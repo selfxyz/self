@@ -8,6 +8,8 @@ import type React from 'react';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { LaunchRecoveryScreen } from '../../../src/screens/recovery/LaunchRecoveryScreen';
+import { TourScreen as TunnelTourScreen } from '../../../src/screens/tunnel/TourScreen';
 import { TunnelDiscloseScreen } from '../../../src/screens/tunnel/TunnelDiscloseScreen';
 import { TunnelKycFailureScreen } from '../../../src/screens/tunnel/TunnelKycFailureScreen';
 import { TunnelKycSuccessScreen } from '../../../src/screens/tunnel/TunnelKycSuccessScreen';
@@ -87,14 +89,16 @@ vi.mock('@selfxyz/euclid', () => ({
   SelfLogo: () => null,
   ProofGenerationScreen: ({ step }: { step: string }) => <div>{`proof-generation:${step}`}</div>,
   ProofProgressScreen: ({ step }: { step: string }) => <div>{`proof-progress:${step}`}</div>,
-  ProofRequestScreen: ({ onClose, onConfirm }: { onClose: () => void; onConfirm: () => void }) => (
+  ProofRequestScreen: ({ onClose, onConfirm }: { onClose: () => void; onConfirm?: () => void }) => (
     <div>
       <button onClick={onClose} type="button">
         Close receipt
       </button>
-      <button onClick={onConfirm} type="button">
-        Confirm receipt
-      </button>
+      {onConfirm && (
+        <button onClick={onConfirm} type="button">
+          Confirm receipt
+        </button>
+      )}
     </div>
   ),
   ProofSuccessScreen: ({ onContinue, onViewDetails }: { onContinue: () => void; onViewDetails: () => void }) => (
@@ -159,6 +163,31 @@ vi.mock('@selfxyz/euclid', () => ({
       </button>
     </div>
   ),
+  LaunchTour1Screen: ({ onRestore }: { onRestore: () => void }) => (
+    <button onClick={onRestore} type="button">
+      Restore tour 1
+    </button>
+  ),
+  LaunchTour2Screen: () => <div>tour-2</div>,
+  LaunchTour3Screen: () => <div>tour-3</div>,
+  LaunchTour4Screen: () => <div>tour-4</div>,
+  LaunchRecoveryScreen: ({
+    onClose,
+    onEnterRecoveryPhrase,
+  }: {
+    onClose: () => void;
+    onEnterRecoveryPhrase: () => void;
+  }) => (
+    <div>
+      <button onClick={onClose} type="button">
+        Back from recovery
+      </button>
+      <button onClick={onEnterRecoveryPhrase} type="button">
+        Enter recovery phrase
+      </button>
+    </div>
+  ),
+  LeftArrowIcon: () => null,
 }));
 
 const LocationDisplay: React.FC = () => {
@@ -281,6 +310,19 @@ const renderRecoveryRequiredRoute = () =>
         <Route path="/tunnel/recovery-required" element={<TunnelRecoveryRequiredScreen />} />
         <Route path="/recovery/phrase-input" element={<LocationDisplay />} />
         <Route path="/tunnel/tour/4" element={<LocationDisplay />} />
+      </Routes>
+      <LocationDisplay />
+    </MemoryRouter>,
+  );
+
+const renderTourRestoreRoute = () =>
+  render(
+    <MemoryRouter initialEntries={['/tunnel/tour/1']}>
+      <Routes>
+        <Route path="/tunnel/tour/:step" element={<TunnelTourScreen />} />
+        <Route path="/recovery" element={<LaunchRecoveryScreen />} />
+        <Route path="/recovery/phrase-input" element={<LocationDisplay />} />
+        <Route path="/settings/security" element={<LocationDisplay />} />
       </Routes>
       <LocationDisplay />
     </MemoryRouter>,
@@ -559,6 +601,85 @@ describe('tunnel flow screens', () => {
     fireEvent.click(screen.getByRole('button', { name: /close/i }));
 
     expectLocation('/tunnel/proof/generating');
+  });
+
+  it('keeps tour restore back button inside the tunnel flow', () => {
+    renderTourRestoreRoute();
+
+    fireEvent.click(screen.getByRole('button', { name: /restore tour 1/i }));
+    fireEvent.click(screen.getByRole('button', { name: /back from recovery/i }));
+
+    expectLocation('/tunnel/tour/1');
+  });
+
+  it('forwards returnTo when entering recovery phrase from tunnel tour', () => {
+    renderTourRestoreRoute();
+
+    fireEvent.click(screen.getByRole('button', { name: /restore tour 1/i }));
+    fireEvent.click(screen.getByRole('button', { name: /enter recovery phrase/i }));
+
+    expectLocation(`/recovery/phrase-input?returnTo=${encodeURIComponent('/tunnel/tour/1')}`);
+  });
+
+  it('hides confirm button on receipt when backState is missing', () => {
+    render(
+      <MemoryRouter
+        initialEntries={[
+          {
+            pathname: '/tunnel/proof/receipt',
+            state: { backPath: '/tunnel/proof/result' },
+          },
+        ]}
+      >
+        <Routes>
+          <Route path="/tunnel/proof/receipt" element={<TunnelProofReceiptScreen />} />
+          <Route path="/tunnel/proof/result" element={<LocationDisplay />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    expect(screen.queryByRole('button', { name: /confirm receipt/i })).toBeNull();
+  });
+
+  it('hides confirm button on receipt when opened from failure context', () => {
+    render(
+      <MemoryRouter
+        initialEntries={[
+          {
+            pathname: '/tunnel/proof/receipt',
+            state: { backPath: '/tunnel/proof/result', backState: { success: false, error: 'TEE down' } },
+          },
+        ]}
+      >
+        <Routes>
+          <Route path="/tunnel/proof/receipt" element={<TunnelProofReceiptScreen />} />
+          <Route path="/tunnel/proof/result" element={<LocationDisplay />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    expect(screen.queryByRole('button', { name: /confirm receipt/i })).toBeNull();
+    expect(screen.getByRole('button', { name: /close receipt/i })).toBeTruthy();
+  });
+
+  it('shows confirm button on receipt when opened from success context', () => {
+    render(
+      <MemoryRouter
+        initialEntries={[
+          {
+            pathname: '/tunnel/proof/receipt',
+            state: { backPath: '/tunnel/proof/result', backState: { success: true } },
+          },
+        ]}
+      >
+        <Routes>
+          <Route path="/tunnel/proof/receipt" element={<TunnelProofReceiptScreen />} />
+          <Route path="/tunnel/proof/result" element={<LocationDisplay />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByRole('button', { name: /confirm receipt/i })).toBeTruthy();
   });
 
   it('routes to error result when disclose setup throws before init starts', async () => {

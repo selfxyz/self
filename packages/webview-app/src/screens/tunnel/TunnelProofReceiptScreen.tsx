@@ -19,7 +19,9 @@ export const TunnelProofReceiptScreen: React.FC = () => {
   const { analytics, haptic } = useSelfClient();
   const { displayLabels, request, appName, appEndpoint, timestamp } = useVerificationRequest();
   const { backPath = '/tunnel/proof/result', backState } =
-    (location.state as { backPath?: string; backState?: unknown } | null) ?? {};
+    (location.state as { backPath?: string; backState?: Record<string, unknown> } | null) ?? {};
+
+  const showConfirm = backPath !== '/tunnel/proof/result' || backState?.success === true;
 
   const onConfirm = useCallback(() => {
     haptic.trigger('selection');
@@ -47,7 +49,7 @@ export const TunnelProofReceiptScreen: React.FC = () => {
       {...WEB_SAFE_AREA}
       variant="default"
       onClose={onClose}
-      onConfirm={onConfirm}
+      onConfirm={showConfirm ? onConfirm : undefined}
       appIcon={<SelfLogo size={40} />}
       appName={appName}
       appEndpoint={appEndpoint}

@@ -37,8 +37,8 @@ export const TourScreen: React.FC = () => {
   }, [navigate, stepNum, client]);
 
   const onResore = useCallback(() => {
-    navigate('/recovery');
-  }, []);
+    navigate('/recovery', { state: { backPath: `/tunnel/tour/${step ?? '1'}` } });
+  }, [navigate, step]);
 
   switch (step) {
     case '1':
