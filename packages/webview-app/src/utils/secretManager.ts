@@ -141,7 +141,20 @@ async function restoreSnapshotBestEffort(
   }
 
   if (rollbackFailures.length > 0) {
-    console.error(`Rollback failed during ${context}:`, rollbackFailures);
+    // A partial rollback leaves mnemonic and secret mismatched — the derived
+    // key from the stored mnemonic would not equal the stored secret. Clear
+    // both so ensureSecret can regenerate a consistent pair from scratch.
+    console.error(`Rollback failed during ${context}, clearing both keys to prevent mismatch:`, rollbackFailures);
+    try {
+      await storage.remove(MNEMONIC_KEY);
+    } catch {
+      /* best effort */
+    }
+    try {
+      await storage.remove(PRIVATE_KEY_KEY);
+    } catch {
+      /* best effort */
+    }
   }
 }
 

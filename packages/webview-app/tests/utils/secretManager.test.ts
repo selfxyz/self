@@ -111,6 +111,44 @@ describe('restoreSecretFromMnemonic', () => {
     expect(storageState.get('self_mnemonic')).toBe(mnemonic);
     expect(storageState.get('self_private_key')).toBe(derivePrivateKey(mnemonic));
   });
+
+  it('clears both keys when mnemonic rollback fails to prevent mismatch', async () => {
+    const storageState = new Map<string, string>();
+    const originalMnemonic = 'legal winner thank year wave sausage worth useful legal winner thank yellow';
+    const originalSecret = derivePrivateKey(originalMnemonic);
+
+    storageState.set('self_mnemonic', originalMnemonic);
+    storageState.set('self_private_key', originalSecret);
+
+    const newMnemonic =
+      'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
+    const newSecret = derivePrivateKey(newMnemonic);
+
+    let failPrivateKeyWrite = true;
+    let failMnemonicRollback = true;
+    const storage = {
+      get: async (key: string) => storageState.get(key) ?? null,
+      set: async (key: string, value: string) => {
+        if (key === 'self_private_key' && value === newSecret && failPrivateKeyWrite) {
+          failPrivateKeyWrite = false;
+          throw new Error('private key write failed');
+        }
+        if (key === 'self_mnemonic' && value === originalMnemonic && failMnemonicRollback) {
+          failMnemonicRollback = false;
+          throw new Error('mnemonic rollback failed');
+        }
+        storageState.set(key, value);
+      },
+      remove: async (key: string) => {
+        storageState.delete(key);
+      },
+    };
+
+    await expect(restoreSecretFromMnemonic(storage, newMnemonic)).rejects.toThrow('private key write failed');
+
+    expect(storageState.get('self_mnemonic')).toBeUndefined();
+    expect(storageState.get('self_private_key')).toBeUndefined();
+  });
 });
 
 describe('ensureSecret', () => {
@@ -247,7 +285,7 @@ describe('restoreStoredSecretSnapshot', () => {
     );
   });
 
-  it('still attempts to restore the private key when mnemonic rollback fails', async () => {
+  it('clears both keys when mnemonic rollback fails to prevent mismatch', async () => {
     const storageState = new Map<string, string>();
     const originalMnemonic =
       'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
@@ -281,6 +319,7 @@ describe('restoreStoredSecretSnapshot', () => {
     };
 
     await expect(restoreStoredSecretSnapshot(storage, targetSnapshot)).rejects.toThrow('write failed');
-    expect(storageState.get('self_private_key')).toBe(originalSecret);
+    expect(storageState.get('self_mnemonic')).toBeUndefined();
+    expect(storageState.get('self_private_key')).toBeUndefined();
   });
 });
