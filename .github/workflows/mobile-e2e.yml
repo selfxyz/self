@@ -28,6 +28,7 @@ on:
     paths:
       - "app/**"
       - "packages/mobile-sdk-alpha/**"
+      - "patches/**"
       - ".github/workflows/mobile-e2e.yml"
   pull_request:
     branches:
@@ -37,6 +38,7 @@ on:
     paths:
       - "app/**"
       - "packages/mobile-sdk-alpha/**"
+      - "patches/**"
       - ".github/workflows/mobile-e2e.yml"
   workflow_dispatch:
 
