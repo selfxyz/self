@@ -33,6 +33,7 @@ final class SelfWebViewHost: NSObject {
             webView.isInspectable = isDebugMode
         }
 
+        webView.navigationDelegate = self
         self.webView = webView
         return webView
     }
@@ -55,6 +56,23 @@ final class SelfWebViewHost: NSObject {
         DispatchQueue.main.async { [weak self] in
             self?.webView?.evaluateJavaScript(js, completionHandler: nil)
         }
+    }
+}
+
+extension SelfWebViewHost: WKNavigationDelegate {
+    func webView(
+        _ webView: WKWebView,
+        decidePolicyFor navigationAction: WKNavigationAction,
+        decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
+    ) {
+        guard let url = navigationAction.request.url, let host = url.host else {
+            decisionHandler(.cancel)
+            return
+        }
+        let isTrusted =
+            (url.scheme == "https" && host == "self-app-alpha.vercel.app") ||
+            (isDebugMode && url.scheme == "http" && host == "127.0.0.1")
+        decisionHandler(isTrusted ? .allow : .cancel)
     }
 }
 

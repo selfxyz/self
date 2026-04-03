@@ -13,6 +13,7 @@ public class WebViewProviderImpl: NSObject {
     private var webView: WKWebView?
     private var viewController: UIViewController?
     private var onMessageReceived: ((String) -> Void)?
+    private var isDebugMode: Bool = false
 
     /// Weak proxy to avoid retain cycles with WKScriptMessageHandler
     private var messageProxy: WeakScriptMessageProxy?
@@ -23,6 +24,7 @@ public class WebViewProviderImpl: NSObject {
 
     @objc(createWebViewOnMessageReceived:isDebugMode:queryParams:)
     public func createWebView(onMessageReceived: @escaping (String) -> Void, isDebugMode: Bool, queryParams: String? = nil) -> UIView {
+        self.isDebugMode = isDebugMode
         // Clean up existing webView and script handlers before creating new one
         if let existingWebView = webView {
             existingWebView.configuration.userContentController.removeScriptMessageHandler(forName: "SelfNativeIOS")
@@ -59,6 +61,7 @@ public class WebViewProviderImpl: NSObject {
             wv.isInspectable = true
         }
 
+        wv.navigationDelegate = self
         self.webView = wv
 
         var urlString = "https://self-app-alpha.vercel.app/tunnel/tour/1"
@@ -127,6 +130,25 @@ private class WebViewHostController: UIViewController {
             wv.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             wv.trailingAnchor.constraint(equalTo: view.trailingAnchor),
         ])
+    }
+}
+
+// MARK: - WKNavigationDelegate
+
+extension WebViewProviderImpl: WKNavigationDelegate {
+    public func webView(
+        _ webView: WKWebView,
+        decidePolicyFor navigationAction: WKNavigationAction,
+        decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
+    ) {
+        guard let url = navigationAction.request.url, let host = url.host else {
+            decisionHandler(.cancel)
+            return
+        }
+        let isTrusted =
+            (url.scheme == "https" && host == "self-app-alpha.vercel.app") ||
+            (isDebugMode && url.scheme == "http" && host == "127.0.0.1")
+        decisionHandler(isTrusted ? .allow : .cancel)
     }
 }
 

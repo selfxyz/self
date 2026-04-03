@@ -51,6 +51,17 @@ class SelfVerificationActivity : AppCompatActivity() {
 
         // Build query params from VerificationRequest JSON
         val queryParams = buildQueryParams()
+        if (queryParams == null) {
+            setResult(
+                RESULT_CODE_ERROR,
+                Intent().apply {
+                    putExtra(EXTRA_ERROR_CODE, "INVALID_BOOTSTRAP")
+                    putExtra(EXTRA_ERROR_MESSAGE, "Invalid verification request/config payload")
+                },
+            )
+            finish()
+            return
+        }
 
         webViewHost = AndroidWebViewHost(this, router, isDebugMode)
         val webView = webViewHost.createWebView(queryParams)
@@ -63,8 +74,8 @@ class SelfVerificationActivity : AppCompatActivity() {
         router.register(LifecycleBridgeHandler(this))
     }
 
-    private fun buildQueryParams(): String {
-        val requestJson = intent.getStringExtra(EXTRA_VERIFICATION_REQUEST) ?: return ""
+    private fun buildQueryParams(): String? {
+        val requestJson = intent.getStringExtra(EXTRA_VERIFICATION_REQUEST) ?: return null
         val configJson = intent.getStringExtra(EXTRA_CONFIG) ?: "{}"
         return try {
             val json = org.json.JSONObject(requestJson)
@@ -116,7 +127,7 @@ class SelfVerificationActivity : AppCompatActivity() {
                 append("selfDefinedData", json.optString("selfDefinedData", null))
             }
         } catch (_: Exception) {
-            ""
+            null
         }
     }
 

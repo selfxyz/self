@@ -54,10 +54,11 @@ class AndroidWebViewHost(
                             view: WebView?,
                             request: WebResourceRequest?,
                         ): Boolean {
-                            val url = request?.url?.toString() ?: return true
-                            if (url.startsWith("https://self-app-alpha.vercel.app")) return false
-                            if (isDebugMode && url.startsWith("http://127.0.0.1:5173")) return false
-                            return true
+                            val uri = request?.url ?: return true
+                            val isAllowed =
+                                (uri.scheme == "https" && uri.host == "self-app-alpha.vercel.app") ||
+                                    (isDebugMode && uri.scheme == "http" && uri.host == "127.0.0.1" && uri.port == 5173)
+                            return !isAllowed
                         }
 
                         override fun onReceivedSslError(
@@ -73,11 +74,15 @@ class AndroidWebViewHost(
                     object : WebChromeClient() {
                         override fun onPermissionRequest(request: PermissionRequest?) {
                             request ?: return
-                            val origin = request.origin?.toString() ?: ""
+                            val origin =
+                                request.origin ?: run {
+                                    request.deny()
+                                    return
+                                }
                             val isTrusted =
-                                origin.startsWith("https://self-app-alpha.vercel.app") ||
-                                    origin.startsWith("https://verify.didit.me") ||
-                                    (isDebugMode && origin.startsWith("http://127.0.0.1"))
+                                (origin.scheme == "https" && origin.host == "self-app-alpha.vercel.app") ||
+                                    (origin.scheme == "https" && origin.host == "verify.didit.me") ||
+                                    (isDebugMode && origin.scheme == "http" && origin.host == "127.0.0.1")
                             if (!isTrusted) {
                                 request.deny()
                                 return
