@@ -41,24 +41,18 @@ final class SelfWebViewHost: NSObject {
         guard let webView = webView else { return }
 
         if isDebugMode {
-            let urlString = "http://localhost:5173?\(queryParams)"
+            let urlString = "http://localhost:5173/tunnel/tour/1?\(queryParams)"
             if let url = URL(string: urlString) {
                 webView.load(URLRequest(url: url))
             }
         } else {
-            guard let bundlePath = Bundle.module.path(forResource: "self-sdk-web", ofType: nil) else {
-                return
-            }
-            let fileURL = URL(fileURLWithPath: "\(bundlePath)/index.html")
-            let bundleURL = URL(fileURLWithPath: bundlePath)
-
-            var components = URLComponents(url: fileURL, resolvingAgainstBaseURL: false)
+            var urlString = "https://self-app-alpha.vercel.app/tunnel/tour/1"
             if !queryParams.isEmpty {
-                components?.query = queryParams
+                urlString += "?\(queryParams)"
             }
-            let targetURL = components?.url ?? fileURL
-
-            webView.loadFileURL(targetURL, allowingReadAccessTo: bundleURL)
+            if let url = URL(string: urlString) {
+                webView.load(URLRequest(url: url))
+            }
         }
     }
 

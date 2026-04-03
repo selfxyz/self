@@ -37,7 +37,7 @@ public struct SelfSdkConfig {
         userIdType: String? = nil,
         chainID: Int? = nil,
         userDefinedData: String? = nil,
-        selfDefinedData: String? = nil
+        selfDefinedData: String? = nil,
         secureStorageProvider: SecureStorageProvider
     ) {
         self.verificationId = verificationId
@@ -65,7 +65,7 @@ public struct SelfSdkConfig {
             URLQueryItem(name: "environment", value: environment),
             URLQueryItem(name: "verificationId", value: verificationId),
             URLQueryItem(name: "userId", value: userId),
-            URLQueryItem(name: "version", value: String(version)),
+            URLQueryItem(name: "version", value: String(version))
         ]
         if let scope = scope {
             items.append(URLQueryItem(name: "scope", value: scope))

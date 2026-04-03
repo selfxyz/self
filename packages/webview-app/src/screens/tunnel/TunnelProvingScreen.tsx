@@ -17,10 +17,8 @@ import { WEB_SAFE_AREA } from '../../utils/insets';
 import { getIdCardProps } from '../../utils/provingUtils';
 import { initSelfAppFromRequest } from '../../utils/selfAppContext';
 
-type Phase = 'dsc' | 'register' | 'disclose';
+type Phase = 'dsc' | 'register';
 
-const MAX_DISCLOSE_RETRIES = 3;
-const DISCLOSE_RETRY_DELAY_MS = 3000;
 const ERROR_STATES: ProvingStateType[] = ['error', 'failure', 'passport_not_supported', 'passport_data_not_found'];
 
 function mapProvingStateToStep(state: ProvingStateType | null, phase: Phase): ProofGenerationStep {
@@ -37,9 +35,8 @@ function mapProvingStateToStep(state: ProvingStateType | null, phase: Phase): Pr
     case 'proving':
       return phase === 'dsc' ? 'readingRegistry' : 'generatingProof';
     case 'post_proving':
-      return phase === 'disclose' ? 'awaitingVerification' : 'generatingProof';
     case 'completed':
-      return phase === 'disclose' ? 'finishingUp' : 'generatingProof';
+      return 'generatingProof';
     default:
       return phase === 'dsc' ? 'readingRegistry' : 'generatingProof';
   }
@@ -57,13 +54,12 @@ export const TunnelProvingScreen: React.FC = () => {
   const passportData = useProvingStore(s => s.passportData);
   const [phase, setPhase] = useState<Phase>('dsc');
   const startedRef = useRef(false);
-  const retryCountRef = useRef(0);
-  const retryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [initDone, setInitDone] = useState(false);
 
   const navigateToError = useCallback(
     (error: string) => {
       haptic.trigger('error');
-      navigate('/tunnel/proof/result', { state: { success: false, error } });
+      navigate('/tunnel/proof/result', { replace: true, state: { success: false, error, source: 'proving' as const } });
     },
     [haptic, navigate],
   );
@@ -71,34 +67,36 @@ export const TunnelProvingScreen: React.FC = () => {
   useEffect(() => {
     if (startedRef.current) return;
     startedRef.current = true;
-    initSelfAppFromRequest(client, verificationCtx);
 
     const start = async () => {
+      initSelfAppFromRequest(client, verificationCtx);
       const selectedDocument = await loadSelectedDocument(client);
       const category = selectedDocument?.data?.documentCategory;
       const initialPhase: Phase = category === 'aadhaar' || category === 'kyc' ? 'register' : 'dsc';
       setPhase(initialPhase);
       analytics.trackEvent('tunnel_proving_started', { phase: initialPhase });
-      init(client, initialPhase, true);
+      await Promise.resolve(init(client, initialPhase, true));
+      setInitDone(true);
     };
-    start();
-  }, [client, init, analytics, verificationCtx]);
+    start().catch(err => {
+      const message = err instanceof Error ? err.message : 'Proving init failed';
+      analytics.trackEvent('tunnel_proving_init_failed', { error: message });
+      navigateToError(message);
+    });
+  }, [client, init, analytics, verificationCtx, navigateToError]);
 
   useEffect(() => {
-    if (!currentState) return;
+    if (!currentState || !initDone) return;
+
+    if (currentState === 'account_recovery_choice') {
+      analytics.trackEvent('tunnel_recovery_required');
+      navigate('/tunnel/recovery-required', { replace: true });
+      return;
+    }
 
     const isError = ERROR_STATES.includes(currentState);
 
-    if (
-      isError &&
-      currentState === 'passport_data_not_found' &&
-      phase === 'disclose' &&
-      retryCountRef.current < MAX_DISCLOSE_RETRIES
-    ) {
-      retryCountRef.current += 1;
-      analytics.trackEvent('tunnel_disclose_retry', { attempt: retryCountRef.current });
-      retryTimeoutRef.current = setTimeout(() => init(client, 'disclose', true), DISCLOSE_RETRY_DELAY_MS);
-    } else if (isError) {
+    if (isError) {
       analytics.trackEvent('tunnel_proving_failed', {
         phase,
         errorCode,
@@ -106,24 +104,19 @@ export const TunnelProvingScreen: React.FC = () => {
         state: currentState,
       });
       navigateToError(reason ?? errorCode ?? currentState);
-    } else if (currentState === 'completed' && phase !== 'disclose') {
-      setPhase('disclose');
-      retryCountRef.current = 0;
-      analytics.trackEvent('tunnel_proving_registration_complete', { previousPhase: phase });
-      init(client, 'disclose', true);
-    } else if (currentState === 'completed' && phase === 'disclose') {
-      analytics.trackEvent('tunnel_proving_disclose_complete');
-      haptic.trigger('success');
-      navigate('/tunnel/proof/result', { state: { success: true } });
+    } else if (currentState === 'completed' && phase === 'dsc') {
+      setPhase('register');
+      analytics.trackEvent('tunnel_proving_registration_complete', { previousPhase: 'dsc' });
+      void Promise.resolve(init(client, 'register', true)).catch(err => {
+        const message = err instanceof Error ? err.message : 'Register init failed';
+        analytics.trackEvent('tunnel_proving_init_failed', { error: message, phase: 'register' });
+        navigateToError(message);
+      });
+    } else if (currentState === 'completed' && phase === 'register') {
+      analytics.trackEvent('tunnel_proving_registration_complete', { previousPhase: 'register' });
+      navigate('/tunnel/proof/disclose', { replace: true });
     }
-
-    return () => {
-      if (retryTimeoutRef.current) {
-        clearTimeout(retryTimeoutRef.current);
-        retryTimeoutRef.current = null;
-      }
-    };
-  }, [currentState, phase, client, init, analytics, haptic, navigate, errorCode, reason, navigateToError]);
+  }, [currentState, initDone, phase, client, init, analytics, haptic, navigate, errorCode, reason, navigateToError]);
 
   return (
     <ProofGenerationScreen

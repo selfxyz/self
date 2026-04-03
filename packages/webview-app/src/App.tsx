@@ -46,15 +46,19 @@ import { SimpleDialogueScreen } from './screens/proving/SimpleDialogueScreen';
 import { VerificationResultScreen } from './screens/proving/VerificationResultScreen';
 import { BackupMethodPickerScreen } from './screens/recovery/BackupMethodPickerScreen';
 import { LaunchRecoveryScreen } from './screens/recovery/LaunchRecoveryScreen';
+import { RecoveryFailureScreen } from './screens/recovery/RecoveryFailureScreen';
 import { RecoveryPhraseScreen } from './screens/recovery/RecoveryPhraseScreen';
 import { RecoverySuccessScreen } from './screens/recovery/RecoverySuccessScreen';
 import { SecretPhraseInputScreen } from './screens/recovery/SecretPhraseInputScreen';
 import { TourScreen as TunnelTourScreen } from './screens/tunnel/TourScreen';
 import { TunnelCountryPickerScreen } from './screens/tunnel/TunnelCountryPickerScreen';
+import { TunnelDiscloseScreen } from './screens/tunnel/TunnelDiscloseScreen';
 import { TunnelIDTypeScreen } from './screens/tunnel/TunnelIDTypeScreen';
+import { TunnelKycSuccessScreen } from './screens/tunnel/TunnelKycSuccessScreen';
 import { TunnelKycWrapper } from './screens/tunnel/TunnelKycWrapper';
 import { TunnelProofReceiptScreen } from './screens/tunnel/TunnelProofReceiptScreen';
 import { TunnelProvingScreen } from './screens/tunnel/TunnelProvingScreen';
+import { TunnelRecoveryRequiredScreen } from './screens/tunnel/TunnelRecoveryRequiredScreen';
 import { TunnelResultScreen } from './screens/tunnel/TunnelResultScreen';
 
 export const App: React.FC = () => (
@@ -85,6 +89,7 @@ export const App: React.FC = () => (
             <Route path="/settings/recovery-phrase" element={<RecoveryPhraseScreen />} />
             <Route path="/recovery" element={<LaunchRecoveryScreen />} />
             <Route path="/recovery/phrase-input" element={<SecretPhraseInputScreen />} />
+            <Route path="/recovery/failure" element={<RecoveryFailureScreen />} />
             <Route path="/recovery/success" element={<RecoverySuccessScreen />} />
             <Route path="/onboarding/backup" element={<SocialSignOnMethodPickerScreen />} />
             <Route path="/onboarding/signin" element={<SocialSignOnPickerScreen />} />
@@ -105,10 +110,13 @@ export const App: React.FC = () => (
             <Route path="/coming-soon" element={<ComingSoonScreen />} />
             <Route path="/tunnel/tour/:step" element={<TunnelTourScreen />} />
             <Route path="/tunnel/kyc" element={<TunnelKycWrapper />} />
+            <Route path="/tunnel/kyc-success" element={<TunnelKycSuccessScreen />} />
             <Route path="/tunnel/registration/country" element={<TunnelCountryPickerScreen />} />
             <Route path="/tunnel/registration/id-type" element={<TunnelIDTypeScreen />} />
             <Route path="/tunnel/proof/receipt" element={<TunnelProofReceiptScreen />} />
             <Route path="/tunnel/proof/generating" element={<TunnelProvingScreen />} />
+            <Route path="/tunnel/recovery-required" element={<TunnelRecoveryRequiredScreen />} />
+            <Route path="/tunnel/proof/disclose" element={<TunnelDiscloseScreen />} />
             <Route path="/tunnel/proof/result" element={<TunnelResultScreen />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

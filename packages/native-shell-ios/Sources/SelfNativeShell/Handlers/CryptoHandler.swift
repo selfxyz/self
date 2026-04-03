@@ -99,10 +99,11 @@ final class CryptoHandler: BridgeHandler {
             kSecReturnRef as String: true
         ]
 
-        var result: AnyObject?
+        var result: CFTypeRef?
         let status = SecItemCopyMatching(query as CFDictionary, &result)
-        guard status == errSecSuccess else { return nil }
-        return result as! SecKey?
+        guard status == errSecSuccess, let result else { return nil }
+        // swiftlint:disable:next force_cast
+        return (result as! SecKey)
     }
 
     private func deleteKey(keyRef: String) {

@@ -10,16 +10,35 @@ const val BRIDGE_PROTOCOL_VERSION = 1
 
 @Serializable
 enum class BridgeDomain {
-    @SerialName("nfc") NFC,
-    @SerialName("biometrics") BIOMETRICS,
-    @SerialName("secureStorage") SECURE_STORAGE,
-    @SerialName("camera") CAMERA,
-    @SerialName("crypto") CRYPTO,
-    @SerialName("haptic") HAPTIC,
-    @SerialName("analytics") ANALYTICS,
-    @SerialName("lifecycle") LIFECYCLE,
-    @SerialName("documents") DOCUMENTS,
-    @SerialName("navigation") NAVIGATION,
+    @SerialName("nfc")
+    NFC,
+
+    @SerialName("biometrics")
+    BIOMETRICS,
+
+    @SerialName("secureStorage")
+    SECURE_STORAGE,
+
+    @SerialName("camera")
+    CAMERA,
+
+    @SerialName("crypto")
+    CRYPTO,
+
+    @SerialName("haptic")
+    HAPTIC,
+
+    @SerialName("analytics")
+    ANALYTICS,
+
+    @SerialName("lifecycle")
+    LIFECYCLE,
+
+    @SerialName("documents")
+    DOCUMENTS,
+
+    @SerialName("navigation")
+    NAVIGATION,
 }
 
 @Serializable
