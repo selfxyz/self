@@ -94,11 +94,21 @@ class AndroidWebViewHost(
                                     return
                                 }
 
+                            val allowedResources =
+                                request.resources.filter {
+                                    it == PermissionRequest.RESOURCE_VIDEO_CAPTURE ||
+                                        it == PermissionRequest.RESOURCE_AUDIO_CAPTURE
+                                }
+                            if (allowedResources.size != request.resources.size) {
+                                request.deny()
+                                return
+                            }
+
                             val neededPermissions = mutableListOf<String>()
-                            if (request.resources.contains(PermissionRequest.RESOURCE_VIDEO_CAPTURE)) {
+                            if (allowedResources.contains(PermissionRequest.RESOURCE_VIDEO_CAPTURE)) {
                                 neededPermissions.add(Manifest.permission.CAMERA)
                             }
-                            if (request.resources.contains(PermissionRequest.RESOURCE_AUDIO_CAPTURE)) {
+                            if (allowedResources.contains(PermissionRequest.RESOURCE_AUDIO_CAPTURE)) {
                                 neededPermissions.add(Manifest.permission.RECORD_AUDIO)
                             }
 
@@ -117,7 +127,7 @@ class AndroidWebViewHost(
                                 return
                             }
 
-                            request.grant(request.resources)
+                            request.grant(allowedResources.toTypedArray())
                         }
 
                         override fun onShowFileChooser(
