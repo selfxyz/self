@@ -33,6 +33,7 @@ final class SelfWebViewHost: NSObject {
             webView.isInspectable = isDebugMode
         }
 
+        webView.navigationDelegate = self
         self.webView = webView
         return webView
     }
@@ -40,26 +41,38 @@ final class SelfWebViewHost: NSObject {
     func loadContent(queryParams: String) {
         guard let webView = webView else { return }
 
-        if isDebugMode {
-            let urlString = "http://localhost:5173/tunnel/tour/1?\(queryParams)"
-            if let url = URL(string: urlString) {
-                webView.load(URLRequest(url: url))
-            }
-        } else {
-            var urlString = "https://self-app-alpha.vercel.app/tunnel/tour/1"
-            if !queryParams.isEmpty {
-                urlString += "?\(queryParams)"
-            }
-            if let url = URL(string: urlString) {
-                webView.load(URLRequest(url: url))
-            }
+        var urlString = "https://self-app-alpha.vercel.app/tunnel/tour/1"
+        if !queryParams.isEmpty {
+            urlString += "?\(queryParams)"
         }
+        guard let url = URL(string: urlString) else {
+            NSLog("SelfWebViewHost: Failed to construct URL from: %@", urlString)
+            return
+        }
+        webView.load(URLRequest(url: url))
     }
 
     func evaluateJs(_ js: String) {
         DispatchQueue.main.async { [weak self] in
             self?.webView?.evaluateJavaScript(js, completionHandler: nil)
         }
+    }
+}
+
+extension SelfWebViewHost: WKNavigationDelegate {
+    func webView(
+        _ webView: WKWebView,
+        decidePolicyFor navigationAction: WKNavigationAction,
+        decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
+    ) {
+        guard let url = navigationAction.request.url, let host = url.host else {
+            decisionHandler(.cancel)
+            return
+        }
+        let isTrusted =
+            (url.scheme == "https" && host == "self-app-alpha.vercel.app") ||
+            (isDebugMode && url.scheme == "http" && host == "127.0.0.1")
+        decisionHandler(isTrusted ? .allow : .cancel)
     }
 }
 

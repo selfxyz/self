@@ -17,7 +17,11 @@ class MessageRouter(
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
 ) {
     private val handlers = mutableMapOf<BridgeDomain, BridgeHandler>()
-    private val json = Json { ignoreUnknownKeys = true }
+    private val json =
+        Json {
+            ignoreUnknownKeys = true
+            encodeDefaults = true
+        }
 
     fun register(handler: BridgeHandler) {
         handlers[handler.domain] = handler
@@ -30,6 +34,23 @@ class MessageRouter(
             } catch (e: Exception) {
                 return // Malformed message — drop silently
             }
+
+        if (request.version != BRIDGE_PROTOCOL_VERSION) {
+            sendResponse(
+                BridgeResponse(
+                    id = generateUuid(),
+                    domain = request.domain,
+                    requestId = request.id,
+                    success = false,
+                    error =
+                        BridgeError(
+                            code = "UNSUPPORTED_VERSION",
+                            message = "Expected protocol version $BRIDGE_PROTOCOL_VERSION, got ${request.version}",
+                        ),
+                ),
+            )
+            return
+        }
 
         val handler = handlers[request.domain]
         if (handler == null) {
