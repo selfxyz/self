@@ -164,6 +164,20 @@ class MessageRouterTest {
         }
 
     @Test
+    fun `messages from untrusted origins are dropped before dispatch`() =
+        runTest {
+            val sent = mutableListOf<String>()
+            val handler = StubHandler(BridgeDomain.SECURE_STORAGE, result = JsonPrimitive("ok"))
+            val router = MessageRouter(sendToWebView = { sent.add(it) }, scope = this)
+            router.register(handler)
+
+            router.onMessageReceived(makeRequest(), isTrustedSource = false)
+            advanceUntilIdle()
+
+            assertTrue(sent.isEmpty())
+        }
+
+    @Test
     fun `register replaces existing handler for same domain`() =
         runTest {
             val sent = mutableListOf<String>()

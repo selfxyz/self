@@ -11,16 +11,20 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.net.http.SslError
-import android.webkit.JavascriptInterface
 import android.webkit.PermissionRequest
 import android.webkit.SslErrorHandler
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.webkit.WebMessageCompat
+import androidx.webkit.WebViewAssetLoader
+import androidx.webkit.WebViewCompat
+import androidx.webkit.WebViewFeature
 import xyz.self.sdk.bridge.MessageRouter
 
 class AndroidWebViewHost(
@@ -34,6 +38,12 @@ class AndroidWebViewHost(
 
     @SuppressLint("SetJavaScriptEnabled")
     fun createWebView(queryParams: String = ""): WebView {
+        val assetLoader =
+            WebViewAssetLoader
+                .Builder()
+                .addPathHandler("/", BundledAssetPathHandler(context))
+                .build()
+
         webView =
             WebView(context).apply {
                 settings.apply {
@@ -50,15 +60,21 @@ class AndroidWebViewHost(
 
                 webViewClient =
                     object : WebViewClient() {
+                        override fun shouldInterceptRequest(
+                            view: WebView?,
+                            request: WebResourceRequest?,
+                        ): WebResourceResponse? {
+                            request ?: return null
+                            val url = request.url
+                            if (!isBundledAssetUrl(url.toString())) return null
+                            return assetLoader.shouldInterceptRequest(url)
+                        }
+
                         override fun shouldOverrideUrlLoading(
                             view: WebView?,
                             request: WebResourceRequest?,
                         ): Boolean {
-                            val uri = request?.url ?: return true
-                            val isAllowed =
-                                (uri.scheme == "https" && uri.host == "self-app-alpha.vercel.app") ||
-                                    (isDebugMode && uri.scheme == "http" && uri.host == "127.0.0.1" && uri.port == 5173)
-                            return !isAllowed
+                            return !isAllowedNavigationUrl(request?.url?.toString(), isDebugMode)
                         }
 
                         override fun onReceivedSslError(
@@ -79,11 +95,7 @@ class AndroidWebViewHost(
                                     request.deny()
                                     return
                                 }
-                            val isTrusted =
-                                (origin.scheme == "https" && origin.host == "self-app-alpha.vercel.app") ||
-                                    (origin.scheme == "https" && origin.host == "verify.didit.me") ||
-                                    (isDebugMode && origin.scheme == "http" && origin.host == "127.0.0.1")
-                            if (!isTrusted) {
+                            if (!isTrustedPermissionOrigin(origin.toString(), isDebugMode)) {
                                 request.deny()
                                 return
                             }
@@ -154,11 +166,9 @@ class AndroidWebViewHost(
                         }
                     }
 
-                addJavascriptInterface(BridgeJsInterface(), "SelfNativeAndroid")
+                installBridge(webView = this)
 
-                val baseUrl = "https://self-app-alpha.vercel.app/tunnel/tour/1"
-                val url = if (queryParams.isNotEmpty()) "$baseUrl?$queryParams" else baseUrl
-                loadUrl(url)
+                loadUrl(initialContentUrl(queryParams, isDebugMode))
             }
         return webView
     }
@@ -173,15 +183,156 @@ class AndroidWebViewHost(
         webView.destroy()
     }
 
-    inner class BridgeJsInterface {
-        @JavascriptInterface
-        fun postMessage(json: String) {
-            router.onMessageReceived(json)
+    private fun installBridge(webView: WebView) {
+        check(WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)) {
+            "WEB_MESSAGE_LISTENER is required to expose the native bridge safely"
+        }
+
+        WebViewCompat.addWebMessageListener(
+            webView,
+            "SelfNativeAndroid",
+            buildAllowedOriginRules(isDebugMode),
+        ) { _, message: WebMessageCompat, _, isMainFrame, _ ->
+            if (!isMainFrame) {
+                return@addWebMessageListener
+            }
+
+            val rawJson = message.data ?: return@addWebMessageListener
+            router.onMessageReceived(
+                rawJson = rawJson,
+                isTrustedSource = isTrustedBridgeOrigin(currentWebViewUrl(), isDebugMode),
+            )
         }
     }
 
     companion object {
         const val FILE_CHOOSER_REQUEST_CODE = 1001
         const val CAMERA_PERMISSION_REQUEST_CODE = 1002
+        private const val BUNDLED_ASSET_HOST = "appassets.androidplatform.net"
+        private const val BUNDLED_TOUR_PATH = "/tunnel/tour/1"
+        private const val DEBUG_HOST = "127.0.0.1"
+        private const val DEBUG_PORT = 5173
+        private const val DIDIT_HOST = "verify.didit.me"
+
+        internal fun initialContentUrl(
+            queryParams: String,
+            isDebugMode: Boolean,
+        ): String =
+            if (isDebugMode) {
+                buildString {
+                    append("http://").append(DEBUG_HOST).append(":").append(DEBUG_PORT).append(BUNDLED_TOUR_PATH)
+                    if (queryParams.isNotEmpty()) {
+                        append("?").append(queryParams)
+                    }
+                }
+            } else {
+                buildString {
+                    append("https://").append(BUNDLED_ASSET_HOST).append(BUNDLED_TOUR_PATH)
+                    if (queryParams.isNotEmpty()) {
+                        append("?").append(queryParams)
+                    }
+                }
+            }
+
+        internal fun isAllowedNavigationUrl(
+            rawUrl: String?,
+            isDebugMode: Boolean,
+        ): Boolean =
+            isBundledAssetUrl(rawUrl) ||
+                isDiditUrl(rawUrl) ||
+                (isDebugMode && isDebugLocalUrl(rawUrl))
+
+        internal fun isTrustedPermissionOrigin(
+            rawUrl: String?,
+            isDebugMode: Boolean,
+        ): Boolean =
+            isBundledAssetUrl(rawUrl) ||
+                isDiditUrl(rawUrl) ||
+                (isDebugMode && isDebugLocalUrl(rawUrl))
+
+        internal fun isTrustedBridgeOrigin(
+            rawUrl: String?,
+            isDebugMode: Boolean,
+        ): Boolean =
+            isBundledAssetUrl(rawUrl) ||
+                (isDebugMode && isDebugLocalUrl(rawUrl))
+
+        internal fun isBundledAssetUrl(rawUrl: String?): Boolean =
+            uriScheme(rawUrl) == "https" && uriHost(rawUrl) == BUNDLED_ASSET_HOST
+
+        private fun isDiditUrl(rawUrl: String?): Boolean =
+            uriScheme(rawUrl) == "https" && uriHost(rawUrl) == DIDIT_HOST
+
+        private fun isDebugLocalUrl(rawUrl: String?): Boolean =
+            uriScheme(rawUrl) == "http" && uriHost(rawUrl) == DEBUG_HOST && uriPort(rawUrl) == DEBUG_PORT
+
+        private fun buildAllowedOriginRules(isDebugMode: Boolean): Set<String> =
+            buildSet {
+                add("https://$BUNDLED_ASSET_HOST")
+                if (isDebugMode) {
+                    add("http://$DEBUG_HOST:$DEBUG_PORT")
+                }
+            }
+
+        private fun uriScheme(rawUrl: String?): String? = parseUri(rawUrl)?.scheme
+
+        private fun uriHost(rawUrl: String?): String? = parseUri(rawUrl)?.host ?: parseUri(rawUrl)?.authority
+
+        private fun uriPort(rawUrl: String?): Int? = parseUri(rawUrl)?.port?.takeIf { it != -1 }
+
+        private fun parseUri(rawUrl: String?): java.net.URI? =
+            rawUrl?.let { raw -> runCatching { java.net.URI(raw) }.getOrNull() }
+    }
+
+    private fun currentWebViewUrl(): String? = webView.url
+
+    private class BundledAssetPathHandler(
+        private val context: Context,
+    ) : WebViewAssetLoader.PathHandler {
+        override fun handle(path: String): WebResourceResponse? {
+            val normalizedPath = path.trimStart('/')
+            val assetCandidates =
+                buildList {
+                    if (normalizedPath.isNotEmpty()) {
+                        add("self-wallet/$normalizedPath")
+                    }
+                    if (!normalizedPath.contains('.')) {
+                        add("self-wallet/index.html")
+                    }
+                }
+
+            for (assetPath in assetCandidates) {
+                val inputStream =
+                    try {
+                        context.assets.open(assetPath)
+                    } catch (_: Exception) {
+                        null
+                    } ?: continue
+
+                return WebResourceResponse(
+                    mimeTypeForAssetPath(assetPath),
+                    "UTF-8",
+                    inputStream,
+                )
+            }
+
+            return null
+        }
+
+        private fun mimeTypeForAssetPath(path: String): String =
+            when {
+                path.endsWith(".js") -> "application/javascript"
+                path.endsWith(".css") -> "text/css"
+                path.endsWith(".html") -> "text/html"
+                path.endsWith(".json") -> "application/json"
+                path.endsWith(".woff2") -> "font/woff2"
+                path.endsWith(".woff") -> "font/woff"
+                path.endsWith(".otf") -> "font/otf"
+                path.endsWith(".ttf") -> "font/ttf"
+                path.endsWith(".png") -> "image/png"
+                path.endsWith(".svg") -> "image/svg+xml"
+                path.endsWith(".wav") -> "audio/wav"
+                else -> "application/octet-stream"
+            }
     }
 }

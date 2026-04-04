@@ -14,7 +14,11 @@ final class MessageRouter {
         handlers[handler.domain] = handler
     }
 
-    func onMessageReceived(rawJson: String) {
+    func onMessageReceived(rawJson: String, isTrustedSource: Bool = true) {
+        guard isTrustedSource else {
+            return
+        }
+
         guard let data = rawJson.data(using: .utf8) else {
             return
         }

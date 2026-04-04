@@ -25,7 +25,15 @@ let package = Package(
             dependencies: [
                 .product(name: "NFCPassportReader", package: "NFCPassportReader"),
             ],
-            path: "Sources/SelfSdkSwift"
+            path: "Sources/SelfSdkSwift",
+            resources: [
+                .copy("Resources/self-sdk-web")
+            ]
+        ),
+        .testTarget(
+            name: "SelfSdkSwiftTests",
+            dependencies: ["SelfSdkSwift"],
+            path: "Tests/SelfSdkSwiftTests"
         ),
     ]
 )

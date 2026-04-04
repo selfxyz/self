@@ -22,7 +22,10 @@ class IosWebViewHost(
 
         return provider.createWebView(
             onMessageReceived = { rawJson ->
-                router.onMessageReceived(rawJson)
+                router.onMessageReceived(
+                    rawJson = rawJson,
+                    isTrustedSource = provider.isBridgeRequestAllowed(),
+                )
             },
             isDebugMode = isDebugMode,
             queryParams = queryParams,

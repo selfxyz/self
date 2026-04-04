@@ -123,6 +123,28 @@ class MessageRouterTest {
     }
 
     @Test
+    fun drops_messages_from_untrusted_origins_before_dispatch() =
+        runTest {
+            val responses = mutableListOf<String>()
+            val testScope = TestScope(UnconfinedTestDispatcher(testScheduler))
+            val router =
+                MessageRouter(
+                    sendToWebView = { responses.add(it) },
+                    scope = testScope,
+                )
+            val handler = FakeBridgeHandler(domain = BridgeDomain.HAPTIC, response = JsonPrimitive("ok"))
+            router.register(handler)
+
+            router.onMessageReceived(
+                rawJson = """{"type":"request","version":1,"id":"req-1","domain":"haptic","method":"trigger","params":{},"timestamp":123}""",
+                isTrustedSource = false,
+            )
+
+            assertEquals(0, responses.size)
+            assertEquals(0, handler.invocations.size)
+        }
+
+    @Test
     fun pushEvent_sends_handleEvent_to_webview() {
         val responses = mutableListOf<String>()
         val router = MessageRouter(sendToWebView = { responses.add(it) })

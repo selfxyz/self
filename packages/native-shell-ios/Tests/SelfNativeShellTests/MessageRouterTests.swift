@@ -149,6 +149,24 @@ final class MessageRouterTests: XCTestCase {
         XCTAssertEqual(sentCount, 0)
     }
 
+    func testUntrustedOriginMessagesAreDroppedBeforeDispatch() {
+        var sentCount = 0
+        let router = MessageRouter { _ in
+            sentCount += 1
+        }
+        router.register(handler: StubHandler(domain: .secureStorage, result: ["value": "abc"]))
+
+        router.onMessageReceived(rawJson: makeRequestJSON(), isTrustedSource: false)
+
+        let expectation = expectation(description: "wait")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            expectation.fulfill()
+        }
+        waitForExpectations(timeout: 2)
+
+        XCTAssertEqual(sentCount, 0)
+    }
+
     // MARK: - Registration
 
     func testRegisterReplacesExistingHandler() {

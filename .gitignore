@@ -58,5 +58,8 @@ contracts/broadcast/
 packages/native-shell-android/.gradle/
 packages/native-shell-android/build/
 
-app/build/*
-packages/mobile-sdk-alpha-source/android/.gradle/*
+# WebView bundles — built from webview-app, not checked in
+packages/native-shell-android/src/main/assets/self-wallet/
+packages/native-shell-ios/Resources/self-sdk-web/
+packages/self-sdk-swift/Sources/SelfSdkSwift/Resources/self-sdk-web/
+

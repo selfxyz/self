@@ -26,7 +26,15 @@ class MessageRouter(
         handlers[handler.domain] = handler
     }
 
-    fun onMessageReceived(rawJson: String) {
+    fun onMessageReceived(
+        rawJson: String,
+        isTrustedSource: Boolean = true,
+    ) {
+        if (!isTrustedSource) {
+            android.util.Log.w("BridgeRouter", "Dropped message from untrusted WebView origin")
+            return
+        }
+
         val request =
             try {
                 json.decodeFromString<BridgeRequest>(rawJson)
