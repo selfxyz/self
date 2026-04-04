@@ -47,7 +47,13 @@ const EMPTY_WORDS = Array.from<string>({ length: WORD_COUNT }).fill('');
 const instruction = 'Enter your recovery phrase to restore your account, registered IDs, and activity history';
 
 class RecoveryFlowError extends Error {
-  constructor(readonly reason: 'storage_write_failed' | 'document_finalization_failed' | 'unexpected_error') {
+  constructor(
+    readonly reason:
+      | 'document_unavailable'
+      | 'storage_write_failed'
+      | 'document_finalization_failed'
+      | 'unexpected_error',
+  ) {
     super(reason);
   }
 }
@@ -180,7 +186,11 @@ export const SecretPhraseInputScreen: React.FC = () => {
       }
 
       const selectedDocument = await loadSelectedDocument(client);
-      const hasRealDocument = selectedDocument && !selectedDocument.metadata.mock;
+      if (selectedDocument === null) {
+        throw new RecoveryFlowError('document_unavailable');
+      }
+
+      const hasRealDocument = !selectedDocument.metadata.mock;
 
       if (!hasRealDocument) {
         await restoreSecretFromMnemonic(storage, mnemonic);
@@ -193,7 +203,9 @@ export const SecretPhraseInputScreen: React.FC = () => {
 
         haptic.trigger('success');
         analytics.trackEvent('recovery_phrase_recovered', { documentCategory: 'none' });
-        navigate('/tunnel/kyc', { replace: true });
+        if (isMountedRef.current) {
+          navigate('/tunnel/kyc', { replace: true });
+        }
         return;
       } else {
         derivedSecret = derivePrivateKey(mnemonic);
@@ -250,10 +262,12 @@ export const SecretPhraseInputScreen: React.FC = () => {
       analytics.trackEvent('recovery_phrase_recovered', {
         documentCategory: selectedDocument.data.documentCategory,
       });
-      if (returnTo) {
-        navigate(returnTo, { replace: true });
-      } else {
-        navigate('/recovery/success');
+      if (isMountedRef.current) {
+        if (returnTo) {
+          navigate(returnTo, { replace: true });
+        } else {
+          navigate('/recovery/success');
+        }
       }
     } catch (error) {
       const reason = error instanceof RecoveryFlowError ? error.reason : 'unexpected_error';
@@ -262,10 +276,12 @@ export const SecretPhraseInputScreen: React.FC = () => {
       analytics.trackEvent('recovery_phrase_failed', {
         reason,
       });
-      navigate(buildRecoveryTarget('/recovery/failure', returnTo), {
-        replace: true,
-        state: returnTo ? { returnTo } : undefined,
-      });
+      if (isMountedRef.current) {
+        navigate(buildRecoveryTarget('/recovery/failure', returnTo), {
+          replace: true,
+          state: returnTo ? { returnTo } : undefined,
+        });
+      }
     } finally {
       derivedSecret = null;
       if (isMountedRef.current) {
