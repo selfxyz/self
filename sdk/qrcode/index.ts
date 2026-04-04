@@ -5,3 +5,5 @@ export { SelfAppBuilder, getUniversalLink } from '@selfxyz/sdk-common';
 
 export { SelfQRcode, SelfQRcodeWrapper } from './components/SelfQRcode.js';
 export { countries } from '@selfxyz/sdk-common';
+export { DISCLOSURE_PRESETS } from '@selfxyz/sdk-common';
+export type { DisclosurePresetName, SelfAppBuilderConfig } from '@selfxyz/sdk-common';

@@ -1,31 +1,59 @@
 import { v4 } from 'uuid';
 
 import { REDIRECT_URL } from '../foundation/constants/network.js';
-import type { SelfApp } from '../foundation/types/app.js';
+import type {
+  SelfApp,
+  SelfAppBuilderConfig,
+  SelfAppDisclosureConfig,
+  DisclosurePresetName,
+} from '../foundation/types/app.js';
 import { validateUserId } from '../circuits/userId.js';
 import { formatEndpoint } from '../crypto/scope.js';
+import { resolveDisclosures } from './presets.js';
+
+function inferEndpointType(endpoint: string): 'https' | 'celo' {
+  if (endpoint.startsWith('0x')) return 'celo';
+  return 'https';
+}
+
+function inferUserIdType(userId: string): 'hex' | 'uuid' {
+  if (userId.startsWith('0x')) return 'hex';
+  return 'uuid';
+}
 
 export class SelfAppBuilder {
   private config: SelfApp;
 
-  constructor(config: Partial<SelfApp>) {
+  constructor(config: SelfAppBuilderConfig | Partial<SelfApp>) {
     if (!config.appName) {
-      throw new Error('appName is required');
+      throw new Error('appName is required — provide the display name for your app');
     }
     if (!config.scope) {
-      throw new Error('scope is required');
+      throw new Error(
+        'scope is required — this must match the scopeSeed used in your contract deployment',
+      );
     }
     if (!config.endpoint) {
-      throw new Error('endpoint is required');
+      throw new Error(
+        'endpoint is required — provide your verification URL (https://...) or contract address (0x...)',
+      );
     }
-    if (!/^[\x00-\x7F]*$/.test(config.scope)) {
-      throw new Error('Scope must contain only ASCII characters (0-127)');
+    const nonAsciiScopeMatch = config.scope.match(/[^\x00-\x7F]/);
+    if (nonAsciiScopeMatch) {
+      throw new Error(
+        `Scope must contain only ASCII characters (0-127). Found '${nonAsciiScopeMatch[0]}' in '${config.scope}'`,
+      );
     }
-    if (!/^[\x00-\x7F]*$/.test(config.endpoint)) {
-      throw new Error('Endpoint must contain only ASCII characters (0-127)');
+    const nonAsciiEndpointMatch = config.endpoint.match(/[^\x00-\x7F]/);
+    if (nonAsciiEndpointMatch) {
+      throw new Error(
+        `Endpoint must contain only ASCII characters (0-127). Found '${nonAsciiEndpointMatch[0]}' in '${config.endpoint}'`,
+      );
     }
     if (config.scope.length > 31) {
-      throw new Error('Scope must be less than 31 characters');
+      throw new Error(
+        `Scope must be at most 31 characters, got ${config.scope.length} characters: '${config.scope}'`,
+      );
     }
     const formattedEndpoint = formatEndpoint(config.endpoint);
     if (formattedEndpoint.length > 496) {
@@ -33,50 +61,114 @@ export class SelfAppBuilder {
         `Endpoint must be less than 496 characters, current endpoint: ${formattedEndpoint}, length: ${formattedEndpoint.length}`,
       );
     }
-    if (!config.userId) {
-      throw new Error('userId is required');
+
+    // Auto-generate userId if not provided
+    const userId = config.userId || v4();
+
+    // Infer types from values, but never override explicit config
+    const endpointType = config.endpointType ?? inferEndpointType(config.endpoint);
+    const userIdType = config.userIdType ?? inferUserIdType(userId);
+
+    if (endpointType === 'https' && !config.endpoint.startsWith('https://')) {
+      const suggestion = config.endpoint.startsWith('http://')
+        ? ` Did you mean '${config.endpoint.replace('http://', 'https://')}'?`
+        : '';
+      throw new Error(`endpoint must start with https://.${suggestion}`);
     }
-    if (config.endpointType === 'https' && !config.endpoint.startsWith('https://')) {
-      throw new Error('endpoint must start with https://');
-    }
-    if (config.endpointType === 'celo' && !config.endpoint.startsWith('0x')) {
-      throw new Error('endpoint must be a valid address');
+    if (endpointType === 'celo' && !config.endpoint.startsWith('0x')) {
+      throw new Error(
+        `Endpoint must be a valid contract address (starting with 0x) for endpointType 'celo'. Got: '${config.endpoint}'`,
+      );
     }
     if (
       config.endpoint &&
       (config.endpoint.includes('localhost') || config.endpoint.includes('127.0.0.1'))
     ) {
-      throw new Error('localhost endpoints are not allowed');
+      throw new Error(
+        `localhost endpoints are not allowed. Use a publicly accessible URL or contract address. Got: '${config.endpoint}'`,
+      );
     }
-    if (config.userIdType === 'hex') {
-      if (!config.userId.startsWith('0x')) {
+
+    let processedUserId = userId;
+    if (userIdType === 'hex') {
+      if (!processedUserId.startsWith('0x')) {
         throw new Error('userId as hex must start with 0x');
       }
-      config.userId = config.userId.slice(2);
+      processedUserId = processedUserId.slice(2);
     }
-    if (!validateUserId(config.userId, config.userIdType ?? 'uuid')) {
+    if (!validateUserId(processedUserId, userIdType)) {
       throw new Error('userId must be a valid UUID or address');
     }
 
+    // Resolve disclosure presets
+    const disclosures = resolveDisclosures(
+      config.disclosures as SelfAppBuilderConfig['disclosures'],
+    );
+
     this.config = {
       sessionId: v4(),
-      userIdType: 'uuid',
       devMode: false,
-      endpointType: 'https',
       header: '',
       logoBase64: '',
       deeplinkCallback: '',
-      disclosures: {},
-      chainID: config.endpointType === 'staging_celo' ? 11142220 : 42220,
+      chainID: endpointType === 'staging_celo' ? 11142220 : 42220,
       version: config.version ?? 2,
       userDefinedData: '',
       selfDefinedData: '',
       ...config,
+      // These must come after spread to ensure our processed values win
+      userId: processedUserId,
+      endpointType,
+      userIdType,
+      disclosures,
     } as SelfApp;
   }
 
   build(): SelfApp {
     return this.config;
+  }
+
+  static forContract(config: {
+    appName: string;
+    contractAddress: string;
+    scopeSeed: string;
+    endpointType?: 'celo' | 'staging_celo';
+    disclosures?: SelfAppDisclosureConfig | DisclosurePresetName;
+    userId?: string;
+    logoBase64?: string;
+    header?: string;
+  }): SelfAppBuilder {
+    return new SelfAppBuilder({
+      appName: config.appName,
+      endpoint: config.contractAddress,
+      scope: config.scopeSeed,
+      endpointType: config.endpointType ?? 'celo',
+      disclosures: config.disclosures,
+      userId: config.userId,
+      logoBase64: config.logoBase64,
+      header: config.header,
+    });
+  }
+
+  static forBackend(config: {
+    appName: string;
+    endpoint: string;
+    scope: string;
+    disclosures?: SelfAppDisclosureConfig | DisclosurePresetName;
+    userId?: string;
+    logoBase64?: string;
+    header?: string;
+  }): SelfAppBuilder {
+    return new SelfAppBuilder({
+      appName: config.appName,
+      endpoint: config.endpoint,
+      scope: config.scope,
+      endpointType: 'https',
+      disclosures: config.disclosures,
+      userId: config.userId,
+      logoBase64: config.logoBase64,
+      header: config.header,
+    });
   }
 }
 
