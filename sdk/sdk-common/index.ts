@@ -274,23 +274,23 @@ export interface SelfAppDisclosureConfig {
   gender?: boolean;
   expiry_date?: boolean;
   ofac?: boolean;
-  excluded_countries?: Country3LetterCode[];
-  minimum_age?: number;
+  excludedCountries?: Country3LetterCode[];
+  minimumAge?: number;
 }
 
-export function normalizeDisclosureConfig(
-  raw: SelfAppDisclosureConfig & { excludedCountries?: Country3LetterCode[]; minimumAge?: number },
-): SelfAppDisclosureConfig {
-  const result = { ...raw } as Record<string, unknown>;
+function normalizeDisclosures(
+  raw: Record<string, unknown>,
+): Record<string, unknown> {
+  const result = { ...raw };
   if ('excludedCountries' in result && !('excluded_countries' in result)) {
     result.excluded_countries = result.excludedCountries;
-    delete result.excludedCountries;
   }
+  delete result.excludedCountries;
   if ('minimumAge' in result && !('minimum_age' in result)) {
     result.minimum_age = result.minimumAge;
-    delete result.minimumAge;
   }
-  return result as SelfAppDisclosureConfig;
+  delete result.minimumAge;
+  return result;
 }
 
 export interface SelfApp {
@@ -575,7 +575,7 @@ export function validateUserId(userId: string, type: UserIdType): boolean {
       return /^[0-9A-Fa-f]+$/.test(userId);
     case 'uuid':
       return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-        userId
+        userId,
       );
     default:
       return false;
@@ -608,13 +608,16 @@ export class SelfAppBuilder {
     const formattedEndpoint = formatEndpoint(config.endpoint);
     if (formattedEndpoint.length > 496) {
       throw new Error(
-        `Endpoint must be less than 496 characters, current endpoint: ${formattedEndpoint}, length: ${formattedEndpoint.length}`
+        `Endpoint must be less than 496 characters, current endpoint: ${formattedEndpoint}, length: ${formattedEndpoint.length}`,
       );
     }
     if (!config.userId) {
       throw new Error('userId is required');
     }
-    if (config.endpointType === 'https' && !config.endpoint.startsWith('https://')) {
+    if (
+      config.endpointType === 'https' &&
+      !config.endpoint.startsWith('https://')
+    ) {
       throw new Error('endpoint must start with https://');
     }
     if (config.endpointType === 'celo' && !config.endpoint.startsWith('0x')) {
@@ -623,7 +626,8 @@ export class SelfAppBuilder {
     // Validate that localhost endpoints are not allowed
     if (
       config.endpoint &&
-      (config.endpoint.includes('localhost') || config.endpoint.includes('127.0.0.1'))
+      (config.endpoint.includes('localhost') ||
+        config.endpoint.includes('127.0.0.1'))
     ) {
       throw new Error('localhost endpoints are not allowed');
     }
@@ -645,11 +649,13 @@ export class SelfAppBuilder {
       header: '',
       logoBase64: '',
       deeplinkCallback: '',
-      disclosures: {},
       chainID: config.endpointType === 'staging_celo' ? 11142220 : 42220,
       version: config.version ?? 2,
       userDefinedData: '',
       ...config,
+      disclosures: normalizeDisclosures(
+        (config.disclosures ?? {}) as Record<string, unknown>,
+      ),
     } as SelfApp;
   }
 

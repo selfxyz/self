@@ -274,23 +274,21 @@ export interface SelfAppDisclosureConfig {
   gender?: boolean;
   expiry_date?: boolean;
   ofac?: boolean;
-  excluded_countries?: Country3LetterCode[];
-  minimum_age?: number;
+  excludedCountries?: Country3LetterCode[];
+  minimumAge?: number;
 }
 
-export function normalizeDisclosureConfig(
-  raw: SelfAppDisclosureConfig & { excludedCountries?: Country3LetterCode[]; minimumAge?: number },
-): SelfAppDisclosureConfig {
-  const result = { ...raw } as Record<string, unknown>;
+function normalizeDisclosures(raw: Record<string, unknown>): Record<string, unknown> {
+  const result = { ...raw };
   if ('excludedCountries' in result && !('excluded_countries' in result)) {
     result.excluded_countries = result.excludedCountries;
-    delete result.excludedCountries;
   }
+  delete result.excludedCountries;
   if ('minimumAge' in result && !('minimum_age' in result)) {
     result.minimum_age = result.minimumAge;
-    delete result.minimumAge;
   }
-  return result as SelfAppDisclosureConfig;
+  delete result.minimumAge;
+  return result;
 }
 
 export interface SelfApp {
@@ -645,11 +643,11 @@ export class SelfAppBuilder {
       header: '',
       logoBase64: '',
       deeplinkCallback: '',
-      disclosures: {},
       chainID: config.endpointType === 'staging_celo' ? 11142220 : 42220,
       version: config.version ?? 2,
       userDefinedData: '',
       ...config,
+      disclosures: normalizeDisclosures((config.disclosures ?? {}) as Record<string, unknown>),
     } as SelfApp;
   }
 

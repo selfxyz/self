@@ -96,7 +96,7 @@ export class DemoComponent {
     userId: '0x123...', // a uuid or address
     disclosures: {
       nationality: true,
-      minimum_age: 18,
+      minimumAge: 18,
       ofac: true,
     },
     version: 2,
@@ -160,8 +160,8 @@ export class DemoComponent {
 | `gender`                | `boolean`              | `false` | Request the gender field.                                 |
 | `expiry_date`           | `boolean`              | `false` | Request the passport expiry date.                         |
 | `ofac`\*\*              | `boolean`              | `false` | Check against OFAC sanction lists.                        |
-| `excluded_countries`\*\* | `Country3LetterCode[]` | `[]`    | Exclude users from specific ISO 3166-1 alpha-3 countries. |
-| `minimum_age`\*\*        | `number`               | —       | Require a minimum age (e.g., `18` (upto `99`)).           |
+| `excludedCountries`\*\* | `Country3LetterCode[]` | `[]`    | Exclude users from specific ISO 3166-1 alpha-3 countries. |
+| `minimumAge`\*\*        | `number`               | —       | Require a minimum age (e.g., `18` (upto `99`)).           |
 
 > \*\* ⚠️ **Important:** These fields must match your **backend configuration**.
 

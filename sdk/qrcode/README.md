@@ -44,8 +44,8 @@ const selfApp = new SelfAppBuilder({
     gender: true,
     expiry_date: true,
     // Custom verification rules
-    minimum_age: 18,
-    excluded_countries: ['IRN', 'PRK'],
+    minimumAge: 18,
+    excludedCountries: ['IRN', 'PRK'],
     ofac: true,
   },
 }).build();
@@ -97,8 +97,8 @@ The `disclosures` object can include the following options:
 | `passport_number`   | boolean  | Request disclosure of passport number        |
 | `gender`            | boolean  | Request disclosure of gender                 |
 | `expiry_date`       | boolean  | Request disclosure of passport expiry date   |
-| `minimum_age`       | number   | Verify the user is at least this age         |
-| `excluded_countries` | string[] | Array of country codes to exclude           |
+| `minimumAge`        | number   | Verify the user is at least this age         |
+| `excludedCountries` | string[] | Array of country codes to exclude            |
 | `ofac`              | boolean  | Enable OFAC compliance check                 |
 
 ## Component Props
@@ -149,8 +149,8 @@ function VerificationPage() {
       date_of_birth: true,
 
       // Set verification rules
-      minimum_age: 18,
-      excluded_countries: ['IRN', 'PRK', 'RUS'],
+      minimumAge: 18,
+      excludedCountries: ['IRN', 'PRK', 'RUS'],
       ofac: true,
     },
   }).build();
