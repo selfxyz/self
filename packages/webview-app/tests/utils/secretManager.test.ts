@@ -120,8 +120,7 @@ describe('restoreSecretFromMnemonic', () => {
     storageState.set('self_mnemonic', originalMnemonic);
     storageState.set('self_private_key', originalSecret);
 
-    const newMnemonic =
-      'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
+    const newMnemonic = 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
     const newSecret = derivePrivateKey(newMnemonic);
 
     let failPrivateKeyWrite = true;
