@@ -35,6 +35,10 @@ object SelfSdk {
                 config.chainID?.let { putExtra(SelfVerificationActivity.EXTRA_CHAIN_ID, it) }
                 config.userDefinedData?.let { putExtra(SelfVerificationActivity.EXTRA_USER_DEFINED_DATA, it) }
                 config.selfDefinedData?.let { putExtra(SelfVerificationActivity.EXTRA_SELF_DEFINED_DATA, it) }
+                config.remoteWebAppBaseUrl?.let { putExtra(SelfVerificationActivity.EXTRA_REMOTE_WEB_APP_BASE_URL, it) }
+                config.remoteWebAppIntegritySha256?.let {
+                    putExtra(SelfVerificationActivity.EXTRA_REMOTE_WEB_APP_INTEGRITY_SHA256, it)
+                }
             }
         activity.startActivityForResult(intent, requestCode)
     }
