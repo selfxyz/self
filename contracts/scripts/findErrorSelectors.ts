@@ -173,8 +173,8 @@ async function findAllErrorSelectors(targetSelector?: string) {
     }
   }
   const mapOutputFile = path.resolve(
-    path.dirname(new URL(import.meta.url).pathname),
-    "../../new-common/src/data/error-selector-map.json",
+    process.cwd(),
+    "../new-common/src/data/error-selector-map.json",
   );
   writeFileSync(mapOutputFile, JSON.stringify(selectorMap, null, 2));
   console.log(`💾 Selector map saved to ${mapOutputFile}`);
