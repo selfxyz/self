@@ -9,16 +9,15 @@ import WebKit
 /// Swift implementation of WebViewProvider using WKWebView.
 /// Handles message passing between the WebView and the KMP bridge.
 public class WebViewProviderImpl: NSObject {
-    static let bundledScheme = "self-sdk"
-    static let bundledHost = "app"
+    static let loopbackHost = "127.0.0.1"
     static let diditHost = "verify.didit.me"
-    static let debugHost = "127.0.0.1"
-    static let debugPort = 5173
+    static let debugPort: UInt16 = 5173
 
     private var webView: WKWebView?
     private var viewController: UIViewController?
     private var onMessageReceived: ((String) -> Void)?
     private var isDebugMode: Bool = false
+    private var assetServer: LocalAssetServer?
 
     /// Weak proxy to avoid retain cycles with WKScriptMessageHandler
     private var messageProxy: WeakScriptMessageProxy?
@@ -38,8 +37,21 @@ public class WebViewProviderImpl: NSObject {
             self.webView = nil
             self.viewController = nil
         }
-        
+
+        assetServer?.stop()
+        assetServer = nil
+
         self.onMessageReceived = onMessageReceived
+
+        if !isDebugMode {
+            let server = LocalAssetServer(bundle: .module, resourceRoot: "self-sdk-web")
+            do {
+                try server.start()
+            } catch {
+                NSLog("SelfSDK-WebView: Failed to start local asset server: %@", "\(error)")
+            }
+            assetServer = server
+        }
 
         // Create message proxy to avoid retain cycle
         let proxy = WeakScriptMessageProxy()
@@ -51,10 +63,6 @@ public class WebViewProviderImpl: NSObject {
         let userContentController = WKUserContentController()
         userContentController.add(proxy, name: "SelfNativeIOS")
         config.userContentController = userContentController
-        config.setURLSchemeHandler(
-            BundledWebViewSchemeHandler(bundle: .module, resourceRoot: "self-sdk-web"),
-            forURLScheme: Self.bundledScheme
-        )
 
         // Allow inline media playback
         config.allowsInlineMediaPlayback = true
@@ -73,7 +81,7 @@ public class WebViewProviderImpl: NSObject {
         wv.navigationDelegate = self
         self.webView = wv
 
-        guard let url = Self.initialContentURL(queryParams: queryParams, isDebugMode: isDebugMode) else {
+        guard let url = initialContentURL(queryParams: queryParams) else {
             NSLog("SelfSDK-WebView: Failed to construct bundled URL")
             return wv
         }
@@ -106,7 +114,15 @@ public class WebViewProviderImpl: NSObject {
     }
 
     @objc public func isBridgeRequestAllowed() -> Bool {
-        Self.isTrustedBridgeURL(webView?.url, isDebugMode: isDebugMode)
+        isTrustedBridgeURL(webView?.url)
+    }
+
+    private var bundledPort: UInt16 {
+        assetServer?.port ?? 0
+    }
+
+    deinit {
+        assetServer?.stop()
     }
 }
 
@@ -154,7 +170,7 @@ extension WebViewProviderImpl: WKNavigationDelegate {
             decisionHandler(.cancel)
             return
         }
-        let isAllowed = Self.isAllowedNavigationURL(url, isDebugMode: isDebugMode, host: host)
+        let isAllowed = isAllowedNavigationURL(url, host: host)
         decisionHandler(isAllowed ? .allow : .cancel)
     }
 }
@@ -168,7 +184,7 @@ extension WebViewProviderImpl: WKScriptMessageHandler {
     ) {
         guard message.name == "SelfNativeIOS",
               message.frameInfo.isMainFrame,
-              Self.isTrustedBridgeFrameInfo(message.frameInfo.securityOrigin, isDebugMode: isDebugMode),
+              isTrustedBridgeFrameInfo(message.frameInfo.securityOrigin),
               isBridgeRequestAllowed() else { return }
 
         if let body = message.body as? String {
@@ -182,11 +198,11 @@ extension WebViewProviderImpl: WKScriptMessageHandler {
 }
 
 extension WebViewProviderImpl {
-    static func initialContentURL(queryParams: String?, isDebugMode: Bool) -> URL? {
+    func initialContentURL(queryParams: String?) -> URL? {
         var components = URLComponents()
-        components.scheme = isDebugMode ? "http" : bundledScheme
-        components.host = isDebugMode ? debugHost : bundledHost
-        components.port = isDebugMode ? debugPort : nil
+        components.scheme = "http"
+        components.host = Self.loopbackHost
+        components.port = Int(isDebugMode ? Self.debugPort : bundledPort)
         components.path = "/tunnel/tour/1"
         if let queryParams, !queryParams.isEmpty {
             components.percentEncodedQuery = queryParams
@@ -194,26 +210,22 @@ extension WebViewProviderImpl {
         return components.url
     }
 
-    static func isAllowedNavigationURL(_ url: URL?, isDebugMode: Bool, host: String? = nil) -> Bool {
+    func isAllowedNavigationURL(_ url: URL?, host: String? = nil) -> Bool {
         guard let url else { return false }
         let resolvedHost = host ?? url.host
-        return isTrustedBridgeURL(url, isDebugMode: isDebugMode) ||
-            (url.scheme == "https" && resolvedHost == diditHost)
+        return isTrustedBridgeURL(url) ||
+            (url.scheme == "https" && resolvedHost == Self.diditHost)
     }
 
-    static func isTrustedBridgeURL(_ url: URL?, isDebugMode: Bool) -> Bool {
+    func isTrustedBridgeURL(_ url: URL?) -> Bool {
         guard let url else { return false }
-        if isDebugMode {
-            return url.scheme == "http" && url.host == debugHost && url.port == debugPort
-        }
-        return url.scheme == bundledScheme && url.host == bundledHost
+        let expectedPort = isDebugMode ? Self.debugPort : bundledPort
+        return url.scheme == "http" && url.host == Self.loopbackHost && url.port == Int(expectedPort)
     }
 
-    static func isTrustedBridgeFrameInfo(_ origin: WKSecurityOrigin, isDebugMode: Bool) -> Bool {
-        if isDebugMode {
-            return origin.protocol == "http" && origin.host == debugHost && origin.port == debugPort
-        }
-        return origin.protocol == bundledScheme && origin.host == bundledHost
+    func isTrustedBridgeFrameInfo(_ origin: WKSecurityOrigin) -> Bool {
+        let expectedPort = isDebugMode ? Self.debugPort : bundledPort
+        return origin.protocol == "http" && origin.host == Self.loopbackHost && origin.port == Int(expectedPort)
     }
 }
 

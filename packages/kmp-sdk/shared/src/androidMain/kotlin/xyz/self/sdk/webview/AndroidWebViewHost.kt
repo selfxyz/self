@@ -184,8 +184,12 @@ class AndroidWebViewHost(
     }
 
     private fun installBridge(webView: WebView) {
-        check(WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)) {
-            "WEB_MESSAGE_LISTENER is required to expose the native bridge safely"
+        if (!WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)) {
+            android.util.Log.e(
+                "WebViewHost",
+                "WEB_MESSAGE_LISTENER not supported — native bridge unavailable on this device",
+            )
+            return
         }
 
         WebViewCompat.addWebMessageListener(

@@ -5,15 +5,14 @@ import UIKit
 import WebKit
 
 final class SelfWebViewHost: NSObject {
-    static let bundledScheme = "self-sdk"
-    static let bundledHost = "app"
+    static let loopbackHost = "127.0.0.1"
     static let diditHost = "verify.didit.me"
-    static let debugHost = "127.0.0.1"
-    static let debugPort = 5173
+    static let debugPort: UInt16 = 5173
 
     private var webView: WKWebView?
     private let router: MessageRouter
     private let isDebugMode: Bool
+    private var assetServer: LocalAssetServer?
 
     init(router: MessageRouter, isDebugMode: Bool = false) {
         self.router = router
@@ -22,14 +21,20 @@ final class SelfWebViewHost: NSObject {
     }
 
     func createWebView() -> WKWebView {
+        if !isDebugMode {
+            let server = LocalAssetServer(bundle: .module, resourceRoot: "self-sdk-web")
+            do {
+                try server.start()
+            } catch {
+                NSLog("SelfWebViewHost: Failed to start local asset server: %@", "\(error)")
+            }
+            assetServer = server
+        }
+
         let config = WKWebViewConfiguration()
         let contentController = WKUserContentController()
         contentController.add(WeakScriptMessageProxy(handler: self), name: "SelfNativeIOS")
         config.userContentController = contentController
-        config.setURLSchemeHandler(
-            BundledWebViewSchemeHandler(bundle: .module, resourceRoot: "self-sdk-web"),
-            forURLScheme: Self.bundledScheme
-        )
         config.preferences.javaScriptCanOpenWindowsAutomatically = false
         config.allowsInlineMediaPlayback = true
         config.mediaTypesRequiringUserActionForPlayback = []
@@ -51,7 +56,7 @@ final class SelfWebViewHost: NSObject {
     func loadContent(queryParams: String) {
         guard let webView = webView else { return }
 
-        guard let url = Self.initialContentURL(queryParams: queryParams, isDebugMode: isDebugMode) else {
+        guard let url = initialContentURL(queryParams: queryParams) else {
             NSLog("SelfWebViewHost: Failed to construct bundled URL")
             return
         }
@@ -62,6 +67,10 @@ final class SelfWebViewHost: NSObject {
         DispatchQueue.main.async { [weak self] in
             self?.webView?.evaluateJavaScript(js, completionHandler: nil)
         }
+    }
+
+    deinit {
+        assetServer?.stop()
     }
 }
 
@@ -75,7 +84,7 @@ extension SelfWebViewHost: WKNavigationDelegate {
             decisionHandler(.cancel)
             return
         }
-        let isAllowed = Self.isAllowedNavigationURL(url, isDebugMode: isDebugMode, host: host)
+        let isAllowed = isAllowedNavigationURL(url, host: host)
         decisionHandler(isAllowed ? .allow : .cancel)
     }
 }
@@ -87,7 +96,7 @@ extension SelfWebViewHost: WKScriptMessageHandler {
     ) {
         guard message.name == "SelfNativeIOS",
               message.frameInfo.isMainFrame,
-              Self.isTrustedBridgeFrameInfo(message.frameInfo.securityOrigin, isDebugMode: isDebugMode),
+              isTrustedBridgeFrameInfo(message.frameInfo.securityOrigin),
               let body = message.body as? String else {
             return
         }
@@ -97,41 +106,41 @@ extension SelfWebViewHost: WKScriptMessageHandler {
 
 private extension SelfWebViewHost {
     func isBridgeRequestAllowed() -> Bool {
-        Self.isTrustedBridgeURL(webView?.url, isDebugMode: isDebugMode)
+        isTrustedBridgeURL(webView?.url)
+    }
+
+    var bundledPort: UInt16 {
+        assetServer?.port ?? 0
     }
 }
 
 extension SelfWebViewHost {
-    static func initialContentURL(queryParams: String, isDebugMode: Bool) -> URL? {
+    func initialContentURL(queryParams: String) -> URL? {
         var components = URLComponents()
-        components.scheme = isDebugMode ? "http" : bundledScheme
-        components.host = isDebugMode ? debugHost : bundledHost
-        components.port = isDebugMode ? debugPort : nil
+        components.scheme = "http"
+        components.host = Self.loopbackHost
+        components.port = Int(isDebugMode ? Self.debugPort : bundledPort)
         components.path = "/tunnel/tour/1"
         components.percentEncodedQuery = queryParams.isEmpty ? nil : queryParams
         return components.url
     }
 
-    static func isAllowedNavigationURL(_ url: URL?, isDebugMode: Bool, host: String? = nil) -> Bool {
+    func isAllowedNavigationURL(_ url: URL?, host: String? = nil) -> Bool {
         guard let url else { return false }
         let resolvedHost = host ?? url.host
-        return isTrustedBridgeURL(url, isDebugMode: isDebugMode) ||
-            (url.scheme == "https" && resolvedHost == diditHost)
+        return isTrustedBridgeURL(url) ||
+            (url.scheme == "https" && resolvedHost == Self.diditHost)
     }
 
-    static func isTrustedBridgeURL(_ url: URL?, isDebugMode: Bool) -> Bool {
+    func isTrustedBridgeURL(_ url: URL?) -> Bool {
         guard let url else { return false }
-        if isDebugMode {
-            return url.scheme == "http" && url.host == debugHost && url.port == debugPort
-        }
-        return url.scheme == bundledScheme && url.host == bundledHost
+        let expectedPort = isDebugMode ? Self.debugPort : bundledPort
+        return url.scheme == "http" && url.host == Self.loopbackHost && url.port == Int(expectedPort)
     }
 
-    static func isTrustedBridgeFrameInfo(_ origin: WKSecurityOrigin, isDebugMode: Bool) -> Bool {
-        if isDebugMode {
-            return origin.protocol == "http" && origin.host == debugHost && origin.port == debugPort
-        }
-        return origin.protocol == bundledScheme && origin.host == bundledHost
+    func isTrustedBridgeFrameInfo(_ origin: WKSecurityOrigin) -> Bool {
+        let expectedPort = isDebugMode ? Self.debugPort : bundledPort
+        return origin.protocol == "http" && origin.host == Self.loopbackHost && origin.port == Int(expectedPort)
     }
 }
 
