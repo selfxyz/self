@@ -132,17 +132,22 @@ Here's a complete example of how to implement the Self QR code in a React applic
 ```tsx
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import SelfQRcodeWrapper, { SelfAppBuilder } from '@selfxyz/qrcode';
 
-const selfApp = SelfAppBuilder.forBackend({
-  appName: 'My Application',
-  endpoint: 'https://myapp.com/api/verify',
-  scope: 'my-application-scope',
-  disclosures: 'basic-kyc',
-}).build();
-
 function VerificationPage() {
+  // Build per-mount so each user gets a unique auto-generated userId
+  const selfApp = useMemo(
+    () =>
+      SelfAppBuilder.forBackend({
+        appName: 'My Application',
+        endpoint: 'https://myapp.com/api/verify',
+        scope: 'my-application-scope',
+        disclosures: 'basic-kyc',
+      }).build(),
+    [],
+  );
+
   return (
     <div className="verification-container">
       <h1>Verify Your Identity</h1>

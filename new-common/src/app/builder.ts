@@ -143,10 +143,10 @@ export class SelfAppBuilder {
       endpoint: config.contractAddress,
       scope: config.scopeSeed,
       endpointType: config.endpointType ?? 'celo',
-      disclosures: config.disclosures,
-      userId: config.userId,
-      logoBase64: config.logoBase64,
-      header: config.header,
+      ...(config.disclosures !== undefined && { disclosures: config.disclosures }),
+      ...(config.userId !== undefined && { userId: config.userId }),
+      ...(config.logoBase64 !== undefined && { logoBase64: config.logoBase64 }),
+      ...(config.header !== undefined && { header: config.header }),
     });
   }
 
@@ -164,10 +164,10 @@ export class SelfAppBuilder {
       endpoint: config.endpoint,
       scope: config.scope,
       endpointType: 'https',
-      disclosures: config.disclosures,
-      userId: config.userId,
-      logoBase64: config.logoBase64,
-      header: config.header,
+      ...(config.disclosures !== undefined && { disclosures: config.disclosures }),
+      ...(config.userId !== undefined && { userId: config.userId }),
+      ...(config.logoBase64 !== undefined && { logoBase64: config.logoBase64 }),
+      ...(config.header !== undefined && { header: config.header }),
     });
   }
 }

@@ -325,6 +325,16 @@ describe('SelfAppBuilder', () => {
       expect(app.logoBase64).toBe('logo-data');
     });
 
+    it('defaults logoBase64 and header to empty string when not provided', () => {
+      const app = SelfAppBuilder.forContract({
+        appName: 'My DApp',
+        contractAddress: '0xabcdef1234567890abcdef1234567890abcdef12',
+        scopeSeed: 'my-seed',
+      }).build();
+      expect(app.logoBase64).toBe('');
+      expect(app.header).toBe('');
+    });
+
     it('supports staging_celo endpointType', () => {
       const app = SelfAppBuilder.forContract({
         appName: 'My DApp',
