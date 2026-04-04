@@ -73,9 +73,7 @@ class AndroidWebViewHost(
                         override fun shouldOverrideUrlLoading(
                             view: WebView?,
                             request: WebResourceRequest?,
-                        ): Boolean {
-                            return !isAllowedNavigationUrl(request?.url?.toString(), isDebugMode)
-                        }
+                        ): Boolean = !isAllowedNavigationUrl(request?.url?.toString(), isDebugMode)
 
                         override fun onReceivedSslError(
                             view: WebView?,
@@ -224,7 +222,11 @@ class AndroidWebViewHost(
         ): String =
             if (isDebugMode) {
                 buildString {
-                    append("http://").append(DEBUG_HOST).append(":").append(DEBUG_PORT).append(BUNDLED_TOUR_PATH)
+                    append("http://")
+                        .append(DEBUG_HOST)
+                        .append(":")
+                        .append(DEBUG_PORT)
+                        .append(BUNDLED_TOUR_PATH)
                     if (queryParams.isNotEmpty()) {
                         append("?").append(queryParams)
                     }
@@ -261,11 +263,9 @@ class AndroidWebViewHost(
             isBundledAssetUrl(rawUrl) ||
                 (isDebugMode && isDebugLocalUrl(rawUrl))
 
-        internal fun isBundledAssetUrl(rawUrl: String?): Boolean =
-            uriScheme(rawUrl) == "https" && uriHost(rawUrl) == BUNDLED_ASSET_HOST
+        internal fun isBundledAssetUrl(rawUrl: String?): Boolean = uriScheme(rawUrl) == "https" && uriHost(rawUrl) == BUNDLED_ASSET_HOST
 
-        private fun isDiditUrl(rawUrl: String?): Boolean =
-            uriScheme(rawUrl) == "https" && uriHost(rawUrl) == DIDIT_HOST
+        private fun isDiditUrl(rawUrl: String?): Boolean = uriScheme(rawUrl) == "https" && uriHost(rawUrl) == DIDIT_HOST
 
         private fun isDebugLocalUrl(rawUrl: String?): Boolean =
             uriScheme(rawUrl) == "http" && uriHost(rawUrl) == DEBUG_HOST && uriPort(rawUrl) == DEBUG_PORT
@@ -284,8 +284,7 @@ class AndroidWebViewHost(
 
         private fun uriPort(rawUrl: String?): Int? = parseUri(rawUrl)?.port?.takeIf { it != -1 }
 
-        private fun parseUri(rawUrl: String?): java.net.URI? =
-            rawUrl?.let { raw -> runCatching { java.net.URI(raw) }.getOrNull() }
+        private fun parseUri(rawUrl: String?): java.net.URI? = rawUrl?.let { raw -> runCatching { java.net.URI(raw) }.getOrNull() }
     }
 
     private fun currentWebViewUrl(): String? = webView.url

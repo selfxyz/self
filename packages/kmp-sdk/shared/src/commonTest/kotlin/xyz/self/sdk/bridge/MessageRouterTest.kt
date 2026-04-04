@@ -135,10 +135,9 @@ class MessageRouterTest {
             val handler = FakeBridgeHandler(domain = BridgeDomain.HAPTIC, response = JsonPrimitive("ok"))
             router.register(handler)
 
-            router.onMessageReceived(
-                rawJson = """{"type":"request","version":1,"id":"req-1","domain":"haptic","method":"trigger","params":{},"timestamp":123}""",
-                isTrustedSource = false,
-            )
+            val untrustedJson =
+                """{"type":"request","version":1,"id":"req-1","domain":"haptic","method":"trigger","params":{},"timestamp":123}"""
+            router.onMessageReceived(rawJson = untrustedJson, isTrustedSource = false)
 
             assertEquals(0, responses.size)
             assertEquals(0, handler.invocations.size)

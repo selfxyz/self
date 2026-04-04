@@ -112,7 +112,7 @@ final class LocalAssetServer {
             "Connection: close",
             "Access-Control-Allow-Origin: *",
             "",
-            "",
+            ""
         ].joined(separator: "\r\n")
         return Data(header.utf8) + body
     }
