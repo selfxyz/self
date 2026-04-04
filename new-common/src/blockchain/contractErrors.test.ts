@@ -62,4 +62,10 @@ describe('humanizeContractError', () => {
   it('handles mixed-case selector input', () => {
     expect(humanizeContractError('0xDA7BD3A6')).toBe('Invalid Vc And Disclose Proof');
   });
+
+  it('decodes a known selector with ABI-encoded params appended', () => {
+    // Custom errors with parameters include the selector followed by ABI-encoded data
+    const selectorWithPayload = '0xda7bd3a6' + '0'.repeat(64);
+    expect(humanizeContractError(selectorWithPayload)).toBe('Invalid Vc And Disclose Proof');
+  });
 });
