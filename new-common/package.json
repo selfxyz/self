@@ -11,6 +11,11 @@
       "require": "./dist/cjs/index.cjs",
       "types": "./dist/esm/index.d.ts"
     },
+    "./src/blockchain": {
+      "import": "./dist/esm/src/blockchain/index.js",
+      "require": "./dist/cjs/src/blockchain/index.cjs",
+      "types": "./dist/esm/src/blockchain/index.d.ts"
+    },
     "./src/*": {
       "import": "./dist/esm/src/*.js",
       "require": "./dist/cjs/src/*.cjs",

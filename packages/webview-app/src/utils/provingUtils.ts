@@ -3,6 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type { IDCardProps } from '@selfxyz/euclid';
+import { humanizeContractError } from '@selfxyz/new-common/src/blockchain';
 import type { BridgeError } from '@selfxyz/webview-bridge';
 
 export type GenerationStep = 'readingRegistry' | 'generatingProof' | 'awaitingVerification' | 'finishingUp';
@@ -14,7 +15,7 @@ export function getFailureState(
 ): { code: string; message: string } {
   return {
     code: code ?? currentState ?? 'proof_generation_failed',
-    message: reason ?? 'The proof request could not be completed.',
+    message: reason ? humanizeContractError(reason) : 'The proof request could not be completed.',
   };
 }
 
@@ -58,10 +59,13 @@ export function normalizeError(error: BridgeError | string | undefined): BridgeE
   if (typeof error === 'string') {
     return {
       code: 'proof_generation_failed',
-      message: error,
+      message: humanizeContractError(error),
     };
   }
-  return error;
+  return {
+    ...error,
+    message: humanizeContractError(error.message),
+  };
 }
 
 export function titleCaseDisclosure(disclosure: string): string {

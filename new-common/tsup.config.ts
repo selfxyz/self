@@ -112,6 +112,7 @@ const entry = {
   'src/attestation/index': 'src/attestation/index.ts',
   'src/attestation/gcp': 'src/attestation/gcp.ts',
   'src/blockchain/index': 'src/blockchain/index.ts',
+  'src/blockchain/contractErrors': 'src/blockchain/contractErrors.ts',
   'src/blockchain/proving': 'src/blockchain/proving.ts',
   'src/blockchain/forbiddenCountries': 'src/blockchain/forbiddenCountries.ts',
   'src/blockchain/formatCallData': 'src/blockchain/formatCallData.ts',

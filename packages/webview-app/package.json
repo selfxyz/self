@@ -25,6 +25,7 @@
     "@selfxyz/euclid": "1.4.0",
     "@selfxyz/euclid-core": "1.4.0",
     "@selfxyz/mobile-sdk-alpha": "workspace:^",
+    "@selfxyz/new-common": "workspace:^",
     "@selfxyz/webview-bridge": "workspace:^",
     "buffer": "^6.0.3",
     "elliptic": "^6.5.4",
