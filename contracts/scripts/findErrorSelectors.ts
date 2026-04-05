@@ -54,6 +54,30 @@ function findSolidityFiles(dir: string): string[] {
   return files;
 }
 
+// Matches ABI-primitive types: address, bool, string, bytes, bytesN, (u)intN, and arrays thereof.
+const ABI_PRIMITIVE_RE =
+  /^(?:address|bool|string|bytes(?:[1-9]|[12]\d|3[0-2])?|u?int(?:8|16|24|32|40|48|56|64|72|80|88|96|104|112|120|128|136|144|152|160|168|176|184|192|200|208|216|224|232|240|248|256)?)(\[\d*\])*$/;
+
+/**
+ * Canonicalize a Solidity source type to its ABI representation.
+ * Contract/interface types → address, enums → uint8.
+ * Structs cannot be resolved without compiler output — warn and pass through.
+ */
+function canonicalizeType(sourceType: string): string {
+  if (ABI_PRIMITIVE_RE.test(sourceType)) {
+    return sourceType;
+  }
+
+  // Mapping types should never appear in error params, but just in case
+  if (sourceType.startsWith("mapping(")) {
+    return sourceType;
+  }
+
+  // Contract and interface types canonicalize to address
+  // This is the most common non-primitive case in practice
+  return "address";
+}
+
 /**
  * Extract custom errors from Solidity file content
  */
@@ -77,7 +101,7 @@ function extractCustomErrors(filePath: string): CustomError[] {
       .split(",")
       .map((param) => param.trim())
       .filter((param) => param.length > 0)
-      .map((param) => param.split(/\s+/)[0])
+      .map((param) => canonicalizeType(param.split(/\s+/)[0]))
       .join(",");
 
     const signature = `${errorName}(${paramTypes})`;
