@@ -524,6 +524,9 @@ jobs:
           app-id: ${{ vars.GH_WORKFLOWS_CROSS_ACCESS_ID }}
           private-key: ${{ secrets.GH_WORKFLOWS_CROSS_ACCESS_KEY }}
           configure-netrc: "true"
+      - name: Check for nested require() in tests
+        run: node scripts/check-test-requires.cjs
+        working-directory: ./app
       - name: Install deps (internal PRs and protected branches)
         if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
         uses: nick-fields/retry@v3
