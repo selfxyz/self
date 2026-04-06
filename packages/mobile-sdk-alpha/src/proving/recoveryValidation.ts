@@ -5,7 +5,13 @@
 import type { DocumentCategory, IDDocument } from '@selfxyz/common';
 import { isUserRegisteredWithAlternativeCSCA } from '@selfxyz/common/utils/passports/validate';
 
-import { markCurrentDocumentAsRegistered, reStorePassportDataWithRightCSCA } from '../documents/utils';
+import { cloneForStorage } from '../adapters/browser/documents';
+import {
+  markCurrentDocumentAsRegistered,
+  reStorePassportDataWithRightCSCA,
+  storePassportData,
+  updateDocumentRegistrationState,
+} from '../documents/utils';
 import { getCommitmentTree } from '../stores';
 import type { SelfClient } from '../types/public';
 
@@ -28,11 +34,58 @@ export async function finalizeRecoveredDocumentRegistration(
   document: IDDocument,
   csca?: string,
 ): Promise<void> {
-  if (csca) {
-    await reStorePassportDataWithRightCSCA(selfClient, document, csca);
-  }
+  const originalDocument = cloneForStorage(document);
+  const originalCatalog = await selfClient.loadDocumentCatalog();
+  const originalSelectedDocument = originalCatalog.selectedDocumentId
+    ? originalCatalog.documents.find(doc => doc.id === originalCatalog.selectedDocumentId)
+    : undefined;
+  const originalSelectedDocumentSnapshot = originalSelectedDocument
+    ? {
+        id: originalSelectedDocument.id,
+        isRegistered: originalSelectedDocument.isRegistered,
+        registeredAt: originalSelectedDocument.registeredAt,
+      }
+    : undefined;
 
-  await markCurrentDocumentAsRegistered(selfClient);
+  try {
+    if (csca) {
+      await reStorePassportDataWithRightCSCA(selfClient, document, csca);
+    }
+
+    await markCurrentDocumentAsRegistered(selfClient);
+  } catch (error) {
+    if (csca) {
+      try {
+        await storePassportData(selfClient, originalDocument);
+      } catch (rollbackError) {
+        console.error('Rollback failed while restoring the original document during recovery:', rollbackError);
+      }
+    }
+
+    if (originalSelectedDocumentSnapshot) {
+      try {
+        const rollbackCatalog = await selfClient.loadDocumentCatalog();
+        rollbackCatalog.selectedDocumentId = originalCatalog.selectedDocumentId;
+        const rollbackDocument = rollbackCatalog.documents.find(doc => doc.id === originalSelectedDocumentSnapshot.id);
+
+        if (rollbackDocument) {
+          rollbackDocument.isRegistered = originalSelectedDocumentSnapshot.isRegistered;
+          rollbackDocument.registeredAt = originalSelectedDocumentSnapshot.registeredAt;
+          await selfClient.saveDocumentCatalog(rollbackCatalog);
+        } else {
+          await updateDocumentRegistrationState(
+            selfClient,
+            originalSelectedDocumentSnapshot.id,
+            Boolean(originalSelectedDocumentSnapshot.isRegistered),
+          );
+        }
+      } catch (rollbackError) {
+        console.error('Rollback failed while restoring the registration flag during recovery:', rollbackError);
+      }
+    }
+
+    throw error;
+  }
 }
 
 export async function validateRecoverySecretForDocument(

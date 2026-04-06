@@ -20,7 +20,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -38,7 +37,6 @@ import platform.UIKit.UIApplicationOpenSettingsURLString
 import platform.UIKit.UIColor
 import platform.UIKit.UIView
 import xyz.self.sdk.models.MrzDetectionState
-import xyz.self.sdk.providers.SdkProviderRegistry
 import xyz.self.testapp.components.MrzViewfinder
 import xyz.self.testapp.models.PassportData
 import xyz.self.testapp.models.VerificationFlowState
@@ -388,7 +386,8 @@ private suspend fun requestCameraPermission(): Boolean =
 
 /**
  * Creates a native camera preview view with MRZ detection
- * Uses SdkProviderRegistry.cameraMrz provider registered by SelfSdkSwift.configure()
+ * NOTE: Temporarily disabled — cameraMrz provider moved out of 3-domain scope.
+ * Will be re-enabled when MRZ/NFC providers are added back.
  */
 @OptIn(ExperimentalForeignApi::class)
 private fun createCameraPreview(
@@ -396,38 +395,6 @@ private fun createCameraPreview(
     onProgress: (MrzDetectionState) -> Unit,
     onError: (String) -> Unit,
 ): UIView {
-    val provider = SdkProviderRegistry.cameraMrz
-
-    if (provider != null) {
-        return provider.createCameraView(
-            onMrzDetected = { jsonString ->
-                try {
-                    val jsonElement = Json.parseToJsonElement(jsonString)
-                    onMrzDetected(jsonElement)
-                } catch (e: Exception) {
-                    Logger.e("MrzScan", "Failed to parse JSON from Swift", e)
-                    onError("Failed to parse scan result")
-                }
-            },
-            onProgress = { stateAny ->
-                try {
-                    val stateIndex =
-                        when (stateAny) {
-                            is Number -> stateAny.toInt()
-                            else -> 0
-                        }
-                    val state = MrzDetectionState.entries.getOrNull(stateIndex) ?: MrzDetectionState.NO_TEXT
-                    onProgress(state)
-                } catch (e: Exception) {
-                    Logger.e("MrzScan", "Failed to convert progress state", e)
-                }
-            },
-            onError = { error ->
-                onError(error)
-            },
-        )
-    }
-
-    onError("MRZ camera not configured. Call SelfSdkSwift.configure() first.")
+    onError("MRZ camera not configured. cameraMrz provider is not in current scope.")
     return UIView().apply { backgroundColor = UIColor.blackColor }
 }

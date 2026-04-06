@@ -11,7 +11,7 @@ import kotlinx.serialization.json.jsonPrimitive
 import xyz.self.sdk.bridge.BridgeDomain
 import xyz.self.sdk.bridge.BridgeHandler
 import xyz.self.sdk.bridge.BridgeHandlerException
-import xyz.self.sdk.providers.SdkProviderRegistry
+import xyz.self.sdk.providers.IosProviderRegistry
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -34,7 +34,7 @@ class BiometricBridgeHandler : BridgeHandler {
 
     private suspend fun authenticate(params: Map<String, JsonElement>): JsonElement {
         val provider =
-            SdkProviderRegistry.biometric
+            IosProviderRegistry.biometric
                 ?: throw BridgeHandlerException("NOT_CONFIGURED", "Biometric provider not configured")
 
         val reason = params["reason"]?.jsonPrimitive?.content ?: "Authenticate to continue"
@@ -66,12 +66,12 @@ class BiometricBridgeHandler : BridgeHandler {
     }
 
     private fun isAvailable(): JsonElement {
-        val provider = SdkProviderRegistry.biometric ?: return JsonPrimitive(false)
+        val provider = IosProviderRegistry.biometric ?: return JsonPrimitive(false)
         return JsonPrimitive(provider.isAvailable())
     }
 
     private fun getBiometryType(): JsonElement {
-        val provider = SdkProviderRegistry.biometric ?: return JsonPrimitive("none")
+        val provider = IosProviderRegistry.biometric ?: return JsonPrimitive("none")
         return JsonPrimitive(provider.getBiometryType())
     }
 }

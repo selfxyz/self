@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.net.http.SslError
+import android.util.Log
 import android.webkit.JavascriptInterface
 import android.webkit.PermissionRequest
 import android.webkit.SslErrorHandler
@@ -22,39 +23,54 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.webkit.WebViewAssetLoader
 import xyz.self.sdk.bridge.MessageRouter
+import java.net.HttpURLConnection
+import java.net.URI
+import java.net.URL
 
 class AndroidWebViewHost(
     private val context: Context,
     private val router: MessageRouter,
     private val isDebugMode: Boolean = false,
+    private val remoteWebAppBaseUrl: String? = null,
+    private val remoteWebAppIntegritySha256: String? = null,
 ) {
     private lateinit var webView: WebView
+
+    @Volatile
+    private var isDestroyed = false
     var fileUploadCallback: ValueCallback<Array<Uri>>? = null
     var pendingPermissionRequest: PermissionRequest? = null
 
     @SuppressLint("SetJavaScriptEnabled")
     fun createWebView(queryParams: String): WebView {
+        isDestroyed = false
         val selfWalletHandler =
-            WebViewAssetLoader.PathHandler { path ->
+            WebViewAssetLoader.PathHandler { rawPath ->
                 try {
-                    val assetPath = "self-wallet/$path"
+                    val normalizedPath = rawPath.removePrefix("/")
+                    val assetPath =
+                        if (normalizedPath.isEmpty() || !normalizedPath.contains('.')) {
+                            "self-wallet/index.html"
+                        } else {
+                            "self-wallet/$normalizedPath"
+                        }
                     val inputStream = context.assets.open(assetPath)
                     val mimeType =
                         when {
-                            path.endsWith(".js") -> "application/javascript"
-                            path.endsWith(".css") -> "text/css"
-                            path.endsWith(".html") -> "text/html"
-                            path.endsWith(".json") -> "application/json"
-                            path.endsWith(".woff2") -> "font/woff2"
-                            path.endsWith(".woff") -> "font/woff"
-                            path.endsWith(".otf") -> "font/otf"
-                            path.endsWith(".ttf") -> "font/ttf"
-                            path.endsWith(".png") -> "image/png"
-                            path.endsWith(".svg") -> "image/svg+xml"
+                            assetPath.endsWith(".js") -> "application/javascript"
+                            assetPath.endsWith(".css") -> "text/css"
+                            assetPath.endsWith(".html") -> "text/html"
+                            assetPath.endsWith(".json") -> "application/json"
+                            assetPath.endsWith(".woff2") -> "font/woff2"
+                            assetPath.endsWith(".woff") -> "font/woff"
+                            assetPath.endsWith(".otf") -> "font/otf"
+                            assetPath.endsWith(".ttf") -> "font/ttf"
+                            assetPath.endsWith(".png") -> "image/png"
+                            assetPath.endsWith(".svg") -> "image/svg+xml"
                             else -> "application/octet-stream"
                         }
                     WebResourceResponse(mimeType, "UTF-8", inputStream)
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     null
                 }
             }
@@ -87,7 +103,7 @@ class AndroidWebViewHost(
                         ): WebResourceResponse? {
                             request ?: return null
                             val url = request.url
-                            if (url.host != "appassets.androidplatform.net") return null
+                            if (url.host != BUNDLED_HOST) return null
                             return assetLoader.shouldInterceptRequest(url)
                         }
 
@@ -95,10 +111,10 @@ class AndroidWebViewHost(
                             view: WebView?,
                             request: WebResourceRequest?,
                         ): Boolean {
-                            val url = request?.url?.toString() ?: return true
-                            if (url.startsWith("https://appassets.androidplatform.net/")) return false
-                            if (url.startsWith("https://self-app-alpha.vercel.app/")) return false
-                            if (isDebugMode && url.startsWith("http://127.0.0.1:5173")) return false
+                            val url = request?.url ?: return true
+                            if (isBundledOrigin(url)) return false
+                            if (isDebugMode && isDebugOrigin(url)) return false
+                            if (isAllowedRemoteOrigin(url.toString())) return false
                             return true
                         }
 
@@ -116,13 +132,13 @@ class AndroidWebViewHost(
                         override fun onPermissionRequest(request: PermissionRequest?) {
                             request ?: return
 
-                            // Only allow permissions from trusted origins
-                            val origin = request.origin?.toString() ?: ""
+                            val originStr = request.origin?.toString() ?: ""
+                            val originUri = Uri.parse(originStr)
                             val isTrusted =
-                                origin.startsWith("https://appassets.androidplatform.net") ||
-                                    origin.startsWith("https://self-app-alpha.vercel.app") ||
-                                    origin.startsWith("https://verify.didit.me") ||
-                                    (isDebugMode && origin.startsWith("http://127.0.0.1"))
+                                isBundledOrigin(originUri) ||
+                                    (isDebugMode && isDebugOrigin(originUri)) ||
+                                    isMatchingOrigin(originUri, "https", "verify.didit.me", 443) ||
+                                    isAllowedRemoteOrigin(originStr)
                             if (!isTrusted) {
                                 request.deny()
                                 return
@@ -134,7 +150,6 @@ class AndroidWebViewHost(
                                     return
                                 }
 
-                            // Collect required Android permissions
                             val neededPermissions = mutableListOf<String>()
                             if (request.resources.contains(PermissionRequest.RESOURCE_VIDEO_CAPTURE)) {
                                 neededPermissions.add(Manifest.permission.CAMERA)
@@ -143,7 +158,6 @@ class AndroidWebViewHost(
                                 neededPermissions.add(Manifest.permission.RECORD_AUDIO)
                             }
 
-                            // Check if any runtime permissions are missing
                             val missingPermissions =
                                 neededPermissions.filter {
                                     ContextCompat.checkSelfPermission(activity, it) != PackageManager.PERMISSION_GRANTED
@@ -178,7 +192,7 @@ class AndroidWebViewHost(
                                 }
                             try {
                                 activity.startActivityForResult(intent, FILE_CHOOSER_REQUEST_CODE)
-                            } catch (e: Exception) {
+                            } catch (_: Exception) {
                                 fileUploadCallback = null
                                 return false
                             }
@@ -189,9 +203,10 @@ class AndroidWebViewHost(
                 addJavascriptInterface(BridgeJsInterface(), "SelfNativeAndroid")
 
                 if (isDebugMode) {
-                    loadUrl("http://127.0.0.1:5173/tunnel/tour/1?$queryParams")
+                    loadUrl(buildDebugUrl(queryParams))
                 } else {
-                    loadUrl("https://self-app-alpha.vercel.app/tunnel/tour/1?$queryParams")
+                    loadUrl(buildBundledUrl(queryParams))
+                    maybeLoadVerifiedRemoteContent(queryParams)
                 }
             }
         return webView
@@ -199,7 +214,7 @@ class AndroidWebViewHost(
 
     fun evaluateJs(js: String) {
         if (!::webView.isInitialized) {
-            android.util.Log.e("WebViewHost", "evaluateJs called but webView not initialized")
+            Log.e("WebViewHost", "evaluateJs called but webView not initialized")
             return
         }
         webView.evaluateJavascript(js, null)
@@ -207,8 +222,101 @@ class AndroidWebViewHost(
 
     fun destroy() {
         if (!::webView.isInitialized) return
+        isDestroyed = true
         webView.destroy()
     }
+
+    private fun buildBundledUrl(queryParams: String): String = buildEntryUrl(BUNDLED_ORIGIN, queryParams)
+
+    private fun buildDebugUrl(queryParams: String): String = buildEntryUrl(DEBUG_ORIGIN, queryParams)
+
+    private fun buildRemoteUrl(queryParams: String): String? = RemoteNavigationPolicy.buildRemoteEntryUrl(remoteWebAppBaseUrl, queryParams)
+
+    private fun buildEntryUrl(
+        baseUrl: String,
+        queryParams: String,
+    ): String {
+        val separator = if (queryParams.isEmpty()) "" else "?$queryParams"
+        return "$baseUrl/tunnel/tour/1$separator"
+    }
+
+    private fun maybeLoadVerifiedRemoteContent(queryParams: String) {
+        val remoteUrl = buildRemoteUrl(queryParams) ?: return
+        val expectedSha256 = remoteWebAppIntegritySha256?.takeIf { it.isNotBlank() } ?: return
+
+        Thread {
+            val verifiedHtml = fetchAndVerifyRemoteEntry(remoteUrl, expectedSha256)
+            if (verifiedHtml == null || !::webView.isInitialized || isDestroyed) {
+                return@Thread
+            }
+
+            webView.post {
+                if (::webView.isInitialized && !isDestroyed) {
+                    webView.loadDataWithBaseURL(
+                        remoteUrl,
+                        verifiedHtml,
+                        "text/html",
+                        "UTF-8",
+                        null,
+                    )
+                }
+            }
+        }.start()
+    }
+
+    private fun fetchAndVerifyRemoteEntry(
+        remoteUrl: String,
+        expectedSha256: String,
+    ): String? =
+        try {
+            val connection = URL(remoteUrl).openConnection() as HttpURLConnection
+            connection.requestMethod = "GET"
+            connection.instanceFollowRedirects = false
+            connection.connectTimeout = 5_000
+            connection.readTimeout = 5_000
+            connection.connect()
+
+            if (connection.responseCode !in 200..299) {
+                Log.w("WebViewHost", "Remote web app integrity check failed with HTTP ${connection.responseCode}")
+                null
+            } else if (!RemoteContentIntegrity.isAcceptableContentType(connection.contentType)) {
+                Log.w("WebViewHost", "Remote web app integrity check failed due to unexpected content type ${connection.contentType}")
+                null
+            } else {
+                val body =
+                    connection.inputStream.use { stream ->
+                        val buffer = java.io.ByteArrayOutputStream()
+                        val chunk = ByteArray(8192)
+                        var totalRead = 0
+                        var bytesRead: Int
+                        while (stream.read(chunk).also { bytesRead = it } != -1) {
+                            totalRead += bytesRead
+                            if (totalRead > MAX_REMOTE_ENTRY_BYTES) {
+                                throw IllegalStateException("Remote entry response exceeded ${MAX_REMOTE_ENTRY_BYTES} bytes")
+                            }
+                            buffer.write(chunk, 0, bytesRead)
+                        }
+                        buffer.toByteArray()
+                    }
+                if (sha256Hex(body) == normalizeSha256(expectedSha256)) {
+                    String(body, Charsets.UTF_8)
+                } else {
+                    Log.w("WebViewHost", "Remote web app integrity check failed: hash mismatch")
+                    null
+                }
+            }
+        } catch (error: Exception) {
+            Log.w("WebViewHost", "Remote web app integrity check failed", error)
+            null
+        }
+
+    private fun isAllowedRemoteOrigin(url: String): Boolean = RemoteNavigationPolicy.isAllowedRemoteOrigin(url, remoteWebAppBaseUrl)
+
+    private fun resolvePort(uri: Uri): Int = RemoteNavigationPolicy.resolvePort(URI(uri.toString()))
+
+    private fun sha256Hex(bytes: ByteArray): String = RemoteContentIntegrity.sha256Hex(bytes)
+
+    private fun normalizeSha256(value: String): String = RemoteContentIntegrity.normalizeSha256(value)
 
     inner class BridgeJsInterface {
         @JavascriptInterface
@@ -217,8 +325,24 @@ class AndroidWebViewHost(
         }
     }
 
+    private fun isBundledOrigin(uri: Uri): Boolean = isMatchingOrigin(uri, "https", BUNDLED_HOST, 443)
+
+    private fun isDebugOrigin(uri: Uri): Boolean = isMatchingOrigin(uri, "http", "127.0.0.1", 5173)
+
+    private fun isMatchingOrigin(
+        uri: Uri,
+        scheme: String,
+        host: String,
+        port: Int,
+    ): Boolean = uri.scheme == scheme && uri.host == host && resolvePort(uri) == port
+
     companion object {
+        private const val BUNDLED_HOST = "appassets.androidplatform.net"
+        private const val BUNDLED_ORIGIN = "https://$BUNDLED_HOST"
+        private const val DEBUG_ORIGIN = "http://127.0.0.1:5173"
+
         const val FILE_CHOOSER_REQUEST_CODE = 1001
         const val CAMERA_PERMISSION_REQUEST_CODE = 1002
+        private const val MAX_REMOTE_ENTRY_BYTES = 5 * 1024 * 1024
     }
 }

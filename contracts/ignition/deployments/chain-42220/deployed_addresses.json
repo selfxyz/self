@@ -99,6 +99,14 @@
   "DeployAllVerifiers#Verifier_register_kyc": "0xbc15010D9748A5e7c0B947D0c0aCb31bD57a0626",
   "DeployAllVerifiers#Verifier_vc_and_disclose_kyc": "0xdB0454156bBa5e5b9CA97be350eCc178ddE20b0f",
   "UpgradeKycRegistryModule#KycRegistryProxy": "0x238f83c641020Ef9636694A846019FD2a105C4f0",
-  "UpgradeKycRegistryModule#PoseidonT3": "0xAD1b73963c7386bF83af187De03136a58111A637",
-  "UpgradeKycRegistryModule#IdentityRegistryKycImplV1": "0x71b820E2D71a9dba77dC00291873cba257ac66be"
+  "UpgradeKycRegistryModule#PoseidonT3": "0x7460578F2012e8a97e56F21D1D9EDd8DC5DcCB10",
+  "UpgradeKycRegistryModule#IdentityRegistryKycImplV1": "0xa3140DbC877A0Ac5CD8d0Eb9DB9930d62bF28c2c",
+  "UpgradeAadhaarRegistryModule#PoseidonT3": "0x21B81C63A66B08BfcAf53Cb2D66e0Ae8886D9ACd",
+  "UpgradeAadhaarRegistryModule#IdentityRegistryAadhaarImplV1": "0x06bB9e39bc89fa98cD3523e4f33d2f62d6Cb4991",
+  "DeployRegistryModule#IdentityRegistry": "0x37F5CB8cB1f6B00aa768D8aA99F1A9289802A968",
+  "DeployIdCardRegistryModule#IdentityRegistry": "0xeAD1E6Ec29c1f3D33a0662f253a3a94D189566E1",
+  "UpgradeRegistryModule#PoseidonT3": "0xA02587616062cD1808BAbB8840376420ED5e56eB",
+  "UpgradeRegistryModule#IdentityRegistryImplV1": "0x9bfBCe58f02e7c4501d51c6b1FB41b1C1ccc2e6C",
+  "UpgradeIdCardRegistryModule#PoseidonT3": "0x3113773f77981e198161C8e561d32Ca99AA42C6D",
+  "UpgradeIdCardRegistryModule#IdentityRegistryIdCardImplV1": "0xD192CD1780Dd0ceCedd626303d9F28b40949eaa3"
 }
