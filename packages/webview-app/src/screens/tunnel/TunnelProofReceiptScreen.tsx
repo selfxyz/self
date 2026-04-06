@@ -3,30 +3,41 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type React from 'react';
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { ProofRequestScreen, SelfLogo } from '@selfxyz/euclid';
 
+import { useSelfClient } from '../../providers/SelfClientProvider';
+import { useVerificationRequest } from '../../providers/VerificationRequestProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
-
-const MOCK_ITEMS = [
-  { label: 'Full Name' },
-  { label: 'Date of Birth' },
-  { label: 'Nationality' },
-  { label: 'Age above 18' },
-];
+import { titleCaseDisclosure } from '../../utils/provingUtils';
 
 export const TunnelProofReceiptScreen: React.FC = () => {
   const navigate = useNavigate();
+  const { analytics, haptic } = useSelfClient();
+  const { displayLabels, request, appName, appEndpoint, timestamp } = useVerificationRequest();
 
   const onConfirm = useCallback(() => {
-    navigate('/tunnel/proof/generating');
-  }, [navigate]);
+    haptic.trigger('selection');
+    analytics.trackEvent('tunnel_proof_receipt_confirmed');
+    navigate('/tunnel/proof/disclose');
+  }, [navigate, haptic, analytics]);
+
+  const proofItems = useMemo(() => {
+    if (displayLabels && displayLabels.length > 0) {
+      return displayLabels.map(label => ({ label }));
+    }
+    return (request.disclosures ?? []).map(key => ({
+      label: titleCaseDisclosure(key),
+    }));
+  }, [displayLabels, request.disclosures]);
 
   const onClose = useCallback(() => {
+    haptic.trigger('selection');
+    analytics.trackEvent('tunnel_proof_receipt_closed');
     navigate(-1);
-  }, [navigate]);
+  }, [navigate, haptic, analytics]);
 
   return (
     <ProofRequestScreen
@@ -35,11 +46,11 @@ export const TunnelProofReceiptScreen: React.FC = () => {
       onClose={onClose}
       onConfirm={onConfirm}
       appIcon={<SelfLogo size={40} />}
-      appName="KYC"
-      appEndpoint="example.com"
+      appName={appName}
+      appEndpoint={appEndpoint}
       documentType="passport"
-      timestamp={Date.now()}
-      items={MOCK_ITEMS}
+      timestamp={timestamp}
+      items={proofItems}
     />
   );
 };

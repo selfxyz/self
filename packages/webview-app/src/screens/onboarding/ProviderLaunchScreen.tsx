@@ -6,11 +6,13 @@ import type React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { Button, colors, Description, spacing, Title } from '@selfxyz/euclid';
+import { Button, colors, Description, KycPendingScreen, spacing, Title } from '@selfxyz/euclid';
+import { generateMockDocument, storePassportData } from '@selfxyz/mobile-sdk-alpha/browser';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { useVerificationRequest } from '../../providers/VerificationRequestProvider';
 import type { KycProviderResult } from '../../types/kycProvider';
+import { buildKycDocument } from '../../utils/buildKycDocument';
 import { waitForAttestation } from '../../utils/diditAttestation';
 import { createDiditSession, launchDiditWebSdk } from '../../utils/diditProvider';
 
@@ -18,18 +20,21 @@ const CONTAINER_ID = 'didit-sdk-container';
 
 type Phase = 'loading' | 'active' | 'waiting' | 'error';
 
+interface ProviderLaunchState {
+  countryCode?: string;
+  documentType?: string;
+  nextPath?: string;
+}
+
 export const ProviderLaunchScreen: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { analytics, haptic, lifecycle } = useSelfClient();
-  const { verificationId: ctxVerificationId } = useVerificationRequest();
+  const { client, analytics, haptic, lifecycle } = useSelfClient();
+  const { verificationId: ctxVerificationId, environment } = useVerificationRequest();
 
-  const { countryCode = '', documentType = '' } =
-    (location.state as {
-      countryCode?: string;
-      documentType?: string;
-    }) || {};
+  const { countryCode = '', documentType = '', nextPath } = (location.state as ProviderLaunchState) || {};
 
+  const defaultNextPath = nextPath ?? '/onboarding/provider-result';
   const verificationId = ctxVerificationId ?? `didit-${Date.now()}`;
 
   const [phase, setPhase] = useState<Phase>('loading');
@@ -54,17 +59,21 @@ export const ProviderLaunchScreen: React.FC = () => {
         if (!mountedRef.current) return;
 
         if (attestationResult.status === 'success' && attestationResult.attestation) {
-          navigate('/onboarding/provider-result', {
+          const attestation = attestationResult.attestation;
+          const kycDoc = buildKycDocument(attestation);
+          await storePassportData(client, kycDoc as any);
+
+          navigate(defaultNextPath, {
             state: {
               providerResult: {
                 ...result,
                 status: 'success' as const,
-                attestation: attestationResult.attestation,
+                attestation,
               },
             },
           });
         } else {
-          navigate('/onboarding/provider-result', {
+          navigate(defaultNextPath, {
             state: {
               providerResult: {
                 ...result,
@@ -81,11 +90,11 @@ export const ProviderLaunchScreen: React.FC = () => {
         return;
       }
 
-      navigate('/onboarding/provider-result', {
+      navigate(defaultNextPath, {
         state: { providerResult: result },
       });
     },
-    [analytics, navigate],
+    [analytics, client, defaultNextPath, navigate],
   );
 
   const handleError = useCallback(
@@ -96,11 +105,11 @@ export const ProviderLaunchScreen: React.FC = () => {
         errorCode: result.error?.code,
         provider: result.provider,
       });
-      navigate('/onboarding/provider-result', {
+      navigate(defaultNextPath, {
         state: { providerResult: result },
       });
     },
-    [analytics, navigate],
+    [analytics, defaultNextPath, navigate],
   );
 
   useEffect(() => {
@@ -109,10 +118,45 @@ export const ProviderLaunchScreen: React.FC = () => {
     analytics.trackEvent('provider_launch_started', {
       countryCode,
       documentType,
+      environment,
     });
 
     let cancelled = false;
     const controller = new AbortController();
+
+    if (environment !== 'prod') {
+      (async () => {
+        try {
+          setPhase('waiting');
+          const mockDoc = await generateMockDocument({
+            age: 25,
+            expiryYears: 5,
+            isInOfacList: false,
+            selectedAlgorithm: 'sha256 rsa 65537 2048',
+            selectedCountry: countryCode || 'US',
+            selectedDocumentType: 'mock_passport',
+            firstName: 'John',
+            lastName: 'Doe',
+          });
+          if (cancelled) return;
+          await storePassportData(client, mockDoc);
+          if (cancelled) return;
+          analytics.trackEvent('provider_mock_complete', { countryCode });
+          navigate(defaultNextPath, { state: { countryCode, documentType } });
+        } catch (err) {
+          if (cancelled) return;
+          const message = err instanceof Error ? err.message : 'Failed to generate mock document';
+          analytics.trackEvent('provider_launch_failed', { error: message });
+          setPhase('error');
+          setErrorMessage(message);
+        }
+      })();
+
+      return () => {
+        cancelled = true;
+        mountedRef.current = false;
+      };
+    }
 
     (async () => {
       try {
@@ -158,7 +202,19 @@ export const ProviderLaunchScreen: React.FC = () => {
       destroyRef.current?.();
       destroyRef.current = null;
     };
-  }, [analytics, countryCode, documentType, handleComplete, handleError, verificationId, retryCount]);
+  }, [
+    analytics,
+    client,
+    countryCode,
+    defaultNextPath,
+    documentType,
+    environment,
+    handleComplete,
+    handleError,
+    navigate,
+    verificationId,
+    retryCount,
+  ]);
 
   const handleBack = useCallback(() => {
     haptic.trigger('selection');
@@ -235,7 +291,16 @@ export const ProviderLaunchScreen: React.FC = () => {
         backgroundColor: colors.white,
       }}
     >
-      {(phase === 'loading' || phase === 'waiting') && (
+      {phase === 'waiting' && (
+        <KycPendingScreen
+          insets={{ top: 0, bottom: 0 }}
+          onCheckBackLater={handleBack}
+          onReceiveLiveUpdates={() => {
+            // TODO: wire up push notifications
+          }}
+        />
+      )}
+      {phase === 'loading' && (
         <div
           style={{
             display: 'flex',
@@ -257,14 +322,7 @@ export const ProviderLaunchScreen: React.FC = () => {
             }}
           />
           <div style={{ marginTop: spacing.md }}>
-            <Title textAlign="center">
-              {phase === 'waiting' ? 'Processing verification...' : 'Loading verification...'}
-            </Title>
-            {phase === 'waiting' && (
-              <Description style={{ marginTop: 8 }}>
-                Your documents are being verified. This may take a moment.
-              </Description>
-            )}
+            <Title textAlign="center">Loading verification...</Title>
           </div>
         </div>
       )}

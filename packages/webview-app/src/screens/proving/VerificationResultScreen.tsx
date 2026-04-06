@@ -10,6 +10,7 @@ import { colors, StatusState, WarningOctagonIcon } from '@selfxyz/euclid';
 import type { VerificationResult } from '@selfxyz/webview-bridge';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
+import { WEB_SAFE_AREA } from '../../utils/insets';
 
 export const VerificationResultScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -46,7 +47,15 @@ export const VerificationResultScreen: React.FC = () => {
   }, [analytics, haptic, lifecycle, navigate, result, resultSent]);
 
   return (
-    <>
+    <div
+      style={{
+        display: 'flex',
+        flex: 1,
+        minHeight: 0,
+        paddingTop: WEB_SAFE_AREA.insets.top,
+        paddingBottom: WEB_SAFE_AREA.insets.bottom,
+      }}
+    >
       <StatusState
         variant={success ? 'success' : 'fail'}
         title={success ? 'ID Verified' : 'Verification Failed'}
@@ -62,6 +71,6 @@ export const VerificationResultScreen: React.FC = () => {
         onButtonPress={onContinue}
         icon={success ? undefined : <WarningOctagonIcon size={64} color={colors.red500} />}
       />
-    </>
+    </div>
   );
 };

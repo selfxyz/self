@@ -38,6 +38,7 @@ android {
 dependencies {
     // Native shell SDK
     implementation("xyz.self.sdk:native-shell-android")
+    implementation("androidx.security:security-crypto:1.1.0")
 
     // Compose
     implementation(platform("androidx.compose:compose-bom:2024.01.00"))

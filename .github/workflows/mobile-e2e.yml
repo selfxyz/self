@@ -28,6 +28,7 @@ on:
     paths:
       - "app/**"
       - "packages/mobile-sdk-alpha/**"
+      - "patches/**"
       - ".github/workflows/mobile-e2e.yml"
   pull_request:
     branches:
@@ -37,6 +38,7 @@ on:
     paths:
       - "app/**"
       - "packages/mobile-sdk-alpha/**"
+      - "patches/**"
       - ".github/workflows/mobile-e2e.yml"
   workflow_dispatch:
 
@@ -92,24 +94,173 @@ jobs:
           app-id: ${{ vars.GH_WORKFLOWS_CROSS_ACCESS_ID }}
           private-key: ${{ secrets.GH_WORKFLOWS_CROSS_ACCESS_KEY }}
           configure-netrc: "true"
+      - name: Check for nested require() in tests
+        run: node scripts/check-test-requires.cjs
+        working-directory: ./app
       - name: Install deps (internal PRs and protected branches)
         if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
-        uses: nick-fields/retry@v3
-        with:
-          timeout_minutes: 10
-          max_attempts: 3
-          retry_wait_seconds: 5
-          command: yarn install --immutable --silent
+        shell: bash
         env:
           SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
+        run: |
+          set -euo pipefail
+
+          log_resources() {
+            echo "=== Runner resource snapshot ($1) ==="
+            free -h || true
+            df -h / || true
+            nproc || true
+
+            if [ -f /sys/fs/cgroup/memory.current ]; then
+              echo "cgroup memory.current: $(cat /sys/fs/cgroup/memory.current)"
+            fi
+            if [ -f /sys/fs/cgroup/memory.max ]; then
+              echo "cgroup memory.max: $(cat /sys/fs/cgroup/memory.max)"
+            fi
+            if [ -f /sys/fs/cgroup/memory.events ]; then
+              echo "cgroup memory.events:"
+              cat /sys/fs/cgroup/memory.events || true
+            fi
+
+            echo "=== dmesg OOM check ==="
+            dmesg 2>/dev/null | grep -i "oom\|killed process\|out of memory" | tail -5 || true
+            echo "=== End resource snapshot ==="
+          }
+
+          check_network() {
+            echo "Checking network prerequisites for Yarn install..."
+            for host in github.com api.github.com classic.yarnpkg.com repo.maven.apache.org; do
+              echo "Resolving ${host}..."
+              getent hosts "${host}" || true
+            done
+          }
+
+          monitored_install() {
+            log_resources "pre-install"
+            check_network
+
+            (
+              while true; do
+                timestamp="$(date -u +%H:%M:%S)"
+                mem_line="$(free -h | awk '/^Mem:/{print "Mem: used="$3" free="$4" avail="$7}')"
+                disk_line="$(df -h / | awk 'NR==2{print "Disk: used="$3" avail="$4}')"
+                cgroup_current="$(cat /sys/fs/cgroup/memory.current 2>/dev/null || echo n/a)"
+                cgroup_max="$(cat /sys/fs/cgroup/memory.max 2>/dev/null || echo n/a)"
+                oom_events="$(tr '\n' ' ' < /sys/fs/cgroup/memory.events 2>/dev/null || echo n/a)"
+                echo "[resource-monitor] ${timestamp} | ${mem_line} | ${disk_line} | cgroup.current=${cgroup_current} cgroup.max=${cgroup_max} | memory.events=${oom_events}"
+                sleep 30
+              done
+            ) &
+            MONITOR_PID=$!
+            trap 'kill "${MONITOR_PID}" 2>/dev/null || true' EXIT
+
+            for attempt in 1 2 3; do
+              echo "Starting yarn install attempt ${attempt}/3..."
+              if timeout 20m yarn install --immutable; then
+                echo "yarn install completed successfully on attempt ${attempt}."
+                kill "${MONITOR_PID}" 2>/dev/null || true
+                trap - EXIT
+                return 0
+              else
+                exit_code=$?
+              fi
+
+              echo "yarn install failed on attempt ${attempt} with exit code ${exit_code}."
+              log_resources "post-failure"
+
+              if [ "${attempt}" -eq 3 ]; then
+                kill "${MONITOR_PID}" 2>/dev/null || true
+                trap - EXIT
+                return "${exit_code}"
+              fi
+
+              echo "Retrying in 5 seconds..."
+              sleep 5
+            done
+          }
+
+          monitored_install
       - name: Install deps (forked PRs - no secrets)
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true }}
-        uses: nick-fields/retry@v3
-        with:
-          timeout_minutes: 10
-          max_attempts: 3
-          retry_wait_seconds: 5
-          command: yarn install --immutable --silent
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          log_resources() {
+            echo "=== Runner resource snapshot ($1) ==="
+            free -h || true
+            df -h / || true
+            nproc || true
+
+            if [ -f /sys/fs/cgroup/memory.current ]; then
+              echo "cgroup memory.current: $(cat /sys/fs/cgroup/memory.current)"
+            fi
+            if [ -f /sys/fs/cgroup/memory.max ]; then
+              echo "cgroup memory.max: $(cat /sys/fs/cgroup/memory.max)"
+            fi
+            if [ -f /sys/fs/cgroup/memory.events ]; then
+              echo "cgroup memory.events:"
+              cat /sys/fs/cgroup/memory.events || true
+            fi
+
+            echo "=== dmesg OOM check ==="
+            dmesg 2>/dev/null | grep -i "oom\|killed process\|out of memory" | tail -5 || true
+            echo "=== End resource snapshot ==="
+          }
+
+          check_network() {
+            echo "Checking network prerequisites for Yarn install..."
+            for host in github.com api.github.com classic.yarnpkg.com repo.maven.apache.org; do
+              echo "Resolving ${host}..."
+              getent hosts "${host}" || true
+            done
+          }
+
+          monitored_install() {
+            log_resources "pre-install"
+            check_network
+
+            (
+              while true; do
+                timestamp="$(date -u +%H:%M:%S)"
+                mem_line="$(free -h | awk '/^Mem:/{print "Mem: used="$3" free="$4" avail="$7}')"
+                disk_line="$(df -h / | awk 'NR==2{print "Disk: used="$3" avail="$4}')"
+                cgroup_current="$(cat /sys/fs/cgroup/memory.current 2>/dev/null || echo n/a)"
+                cgroup_max="$(cat /sys/fs/cgroup/memory.max 2>/dev/null || echo n/a)"
+                oom_events="$(tr '\n' ' ' < /sys/fs/cgroup/memory.events 2>/dev/null || echo n/a)"
+                echo "[resource-monitor] ${timestamp} | ${mem_line} | ${disk_line} | cgroup.current=${cgroup_current} cgroup.max=${cgroup_max} | memory.events=${oom_events}"
+                sleep 30
+              done
+            ) &
+            MONITOR_PID=$!
+            trap 'kill "${MONITOR_PID}" 2>/dev/null || true' EXIT
+
+            for attempt in 1 2 3; do
+              echo "Starting yarn install attempt ${attempt}/3..."
+              if timeout 20m yarn install --immutable; then
+                echo "yarn install completed successfully on attempt ${attempt}."
+                kill "${MONITOR_PID}" 2>/dev/null || true
+                trap - EXIT
+                return 0
+              else
+                exit_code=$?
+              fi
+
+              echo "yarn install failed on attempt ${attempt} with exit code ${exit_code}."
+              log_resources "post-failure"
+
+              if [ "${attempt}" -eq 3 ]; then
+                kill "${MONITOR_PID}" 2>/dev/null || true
+                trap - EXIT
+                return "${exit_code}"
+              fi
+
+              echo "Retrying in 5 seconds..."
+              sleep 5
+            done
+          }
+
+          monitored_install
 
       - name: Validate Maestro test file
         run: |
@@ -373,6 +524,9 @@ jobs:
           app-id: ${{ vars.GH_WORKFLOWS_CROSS_ACCESS_ID }}
           private-key: ${{ secrets.GH_WORKFLOWS_CROSS_ACCESS_KEY }}
           configure-netrc: "true"
+      - name: Check for nested require() in tests
+        run: node scripts/check-test-requires.cjs
+        working-directory: ./app
       - name: Install deps (internal PRs and protected branches)
         if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
         uses: nick-fields/retry@v3

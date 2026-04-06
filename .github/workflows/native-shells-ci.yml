@@ -1,0 +1,99 @@
+name: Native Shells CI
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    paths:
+      - "packages/native-shell-android/**"
+      - "packages/native-shell-ios/**"
+      - ".github/workflows/native-shells-ci.yml"
+      - ".github/actions/**"
+  push:
+    branches: [dev, staging, main]
+    paths:
+      - "packages/native-shell-android/**"
+      - "packages/native-shell-ios/**"
+      - ".github/workflows/native-shells-ci.yml"
+      - ".github/actions/**"
+  workflow_dispatch: {}
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      android: ${{ steps.filter.outputs.android }}
+      ios: ${{ steps.filter.outputs.ios }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            android:
+              - "packages/native-shell-android/**"
+              - ".github/workflows/native-shells-ci.yml"
+              - ".github/actions/**"
+            ios:
+              - "packages/native-shell-ios/**"
+              - ".github/workflows/native-shells-ci.yml"
+              - ".github/actions/**"
+
+  native-shell-android-tests:
+    needs: changes
+    if: needs.changes.outputs.android == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: packages/native-shell-android
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: ./.github/actions/cache-gradle
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-disabled: true
+      - run: ./gradlew ktlintCheck
+      - run: ./gradlew testDebugUnitTest
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-shell-android-test-results
+          path: |
+            packages/native-shell-android/build/reports/tests/
+            packages/native-shell-android/build/test-results/
+
+  native-shell-ios-tests:
+    needs: changes
+    if: needs.changes.outputs.ios == 'true'
+    runs-on: namespace-profile-apple-silicon-6cpu
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: packages/native-shell-ios
+    steps:
+      - uses: actions/checkout@v4
+      - name: Find iOS Simulator
+        id: sim
+        uses: ./.github/actions/find-ios-simulator
+      - name: Install SwiftLint
+        run: brew install swiftlint
+      - name: Run SwiftLint
+        run: swiftlint lint --strict
+      - name: Run Swift package tests
+        run: |
+          xcodebuild \
+            -scheme SelfNativeShell \
+            -destination "id=${{ steps.sim.outputs.id }}" \
+            -resultBundlePath TestResults.xcresult \
+            test
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-shell-ios-test-results
+          path: packages/native-shell-ios/TestResults.xcresult
