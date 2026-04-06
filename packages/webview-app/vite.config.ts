@@ -56,8 +56,10 @@ function subresourceIntegrity(): Plugin {
   };
 }
 
+const basePath = process.env.VITE_BASE_PATH ?? '/';
+
 export default defineConfig({
-  base: '/',
+  base: basePath,
   plugins: [
     react(),
     subresourceIntegrity(),
