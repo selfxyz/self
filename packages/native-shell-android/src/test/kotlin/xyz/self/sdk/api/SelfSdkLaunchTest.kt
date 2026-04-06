@@ -122,6 +122,26 @@ class SelfSdkLaunchTest {
     }
 
     @Test
+    fun `launch forwards default hosted web app url`() {
+        val activity = Robolectric.buildActivity(Activity::class.java).setup().get()
+        val launchConfig =
+            SelfSdkLaunchConfig(
+                config = minimalConfig(),
+                secureStorageProvider = FakeStorageProvider(),
+            )
+
+        SelfSdk.launch(activity, launchConfig)
+
+        val shadow = shadowOf(activity)
+        val intent = shadow.nextStartedActivityForResult.intent
+
+        assertEquals(
+            "https://verify.self.xyz/v1/",
+            intent.getStringExtra(SelfVerificationActivity.EXTRA_REMOTE_WEB_APP_BASE_URL),
+        )
+    }
+
+    @Test
     fun `launch uses default request code`() {
         val activity = Robolectric.buildActivity(Activity::class.java).setup().get()
         val launchConfig =
