@@ -39,7 +39,7 @@ public struct SelfSdkConfig {
         chainID: Int? = nil,
         userDefinedData: String? = nil,
         selfDefinedData: String? = nil,
-        remoteWebAppBaseURL: URL? = nil,
+        remoteWebAppBaseURL: URL? = URL(string: "https://verify.self.xyz/v1/"),
         secureStorageProvider: SecureStorageProvider
     ) {
         self.verificationId = verificationId
