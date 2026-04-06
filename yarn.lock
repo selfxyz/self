@@ -10497,6 +10497,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@scure/base@npm:2.0.0":
+  version: 2.0.0
+  resolution: "@scure/base@npm:2.0.0"
+  checksum: 10c0/7d999c7bebf053bb49cb706fdc6c5366737cff0f7f7518f52d32d7f7ad7b898904f03673648a2af5c4f22396f5c05f1d8bddbf010d6595052d07ba8163d506ad
+  languageName: node
+  linkType: hard
+
 "@scure/bip32@npm:1.7.0, @scure/bip32@npm:^1.7.0":
   version: 1.7.0
   resolution: "@scure/bip32@npm:1.7.0"
@@ -10505,6 +10512,17 @@ __metadata:
     "@noble/hashes": "npm:~1.8.0"
     "@scure/base": "npm:~1.2.5"
   checksum: 10c0/e3d4c1f207df16abcd79babcdb74d36f89bdafc90bf02218a5140cc5cba25821d80d42957c6705f35210cc5769714ea9501d4ae34732cdd1c26c9ff182a219f7
+  languageName: node
+  linkType: hard
+
+"@scure/bip32@npm:^2.0.1":
+  version: 2.0.1
+  resolution: "@scure/bip32@npm:2.0.1"
+  dependencies:
+    "@noble/curves": "npm:2.0.1"
+    "@noble/hashes": "npm:2.0.1"
+    "@scure/base": "npm:2.0.0"
+  checksum: 10c0/7c7ceac0ded08942afc866fa8a2f6fe1ad90b09932fd11560418701a965efe26e0cdf29ea87d18bc0bd847d34541c2ba1afed08794e273eafac8ab2ad23d012d
   languageName: node
   linkType: hard
 
@@ -10791,26 +10809,26 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@selfxyz/euclid-core@npm:1.3.0, @selfxyz/euclid-core@npm:^1.3.0":
-  version: 1.3.0
-  resolution: "@selfxyz/euclid-core@npm:1.3.0"
+"@selfxyz/euclid-core@npm:1.4.0, @selfxyz/euclid-core@npm:^1.4.0":
+  version: 1.4.0
+  resolution: "@selfxyz/euclid-core@npm:1.4.0"
   peerDependencies:
     react: ">=18.2.0"
-  checksum: 10c0/346831b2e2128014a1143f2af079229c40bfe64a622ef54600f0d927a8b8f78e8ad624fd4805488e03fbc2504171313fcc62c4123970afa30597c7380c817c3b
+  checksum: 10c0/ab08282ee623ae120e7c0e83889739775d7f2289d5d662026c17ec4e3f9fd398c91ab79e98fab1198e8d9b6ccecbea4fd2576acb3d62d20481350e28bfd8cb2a
   languageName: node
   linkType: hard
 
-"@selfxyz/euclid@npm:1.3.0":
-  version: 1.3.0
-  resolution: "@selfxyz/euclid@npm:1.3.0"
+"@selfxyz/euclid@npm:1.4.0":
+  version: 1.4.0
+  resolution: "@selfxyz/euclid@npm:1.4.0"
   dependencies:
     "@lottiefiles/dotlottie-react": "npm:^0.18.4"
-    "@selfxyz/euclid-core": "npm:^1.3.0"
+    "@selfxyz/euclid-core": "npm:^1.4.0"
     lottie-react: "npm:^2.4.1"
   peerDependencies:
     react: ">=18.2.0"
     react-dom: ">=18.2.0"
-  checksum: 10c0/056e53cfa6566056fc107fb553157de586dcdd384eedf101316b11b08d39d5800226321d53e119e38160977ef346632f6db16c27ad67f003d0bf085aed8a0f48
+  checksum: 10c0/fd560c7b7a2f1fcb7e69d85d3f34b6c7f9c2d711a634c18cc034566b9b3f8b2e353acdab60a9233326688ef055cf4ab6ff16d3d6a7912c8876e1d77559717f48
   languageName: node
   linkType: hard
 
@@ -11268,9 +11286,10 @@ __metadata:
   resolution: "@selfxyz/webview-app@workspace:packages/webview-app"
   dependencies:
     "@didit-protocol/sdk-web": "npm:^0.1.8"
+    "@scure/bip32": "npm:^2.0.1"
     "@scure/bip39": "npm:^1.6.0"
-    "@selfxyz/euclid": "npm:1.3.0"
-    "@selfxyz/euclid-core": "npm:1.3.0"
+    "@selfxyz/euclid": "npm:1.4.0"
+    "@selfxyz/euclid-core": "npm:1.4.0"
     "@selfxyz/mobile-sdk-alpha": "workspace:^"
     "@selfxyz/webview-bridge": "workspace:^"
     "@testing-library/react": "npm:^14.1.2"

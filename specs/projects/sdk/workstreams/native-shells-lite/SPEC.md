@@ -55,21 +55,23 @@
 
 ## Backlog
 
-| ID     | Title                                   | Status      | Priority | Depends On     | Plan                                                             | PR                                                            |
-| ------ | --------------------------------------- | ----------- | -------- | -------------- | ---------------------------------------------------------------- | ------------------------------------------------------------- |
-| NSL-01 | Android native shell (plain Kotlin)     | In Progress | High     | -              | [plans/NSL-01-android-shell.md](./plans/NSL-01-android-shell.md) | Code complete on `feat/webview-sdk`, needs testing            |
-| NSL-02 | iOS native shell (plain Swift)          | In Progress | High     | -              | [plans/NSL-02-ios-shell.md](./plans/NSL-02-ios-shell.md)         | Code complete on `feat/webview-sdk`, needs testing            |
-| NSL-03 | Test apps (adapt from kmp-sdk-test-app) | In Progress | Medium   | NSL-01, NSL-02 | [plans/NSL-03-test-apps.md](./plans/NSL-03-test-apps.md)         | Code complete on `feat/webview-sdk`, needs build verification |
+| ID     | Title                                   | Status      | Priority | Depends On             | Plan                                                                     | PR                                                            |
+| ------ | --------------------------------------- | ----------- | -------- | ---------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------- |
+| NSL-01 | Android native shell (plain Kotlin)     | In Progress | High     | -                      | [plans/NSL-01-android-shell.md](./plans/NSL-01-android-shell.md)         | Code complete on `feat/webview-sdk`, needs testing            |
+| NSL-02 | iOS native shell (plain Swift)          | In Progress | High     | -                      | [plans/NSL-02-ios-shell.md](./plans/NSL-02-ios-shell.md)                 | Code complete on `feat/webview-sdk`, needs testing            |
+| NSL-03 | Test apps (adapt from kmp-sdk-test-app) | In Progress | Medium   | NSL-01, NSL-02         | [plans/NSL-03-test-apps.md](./plans/NSL-03-test-apps.md)                 | Code complete on `feat/webview-sdk`, needs build verification |
+| NSL-04 | Delegate keychain to SDK consumers      | Done        | Medium   | NSL-01, NSL-02, NSL-03 | [plans/NSL-04-delegate-keychain.md](./plans/NSL-04-delegate-keychain.md) | Implemented on `dev`                                          |
 
 Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 
 ## Active Plans
 
-| Plan                                                             | IDs    | Status                                                |
-| ---------------------------------------------------------------- | ------ | ----------------------------------------------------- |
-| [plans/NSL-01-android-shell.md](./plans/NSL-01-android-shell.md) | NSL-01 | In Progress (code complete, needs testing)            |
-| [plans/NSL-02-ios-shell.md](./plans/NSL-02-ios-shell.md)         | NSL-02 | In Progress (code complete, needs testing)            |
-| [plans/NSL-03-test-apps.md](./plans/NSL-03-test-apps.md)         | NSL-03 | In Progress (code complete, needs build verification) |
+| Plan                                                                     | IDs    | Status                                                |
+| ------------------------------------------------------------------------ | ------ | ----------------------------------------------------- |
+| [plans/NSL-01-android-shell.md](./plans/NSL-01-android-shell.md)         | NSL-01 | In Progress (code complete, needs testing)            |
+| [plans/NSL-02-ios-shell.md](./plans/NSL-02-ios-shell.md)                 | NSL-02 | In Progress (code complete, needs testing)            |
+| [plans/NSL-03-test-apps.md](./plans/NSL-03-test-apps.md)                 | NSL-03 | In Progress (code complete, needs build verification) |
+| [plans/NSL-04-delegate-keychain.md](./plans/NSL-04-delegate-keychain.md) | NSL-04 | Done                                                  |
 
 ## Completion Checklist
 

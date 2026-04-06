@@ -13,6 +13,7 @@ public class WebViewProviderImpl: NSObject {
     private var webView: WKWebView?
     private var viewController: UIViewController?
     private var onMessageReceived: ((String) -> Void)?
+    private var isDebugMode: Bool = false
 
     /// Weak proxy to avoid retain cycles with WKScriptMessageHandler
     private var messageProxy: WeakScriptMessageProxy?
@@ -21,8 +22,9 @@ public class WebViewProviderImpl: NSObject {
         super.init()
     }
 
-    @objc(createWebViewOnMessageReceived:isDebugMode:)
-    public func createWebView(onMessageReceived: @escaping (String) -> Void, isDebugMode: Bool) -> UIView {
+    @objc(createWebViewOnMessageReceived:isDebugMode:queryParams:)
+    public func createWebView(onMessageReceived: @escaping (String) -> Void, isDebugMode: Bool, queryParams: String? = nil) -> UIView {
+        self.isDebugMode = isDebugMode
         // Clean up existing webView and script handlers before creating new one
         if let existingWebView = webView {
             existingWebView.configuration.userContentController.removeScriptMessageHandler(forName: "SelfNativeIOS")
@@ -31,7 +33,7 @@ public class WebViewProviderImpl: NSObject {
             self.webView = nil
             self.viewController = nil
         }
-
+        
         self.onMessageReceived = onMessageReceived
 
         // Create message proxy to avoid retain cycle
@@ -51,29 +53,26 @@ public class WebViewProviderImpl: NSObject {
 
         let wv = WKWebView(frame: .zero, configuration: config)
         wv.isOpaque = false
-        wv.backgroundColor = .white
+        wv.backgroundColor = .clear
         wv.scrollView.isScrollEnabled = true
+        wv.scrollView.bounces = false
 
         if #available(iOS 16.4, *), isDebugMode {
             wv.isInspectable = true
         }
 
+        wv.navigationDelegate = self
         self.webView = wv
 
-        // Load the bundled HTML or localhost for debug
-        if isDebugMode {
-            if let url = URL(string: "http://localhost:5173") {
-                wv.load(URLRequest(url: url))
-            }
-        } else {
-            // Load from app bundle
-            if let htmlURL = Bundle.main.url(forResource: "index", withExtension: "html", subdirectory: "self-sdk-web") {
-                wv.loadFileURL(htmlURL, allowingReadAccessTo: htmlURL.deletingLastPathComponent())
-            } else {
-                NSLog("SelfSDK-WebView: ERROR - index.html not found in self-sdk-web bundle directory")
-                assertionFailure("SelfSDK: index.html not found in self-sdk-web bundle directory. Ensure the web assets are included in the app bundle.")
-            }
+        var urlString = "https://self-app-alpha.vercel.app/tunnel/tour/1"
+        if let params = queryParams, !params.isEmpty {
+            urlString += "?\(params)"
         }
+        guard let url = URL(string: urlString) else {
+            NSLog("SelfSDK-WebView: Failed to construct URL from: %@", urlString)
+            return wv
+        }
+        wv.load(URLRequest(url: url))
 
         return wv
     }
@@ -96,12 +95,60 @@ public class WebViewProviderImpl: NSObject {
             return existingVC
         }
 
-        let vc = UIViewController()
-        if let wv = webView {
-            vc.view = wv
-        }
+        let vc = WebViewHostController(webView: webView)
         self.viewController = vc
         return vc
+    }
+}
+
+// MARK: - Host VC that embeds the WKWebView with proper Auto Layout
+
+private class WebViewHostController: UIViewController {
+    private let embeddedWebView: WKWebView?
+
+    init(webView: WKWebView?) {
+        self.embeddedWebView = webView
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) is not supported")
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = .black
+
+        guard let wv = embeddedWebView else { return }
+        wv.translatesAutoresizingMaskIntoConstraints = false
+        wv.scrollView.contentInsetAdjustmentBehavior = .never
+        view.addSubview(wv)
+        NSLayoutConstraint.activate([
+            wv.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            wv.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            wv.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            wv.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+        ])
+    }
+}
+
+// MARK: - WKNavigationDelegate
+
+extension WebViewProviderImpl: WKNavigationDelegate {
+    public func webView(
+        _ webView: WKWebView,
+        decidePolicyFor navigationAction: WKNavigationAction,
+        decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
+    ) {
+        guard let url = navigationAction.request.url, let host = url.host else {
+            decisionHandler(.cancel)
+            return
+        }
+        let isTrusted =
+            (url.scheme == "https" && host == "self-app-alpha.vercel.app") ||
+            (isDebugMode && url.scheme == "http" && host == "127.0.0.1")
+        decisionHandler(isTrusted ? .allow : .cancel)
     }
 }
 

@@ -13,6 +13,7 @@ interface WebViewProvider {
     fun createWebView(
         onMessageReceived: (String) -> Unit,
         isDebugMode: Boolean,
+        queryParams: String? = null,
     ): UIView
 
     fun evaluateJs(js: String)

@@ -11,4 +11,10 @@ data class VerificationRequest(
     val userId: String? = null,
     val scope: String? = null,
     val disclosures: List<String> = emptyList(),
+    val verificationId: String? = null,
+    val resultType: String? = null,
+    val excludedCountries: List<String> = emptyList(),
+    val userIdType: String? = null,
+    val userDefinedData: String? = null,
+    val selfDefinedData: String? = null,
 )

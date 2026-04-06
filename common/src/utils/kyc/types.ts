@@ -1,5 +1,6 @@
-import { Point } from '@zk-kit/baby-jubjub';
 import * as constants from './constants.js';
+
+import { Point } from '@zk-kit/baby-jubjub';
 
 export type KycData = {
   country: string;
@@ -17,37 +18,6 @@ export type KycData = {
   current_date: string;
   majority_age_ASCII: string;
   selector_older_than: string;
-};
-
-export const serializeKycData = (
-  kycData: Omit<
-    KycData,
-    'user_identifier' | 'current_date' | 'majority_age_ASCII' | 'selector_older_than'
-  >
-) => {
-  //ensure max length of each field
-  let serializedData = '';
-  serializedData += kycData.country.padEnd(constants.KYC_COUNTRY_LENGTH, '\0');
-  serializedData += kycData.idType.padEnd(constants.KYC_ID_TYPE_LENGTH, '\0');
-  serializedData += kycData.idNumber.padEnd(constants.KYC_ID_NUMBER_LENGTH, '\0');
-  serializedData += kycData.issuanceDate.padEnd(constants.KYC_ISSUANCE_DATE_LENGTH, '\0');
-  serializedData += kycData.expiryDate.padEnd(constants.KYC_EXPIRY_DATE_LENGTH, '\0');
-  serializedData += kycData.fullName.padEnd(constants.KYC_FULL_NAME_LENGTH, '\0');
-  serializedData += kycData.dob.padEnd(constants.KYC_DOB_LENGTH, '\0');
-  serializedData += kycData.photoHash.padEnd(constants.KYC_PHOTO_HASH_LENGTH, '\0');
-  serializedData += kycData.phoneNumber.padEnd(constants.KYC_PHONE_NUMBER_LENGTH, '\0');
-  serializedData += kycData.gender.padEnd(constants.KYC_GENDER_LENGTH, '\0');
-  serializedData += kycData.address.padEnd(constants.KYC_ADDRESS_LENGTH, '\0');
-
-  return serializedData;
-};
-
-export type KycRegisterInput = {
-  data_padded: number[];
-  s: bigint;
-  R: [bigint, bigint];
-  pubKey: [bigint, bigint];
-  secret: string;
 };
 
 export type KycDiscloseInput = {
@@ -84,7 +54,38 @@ export type KycDisclosePublicInput = {
   ofac_name_yob_smt_root: string;
 };
 
+export type KycRegisterInput = {
+  data_padded: number[];
+  s: bigint;
+  R: [bigint, bigint];
+  pubKey: [bigint, bigint];
+  secret: string;
+};
+
 export type Signature = {
   R: Point<bigint>;
   s: bigint;
+};
+
+export const serializeKycData = (
+  kycData: Omit<
+    KycData,
+    'user_identifier' | 'current_date' | 'majority_age_ASCII' | 'selector_older_than'
+  >
+) => {
+  //ensure max length of each field
+  let serializedData = '';
+  serializedData += kycData.country.padEnd(constants.KYC_COUNTRY_LENGTH, '\0');
+  serializedData += kycData.idType.padEnd(constants.KYC_ID_TYPE_LENGTH, '\0');
+  serializedData += kycData.idNumber.padEnd(constants.KYC_ID_NUMBER_LENGTH, '\0');
+  serializedData += kycData.issuanceDate.padEnd(constants.KYC_ISSUANCE_DATE_LENGTH, '\0');
+  serializedData += kycData.expiryDate.padEnd(constants.KYC_EXPIRY_DATE_LENGTH, '\0');
+  serializedData += kycData.fullName.padEnd(constants.KYC_FULL_NAME_LENGTH, '\0');
+  serializedData += kycData.dob.padEnd(constants.KYC_DOB_LENGTH, '\0');
+  serializedData += kycData.photoHash.padEnd(constants.KYC_PHOTO_HASH_LENGTH, '\0');
+  serializedData += kycData.phoneNumber.padEnd(constants.KYC_PHONE_NUMBER_LENGTH, '\0');
+  serializedData += kycData.gender.padEnd(constants.KYC_GENDER_LENGTH, '\0');
+  serializedData += kycData.address.padEnd(constants.KYC_ADDRESS_LENGTH, '\0');
+
+  return serializedData;
 };

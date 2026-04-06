@@ -8,12 +8,19 @@ final class LifecycleHandler: BridgeHandler {
 
     private weak var viewController: UIViewController?
     private let onResult: ((Any?) -> Void)?
+    private let onFailure: ((Error) -> Void)?
     private let onDismiss: (() -> Void)?
     private var hasEmittedResult = false
 
-    init(viewController: UIViewController?, onResult: ((Any?) -> Void)?, onDismiss: (() -> Void)?) {
+    init(
+        viewController: UIViewController?,
+        onResult: ((Any?) -> Void)?,
+        onFailure: ((Error) -> Void)?,
+        onDismiss: (() -> Void)?
+    ) {
         self.viewController = viewController
         self.onResult = onResult
+        self.onFailure = onFailure
         self.onDismiss = onDismiss
     }
 
@@ -31,10 +38,16 @@ final class LifecycleHandler: BridgeHandler {
             return nil
 
         case "setResult":
-            let result = params?["result"]
+            let result = SelfLifecycleResultEnvelope.extractPayload(from: params)
+            let isSuccess = SelfLifecycleResultEnvelope.extractSuccess(from: result) ?? false
             await MainActor.run {
+                guard !hasEmittedResult else { return }
                 hasEmittedResult = true
-                onResult?(result)
+                if isSuccess {
+                    onResult?(result)
+                } else {
+                    onFailure?(SelfLifecycleResultError(payload: result))
+                }
                 dismiss()
             }
             return nil
@@ -47,13 +60,47 @@ final class LifecycleHandler: BridgeHandler {
     @MainActor
     private func dismiss() {
         if let vc = viewController {
-            vc.dismiss(animated: true) { [weak self] in
-                guard let self = self, !self.hasEmittedResult else { return }
+            guard !hasEmittedResult else {
+                vc.dismiss(animated: true)
+                return
+            }
+            hasEmittedResult = true
+            vc.dismiss(animated: true) {
                 self.onDismiss?()
             }
         } else {
             guard !hasEmittedResult else { return }
+            hasEmittedResult = true
             onDismiss?()
         }
+    }
+}
+
+enum SelfLifecycleResultEnvelope {
+    static func extractPayload(from params: [String: Any]?) -> Any? {
+        guard let params else { return nil }
+        if let nestedResult = params["result"] {
+            return nestedResult
+        }
+        return params
+    }
+
+    static func extractSuccess(from payload: Any?) -> Bool? {
+        guard let payload = payload as? [String: Any] else { return nil }
+        return payload["success"] as? Bool
+    }
+}
+
+struct SelfLifecycleResultError: LocalizedError {
+    let payload: Any?
+
+    var errorDescription: String? {
+        if let payload = payload as? [String: Any],
+           let error = payload["error"] as? [String: Any],
+           let message = error["message"] as? String {
+            return message
+        }
+
+        return "Verification failed"
     }
 }

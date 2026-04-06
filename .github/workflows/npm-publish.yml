@@ -36,42 +36,64 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          fetch-depth: 2
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
 
       - name: Check for version changes
         id: check-version
         run: |
-          git diff HEAD^ HEAD --name-only | grep -q "sdk/core/package.json" && echo "core_changed=true" >> $GITHUB_OUTPUT || echo "core_changed=false" >> $GITHUB_OUTPUT
-          git diff HEAD^ HEAD --name-only | grep -q "sdk/qrcode/package.json" && echo "qrcode_changed=true" >> $GITHUB_OUTPUT || echo "qrcode_changed=false" >> $GITHUB_OUTPUT
-          git diff HEAD^ HEAD --name-only | grep -q "common/package.json" && echo "common_changed=true" >> $GITHUB_OUTPUT || echo "common_changed=false" >> $GITHUB_OUTPUT
-          git diff HEAD^ HEAD --name-only | grep -q "contracts/package.json" && echo "contracts_changed=true" >> $GITHUB_OUTPUT || echo "contracts_changed=false" >> $GITHUB_OUTPUT
-          git diff HEAD^ HEAD --name-only | grep -q "sdk/qrcode-angular/package.json" && echo "qrcode_angular_changed=true" >> $GITHUB_OUTPUT || echo "qrcode_angular_changed=false" >> $GITHUB_OUTPUT
-          git diff HEAD^ HEAD --name-only | grep -q "packages/mobile-sdk-alpha/package.json" && echo "msdk_changed=true" >> $GITHUB_OUTPUT || echo "msdk_changed=false" >> $GITHUB_OUTPUT
-
-          # check if it was dispatched manually as well
-          if git diff HEAD^ HEAD -- sdk/core/package.json | grep -q '"version":' || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "core_changed=true" >> $GITHUB_OUTPUT
+          BASE_SHA="${{ github.event.before }}"
+          HEAD_SHA="${{ github.sha }}"
+          if [ -z "$BASE_SHA" ] || [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ]; then
+            # Zero-before means new ref. Use the first pushed commit's parent as base.
+            FIRST_PUSHED=$(node -e "
+              const fs = require('fs');
+              const event = JSON.parse(fs.readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8'));
+              const commits = event.commits || [];
+              process.stdout.write(commits.length > 0 ? commits[0].id : '');
+            ")
+            if [ -n "$FIRST_PUSHED" ]; then
+              BASE_SHA="$(git rev-parse "${FIRST_PUSHED}^" 2>/dev/null || echo "")"
+            fi
           fi
 
-          if git diff HEAD^ HEAD -- sdk/qrcode/package.json | grep -q '"version":' || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "qrcode_changed=true" >> $GITHUB_OUTPUT
-          fi
+          get_version() {
+            git show "$1":"$2" 2>/dev/null | node -e "
+              let d=''; process.stdin.on('data',c=>d+=c); process.stdin.on('end',()=>{
+                try { process.stdout.write(JSON.parse(d).version||'') } catch {}
+              })"
+          }
 
-          if git diff HEAD^ HEAD -- common/package.json | grep -q '"version":' || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "common_changed=true" >> $GITHUB_OUTPUT
-          fi
+          has_version_change() {
+            local package_json_path="$1"
+            local old_version new_version
+            old_version=""
+            if [ -n "$BASE_SHA" ]; then
+              old_version="$(get_version "$BASE_SHA" "$package_json_path")"
+            fi
+            new_version="$(get_version "$HEAD_SHA" "$package_json_path")"
+            [ -n "$new_version" ] && [ "$old_version" != "$new_version" ]
+          }
 
-          if git diff HEAD^ HEAD -- contracts/package.json | grep -q '"version":' || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "contracts_changed=true" >> $GITHUB_OUTPUT
-          fi
+          set_changed_output() {
+            local output_name="$1"
+            local package_json_path="$2"
 
-          if git diff HEAD^ HEAD -- sdk/qrcode-angular/package.json | grep -q '"version":' || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "qrcode_angular_changed=true" >> $GITHUB_OUTPUT
-          fi
+            if [ "${{ github.event_name }}" = "workflow_dispatch" ] || has_version_change "$package_json_path"; then
+              echo "${output_name}=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "${output_name}=false" >> "$GITHUB_OUTPUT"
+            fi
+          }
 
-          if git diff HEAD^ HEAD -- packages/mobile-sdk-alpha/package.json | grep -q '"version":' || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "msdk_changed=true" >> $GITHUB_OUTPUT
-          fi
+          set_changed_output core_changed "sdk/core/package.json"
+          set_changed_output qrcode_changed "sdk/qrcode/package.json"
+          set_changed_output common_changed "common/package.json"
+          set_changed_output contracts_changed "contracts/package.json"
+          set_changed_output qrcode_angular_changed "sdk/qrcode-angular/package.json"
+          set_changed_output msdk_changed "packages/mobile-sdk-alpha/package.json"
 
   publish-core:
     needs: detect-changes
