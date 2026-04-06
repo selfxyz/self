@@ -63,6 +63,48 @@
     "name": "INVALID_TIMESTAMP",
     "signature": "INVALID_TIMESTAMP()",
     "selector": "0x118818d1",
+    "file": "contracts/contracts/registry/IdentityRegistryAadhaarImplV1.sol"
+  },
+  {
+    "name": "INVALID_TIMESTAMP",
+    "signature": "INVALID_TIMESTAMP()",
+    "selector": "0x118818d1",
+    "file": "contracts/contracts/registry/IdentityRegistryIdCardImplV1.sol"
+  },
+  {
+    "name": "INVALID_TIMESTAMP",
+    "signature": "INVALID_TIMESTAMP()",
+    "selector": "0x118818d1",
+    "file": "contracts/contracts/registry/IdentityRegistryImplV1.sol"
+  },
+  {
+    "name": "INVALID_TIMESTAMP",
+    "signature": "INVALID_TIMESTAMP()",
+    "selector": "0x118818d1",
+    "file": "contracts/contracts/registry/IdentityRegistryKycImplV1.sol"
+  },
+  {
+    "name": "InvalidRootsCount",
+    "signature": "InvalidRootsCount()",
+    "selector": "0x128781c2",
+    "file": "contracts/contracts/registry/IdentityRegistryAadhaarImplV1.sol"
+  },
+  {
+    "name": "InvalidRootsCount",
+    "signature": "InvalidRootsCount()",
+    "selector": "0x128781c2",
+    "file": "contracts/contracts/registry/IdentityRegistryIdCardImplV1.sol"
+  },
+  {
+    "name": "InvalidRootsCount",
+    "signature": "InvalidRootsCount()",
+    "selector": "0x128781c2",
+    "file": "contracts/contracts/registry/IdentityRegistryImplV1.sol"
+  },
+  {
+    "name": "InvalidRootsCount",
+    "signature": "InvalidRootsCount()",
+    "selector": "0x128781c2",
     "file": "contracts/contracts/registry/IdentityRegistryKycImplV1.sol"
   },
   {
@@ -183,6 +225,24 @@
     "name": "ONLY_TEE_CAN_ACCESS",
     "signature": "ONLY_TEE_CAN_ACCESS()",
     "selector": "0x2822d0cb",
+    "file": "contracts/contracts/registry/IdentityRegistryAadhaarImplV1.sol"
+  },
+  {
+    "name": "ONLY_TEE_CAN_ACCESS",
+    "signature": "ONLY_TEE_CAN_ACCESS()",
+    "selector": "0x2822d0cb",
+    "file": "contracts/contracts/registry/IdentityRegistryIdCardImplV1.sol"
+  },
+  {
+    "name": "ONLY_TEE_CAN_ACCESS",
+    "signature": "ONLY_TEE_CAN_ACCESS()",
+    "selector": "0x2822d0cb",
+    "file": "contracts/contracts/registry/IdentityRegistryImplV1.sol"
+  },
+  {
+    "name": "ONLY_TEE_CAN_ACCESS",
+    "signature": "ONLY_TEE_CAN_ACCESS()",
+    "selector": "0x2822d0cb",
     "file": "contracts/contracts/registry/IdentityRegistryKycImplV1.sol"
   },
   {
@@ -196,6 +256,30 @@
     "signature": "UserIdentifierAlreadyRegistered()",
     "selector": "0x29393238",
     "file": "contracts/contracts/tests/TestAirdrop.sol"
+  },
+  {
+    "name": "InvalidRootsHash",
+    "signature": "InvalidRootsHash()",
+    "selector": "0x372c4a4b",
+    "file": "contracts/contracts/registry/IdentityRegistryAadhaarImplV1.sol"
+  },
+  {
+    "name": "InvalidRootsHash",
+    "signature": "InvalidRootsHash()",
+    "selector": "0x372c4a4b",
+    "file": "contracts/contracts/registry/IdentityRegistryIdCardImplV1.sol"
+  },
+  {
+    "name": "InvalidRootsHash",
+    "signature": "InvalidRootsHash()",
+    "selector": "0x372c4a4b",
+    "file": "contracts/contracts/registry/IdentityRegistryImplV1.sol"
+  },
+  {
+    "name": "InvalidRootsHash",
+    "signature": "InvalidRootsHash()",
+    "selector": "0x372c4a4b",
+    "file": "contracts/contracts/registry/IdentityRegistryKycImplV1.sol"
   },
   {
     "name": "InvalidFieldElement",
@@ -381,6 +465,24 @@
     "name": "INVALID_PROOF",
     "signature": "INVALID_PROOF()",
     "selector": "0x712eb087",
+    "file": "contracts/contracts/registry/IdentityRegistryAadhaarImplV1.sol"
+  },
+  {
+    "name": "INVALID_PROOF",
+    "signature": "INVALID_PROOF()",
+    "selector": "0x712eb087",
+    "file": "contracts/contracts/registry/IdentityRegistryIdCardImplV1.sol"
+  },
+  {
+    "name": "INVALID_PROOF",
+    "signature": "INVALID_PROOF()",
+    "selector": "0x712eb087",
+    "file": "contracts/contracts/registry/IdentityRegistryImplV1.sol"
+  },
+  {
+    "name": "INVALID_PROOF",
+    "signature": "INVALID_PROOF()",
+    "selector": "0x712eb087",
     "file": "contracts/contracts/registry/IdentityRegistryKycImplV1.sol"
   },
   {
@@ -388,6 +490,24 @@
     "signature": "INVALID_OFAC()",
     "selector": "0x71b125ed",
     "file": "contracts/contracts/IdentityVerificationHubImplV1.sol"
+  },
+  {
+    "name": "INVALID_IMAGE",
+    "signature": "INVALID_IMAGE()",
+    "selector": "0x7f91b413",
+    "file": "contracts/contracts/registry/IdentityRegistryAadhaarImplV1.sol"
+  },
+  {
+    "name": "INVALID_IMAGE",
+    "signature": "INVALID_IMAGE()",
+    "selector": "0x7f91b413",
+    "file": "contracts/contracts/registry/IdentityRegistryIdCardImplV1.sol"
+  },
+  {
+    "name": "INVALID_IMAGE",
+    "signature": "INVALID_IMAGE()",
+    "selector": "0x7f91b413",
+    "file": "contracts/contracts/registry/IdentityRegistryImplV1.sol"
   },
   {
     "name": "INVALID_IMAGE",
@@ -627,6 +747,24 @@
     "name": "INVALID_ROOT_CA",
     "signature": "INVALID_ROOT_CA()",
     "selector": "0xee57533e",
+    "file": "contracts/contracts/registry/IdentityRegistryAadhaarImplV1.sol"
+  },
+  {
+    "name": "INVALID_ROOT_CA",
+    "signature": "INVALID_ROOT_CA()",
+    "selector": "0xee57533e",
+    "file": "contracts/contracts/registry/IdentityRegistryIdCardImplV1.sol"
+  },
+  {
+    "name": "INVALID_ROOT_CA",
+    "signature": "INVALID_ROOT_CA()",
+    "selector": "0xee57533e",
+    "file": "contracts/contracts/registry/IdentityRegistryImplV1.sol"
+  },
+  {
+    "name": "INVALID_ROOT_CA",
+    "signature": "INVALID_ROOT_CA()",
+    "selector": "0xee57533e",
     "file": "contracts/contracts/registry/IdentityRegistryKycImplV1.sol"
   },
   {
@@ -670,6 +808,24 @@
     "signature": "InvalidIdentityCommitmentRoot()",
     "selector": "0xf53393a7",
     "file": "contracts/contracts/libraries/RootCheckLib.sol"
+  },
+  {
+    "name": "TEE_NOT_SET",
+    "signature": "TEE_NOT_SET()",
+    "selector": "0xfc833fc6",
+    "file": "contracts/contracts/registry/IdentityRegistryAadhaarImplV1.sol"
+  },
+  {
+    "name": "TEE_NOT_SET",
+    "signature": "TEE_NOT_SET()",
+    "selector": "0xfc833fc6",
+    "file": "contracts/contracts/registry/IdentityRegistryIdCardImplV1.sol"
+  },
+  {
+    "name": "TEE_NOT_SET",
+    "signature": "TEE_NOT_SET()",
+    "selector": "0xfc833fc6",
+    "file": "contracts/contracts/registry/IdentityRegistryImplV1.sol"
   },
   {
     "name": "TEE_NOT_SET",
