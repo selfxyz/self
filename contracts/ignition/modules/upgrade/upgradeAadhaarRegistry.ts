@@ -22,12 +22,9 @@ export default buildModule("UpgradeAadhaarRegistryModule", (m) => {
     libraries: { PoseidonT3: poseidonT3 },
   });
 
-  // Get proxy reference
   const aadhaarProxy = m.contractAt("IdentityRegistryAadhaarImplV1", aadhaarProxyAddress, {
     id: "AadhaarRegistryProxy",
   });
-
-  // Code-only upgrade — no new reinitializer needed
   m.call(aadhaarProxy, "upgradeToAndCall", [newAadhaarImpl, "0x"], {
     after: [newAadhaarImpl],
   });
@@ -35,6 +32,5 @@ export default buildModule("UpgradeAadhaarRegistryModule", (m) => {
   return {
     poseidonT3,
     newAadhaarImpl,
-    aadhaarProxy,
   };
 });

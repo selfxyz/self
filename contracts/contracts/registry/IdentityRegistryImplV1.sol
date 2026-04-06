@@ -680,9 +680,7 @@ contract IdentityRegistryImplV1 is IdentityRegistryStorageV1, IIdentityRegistryV
 
         // Verify roots hash matches eat_nonce from proof
         bytes32 myHash = sha256(abi.encodePacked(roots[0], roots[1], roots[2]));
-        uint256 rootsHashFromProof = GCPJWTHelper.unpackAndDecodeHexPubkey(
-            pubSignals[1], pubSignals[2], pubSignals[3]
-        );
+        uint256 rootsHashFromProof = GCPJWTHelper.unpackAndDecodeHexPubkey(pubSignals[1], pubSignals[2], pubSignals[3]);
         if (uint256(myHash) != rootsHashFromProof) revert InvalidRootsHash();
 
         // Update this registry's roots with rolling window: [nameAndDob, nameAndYob, passportNo]

@@ -22,12 +22,9 @@ export default buildModule("UpgradeRegistryModule", (m) => {
     libraries: { PoseidonT3: poseidonT3 },
   });
 
-  // Get proxy reference
   const registryProxy = m.contractAt("IdentityRegistryImplV1", registryProxyAddress, {
     id: "RegistryProxy",
   });
-
-  // Code-only upgrade — no new reinitializer needed
   m.call(registryProxy, "upgradeToAndCall", [newRegistryImpl, "0x"], {
     after: [newRegistryImpl],
   });
@@ -35,6 +32,5 @@ export default buildModule("UpgradeRegistryModule", (m) => {
   return {
     poseidonT3,
     newRegistryImpl,
-    registryProxy,
   };
 });

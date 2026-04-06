@@ -22,12 +22,9 @@ export default buildModule("UpgradeIdCardRegistryModule", (m) => {
     libraries: { PoseidonT3: poseidonT3 },
   });
 
-  // Get proxy reference
   const idCardProxy = m.contractAt("IdentityRegistryIdCardImplV1", idCardProxyAddress, {
     id: "IdCardRegistryProxy",
   });
-
-  // Code-only upgrade — no new reinitializer needed
   m.call(idCardProxy, "upgradeToAndCall", [newIdCardImpl, "0x"], {
     after: [newIdCardImpl],
   });
@@ -35,6 +32,5 @@ export default buildModule("UpgradeIdCardRegistryModule", (m) => {
   return {
     poseidonT3,
     newIdCardImpl,
-    idCardProxy,
   };
 });

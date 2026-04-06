@@ -416,8 +416,7 @@ contract IdentityRegistryIdCardImplV1 is IdentityRegistryIdCardStorageV1, IIdent
      * @return True if all provided roots match the stored values, false otherwise.
      */
     function checkOfacRoots(uint256 nameAndDobRoot, uint256 nameAndYobRoot) external view onlyProxy returns (bool) {
-        bool currentMatch = (_nameAndDobOfacRoot == nameAndDobRoot) &&
-            (_nameAndYobOfacRoot == nameAndYobRoot);
+        bool currentMatch = (_nameAndDobOfacRoot == nameAndDobRoot) && (_nameAndYobOfacRoot == nameAndYobRoot);
         bool prevMatch = (_prevNameAndDobOfacRoot != 0) &&
             (_prevNameAndDobOfacRoot == nameAndDobRoot) &&
             (_prevNameAndYobOfacRoot == nameAndYobRoot);
@@ -636,9 +635,7 @@ contract IdentityRegistryIdCardImplV1 is IdentityRegistryIdCardStorageV1, IIdent
 
         // Verify roots hash matches eat_nonce from proof
         bytes32 myHash = sha256(abi.encodePacked(roots[0], roots[1]));
-        uint256 rootsHashFromProof = GCPJWTHelper.unpackAndDecodeHexPubkey(
-            pubSignals[1], pubSignals[2], pubSignals[3]
-        );
+        uint256 rootsHashFromProof = GCPJWTHelper.unpackAndDecodeHexPubkey(pubSignals[1], pubSignals[2], pubSignals[3]);
         if (uint256(myHash) != rootsHashFromProof) revert InvalidRootsHash();
 
         // Update this registry's roots with rolling window: [nameAndDob, nameAndYob]
