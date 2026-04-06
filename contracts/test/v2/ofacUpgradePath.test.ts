@@ -17,13 +17,14 @@ import { deploySystemFixturesV2 } from "../utils/deploymentV2";
 import { DeployedActorsV2 } from "../utils/types";
 import { expect } from "chai";
 
-const GCP_ROOT_CA_PUBKEY_HASH =
-  21107503781769611051785921462832133421817512022858926231578334326320168810501n;
+const GCP_ROOT_CA_PUBKEY_HASH = 21107503781769611051785921462832133421817512022858926231578334326320168810501n;
 
 function packUint256ToHexFields(value: bigint): [bigint, bigint, bigint] {
   const hexStr = value.toString(16).padStart(64, "0");
   const bytes = Buffer.from(hexStr, "utf8");
-  let p0 = 0n, p1 = 0n, p2 = 0n;
+  let p0 = 0n,
+    p1 = 0n,
+    p2 = 0n;
   for (let i = 0; i < Math.min(31, bytes.length); i++) p0 |= BigInt(bytes[i]) << BigInt(i * 8);
   for (let i = 31; i < Math.min(62, bytes.length); i++) p1 |= BigInt(bytes[i]) << BigInt((i - 31) * 8);
   for (let i = 62; i < Math.min(93, bytes.length); i++) p2 |= BigInt(bytes[i]) << BigInt((i - 62) * 8);
@@ -118,28 +119,29 @@ describe("OFAC Upgrade Path Test", function () {
 
     const pubSignals: bigint[] = [
       GCP_ROOT_CA_PUBKEY_HASH,
-      p0, p1, p2,
+      p0,
+      p1,
+      p2,
       0n,
-      testImageHash.p0, testImageHash.p1, testImageHash.p2,
+      testImageHash.p0,
+      testImageHash.p1,
+      testImageHash.p2,
       ...getCurrentDateDigitsYYMMDDHHMMSS(),
     ];
 
     const mockProof = {
       a: [1n, 2n] as [bigint, bigint],
-      b: [[1n, 2n], [3n, 4n]] as [[bigint, bigint], [bigint, bigint]],
+      b: [
+        [1n, 2n],
+        [3n, 4n],
+      ] as [[bigint, bigint], [bigint, bigint]],
       c: [1n, 2n] as [bigint, bigint],
     };
 
     // Call from TEE address (deployer)
     const proofTx = await actors.registryKyc
       .connect(deployer)
-      .updateOfacRootsWithProof(
-        mockProof.a,
-        mockProof.b,
-        mockProof.c,
-        pubSignals,
-        kycRoots,
-      );
+      .updateOfacRootsWithProof(mockProof.a, mockProof.b, mockProof.c, pubSignals, kycRoots);
     await proofTx.wait();
 
     // --- Phase 6: Verify new current roots ---
@@ -155,7 +157,10 @@ describe("OFAC Upgrade Path Test", function () {
     // --- Phase 6c: Verify checkOfacRoots accepts current and previous snapshots (not mixed) ---
     expect(await actors.registryKyc.checkOfacRoots(800n, 900n)).to.equal(true);
     expect(await actors.registryKyc.checkOfacRoots(initialDobRoot, initialYobRoot)).to.equal(true);
-    expect(await actors.registryKyc.checkOfacRoots(800n, initialYobRoot)).to.equal(false, 'mixed pair must be rejected');
+    expect(await actors.registryKyc.checkOfacRoots(800n, initialYobRoot)).to.equal(
+      false,
+      "mixed pair must be rejected",
+    );
 
     // --- Phase 7: Verify old setter functions still work after upgrade ---
     await actors.registryKyc.updateNameAndDobOfacRoot(11111n);

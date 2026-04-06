@@ -58,8 +58,7 @@ describe("OFAC Proof Update test", function () {
   let deployedActors: DeployedActorsV2;
   let mockVerifier: any;
 
-  const GCP_ROOT_CA_PUBKEY_HASH =
-    21107503781769611051785921462832133421817512022858926231578334326320168810501n;
+  const GCP_ROOT_CA_PUBKEY_HASH = 21107503781769611051785921462832133421817512022858926231578334326320168810501n;
 
   // Test image hash that unpacks to: d2221a0ee83901980c607ceff2edbedf3f6ce5f437eafa5d89be39e9e7487c04
   const testImageHash = {
@@ -221,7 +220,13 @@ describe("OFAC Proof Update test", function () {
       await expect(
         deployedActors.registry
           .connect(deployedActors.user1)
-          .updateOfacRootsWithProof(mockProof.a, mockProof.b, mockProof.c, buildPubSignals(passportRoots), passportRoots),
+          .updateOfacRootsWithProof(
+            mockProof.a,
+            mockProof.b,
+            mockProof.c,
+            buildPubSignals(passportRoots),
+            passportRoots,
+          ),
       ).to.be.revertedWithCustomError(deployedActors.registry, "ONLY_TEE_CAN_ACCESS");
     });
 
@@ -464,9 +469,7 @@ describe("OFAC Proof Update test", function () {
 
     it("should not allow non-SECURITY_ROLE to update PCR0Manager", async () => {
       await expect(
-        deployedActors.registry
-          .connect(deployedActors.user1)
-          .updatePCR0Manager(ethers.Wallet.createRandom().address),
+        deployedActors.registry.connect(deployedActors.user1).updatePCR0Manager(ethers.Wallet.createRandom().address),
       ).to.be.revertedWithCustomError(deployedActors.registry, "AccessControlUnauthorizedAccount");
     });
 
