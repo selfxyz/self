@@ -14,15 +14,10 @@ import platform.UIKit.UIWindowScene
 import platform.darwin.dispatch_async
 import platform.darwin.dispatch_get_main_queue
 import xyz.self.sdk.bridge.MessageRouter
-import xyz.self.sdk.handlers.AnalyticsBridgeHandler
-import xyz.self.sdk.handlers.BiometricBridgeHandler
-import xyz.self.sdk.handlers.CameraMrzBridgeHandler
 import xyz.self.sdk.handlers.CryptoBridgeHandler
-import xyz.self.sdk.handlers.DocumentsBridgeHandler
-import xyz.self.sdk.handlers.HapticBridgeHandler
 import xyz.self.sdk.handlers.LifecycleBridgeHandler
-import xyz.self.sdk.handlers.NfcBridgeHandler
 import xyz.self.sdk.handlers.SecureStorageBridgeHandler
+import xyz.self.sdk.providers.IosProviderRegistry
 import xyz.self.sdk.providers.SdkProviderRegistry
 import xyz.self.sdk.webview.IosWebViewHost
 
@@ -59,9 +54,10 @@ actual class SelfSdk private constructor(
         request: VerificationRequest,
         callback: SelfSdkCallback,
     ) {
-        check(SdkProviderRegistry.isConfigured()) {
-            "SdkProviderRegistry is not configured. " +
-                "Call SelfSdkSwift.configure() from your iOS app before launching the SDK."
+        check(SdkProviderRegistry.isConfigured() && IosProviderRegistry.webView != null) {
+            "SDK providers not configured. " +
+                "Call SelfSdkSwift.configure() from your iOS app before launching the SDK. " +
+                "Required: secureStorage, crypto, and webView providers."
         }
 
         // Store callback for later
@@ -97,17 +93,20 @@ actual class SelfSdk private constructor(
             )
         }
 
-        // Register all iOS bridge handlers
+        // Register 3-domain bridge handlers
         registerHandlers(router!!, lifecycleHandler)
+
+        // Build query params from config + request
+        val queryParams = buildQueryParams(request)
 
         // Create WebView host and the web view
         webViewHost = IosWebViewHost(router!!, config.debug)
-        webViewHost!!.createWebView()
+        webViewHost!!.createWebView(queryParams)
 
         // Get the ViewController from the WebView provider and present it
         val sdkVC =
             (
-                SdkProviderRegistry.webView
+                IosProviderRegistry.webView
                     ?: throw IllegalStateException("WebView provider not configured. Call SelfSdkSwift.configure() first.")
             ).getViewController()
         sdkVC.setModalPresentationStyle(UIModalPresentationFullScreen)
@@ -146,14 +145,48 @@ actual class SelfSdk private constructor(
         router: MessageRouter,
         lifecycleHandler: LifecycleBridgeHandler,
     ) {
-        router.register(BiometricBridgeHandler())
         router.register(SecureStorageBridgeHandler())
         router.register(CryptoBridgeHandler())
-        router.register(HapticBridgeHandler())
-        router.register(AnalyticsBridgeHandler())
         router.register(lifecycleHandler)
-        router.register(DocumentsBridgeHandler())
-        router.register(CameraMrzBridgeHandler())
-        router.register(NfcBridgeHandler(router))
     }
+
+    private fun buildQueryParams(request: VerificationRequest): String? {
+        val parts = mutableListOf<String>()
+
+        // Config params (always present)
+        parts.add("endpoint=${encodeParam(config.endpoint)}")
+        parts.add("appEndpoint=${encodeParam(config.appEndpoint ?: config.endpoint)}")
+        parts.add("environment=${encodeParam(config.environment.queryValue)}")
+        parts.add("version=${config.version}")
+
+        // Optional config params
+        config.appName?.let { parts.add("appName=${encodeParam(it)}") }
+        config.endpointType?.let { parts.add("endpointType=${encodeParam(it)}") }
+        config.chainID?.let { parts.add("chainID=$it") }
+
+        // Request params
+        request.verificationId?.let { parts.add("verificationId=${encodeParam(it)}") }
+        request.userId?.let { parts.add("userId=${encodeParam(it)}") }
+        request.scope?.let { parts.add("scope=${encodeParam(it)}") }
+        if (request.disclosures.isNotEmpty()) {
+            parts.add("disclosures=${encodeParam(request.disclosures.joinToString(","))}")
+        }
+        request.resultType?.let { parts.add("resultType=${encodeParam(it)}") }
+        if (request.excludedCountries.isNotEmpty()) {
+            parts.add("excludedCountries=${encodeParam(request.excludedCountries.joinToString(","))}")
+        }
+        request.userIdType?.let { parts.add("userIdType=${encodeParam(it)}") }
+        request.userDefinedData?.let { parts.add("userDefinedData=${encodeParam(it)}") }
+        request.selfDefinedData?.let { parts.add("selfDefinedData=${encodeParam(it)}") }
+
+        return parts.joinToString("&").ifEmpty { null }
+    }
+
+    private fun encodeParam(value: String): String =
+        value
+            .replace("%", "%25")
+            .replace("&", "%26")
+            .replace("=", "%3D")
+            .replace("+", "%2B")
+            .replace(" ", "%20")
 }

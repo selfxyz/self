@@ -19,7 +19,7 @@ export const TunnelKycWrapper: React.FC = () => {
       replace
       state={{
         ...incomingState,
-        nextPath: '/tunnel/proof/receipt',
+        nextPath: '/tunnel/kyc-success',
       }}
     />
   );

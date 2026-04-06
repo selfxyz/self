@@ -171,27 +171,27 @@ SelfSdk.launch(
 
 ### Files Created
 
-| File | Purpose |
-|------|---------|
-| `packages/native-shell-android/src/main/kotlin/xyz/self/sdk/api/SecureStorageProvider.kt` | Interface definition |
-| `packages/native-shell-android/src/main/kotlin/xyz/self/sdk/api/SelfSdkLaunchConfig.kt` | Wraps SelfSdkConfig + SecureStorageProvider |
-| `packages/native-shell-ios/Sources/SelfNativeShell/API/SecureStorageProvider.swift` | Protocol definition |
+| File                                                                                                  | Purpose                                         |
+| ----------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| `packages/native-shell-android/src/main/kotlin/xyz/self/sdk/api/SecureStorageProvider.kt`             | Interface definition                            |
+| `packages/native-shell-android/src/main/kotlin/xyz/self/sdk/api/SelfSdkLaunchConfig.kt`               | Wraps SelfSdkConfig + SecureStorageProvider     |
+| `packages/native-shell-ios/Sources/SelfNativeShell/API/SecureStorageProvider.swift`                   | Protocol definition                             |
 | `packages/sdk-test-app/android/app/src/main/kotlin/xyz/self/testapp/EncryptedPrefsStorageProvider.kt` | Reference impl using EncryptedSharedPreferences |
-| `packages/sdk-test-app/ios/SelfTestApp/KeychainStorageProvider.swift` | Reference impl using iOS Keychain |
+| `packages/sdk-test-app/ios/SelfTestApp/KeychainStorageProvider.swift`                                 | Reference impl using iOS Keychain               |
 
 ### Files Modified
 
-| File | Change |
-|------|--------|
-| `packages/native-shell-android/src/main/kotlin/xyz/self/sdk/api/SelfSdk.kt` | Change `launch()` to accept `SelfSdkLaunchConfig` |
-| `packages/native-shell-android/src/main/kotlin/xyz/self/sdk/handlers/SecureStorageHandler.kt` | Delegate to provider, remove EncryptedSharedPreferences |
-| `packages/native-shell-android/src/main/kotlin/xyz/self/sdk/webview/SelfVerificationActivity.kt` | Pass provider to handler |
-| `packages/native-shell-ios/Sources/SelfNativeShell/API/SelfSdkConfig.swift` | Add `secureStorageProvider` property |
-| `packages/native-shell-ios/Sources/SelfNativeShell/API/SelfSdk.swift` | Pass provider to handler |
-| `packages/native-shell-ios/Sources/SelfNativeShell/Handlers/SecureStorageHandler.swift` | Delegate to provider, remove Keychain calls |
-| `packages/sdk-test-app/android/app/src/main/kotlin/xyz/self/testapp/MainActivity.kt` | Use SelfSdkLaunchConfig with provider |
-| `packages/sdk-test-app/android/app/build.gradle.kts` | Add security-crypto dependency |
-| `packages/sdk-test-app/ios/SelfTestApp/ContentView.swift` | Pass provider in SelfSdkConfig |
+| File                                                                                             | Change                                                  |
+| ------------------------------------------------------------------------------------------------ | ------------------------------------------------------- |
+| `packages/native-shell-android/src/main/kotlin/xyz/self/sdk/api/SelfSdk.kt`                      | Change `launch()` to accept `SelfSdkLaunchConfig`       |
+| `packages/native-shell-android/src/main/kotlin/xyz/self/sdk/handlers/SecureStorageHandler.kt`    | Delegate to provider, remove EncryptedSharedPreferences |
+| `packages/native-shell-android/src/main/kotlin/xyz/self/sdk/webview/SelfVerificationActivity.kt` | Pass provider to handler                                |
+| `packages/native-shell-ios/Sources/SelfNativeShell/API/SelfSdkConfig.swift`                      | Add `secureStorageProvider` property                    |
+| `packages/native-shell-ios/Sources/SelfNativeShell/API/SelfSdk.swift`                            | Pass provider to handler                                |
+| `packages/native-shell-ios/Sources/SelfNativeShell/Handlers/SecureStorageHandler.swift`          | Delegate to provider, remove Keychain calls             |
+| `packages/sdk-test-app/android/app/src/main/kotlin/xyz/self/testapp/MainActivity.kt`             | Use SelfSdkLaunchConfig with provider                   |
+| `packages/sdk-test-app/android/app/build.gradle.kts`                                             | Add security-crypto dependency                          |
+| `packages/sdk-test-app/ios/SelfTestApp/ContentView.swift`                                        | Pass provider in SelfSdkConfig                          |
 
 ### Files NOT Modified
 

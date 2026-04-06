@@ -1,7 +1,8 @@
 diff --git a/node_modules/react-native-gesture-handler/android/build.gradle b/node_modules/react-native-gesture-handler/android/build.gradle
+index 0000000..0000001 100644
 --- a/node_modules/react-native-gesture-handler/android/build.gradle
 +++ b/node_modules/react-native-gesture-handler/android/build.gradle
-@@ -178,9 +178,10 @@
+@@ -202,9 +202,10 @@
  }
  
  def kotlin_version = safeExtGet('kotlinVersion', project.properties['RNGH_kotlinVersion'])

@@ -4,22 +4,29 @@
 
 package xyz.self.sdk.providers
 
-object SdkProviderRegistry {
+object IosProviderRegistry {
     var biometric: BiometricProvider? = null
-    var secureStorage: SecureStorageProvider? = null
     var haptic: HapticProvider? = null
-    var crypto: CryptoProvider? = null
     var documents: DocumentsProvider? = null
     var nfc: NfcProvider? = null
     var cameraMrz: CameraMrzProvider? = null
     var webView: WebViewProvider? = null
 
-    fun isConfigured(): Boolean =
-        biometric != null &&
-            secureStorage != null &&
-            crypto != null &&
+    fun isFullyConfigured(): Boolean =
+        SdkProviderRegistry.isConfigured() &&
+            biometric != null &&
             documents != null &&
             nfc != null &&
             cameraMrz != null &&
             webView != null
+
+    fun reset() {
+        SdkProviderRegistry.reset()
+        biometric = null
+        haptic = null
+        documents = null
+        nfc = null
+        cameraMrz = null
+        webView = null
+    }
 }

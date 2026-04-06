@@ -12,6 +12,11 @@ const MNEMONIC_KEY = 'self_mnemonic';
 const PRIVATE_KEY_KEY = 'self_private_key';
 const DEFAULT_DERIVATION_PATH = "m/44'/60'/0'/0/0";
 
+export type StoredSecretSnapshot = {
+  mnemonic: string | null;
+  secret: string | null;
+};
+
 function bytesToHex(bytes: Uint8Array): string {
   return Array.from(bytes)
     .map(b => b.toString(16).padStart(2, '0'))
@@ -26,19 +31,45 @@ export function derivePrivateKey(mnemonic: string, path = DEFAULT_DERIVATION_PAT
   return '0x' + bytesToHex(derived.privateKey);
 }
 
-let ensureSecretInFlight: Promise<void> | null = null;
+// Single lock serializes all secret storage mutations so mnemonic
+// and private key can never end up in a mismatched state.
+let secretLock: Promise<void> = Promise.resolve();
 
-export async function ensureSecret(storage: BridgeStorageAdapter): Promise<void> {
-  if (ensureSecretInFlight) {
-    await ensureSecretInFlight;
-    return ensureSecret(storage);
-  }
+function withSecretLock<T>(fn: () => Promise<T>): Promise<T> {
+  const next = secretLock.then(fn, fn);
+  secretLock = next.then(
+    () => {},
+    () => {},
+  );
+  return next;
+}
 
-  ensureSecretInFlight = (async () => {
+async function readStoredSecretSnapshotUnlocked(storage: BridgeStorageAdapter): Promise<StoredSecretSnapshot> {
+  const [mnemonic, secret] = await Promise.all([storage.get(MNEMONIC_KEY), storage.get(PRIVATE_KEY_KEY)]);
+
+  return {
+    mnemonic,
+    secret,
+  };
+}
+
+export function ensureSecret(storage: BridgeStorageAdapter): Promise<void> {
+  return withSecretLock(async () => {
     const existing = await storage.get(PRIVATE_KEY_KEY);
-    if (existing) return;
-
     let mnemonic = await storage.get(MNEMONIC_KEY);
+
+    if (existing) {
+      if (!mnemonic) {
+        return;
+      }
+
+      const derivedPrivateKey = derivePrivateKey(mnemonic);
+      if (existing !== derivedPrivateKey) {
+        await storage.set(PRIVATE_KEY_KEY, derivedPrivateKey);
+      }
+      return;
+    }
+
     if (!mnemonic) {
       mnemonic = generateMnemonic(wordlist, 256);
       await storage.set(MNEMONIC_KEY, mnemonic);
@@ -46,9 +77,104 @@ export async function ensureSecret(storage: BridgeStorageAdapter): Promise<void>
 
     const privateKey = derivePrivateKey(mnemonic);
     await storage.set(PRIVATE_KEY_KEY, privateKey);
-  })().finally(() => {
-    ensureSecretInFlight = null;
   });
+}
 
-  return ensureSecretInFlight;
+export async function readStoredSecretSnapshot(storage: BridgeStorageAdapter): Promise<StoredSecretSnapshot> {
+  return withSecretLock(() => readStoredSecretSnapshotUnlocked(storage));
+}
+
+export function restoreSecretFromMnemonic(
+  storage: BridgeStorageAdapter,
+  mnemonic: string,
+): Promise<{ secret: string }> {
+  const secret = derivePrivateKey(mnemonic);
+
+  return withSecretLock(async () => {
+    const previousSnapshot = await readStoredSecretSnapshotUnlocked(storage);
+
+    try {
+      await storage.set(MNEMONIC_KEY, mnemonic);
+      await storage.set(PRIVATE_KEY_KEY, secret);
+    } catch (error) {
+      await restoreSnapshotBestEffort(storage, previousSnapshot, 'secret restore from mnemonic');
+      throw error;
+    }
+
+    return { secret };
+  });
+}
+
+export function restoreStoredSecretSnapshot(
+  storage: BridgeStorageAdapter,
+  snapshot: StoredSecretSnapshot,
+): Promise<void> {
+  return withSecretLock(async () => {
+    const previousSnapshot = await readStoredSecretSnapshotUnlocked(storage);
+
+    try {
+      await writeSnapshot(storage, snapshot);
+    } catch (error) {
+      await restoreSnapshotBestEffort(storage, previousSnapshot, 'secret snapshot restore');
+      throw error;
+    }
+  });
+}
+
+async function restoreSnapshotBestEffort(
+  storage: BridgeStorageAdapter,
+  snapshot: StoredSecretSnapshot,
+  context: string,
+): Promise<void> {
+  const rollbackFailures: Error[] = [];
+
+  try {
+    await writeMnemonic(storage, snapshot.mnemonic);
+  } catch (rollbackError) {
+    rollbackFailures.push(rollbackError instanceof Error ? rollbackError : new Error(String(rollbackError)));
+  }
+
+  try {
+    await writeSecret(storage, snapshot.secret);
+  } catch (rollbackError) {
+    rollbackFailures.push(rollbackError instanceof Error ? rollbackError : new Error(String(rollbackError)));
+  }
+
+  if (rollbackFailures.length > 0) {
+    // A partial rollback leaves mnemonic and secret mismatched — the derived
+    // key from the stored mnemonic would not equal the stored secret. Clear
+    // both so ensureSecret can regenerate a consistent pair from scratch.
+    console.error(`Rollback failed during ${context}, clearing both keys to prevent mismatch:`, rollbackFailures);
+    try {
+      await storage.remove(MNEMONIC_KEY);
+    } catch {
+      /* best effort */
+    }
+    try {
+      await storage.remove(PRIVATE_KEY_KEY);
+    } catch {
+      /* best effort */
+    }
+  }
+}
+
+async function writeSnapshot(storage: BridgeStorageAdapter, snapshot: StoredSecretSnapshot): Promise<void> {
+  await writeMnemonic(storage, snapshot.mnemonic);
+  await writeSecret(storage, snapshot.secret);
+}
+
+async function writeMnemonic(storage: BridgeStorageAdapter, mnemonic: string | null): Promise<void> {
+  if (mnemonic === null) {
+    await storage.remove(MNEMONIC_KEY);
+  } else {
+    await storage.set(MNEMONIC_KEY, mnemonic);
+  }
+}
+
+async function writeSecret(storage: BridgeStorageAdapter, secret: string | null): Promise<void> {
+  if (secret === null) {
+    await storage.remove(PRIVATE_KEY_KEY);
+  } else {
+    await storage.set(PRIVATE_KEY_KEY, secret);
+  }
 }

@@ -143,6 +143,53 @@ export const KeychainDebugScreen: React.FC = () => {
     }
   }, [documents, addLog]);
 
+  const handleClearAll = useCallback(async () => {
+    const ALL_KEYS = ['self_document_catalog', 'self_mnemonic', 'self_private_key'];
+    try {
+      for (const k of ALL_KEYS) {
+        const existing = await storage.get(k);
+        if (existing !== null) {
+          await storage.remove(k);
+          addLog(`REMOVE "${k}" -> cleared (${existing.length} chars)`);
+        } else {
+          addLog(`SKIP "${k}" -> already empty`);
+        }
+      }
+      addLog('CLEAR ALL -> done');
+    } catch (e) {
+      addLog(`CLEAR ALL FAILED: ${e}`, true);
+    }
+  }, [storage, addLog]);
+
+  const handleDumpAll = useCallback(async () => {
+    const ALL_KEYS = ['self_document_catalog', 'self_mnemonic', 'self_private_key'];
+    try {
+      for (const k of ALL_KEYS) {
+        const val = await storage.get(k);
+        if (val === null) {
+          addLog(`${k} -> null`);
+        } else if (k === 'self_document_catalog') {
+          try {
+            const catalog = JSON.parse(val);
+            const docs = catalog.documents ?? [];
+            addLog(`${k} -> ${docs.length} doc(s), selected: ${catalog.selectedDocumentId ?? 'none'}`);
+            for (const doc of docs) {
+              addLog(`  [${doc.id}] type=${doc.documentType} mock=${doc.mock} registered=${doc.isRegistered}`);
+            }
+          } catch {
+            addLog(`${k} -> ${val.length} chars (parse error)`, true);
+          }
+        } else if (k === 'self_mnemonic') {
+          addLog(`${k} -> ${val.split(' ').length} words`);
+        } else {
+          addLog(`${k} -> ${val.slice(0, 20)}... (${val.length} chars)`);
+        }
+      }
+    } catch (e) {
+      addLog(`DUMP FAILED: ${e}`, true);
+    }
+  }, [storage, addLog]);
+
   const handleDeleteDoc = useCallback(async () => {
     try {
       await documents.deleteDocument(docId);
@@ -159,71 +206,85 @@ export const KeychainDebugScreen: React.FC = () => {
 
   return (
     <div style={styles.container}>
-      <div style={styles.header}>
-        <button style={styles.backButton} onClick={() => navigate('/settings/dev-mode')}>
-          &larr; Back
-        </button>
-        <h2 style={styles.title}>Keychain Debug</h2>
-        <span style={{ marginLeft: 'auto', fontSize: 12, color: bridge.isConnected ? '#a0e0a0' : '#e94560' }}>
-          {bridge.isConnected ? 'Bridge connected' : 'No transport'}
-        </span>
-      </div>
+      <div style={styles.controls}>
+        <div style={styles.header}>
+          <button style={styles.backButton} onClick={() => navigate('/settings/dev-mode')}>
+            &larr; Back
+          </button>
+          <h2 style={styles.title}>Keychain Debug</h2>
+          <span style={{ marginLeft: 'auto', fontSize: 12, color: bridge.isConnected ? '#a0e0a0' : '#e94560' }}>
+            {bridge.isConnected ? 'Bridge connected' : 'No transport'}
+          </span>
+        </div>
 
-      <div style={styles.section}>
-        <div style={styles.row}>
-          <button style={{ ...styles.button, backgroundColor: '#e0a030' }} onClick={handlePing}>
-            Ping Bridge (5s timeout)
-          </button>
+        <div style={styles.section}>
+          <div style={styles.row}>
+            <button style={{ ...styles.button, backgroundColor: '#e0a030' }} onClick={handlePing}>
+              Ping Bridge (5s timeout)
+            </button>
+          </div>
         </div>
-      </div>
 
-      <div style={styles.section}>
-        <h3 style={styles.sectionTitle}>Raw Secure Storage</h3>
-        <div style={styles.row}>
-          <input style={styles.input} placeholder="Key" value={key} onChange={e => setKey(e.target.value)} />
-          <input style={styles.input} placeholder="Value" value={value} onChange={e => setValue(e.target.value)} />
+        <div style={styles.section}>
+          <h3 style={styles.sectionTitle}>Raw Secure Storage</h3>
+          <div style={styles.row}>
+            <input style={styles.input} placeholder="Key" value={key} onChange={e => setKey(e.target.value)} />
+            <input style={styles.input} placeholder="Value" value={value} onChange={e => setValue(e.target.value)} />
+          </div>
+          <div style={styles.row}>
+            <button style={styles.button} onClick={handleSet}>
+              Set
+            </button>
+            <button style={styles.button} onClick={handleGet}>
+              Get
+            </button>
+            <button style={{ ...styles.button, ...styles.dangerButton }} onClick={handleRemove}>
+              Remove
+            </button>
+          </div>
         </div>
-        <div style={styles.row}>
-          <button style={styles.button} onClick={handleSet}>
-            Set
-          </button>
-          <button style={styles.button} onClick={handleGet}>
-            Get
-          </button>
-          <button style={{ ...styles.button, ...styles.dangerButton }} onClick={handleRemove}>
-            Remove
-          </button>
-        </div>
-      </div>
 
-      <div style={styles.section}>
-        <h3 style={styles.sectionTitle}>Documents Adapter</h3>
-        <div style={styles.row}>
-          <input
-            style={styles.input}
-            placeholder="Document ID"
-            value={docId}
-            onChange={e => setDocId(e.target.value)}
-          />
+        <div style={styles.section}>
+          <h3 style={styles.sectionTitle}>Documents Adapter</h3>
+          <div style={styles.row}>
+            <input
+              style={styles.input}
+              placeholder="Document ID"
+              value={docId}
+              onChange={e => setDocId(e.target.value)}
+            />
+          </div>
+          <div style={styles.row}>
+            <button style={styles.button} onClick={handleSaveDoc}>
+              Save Mock
+            </button>
+            <button style={styles.button} onClick={handleLoadDoc}>
+              Load
+            </button>
+            <button style={{ ...styles.button, ...styles.dangerButton }} onClick={handleDeleteDoc}>
+              Delete
+            </button>
+          </div>
+          <div style={styles.row}>
+            <button style={styles.button} onClick={handleLoadCatalog}>
+              Load Catalog
+            </button>
+            <button style={{ ...styles.button, ...styles.dangerButton }} onClick={handleDeleteCatalog}>
+              Delete Catalog
+            </button>
+          </div>
         </div>
-        <div style={styles.row}>
-          <button style={styles.button} onClick={handleSaveDoc}>
-            Save Mock
-          </button>
-          <button style={styles.button} onClick={handleLoadDoc}>
-            Load
-          </button>
-          <button style={{ ...styles.button, ...styles.dangerButton }} onClick={handleDeleteDoc}>
-            Delete
-          </button>
-        </div>
-        <div style={styles.row}>
-          <button style={styles.button} onClick={handleLoadCatalog}>
-            Load Catalog
-          </button>
-          <button style={{ ...styles.button, ...styles.dangerButton }} onClick={handleDeleteCatalog}>
-            Delete Catalog
-          </button>
+
+        <div style={styles.section}>
+          <h3 style={styles.sectionTitle}>Inspect / Danger Zone</h3>
+          <div style={styles.row}>
+            <button style={{ ...styles.button, backgroundColor: '#2563eb' }} onClick={handleDumpAll}>
+              Dump All Keys
+            </button>
+            <button style={{ ...styles.button, ...styles.dangerButton }} onClick={handleClearAll}>
+              Clear Entire Keychain
+            </button>
+          </div>
         </div>
       </div>
 
@@ -255,7 +316,15 @@ const styles: Record<string, React.CSSProperties> = {
     margin: '0 auto',
     color: '#e0e0e0',
     backgroundColor: '#1a1a2e',
-    minHeight: '100vh',
+    height: '100vh',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    overflow: 'hidden',
+  },
+  controls: {
+    flexShrink: 1,
+    overflowY: 'auto' as const,
+    maxHeight: '50%',
   },
   header: {
     display: 'flex',
@@ -320,6 +389,10 @@ const styles: Record<string, React.CSSProperties> = {
   },
   logSection: {
     flex: 1,
+    display: 'flex',
+    flexDirection: 'column' as const,
+    minHeight: 0,
+    overflow: 'hidden',
   },
   logHeader: {
     display: 'flex',
@@ -340,7 +413,7 @@ const styles: Record<string, React.CSSProperties> = {
     backgroundColor: '#0a0a1a',
     borderRadius: 8,
     padding: 10,
-    maxHeight: 300,
+    flex: 1,
     overflowY: 'auto' as const,
     fontSize: 12,
     fontFamily: 'monospace',

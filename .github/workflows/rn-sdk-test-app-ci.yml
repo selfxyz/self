@@ -68,10 +68,15 @@ jobs:
           java-version: "17"
       - name: Generate debug keystore
         run: |
-          keytool -genkeypair -v -keystore packages/rn-sdk-test-app/android/app/debug.keystore \
-            -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 \
-            -storepass android -keypass android \
-            -dname "CN=Android Debug,O=Android,C=US"
+          KEYSTORE_PATH="packages/rn-sdk-test-app/android/app/debug.keystore"
+          if keytool -list -keystore "$KEYSTORE_PATH" -storepass android -alias androiddebugkey >/dev/null 2>&1; then
+            echo "Using existing debug keystore at $KEYSTORE_PATH"
+          else
+            keytool -genkeypair -v -keystore "$KEYSTORE_PATH" \
+              -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 \
+              -storepass android -keypass android \
+              -dname "CN=Android Debug,O=Android,C=US"
+          fi
       - name: Publish KMP SDK to mavenLocal
         run: |
           cd packages/kmp-sdk && ./gradlew :shared:publishToMavenLocal --quiet

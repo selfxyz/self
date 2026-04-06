@@ -319,6 +319,7 @@ const provingMachine = createMachine({
         PROVE_SUCCESS: 'post_proving',
         PROVE_ERROR: 'error',
         PROVE_FAILURE: 'failure',
+        PROVE_ALREADY_REGISTERED: 'account_recovery_choice',
       },
     },
     post_proving: {
@@ -1013,6 +1014,8 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         circuitType,
         endpointType: null,
         env: null,
+        error_code: null,
+        reason: null,
       });
 
       actor = createActor(provingMachine);

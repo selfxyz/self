@@ -19,12 +19,18 @@ data class SelfSdkConfig(
     val chainID: Int? = null,
     val userDefinedData: String? = null,
     val selfDefinedData: String? = null,
+    val remoteWebAppBaseUrl: String? = null,
+    val remoteWebAppIntegritySha256: String? = null,
 )
 
-class SelfSdkException(message: String) : Exception(message)
+class SelfSdkException(
+    message: String,
+) : Exception(message)
 
 interface SelfSdkCallback {
     fun onSuccess(resultJson: String)
+
     fun onFailure(error: SelfSdkException)
+
     fun onCancelled()
 }

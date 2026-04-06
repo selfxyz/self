@@ -3,7 +3,7 @@ name: pr-summary
 description: Generate a GitHub PR title and summary from all branch changes, including Linear issue and Figma links when available.
 disable-model-invocation: false
 user-invocable: true
-argument-hint: '[base-branch (default: main)]'
+argument-hint: '[base-branch (default: dev)]'
 ---
 
 # Generate PR Title and Summary
@@ -12,13 +12,13 @@ You generate a concise GitHub PR title and a structured summary covering ALL cha
 
 ## Input
 
-`$ARGUMENTS` — Optional base branch name (default: `main`).
+`$ARGUMENTS` — Optional base branch name (default: `dev`).
 
 ## Workflow
 
 ### Step 1: Determine the Base Branch
 
-Use `$ARGUMENTS` if provided, otherwise default to `main`.
+Use `$ARGUMENTS` if provided, otherwise default to `dev`.
 
 Verify the base branch exists:
 
