@@ -28,7 +28,7 @@ class MessageRouter(
 
     fun onMessageReceived(
         rawJson: String,
-        isTrustedSource: Boolean = true,
+        isTrustedSource: Boolean,
     ) {
         if (!isTrustedSource) {
             android.util.Log.w("BridgeRouter", "Dropped message from untrusted WebView origin")

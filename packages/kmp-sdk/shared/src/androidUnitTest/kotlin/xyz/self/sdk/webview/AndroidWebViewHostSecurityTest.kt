@@ -19,14 +19,14 @@ class AndroidWebViewHostSecurityTest {
     }
 
     @Test
-    fun `navigation only allows bundled didit and debug origins`() {
+    fun `navigation only allows bundled and debug origins`() {
         assertTrue(
             AndroidWebViewHost.isAllowedNavigationUrl(
                 "https://appassets.androidplatform.net/tunnel/tour/1",
                 isDebugMode = false,
             ),
         )
-        assertTrue(
+        assertFalse(
             AndroidWebViewHost.isAllowedNavigationUrl(
                 "https://verify.didit.me/session/123",
                 isDebugMode = false,

@@ -14,7 +14,7 @@ final class MessageRouter {
         handlers[handler.domain] = handler
     }
 
-    func onMessageReceived(rawJson: String, isTrustedSource: Bool = true) {
+    func onMessageReceived(rawJson: String, isTrustedSource: Bool) {
         guard isTrustedSource else {
             return
         }

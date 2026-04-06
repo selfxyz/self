@@ -182,19 +182,15 @@ class AndroidWebViewHost(
     }
 
     private fun installBridge(webView: WebView) {
-        if (!WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)) {
-            android.util.Log.e(
-                "WebViewHost",
-                "WEB_MESSAGE_LISTENER not supported — native bridge unavailable on this device",
-            )
-            return
+        check(WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)) {
+            "WEB_MESSAGE_LISTENER not supported — native bridge unavailable on this device"
         }
 
         WebViewCompat.addWebMessageListener(
             webView,
             "SelfNativeAndroid",
             buildAllowedOriginRules(isDebugMode),
-        ) { _, message: WebMessageCompat, _, isMainFrame, _ ->
+        ) { _, message: WebMessageCompat, sourceOrigin, isMainFrame, _ ->
             if (!isMainFrame) {
                 return@addWebMessageListener
             }
@@ -202,7 +198,7 @@ class AndroidWebViewHost(
             val rawJson = message.data ?: return@addWebMessageListener
             router.onMessageReceived(
                 rawJson = rawJson,
-                isTrustedSource = isTrustedBridgeOrigin(currentWebViewUrl(), isDebugMode),
+                isTrustedSource = isTrustedBridgeOrigin(sourceOrigin.toString(), isDebugMode),
             )
         }
     }
@@ -245,7 +241,6 @@ class AndroidWebViewHost(
             isDebugMode: Boolean,
         ): Boolean =
             isBundledAssetUrl(rawUrl) ||
-                isDiditUrl(rawUrl) ||
                 (isDebugMode && isDebugLocalUrl(rawUrl))
 
         internal fun isTrustedPermissionOrigin(
@@ -286,8 +281,6 @@ class AndroidWebViewHost(
 
         private fun parseUri(rawUrl: String?): java.net.URI? = rawUrl?.let { raw -> runCatching { java.net.URI(raw) }.getOrNull() }
     }
-
-    private fun currentWebViewUrl(): String? = webView.url
 
     private class BundledAssetPathHandler(
         private val context: Context,

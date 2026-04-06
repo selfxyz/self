@@ -203,19 +203,15 @@ class AndroidWebViewHost(
     }
 
     private fun installBridge(webView: WebView) {
-        if (!WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)) {
-            Log.e(
-                "WebViewHost",
-                "WEB_MESSAGE_LISTENER not supported — native bridge unavailable on this device",
-            )
-            return
+        check(WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)) {
+            "WEB_MESSAGE_LISTENER not supported — native bridge unavailable on this device"
         }
 
         WebViewCompat.addWebMessageListener(
             webView,
             "SelfNativeAndroid",
             buildAllowedOriginRules(isDebugMode, remoteWebAppBaseUrl),
-        ) { _, message: WebMessageCompat, _, isMainFrame, _ ->
+        ) { _, message: WebMessageCompat, sourceOrigin, isMainFrame, _ ->
             if (!isMainFrame) {
                 return@addWebMessageListener
             }
@@ -225,7 +221,7 @@ class AndroidWebViewHost(
                 rawJson = rawJson,
                 isTrustedSource =
                     isTrustedBridgeOrigin(
-                        currentWebViewUrl(),
+                        sourceOrigin.toString(),
                         isDebugMode,
                         remoteWebAppBaseUrl,
                     ),
@@ -419,8 +415,6 @@ class AndroidWebViewHost(
 
         private fun parseUri(rawUrl: String?): java.net.URI? = rawUrl?.let { raw -> runCatching { java.net.URI(raw) }.getOrNull() }
     }
-
-    private fun currentWebViewUrl(): String? = webView.url
 
     private class BundledAssetPathHandler(
         private val context: Context,

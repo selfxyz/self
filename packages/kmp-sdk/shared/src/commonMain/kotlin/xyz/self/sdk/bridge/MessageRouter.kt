@@ -29,7 +29,7 @@ class MessageRouter(
 
     fun onMessageReceived(
         rawJson: String,
-        isTrustedSource: Boolean = true,
+        isTrustedSource: Boolean,
     ) {
         if (!isTrustedSource) {
             return // Drop messages from untrusted WebView origins.

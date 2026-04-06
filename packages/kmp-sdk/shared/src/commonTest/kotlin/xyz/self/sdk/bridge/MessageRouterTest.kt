@@ -44,7 +44,7 @@ class MessageRouterTest {
                 {"type":"request","version":1,"id":"req-1","domain":"haptic","method":"trigger","params":{},"timestamp":123}
                 """.trimIndent()
 
-            router.onMessageReceived(request)
+            router.onMessageReceived(request, isTrustedSource = true)
 
             assertEquals(1, responses.size)
             assertTrue(responses[0].contains("_handleResponse"))
@@ -62,7 +62,7 @@ class MessageRouterTest {
                 {"type":"request","version":1,"id":"req-1","domain":"haptic","method":"trigger","params":{},"timestamp":123}
                 """.trimIndent()
 
-            router.onMessageReceived(request)
+            router.onMessageReceived(request, isTrustedSource = true)
 
             assertEquals(1, responses.size)
             assertTrue(responses[0].contains("DOMAIN_NOT_FOUND"))
@@ -95,7 +95,7 @@ class MessageRouterTest {
                 {"type":"request","version":1,"id":"req-2","domain":"crypto","method":"sign","params":{},"timestamp":123}
                 """.trimIndent()
 
-            router.onMessageReceived(request)
+            router.onMessageReceived(request, isTrustedSource = true)
 
             assertEquals(1, responses.size)
             assertTrue(responses[0].contains("KEY_NOT_FOUND"))
@@ -117,7 +117,7 @@ class MessageRouterTest {
         val responses = mutableListOf<String>()
         val router = MessageRouter(sendToWebView = { responses.add(it) })
 
-        router.onMessageReceived("this is not json")
+        router.onMessageReceived("this is not json", isTrustedSource = true)
 
         assertEquals(0, responses.size)
     }
@@ -181,6 +181,7 @@ class MessageRouterTest {
             repeat(3) { i ->
                 router.onMessageReceived(
                     """{"type":"request","version":1,"id":"req-$i","domain":"haptic","method":"trigger","params":{},"timestamp":123}""",
+                    isTrustedSource = true,
                 )
             }
 
@@ -209,6 +210,7 @@ class MessageRouterTest {
 
             router.onMessageReceived(
                 """{"type":"request","version":1,"id":"req-1","domain":"haptic","method":"trigger","params":{},"timestamp":123}""",
+                isTrustedSource = true,
             )
 
             assertEquals(1, hapticHandler.invocations.size)
@@ -235,6 +237,7 @@ class MessageRouterTest {
 
             router.onMessageReceived(
                 """{"type":"request","version":1,"id":"req-1","domain":"nfc","method":"scan","params":{},"timestamp":123}""",
+                isTrustedSource = true,
             )
 
             assertEquals(0, handlerA.invocations.size)
@@ -256,6 +259,7 @@ class MessageRouterTest {
 
             router.onMessageReceived(
                 """{"type":"request","version":1,"id":"my-unique-req-id","domain":"haptic","method":"trigger","params":{},"timestamp":123}""",
+                isTrustedSource = true,
             )
 
             assertEquals(1, responses.size)
@@ -296,6 +300,7 @@ class MessageRouterTest {
 
             router.onMessageReceived(
                 """{"type":"request","version":1,"id":"req-1","domain":"crypto","method":"sign","params":{},"timestamp":123}""",
+                isTrustedSource = true,
             )
 
             assertEquals(1, responses.size)

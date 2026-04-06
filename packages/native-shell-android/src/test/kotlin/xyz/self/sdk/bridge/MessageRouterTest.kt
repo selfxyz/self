@@ -66,7 +66,7 @@ class MessageRouterTest {
             val sent = mutableListOf<String>()
             val router = MessageRouter(sendToWebView = { sent.add(it) }, scope = this)
 
-            router.onMessageReceived(makeRequest(version = 999))
+            router.onMessageReceived(makeRequest(version = 999), isTrustedSource = true)
             advanceUntilIdle()
 
             assertEquals(1, sent.size)
@@ -82,7 +82,7 @@ class MessageRouterTest {
             val sent = mutableListOf<String>()
             val router = MessageRouter(sendToWebView = { sent.add(it) }, scope = this)
 
-            router.onMessageReceived(makeRequest(domain = BridgeDomain.NFC))
+            router.onMessageReceived(makeRequest(domain = BridgeDomain.NFC), isTrustedSource = true)
             advanceUntilIdle()
 
             assertEquals(1, sent.size)
@@ -98,7 +98,7 @@ class MessageRouterTest {
             val router = MessageRouter(sendToWebView = { sent.add(it) }, scope = this)
             router.register(StubHandler(BridgeDomain.SECURE_STORAGE, result = JsonPrimitive("ok")))
 
-            router.onMessageReceived(makeRequest())
+            router.onMessageReceived(makeRequest(), isTrustedSource = true)
             advanceUntilIdle()
 
             assertEquals(1, sent.size)
@@ -119,7 +119,7 @@ class MessageRouterTest {
                 ),
             )
 
-            router.onMessageReceived(makeRequest())
+            router.onMessageReceived(makeRequest(), isTrustedSource = true)
             advanceUntilIdle()
 
             assertEquals(1, sent.size)
@@ -141,7 +141,7 @@ class MessageRouterTest {
                 ),
             )
 
-            router.onMessageReceived(makeRequest())
+            router.onMessageReceived(makeRequest(), isTrustedSource = true)
             advanceUntilIdle()
 
             assertEquals(1, sent.size)
@@ -157,7 +157,7 @@ class MessageRouterTest {
             val sent = mutableListOf<String>()
             val router = MessageRouter(sendToWebView = { sent.add(it) }, scope = this)
 
-            router.onMessageReceived("{not valid json")
+            router.onMessageReceived("{not valid json", isTrustedSource = true)
             advanceUntilIdle()
 
             assertTrue(sent.isEmpty())
@@ -185,7 +185,7 @@ class MessageRouterTest {
             router.register(StubHandler(BridgeDomain.SECURE_STORAGE, result = JsonPrimitive("first")))
             router.register(StubHandler(BridgeDomain.SECURE_STORAGE, result = JsonPrimitive("second")))
 
-            router.onMessageReceived(makeRequest())
+            router.onMessageReceived(makeRequest(), isTrustedSource = true)
             advanceUntilIdle()
 
             val resp = parseResponse(sent[0])

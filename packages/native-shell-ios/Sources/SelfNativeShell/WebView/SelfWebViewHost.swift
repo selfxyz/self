@@ -194,15 +194,11 @@ extension SelfWebViewHost: WKScriptMessageHandler {
               let body = message.body as? String else {
             return
         }
-        router.onMessageReceived(rawJson: body, isTrustedSource: isBridgeRequestAllowed())
+        router.onMessageReceived(rawJson: body, isTrustedSource: true)
     }
 }
 
 private extension SelfWebViewHost {
-    func isBridgeRequestAllowed() -> Bool {
-        isTrustedBridgeURL(webView?.url)
-    }
-
     func isTrustedBridgeOrigin(_ url: URL?) -> Bool {
         guard let url else { return false }
 
