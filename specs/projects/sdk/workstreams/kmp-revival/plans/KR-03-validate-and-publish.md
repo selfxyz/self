@@ -21,7 +21,7 @@ After KR-01 (Android parity) and KR-02 (iOS parity), you need to validate that t
 
 ### Out of Scope
 
-- Actual publishing to external Maven/SPM registries (that's a follow-up, equivalent to paused NS-08)
+- Actual publishing to external Maven/SPM registries (tracked as [SD-06](../../sdk-distribution/plans/SD-06-kmp-remote-publishing.md))
 - `packages/native-shell-android/` and `packages/native-shell-ios/` — do not modify
 - CI/CD pipeline changes
 - Android dependency trimming or Android manifest slimming inside `packages/kmp-sdk/` — that ownership belongs to KR-01; KR-03 validates the result
