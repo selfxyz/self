@@ -4,28 +4,28 @@
     "signature": "REGISTERED_COMMITMENT()",
     "selector": "0x034acfcc",
     "file": "contracts/registry/IdentityRegistryAadhaarImplV1.sol",
-    "line": 136
+    "line": 187
   },
   {
     "name": "REGISTERED_COMMITMENT",
     "signature": "REGISTERED_COMMITMENT()",
     "selector": "0x034acfcc",
     "file": "contracts/registry/IdentityRegistryIdCardImplV1.sol",
-    "line": 144
+    "line": 195
   },
   {
     "name": "REGISTERED_COMMITMENT",
     "signature": "REGISTERED_COMMITMENT()",
     "selector": "0x034acfcc",
     "file": "contracts/registry/IdentityRegistryImplV1.sol",
-    "line": 151
+    "line": 205
   },
   {
     "name": "REGISTERED_COMMITMENT",
     "signature": "REGISTERED_COMMITMENT()",
     "selector": "0x034acfcc",
     "file": "contracts/registry/IdentityRegistryKycImplV1.sol",
-    "line": 179
+    "line": 189
   },
   {
     "name": "InvalidProof",
@@ -73,8 +73,57 @@
     "name": "INVALID_TIMESTAMP",
     "signature": "INVALID_TIMESTAMP()",
     "selector": "0x118818d1",
+    "file": "contracts/registry/IdentityRegistryAadhaarImplV1.sol",
+    "line": 197
+  },
+  {
+    "name": "INVALID_TIMESTAMP",
+    "signature": "INVALID_TIMESTAMP()",
+    "selector": "0x118818d1",
+    "file": "contracts/registry/IdentityRegistryIdCardImplV1.sol",
+    "line": 203
+  },
+  {
+    "name": "INVALID_TIMESTAMP",
+    "signature": "INVALID_TIMESTAMP()",
+    "selector": "0x118818d1",
+    "file": "contracts/registry/IdentityRegistryImplV1.sol",
+    "line": 213
+  },
+  {
+    "name": "INVALID_TIMESTAMP",
+    "signature": "INVALID_TIMESTAMP()",
+    "selector": "0x118818d1",
     "file": "contracts/registry/IdentityRegistryKycImplV1.sol",
-    "line": 189
+    "line": 199
+  },
+  {
+    "name": "InvalidRootsCount",
+    "signature": "InvalidRootsCount()",
+    "selector": "0x128781c2",
+    "file": "contracts/registry/IdentityRegistryAadhaarImplV1.sol",
+    "line": 201
+  },
+  {
+    "name": "InvalidRootsCount",
+    "signature": "InvalidRootsCount()",
+    "selector": "0x128781c2",
+    "file": "contracts/registry/IdentityRegistryIdCardImplV1.sol",
+    "line": 207
+  },
+  {
+    "name": "InvalidRootsCount",
+    "signature": "InvalidRootsCount()",
+    "selector": "0x128781c2",
+    "file": "contracts/registry/IdentityRegistryImplV1.sol",
+    "line": 217
+  },
+  {
+    "name": "InvalidRootsCount",
+    "signature": "InvalidRootsCount()",
+    "selector": "0x128781c2",
+    "file": "contracts/registry/IdentityRegistryKycImplV1.sol",
+    "line": 203
   },
   {
     "name": "InvalidAttestationId",
@@ -179,14 +228,14 @@
     "signature": "HUB_ADDRESS_ZERO()",
     "selector": "0x22697ffa",
     "file": "contracts/registry/IdentityRegistryAadhaarImplV1.sol",
-    "line": 138
+    "line": 189
   },
   {
     "name": "HUB_ADDRESS_ZERO",
     "signature": "HUB_ADDRESS_ZERO()",
     "selector": "0x22697ffa",
     "file": "contracts/registry/IdentityRegistryKycImplV1.sol",
-    "line": 181
+    "line": 191
   },
   {
     "name": "RegisteredNullifier",
@@ -213,8 +262,29 @@
     "name": "ONLY_TEE_CAN_ACCESS",
     "signature": "ONLY_TEE_CAN_ACCESS()",
     "selector": "0x2822d0cb",
+    "file": "contracts/registry/IdentityRegistryAadhaarImplV1.sol",
+    "line": 205
+  },
+  {
+    "name": "ONLY_TEE_CAN_ACCESS",
+    "signature": "ONLY_TEE_CAN_ACCESS()",
+    "selector": "0x2822d0cb",
+    "file": "contracts/registry/IdentityRegistryIdCardImplV1.sol",
+    "line": 211
+  },
+  {
+    "name": "ONLY_TEE_CAN_ACCESS",
+    "signature": "ONLY_TEE_CAN_ACCESS()",
+    "selector": "0x2822d0cb",
+    "file": "contracts/registry/IdentityRegistryImplV1.sol",
+    "line": 221
+  },
+  {
+    "name": "ONLY_TEE_CAN_ACCESS",
+    "signature": "ONLY_TEE_CAN_ACCESS()",
+    "selector": "0x2822d0cb",
     "file": "contracts/registry/IdentityRegistryKycImplV1.sol",
-    "line": 177
+    "line": 187
   },
   {
     "name": "UserIdentifierAlreadyRegistered",
@@ -229,6 +299,34 @@
     "selector": "0x29393238",
     "file": "contracts/tests/TestAirdrop.sol",
     "line": 42
+  },
+  {
+    "name": "InvalidRootsHash",
+    "signature": "InvalidRootsHash()",
+    "selector": "0x372c4a4b",
+    "file": "contracts/registry/IdentityRegistryAadhaarImplV1.sol",
+    "line": 199
+  },
+  {
+    "name": "InvalidRootsHash",
+    "signature": "InvalidRootsHash()",
+    "selector": "0x372c4a4b",
+    "file": "contracts/registry/IdentityRegistryIdCardImplV1.sol",
+    "line": 205
+  },
+  {
+    "name": "InvalidRootsHash",
+    "signature": "InvalidRootsHash()",
+    "selector": "0x372c4a4b",
+    "file": "contracts/registry/IdentityRegistryImplV1.sol",
+    "line": 215
+  },
+  {
+    "name": "InvalidRootsHash",
+    "signature": "InvalidRootsHash()",
+    "selector": "0x372c4a4b",
+    "file": "contracts/registry/IdentityRegistryKycImplV1.sol",
+    "line": 201
   },
   {
     "name": "InvalidFieldElement",
@@ -277,28 +375,28 @@
     "signature": "HUB_NOT_SET()",
     "selector": "0x4ffa9998",
     "file": "contracts/registry/IdentityRegistryAadhaarImplV1.sol",
-    "line": 132
+    "line": 183
   },
   {
     "name": "HUB_NOT_SET",
     "signature": "HUB_NOT_SET()",
     "selector": "0x4ffa9998",
     "file": "contracts/registry/IdentityRegistryIdCardImplV1.sol",
-    "line": 140
+    "line": 191
   },
   {
     "name": "HUB_NOT_SET",
     "signature": "HUB_NOT_SET()",
     "selector": "0x4ffa9998",
     "file": "contracts/registry/IdentityRegistryImplV1.sol",
-    "line": 147
+    "line": 201
   },
   {
     "name": "HUB_NOT_SET",
     "signature": "HUB_NOT_SET()",
     "selector": "0x4ffa9998",
     "file": "contracts/registry/IdentityRegistryKycImplV1.sol",
-    "line": 171
+    "line": 181
   },
   {
     "name": "INVALID_COMMITMENT_ROOT",
@@ -444,8 +542,29 @@
     "name": "INVALID_PROOF",
     "signature": "INVALID_PROOF()",
     "selector": "0x712eb087",
+    "file": "contracts/registry/IdentityRegistryAadhaarImplV1.sol",
+    "line": 191
+  },
+  {
+    "name": "INVALID_PROOF",
+    "signature": "INVALID_PROOF()",
+    "selector": "0x712eb087",
+    "file": "contracts/registry/IdentityRegistryIdCardImplV1.sol",
+    "line": 197
+  },
+  {
+    "name": "INVALID_PROOF",
+    "signature": "INVALID_PROOF()",
+    "selector": "0x712eb087",
+    "file": "contracts/registry/IdentityRegistryImplV1.sol",
+    "line": 207
+  },
+  {
+    "name": "INVALID_PROOF",
+    "signature": "INVALID_PROOF()",
+    "selector": "0x712eb087",
     "file": "contracts/registry/IdentityRegistryKycImplV1.sol",
-    "line": 183
+    "line": 193
   },
   {
     "name": "INVALID_OFAC",
@@ -458,8 +577,29 @@
     "name": "INVALID_IMAGE",
     "signature": "INVALID_IMAGE()",
     "selector": "0x7f91b413",
+    "file": "contracts/registry/IdentityRegistryAadhaarImplV1.sol",
+    "line": 195
+  },
+  {
+    "name": "INVALID_IMAGE",
+    "signature": "INVALID_IMAGE()",
+    "selector": "0x7f91b413",
+    "file": "contracts/registry/IdentityRegistryIdCardImplV1.sol",
+    "line": 201
+  },
+  {
+    "name": "INVALID_IMAGE",
+    "signature": "INVALID_IMAGE()",
+    "selector": "0x7f91b413",
+    "file": "contracts/registry/IdentityRegistryImplV1.sol",
+    "line": 211
+  },
+  {
+    "name": "INVALID_IMAGE",
+    "signature": "INVALID_IMAGE()",
+    "selector": "0x7f91b413",
     "file": "contracts/registry/IdentityRegistryKycImplV1.sol",
-    "line": 187
+    "line": 197
   },
   {
     "name": "InvalidForbiddenCountries",
@@ -585,28 +725,28 @@
     "signature": "ONLY_HUB_CAN_ACCESS()",
     "selector": "0xba0318cb",
     "file": "contracts/registry/IdentityRegistryAadhaarImplV1.sol",
-    "line": 134
+    "line": 185
   },
   {
     "name": "ONLY_HUB_CAN_ACCESS",
     "signature": "ONLY_HUB_CAN_ACCESS()",
     "selector": "0xba0318cb",
     "file": "contracts/registry/IdentityRegistryIdCardImplV1.sol",
-    "line": 142
+    "line": 193
   },
   {
     "name": "ONLY_HUB_CAN_ACCESS",
     "signature": "ONLY_HUB_CAN_ACCESS()",
     "selector": "0xba0318cb",
     "file": "contracts/registry/IdentityRegistryImplV1.sol",
-    "line": 149
+    "line": 203
   },
   {
     "name": "ONLY_HUB_CAN_ACCESS",
     "signature": "ONLY_HUB_CAN_ACCESS()",
     "selector": "0xba0318cb",
     "file": "contracts/registry/IdentityRegistryKycImplV1.sol",
-    "line": 173
+    "line": 183
   },
   {
     "name": "INVALID_FORBIDDEN_COUNTRIES",
@@ -731,8 +871,29 @@
     "name": "INVALID_ROOT_CA",
     "signature": "INVALID_ROOT_CA()",
     "selector": "0xee57533e",
+    "file": "contracts/registry/IdentityRegistryAadhaarImplV1.sol",
+    "line": 193
+  },
+  {
+    "name": "INVALID_ROOT_CA",
+    "signature": "INVALID_ROOT_CA()",
+    "selector": "0xee57533e",
+    "file": "contracts/registry/IdentityRegistryIdCardImplV1.sol",
+    "line": 199
+  },
+  {
+    "name": "INVALID_ROOT_CA",
+    "signature": "INVALID_ROOT_CA()",
+    "selector": "0xee57533e",
+    "file": "contracts/registry/IdentityRegistryImplV1.sol",
+    "line": 209
+  },
+  {
+    "name": "INVALID_ROOT_CA",
+    "signature": "INVALID_ROOT_CA()",
+    "selector": "0xee57533e",
     "file": "contracts/registry/IdentityRegistryKycImplV1.sol",
-    "line": 185
+    "line": 195
   },
   {
     "name": "InvalidUserIdentifier",
@@ -787,8 +948,29 @@
     "name": "TEE_NOT_SET",
     "signature": "TEE_NOT_SET()",
     "selector": "0xfc833fc6",
+    "file": "contracts/registry/IdentityRegistryAadhaarImplV1.sol",
+    "line": 203
+  },
+  {
+    "name": "TEE_NOT_SET",
+    "signature": "TEE_NOT_SET()",
+    "selector": "0xfc833fc6",
+    "file": "contracts/registry/IdentityRegistryIdCardImplV1.sol",
+    "line": 209
+  },
+  {
+    "name": "TEE_NOT_SET",
+    "signature": "TEE_NOT_SET()",
+    "selector": "0xfc833fc6",
+    "file": "contracts/registry/IdentityRegistryImplV1.sol",
+    "line": 219
+  },
+  {
+    "name": "TEE_NOT_SET",
+    "signature": "TEE_NOT_SET()",
+    "selector": "0xfc833fc6",
     "file": "contracts/registry/IdentityRegistryKycImplV1.sol",
-    "line": 175
+    "line": 185
   },
   {
     "name": "LengthMismatch",
