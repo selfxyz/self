@@ -46,9 +46,17 @@ jobs:
         run: |
           BASE_SHA="${{ github.event.before }}"
           HEAD_SHA="${{ github.sha }}"
-          NO_BASE=false
           if [ -z "$BASE_SHA" ] || [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ]; then
-            NO_BASE=true
+            # Zero-before means new ref. Use the first pushed commit's parent as base.
+            FIRST_PUSHED=$(node -e "
+              const fs = require('fs');
+              const event = JSON.parse(fs.readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8'));
+              const commits = event.commits || [];
+              process.stdout.write(commits.length > 0 ? commits[0].id : '');
+            ")
+            if [ -n "$FIRST_PUSHED" ]; then
+              BASE_SHA="$(git rev-parse "${FIRST_PUSHED}^" 2>/dev/null || echo "")"
+            fi
           fi
 
           get_version() {
@@ -58,26 +66,13 @@ jobs:
               })"
           }
 
-          was_file_touched_in_push() {
-            node -e "
-              const fs = require('fs');
-              const event = JSON.parse(fs.readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8'));
-              const target = process.argv[1];
-              const touched = (event.commits || []).some((commit) =>
-                ['added', 'modified', 'removed'].some((key) => (commit[key] || []).includes(target))
-              );
-              process.exit(touched ? 0 : 1);
-            " "$1"
-          }
-
           has_version_change() {
             local package_json_path="$1"
-            if [ "$NO_BASE" = "true" ]; then
-              was_file_touched_in_push "$package_json_path"
-              return $?
-            fi
             local old_version new_version
-            old_version="$(get_version "$BASE_SHA" "$package_json_path")"
+            old_version=""
+            if [ -n "$BASE_SHA" ]; then
+              old_version="$(get_version "$BASE_SHA" "$package_json_path")"
+            fi
             new_version="$(get_version "$HEAD_SHA" "$package_json_path")"
             [ -n "$new_version" ] && [ "$old_version" != "$new_version" ]
           }
