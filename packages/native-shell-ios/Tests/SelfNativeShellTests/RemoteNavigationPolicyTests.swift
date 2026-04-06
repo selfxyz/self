@@ -36,6 +36,16 @@ final class RemoteNavigationPolicyTests: XCTestCase {
         )
     }
 
+    func testMainFrameAllowsBundledFallbackWhenRemoteBaseURLIsNil() {
+        XCTAssertTrue(
+            RemoteNavigationPolicy.isAllowedMainFrameNavigation(
+                url: URL(string: "self-sdk://app/tunnel/tour/1")!,
+                remoteWebAppBaseURL: nil,
+                isDebugMode: false
+            )
+        )
+    }
+
     func testMainFrameRejectsDifferentRemotePort() {
         XCTAssertFalse(
             RemoteNavigationPolicy.isAllowedMainFrameNavigation(
@@ -80,6 +90,16 @@ final class RemoteNavigationPolicyTests: XCTestCase {
                 queryParams: "foo=bar"
             )?.absoluteString,
             "https://verify.self.xyz/tunnel/tour/1?foo=bar"
+        )
+    }
+
+    func testMakeEntryURLPreservesHostedBasePath() {
+        XCTAssertEqual(
+            RemoteNavigationPolicy.makeEntryURL(
+                baseURL: URL(string: "https://verify.self.xyz/v1/"),
+                queryParams: "foo=bar"
+            )?.absoluteString,
+            "https://verify.self.xyz/v1/tunnel/tour/1?foo=bar"
         )
     }
 }

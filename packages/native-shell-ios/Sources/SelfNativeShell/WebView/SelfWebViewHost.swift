@@ -65,11 +65,14 @@ final class SelfWebViewHost: NSObject {
             return
         }
 
+        if remoteWebAppBaseURL != nil {
+            loadVerifiedRemoteContent(queryParams: queryParams)
+            return
+        }
+
         if let bundledURL = makeBundledEntryURL(queryParams: queryParams) {
             webView.load(URLRequest(url: bundledURL))
         }
-
-        loadVerifiedRemoteContent(queryParams: queryParams)
     }
 
     func evaluateJs(_ js: String) {
@@ -89,9 +92,13 @@ final class SelfWebViewHost: NSObject {
         guard let baseURL = remoteWebAppBaseURL,
               baseURL.scheme == "https",
               baseURL.host != nil,
-              let expectedSha256 = remoteWebAppIntegritySha256?.trimmingCharacters(in: .whitespacesAndNewlines),
-              !expectedSha256.isEmpty,
               let remoteURL = RemoteNavigationPolicy.makeEntryURL(baseURL: baseURL, queryParams: queryParams) else {
+            return
+        }
+
+        guard let expectedSha256 = remoteWebAppIntegritySha256?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !expectedSha256.isEmpty else {
+            webView?.load(URLRequest(url: remoteURL))
             return
         }
 
