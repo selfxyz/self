@@ -7,6 +7,11 @@ on:
         description: 'Version to publish (e.g., 0.1.0)'
         required: true
         type: string
+      dry-run:
+        description: 'Dry run — build and validate without publishing'
+        required: false
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -36,7 +41,12 @@ jobs:
       - name: Build
         run: ./gradlew build
 
-      - name: Publish
+      - name: Publish to Maven Local (dry run)
+        if: inputs.dry-run
+        run: ./gradlew publishToMavenLocal
+
+      - name: Publish to GitHub Packages
+        if: ${{ !inputs.dry-run }}
         run: ./gradlew publishReleasePublicationToGitHubPackagesRepository
         env:
           GITHUB_ACTOR: ${{ github.actor }}
