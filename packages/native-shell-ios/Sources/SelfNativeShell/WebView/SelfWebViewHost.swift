@@ -207,7 +207,7 @@ extension SelfWebViewHost: WKScriptMessageHandler {
 private final class SelfBundledAssetSchemeHandler: NSObject, WKURLSchemeHandler {
     func webView(_ webView: WKWebView, start urlSchemeTask: WKURLSchemeTask) {
         guard let requestURL = urlSchemeTask.request.url,
-              let rootURL = Bundle.module.resourceURL?.appendingPathComponent(
+              let rootURL = Bundle.main.resourceURL?.appendingPathComponent(
                 SelfWebViewHost.bundledRootFolder,
                 isDirectory: true
               ),
