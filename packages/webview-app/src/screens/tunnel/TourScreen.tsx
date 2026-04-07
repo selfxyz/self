@@ -24,31 +24,32 @@ export const TourScreen: React.FC = () => {
       return;
     }
 
-    const selectedDoc = await loadSelectedDocument(client);
-
-    console.log('selected Doc', selectedDoc);
-    const isRegisteredRealDoc = selectedDoc?.metadata?.isRegistered === true;
-
-    if (isRegisteredRealDoc) {
-      navigate('/tunnel/proof/disclose');
-    } else {
-      navigate('/tunnel/kyc');
+    try {
+      const selectedDoc = await loadSelectedDocument(client);
+      if (selectedDoc?.metadata?.isRegistered === true) {
+        navigate('/tunnel/proof/disclose');
+        return;
+      }
+    } catch {
+      // Fall through to KYC when document state is unavailable.
     }
+
+    navigate('/tunnel/kyc');
   }, [navigate, stepNum, client]);
 
-  const onResore = useCallback(() => {
+  const onRestore = useCallback(() => {
     navigate('/recovery');
   }, []);
 
   switch (step) {
     case '1':
-      return <LaunchTour1Screen {...WEB_SAFE_AREA} onNext={onNext} onRestore={onResore} />;
+      return <LaunchTour1Screen {...WEB_SAFE_AREA} onNext={onNext} onRestore={onRestore} />;
     case '2':
-      return <LaunchTour2Screen {...WEB_SAFE_AREA} onNext={onNext} onRestore={onResore} />;
+      return <LaunchTour2Screen {...WEB_SAFE_AREA} onNext={onNext} onRestore={onRestore} />;
     case '3':
-      return <LaunchTour3Screen {...WEB_SAFE_AREA} onNext={onNext} onRestore={onResore} />;
+      return <LaunchTour3Screen {...WEB_SAFE_AREA} onNext={onNext} onRestore={onRestore} />;
     case '4':
-      return <LaunchTour4Screen {...WEB_SAFE_AREA} onNext={onNext} onRestore={onResore} />;
+      return <LaunchTour4Screen {...WEB_SAFE_AREA} onNext={onNext} onRestore={onRestore} />;
     default:
       return <Navigate to="/tunnel/tour/1" replace />;
   }

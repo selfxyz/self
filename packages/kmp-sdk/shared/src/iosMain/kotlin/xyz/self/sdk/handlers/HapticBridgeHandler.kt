@@ -10,7 +10,7 @@ import kotlinx.serialization.json.jsonPrimitive
 import xyz.self.sdk.bridge.BridgeDomain
 import xyz.self.sdk.bridge.BridgeHandler
 import xyz.self.sdk.bridge.BridgeHandlerException
-import xyz.self.sdk.providers.SdkProviderRegistry
+import xyz.self.sdk.providers.IosProviderRegistry
 
 class HapticBridgeHandler : BridgeHandler {
     override val domain = BridgeDomain.HAPTIC
@@ -29,14 +29,14 @@ class HapticBridgeHandler : BridgeHandler {
         }
 
     private fun trigger(params: Map<String, JsonElement>): JsonElement? {
-        val provider = SdkProviderRegistry.haptic ?: return null
+        val provider = IosProviderRegistry.haptic ?: return null
         val type = params["type"]?.jsonPrimitive?.content ?: "medium"
         provider.trigger(type)
         return null
     }
 
     private fun isAvailable(): JsonElement {
-        val provider = SdkProviderRegistry.haptic ?: return JsonPrimitive(false)
+        val provider = IosProviderRegistry.haptic ?: return JsonPrimitive(false)
         return JsonPrimitive(provider.isAvailable())
     }
 }

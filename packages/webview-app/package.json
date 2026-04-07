@@ -13,6 +13,8 @@
     "lint:fix": "eslint . --fix --max-warnings=0",
     "nice": "prettier --write . && eslint . --fix && tsc --noEmit",
     "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "types": "tsc --noEmit"
   },

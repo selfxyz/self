@@ -4,16 +4,20 @@
 
 package xyz.self.testapp.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -36,6 +40,7 @@ import androidx.navigation.NavController
 import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import xyz.self.sdk.api.SelfEnvironment
 import xyz.self.sdk.api.SelfSdk
 import xyz.self.sdk.api.SelfSdkCallback
 import xyz.self.sdk.api.SelfSdkConfig
@@ -46,14 +51,31 @@ import xyz.self.sdk.api.VerificationResult
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SdkLaunchScreen(navController: NavController) {
-    var userId by remember { mutableStateOf("test-user") }
+    var useMockDocument by remember { mutableStateOf(true) }
+    var userId by remember { mutableStateOf("d6e7f8a9-1b2c-4d3e-a5f6-789012345678") }
     var scope by remember { mutableStateOf("identity") }
+    var verificationId by remember { mutableStateOf("example-verification-id") }
+    var disclosures by remember { mutableStateOf("full_name,dob") }
+    var appName by remember { mutableStateOf("Self Test App") }
+    var appEndpoint by remember { mutableStateOf("") }
+    var resultType by remember { mutableStateOf("") }
     var callbackStatus by remember { mutableStateOf("Idle") }
     var callbackPayload by remember { mutableStateOf<String?>(null) }
     var callbackError by remember { mutableStateOf<SelfSdkError?>(null) }
 
+    val environment = if (useMockDocument) SelfEnvironment.STG else SelfEnvironment.PROD
     val coroutineScope = rememberCoroutineScope()
-    val sdk = remember { SelfSdk.configure(SelfSdkConfig(debug = true)) }
+    val sdk =
+        remember(environment, appName, appEndpoint) {
+            SelfSdk.configure(
+                SelfSdkConfig(
+                    environment = environment,
+                    debug = true,
+                    appName = appName.ifBlank { null },
+                    appEndpoint = appEndpoint.ifBlank { null },
+                ),
+            )
+        }
     val json = remember { Json { prettyPrint = true } }
 
     Scaffold(
@@ -73,6 +95,42 @@ fun SdkLaunchScreen(navController: NavController) {
                 style = MaterialTheme.typography.bodyMedium,
             )
 
+            Text("Document Mode", style = MaterialTheme.typography.labelMedium)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(0.dp),
+            ) {
+                val shape = RoundedCornerShape(8.dp)
+                Button(
+                    onClick = { useMockDocument = true },
+                    modifier = Modifier.weight(1f),
+                    shape = shape,
+                    colors =
+                        if (useMockDocument) {
+                            ButtonDefaults.buttonColors()
+                        } else {
+                            ButtonDefaults.outlinedButtonColors()
+                        },
+                    border = if (!useMockDocument) BorderStroke(1.dp, MaterialTheme.colorScheme.outline) else null,
+                ) {
+                    Text("Mock Document")
+                }
+                Button(
+                    onClick = { useMockDocument = false },
+                    modifier = Modifier.weight(1f),
+                    shape = shape,
+                    colors =
+                        if (!useMockDocument) {
+                            ButtonDefaults.buttonColors()
+                        } else {
+                            ButtonDefaults.outlinedButtonColors()
+                        },
+                    border = if (useMockDocument) BorderStroke(1.dp, MaterialTheme.colorScheme.outline) else null,
+                ) {
+                    Text("Real Document")
+                }
+            }
+
             OutlinedTextField(
                 value = userId,
                 onValueChange = { userId = it },
@@ -89,6 +147,46 @@ fun SdkLaunchScreen(navController: NavController) {
                 singleLine = true,
             )
 
+            OutlinedTextField(
+                value = verificationId,
+                onValueChange = { verificationId = it },
+                label = { Text("Verification ID") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+            )
+
+            OutlinedTextField(
+                value = disclosures,
+                onValueChange = { disclosures = it },
+                label = { Text("Disclosures (comma-separated)") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+            )
+
+            OutlinedTextField(
+                value = appName,
+                onValueChange = { appName = it },
+                label = { Text("App Name") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+            )
+
+            OutlinedTextField(
+                value = appEndpoint,
+                onValueChange = { appEndpoint = it },
+                label = { Text("App Endpoint") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+            )
+
+            OutlinedTextField(
+                value = resultType,
+                onValueChange = { resultType = it },
+                label = { Text("Result Type") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+            )
+
             Button(
                 onClick = {
                     callbackStatus = "Launching verification..."
@@ -99,7 +197,9 @@ fun SdkLaunchScreen(navController: NavController) {
                         VerificationRequest(
                             userId = userId.ifBlank { null },
                             scope = scope.ifBlank { null },
-                            disclosures = listOf("name", "nationality", "date_of_birth"),
+                            verificationId = verificationId.ifBlank { null },
+                            disclosures = disclosures.split(",").map { it.trim() }.filter { it.isNotEmpty() },
+                            resultType = resultType.ifBlank { null },
                         )
 
                     sdk.launch(
@@ -142,10 +242,10 @@ fun SdkLaunchScreen(navController: NavController) {
             }
 
             OutlinedButton(
-                onClick = { navController.navigate("passport_details") },
+                onClick = { navController.navigate("domain_smoke") },
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Text("Open Manual MRZ/NFC Flow")
+                Text("Run Domain Smoke Tests")
             }
 
             Spacer(modifier = Modifier.height(8.dp))

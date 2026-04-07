@@ -44,6 +44,15 @@ function withSecretLock<T>(fn: () => Promise<T>): Promise<T> {
   return next;
 }
 
+async function readStoredSecretSnapshotUnlocked(storage: BridgeStorageAdapter): Promise<StoredSecretSnapshot> {
+  const [mnemonic, secret] = await Promise.all([storage.get(MNEMONIC_KEY), storage.get(PRIVATE_KEY_KEY)]);
+
+  return {
+    mnemonic,
+    secret,
+  };
+}
+
 export function ensureSecret(storage: BridgeStorageAdapter): Promise<void> {
   return withSecretLock(async () => {
     const existing = await storage.get(PRIVATE_KEY_KEY);
@@ -72,12 +81,7 @@ export function ensureSecret(storage: BridgeStorageAdapter): Promise<void> {
 }
 
 export async function readStoredSecretSnapshot(storage: BridgeStorageAdapter): Promise<StoredSecretSnapshot> {
-  const [mnemonic, secret] = await Promise.all([storage.get(MNEMONIC_KEY), storage.get(PRIVATE_KEY_KEY)]);
-
-  return {
-    mnemonic,
-    secret,
-  };
+  return withSecretLock(() => readStoredSecretSnapshotUnlocked(storage));
 }
 
 export function restoreSecretFromMnemonic(
@@ -87,13 +91,13 @@ export function restoreSecretFromMnemonic(
   const secret = derivePrivateKey(mnemonic);
 
   return withSecretLock(async () => {
-    const previousSnapshot = await readStoredSecretSnapshot(storage);
+    const previousSnapshot = await readStoredSecretSnapshotUnlocked(storage);
 
     try {
       await storage.set(MNEMONIC_KEY, mnemonic);
       await storage.set(PRIVATE_KEY_KEY, secret);
     } catch (error) {
-      await writeSnapshot(storage, previousSnapshot);
+      await restoreSnapshotBestEffort(storage, previousSnapshot, 'secret restore from mnemonic');
       throw error;
     }
 
@@ -105,19 +109,72 @@ export function restoreStoredSecretSnapshot(
   storage: BridgeStorageAdapter,
   snapshot: StoredSecretSnapshot,
 ): Promise<void> {
-  return withSecretLock(() => writeSnapshot(storage, snapshot));
+  return withSecretLock(async () => {
+    const previousSnapshot = await readStoredSecretSnapshotUnlocked(storage);
+
+    try {
+      await writeSnapshot(storage, snapshot);
+    } catch (error) {
+      await restoreSnapshotBestEffort(storage, previousSnapshot, 'secret snapshot restore');
+      throw error;
+    }
+  });
+}
+
+async function restoreSnapshotBestEffort(
+  storage: BridgeStorageAdapter,
+  snapshot: StoredSecretSnapshot,
+  context: string,
+): Promise<void> {
+  const rollbackFailures: Error[] = [];
+
+  try {
+    await writeMnemonic(storage, snapshot.mnemonic);
+  } catch (rollbackError) {
+    rollbackFailures.push(rollbackError instanceof Error ? rollbackError : new Error(String(rollbackError)));
+  }
+
+  try {
+    await writeSecret(storage, snapshot.secret);
+  } catch (rollbackError) {
+    rollbackFailures.push(rollbackError instanceof Error ? rollbackError : new Error(String(rollbackError)));
+  }
+
+  if (rollbackFailures.length > 0) {
+    // A partial rollback leaves mnemonic and secret mismatched — the derived
+    // key from the stored mnemonic would not equal the stored secret. Clear
+    // both so ensureSecret can regenerate a consistent pair from scratch.
+    console.error(`Rollback failed during ${context}, clearing both keys to prevent mismatch:`, rollbackFailures);
+    try {
+      await storage.remove(MNEMONIC_KEY);
+    } catch {
+      /* best effort */
+    }
+    try {
+      await storage.remove(PRIVATE_KEY_KEY);
+    } catch {
+      /* best effort */
+    }
+  }
 }
 
 async function writeSnapshot(storage: BridgeStorageAdapter, snapshot: StoredSecretSnapshot): Promise<void> {
-  if (snapshot.mnemonic === null) {
+  await writeMnemonic(storage, snapshot.mnemonic);
+  await writeSecret(storage, snapshot.secret);
+}
+
+async function writeMnemonic(storage: BridgeStorageAdapter, mnemonic: string | null): Promise<void> {
+  if (mnemonic === null) {
     await storage.remove(MNEMONIC_KEY);
   } else {
-    await storage.set(MNEMONIC_KEY, snapshot.mnemonic);
+    await storage.set(MNEMONIC_KEY, mnemonic);
   }
+}
 
-  if (snapshot.secret === null) {
+async function writeSecret(storage: BridgeStorageAdapter, secret: string | null): Promise<void> {
+  if (secret === null) {
     await storage.remove(PRIVATE_KEY_KEY);
   } else {
-    await storage.set(PRIVATE_KEY_KEY, snapshot.secret);
+    await storage.set(PRIVATE_KEY_KEY, secret);
   }
 }

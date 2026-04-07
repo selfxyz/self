@@ -11,7 +11,7 @@ import kotlinx.serialization.json.JsonPrimitive
 import xyz.self.sdk.bridge.BridgeDomain
 import xyz.self.sdk.bridge.BridgeHandler
 import xyz.self.sdk.bridge.BridgeHandlerException
-import xyz.self.sdk.providers.SdkProviderRegistry
+import xyz.self.sdk.providers.IosProviderRegistry
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -34,7 +34,7 @@ class CameraMrzBridgeHandler : BridgeHandler {
 
     private suspend fun scanMRZ(): JsonElement =
         suspendCancellableCoroutine { continuation ->
-            val provider = SdkProviderRegistry.cameraMrz
+            val provider = IosProviderRegistry.cameraMrz
             if (provider == null) {
                 continuation.resumeWithException(
                     BridgeHandlerException("NOT_CONFIGURED", "CameraMrz provider not configured"),
@@ -71,12 +71,12 @@ class CameraMrzBridgeHandler : BridgeHandler {
         }
 
     private fun isAvailable(): JsonElement {
-        val provider = SdkProviderRegistry.cameraMrz ?: return JsonPrimitive(false)
+        val provider = IosProviderRegistry.cameraMrz ?: return JsonPrimitive(false)
         return JsonPrimitive(provider.isAvailable())
     }
 
     private fun stopCamera(): JsonElement? {
-        SdkProviderRegistry.cameraMrz?.stopCamera()
+        IosProviderRegistry.cameraMrz?.stopCamera()
         return null
     }
 }
