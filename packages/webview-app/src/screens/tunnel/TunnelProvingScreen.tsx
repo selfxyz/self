@@ -106,7 +106,9 @@ export const TunnelProvingScreen: React.FC = () => {
       navigateToError(reason ?? errorCode ?? currentState);
     } else if (currentState === 'completed') {
       analytics.trackEvent('tunnel_proving_registration_complete', { previousPhase: phase });
-      navigate('/tunnel/proof/disclose', { replace: true });
+      // Brief delay to allow tree reader to index the on-chain commitment
+      // before disclose fetches the identity tree.
+      setTimeout(() => navigate('/tunnel/proof/disclose', { replace: true }), 5000);
     }
   }, [currentState, initDone, phase, analytics, haptic, navigate, errorCode, reason, navigateToError]);
 
