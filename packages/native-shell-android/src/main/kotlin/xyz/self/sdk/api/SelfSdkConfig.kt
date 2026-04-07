@@ -19,8 +19,7 @@ data class SelfSdkConfig(
     val chainID: Int? = null,
     val userDefinedData: String? = null,
     val selfDefinedData: String? = null,
-    val remoteWebAppBaseUrl: String? = null,
-    val remoteWebAppIntegritySha256: String? = null,
+    val remoteWebAppBaseUrl: String = "https://self-app-alpha.vercel.app",
 )
 
 class SelfSdkException(

@@ -38,7 +38,7 @@ final class MessageRouterTests: XCTestCase {
             expectation.fulfill()
         }
 
-        router.onMessageReceived(rawJson: makeRequestJSON(version: 999))
+        router.onMessageReceived(rawJson: makeRequestJSON(version: 999), isTrustedSource: true)
 
         waitForExpectations(timeout: 2)
 
@@ -57,7 +57,7 @@ final class MessageRouterTests: XCTestCase {
             expectation.fulfill()
         }
 
-        router.onMessageReceived(rawJson: makeRequestJSON(domain: "secureStorage"))
+        router.onMessageReceived(rawJson: makeRequestJSON(domain: "secureStorage"), isTrustedSource: true)
 
         waitForExpectations(timeout: 2)
 
@@ -77,7 +77,7 @@ final class MessageRouterTests: XCTestCase {
         }
         router.register(handler: StubHandler(domain: .secureStorage, result: ["value": "abc"]))
 
-        router.onMessageReceived(rawJson: makeRequestJSON())
+        router.onMessageReceived(rawJson: makeRequestJSON(), isTrustedSource: true)
 
         waitForExpectations(timeout: 2)
 
@@ -99,7 +99,7 @@ final class MessageRouterTests: XCTestCase {
             error: BridgeHandlerError.missingParam("key")
         ))
 
-        router.onMessageReceived(rawJson: makeRequestJSON())
+        router.onMessageReceived(rawJson: makeRequestJSON(), isTrustedSource: true)
 
         waitForExpectations(timeout: 2)
 
@@ -120,7 +120,7 @@ final class MessageRouterTests: XCTestCase {
             error: NSError(domain: "test", code: 1, userInfo: [NSLocalizedDescriptionKey: "disk full"])
         ))
 
-        router.onMessageReceived(rawJson: makeRequestJSON())
+        router.onMessageReceived(rawJson: makeRequestJSON(), isTrustedSource: true)
 
         waitForExpectations(timeout: 2)
 
@@ -137,9 +137,27 @@ final class MessageRouterTests: XCTestCase {
             sentCount += 1
         }
 
-        router.onMessageReceived(rawJson: "{not valid json")
+        router.onMessageReceived(rawJson: "{not valid json", isTrustedSource: true)
 
         // Give async code a chance to run
+        let expectation = expectation(description: "wait")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            expectation.fulfill()
+        }
+        waitForExpectations(timeout: 2)
+
+        XCTAssertEqual(sentCount, 0)
+    }
+
+    func testUntrustedOriginMessagesAreDroppedBeforeDispatch() {
+        var sentCount = 0
+        let router = MessageRouter { _ in
+            sentCount += 1
+        }
+        router.register(handler: StubHandler(domain: .secureStorage, result: ["value": "abc"]))
+
+        router.onMessageReceived(rawJson: makeRequestJSON(), isTrustedSource: false)
+
         let expectation = expectation(description: "wait")
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             expectation.fulfill()
@@ -162,7 +180,7 @@ final class MessageRouterTests: XCTestCase {
         router.register(handler: StubHandler(domain: .secureStorage, result: ["value": "first"]))
         router.register(handler: StubHandler(domain: .secureStorage, result: ["value": "second"]))
 
-        router.onMessageReceived(rawJson: makeRequestJSON())
+        router.onMessageReceived(rawJson: makeRequestJSON(), isTrustedSource: true)
 
         waitForExpectations(timeout: 2)
 

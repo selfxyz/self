@@ -36,8 +36,7 @@ class SelfVerificationActivity : AppCompatActivity() {
         val chainID = if (intent.hasExtra(EXTRA_CHAIN_ID)) intent.getIntExtra(EXTRA_CHAIN_ID, 0) else null
         val userDefinedData = intent.getStringExtra(EXTRA_USER_DEFINED_DATA)
         val selfDefinedData = intent.getStringExtra(EXTRA_SELF_DEFINED_DATA)
-        val remoteWebAppBaseUrl = intent.getStringExtra(EXTRA_REMOTE_WEB_APP_BASE_URL)
-        val remoteWebAppIntegritySha256 = intent.getStringExtra(EXTRA_REMOTE_WEB_APP_INTEGRITY_SHA256)
+        val remoteWebAppBaseUrl = intent.getStringExtra(EXTRA_REMOTE_WEB_APP_BASE_URL) ?: "https://self-app-alpha.vercel.app"
 
         router =
             MessageRouter(
@@ -68,7 +67,6 @@ class SelfVerificationActivity : AppCompatActivity() {
                 router = router,
                 isDebugMode = isDebugMode,
                 remoteWebAppBaseUrl = remoteWebAppBaseUrl,
-                remoteWebAppIntegritySha256 = remoteWebAppIntegritySha256,
             )
 
         val queryParams =
@@ -161,7 +159,6 @@ class SelfVerificationActivity : AppCompatActivity() {
         const val EXTRA_USER_DEFINED_DATA = "xyz.self.sdk.USER_DEFINED_DATA"
         const val EXTRA_SELF_DEFINED_DATA = "xyz.self.sdk.SELF_DEFINED_DATA"
         const val EXTRA_REMOTE_WEB_APP_BASE_URL = "xyz.self.sdk.REMOTE_WEB_APP_BASE_URL"
-        const val EXTRA_REMOTE_WEB_APP_INTEGRITY_SHA256 = "xyz.self.sdk.REMOTE_WEB_APP_INTEGRITY_SHA256"
         const val EXTRA_RESULT_DATA = "xyz.self.sdk.RESULT_DATA"
     }
 }

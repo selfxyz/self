@@ -19,4 +19,8 @@ interface WebViewProvider {
     fun evaluateJs(js: String)
 
     fun getViewController(): UIViewController
+
+    fun isBridgeRequestAllowed(): Boolean
+
+    fun configureRemoteLoading(remoteWebAppBaseURL: String?) {}
 }
