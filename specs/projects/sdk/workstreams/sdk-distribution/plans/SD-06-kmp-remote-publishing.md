@@ -18,11 +18,11 @@ The KMP SDK (`packages/kmp-sdk/`) already has `maven-publish` configured and pro
 - Add remote Maven repository configuration to `packages/kmp-sdk/shared/build.gradle.kts`
 - Switch `createXCFramework` task from debug to release variants
 - Update `packages/kmp-sdk/Package.swift` from local path to remote URL + checksum
+- Add `publish-kmp-sdk.yml` workflow (manual dispatch with dry-run, matching SD-04 pattern)
 
 ### Out of Scope
 
 - Maven Central account setup / GPG signing (ops task, not code)
-- CI/CD automated publishing pipeline
 - CDN or hosting infrastructure for XCFramework ZIP
 - KMP source code changes (owned by kmp-revival workstream)
 - Native shell publishing (SD-04, SD-05)
@@ -37,6 +37,7 @@ The KMP SDK (`packages/kmp-sdk/`) already has `maven-publish` configured and pro
 
 - `packages/kmp-sdk/shared/build.gradle.kts` — Add `publishing { repositories { maven { ... } } }` block for remote Maven repo. Switch `createXCFramework` task dependencies from `linkDebugFramework*` to `linkReleaseFramework*` and update framework paths from `debugFramework` to `releaseFramework`.
 - `packages/kmp-sdk/Package.swift` — Change `.binaryTarget` from local `path:` to remote `url:` + `checksum:`.
+- `.github/workflows/publish-kmp-sdk.yml` — Add manual dispatch workflow with dry-run mode (matching SD-04 pattern).
 
 ### Files NOT to Modify
 
@@ -65,7 +66,7 @@ publishing {
             url = uri("https://maven.pkg.github.com/selfxyz/self")
             credentials {
                 username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_ACTOR")
-                password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
+                password = project.findProperty("gpr.token") as String? ?: System.getenv("GITHUB_TOKEN")
             }
         }
     }
@@ -145,6 +146,12 @@ swift package compute-checksum SelfSdk.xcframework.zip
 
 The actual URL and checksum values will be set during the first release. Use placeholder values with a `// TODO: Update on first release` comment until then.
 
+#### 4. Add publish workflow
+
+**File:** `.github/workflows/publish-kmp-sdk.yml`
+
+Match the SD-04 pattern (`publish-android-sdk.yml`): manual `workflow_dispatch` with `version` input and `dry-run` toggle (defaults to on). Steps: checkout → setup JDK 17 → cache Gradle → set version → build → test (`./gradlew :shared:jvmTest`) → publish (`publishToMavenLocal` for dry-run, `publishAllPublicationsToGitHubPackagesRepository` for real).
+
 ### Validation
 
 ```bash
@@ -167,7 +174,7 @@ swift package dump-package
 
 ### Consumer Setup
 
-The Maven package on GitHub Packages is **private** — it is not publicly resolvable. Consumers must configure credentials to pull the dependency.
+The Maven package on GitHub Packages requires authentication even though the repo is public. Consumers need a GitHub token with `read:packages` scope (any GitHub account works — no org/repo access required).
 
 #### Android (Gradle)
 
@@ -180,7 +187,7 @@ dependencyResolutionManagement {
             url = uri("https://maven.pkg.github.com/selfxyz/self")
             credentials {
                 username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_ACTOR")
-                password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
+                password = project.findProperty("gpr.token") as String? ?: System.getenv("GITHUB_TOKEN")
             }
         }
     }
@@ -197,7 +204,7 @@ Consumers need a GitHub personal access token with `read:packages` scope. Set in
 
 ```properties
 gpr.user=GITHUB_USERNAME
-gpr.key=ghp_YOUR_TOKEN
+gpr.token=ghp_YOUR_TOKEN
 ```
 
 Or set `GITHUB_ACTOR` / `GITHUB_TOKEN` environment variables in CI.
@@ -218,6 +225,7 @@ The XCFramework ZIP hosted on GitHub Releases can also be private. If the repo i
 - [ ] `./gradlew :shared:jvmTest` passes
 - [ ] `./gradlew createXCFramework` produces a release XCFramework
 - [ ] `swift package dump-package` succeeds
+- [ ] `publish-kmp-sdk.yml` workflow added with dry-run mode
 - [ ] Backlog row updated
 - [ ] Plan status updated
 
