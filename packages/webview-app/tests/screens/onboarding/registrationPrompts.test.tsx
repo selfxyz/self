@@ -13,7 +13,6 @@ import { PushNotificationPromptScreen } from '../../../src/screens/onboarding/Pu
 import { ScanSuccessScreen } from '../../../src/screens/onboarding/ScanSuccessScreen';
 import { SocialSignOnMethodPickerScreen } from '../../../src/screens/onboarding/SocialSignOnMethodPickerScreen';
 import { OnboardingRecoveryPhraseScreen } from '../../../src/screens/recovery/RecoveryPhraseScreen';
-import { shouldUseHistoryBack } from '../../../src/utils/mockOnboardingFlow';
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 
@@ -53,7 +52,7 @@ vi.mock('@selfxyz/webview-bridge/adapters', () => ({
 
 vi.mock('../../../src/utils/mockOnboardingFlow', async importOriginal => {
   const actual = await importOriginal<typeof import('../../../src/utils/mockOnboardingFlow')>();
-  return { ...actual, shouldUseHistoryBack: vi.fn(() => false) };
+  return { ...actual };
 });
 
 vi.mock('@selfxyz/euclid', () => ({
@@ -262,10 +261,9 @@ describe('registration prompt screens', () => {
     expectLocation('/onboarding/signin?mock=existing-account');
   });
 
-  it('uses header back on conflict to return to the prior prompt screen', () => {
-    vi.mocked(shouldUseHistoryBack).mockReturnValue(true);
+  it('closes conflict screen to the signin screen', () => {
     renderWithRoutes(
-      ['/onboarding/signin?mock=existing-account', '/onboarding/conflict?mock=existing-account'],
+      ['/onboarding/conflict?mock=existing-account'],
       '/onboarding/conflict',
       <ConflictDetectedScreen />,
     );
@@ -287,10 +285,9 @@ describe('registration prompt screens', () => {
     expectLocation('/');
   });
 
-  it('uses header back on notifications to return to the recovery phrase screen', () => {
-    vi.mocked(shouldUseHistoryBack).mockReturnValue(true);
+  it('closes notifications screen to the recovery phrase screen', () => {
     renderWithRoutes(
-      ['/onboarding/recovery-phrase?mock=default', '/onboarding/notifications?mock=default'],
+      ['/onboarding/notifications?mock=default'],
       '/onboarding/notifications',
       <PushNotificationPromptScreen />,
     );

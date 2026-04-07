@@ -10,7 +10,7 @@ import { PushNotificationPromptScreen as EuclidPushNotificationPromptScreen } fr
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
-import { getPromptMockFromSearch, getPromptMockSearch, shouldUseHistoryBack } from '../../utils/mockOnboardingFlow';
+import { getPromptMockFromSearch, getPromptMockSearch } from '../../utils/mockOnboardingFlow';
 
 export const PushNotificationPromptScreen: React.FC = () => {
   const location = useLocation();
@@ -33,12 +33,6 @@ export const PushNotificationPromptScreen: React.FC = () => {
   const onClose = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('push_notification_header_back', { mock });
-
-    if (shouldUseHistoryBack()) {
-      navigate(-1);
-      return;
-    }
-
     navigate(`/onboarding/recovery-phrase${getPromptMockSearch(mock)}`);
   }, [mock, navigate, haptic, analytics]);
 

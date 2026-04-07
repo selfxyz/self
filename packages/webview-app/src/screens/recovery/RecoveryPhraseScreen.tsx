@@ -23,7 +23,7 @@ import { bridgeStorageAdapter } from '@selfxyz/webview-bridge/adapters';
 import { useBridge } from '../../providers/BridgeProvider';
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
-import { getPromptMockFromSearch, getPromptMockSearch, shouldUseHistoryBack } from '../../utils/mockOnboardingFlow';
+import { getPromptMockFromSearch, getPromptMockSearch } from '../../utils/mockOnboardingFlow';
 import { ensureSecret, MNEMONIC_KEY } from '../../utils/secretManager';
 
 function parseMnemonicWords(raw: string | null): string[] | undefined {
@@ -97,11 +97,6 @@ const recoveryPhrasePlaceholderWords = [
   '*******',
   '******',
   '******',
-  '#***',
-  '********',
-  '****',
-  '********',
-  '*#*******#***',
 ];
 
 const copy = {
@@ -326,11 +321,6 @@ export const OnboardingRecoveryPhraseScreen: React.FC = () => {
   const successPath = `/onboarding/success${getPromptMockSearch(mock)}`;
 
   const onBack = useCallback(() => {
-    if (shouldUseHistoryBack()) {
-      navigate(-1);
-      return;
-    }
-
     navigate(successPath);
   }, [navigate, successPath]);
 
