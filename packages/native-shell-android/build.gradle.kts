@@ -53,11 +53,15 @@ android {
     }
 }
 
+val webViewBundleDir = file("src/main/assets/self-wallet")
+val webViewBundleIndex = file("src/main/assets/self-wallet/index.html")
+
 tasks.register("validateWebViewBundle") {
+    onlyIf {
+        webViewBundleDir.exists()
+    }
     doLast {
-        val bundleDir = file("src/main/assets/self-wallet")
-        val indexFile = file("src/main/assets/self-wallet/index.html")
-        if (!bundleDir.exists() || !indexFile.exists()) {
+        if (!webViewBundleIndex.exists()) {
             throw GradleException(
                 "WebView bundle not found at src/main/assets/self-wallet/index.html. " +
                     "Run ./scripts/build-webview-bundle.sh from the repo root first.",
@@ -67,7 +71,9 @@ tasks.register("validateWebViewBundle") {
 }
 
 tasks.named("preBuild") {
-    dependsOn("validateWebViewBundle")
+    if (webViewBundleDir.exists()) {
+        dependsOn("validateWebViewBundle")
+    }
 }
 
 dependencies {

@@ -19,6 +19,7 @@ class SelfSdkConfigTest {
         assertEquals("prod", config.environment)
         assertFalse(config.isDebugMode)
         assertEquals(1, config.version)
+        assertEquals("https://verify.self.xyz/v1/", config.remoteWebAppBaseUrl)
     }
 
     @Test

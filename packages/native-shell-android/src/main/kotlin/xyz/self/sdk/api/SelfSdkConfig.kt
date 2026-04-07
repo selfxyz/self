@@ -19,7 +19,7 @@ data class SelfSdkConfig(
     val chainID: Int? = null,
     val userDefinedData: String? = null,
     val selfDefinedData: String? = null,
-    val remoteWebAppBaseUrl: String? = null,
+    val remoteWebAppBaseUrl: String? = DEFAULT_REMOTE_WEB_APP_BASE_URL,
     val remoteWebAppIntegritySha256: String? = null,
 )
 
@@ -34,3 +34,5 @@ interface SelfSdkCallback {
 
     fun onCancelled()
 }
+
+const val DEFAULT_REMOTE_WEB_APP_BASE_URL = "https://verify.self.xyz/v1/"

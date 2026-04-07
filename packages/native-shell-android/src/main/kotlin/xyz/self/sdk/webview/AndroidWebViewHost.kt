@@ -22,6 +22,7 @@ import android.webkit.WebViewClient
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.webkit.WebViewAssetLoader
+import xyz.self.sdk.api.DEFAULT_REMOTE_WEB_APP_BASE_URL
 import xyz.self.sdk.bridge.MessageRouter
 import java.net.HttpURLConnection
 import java.net.URI
@@ -31,10 +32,11 @@ class AndroidWebViewHost(
     private val context: Context,
     private val router: MessageRouter,
     private val isDebugMode: Boolean = false,
-    private val remoteWebAppBaseUrl: String? = null,
+    private val remoteWebAppBaseUrl: String? = DEFAULT_REMOTE_WEB_APP_BASE_URL,
     private val remoteWebAppIntegritySha256: String? = null,
 ) {
     private lateinit var webView: WebView
+    private val bundledAssetsAvailable by lazy { hasBundledAssets() }
 
     @Volatile
     private var isDestroyed = false
@@ -112,10 +114,7 @@ class AndroidWebViewHost(
                             request: WebResourceRequest?,
                         ): Boolean {
                             val url = request?.url ?: return true
-                            if (isBundledOrigin(url)) return false
-                            if (isDebugMode && isDebugOrigin(url)) return false
-                            if (isAllowedRemoteOrigin(url.toString())) return false
-                            return true
+                            return !shouldAllowNavigation(url.toString())
                         }
 
                         override fun onReceivedSslError(
@@ -138,7 +137,8 @@ class AndroidWebViewHost(
                                 isBundledOrigin(originUri) ||
                                     (isDebugMode && isDebugOrigin(originUri)) ||
                                     isMatchingOrigin(originUri, "https", "verify.didit.me", 443) ||
-                                    isAllowedRemoteOrigin(originStr)
+                                    isAllowedRemoteOrigin(originStr) ||
+                                    isDefaultHostedOrigin(originStr)
                             if (!isTrusted) {
                                 request.deny()
                                 return
@@ -205,8 +205,7 @@ class AndroidWebViewHost(
                 if (isDebugMode) {
                     loadUrl(buildDebugUrl(queryParams))
                 } else {
-                    loadUrl(buildBundledUrl(queryParams))
-                    maybeLoadVerifiedRemoteContent(queryParams)
+                    loadContent(queryParams)
                 }
             }
         return webView
@@ -232,6 +231,27 @@ class AndroidWebViewHost(
 
     private fun buildRemoteUrl(queryParams: String): String? = RemoteNavigationPolicy.buildRemoteEntryUrl(remoteWebAppBaseUrl, queryParams)
 
+    internal fun resolveInitialContentUrl(
+        queryParams: String,
+        bundledFallbackAvailable: Boolean = bundledAssetsAvailable,
+    ): String? {
+        val remoteUrl = buildRemoteUrl(queryParams)
+        if (remoteUrl != null) return remoteUrl
+        if (bundledFallbackAvailable && remoteWebAppBaseUrl.isNullOrBlank()) {
+            return buildBundledUrl(queryParams)
+        }
+        return null
+    }
+
+    internal fun shouldAllowNavigation(url: String): Boolean {
+        val uri = Uri.parse(url)
+        if (isBundledOrigin(uri)) return true
+        if (isDebugMode && isDebugOrigin(uri)) return true
+        if (isAllowedRemoteOrigin(url)) return true
+        if (isDefaultHostedOrigin(url)) return true
+        return false
+    }
+
     private fun buildEntryUrl(
         baseUrl: String,
         queryParams: String,
@@ -240,9 +260,19 @@ class AndroidWebViewHost(
         return "$baseUrl/tunnel/tour/1$separator"
     }
 
-    private fun maybeLoadVerifiedRemoteContent(queryParams: String) {
-        val remoteUrl = buildRemoteUrl(queryParams) ?: return
-        val expectedSha256 = remoteWebAppIntegritySha256?.takeIf { it.isNotBlank() } ?: return
+    private fun loadContent(queryParams: String) {
+        val initialUrl = resolveInitialContentUrl(queryParams) ?: return
+        if (initialUrl.startsWith(BUNDLED_ORIGIN)) {
+            webView.loadUrl(initialUrl)
+            return
+        }
+        if (!maybeLoadVerifiedRemoteContent(initialUrl)) {
+            webView.loadUrl(initialUrl)
+        }
+    }
+
+    private fun maybeLoadVerifiedRemoteContent(remoteUrl: String): Boolean {
+        val expectedSha256 = remoteWebAppIntegritySha256?.takeIf { it.isNotBlank() } ?: return false
 
         Thread {
             val verifiedHtml = fetchAndVerifyRemoteEntry(remoteUrl, expectedSha256)
@@ -262,6 +292,7 @@ class AndroidWebViewHost(
                 }
             }
         }.start()
+        return true
     }
 
     private fun fetchAndVerifyRemoteEntry(
@@ -311,6 +342,16 @@ class AndroidWebViewHost(
         }
 
     private fun isAllowedRemoteOrigin(url: String): Boolean = RemoteNavigationPolicy.isAllowedRemoteOrigin(url, remoteWebAppBaseUrl)
+
+    private fun isDefaultHostedOrigin(url: String): Boolean =
+        RemoteNavigationPolicy.isAllowedRemoteOrigin(url, DEFAULT_REMOTE_WEB_APP_BASE_URL)
+
+    private fun hasBundledAssets(): Boolean =
+        try {
+            context.assets.open("self-wallet/index.html").use { true }
+        } catch (_: Exception) {
+            false
+        }
 
     private fun resolvePort(uri: Uri): Int = RemoteNavigationPolicy.resolvePort(URI(uri.toString()))
 
