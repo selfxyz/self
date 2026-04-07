@@ -1,0 +1,43 @@
+name: Publish Android SDK
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to publish (e.g., 0.1.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    name: Publish to GitHub Packages
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/native-shell-android
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: ./.github/actions/cache-gradle
+
+      - name: Set version
+        run: |
+          sed -i "s/version = \".*\"/version = \"${{ inputs.version }}\"/" build.gradle.kts
+
+      - name: Build
+        run: ./gradlew build
+
+      - name: Publish
+        run: ./gradlew publishReleasePublicationToGitHubPackagesRepository
+        env:
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
