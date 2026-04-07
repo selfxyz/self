@@ -127,7 +127,9 @@ private extension SelfWebViewHost {
     func isTrustedBridgeOrigin(_ url: URL?) -> Bool {
         guard let url else { return false }
         if isDebugMode {
-            return url.absoluteString.hasPrefix("http://localhost:5173")
+            return url.scheme == "http" &&
+                url.host == "localhost" &&
+                resolvedPort(for: url) == 5173
         }
         return url.scheme == remoteWebAppBaseURL.scheme &&
             url.host == remoteWebAppBaseURL.host &&
@@ -147,7 +149,7 @@ extension SelfWebViewHost {
 
     func isAllowedNavigationURL(_ url: URL?, host: String? = nil) -> Bool {
         guard let url else { return false }
-        return isAllowedNavigation(url: url)
+        return isAllowedNavigation(url: url) || isAllowedSubframeNavigation(url: url)
     }
 
     func isTrustedBridgeURL(_ url: URL?) -> Bool {

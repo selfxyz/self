@@ -23,7 +23,9 @@ enum RemoteNavigationPolicy {
         isDebugMode: Bool
     ) -> Bool {
         if isDebugMode {
-            return url.absoluteString.hasPrefix("http://localhost:5173")
+            return url.scheme == "http" &&
+                url.host == "localhost" &&
+                resolvedPort(for: url) == 5173
         }
 
         guard let remoteWebAppBaseURL,
