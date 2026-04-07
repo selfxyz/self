@@ -200,6 +200,10 @@ const RecoveryPhraseScreenBase: React.FC<RecoveryPhraseScreenBaseProps> = ({
     analytics.trackEvent('recovery_phrase_revealed');
 
     const resolvedWords = await resolveMnemonicWords(storage);
+    if (!resolvedWords?.length) {
+      haptic.trigger('error');
+      return;
+    }
     setWords(resolvedWords);
     setVariant('revealed');
   }, [haptic, analytics, storage]);
@@ -251,6 +255,10 @@ const SettingsRecoveryPhraseScreen: React.FC<{ onBack: () => void }> = ({ onBack
     analytics.trackEvent('recovery_phrase_revealed');
 
     const resolvedWords = await resolveMnemonicWords(storage);
+    if (!resolvedWords?.length) {
+      haptic.trigger('error');
+      return;
+    }
     setWords(resolvedWords);
     setVariant('revealed');
   }, [analytics, haptic, storage]);
