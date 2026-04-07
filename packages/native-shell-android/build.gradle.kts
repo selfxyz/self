@@ -3,6 +3,7 @@ plugins {
     id("org.jetbrains.kotlin.android") version "1.9.22"
     id("org.jetbrains.kotlin.plugin.serialization") version "1.9.22"
     id("org.jlleitschuh.gradle.ktlint") version "12.1.2"
+    `maven-publish`
 }
 
 ktlint {
@@ -50,6 +51,19 @@ android {
     testOptions {
         unitTests.isReturnDefaultValues = true
         unitTests.isIncludeAndroidResources = true
+    }
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            create<MavenPublication>("release") {
+                from(components["release"])
+                groupId = "xyz.self.sdk"
+                artifactId = "native-shell-android"
+                version = "0.1.0"
+            }
+        }
     }
 }
 
