@@ -217,6 +217,7 @@ const renderResultRoute = (
     <MemoryRouter initialEntries={[initialEntry]}>
       <Routes>
         <Route path="/tunnel/proof/result" element={<TunnelResultScreen />} />
+        <Route path="/tunnel/tour/4" element={<LocationDisplay />} />
         <Route path="/tunnel/kyc" element={<LocationDisplay />} />
         <Route path="/tunnel/proof/generating" element={<LocationDisplay />} />
         <Route path="/tunnel/proof/disclose" element={<LocationDisplay />} />
@@ -396,7 +397,7 @@ describe('tunnel flow screens', () => {
     expectLocation('/tunnel/proof/receipt');
   });
 
-  it('keeps failure close inside the tunnel proving route', () => {
+  it('routes proving failure close back to tunnel tour step 4', () => {
     renderResultRoute({
       pathname: '/tunnel/proof/result',
       state: { success: false, error: 'TEE down', source: 'proving' },
@@ -404,7 +405,7 @@ describe('tunnel flow screens', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /close/i }));
 
-    expectLocation('/tunnel/proof/generating');
+    expectLocation('/tunnel/tour/4');
   });
 
   it('keeps disclose failure close inside the tunnel disclose route', () => {
@@ -592,7 +593,7 @@ describe('tunnel flow screens', () => {
     expectLocation('/tunnel/proof/result');
   });
 
-  it('defaults source to proving when absent', () => {
+  it('defaults missing failure source close to tunnel tour step 4', () => {
     renderResultRoute({
       pathname: '/tunnel/proof/result',
       state: { success: false, error: 'Unknown error' },
@@ -600,7 +601,7 @@ describe('tunnel flow screens', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /close/i }));
 
-    expectLocation('/tunnel/proof/generating');
+    expectLocation('/tunnel/tour/4');
   });
 
   it('keeps tour restore back button inside the tunnel flow', () => {

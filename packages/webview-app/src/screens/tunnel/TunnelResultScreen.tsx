@@ -31,6 +31,18 @@ const getTunnelBackPath = (source: TunnelResultState['source']): string => {
   }
 };
 
+const getTunnelClosePath = (source: TunnelResultState['source']): string => {
+  switch (source) {
+    case 'disclose':
+      return '/tunnel/proof/disclose';
+    case 'kyc':
+      return '/tunnel/kyc';
+    case 'proving':
+    default:
+      return '/tunnel/tour/4';
+  }
+};
+
 export const TunnelResultScreen: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -73,7 +85,7 @@ export const TunnelResultScreen: React.FC = () => {
   }, [location.pathname, location.state, navigate]);
 
   const onCancel = useCallback(() => {
-    navigate(getTunnelBackPath(source), { replace: true });
+    navigate(getTunnelClosePath(source), { replace: true });
   }, [navigate, source]);
 
   if (success) {

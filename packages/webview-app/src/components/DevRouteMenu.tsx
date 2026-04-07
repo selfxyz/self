@@ -14,6 +14,7 @@ interface DevScreenLink {
 interface DevScreenGroup {
   title: string;
   links: DevScreenLink[];
+  description?: string;
 }
 
 const screenGroups: DevScreenGroup[] = [
@@ -86,11 +87,12 @@ const screenGroups: DevScreenGroup[] = [
   },
   {
     title: 'Tunnel — Mock KYC',
+    description: 'Mocks diverge after /tunnel/kyc; some outcomes intentionally share the same final route.',
     links: [
-      { href: '/tunnel/tour/1?mock=success', label: 'Flow → Proving Failure' },
-      { href: '/tunnel/tour/1?mock=kyc-failure', label: 'Flow → Failure (retryable)' },
-      { href: '/tunnel/tour/1?mock=registration-failure', label: 'Flow → Failure (fatal)' },
-      { href: '/tunnel/tour/1?mock=cancel', label: 'Flow → Cancel' },
+      { href: '/tunnel/tour/1?mock=success', label: 'Flow → KYC Success, Then Proof Failure' },
+      { href: '/tunnel/tour/1?mock=kyc-failure', label: 'Flow → KYC Error (Retryable)' },
+      { href: '/tunnel/tour/1?mock=registration-failure', label: 'Flow → KYC Error (Fatal → Tour Step 4)' },
+      { href: '/tunnel/tour/1?mock=cancel', label: 'Flow → KYC Cancel → Tour Step 4' },
     ],
   },
   {
@@ -160,6 +162,18 @@ export const DevRouteMenu: React.FC = () => {
               >
                 {group.title}
               </div>
+              {group.description ? (
+                <div
+                  style={{
+                    color: 'rgba(255, 255, 255, 0.65)',
+                    fontSize: 11,
+                    lineHeight: 1.4,
+                    padding: '0 2px 6px',
+                  }}
+                >
+                  {group.description}
+                </div>
+              ) : null}
               {group.links.map(link => {
                 const isActive = `${location.pathname}${location.search}` === link.href;
 
