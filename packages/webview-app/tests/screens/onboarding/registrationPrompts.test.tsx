@@ -12,7 +12,7 @@ import { ConflictDetectedScreen } from '../../../src/screens/onboarding/Conflict
 import { PushNotificationPromptScreen } from '../../../src/screens/onboarding/PushNotificationPromptScreen';
 import { ScanSuccessScreen } from '../../../src/screens/onboarding/ScanSuccessScreen';
 import { SocialSignOnMethodPickerScreen } from '../../../src/screens/onboarding/SocialSignOnMethodPickerScreen';
-import { shouldUseHistoryBack } from '../../../src/utils/mockOnboardingFlow';
+import { OnboardingRecoveryPhraseScreen } from '../../../src/screens/recovery/RecoveryPhraseScreen';
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 
@@ -30,15 +30,29 @@ vi.mock('../../../src/components/MockRegistrationFailureButton', () => ({
   MockRegistrationFailureButton: () => null,
 }));
 
+vi.mock('../../../src/providers/BridgeProvider', () => ({
+  useBridge: () => ({}),
+}));
+
 vi.mock('../../../src/utils/mockDocumentStore', () => ({
   mockDocumentStore: {
     addDocument: vi.fn(),
   },
 }));
 
+const storageGet = vi.fn<() => Promise<string | null>>();
+
+vi.mock('@selfxyz/webview-bridge/adapters', () => ({
+  bridgeStorageAdapter: () => ({
+    get: storageGet,
+    set: vi.fn().mockResolvedValue(undefined),
+    remove: vi.fn().mockResolvedValue(undefined),
+  }),
+}));
+
 vi.mock('../../../src/utils/mockOnboardingFlow', async importOriginal => {
   const actual = await importOriginal<typeof import('../../../src/utils/mockOnboardingFlow')>();
-  return { ...actual, shouldUseHistoryBack: vi.fn(() => false) };
+  return { ...actual };
 });
 
 vi.mock('@selfxyz/euclid', () => ({
@@ -46,6 +60,31 @@ vi.mock('@selfxyz/euclid', () => ({
     insets: { top, bottom, left: 0, right: 0 },
     safeArea: { top, bottom, left: 0, right: 0 },
   }),
+  colors: {
+    slate50: '#f8fafc',
+    blue50: '#eff6ff',
+    blue100: '#dbeafe',
+    black: '#000000',
+    slate500: '#64748b',
+  },
+  spacing: {
+    mdLg: 24,
+    xlLg: 32,
+    smLg: 16,
+    smPlus: 12,
+  },
+  borderRadius: {
+    mdd: 14,
+  },
+  fontFamily: {
+    dinOT: 'DIN OT',
+  },
+  fontWeight: {
+    medium: 500,
+  },
+  LeftArrowIcon: () => null,
+  TopNavigationDialogue: () => null,
+  RecoveryPhrase: () => null,
   ScanSuccessScreen: ({ onClose, onFinish }: { onClose: () => void; onFinish: () => void }) => (
     <div>
       <button onClick={onClose} type="button">
@@ -60,6 +99,27 @@ vi.mock('@selfxyz/euclid', () => ({
     <button onClick={onDismiss} type="button">
       Dismiss backup
     </button>
+  ),
+  RecoveryPhraseScreen: ({
+    onBack,
+    onAppleBackup,
+    onGoogleBackup,
+  }: {
+    onBack: () => void;
+    onAppleBackup: () => void;
+    onGoogleBackup: () => void;
+  }) => (
+    <div>
+      <button onClick={onBack} type="button">
+        Back recovery phrase
+      </button>
+      <button onClick={onAppleBackup} type="button">
+        Continue with Apple
+      </button>
+      <button onClick={onGoogleBackup} type="button">
+        Continue with Google
+      </button>
+    </div>
   ),
   ConflictDetectedScreen: ({
     onClose,
@@ -110,8 +170,10 @@ const renderWithRoutes = (
       <Routes>
         <Route path={routePath} element={element} />
         <Route path="/onboarding/backup" element={<LocationDisplay />} />
+        <Route path="/onboarding/recovery-phrase" element={<LocationDisplay />} />
         <Route path="/onboarding/signin" element={<LocationDisplay />} />
         <Route path="/onboarding/notifications" element={<LocationDisplay />} />
+        <Route path="/onboarding/success" element={<LocationDisplay />} />
         <Route path="/" element={<LocationDisplay />} />
       </Routes>
     </MemoryRouter>,
@@ -120,6 +182,7 @@ const renderWithRoutes = (
 describe('registration prompt screens', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    storageGet.mockResolvedValue(null);
   });
 
   afterEach(() => {
@@ -135,7 +198,43 @@ describe('registration prompt screens', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /finish success/i }));
 
-    expectLocation('/onboarding/backup?mock=default');
+    expectLocation('/onboarding/recovery-phrase?mock=default');
+  });
+
+  it('advances onboarding recovery phrase actions into notifications', () => {
+    renderWithRoutes(
+      ['/onboarding/recovery-phrase?mock=existing-account'],
+      '/onboarding/recovery-phrase',
+      <OnboardingRecoveryPhraseScreen />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /continue with apple/i }));
+
+    expectLocation('/onboarding/notifications?mock=existing-account');
+  });
+
+  it('routes the google onboarding recovery phrase action into notifications', () => {
+    renderWithRoutes(
+      ['/onboarding/recovery-phrase?mock=default'],
+      '/onboarding/recovery-phrase',
+      <OnboardingRecoveryPhraseScreen />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /continue with google/i }));
+
+    expectLocation('/onboarding/notifications?mock=default');
+  });
+
+  it('falls back to scan success when closing onboarding recovery phrase without history', () => {
+    renderWithRoutes(
+      ['/onboarding/recovery-phrase?mock=default'],
+      '/onboarding/recovery-phrase',
+      <OnboardingRecoveryPhraseScreen />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /back recovery phrase/i }));
+
+    expectLocation('/onboarding/success?mock=default');
   });
 
   it('preserves prompt mock state when dismissing the backup method picker', () => {
@@ -162,10 +261,9 @@ describe('registration prompt screens', () => {
     expectLocation('/onboarding/signin?mock=existing-account');
   });
 
-  it('uses header back on conflict to return to the prior prompt screen', () => {
-    vi.mocked(shouldUseHistoryBack).mockReturnValue(true);
+  it('closes conflict screen to the signin screen', () => {
     renderWithRoutes(
-      ['/onboarding/signin?mock=existing-account', '/onboarding/conflict?mock=existing-account'],
+      ['/onboarding/conflict?mock=existing-account'],
       '/onboarding/conflict',
       <ConflictDetectedScreen />,
     );
@@ -187,16 +285,15 @@ describe('registration prompt screens', () => {
     expectLocation('/');
   });
 
-  it('uses header back on notifications to return to the backup screen', () => {
-    vi.mocked(shouldUseHistoryBack).mockReturnValue(true);
+  it('closes notifications screen to the recovery phrase screen', () => {
     renderWithRoutes(
-      ['/onboarding/backup?mock=default', '/onboarding/notifications?mock=default'],
+      ['/onboarding/notifications?mock=default'],
       '/onboarding/notifications',
       <PushNotificationPromptScreen />,
     );
 
     fireEvent.click(screen.getByRole('button', { name: /close notifications/i }));
 
-    expectLocation('/onboarding/backup?mock=default');
+    expectLocation('/onboarding/recovery-phrase?mock=default');
   });
 });

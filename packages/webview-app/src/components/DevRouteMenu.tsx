@@ -32,6 +32,7 @@ const screenGroups: DevScreenGroup[] = [
       { href: '/onboarding/country', label: 'Country Picker' },
       { href: '/onboarding/confirm', label: 'Confirm ID' },
       { href: '/onboarding/success', label: 'Scan Success' },
+      { href: '/onboarding/recovery-phrase', label: 'Recovery Phrase' },
       { href: '/onboarding/failure', label: 'Registration Failure' },
       { href: '/onboarding/backup', label: 'Social Sign-On Method' },
       { href: '/onboarding/signin', label: 'Social Sign-On' },
