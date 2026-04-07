@@ -201,11 +201,17 @@ class AndroidWebViewHost(
             remoteWebAppBaseUrl: String = "https://self-app-alpha.vercel.app",
             devServerUrl: String? = null,
         ): String {
-            val baseUrl = when {
-                isDebugMode && devServerUrl != null -> devServerUrl.trimEnd('/')
-                isDebugMode -> "http://$DEBUG_HOST:$DEBUG_PORT"
-                else -> remoteWebAppBaseUrl.trimEnd('/')
-            }
+            val baseUrl =
+                when {
+                    isDebugMode && devServerUrl != null -> devServerUrl.trimEnd('/')
+                    isDebugMode -> "http://$DEBUG_HOST:$DEBUG_PORT"
+                    else -> {
+                        require(remoteWebAppBaseUrl.startsWith("https://")) {
+                            "remoteWebAppBaseUrl must use HTTPS in release builds"
+                        }
+                        remoteWebAppBaseUrl.trimEnd('/')
+                    }
+                }
             return buildString {
                 append(baseUrl).append(BUNDLED_TOUR_PATH)
                 if (queryParams.isNotEmpty()) {
@@ -246,7 +252,10 @@ class AndroidWebViewHost(
                 (isDebugMode && isDebugLocalUrl(rawUrl)) ||
                 (isDebugMode && isDevServerUrl(rawUrl, devServerUrl))
 
-        internal fun isRemoteOrigin(rawUrl: String?, remoteWebAppBaseUrl: String?): Boolean {
+        internal fun isRemoteOrigin(
+            rawUrl: String?,
+            remoteWebAppBaseUrl: String?,
+        ): Boolean {
             if (rawUrl == null || remoteWebAppBaseUrl == null) return false
             val url = parseUri(rawUrl) ?: return false
             val remote = parseUri(remoteWebAppBaseUrl) ?: return false
@@ -255,12 +264,20 @@ class AndroidWebViewHost(
                 resolvedPort(url) == resolvedPort(remote)
         }
 
-        private fun isDiditUrl(rawUrl: String?): Boolean = uriScheme(rawUrl) == "https" && uriHost(rawUrl) == DIDIT_HOST
+        private fun isDiditUrl(rawUrl: String?): Boolean {
+            val port = uriPort(rawUrl)
+            return uriScheme(rawUrl) == "https" &&
+                uriHost(rawUrl) == DIDIT_HOST &&
+                (port == null || port == 443)
+        }
 
         private fun isDebugLocalUrl(rawUrl: String?): Boolean =
             uriScheme(rawUrl) == "http" && uriHost(rawUrl) == DEBUG_HOST && uriPort(rawUrl) == DEBUG_PORT
 
-        private fun isDevServerUrl(rawUrl: String?, devServerUrl: String?): Boolean {
+        private fun isDevServerUrl(
+            rawUrl: String?,
+            devServerUrl: String?,
+        ): Boolean {
             if (rawUrl == null || devServerUrl == null) return false
             val url = parseUri(rawUrl) ?: return false
             val dev = parseUri(devServerUrl) ?: return false
@@ -269,10 +286,14 @@ class AndroidWebViewHost(
                 resolvedPort(url) == resolvedPort(dev)
         }
 
-        private fun buildAllowedOriginRules(isDebugMode: Boolean, remoteWebAppBaseUrl: String, devServerUrl: String? = null): Set<String> {
+        private fun buildAllowedOriginRules(
+            isDebugMode: Boolean,
+            remoteWebAppBaseUrl: String,
+            devServerUrl: String? = null,
+        ): Set<String> {
             val remote = parseUri(remoteWebAppBaseUrl)
             return buildSet {
-                if (remote != null) {
+                if (remote != null && remote.scheme == "https") {
                     val host = remote.host ?: remote.authority
                     val port = resolvedPort(remote)
                     val defaultPort = if (remote.scheme == "https") 443 else 80

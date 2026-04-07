@@ -48,6 +48,18 @@ final class SelfWebViewHostTests: XCTestCase {
         )
     }
 
+    func testHttpBaseURLProducesNilInRelease() {
+        let router = MessageRouter(sendToWebView: { _ in })
+        let host = SelfWebViewHost(
+            router: router,
+            isDebugMode: false,
+            remoteWebAppBaseURL: URL(string: "http://self-app-alpha.vercel.app")
+        )
+        _ = host.createWebView()
+
+        XCTAssertNil(host.initialContentURL(queryParams: ""))
+    }
+
     func testBridgeTrustAcceptsRemoteRejectsDidit() {
         let router = MessageRouter(sendToWebView: { _ in })
         let host = SelfWebViewHost(router: router, isDebugMode: false)

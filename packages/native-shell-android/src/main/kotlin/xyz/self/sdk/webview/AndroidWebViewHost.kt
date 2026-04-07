@@ -232,6 +232,9 @@ class AndroidWebViewHost(
                     }
                 }
             } else {
+                require(remoteWebAppBaseUrl.startsWith("https://")) {
+                    "remoteWebAppBaseUrl must use HTTPS in release builds"
+                }
                 buildString {
                     append(remoteWebAppBaseUrl.trimEnd('/')).append(BUNDLED_TOUR_PATH)
                     if (queryParams.isNotEmpty()) {
@@ -266,7 +269,12 @@ class AndroidWebViewHost(
             isRemoteOrigin(rawUrl, remoteWebAppBaseUrl) ||
                 (isDebugMode && isDebugLocalUrl(rawUrl))
 
-        private fun isDiditUrl(rawUrl: String?): Boolean = uriScheme(rawUrl) == "https" && uriHost(rawUrl) == DIDIT_HOST
+        private fun isDiditUrl(rawUrl: String?): Boolean {
+            val port = uriPort(rawUrl)
+            return uriScheme(rawUrl) == "https" &&
+                uriHost(rawUrl) == DIDIT_HOST &&
+                (port == null || port == 443)
+        }
 
         private fun isDebugLocalUrl(rawUrl: String?): Boolean =
             uriScheme(rawUrl) == "http" && uriHost(rawUrl) == DEBUG_HOST && uriPort(rawUrl) == DEBUG_PORT
@@ -287,6 +295,7 @@ class AndroidWebViewHost(
         private fun buildOriginRule(rawUrl: String): String? {
             val uri = parseUri(rawUrl) ?: return null
             val scheme = uri.scheme ?: return null
+            if (scheme != "https") return null
             val host = uri.host ?: return null
             val port = uri.port.takeIf { it != -1 }
 

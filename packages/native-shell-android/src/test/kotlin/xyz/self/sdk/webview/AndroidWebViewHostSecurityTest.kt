@@ -4,6 +4,7 @@ package xyz.self.sdk.webview
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -19,7 +20,8 @@ class AndroidWebViewHostSecurityTest {
     @Test
     fun `debug builds launch localhost`() {
         assertTrue(
-            AndroidWebViewHost.initialContentUrl(queryParams = "", isDebugMode = true)
+            AndroidWebViewHost
+                .initialContentUrl(queryParams = "", isDebugMode = true)
                 .startsWith("http://127.0.0.1:5173"),
         )
     }
@@ -52,6 +54,29 @@ class AndroidWebViewHostSecurityTest {
             AndroidWebViewHost.isAllowedNavigationUrl(
                 "http://127.0.0.1:5173/tunnel/tour/1",
                 isDebugMode = true,
+            ),
+        )
+    }
+
+    @Test
+    fun `release build rejects HTTP base URL`() {
+        assertFailsWith<IllegalArgumentException> {
+            AndroidWebViewHost.initialContentUrl(
+                queryParams = "",
+                isDebugMode = false,
+                remoteWebAppBaseUrl = "http://self-app-alpha.vercel.app",
+            )
+        }
+    }
+
+    @Test
+    fun `didit on non-443 port is rejected`() {
+        val remoteBase = "https://self-app-alpha.vercel.app"
+        assertFalse(
+            AndroidWebViewHost.isAllowedNavigationUrl(
+                "https://verify.didit.me:8443/session/123",
+                isDebugMode = false,
+                remoteWebAppBaseUrl = remoteBase,
             ),
         )
     }

@@ -26,6 +26,13 @@ final class WebViewProviderImplTests: XCTestCase {
         XCTAssertTrue(url.path.contains("/tunnel/tour/1"))
     }
 
+    func testHttpBaseURLProducesNilInRelease() {
+        let provider = WebViewProviderImpl()
+        provider.configureRemoteLoading(remoteWebAppBaseURL: "http://self-app-alpha.vercel.app")
+
+        XCTAssertNil(provider.initialContentURL(queryParams: nil))
+    }
+
     func testAllowedNavigationAcceptsRemoteAlphaAndDidit() {
         let provider = WebViewProviderImpl()
 
@@ -37,6 +44,16 @@ final class WebViewProviderImplTests: XCTestCase {
         XCTAssertTrue(
             provider.isAllowedNavigationURL(
                 URL(string: "https://self-app-alpha.vercel.app/tunnel/tour/1")
+            )
+        )
+    }
+
+    func testDiditOnNonStandardPortIsRejected() {
+        let provider = WebViewProviderImpl()
+
+        XCTAssertFalse(
+            provider.isAllowedNavigationURL(
+                URL(string: "https://verify.didit.me:8443/session/123")
             )
         )
     }

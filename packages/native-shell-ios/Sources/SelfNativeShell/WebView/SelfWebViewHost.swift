@@ -48,8 +48,15 @@ final class SelfWebViewHost: NSObject {
 
     func loadContent(queryParams: String) {
         guard let webView = webView else { return }
-        let baseURL = isDebugMode ? URL(string: "http://localhost:5173") : remoteWebAppBaseURL
-        if let url = RemoteNavigationPolicy.makeEntryURL(baseURL: baseURL, queryParams: queryParams) {
+        if isDebugMode {
+            let debugBase = URL(string: "http://localhost:5173")
+            if let url = RemoteNavigationPolicy.makeEntryURL(baseURL: debugBase, queryParams: queryParams) {
+                webView.load(URLRequest(url: url))
+            }
+            return
+        }
+        guard remoteWebAppBaseURL.scheme == "https" else { return }
+        if let url = RemoteNavigationPolicy.makeEntryURL(baseURL: remoteWebAppBaseURL, queryParams: queryParams) {
             webView.load(URLRequest(url: url))
         }
     }
@@ -130,8 +137,12 @@ private extension SelfWebViewHost {
 
 extension SelfWebViewHost {
     func initialContentURL(queryParams: String) -> URL? {
-        let baseURL = isDebugMode ? URL(string: "http://localhost:5173") : remoteWebAppBaseURL
-        return RemoteNavigationPolicy.makeEntryURL(baseURL: baseURL, queryParams: queryParams)
+        if isDebugMode {
+            let debugBase = URL(string: "http://localhost:5173")
+            return RemoteNavigationPolicy.makeEntryURL(baseURL: debugBase, queryParams: queryParams)
+        }
+        guard remoteWebAppBaseURL.scheme == "https" else { return nil }
+        return RemoteNavigationPolicy.makeEntryURL(baseURL: remoteWebAppBaseURL, queryParams: queryParams)
     }
 
     func isAllowedNavigationURL(_ url: URL?, host: String? = nil) -> Bool {
@@ -149,7 +160,16 @@ extension SelfWebViewHost {
         }
         return origin.protocol == remoteWebAppBaseURL.scheme &&
             origin.host == remoteWebAppBaseURL.host &&
-            origin.port == resolvedPort(for: remoteWebAppBaseURL)
+            resolvedSecurityOriginPort(origin) == resolvedPort(for: remoteWebAppBaseURL)
+    }
+
+    private func resolvedSecurityOriginPort(_ origin: WKSecurityOrigin) -> Int {
+        if origin.port != 0 { return origin.port }
+        switch origin.protocol {
+        case "https": return 443
+        case "http": return 80
+        default: return 0
+        }
     }
 }
 

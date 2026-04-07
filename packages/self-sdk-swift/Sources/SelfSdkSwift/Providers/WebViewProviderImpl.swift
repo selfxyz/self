@@ -197,6 +197,7 @@ extension WebViewProviderImpl {
             return components.url
         }
 
+        guard remoteWebAppBaseURL.scheme == "https" else { return nil }
         var components = URLComponents()
         components.scheme = remoteWebAppBaseURL.scheme
         components.host = remoteWebAppBaseURL.host
@@ -212,7 +213,7 @@ extension WebViewProviderImpl {
         guard let url else { return false }
         let resolvedHost = host ?? url.host
         return isTrustedBridgeURL(url) ||
-            (url.scheme == "https" && resolvedHost == Self.diditHost)
+            (url.scheme == "https" && resolvedHost == Self.diditHost && resolvedPort(for: url) == 443)
     }
 
     func isTrustedBridgeURL(_ url: URL?) -> Bool {
@@ -232,7 +233,16 @@ extension WebViewProviderImpl {
         let expectedPort = resolvedPort(for: remoteWebAppBaseURL)
         return origin.protocol == remoteWebAppBaseURL.scheme &&
             origin.host == remoteWebAppBaseURL.host &&
-            origin.port == expectedPort
+            resolvedSecurityOriginPort(origin) == expectedPort
+    }
+
+    private func resolvedSecurityOriginPort(_ origin: WKSecurityOrigin) -> Int {
+        if origin.port != 0 { return origin.port }
+        switch origin.protocol {
+        case "https": return 443
+        case "http": return 80
+        default: return 0
+        }
     }
 
     private func resolvedPort(for url: URL) -> Int {

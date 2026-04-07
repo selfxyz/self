@@ -48,7 +48,8 @@ enum RemoteNavigationPolicy {
         guard url.scheme == "https", let host = url.host else {
             return false
         }
-        return allowedSubframeHosts.contains(host)
+        let port = resolvedPort(for: url)
+        return allowedSubframeHosts.contains(host) && port == 443
     }
 
     static func resolvedPort(for url: URL) -> Int {
