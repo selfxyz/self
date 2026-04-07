@@ -14,7 +14,7 @@
     "bump-version:major": "npm version major && yarn sync-versions",
     "bump-version:minor": "npm version minor && yarn sync-versions",
     "bump-version:patch": "npm version patch && yarn sync-versions",
-    "clean": "yarn clean:watchman && yarn clean:build && yarn clean:ios && yarn clean:xcode && yarn clean:pod-cache && yarn clean:node && yarn clean:android-deps",
+    "clean": "yarn clean:watchman && yarn clean:build && yarn clean:ios && yarn clean:xcode && yarn clean:pod-cache && yarn clean:android-deps && yarn clean:node",
     "clean:android-deps": "node scripts/cleanup-private-modules.cjs",
     "clean:build": "rm -rf ios/build android/app/build android/build",
     "clean:ios": "rm -rf ios/Pods ios/Podfile.lock Gemfile.lock",
