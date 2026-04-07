@@ -61,6 +61,31 @@ vi.mock('@selfxyz/euclid', () => ({
     insets: { top, bottom, left: 0, right: 0 },
     safeArea: { top, bottom, left: 0, right: 0 },
   }),
+  colors: {
+    slate50: '#f8fafc',
+    blue50: '#eff6ff',
+    blue100: '#dbeafe',
+    black: '#000000',
+    slate500: '#64748b',
+  },
+  spacing: {
+    mdLg: 24,
+    xlLg: 32,
+    smLg: 16,
+    smPlus: 12,
+  },
+  borderRadius: {
+    mdd: 14,
+  },
+  fontFamily: {
+    dinOT: 'DIN OT',
+  },
+  fontWeight: {
+    medium: 500,
+  },
+  LeftArrowIcon: () => null,
+  TopNavigationDialogue: () => null,
+  RecoveryPhrase: () => null,
   ScanSuccessScreen: ({ onClose, onFinish }: { onClose: () => void; onFinish: () => void }) => (
     <div>
       <button onClick={onClose} type="button">
