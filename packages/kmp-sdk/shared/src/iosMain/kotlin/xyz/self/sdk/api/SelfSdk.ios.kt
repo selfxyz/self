@@ -100,7 +100,7 @@ actual class SelfSdk private constructor(
         val queryParams = buildQueryParams(request)
 
         // Create WebView host and the web view
-        webViewHost = IosWebViewHost(router!!, config.debug)
+        webViewHost = IosWebViewHost(router!!, config.debug, remoteWebAppBaseUrl = config.remoteWebAppBaseUrl)
         webViewHost!!.createWebView(queryParams)
 
         // Get the ViewController from the WebView provider and present it

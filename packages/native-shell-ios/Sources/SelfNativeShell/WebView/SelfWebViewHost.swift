@@ -5,13 +5,21 @@ import UIKit
 import WebKit
 
 final class SelfWebViewHost: NSObject {
+    private static let defaultRemoteBaseURL = URL(string: "https://self-app-alpha.vercel.app")!
+
     private var webView: WKWebView?
     private let router: MessageRouter
     private let isDebugMode: Bool
+    private let remoteWebAppBaseURL: URL
 
-    init(router: MessageRouter, isDebugMode: Bool = false) {
+    init(
+        router: MessageRouter,
+        isDebugMode: Bool = false,
+        remoteWebAppBaseURL: URL? = nil
+    ) {
         self.router = router
         self.isDebugMode = isDebugMode
+        self.remoteWebAppBaseURL = remoteWebAppBaseURL ?? Self.defaultRemoteBaseURL
         super.init()
     }
 
@@ -28,34 +36,55 @@ final class SelfWebViewHost: NSObject {
         webView.scrollView.bounces = false
         webView.isOpaque = false
         webView.backgroundColor = .clear
+        webView.navigationDelegate = self
 
         if #available(iOS 16.4, *) {
             webView.isInspectable = isDebugMode
         }
 
-        webView.navigationDelegate = self
         self.webView = webView
         return webView
     }
 
     func loadContent(queryParams: String) {
         guard let webView = webView else { return }
-
-        var urlString = "https://self-app-alpha.vercel.app/tunnel/tour/1"
-        if !queryParams.isEmpty {
-            urlString += "?\(queryParams)"
-        }
-        guard let url = URL(string: urlString) else {
-            NSLog("SelfWebViewHost: Failed to construct URL from: %@", urlString)
+        if isDebugMode {
+            let debugBase = URL(string: "http://localhost:5173")
+            if let url = RemoteNavigationPolicy.makeEntryURL(baseURL: debugBase, queryParams: queryParams) {
+                webView.load(URLRequest(url: url))
+            }
             return
         }
-        webView.load(URLRequest(url: url))
+        guard remoteWebAppBaseURL.scheme == "https" else { return }
+        if let url = RemoteNavigationPolicy.makeEntryURL(baseURL: remoteWebAppBaseURL, queryParams: queryParams) {
+            webView.load(URLRequest(url: url))
+        }
     }
 
     func evaluateJs(_ js: String) {
         DispatchQueue.main.async { [weak self] in
             self?.webView?.evaluateJavaScript(js, completionHandler: nil)
         }
+    }
+
+    private func isAllowedNavigation(url: URL) -> Bool {
+        RemoteNavigationPolicy.isAllowedMainFrameNavigation(
+            url: url,
+            remoteWebAppBaseURL: remoteWebAppBaseURL,
+            isDebugMode: isDebugMode
+        )
+    }
+
+    private func resolvedPort(for url: URL) -> Int {
+        RemoteNavigationPolicy.resolvedPort(for: url)
+    }
+
+    private func isAllowedSubframeNavigation(url: URL) -> Bool {
+        RemoteNavigationPolicy.isAllowedSubframeNavigation(
+            url: url,
+            remoteWebAppBaseURL: remoteWebAppBaseURL,
+            isDebugMode: isDebugMode
+        )
     }
 }
 
@@ -65,14 +94,17 @@ extension SelfWebViewHost: WKNavigationDelegate {
         decidePolicyFor navigationAction: WKNavigationAction,
         decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
     ) {
-        guard let url = navigationAction.request.url, let host = url.host else {
+        guard let url = navigationAction.request.url else {
             decisionHandler(.cancel)
             return
         }
-        let isTrusted =
-            (url.scheme == "https" && host == "self-app-alpha.vercel.app") ||
-            (isDebugMode && url.scheme == "http" && host == "127.0.0.1")
-        decisionHandler(isTrusted ? .allow : .cancel)
+
+        if let targetFrame = navigationAction.targetFrame, !targetFrame.isMainFrame {
+            decisionHandler(isAllowedSubframeNavigation(url: url) ? .allow : .cancel)
+            return
+        }
+
+        decisionHandler(isAllowedNavigation(url: url) ? .allow : .cancel)
     }
 }
 
@@ -82,10 +114,64 @@ extension SelfWebViewHost: WKScriptMessageHandler {
         didReceive message: WKScriptMessage
     ) {
         guard message.name == "SelfNativeIOS",
+              message.frameInfo.isMainFrame,
+              isTrustedBridgeFrameInfo(message.frameInfo.securityOrigin),
               let body = message.body as? String else {
             return
         }
-        router.onMessageReceived(rawJson: body)
+        router.onMessageReceived(rawJson: body, isTrustedSource: true)
+    }
+}
+
+private extension SelfWebViewHost {
+    func isTrustedBridgeOrigin(_ url: URL?) -> Bool {
+        guard let url else { return false }
+        if isDebugMode {
+            return url.scheme == "http" &&
+                url.host == "localhost" &&
+                resolvedPort(for: url) == 5173
+        }
+        return url.scheme == remoteWebAppBaseURL.scheme &&
+            url.host == remoteWebAppBaseURL.host &&
+            resolvedPort(for: url) == resolvedPort(for: remoteWebAppBaseURL)
+    }
+}
+
+extension SelfWebViewHost {
+    func initialContentURL(queryParams: String) -> URL? {
+        if isDebugMode {
+            let debugBase = URL(string: "http://localhost:5173")
+            return RemoteNavigationPolicy.makeEntryURL(baseURL: debugBase, queryParams: queryParams)
+        }
+        guard remoteWebAppBaseURL.scheme == "https" else { return nil }
+        return RemoteNavigationPolicy.makeEntryURL(baseURL: remoteWebAppBaseURL, queryParams: queryParams)
+    }
+
+    func isAllowedNavigationURL(_ url: URL?, host: String? = nil) -> Bool {
+        guard let url else { return false }
+        return isAllowedNavigation(url: url) || isAllowedSubframeNavigation(url: url)
+    }
+
+    func isTrustedBridgeURL(_ url: URL?) -> Bool {
+        isTrustedBridgeOrigin(url)
+    }
+
+    func isTrustedBridgeFrameInfo(_ origin: WKSecurityOrigin) -> Bool {
+        if isDebugMode {
+            return origin.protocol == "http" && origin.host == "localhost" && origin.port == 5173
+        }
+        return origin.protocol == remoteWebAppBaseURL.scheme &&
+            origin.host == remoteWebAppBaseURL.host &&
+            resolvedSecurityOriginPort(origin) == resolvedPort(for: remoteWebAppBaseURL)
+    }
+
+    private func resolvedSecurityOriginPort(_ origin: WKSecurityOrigin) -> Int {
+        if origin.port != 0 { return origin.port }
+        switch origin.protocol {
+        case "https": return 443
+        case "http": return 80
+        default: return 0
+        }
     }
 }
 

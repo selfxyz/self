@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "android": "./scripts/run-android.sh",
+    "ios": "./scripts/run-ios.sh",
     "android:build": "./gradlew :composeApp:assembleDebug",
     "clean": "./gradlew clean",
     "format": "./gradlew ktlintFormat && cd iosApp && swiftlint --fix --format",

@@ -16,8 +16,32 @@ import { WEB_SAFE_AREA } from '../../utils/insets';
 interface TunnelResultState {
   success?: boolean;
   error?: string;
-  source?: 'proving' | 'disclose';
+  source?: 'disclose' | 'kyc' | 'proving';
 }
+
+const getTunnelBackPath = (source: TunnelResultState['source']): string => {
+  switch (source) {
+    case 'disclose':
+      return '/tunnel/proof/disclose';
+    case 'kyc':
+      return '/tunnel/kyc';
+    case 'proving':
+    default:
+      return '/tunnel/proof/generating';
+  }
+};
+
+const getTunnelClosePath = (source: TunnelResultState['source']): string => {
+  switch (source) {
+    case 'disclose':
+      return '/tunnel/proof/disclose';
+    case 'kyc':
+      return '/tunnel/kyc';
+    case 'proving':
+    default:
+      return '/tunnel/tour/4';
+  }
+};
 
 export const TunnelResultScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -51,17 +75,18 @@ export const TunnelResultScreen: React.FC = () => {
   }, [request.userId, verificationId, lifecycle, analytics]);
 
   const onRetry = useCallback(() => {
-    navigate(source === 'disclose' ? '/tunnel/proof/disclose' : '/tunnel/proof/generating');
+    navigate(getTunnelBackPath(source), { replace: true });
   }, [navigate, source]);
 
   const onViewDetails = useCallback(() => {
-    navigate('/tunnel/proof/receipt');
-  }, [navigate]);
+    navigate('/tunnel/proof/receipt', {
+      state: { backPath: location.pathname, backState: location.state },
+    });
+  }, [location.pathname, location.state, navigate]);
 
   const onCancel = useCallback(() => {
-    lifecycle.dismiss({ reason: 'back' });
-    navigate('/');
-  }, [lifecycle, navigate]);
+    navigate(getTunnelClosePath(source), { replace: true });
+  }, [navigate, source]);
 
   if (success) {
     return (

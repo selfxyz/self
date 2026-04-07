@@ -11,7 +11,6 @@ import { ComingSoonScreen as EuclidComingSoonScreen } from '@selfxyz/euclid';
 import { useSelfClient } from '../providers/SelfClientProvider';
 import { getCountryName, renderFlag } from '../utils/countryFlags';
 import { WEB_SAFE_AREA } from '../utils/insets';
-import { shouldUseHistoryBack } from '../utils/mockOnboardingFlow';
 
 export const ComingSoonScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -29,11 +28,6 @@ export const ComingSoonScreen: React.FC = () => {
   const onDismiss = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('coming_soon_dismissed');
-    if (shouldUseHistoryBack()) {
-      navigate(-1);
-      return;
-    }
-
     navigate('/');
   }, [navigate, haptic, analytics]);
 
