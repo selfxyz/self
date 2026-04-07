@@ -4,11 +4,11 @@
 
 import { ProofEvents } from '../../../src/constants/analytics';
 import { markCurrentDocumentAsRegistered } from '../../../src/documents/utils';
+import { setupActorSubscriptions } from '../../../src/proving/internal/actorSubscriptions';
 import type { ProvingDependencies, ProvingStateWithMethods } from '../../../src/proving/internal/dependencyFactory';
 import { handleRegisterErrorOrFailure } from '../../../src/proving/internal/websocketHandlers';
 import { SdkEvents } from '../../../src/types/events';
 import type { SelfClient } from '../../../src/types/public';
-import { setupActorSubscriptions } from '../../../src/proving/internal/actorSubscriptions';
 import { actorMock, emitState } from '../actorMock';
 
 vi.mock('../../../src/documents/utils', () => ({

@@ -11,6 +11,18 @@ import type { IDDocument } from '@selfxyz/common/utils/types';
 import type { SelfClient } from '../../types/public';
 import type { provingMachineCircuitType, ProvingStateType, WsHandlers } from '../types';
 
+export interface ProvingDependencies {
+  get: ProvingGetState;
+  set: ProvingSetState;
+  getActor: ProvingGetActor;
+}
+
+export type ProvingGetActor = () => AnyActorRef | null;
+
+export type ProvingGetState = () => ProvingStoreSnapshot;
+
+export type ProvingSetState = (partial: Partial<ProvingStoreSnapshot>) => void;
+
 /**
  * Union of all store methods that internal modules access via deps.get() casts.
  * Centralised here so each module imports one type instead of defining its own subset.
@@ -34,17 +46,6 @@ export type ProvingStateWithMethods = ProvingStoreSnapshot & {
   _handleAccountVerifiedSuccess: (selfClient: SelfClient) => void;
   _handlePassportDataNotFound: (selfClient: SelfClient) => void;
 };
-
-export interface ProvingDependencies {
-  get: ProvingGetState;
-  set: ProvingSetState;
-  getActor: ProvingGetActor;
-}
-export type ProvingGetActor = () => AnyActorRef | null;
-
-export type ProvingGetState = () => ProvingStoreSnapshot;
-
-export type ProvingSetState = (partial: Partial<ProvingStoreSnapshot>) => void;
 
 export interface ProvingStoreSnapshot {
   currentState: ProvingStateType;

@@ -124,9 +124,9 @@ export const startFetchingData = async (selfClient: SelfClient, deps: ProvingDep
     if (!passportData) {
       throw new Error('PassportData is not available');
     }
-      const document: DocumentCategory = passportData.documentCategory;
-      console.log('document', document);
-      switch (passportData.documentCategory) {
+    const document: DocumentCategory = passportData.documentCategory;
+    console.log('document', document);
+    switch (passportData.documentCategory) {
       case 'passport':
       case 'id_card':
         if (!passportData?.dsc_parsed?.authorityKeyIdentifier) {
