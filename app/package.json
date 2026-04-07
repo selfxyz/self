@@ -33,7 +33,7 @@
     "postinstall": "npx patch-package --patch-dir ../patches || true",
     "install-app": "yarn install-app:setup && yarn clean:xcode-env-local",
     "install-app:mobile-deploy": "yarn install && yarn build:deps && yarn clean:xcode-env-local",
-    "install-app:setup": "yarn install && yarn build:deps && yarn setup:android-deps && cd ios && bundle install && scripts/pod-install-with-cache-fix.sh && cd ..",
+    "install-app:setup": "yarn install && yarn build:deps && yarn setup:android-deps && cd ios && scripts/install-ios-deps-if-needed.sh && cd ..",
     "ios": "yarn build:deps && node scripts/run-ios-simulator.cjs",
     "ios:fastlane-debug": "yarn reinstall && bundle exec fastlane --verbose ios internal_test",
     "jest:clear": "node ./node_modules/jest/bin/jest.js --clearCache",

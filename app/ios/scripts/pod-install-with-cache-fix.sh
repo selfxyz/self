@@ -12,12 +12,11 @@ if bundle exec pod install --no-repo-update; then
   exit 0
 fi
 
-echo "⚠️ pod install failed; clearing CocoaPods caches and refreshing Hermes..."
-bundle exec pod cache clean --all > /dev/null 2>&1 || true
-rm -rf ~/Library/Caches/CocoaPods > /dev/null 2>&1 || true
+echo "⚠️ pod install failed; clearing Hermes cache and retrying..."
+bundle exec pod cache clean hermes-engine --all > /dev/null 2>&1 || true
 
 echo "🔧 Running targeted fix: bundle exec pod update hermes-engine..."
-bundle exec pod update hermes-engine --no-repo-update
+bundle exec pod update hermes-engine --no-repo-update --verbose
 
 echo "🔄 Retrying pod install..."
 bundle exec pod install --no-repo-update
