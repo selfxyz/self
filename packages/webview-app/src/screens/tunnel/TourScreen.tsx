@@ -4,7 +4,7 @@
 
 import type React from 'react';
 import { useCallback } from 'react';
-import { Navigate, useNavigate, useParams } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import { LaunchTour1Screen, LaunchTour2Screen, LaunchTour3Screen, LaunchTour4Screen } from '@selfxyz/euclid';
 import { loadSelectedDocument } from '@selfxyz/mobile-sdk-alpha/browser';
@@ -14,13 +14,15 @@ import { WEB_SAFE_AREA } from '../../utils/insets';
 
 export const TourScreen: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { step } = useParams<{ step: string }>();
   const stepNum = parseInt(step ?? '1', 10);
   const { client } = useSelfClient();
+  const mockParam = import.meta.env.DEV ? location.search : '';
 
   const onNext = useCallback(async () => {
     if (stepNum < 4) {
-      navigate(`/tunnel/tour/${stepNum + 1}`);
+      navigate(`/tunnel/tour/${stepNum + 1}${mockParam}`);
       return;
     }
 
@@ -34,8 +36,8 @@ export const TourScreen: React.FC = () => {
       // Fall through to KYC when document state is unavailable.
     }
 
-    navigate('/tunnel/kyc');
-  }, [navigate, stepNum, client]);
+    navigate(`/tunnel/kyc${mockParam}`);
+  }, [navigate, stepNum, client, mockParam]);
 
   const onRestore = useCallback(() => {
     navigate('/recovery', { state: { backPath: `/tunnel/tour/${step ?? '1'}` } });

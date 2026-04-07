@@ -72,15 +72,25 @@ const screenGroups: DevScreenGroup[] = [
     ],
   },
   {
-    title: 'Tunnel',
+    title: 'Tunnel — Screens',
     links: [
       { href: '/tunnel/tour/1', label: 'Tour' },
-      { href: '/tunnel/kyc', label: 'KYC Mock' },
       { href: '/tunnel/registration/country', label: 'Country Picker' },
       { href: '/tunnel/registration/id-type', label: 'ID Type' },
-      { href: '/tunnel/proof/receipt', label: 'Proof Receipt' },
+      { href: '/tunnel/kyc-failure', label: 'KYC Failure' },
+      { href: '/tunnel/recovery-required', label: 'Recovery Required' },
       { href: '/tunnel/proof/generating', label: 'Proving' },
       { href: '/tunnel/proof/result', label: 'Result' },
+      { href: '/tunnel/proof/receipt', label: 'Proof Receipt' },
+    ],
+  },
+  {
+    title: 'Tunnel — Mock KYC',
+    links: [
+      { href: '/tunnel/tour/1?mock=success', label: 'Flow → Proving Failure' },
+      { href: '/tunnel/tour/1?mock=kyc-failure', label: 'Flow → Failure (retryable)' },
+      { href: '/tunnel/tour/1?mock=registration-failure', label: 'Flow → Failure (fatal)' },
+      { href: '/tunnel/tour/1?mock=cancel', label: 'Flow → Cancel' },
     ],
   },
   {
@@ -103,10 +113,10 @@ export const DevRouteMenu: React.FC = () => {
     }
   }, [isOpen]);
 
-  const currentLabel = useMemo(
-    () => allLinks.find(link => link.href === location.pathname)?.label ?? 'Dev Screens',
-    [location.pathname],
-  );
+  const currentLabel = useMemo(() => {
+    const fullPath = `${location.pathname}${location.search}`;
+    return allLinks.find(link => link.href === fullPath)?.label ?? 'Dev Screens';
+  }, [location.pathname, location.search]);
 
   return (
     <div
@@ -151,7 +161,7 @@ export const DevRouteMenu: React.FC = () => {
                 {group.title}
               </div>
               {group.links.map(link => {
-                const isActive = location.pathname === link.href;
+                const isActive = `${location.pathname}${location.search}` === link.href;
 
                 return (
                   <button
