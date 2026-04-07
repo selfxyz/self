@@ -21,4 +21,6 @@ interface WebViewProvider {
     fun getViewController(): UIViewController
 
     fun isBridgeRequestAllowed(): Boolean
+
+    fun configureRemoteLoading(remoteWebAppBaseURL: String?) {}
 }

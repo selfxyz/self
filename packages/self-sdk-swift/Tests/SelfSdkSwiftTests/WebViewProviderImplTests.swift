@@ -6,37 +6,68 @@ import XCTest
 @testable import SelfSdkSwift
 
 final class WebViewProviderImplTests: XCTestCase {
-    func testReleaseBuildUsesLoopbackOrigin() throws {
+    func testReleaseBuildUsesRemoteOrigin() throws {
         let provider = WebViewProviderImpl()
-        // Create webView to start the local server (port assigned dynamically)
-        _ = provider.createWebView(onMessageReceived: { _ in }, isDebugMode: false)
+
+        let url = try XCTUnwrap(provider.initialContentURL(queryParams: nil))
+        XCTAssertEqual(url.scheme, "https")
+        XCTAssertEqual(url.host, "self-app-alpha.vercel.app")
+        XCTAssertTrue(url.path.contains("/tunnel/tour/1"))
+    }
+
+    func testDebugBuildUsesLocalhost() throws {
+        let provider = WebViewProviderImpl()
+        _ = provider.createWebView(onMessageReceived: { _ in }, isDebugMode: true)
 
         let url = try XCTUnwrap(provider.initialContentURL(queryParams: nil))
         XCTAssertEqual(url.scheme, "http")
         XCTAssertEqual(url.host, "127.0.0.1")
-        XCTAssertNotNil(url.port)
+        XCTAssertEqual(url.port, 5173)
         XCTAssertTrue(url.path.contains("/tunnel/tour/1"))
     }
 
-    func testAllowedNavigationRejectsRemoteAlphaOrigin() {
+    func testAllowedNavigationAcceptsRemoteAlphaAndDidit() {
         let provider = WebViewProviderImpl()
-        _ = provider.createWebView(onMessageReceived: { _ in }, isDebugMode: false)
 
         XCTAssertTrue(
             provider.isAllowedNavigationURL(
                 URL(string: "https://verify.didit.me/session/123")
             )
         )
-        XCTAssertFalse(
+        XCTAssertTrue(
             provider.isAllowedNavigationURL(
                 URL(string: "https://self-app-alpha.vercel.app/tunnel/tour/1")
             )
         )
     }
 
-    func testBridgeTrustRejectsVercelAndDidit() {
+    func testAllowedNavigationRejectsArbitraryOrigins() {
         let provider = WebViewProviderImpl()
-        _ = provider.createWebView(onMessageReceived: { _ in }, isDebugMode: false)
+
+        XCTAssertFalse(
+            provider.isAllowedNavigationURL(
+                URL(string: "https://evil.com/tunnel/tour/1")
+            )
+        )
+        XCTAssertFalse(
+            provider.isAllowedNavigationURL(
+                URL(string: "http://example.com/test")
+            )
+        )
+    }
+
+    func testBridgeTrustAcceptsRemoteOrigin() {
+        let provider = WebViewProviderImpl()
+
+        XCTAssertTrue(
+            provider.isTrustedBridgeURL(
+                URL(string: "https://self-app-alpha.vercel.app/tunnel/tour/1")
+            )
+        )
+    }
+
+    func testBridgeTrustRejectsDiditAndArbitrary() {
+        let provider = WebViewProviderImpl()
 
         XCTAssertFalse(
             provider.isTrustedBridgeURL(
@@ -45,7 +76,7 @@ final class WebViewProviderImplTests: XCTestCase {
         )
         XCTAssertFalse(
             provider.isTrustedBridgeURL(
-                URL(string: "https://self-app-alpha.vercel.app/tunnel/tour/1")
+                URL(string: "https://evil.com/tunnel/tour/1")
             )
         )
     }

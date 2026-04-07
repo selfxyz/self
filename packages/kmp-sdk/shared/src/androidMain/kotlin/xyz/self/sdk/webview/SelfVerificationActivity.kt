@@ -63,7 +63,14 @@ class SelfVerificationActivity : AppCompatActivity() {
             return
         }
 
-        webViewHost = AndroidWebViewHost(this, router, isDebugMode)
+        val configJson = intent.getStringExtra(EXTRA_CONFIG) ?: "{}"
+        val remoteWebAppBaseUrl = try {
+            org.json.JSONObject(configJson).optString("remoteWebAppBaseUrl", "https://self-app-alpha.vercel.app")
+        } catch (_: Exception) {
+            "https://self-app-alpha.vercel.app"
+        }
+
+        webViewHost = AndroidWebViewHost(this, router, isDebugMode, remoteWebAppBaseUrl)
         val webView = webViewHost.createWebView(queryParams)
         setContentView(webView)
     }
