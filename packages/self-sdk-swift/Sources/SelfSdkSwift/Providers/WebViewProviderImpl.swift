@@ -12,12 +12,13 @@ public class WebViewProviderImpl: NSObject {
     static let loopbackHost = "127.0.0.1"
     static let diditHost = "verify.didit.me"
     static let debugPort: UInt16 = 5173
+    private static let defaultRemoteBaseURL = URL(string: "https://self-app-alpha.vercel.app")!
 
     private var webView: WKWebView?
     private var viewController: UIViewController?
     private var onMessageReceived: ((String) -> Void)?
     private var isDebugMode: Bool = false
-    private var assetServer: LocalAssetServer?
+    private var remoteWebAppBaseURL: URL = WebViewProviderImpl.defaultRemoteBaseURL
 
     /// Weak proxy to avoid retain cycles with WKScriptMessageHandler
     private var messageProxy: WeakScriptMessageProxy?
@@ -38,20 +39,7 @@ public class WebViewProviderImpl: NSObject {
             self.viewController = nil
         }
 
-        assetServer?.stop()
-        assetServer = nil
-
         self.onMessageReceived = onMessageReceived
-
-        if !isDebugMode {
-            let server = LocalAssetServer(bundle: .module, resourceRoot: "self-sdk-web")
-            do {
-                try server.start()
-            } catch {
-                NSLog("SelfSDK-WebView: Failed to start local asset server: %@", "\(error)")
-            }
-            assetServer = server
-        }
 
         // Create message proxy to avoid retain cycle
         let proxy = WeakScriptMessageProxy()
@@ -117,12 +105,10 @@ public class WebViewProviderImpl: NSObject {
         isTrustedBridgeURL(webView?.url)
     }
 
-    private var bundledPort: UInt16 {
-        assetServer?.port ?? 0
-    }
-
-    deinit {
-        assetServer?.stop()
+    @objc(configureRemoteLoadingRemoteWebAppBaseURL:)
+    public func configureRemoteLoading(remoteWebAppBaseURL: String?) {
+        self.remoteWebAppBaseURL = remoteWebAppBaseURL.flatMap { URL(string: $0) }
+            ?? Self.defaultRemoteBaseURL
     }
 }
 
@@ -199,10 +185,22 @@ extension WebViewProviderImpl: WKScriptMessageHandler {
 
 extension WebViewProviderImpl {
     func initialContentURL(queryParams: String?) -> URL? {
+        if isDebugMode {
+            var components = URLComponents()
+            components.scheme = "http"
+            components.host = Self.loopbackHost
+            components.port = Int(Self.debugPort)
+            components.path = "/tunnel/tour/1"
+            if let queryParams, !queryParams.isEmpty {
+                components.percentEncodedQuery = queryParams
+            }
+            return components.url
+        }
+
         var components = URLComponents()
-        components.scheme = "http"
-        components.host = Self.loopbackHost
-        components.port = Int(isDebugMode ? Self.debugPort : bundledPort)
+        components.scheme = remoteWebAppBaseURL.scheme
+        components.host = remoteWebAppBaseURL.host
+        if let port = remoteWebAppBaseURL.port { components.port = port }
         components.path = "/tunnel/tour/1"
         if let queryParams, !queryParams.isEmpty {
             components.percentEncodedQuery = queryParams
@@ -219,13 +217,27 @@ extension WebViewProviderImpl {
 
     func isTrustedBridgeURL(_ url: URL?) -> Bool {
         guard let url else { return false }
-        let expectedPort = isDebugMode ? Self.debugPort : bundledPort
-        return url.scheme == "http" && url.host == Self.loopbackHost && url.port == Int(expectedPort)
+        if isDebugMode {
+            return url.scheme == "http" && url.host == Self.loopbackHost && url.port == Int(Self.debugPort)
+        }
+        return url.scheme == remoteWebAppBaseURL.scheme &&
+            url.host == remoteWebAppBaseURL.host &&
+            resolvedPort(for: url) == resolvedPort(for: remoteWebAppBaseURL)
     }
 
     func isTrustedBridgeFrameInfo(_ origin: WKSecurityOrigin) -> Bool {
-        let expectedPort = isDebugMode ? Self.debugPort : bundledPort
-        return origin.protocol == "http" && origin.host == Self.loopbackHost && origin.port == Int(expectedPort)
+        if isDebugMode {
+            return origin.protocol == "http" && origin.host == Self.loopbackHost && origin.port == Int(Self.debugPort)
+        }
+        let expectedPort = resolvedPort(for: remoteWebAppBaseURL)
+        return origin.protocol == remoteWebAppBaseURL.scheme &&
+            origin.host == remoteWebAppBaseURL.host &&
+            origin.port == expectedPort
+    }
+
+    private func resolvedPort(for url: URL) -> Int {
+        if let port = url.port { return port }
+        return url.scheme == "https" ? 443 : 80
     }
 }
 

@@ -4,22 +4,38 @@ import XCTest
 @testable import SelfNativeShell
 
 final class SelfWebViewHostTests: XCTestCase {
-    func testReleaseBuildUsesBundledSchemeOrigin() throws {
+    func testReleaseBuildUsesRemoteOrigin() throws {
         let router = MessageRouter(sendToWebView: { _ in })
         let host = SelfWebViewHost(router: router, isDebugMode: false)
         _ = host.createWebView()
 
         let url = try XCTUnwrap(host.initialContentURL(queryParams: ""))
-        XCTAssertEqual(url.scheme, SelfWebViewHost.bundledScheme)
-        XCTAssertEqual(url.host, SelfWebViewHost.bundledHost)
+        XCTAssertEqual(url.scheme, "https")
+        XCTAssertEqual(url.host, "self-app-alpha.vercel.app")
         XCTAssertTrue(url.path.contains("/tunnel/tour/1"))
     }
 
-    func testAllowedNavigationRejectsRemoteAlphaOrigin() {
+    func testDebugBuildUsesLocalhost() throws {
+        let router = MessageRouter(sendToWebView: { _ in })
+        let host = SelfWebViewHost(router: router, isDebugMode: true)
+        _ = host.createWebView()
+
+        let url = try XCTUnwrap(host.initialContentURL(queryParams: ""))
+        XCTAssertEqual(url.scheme, "http")
+        XCTAssertEqual(url.host, "localhost")
+        XCTAssertTrue(url.absoluteString.hasPrefix("http://localhost:5173"))
+    }
+
+    func testAllowedNavigationAcceptsRemoteAlphaOrigin() {
         let router = MessageRouter(sendToWebView: { _ in })
         let host = SelfWebViewHost(router: router, isDebugMode: false)
         _ = host.createWebView()
 
+        XCTAssertTrue(
+            host.isAllowedNavigationURL(
+                URL(string: "https://self-app-alpha.vercel.app/tunnel/tour/1")
+            )
+        )
         XCTAssertTrue(
             host.isAllowedNavigationURL(
                 URL(string: "https://verify.didit.me/session/123")
@@ -27,19 +43,19 @@ final class SelfWebViewHostTests: XCTestCase {
         )
         XCTAssertFalse(
             host.isAllowedNavigationURL(
-                URL(string: "https://self-app-alpha.vercel.app/tunnel/tour/1")
+                URL(string: "https://evil.example.com/tunnel/tour/1")
             )
         )
     }
 
-    func testBridgeTrustRejectsVercelAndDidit() {
+    func testBridgeTrustAcceptsRemoteRejectsDidit() {
         let router = MessageRouter(sendToWebView: { _ in })
         let host = SelfWebViewHost(router: router, isDebugMode: false)
         _ = host.createWebView()
 
         XCTAssertTrue(
             host.isTrustedBridgeURL(
-                URL(string: "self-sdk://app/tunnel/tour/1")
+                URL(string: "https://self-app-alpha.vercel.app/tunnel/tour/1")
             )
         )
         XCTAssertFalse(
@@ -49,7 +65,7 @@ final class SelfWebViewHostTests: XCTestCase {
         )
         XCTAssertFalse(
             host.isTrustedBridgeURL(
-                URL(string: "https://self-app-alpha.vercel.app/tunnel/tour/1")
+                URL(string: "https://evil.example.com/tunnel/tour/1")
             )
         )
     }

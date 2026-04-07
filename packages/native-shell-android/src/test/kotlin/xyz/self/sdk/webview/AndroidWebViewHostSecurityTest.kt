@@ -9,31 +9,43 @@ import kotlin.test.assertTrue
 
 class AndroidWebViewHostSecurityTest {
     @Test
-    fun `release builds launch bundled content`() {
+    fun `release builds launch remote content`() {
         assertEquals(
-            "https://appassets.androidplatform.net/tunnel/tour/1",
+            "https://self-app-alpha.vercel.app/tunnel/tour/1",
             AndroidWebViewHost.initialContentUrl(queryParams = "", isDebugMode = false),
         )
     }
 
     @Test
-    fun `navigation only allows bundled remote and debug main-frame origins`() {
+    fun `debug builds launch localhost`() {
         assertTrue(
-            AndroidWebViewHost.isAllowedNavigationUrl(
-                "https://appassets.androidplatform.net/tunnel/tour/1",
-                isDebugMode = false,
-            ),
+            AndroidWebViewHost.initialContentUrl(queryParams = "", isDebugMode = true)
+                .startsWith("http://127.0.0.1:5173"),
         )
-        assertFalse(
-            AndroidWebViewHost.isAllowedNavigationUrl(
-                "https://verify.didit.me/session/123",
-                isDebugMode = false,
-            ),
-        )
-        assertFalse(
+    }
+
+    @Test
+    fun `navigation allows remote didit and debug origins`() {
+        val remoteBase = "https://self-app-alpha.vercel.app"
+        assertTrue(
             AndroidWebViewHost.isAllowedNavigationUrl(
                 "https://self-app-alpha.vercel.app/tunnel/tour/1",
                 isDebugMode = false,
+                remoteWebAppBaseUrl = remoteBase,
+            ),
+        )
+        assertTrue(
+            AndroidWebViewHost.isAllowedNavigationUrl(
+                "https://verify.didit.me/session/123",
+                isDebugMode = false,
+                remoteWebAppBaseUrl = remoteBase,
+            ),
+        )
+        assertFalse(
+            AndroidWebViewHost.isAllowedNavigationUrl(
+                "https://evil.example.com/tunnel/tour/1",
+                isDebugMode = false,
+                remoteWebAppBaseUrl = remoteBase,
             ),
         )
         assertTrue(
@@ -45,23 +57,27 @@ class AndroidWebViewHostSecurityTest {
     }
 
     @Test
-    fun `bridge trust excludes didit and remote production origins`() {
+    fun `bridge trust accepts remote rejects didit and arbitrary origins`() {
+        val remoteBase = "https://self-app-alpha.vercel.app"
         assertTrue(
             AndroidWebViewHost.isTrustedBridgeOrigin(
-                "https://appassets.androidplatform.net/tunnel/tour/1",
+                "https://self-app-alpha.vercel.app/tunnel/tour/1",
                 isDebugMode = false,
+                remoteWebAppBaseUrl = remoteBase,
             ),
         )
         assertFalse(
             AndroidWebViewHost.isTrustedBridgeOrigin(
                 "https://verify.didit.me/session/123",
                 isDebugMode = false,
+                remoteWebAppBaseUrl = remoteBase,
             ),
         )
         assertFalse(
             AndroidWebViewHost.isTrustedBridgeOrigin(
-                "https://self-app-alpha.vercel.app/tunnel/tour/1",
+                "https://evil.example.com/tunnel/tour/1",
                 isDebugMode = false,
+                remoteWebAppBaseUrl = remoteBase,
             ),
         )
     }
