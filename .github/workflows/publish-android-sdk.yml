@@ -1,8 +1,6 @@
 name: Publish Android SDK
 
 on:
-  push:
-    branches: [self-2473/sd-04-android-maven]
   workflow_dispatch:
     inputs:
       version:
@@ -38,18 +36,17 @@ jobs:
 
       - name: Set version
         run: |
-          VERSION="${{ inputs.version || '0.1.0-test' }}"
-          sed -i "s/version = \".*\"/version = \"$VERSION\"/" build.gradle.kts
+          sed -i "s/version = \".*\"/version = \"${{ inputs.version }}\"/" build.gradle.kts
 
       - name: Build
         run: ./gradlew build
 
       - name: Publish to Maven Local (dry run)
-        if: inputs.dry-run != 'false'
+        if: inputs.dry-run
         run: ./gradlew publishToMavenLocal
 
       - name: Publish to GitHub Packages
-        if: inputs.dry-run == 'false'
+        if: ${{ !inputs.dry-run }}
         run: ./gradlew publishReleasePublicationToGitHubPackagesRepository
         env:
           GITHUB_ACTOR: ${{ github.actor }}
