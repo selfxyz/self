@@ -48,6 +48,8 @@ import xyz.self.sdk.api.SelfSdkError
 import xyz.self.sdk.api.VerificationRequest
 import xyz.self.sdk.api.VerificationResult
 
+expect fun getDevServerUrl(): String?
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SdkLaunchScreen(navController: NavController) {
@@ -65,6 +67,7 @@ fun SdkLaunchScreen(navController: NavController) {
 
     val environment = if (useMockDocument) SelfEnvironment.STG else SelfEnvironment.PROD
     val coroutineScope = rememberCoroutineScope()
+    val devServerUrl = remember { getDevServerUrl() }
     val sdk =
         remember(environment, appName, appEndpoint) {
             SelfSdk.configure(
@@ -73,6 +76,7 @@ fun SdkLaunchScreen(navController: NavController) {
                     debug = true,
                     appName = appName.ifBlank { null },
                     appEndpoint = appEndpoint.ifBlank { null },
+                    devServerUrl = devServerUrl,
                 ),
             )
         }

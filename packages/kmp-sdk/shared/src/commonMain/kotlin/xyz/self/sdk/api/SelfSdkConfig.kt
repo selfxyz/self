@@ -35,4 +35,5 @@ data class SelfSdkConfig(
     val endpointType: String? = null,
     val chainID: Int? = null,
     val remoteWebAppBaseUrl: String = "https://self-app-alpha.vercel.app",
+    val devServerUrl: String? = null,
 )
