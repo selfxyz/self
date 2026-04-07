@@ -22,6 +22,7 @@ final class SelfSdkConfigTests: XCTestCase {
         XCTAssertEqual(config.environment, "prod")
         XCTAssertEqual(config.isDebugMode, false)
         XCTAssertEqual(config.version, 1)
+        XCTAssertEqual(config.remoteWebAppBaseURL?.absoluteString, "https://verify.self.xyz/v1/")
         XCTAssertTrue(config.secureStorageProvider as AnyObject === provider)
     }
 
