@@ -124,6 +124,9 @@ actual class SelfSdk private constructor(
                 putExtra(SelfVerificationActivity.EXTRA_DEBUG_MODE, config.debug)
                 putExtra(SelfVerificationActivity.EXTRA_VERIFICATION_REQUEST, serializeRequest(request))
                 putExtra(SelfVerificationActivity.EXTRA_CONFIG, serializeConfig(config))
+                if (config.devServerUrl != null) {
+                    putExtra(SelfVerificationActivity.EXTRA_DEV_SERVER_URL, config.devServerUrl)
+                }
             }
 
         // Launch the verification activity

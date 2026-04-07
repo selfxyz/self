@@ -27,6 +27,7 @@ class AndroidWebViewHost(
     private val context: Context,
     private val router: MessageRouter,
     private val isDebugMode: Boolean = false,
+    private val devServerUrl: String? = null,
 ) {
     private lateinit var webView: WebView
     var pendingPermissionRequest: PermissionRequest? = null
@@ -55,9 +56,17 @@ class AndroidWebViewHost(
                             request: WebResourceRequest?,
                         ): Boolean {
                             val uri = request?.url ?: return true
+                            val devHost = devServerUrl?.let { Uri.parse(it) }
                             val isAllowed =
                                 (uri.scheme == "https" && uri.host == "self-app-alpha.vercel.app") ||
-                                    (isDebugMode && uri.scheme == "http" && uri.host == "127.0.0.1" && uri.port == 5173)
+                                    (isDebugMode && uri.scheme == "http" && uri.host == "127.0.0.1" && uri.port == 5173) ||
+                                    (
+                                        isDebugMode &&
+                                            devHost != null &&
+                                            uri.scheme == devHost.scheme &&
+                                            uri.host == devHost.host &&
+                                            uri.port == devHost.port
+                                    )
                             return !isAllowed
                         }
 
@@ -79,10 +88,18 @@ class AndroidWebViewHost(
                                     request.deny()
                                     return
                                 }
+                            val devHost = devServerUrl?.let { Uri.parse(it) }
                             val isTrusted =
                                 (origin.scheme == "https" && origin.host == "self-app-alpha.vercel.app") ||
                                     (origin.scheme == "https" && origin.host == "verify.didit.me") ||
-                                    (isDebugMode && origin.scheme == "http" && origin.host == "127.0.0.1")
+                                    (isDebugMode && origin.scheme == "http" && origin.host == "127.0.0.1" && origin.port == 5173) ||
+                                    (
+                                        isDebugMode &&
+                                            devHost != null &&
+                                            origin.scheme == devHost.scheme &&
+                                            origin.host == devHost.host &&
+                                            origin.port == devHost.port
+                                    )
                             if (!isTrusted) {
                                 request.deny()
                                 return
@@ -156,7 +173,12 @@ class AndroidWebViewHost(
 
                 addJavascriptInterface(BridgeJsInterface(), "SelfNativeAndroid")
 
-                val baseUrl = "https://self-app-alpha.vercel.app/tunnel/tour/1"
+                val baseUrl =
+                    if (isDebugMode && devServerUrl != null) {
+                        "${devServerUrl.trimEnd('/')}/tunnel/tour/1"
+                    } else {
+                        "https://self-app-alpha.vercel.app/tunnel/tour/1"
+                    }
                 val url = if (queryParams.isNotEmpty()) "$baseUrl?$queryParams" else baseUrl
                 loadUrl(url)
             }

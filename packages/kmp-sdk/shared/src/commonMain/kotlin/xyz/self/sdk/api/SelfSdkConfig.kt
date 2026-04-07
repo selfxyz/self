@@ -34,4 +34,5 @@ data class SelfSdkConfig(
     val appEndpoint: String? = null,
     val endpointType: String? = null,
     val chainID: Int? = null,
+    val devServerUrl: String? = null,
 )

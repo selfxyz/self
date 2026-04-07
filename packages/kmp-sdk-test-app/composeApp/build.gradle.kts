@@ -74,6 +74,12 @@ android {
                 .toInt()
         versionCode = 1
         versionName = "1.0.0"
+
+        buildConfigField("String", "WEBVIEW_DEV_URL", "\"${System.getenv("WEBVIEW_DEV_URL") ?: ""}\"")
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     compileOptions {
