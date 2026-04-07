@@ -12,7 +12,7 @@ gem "fastlane", "~> 2.232.0"
 
 group :development do
   gem "dotenv"
-  gem "nokogiri", "~> 1.18", platform: :ruby
+  gem "nokogiri", "~> 1.18"
   gem "bundler-audit", "~> 0.9", require: false
 end
 
