@@ -51,7 +51,10 @@ final class MessageRouter {
         }
 
         let params = request.params?.mapValues { $0.value }
+        dispatchRequest(request, handler: handler, params: params)
+    }
 
+    private func dispatchRequest(_ request: BridgeRequest, handler: BridgeHandler, params: [String: Any]?) {
         Task {
             do {
                 let result = try await handler.handle(method: request.method, params: params)
