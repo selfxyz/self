@@ -13,7 +13,7 @@ cd "$KMP_SDK_DIR"
 # --- Resolve Xcode project dependencies ---
 cd "$IOS_DIR"
 echo "📦 Resolving package dependencies..."
-xcodebuild -project iosApp.xcodeproj -resolvePackageDependencies -quiet 2>/dev/null || true
+xcodebuild -workspace iosApp.xcworkspace -resolvePackageDependencies -quiet 2>/dev/null || true
 
 # --- Find an available iOS Simulator ---
 echo "📱 Finding iOS Simulator..."
@@ -50,7 +50,7 @@ fi
 
 # --- Build the app ---
 echo "🔨 Building iOS app..."
-xcodebuild -project iosApp.xcodeproj \
+xcodebuild -workspace iosApp.xcworkspace \
     -scheme iosApp \
     -sdk iphonesimulator \
     -destination "id=$SIMULATOR_ID" \
@@ -61,7 +61,7 @@ xcodebuild -project iosApp.xcodeproj \
     2>&1 | tail -5
 
 # --- Find and install the app ---
-BUILD_DIR=$(xcodebuild -project iosApp.xcodeproj \
+BUILD_DIR=$(xcodebuild -workspace iosApp.xcworkspace \
     -scheme iosApp \
     -sdk iphonesimulator \
     -showBuildSettings 2>/dev/null | grep ' BUILT_PRODUCTS_DIR' | awk '{print $3}')
