@@ -292,6 +292,51 @@ function isExistingModuleReusable(module) {
     return false;
   }
 
+  // Reject dirty checkouts — uncommitted changes compromise integrity
+  try {
+    const status = execSync('git status --porcelain', {
+      cwd: localPath,
+      stdio: ['ignore', 'pipe', 'pipe'],
+      encoding: 'utf8',
+    }).trim();
+
+    if (status.length > 0) {
+      log(
+        `Existing ${repoName} checkout has uncommitted changes; recloning`,
+        'warning',
+      );
+      return false;
+    }
+  } catch (error) {
+    log(
+      `Could not check dirty state for ${repoName}: ${error.message}`,
+      'warning',
+    );
+    return false;
+  }
+
+  // When a specific commit is pinned, verify HEAD matches
+  if (module.commit) {
+    try {
+      const head = execSync('git rev-parse HEAD', {
+        cwd: localPath,
+        stdio: ['ignore', 'pipe', 'pipe'],
+        encoding: 'utf8',
+      }).trim();
+
+      if (head !== module.commit) {
+        log(
+          `Existing ${repoName} is at ${head.slice(0, 12)} but expected ${module.commit.slice(0, 12)}; recloning`,
+          'warning',
+        );
+        return false;
+      }
+    } catch (error) {
+      log(`Could not read HEAD for ${repoName}: ${error.message}`, 'warning');
+      return false;
+    }
+  }
+
   return true;
 }
 
