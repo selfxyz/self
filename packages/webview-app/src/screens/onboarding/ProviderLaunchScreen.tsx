@@ -298,6 +298,7 @@ export const ProviderLaunchScreen: React.FC = () => {
         height: '100vh',
         display: 'flex',
         flexDirection: 'column',
+        position: 'relative',
         backgroundColor: colors.white,
         overflow: 'hidden',
       }}

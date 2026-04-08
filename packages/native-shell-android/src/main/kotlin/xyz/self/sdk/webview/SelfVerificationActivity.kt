@@ -5,8 +5,13 @@ package xyz.self.sdk.webview
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.view.ViewGroup
 import android.webkit.WebChromeClient
+import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import xyz.self.sdk.api.SelfSdk
 import xyz.self.sdk.bridge.MessageRouter
 import xyz.self.sdk.handlers.CryptoHandler
@@ -16,9 +21,11 @@ import xyz.self.sdk.handlers.SecureStorageHandler
 class SelfVerificationActivity : AppCompatActivity() {
     private lateinit var webViewHost: AndroidWebViewHost
     private lateinit var router: MessageRouter
+    private var container: FrameLayout? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
 
         val isDebugMode = intent.getBooleanExtra(EXTRA_DEBUG_MODE, false)
         val environment = intent.getStringExtra(EXTRA_ENVIRONMENT) ?: "prod"
@@ -93,7 +100,32 @@ class SelfVerificationActivity : AppCompatActivity() {
             }
 
         val webView = webViewHost.createWebView(queryParams)
-        setContentView(webView)
+        val wrapper =
+            FrameLayout(this).apply {
+                addView(
+                    webView,
+                    ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                    ),
+                )
+            }
+        container = wrapper
+        setContentView(wrapper)
+
+        ViewCompat.setOnApplyWindowInsetsListener(wrapper) { view, insets ->
+            val systemInsets =
+                insets.getInsets(
+                    WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout(),
+                )
+            view.setPadding(
+                systemInsets.left,
+                systemInsets.top,
+                systemInsets.right,
+                systemInsets.bottom,
+            )
+            WindowInsetsCompat.CONSUMED
+        }
     }
 
     override fun onRequestPermissionsResult(
@@ -135,6 +167,7 @@ class SelfVerificationActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
+        container?.let { ViewCompat.setOnApplyWindowInsetsListener(it, null) }
         if (::webViewHost.isInitialized) {
             webViewHost.destroy()
         }
