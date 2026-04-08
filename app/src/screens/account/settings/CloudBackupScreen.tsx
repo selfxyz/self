@@ -186,8 +186,6 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
     upload,
     toggleCloudBackupEnabled,
     trackEvent,
-    navigation,
-    params,
     selfClient,
     showNoRegisteredAccountModal,
   ]);
