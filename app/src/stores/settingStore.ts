@@ -173,9 +173,17 @@ export function waitForSettingStoreHydration(): Promise<void> {
     return Promise.resolve();
   }
   return new Promise<void>(resolve => {
+    let resolved = false;
     const unsubscribe = useSettingStore.persist.onFinishHydration(() => {
+      resolved = true;
       unsubscribe();
       resolve();
     });
+
+    if (useSettingStore.persist.hasHydrated() && !resolved) {
+      resolved = true;
+      unsubscribe();
+      resolve();
+    }
   });
 }
