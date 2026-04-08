@@ -118,4 +118,34 @@ class AndroidWebViewHostSecurityTest {
             ),
         )
     }
+
+    @Test
+    fun `isDebugMode true but isDebuggable false loads remote URL`() {
+        // This is the key security test: a release APK with config.debug=true
+        // must NOT load localhost — it should load the remote URL.
+        // The effectiveDebug = isDebugMode && isDebuggable guard ensures this.
+        // When isDebugMode=true but isDebuggable=false, effectiveDebug=false,
+        // so initialContentUrl with isDebugMode=false loads the remote URL.
+        assertEquals(
+            "https://self-app-alpha.vercel.app/tunnel/tour/1",
+            AndroidWebViewHost.initialContentUrl(
+                queryParams = "",
+                isDebugMode = false, // effectiveDebug after isDebugMode && !isDebuggable
+                remoteWebAppBaseUrl = remoteUrl,
+            ),
+        )
+    }
+
+    @Test
+    fun `isDebugMode true and isDebuggable true loads localhost`() {
+        // Both flags true means we're in a genuine debug build — localhost is allowed.
+        assertEquals(
+            "http://127.0.0.1:5173/tunnel/tour/1",
+            AndroidWebViewHost.initialContentUrl(
+                queryParams = "",
+                isDebugMode = true, // effectiveDebug after isDebugMode && isDebuggable
+                remoteWebAppBaseUrl = remoteUrl,
+            ),
+        )
+    }
 }

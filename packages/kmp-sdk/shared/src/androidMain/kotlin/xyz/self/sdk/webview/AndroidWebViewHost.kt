@@ -23,13 +23,15 @@ import androidx.core.content.ContextCompat
 import androidx.webkit.WebMessageCompat
 import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
+import xyz.self.sdk.api.SdkConstants
 import xyz.self.sdk.bridge.MessageRouter
 
 class AndroidWebViewHost(
     private val context: Context,
     private val router: MessageRouter,
     private val isDebugMode: Boolean = false,
-    private val remoteWebAppBaseUrl: String = "https://self-app-alpha.vercel.app",
+    private val isDebuggable: Boolean = false,
+    private val remoteWebAppBaseUrl: String = SdkConstants.DEFAULT_REMOTE_WEB_APP_BASE_URL,
     private val devServerUrl: String? = null,
 ) {
     private lateinit var webView: WebView
@@ -38,6 +40,7 @@ class AndroidWebViewHost(
 
     @SuppressLint("SetJavaScriptEnabled")
     fun createWebView(queryParams: String = ""): WebView {
+        val effectiveDebug = isDebugMode && isDebuggable
         webView =
             WebView(context).apply {
                 settings.apply {
@@ -47,7 +50,7 @@ class AndroidWebViewHost(
                     allowContentAccess = false
                     mediaPlaybackRequiresUserGesture = false
 
-                    if (isDebugMode) {
+                    if (effectiveDebug) {
                         WebView.setWebContentsDebuggingEnabled(true)
                     }
                 }
@@ -57,7 +60,7 @@ class AndroidWebViewHost(
                         override fun shouldOverrideUrlLoading(
                             view: WebView?,
                             request: WebResourceRequest?,
-                        ): Boolean = !isAllowedNavigationUrl(request?.url?.toString(), isDebugMode, remoteWebAppBaseUrl, devServerUrl)
+                        ): Boolean = !isAllowedNavigationUrl(request?.url?.toString(), effectiveDebug, remoteWebAppBaseUrl, devServerUrl)
 
                         override fun onReceivedSslError(
                             view: WebView?,
@@ -77,7 +80,7 @@ class AndroidWebViewHost(
                                     request.deny()
                                     return
                                 }
-                            if (!isTrustedPermissionOrigin(origin.toString(), isDebugMode, remoteWebAppBaseUrl, devServerUrl)) {
+                            if (!isTrustedPermissionOrigin(origin.toString(), effectiveDebug, remoteWebAppBaseUrl, devServerUrl)) {
                                 request.deny()
                                 return
                             }
@@ -148,9 +151,9 @@ class AndroidWebViewHost(
                         }
                     }
 
-                installBridge(webView = this)
+                installBridge(webView = this, effectiveDebug = effectiveDebug)
 
-                loadUrl(initialContentUrl(queryParams, isDebugMode, remoteWebAppBaseUrl, devServerUrl))
+                loadUrl(initialContentUrl(queryParams, effectiveDebug, remoteWebAppBaseUrl, devServerUrl))
             }
         return webView
     }
@@ -165,7 +168,7 @@ class AndroidWebViewHost(
         webView.destroy()
     }
 
-    private fun installBridge(webView: WebView) {
+    private fun installBridge(webView: WebView, effectiveDebug: Boolean) {
         check(WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)) {
             "WEB_MESSAGE_LISTENER not supported — native bridge unavailable on this device"
         }
@@ -173,7 +176,7 @@ class AndroidWebViewHost(
         WebViewCompat.addWebMessageListener(
             webView,
             "SelfNativeAndroid",
-            buildAllowedOriginRules(isDebugMode, remoteWebAppBaseUrl, devServerUrl),
+            buildAllowedOriginRules(effectiveDebug, remoteWebAppBaseUrl, devServerUrl),
         ) { _, message: WebMessageCompat, sourceOrigin, isMainFrame, _ ->
             if (!isMainFrame) {
                 return@addWebMessageListener
@@ -182,7 +185,7 @@ class AndroidWebViewHost(
             val rawJson = message.data ?: return@addWebMessageListener
             router.onMessageReceived(
                 rawJson = rawJson,
-                isTrustedSource = isTrustedBridgeOrigin(sourceOrigin.toString(), isDebugMode, remoteWebAppBaseUrl, devServerUrl),
+                isTrustedSource = isTrustedBridgeOrigin(sourceOrigin.toString(), effectiveDebug, remoteWebAppBaseUrl, devServerUrl),
             )
         }
     }
@@ -190,21 +193,17 @@ class AndroidWebViewHost(
     companion object {
         const val FILE_CHOOSER_REQUEST_CODE = 1001
         const val CAMERA_PERMISSION_REQUEST_CODE = 1002
-        private const val BUNDLED_TOUR_PATH = "/tunnel/tour/1"
-        private const val DEBUG_HOST = "127.0.0.1"
-        private const val DEBUG_PORT = 5173
-        private const val DIDIT_HOST = "verify.didit.me"
 
         internal fun initialContentUrl(
             queryParams: String,
             isDebugMode: Boolean,
-            remoteWebAppBaseUrl: String = "https://self-app-alpha.vercel.app",
+            remoteWebAppBaseUrl: String = SdkConstants.DEFAULT_REMOTE_WEB_APP_BASE_URL,
             devServerUrl: String? = null,
         ): String {
             val baseUrl =
                 when {
                     isDebugMode && devServerUrl != null -> devServerUrl.trimEnd('/')
-                    isDebugMode -> "http://$DEBUG_HOST:$DEBUG_PORT"
+                    isDebugMode -> "http://${SdkConstants.LOOPBACK_HOST}:${SdkConstants.DEBUG_PORT}"
                     else -> {
                         require(remoteWebAppBaseUrl.startsWith("https://")) {
                             "remoteWebAppBaseUrl must use HTTPS in release builds"
@@ -213,7 +212,7 @@ class AndroidWebViewHost(
                     }
                 }
             return buildString {
-                append(baseUrl).append(BUNDLED_TOUR_PATH)
+                append(baseUrl).append(SdkConstants.BUNDLED_TOUR_PATH)
                 if (queryParams.isNotEmpty()) {
                     append("?").append(queryParams)
                 }
@@ -267,12 +266,12 @@ class AndroidWebViewHost(
         private fun isDiditUrl(rawUrl: String?): Boolean {
             val port = uriPort(rawUrl)
             return uriScheme(rawUrl) == "https" &&
-                uriHost(rawUrl) == DIDIT_HOST &&
+                uriHost(rawUrl) == SdkConstants.DIDIT_HOST &&
                 (port == null || port == 443)
         }
 
         private fun isDebugLocalUrl(rawUrl: String?): Boolean =
-            uriScheme(rawUrl) == "http" && uriHost(rawUrl) == DEBUG_HOST && uriPort(rawUrl) == DEBUG_PORT
+            uriScheme(rawUrl) == "http" && uriHost(rawUrl) == SdkConstants.LOOPBACK_HOST && uriPort(rawUrl) == SdkConstants.DEBUG_PORT
 
         private fun isDevServerUrl(
             rawUrl: String?,
@@ -304,7 +303,7 @@ class AndroidWebViewHost(
                     }
                 }
                 if (isDebugMode) {
-                    add("http://$DEBUG_HOST:$DEBUG_PORT")
+                    add("http://${SdkConstants.LOOPBACK_HOST}:${SdkConstants.DEBUG_PORT}")
                     devServerUrl?.let { parseUri(it) }?.let { dev ->
                         val host = dev.host ?: dev.authority
                         val port = resolvedPort(dev)
