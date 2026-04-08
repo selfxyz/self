@@ -165,7 +165,7 @@
     "react-native-safe-area-context": "^5.7.0",
     "react-native-screens": "4.15.3",
     "react-native-sqlite-storage": "^6.0.1",
-    "react-native-svg": "15.15.4",
+    "react-native-svg": "15.14.0",
     "react-native-svg-web": "1.0.9",
     "react-native-url-polyfill": "^3.0.0",
     "react-native-web": "^0.21.2",
