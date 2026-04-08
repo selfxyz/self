@@ -19,6 +19,7 @@ public class WebViewProviderImpl: NSObject {
     private var onMessageReceived: ((String) -> Void)?
     private var isDebugMode: Bool = false
     private var remoteWebAppBaseURL: URL = WebViewProviderImpl.defaultRemoteBaseURL
+    private var devServerUrl: String?
 
     /// Weak proxy to avoid retain cycles with WKScriptMessageHandler
     private var messageProxy: WeakScriptMessageProxy?
@@ -110,6 +111,11 @@ public class WebViewProviderImpl: NSObject {
         self.remoteWebAppBaseURL = remoteWebAppBaseURL.flatMap { URL(string: $0) }
             ?? Self.defaultRemoteBaseURL
     }
+
+    @objc(configureDevServerDevServerUrl:)
+    public func configureDevServer(devServerUrl: String?) {
+        self.devServerUrl = devServerUrl
+    }
 }
 
 // MARK: - Host VC that embeds the WKWebView with proper Auto Layout
@@ -185,6 +191,20 @@ extension WebViewProviderImpl: WKScriptMessageHandler {
 
 extension WebViewProviderImpl {
     func initialContentURL(queryParams: String?) -> URL? {
+        #if DEBUG
+        if isDebugMode, let devUrl = devServerUrl, !devUrl.isEmpty,
+           let baseURL = URL(string: devUrl.hasSuffix("/") ? String(devUrl.dropLast()) : devUrl) {
+            var components = URLComponents()
+            components.scheme = baseURL.scheme
+            components.host = baseURL.host
+            components.port = baseURL.port
+            components.path = "/tunnel/tour/1"
+            if let queryParams, !queryParams.isEmpty {
+                components.percentEncodedQuery = queryParams
+            }
+            return components.url
+        }
+
         if isDebugMode {
             var components = URLComponents()
             components.scheme = "http"
@@ -196,6 +216,7 @@ extension WebViewProviderImpl {
             }
             return components.url
         }
+        #endif
 
         guard remoteWebAppBaseURL.scheme == "https" else { return nil }
         var components = URLComponents()
@@ -218,18 +239,29 @@ extension WebViewProviderImpl {
 
     func isTrustedBridgeURL(_ url: URL?) -> Bool {
         guard let url else { return false }
+        #if DEBUG
         if isDebugMode {
+            if let devUrl = devServerUrl, !devUrl.isEmpty, let devBase = URL(string: devUrl) {
+                return url.scheme == devBase.scheme && url.host == devBase.host && resolvedPort(for: url) == resolvedPort(for: devBase)
+            }
             return url.scheme == "http" && url.host == Self.loopbackHost && url.port == Int(Self.debugPort)
         }
+        #endif
         return url.scheme == remoteWebAppBaseURL.scheme &&
             url.host == remoteWebAppBaseURL.host &&
             resolvedPort(for: url) == resolvedPort(for: remoteWebAppBaseURL)
     }
 
     func isTrustedBridgeFrameInfo(_ origin: WKSecurityOrigin) -> Bool {
+        #if DEBUG
         if isDebugMode {
+            if let devUrl = devServerUrl, !devUrl.isEmpty, let devBase = URL(string: devUrl) {
+                let expectedPort = resolvedPort(for: devBase)
+                return origin.protocol == devBase.scheme && origin.host == devBase.host && resolvedSecurityOriginPort(origin) == expectedPort
+            }
             return origin.protocol == "http" && origin.host == Self.loopbackHost && origin.port == Int(Self.debugPort)
         }
+        #endif
         let expectedPort = resolvedPort(for: remoteWebAppBaseURL)
         return origin.protocol == remoteWebAppBaseURL.scheme &&
             origin.host == remoteWebAppBaseURL.host &&

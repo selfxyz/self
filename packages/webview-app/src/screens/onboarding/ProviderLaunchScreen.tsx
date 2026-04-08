@@ -15,6 +15,7 @@ import type { KycProviderResult } from '../../types/kycProvider';
 import { buildKycDocument } from '../../utils/buildKycDocument';
 import { waitForAttestation } from '../../utils/diditAttestation';
 import { createDiditSession, launchDiditWebSdk } from '../../utils/diditProvider';
+import { WEB_SAFE_AREA } from '../../utils/insets';
 
 const CONTAINER_ID = 'didit-sdk-container';
 
@@ -294,20 +295,33 @@ export const ProviderLaunchScreen: React.FC = () => {
   return (
     <div
       style={{
-        minHeight: '100vh',
+        height: '100vh',
         display: 'flex',
         flexDirection: 'column',
+        position: 'relative',
         backgroundColor: colors.white,
+        overflow: 'hidden',
       }}
     >
       {phase === 'waiting' && (
-        <KycPendingScreen
-          insets={{ top: 0, bottom: 0 }}
-          onCheckBackLater={handleBack}
-          onReceiveLiveUpdates={() => {
-            // TODO: wire up push notifications
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            zIndex: 1,
+            overflow: 'hidden',
+            display: 'flex',
+            flexDirection: 'column',
           }}
-        />
+        >
+          <KycPendingScreen
+            insets={WEB_SAFE_AREA.insets}
+            onCheckBackLater={handleBack}
+            onReceiveLiveUpdates={() => {
+              // TODO: wire up push notifications
+            }}
+          />
+        </div>
       )}
       {phase === 'loading' && (
         <div
@@ -336,18 +350,18 @@ export const ProviderLaunchScreen: React.FC = () => {
         </div>
       )}
       <style>{`
-        .shadow-card {
+        #${CONTAINER_ID} .shadow-card {
           width: 100% !important;
           max-width: 100% !important;
           height: 100% !important;
           max-height: 100% !important;
           border-radius: 0 !important;
         }
-        iframe[class*="in-iframe"] {
+        #${CONTAINER_ID} iframe[class*="in-iframe"] {
           width: 100% !important;
           height: 100% !important;
         }
-        div[class*="size-full"] {
+        #${CONTAINER_ID} div[class*="size-full"] {
           width: 100vw !important;
           max-width: 100vw !important;
         }

@@ -23,4 +23,6 @@ interface WebViewProvider {
     fun isBridgeRequestAllowed(): Boolean
 
     fun configureRemoteLoading(remoteWebAppBaseURL: String?) {}
+
+    fun configureDevServer(devServerUrl: String?) {}
 }

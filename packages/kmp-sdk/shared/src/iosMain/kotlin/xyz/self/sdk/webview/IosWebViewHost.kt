@@ -15,6 +15,7 @@ class IosWebViewHost(
     private val router: MessageRouter,
     private val isDebugMode: Boolean = false,
     private val remoteWebAppBaseUrl: String = "https://self-app-alpha.vercel.app",
+    private val devServerUrl: String? = null,
 ) {
     fun createWebView(queryParams: String? = null): UIView {
         val provider =
@@ -22,6 +23,7 @@ class IosWebViewHost(
                 ?: throw IllegalStateException("WebView provider not configured")
 
         provider.configureRemoteLoading(remoteWebAppBaseUrl)
+        provider.configureDevServer(devServerUrl)
 
         return provider.createWebView(
             onMessageReceived = { rawJson ->
