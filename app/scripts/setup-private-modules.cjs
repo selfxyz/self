@@ -277,8 +277,9 @@ function isExistingModuleReusable(module) {
       `^(git@github\\.com:|https://github\\.com/|ssh://git@github\\.com/)${GITHUB_ORG}/${repoName}(\\.git)?$`,
     );
     if (!canonicalOriginPattern.test(remoteUrl)) {
+      const safeUrl = remoteUrl.replace(/\/\/[^@]+@/, '//***@');
       log(
-        `Existing ${repoName} checkout points at unexpected origin ${remoteUrl}; recloning`,
+        `Existing ${repoName} checkout points at unexpected origin ${safeUrl}; recloning`,
         'warning',
       );
       return false;
