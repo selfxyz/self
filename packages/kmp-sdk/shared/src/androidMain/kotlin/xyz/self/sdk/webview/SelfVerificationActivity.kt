@@ -79,27 +79,29 @@ class SelfVerificationActivity : AppCompatActivity() {
         val devServerUrl = intent.getStringExtra(EXTRA_DEV_SERVER_URL)
         webViewHost = AndroidWebViewHost(this, router, isDebugMode, remoteWebAppBaseUrl, devServerUrl)
         val webView = webViewHost.createWebView(queryParams)
-        val wrapper = FrameLayout(this).apply {
-            addView(
-                webView,
-                ViewGroup.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                ),
-            )
-        }
+        val wrapper =
+            FrameLayout(this).apply {
+                addView(
+                    webView,
+                    ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                    ),
+                )
+            }
         this.container = wrapper
         setContentView(wrapper)
 
         ViewCompat.setOnApplyWindowInsetsListener(wrapper) { view, insets ->
-            val systemInsets = insets.getInsets(
-                WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
-            )
+            val systemInsets =
+                insets.getInsets(
+                    WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout(),
+                )
             view.setPadding(
                 systemInsets.left,
                 systemInsets.top,
                 systemInsets.right,
-                systemInsets.bottom
+                systemInsets.bottom,
             )
             WindowInsetsCompat.CONSUMED
         }
