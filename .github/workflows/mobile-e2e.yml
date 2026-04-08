@@ -824,6 +824,11 @@ jobs:
           SIMULATOR_ID="${IOS_SIMULATOR_ID:-iPhone SE (3rd generation)}"
           echo "Installing on simulator: $SIMULATOR_ID"
 
+          echo "Erasing simulator to ensure clean state..."
+          xcrun simctl erase "$SIMULATOR_ID"
+          xcrun simctl boot "$SIMULATOR_ID" || true
+          xcrun simctl bootstatus "$SIMULATOR_ID" -b
+
           echo "Removing any existing app installation..."
           xcrun simctl uninstall "$SIMULATOR_ID" "$IOS_BUNDLE_ID" 2>/dev/null || true
 
