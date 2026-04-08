@@ -179,9 +179,10 @@ const HomeScreen: React.FC = () => {
     const store = useUserStore.getState();
     if (!store.isReferrerRegistered(referrer)) {
       const result = await registerReferral(referrer);
-      if (result.success) {
-        store.markReferrerAsRegistered(referrer);
+      if (!result.success) {
+        return;
       }
+      store.markReferrerAsRegistered(referrer);
     }
     store.clearDeepLinkReferrer();
   }, [referrer, registerReferral]);

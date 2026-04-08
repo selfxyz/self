@@ -57,12 +57,14 @@ const SuccessScreen: React.FC = () => {
 
   const onOkPress = useCallback(async () => {
     buttonTap();
-
     goHome();
+    const completedSessionId = sessionId;
     setTimeout(() => {
-      selfClient.getSelfAppState().cleanSelfApp();
+      if (useProvingStore.getState().uuid === completedSessionId) {
+        selfClient.getSelfAppState().cleanSelfApp();
+      }
     }, 2000);
-  }, [goHome, selfClient]);
+  }, [goHome, selfClient, sessionId, useProvingStore]);
 
   function cancelDeeplinkCallbackRedirect() {
     setCountdown(null);
