@@ -273,12 +273,10 @@ function isExistingModuleReusable(module) {
       encoding: 'utf8',
     }).trim();
 
-    const expectedRepoFragment = `/${repoName}.git`;
-    const expectedSshFragment = `:${repoName}.git`;
-    if (
-      !remoteUrl.includes(expectedRepoFragment) &&
-      !remoteUrl.includes(expectedSshFragment)
-    ) {
+    const canonicalOriginPattern = new RegExp(
+      `^(git@github\\.com:|https://github\\.com/|ssh://git@github\\.com/)${GITHUB_ORG}/${repoName}(\\.git)?$`,
+    );
+    if (!canonicalOriginPattern.test(remoteUrl)) {
       log(
         `Existing ${repoName} checkout points at unexpected origin ${remoteUrl}; recloning`,
         'warning',
