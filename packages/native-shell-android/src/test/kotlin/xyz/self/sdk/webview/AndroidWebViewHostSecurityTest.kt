@@ -28,10 +28,10 @@ class AndroidWebViewHostSecurityTest {
 
     @Test
     fun `navigation allows remote didit and debug origins`() {
-        val remoteBase = "https://self-app-alpha.vercel.app"
+        val remoteBase = "https://verify.self.xyz/v1/"
         assertTrue(
             AndroidWebViewHost.isAllowedNavigationUrl(
-                "https://self-app-alpha.vercel.app/tunnel/tour/1",
+                "https://verify.self.xyz/v1/tunnel/tour/1",
                 isDebugMode = false,
                 remoteWebAppBaseUrl = remoteBase,
             ),
@@ -71,7 +71,7 @@ class AndroidWebViewHostSecurityTest {
 
     @Test
     fun `didit on non-443 port is rejected`() {
-        val remoteBase = "https://self-app-alpha.vercel.app"
+        val remoteBase = "https://verify.self.xyz/v1/"
         assertFalse(
             AndroidWebViewHost.isAllowedNavigationUrl(
                 "https://verify.didit.me:8443/session/123",
@@ -83,10 +83,10 @@ class AndroidWebViewHostSecurityTest {
 
     @Test
     fun `bridge trust accepts remote rejects didit and arbitrary origins`() {
-        val remoteBase = "https://self-app-alpha.vercel.app"
+        val remoteBase = "https://verify.self.xyz/v1/"
         assertTrue(
             AndroidWebViewHost.isTrustedBridgeOrigin(
-                "https://self-app-alpha.vercel.app/tunnel/tour/1",
+                "https://verify.self.xyz/v1/tunnel/tour/1",
                 isDebugMode = false,
                 remoteWebAppBaseUrl = remoteBase,
             ),
