@@ -43,7 +43,7 @@ class SelfVerificationActivity : AppCompatActivity() {
         val chainID = if (intent.hasExtra(EXTRA_CHAIN_ID)) intent.getIntExtra(EXTRA_CHAIN_ID, 0) else null
         val userDefinedData = intent.getStringExtra(EXTRA_USER_DEFINED_DATA)
         val selfDefinedData = intent.getStringExtra(EXTRA_SELF_DEFINED_DATA)
-        val remoteWebAppBaseUrl = intent.getStringExtra(EXTRA_REMOTE_WEB_APP_BASE_URL) ?: "https://self-app-alpha.vercel.app"
+        val remoteWebAppBaseUrl = intent.getStringExtra(EXTRA_REMOTE_WEB_APP_BASE_URL) ?: "https://verify.self.xyz/v1/"
 
         router =
             MessageRouter(

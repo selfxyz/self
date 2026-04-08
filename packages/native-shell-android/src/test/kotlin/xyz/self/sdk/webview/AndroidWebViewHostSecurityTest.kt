@@ -12,7 +12,7 @@ class AndroidWebViewHostSecurityTest {
     @Test
     fun `release builds launch remote content`() {
         assertEquals(
-            "https://self-app-alpha.vercel.app/tunnel/tour/1",
+            "https://verify.self.xyz/v1/tunnel/tour/1",
             AndroidWebViewHost.initialContentUrl(queryParams = "", isDebugMode = false),
         )
     }
@@ -64,7 +64,7 @@ class AndroidWebViewHostSecurityTest {
             AndroidWebViewHost.initialContentUrl(
                 queryParams = "",
                 isDebugMode = false,
-                remoteWebAppBaseUrl = "http://self-app-alpha.vercel.app",
+                remoteWebAppBaseUrl = "http://verify.self.xyz",
             )
         }
     }
