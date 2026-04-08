@@ -349,7 +349,9 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
                       .shouldTrigger('kyc_initialization')
                   ) {
                     console.log('[DEV] Injecting KYC initialization error');
-                    throw new Error('Injected KYC initialization error for testing');
+                    throw new Error(
+                      'Injected KYC initialization error for testing',
+                    );
                   }
 
                   const session = await createKycSession();
