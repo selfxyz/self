@@ -34391,13 +34391,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-passkey@npm:3.3.2":
-  version: 3.3.2
-  resolution: "react-native-passkey@npm:3.3.2"
+"react-native-passkey@npm:^3.3.3":
+  version: 3.3.3
+  resolution: "react-native-passkey@npm:3.3.3"
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 10c0/417a7f238ecd6c77dd1f6dfd44d6896cf784f6431f0ff78479b5bb8e42a25ad108531e32a256f6fb69b556e90fd9e84fa0c498934a69b2310d3baf13ebcea3c6
+  checksum: 10c0/6de23b81cb4bfe52b999e54212c7ee1c995890ff1d663fa3d76b19bc11d08e7e1a22556f3b7e92d06f9cd57d25f47bf190636d3815ebcbc110e49e6a63e0860a
   languageName: node
   linkType: hard
 
