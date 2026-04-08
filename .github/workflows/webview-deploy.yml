@@ -23,6 +23,12 @@ jobs:
 
       - uses: ./.github/actions/yarn-install
 
+      - name: Build workspace dependencies
+        run: |
+          yarn workspace @selfxyz/common build
+          yarn workspace @selfxyz/mobile-sdk-alpha build:ts-only
+          yarn workspace @selfxyz/webview-bridge build
+
       - name: Build hosted bundle
         run: yarn workspace @selfxyz/webview-app build:hosted
 
