@@ -3,16 +3,17 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import Foundation
+import SelfSdk
 import UIKit
 import WebKit
 
 /// Swift implementation of WebViewProvider using WKWebView.
 /// Handles message passing between the WebView and the KMP bridge.
 public class WebViewProviderImpl: NSObject {
-    static let loopbackHost = "127.0.0.1"
-    static let diditHost = "verify.didit.me"
-    static let debugPort: UInt16 = 5173
-    private static let defaultRemoteBaseURL = URL(string: "https://self-app-alpha.vercel.app")!
+    static let loopbackHost = SdkConstants.shared.LOOPBACK_HOST
+    static let diditHost = SdkConstants.shared.DIDIT_HOST
+    static let debugPort = Int(SdkConstants.shared.DEBUG_PORT)
+    private static let defaultRemoteBaseURL = URL(string: SdkConstants.shared.DEFAULT_REMOTE_WEB_APP_BASE_URL)!
 
     private var webView: WKWebView?
     private var viewController: UIViewController?
@@ -198,7 +199,7 @@ extension WebViewProviderImpl {
             components.scheme = baseURL.scheme
             components.host = baseURL.host
             components.port = baseURL.port
-            components.path = "/tunnel/tour/1"
+            components.path = SdkConstants.shared.BUNDLED_TOUR_PATH
             if let queryParams, !queryParams.isEmpty {
                 components.percentEncodedQuery = queryParams
             }
@@ -209,8 +210,8 @@ extension WebViewProviderImpl {
             var components = URLComponents()
             components.scheme = "http"
             components.host = Self.loopbackHost
-            components.port = Int(Self.debugPort)
-            components.path = "/tunnel/tour/1"
+            components.port = Self.debugPort
+            components.path = SdkConstants.shared.BUNDLED_TOUR_PATH
             if let queryParams, !queryParams.isEmpty {
                 components.percentEncodedQuery = queryParams
             }
@@ -223,7 +224,7 @@ extension WebViewProviderImpl {
         components.scheme = remoteWebAppBaseURL.scheme
         components.host = remoteWebAppBaseURL.host
         if let port = remoteWebAppBaseURL.port { components.port = port }
-        components.path = "/tunnel/tour/1"
+        components.path = SdkConstants.shared.BUNDLED_TOUR_PATH
         if let queryParams, !queryParams.isEmpty {
             components.percentEncodedQuery = queryParams
         }
@@ -244,7 +245,7 @@ extension WebViewProviderImpl {
             if let devUrl = devServerUrl, !devUrl.isEmpty, let devBase = URL(string: devUrl) {
                 return url.scheme == devBase.scheme && url.host == devBase.host && resolvedPort(for: url) == resolvedPort(for: devBase)
             }
-            return url.scheme == "http" && url.host == Self.loopbackHost && url.port == Int(Self.debugPort)
+            return url.scheme == "http" && url.host == Self.loopbackHost && url.port == Self.debugPort
         }
         #endif
         return url.scheme == remoteWebAppBaseURL.scheme &&
@@ -259,7 +260,7 @@ extension WebViewProviderImpl {
                 let expectedPort = resolvedPort(for: devBase)
                 return origin.protocol == devBase.scheme && origin.host == devBase.host && resolvedSecurityOriginPort(origin) == expectedPort
             }
-            return origin.protocol == "http" && origin.host == Self.loopbackHost && origin.port == Int(Self.debugPort)
+            return origin.protocol == "http" && origin.host == Self.loopbackHost && origin.port == Self.debugPort
         }
         #endif
         let expectedPort = resolvedPort(for: remoteWebAppBaseURL)
