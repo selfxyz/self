@@ -38,7 +38,10 @@ import {
   getStartupNavigationTarget,
   hasStartupRecoverySignal,
 } from '@/screens/app/startupRouting';
-import { useSettingStore } from '@/stores/settingStore';
+import {
+  useSettingStore,
+  waitForSettingStoreHydration,
+} from '@/stores/settingStore';
 import { IS_DEV_MODE } from '@/utils/devUtils';
 
 const SplashScreen: React.FC = ({}) => {
@@ -75,6 +78,7 @@ const SplashScreen: React.FC = ({}) => {
           }
 
           await migrateFromLegacyStorage();
+          await waitForSettingStoreHydration();
 
           const needsMigration = await checkIfAnyDocumentsNeedMigration();
           if (needsMigration) {
