@@ -1,14 +1,6 @@
 appId: com.proofofpassportapp
 ---
 - launchApp
-- extendedWaitUntil:
-    true:
-      or:
-        - visible:
-            id: "disclaimer-screen-root"
-        - visible:
-            id: "home-screen-root"
-    timeout: ${LAUNCH_WAIT_MS:120000}
 - runFlow:
     when:
       visible:
