@@ -4,6 +4,10 @@
   "buildCommand": "yarn workspace @selfxyz/common build && yarn workspace @selfxyz/mobile-sdk-alpha build:ts-only && yarn workspace @selfxyz/webview-bridge build && yarn workspace @selfxyz/webview-app run build",
   "rewrites": [
     {
+      "source": "/v1/:path*",
+      "destination": "/v1/index.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
