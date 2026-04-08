@@ -53,7 +53,7 @@ final class SelfWebViewHostTests: XCTestCase {
         let host = SelfWebViewHost(
             router: router,
             isDebugMode: false,
-            remoteWebAppBaseURL: URL(string: "http://self-app-alpha.vercel.app")
+            remoteWebAppBaseURL: URL(string: "http://verify.self.xyz")
         )
         _ = host.createWebView()
 
