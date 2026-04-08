@@ -3,8 +3,6 @@
 import Foundation
 
 enum RemoteNavigationPolicy {
-    private static let bundledScheme = SelfWebViewHost.bundledScheme
-    private static let bundledHost = SelfWebViewHost.bundledHost
     private static let allowedSubframeHosts: Set<String> = ["verify.didit.me"]
 
     static func makeEntryURL(baseURL: URL?, queryParams: String) -> URL? {
@@ -25,11 +23,9 @@ enum RemoteNavigationPolicy {
         isDebugMode: Bool
     ) -> Bool {
         if isDebugMode {
-            return url.absoluteString.hasPrefix("http://localhost:5173")
-        }
-
-        if url.scheme == bundledScheme, url.host == bundledHost {
-            return true
+            return url.scheme == "http" &&
+                url.host == "localhost" &&
+                resolvedPort(for: url) == 5173
         }
 
         guard let remoteWebAppBaseURL,
@@ -54,7 +50,8 @@ enum RemoteNavigationPolicy {
         guard url.scheme == "https", let host = url.host else {
             return false
         }
-        return allowedSubframeHosts.contains(host)
+        let port = resolvedPort(for: url)
+        return allowedSubframeHosts.contains(host) && port == 443
     }
 
     static func resolvedPort(for url: URL) -> Int {

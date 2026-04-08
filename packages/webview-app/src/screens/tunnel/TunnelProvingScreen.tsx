@@ -104,19 +104,13 @@ export const TunnelProvingScreen: React.FC = () => {
         state: currentState,
       });
       navigateToError(reason ?? errorCode ?? currentState);
-    } else if (currentState === 'completed' && phase === 'dsc') {
-      setPhase('register');
-      analytics.trackEvent('tunnel_proving_registration_complete', { previousPhase: 'dsc' });
-      void Promise.resolve(init(client, 'register', true)).catch(err => {
-        const message = err instanceof Error ? err.message : 'Register init failed';
-        analytics.trackEvent('tunnel_proving_init_failed', { error: message, phase: 'register' });
-        navigateToError(message);
-      });
-    } else if (currentState === 'completed' && phase === 'register') {
-      analytics.trackEvent('tunnel_proving_registration_complete', { previousPhase: 'register' });
-      navigate('/tunnel/proof/disclose', { replace: true });
+    } else if (currentState === 'completed') {
+      analytics.trackEvent('tunnel_proving_registration_complete', { previousPhase: phase });
+      // Brief delay to allow tree reader to index the on-chain commitment
+      // before disclose fetches the identity tree.
+      setTimeout(() => navigate('/tunnel/proof/disclose', { replace: true }), 5000);
     }
-  }, [currentState, initDone, phase, client, init, analytics, haptic, navigate, errorCode, reason, navigateToError]);
+  }, [currentState, initDone, phase, analytics, haptic, navigate, errorCode, reason, navigateToError]);
 
   return (
     <ProofGenerationScreen

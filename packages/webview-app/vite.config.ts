@@ -85,5 +85,5 @@ export default defineConfig({
     emptyOutDir: true,
     sourcemap: true,
   },
-  server: { host: '0.0.0.0', port: 5173 },
+  server: { host: '0.0.0.0', port: 5173, allowedHosts: ['.ngrok-free.app'] },
 });

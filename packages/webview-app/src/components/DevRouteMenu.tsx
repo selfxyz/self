@@ -14,6 +14,7 @@ interface DevScreenLink {
 interface DevScreenGroup {
   title: string;
   links: DevScreenLink[];
+  description?: string;
 }
 
 const screenGroups: DevScreenGroup[] = [
@@ -31,6 +32,7 @@ const screenGroups: DevScreenGroup[] = [
       { href: '/onboarding/country', label: 'Country Picker' },
       { href: '/onboarding/confirm', label: 'Confirm ID' },
       { href: '/onboarding/success', label: 'Scan Success' },
+      { href: '/onboarding/recovery-phrase', label: 'Recovery Phrase' },
       { href: '/onboarding/failure', label: 'Registration Failure' },
       { href: '/onboarding/backup', label: 'Social Sign-On Method' },
       { href: '/onboarding/signin', label: 'Social Sign-On' },
@@ -72,15 +74,26 @@ const screenGroups: DevScreenGroup[] = [
     ],
   },
   {
-    title: 'Tunnel',
+    title: 'Tunnel — Screens',
     links: [
       { href: '/tunnel/tour/1', label: 'Tour' },
-      { href: '/tunnel/kyc', label: 'KYC Mock' },
       { href: '/tunnel/registration/country', label: 'Country Picker' },
       { href: '/tunnel/registration/id-type', label: 'ID Type' },
-      { href: '/tunnel/proof/receipt', label: 'Proof Receipt' },
+      { href: '/tunnel/kyc-failure', label: 'KYC Failure' },
+      { href: '/tunnel/recovery-required', label: 'Recovery Required' },
       { href: '/tunnel/proof/generating', label: 'Proving' },
       { href: '/tunnel/proof/result', label: 'Result' },
+      { href: '/tunnel/proof/receipt', label: 'Proof Receipt' },
+    ],
+  },
+  {
+    title: 'Tunnel — Mock KYC',
+    description: 'Mocks diverge after /tunnel/kyc; some outcomes intentionally share the same final route.',
+    links: [
+      { href: '/tunnel/tour/1?mock=success', label: 'Flow → KYC Success, Then Proof Failure' },
+      { href: '/tunnel/tour/1?mock=kyc-failure', label: 'Flow → KYC Error (Retryable)' },
+      { href: '/tunnel/tour/1?mock=registration-failure', label: 'Flow → KYC Error (Fatal → Tour Step 4)' },
+      { href: '/tunnel/tour/1?mock=cancel', label: 'Flow → KYC Cancel → Tour Step 4' },
     ],
   },
   {
@@ -103,10 +116,10 @@ export const DevRouteMenu: React.FC = () => {
     }
   }, [isOpen]);
 
-  const currentLabel = useMemo(
-    () => allLinks.find(link => link.href === location.pathname)?.label ?? 'Dev Screens',
-    [location.pathname],
-  );
+  const currentLabel = useMemo(() => {
+    const fullPath = `${location.pathname}${location.search}`;
+    return allLinks.find(link => link.href === fullPath)?.label ?? 'Dev Screens';
+  }, [location.pathname, location.search]);
 
   return (
     <div
@@ -150,8 +163,20 @@ export const DevRouteMenu: React.FC = () => {
               >
                 {group.title}
               </div>
+              {group.description ? (
+                <div
+                  style={{
+                    color: 'rgba(255, 255, 255, 0.65)',
+                    fontSize: 11,
+                    lineHeight: 1.4,
+                    padding: '0 2px 6px',
+                  }}
+                >
+                  {group.description}
+                </div>
+              ) : null}
               {group.links.map(link => {
-                const isActive = location.pathname === link.href;
+                const isActive = `${location.pathname}${location.search}` === link.href;
 
                 return (
                   <button

@@ -5,6 +5,29 @@ import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/U
 import {InternalLeanIMT, LeanIMTData} from "@zk-kit/imt.sol/internal/InternalLeanIMT.sol";
 import {IIdentityRegistryIdCardV1} from "../interfaces/IIdentityRegistryIdCardV1.sol";
 import {ImplRoot} from "../upgradeable/ImplRoot.sol";
+import {GCPJWTHelper} from "../libraries/GCPJWTHelper.sol";
+import {Formatter} from "../libraries/Formatter.sol";
+
+/**
+ * @title IGCPJWTVerifier
+ * @notice Interface for the GCP JWT verifier contract.
+ */
+interface IGCPJWTVerifier {
+    function verifyProof(
+        uint256[2] calldata pA,
+        uint256[2][2] calldata pB,
+        uint256[2] calldata pC,
+        uint256[20] calldata pubSignals
+    ) external view returns (bool);
+}
+
+/**
+ * @title IPCR0Manager
+ * @notice Interface for the PCR0 (TEE image hash) manager contract.
+ */
+interface IPCR0Manager {
+    function isPCR0Set(bytes calldata pcr0) external view returns (bool);
+}
 
 /**
  * @notice ⚠️ CRITICAL STORAGE LAYOUT WARNING ⚠️
@@ -35,8 +58,8 @@ import {ImplRoot} from "../upgradeable/ImplRoot.sol";
  */
 
 /**
- * @title IdentityRegistryStorageV1
- * @dev Abstract contract for storage layout of IdentityRegistryImplV1.
+ * @title IdentityRegistryIdCardStorageV1
+ * @dev Abstract contract for storage layout of IdentityRegistryIdCardImplV1.
  * Inherits from ImplRoot to provide upgradeable functionality.
  */
 abstract contract IdentityRegistryIdCardStorageV1 is ImplRoot {
@@ -71,14 +94,32 @@ abstract contract IdentityRegistryIdCardStorageV1 is ImplRoot {
 
     /// @notice Current CSCA root.
     uint256 internal _cscaRoot;
+
+    /// @notice Previous name and date of birth OFAC root (rolling window).
+    uint256 internal _prevNameAndDobOfacRoot;
+
+    /// @notice Previous name and year of birth OFAC root (rolling window).
+    uint256 internal _prevNameAndYobOfacRoot;
+
+    /// @notice Address of the GCP JWT verifier contract for OFAC proof updates.
+    address internal _gcpJwtVerifier;
+
+    /// @notice Address of the PCR0Manager for OFAC proof updates.
+    address internal _pcr0Manager;
+
+    /// @notice Expected hash of the GCP root CA public key for OFAC proof verification.
+    uint256 internal _gcpRootCAPubkeyHash;
+
+    /// @notice Address of the TEE authorized to call updateOfacRootsWithProof.
+    address internal _tee;
 }
 
 /**
- * @title IdentityRegistryImplV1
+ * @title IdentityRegistryIdCardImplV1
  * @notice Provides functions to register and manage identity commitments using a Merkle tree structure.
  * @dev Inherits from IdentityRegistryStorageV1 and implements IIdentityRegistryV1.
  *
- * @custom:version 1.2.0
+ * @custom:version 1.3.1
  */
 contract IdentityRegistryIdCardImplV1 is IdentityRegistryIdCardStorageV1, IIdentityRegistryIdCardV1 {
     using InternalLeanIMT for LeanIMTData;
@@ -131,6 +172,16 @@ contract IdentityRegistryIdCardImplV1 is IdentityRegistryIdCardStorageV1, IIdent
     event DevNullifierStateChanged(bytes32 indexed attestationId, uint256 indexed nullifier, bool state);
     /// @notice Emitted when the state of a DSC key commitment is changed by dev team.
     event DevDscKeyCommitmentStateChanged(uint256 indexed commitment, bool state);
+    /// @notice Emitted when OFAC roots are updated via proof.
+    event OfacRootsUpdatedWithProof(bytes32 rootsHash, uint256 timestamp);
+    /// @notice Emitted when the GCP JWT verifier address is updated.
+    event GCPJWTVerifierUpdated(address gcpJwtVerifier);
+    /// @notice Emitted when the PCR0Manager address is updated.
+    event PCR0ManagerUpdated(address pcr0Manager);
+    /// @notice Emitted when the GCP root CA pubkey hash is updated.
+    event GCPRootCAPubkeyHashUpdated(uint256 gcpRootCAPubkeyHash);
+    /// @notice Emitted when the TEE address is updated.
+    event TEEUpdated(address tee);
 
     // ====================================================
     // Errors
@@ -142,6 +193,22 @@ contract IdentityRegistryIdCardImplV1 is IdentityRegistryIdCardStorageV1, IIdent
     error ONLY_HUB_CAN_ACCESS();
     /// @notice Thrown when attempting to register a commitment that has already been registered.
     error REGISTERED_COMMITMENT();
+    /// @notice Thrown when the GCP JWT proof verification fails.
+    error INVALID_PROOF();
+    /// @notice Thrown when the GCP root CA public key hash does not match the expected value.
+    error INVALID_ROOT_CA();
+    /// @notice Thrown when the TEE image hash is not registered in the PCR0Manager.
+    error INVALID_IMAGE();
+    /// @notice Thrown when the timestamp is invalid.
+    error INVALID_TIMESTAMP();
+    /// @notice Thrown when the roots hash does not match the proof.
+    error InvalidRootsHash();
+    /// @notice Thrown when the wrong number of roots is provided.
+    error InvalidRootsCount();
+    /// @notice Thrown when the TEE address is not set.
+    error TEE_NOT_SET();
+    /// @notice Thrown when a function is accessed by an address other than the designated TEE.
+    error ONLY_TEE_CAN_ACCESS();
 
     // ====================================================
     // Modifiers
@@ -154,6 +221,16 @@ contract IdentityRegistryIdCardImplV1 is IdentityRegistryIdCardStorageV1, IIdent
     modifier onlyHub() {
         if (address(_hub) == address(0)) revert HUB_NOT_SET();
         if (msg.sender != address(_hub)) revert ONLY_HUB_CAN_ACCESS();
+        _;
+    }
+
+    /**
+     * @notice Modifier to restrict access to functions to only the TEE.
+     * @dev Reverts if the TEE is not set or if the caller is not the TEE.
+     */
+    modifier onlyTEE() {
+        if (address(_tee) == address(0)) revert TEE_NOT_SET();
+        if (msg.sender != address(_tee)) revert ONLY_TEE_CAN_ACCESS();
         _;
     }
 
@@ -195,6 +272,25 @@ contract IdentityRegistryIdCardImplV1 is IdentityRegistryIdCardStorageV1, IIdent
      */
     function initializeGovernance() external reinitializer(2) {
         __ImplRoot_init();
+    }
+
+    /**
+     * @notice Initializes OFAC proof verification infrastructure.
+     * @dev Sets GCP JWT verifier, PCR0Manager, and root CA pubkey hash.
+     * @param gcpJwtVerifier_ The GCP JWT Groth16 verifier address.
+     * @param pcr0Manager_ The PCR0Manager address for TEE image validation.
+     * @param gcpRootCAPubkeyHash_ The expected Poseidon hash of the GCP root CA public key.
+     */
+    function initializeOfacProof(
+        address gcpJwtVerifier_,
+        address pcr0Manager_,
+        uint256 gcpRootCAPubkeyHash_,
+        address teeAddress_
+    ) external onlyProxy onlyRole(SECURITY_ROLE) reinitializer(3) {
+        _gcpJwtVerifier = gcpJwtVerifier_;
+        _pcr0Manager = pcr0Manager_;
+        _gcpRootCAPubkeyHash = gcpRootCAPubkeyHash_;
+        _tee = teeAddress_;
     }
 
     // ====================================================
@@ -288,13 +384,43 @@ contract IdentityRegistryIdCardImplV1 is IdentityRegistryIdCardStorageV1, IIdent
     }
 
     /**
+     * @notice Retrieves the previous name and date of birth OFAC root (rolling window).
+     * @return The stored previous name and date of birth OFAC root.
+     */
+    function getPrevNameAndDobOfacRoot() external view onlyProxy returns (uint256) {
+        return _prevNameAndDobOfacRoot;
+    }
+
+    /**
+     * @notice Retrieves the previous name and year of birth OFAC root (rolling window).
+     * @return The stored previous name and year of birth OFAC root.
+     */
+    function getPrevNameAndYobOfacRoot() external view onlyProxy returns (uint256) {
+        return _prevNameAndYobOfacRoot;
+    }
+
+    /// @notice Returns the address of the GCP JWT verifier contract.
+    function getGcpJwtVerifier() external view onlyProxy returns (address) {
+        return _gcpJwtVerifier;
+    }
+
+    /// @notice Returns the address of the PCR0 Manager contract.
+    function getPcr0Manager() external view onlyProxy returns (address) {
+        return _pcr0Manager;
+    }
+
+    /**
      * @notice Validates whether the provided OFAC roots match the stored values.
      * @param nameAndDobRoot The name and date of birth OFAC root to validate.
      * @param nameAndYobRoot The name and year of birth OFAC root to validate.
      * @return True if all provided roots match the stored values, false otherwise.
      */
     function checkOfacRoots(uint256 nameAndDobRoot, uint256 nameAndYobRoot) external view onlyProxy returns (bool) {
-        return _nameAndDobOfacRoot == nameAndDobRoot && _nameAndYobOfacRoot == nameAndYobRoot;
+        bool currentMatch = (_nameAndDobOfacRoot == nameAndDobRoot) && (_nameAndYobOfacRoot == nameAndYobRoot);
+        bool prevMatch = (_prevNameAndDobOfacRoot != 0) &&
+            (_prevNameAndDobOfacRoot == nameAndDobRoot) &&
+            (_prevNameAndYobOfacRoot == nameAndYobRoot);
+        return currentMatch || prevMatch;
     }
 
     /**
@@ -407,6 +533,7 @@ contract IdentityRegistryIdCardImplV1 is IdentityRegistryIdCardStorageV1, IIdent
      * @param newNameAndDobOfacRoot The new name and date of birth OFAC root value.
      */
     function updateNameAndDobOfacRoot(uint256 newNameAndDobOfacRoot) external onlyProxy onlyRole(OPERATIONS_ROLE) {
+        _prevNameAndDobOfacRoot = _nameAndDobOfacRoot;
         _nameAndDobOfacRoot = newNameAndDobOfacRoot;
         emit NameAndDobOfacRootUpdated(newNameAndDobOfacRoot);
     }
@@ -417,6 +544,7 @@ contract IdentityRegistryIdCardImplV1 is IdentityRegistryIdCardStorageV1, IIdent
      * @param newNameAndYobOfacRoot The new name and year of birth OFAC root value.
      */
     function updateNameAndYobOfacRoot(uint256 newNameAndYobOfacRoot) external onlyProxy onlyRole(OPERATIONS_ROLE) {
+        _prevNameAndYobOfacRoot = _nameAndYobOfacRoot;
         _nameAndYobOfacRoot = newNameAndYobOfacRoot;
         emit NameAndYobOfacRootUpdated(newNameAndYobOfacRoot);
     }
@@ -429,6 +557,96 @@ contract IdentityRegistryIdCardImplV1 is IdentityRegistryIdCardStorageV1, IIdent
     function updateCscaRoot(uint256 newCscaRoot) external onlyProxy onlyRole(OPERATIONS_ROLE) {
         _cscaRoot = newCscaRoot;
         emit CscaRootUpdated(newCscaRoot);
+    }
+
+    /// @notice Updates the GCP JWT verifier contract address.
+    /// @param verifier The new GCP JWT verifier address.
+    function updateGCPJWTVerifier(address verifier) external onlyProxy onlyRole(SECURITY_ROLE) {
+        _gcpJwtVerifier = verifier;
+        emit GCPJWTVerifierUpdated(verifier);
+    }
+
+    /// @notice Updates the PCR0Manager address.
+    /// @param newPCR0Manager The new PCR0Manager address.
+    function updatePCR0Manager(address newPCR0Manager) external onlyProxy onlyRole(SECURITY_ROLE) {
+        _pcr0Manager = newPCR0Manager;
+        emit PCR0ManagerUpdated(newPCR0Manager);
+    }
+
+    /// @notice Updates the GCP root CA pubkey hash.
+    /// @param newHash The new GCP root CA pubkey hash value.
+    function updateGCPRootCAPubkeyHash(uint256 newHash) external onlyProxy onlyRole(SECURITY_ROLE) {
+        _gcpRootCAPubkeyHash = newHash;
+        emit GCPRootCAPubkeyHashUpdated(newHash);
+    }
+
+    /// @notice Updates the TEE address.
+    /// @param teeAddress The new TEE address.
+    function updateTEE(address teeAddress) external onlyProxy onlyRole(SECURITY_ROLE) {
+        _tee = teeAddress;
+        emit TEEUpdated(teeAddress);
+    }
+
+    /// @notice Retrieves the TEE address.
+    /// @return The current TEE address.
+    function tee() external view onlyProxy returns (address) {
+        return _tee;
+    }
+
+    /// @notice Updates OFAC roots via proof-verified TEE attestation.
+    /// @dev Verifies the Groth16 proof, validates TEE attestation claims, checks
+    /// this registry's roots hash against the eat_nonce from the proof. Restricted to the TEE address. The proof provides
+    /// cryptographic verification, and onlyTEE provides access control.
+    /// @param pA Groth16 proof element A.
+    /// @param pB Groth16 proof element B.
+    /// @param pC Groth16 proof element C.
+    /// @param pubSignals Circuit public signals [rootCA, eatNonce[0-2], unused, imageHash[0-2], date[0-11]].
+    /// @param roots This registry's roots: [nameAndDob, nameAndYob].
+    function updateOfacRootsWithProof(
+        uint256[2] calldata pA,
+        uint256[2][2] calldata pB,
+        uint256[2] calldata pC,
+        uint256[20] calldata pubSignals,
+        uint256[] calldata roots
+    ) external onlyProxy onlyTEE {
+        if (roots.length != 2) revert InvalidRootsCount();
+
+        // Verify Groth16 proof
+        if (!IGCPJWTVerifier(_gcpJwtVerifier).verifyProof(pA, pB, pC, pubSignals)) revert INVALID_PROOF();
+
+        // Verify root CA pubkey hash
+        if (pubSignals[0] != _gcpRootCAPubkeyHash) revert INVALID_ROOT_CA();
+
+        // Verify TEE image hash
+        bytes memory imageHash = GCPJWTHelper.unpackAndConvertImageHash(pubSignals[5], pubSignals[6], pubSignals[7]);
+        if (!IPCR0Manager(_pcr0Manager).isPCR0Set(imageHash)) revert INVALID_IMAGE();
+
+        // Verify timestamp (±1 hour)
+        uint256 currentTimestamp = Formatter.toTimeStampWithSeconds(
+            2000 + pubSignals[8] * 10 + pubSignals[9],
+            pubSignals[10] * 10 + pubSignals[11],
+            pubSignals[12] * 10 + pubSignals[13],
+            pubSignals[14] * 10 + pubSignals[15],
+            pubSignals[16] * 10 + pubSignals[17],
+            pubSignals[18] * 10 + pubSignals[19]
+        );
+        if (currentTimestamp + 1 hours < block.timestamp) revert INVALID_TIMESTAMP();
+        if (currentTimestamp > block.timestamp + 1 hours) revert INVALID_TIMESTAMP();
+
+        // Verify roots hash matches eat_nonce from proof
+        bytes32 myHash = sha256(abi.encodePacked(roots[0], roots[1]));
+        uint256 rootsHashFromProof = GCPJWTHelper.unpackAndDecodeHexPubkey(pubSignals[1], pubSignals[2], pubSignals[3]);
+        if (uint256(myHash) != rootsHashFromProof) revert InvalidRootsHash();
+
+        // Update this registry's roots with rolling window: [nameAndDob, nameAndYob]
+        _prevNameAndDobOfacRoot = _nameAndDobOfacRoot;
+        _nameAndDobOfacRoot = roots[0];
+        _prevNameAndYobOfacRoot = _nameAndYobOfacRoot;
+        _nameAndYobOfacRoot = roots[1];
+
+        emit NameAndDobOfacRootUpdated(roots[0]);
+        emit NameAndYobOfacRootUpdated(roots[1]);
+        emit OfacRootsUpdatedWithProof(myHash, block.timestamp);
     }
 
     /**

@@ -8,8 +8,13 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
+import android.view.ViewGroup
 import android.webkit.WebChromeClient
+import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import xyz.self.sdk.bridge.MessageRouter
 import xyz.self.sdk.handlers.CryptoBridgeHandler
 import xyz.self.sdk.handlers.LifecycleBridgeHandler
@@ -21,9 +26,11 @@ import xyz.self.sdk.providers.SdkProviderRegistry
 class SelfVerificationActivity : AppCompatActivity() {
     private lateinit var webViewHost: AndroidWebViewHost
     private lateinit var router: MessageRouter
+    private var container: FrameLayout? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         initVerificationFlow()
     }
 
@@ -63,9 +70,43 @@ class SelfVerificationActivity : AppCompatActivity() {
             return
         }
 
-        webViewHost = AndroidWebViewHost(this, router, isDebugMode)
+        val configJson = intent.getStringExtra(EXTRA_CONFIG) ?: "{}"
+        val remoteWebAppBaseUrl =
+            try {
+                org.json.JSONObject(configJson).optString("remoteWebAppBaseUrl", "https://self-app-alpha.vercel.app")
+            } catch (_: Exception) {
+                "https://self-app-alpha.vercel.app"
+            }
+
+        val devServerUrl = intent.getStringExtra(EXTRA_DEV_SERVER_URL)
+        webViewHost = AndroidWebViewHost(this, router, isDebugMode, remoteWebAppBaseUrl, devServerUrl)
         val webView = webViewHost.createWebView(queryParams)
-        setContentView(webView)
+        val wrapper =
+            FrameLayout(this).apply {
+                addView(
+                    webView,
+                    ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                    ),
+                )
+            }
+        this.container = wrapper
+        setContentView(wrapper)
+
+        ViewCompat.setOnApplyWindowInsetsListener(wrapper) { view, insets ->
+            val systemInsets =
+                insets.getInsets(
+                    WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout(),
+                )
+            view.setPadding(
+                systemInsets.left,
+                systemInsets.top,
+                systemInsets.right,
+                systemInsets.bottom,
+            )
+            WindowInsetsCompat.CONSUMED
+        }
     }
 
     private fun registerHandlers() {
@@ -169,6 +210,7 @@ class SelfVerificationActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
+        container?.let { ViewCompat.setOnApplyWindowInsetsListener(it, null) }
         if (::webViewHost.isInitialized) {
             webViewHost.destroy()
         }
@@ -179,6 +221,7 @@ class SelfVerificationActivity : AppCompatActivity() {
         const val EXTRA_DEBUG_MODE = "xyz.self.sdk.DEBUG_MODE"
         const val EXTRA_VERIFICATION_REQUEST = "xyz.self.sdk.VERIFICATION_REQUEST"
         const val EXTRA_CONFIG = "xyz.self.sdk.CONFIG"
+        const val EXTRA_DEV_SERVER_URL = "xyz.self.sdk.DEV_SERVER_URL"
 
         const val RESULT_CODE_SUCCESS = RESULT_OK
         const val RESULT_CODE_ERROR = RESULT_FIRST_USER

@@ -1,22 +1,23 @@
 #!/bin/bash
 
-# Pod install with hermes-engine cache fix for React Native upgrades
-# This script handles CocoaPods cache mismatches that occur after React Native version upgrades
+# Pod install with an on-demand Hermes cache fix.
+# Most installs should reuse CocoaPods caches; only clear them after a failure
+# that is likely caused by a stale Hermes artifact from a React Native upgrade.
 
-set -e  # Exit on any error
+set -e
 
-echo "🧹 Clearing CocoaPods cache to prevent hermes-engine version conflicts..."
-bundle exec pod cache clean --all > /dev/null 2>&1 || true
-rm -rf ~/Library/Caches/CocoaPods > /dev/null 2>&1 || true
-
-echo "📦 Attempting pod install..."
-if bundle exec pod install; then
+echo "📦 Attempting pod install with existing CocoaPods caches..."
+if bundle exec pod install --no-repo-update; then
   echo "✅ Pods installed successfully"
-else
-  echo "⚠️ Pod install failed, likely due to hermes-engine cache mismatch after React Native upgrade"
-  echo "🔧 Running targeted fix: bundle exec pod update hermes-engine..."
-  bundle exec pod update hermes-engine --no-repo-update
-  echo "🔄 Retrying pod install..."
-  bundle exec pod install
-  echo "✅ Pods installed successfully after cache fix"
+  exit 0
 fi
+
+echo "⚠️ pod install failed; clearing Hermes cache and retrying..."
+bundle exec pod cache clean hermes-engine --all > /dev/null 2>&1 || true
+
+echo "🔧 Running targeted fix: bundle exec pod update hermes-engine..."
+bundle exec pod update hermes-engine --no-repo-update --verbose
+
+echo "🔄 Retrying pod install..."
+bundle exec pod install --no-repo-update
+echo "✅ Pods installed successfully after cache fix"
