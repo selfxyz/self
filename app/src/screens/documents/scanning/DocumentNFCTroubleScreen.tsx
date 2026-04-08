@@ -14,9 +14,9 @@ import { slate500, slate700 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import type { TipProps } from '@/components/Tips';
 import Tips from '@/components/Tips';
-import { useDiditLauncher } from '@/hooks/useDiditLauncher';
 import { useFeedbackAutoHide } from '@/hooks/useFeedbackAutoHide';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
+import { useKycLauncher } from '@/hooks/useKycLauncher';
 import { selectionChange } from '@/integrations/haptics';
 import SimpleScrolledTitleLayout from '@/layouts/SimpleScrolledTitleLayout';
 import { flushAllAnalytics } from '@/services/analytics';
@@ -61,7 +61,7 @@ const DocumentNFCTroubleScreen: React.FC = () => {
   const selfClient = useSelfClient();
   const { useMRZStore } = selfClient;
   const { countryCode } = useMRZStore();
-  const { launchDiditVerification, isLoading } = useDiditLauncher({
+  const { launchKycVerification, isLoading } = useKycLauncher({
     countryCode,
     errorSource: 'nfc_scan_failed',
   });
@@ -96,7 +96,7 @@ const DocumentNFCTroubleScreen: React.FC = () => {
           </SecondaryButton>
 
           <SecondaryButton
-            onPress={launchDiditVerification}
+            onPress={launchKycVerification}
             disabled={isLoading}
             textColor={slate700}
             style={{ marginBottom: 0 }}

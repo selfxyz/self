@@ -22,7 +22,10 @@ export interface AttestationResult {
  *
  * After receiving data, emits `ack_success` to trigger session deletion on the TEE.
  */
-export function waitForAttestation(sessionId: string, signal?: AbortSignal): Promise<AttestationResult> {
+export function waitForKycAttestation(
+  sessionId: string,
+  signal?: AbortSignal,
+): Promise<AttestationResult> {
   return new Promise(resolve => {
     const socket = io(DIDIT_TEE_URL, {
       transports: ['websocket', 'polling'],

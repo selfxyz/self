@@ -8,7 +8,7 @@ const FETCH_TIMEOUT_MS = 30_000;
 
 const DIDIT_TEE_URL = import.meta.env.VITE_DIDIT_TEE_URL ?? 'https://kyc.self.xyz';
 
-export interface DiditLaunchConfig {
+export interface KycLaunchConfig {
   url: string;
   containerId: string;
   verificationId: string;
@@ -17,7 +17,7 @@ export interface DiditLaunchConfig {
   onEvent?: (event: string, payload: unknown) => void;
 }
 
-export interface DiditSession {
+export interface KycSession {
   sessionId: string;
   sessionToken: string;
   url: string;
@@ -33,7 +33,9 @@ function buildProviderResult(verificationId: string, overrides: Partial<KycProvi
   };
 }
 
-export async function createDiditSession(signal?: AbortSignal): Promise<DiditSession> {
+export async function createKycSession(
+  signal?: AbortSignal,
+): Promise<KycSession> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
@@ -55,9 +57,9 @@ export async function createDiditSession(signal?: AbortSignal): Promise<DiditSes
 
     const body: unknown = await response.json();
     if (typeof body === 'string') {
-      return JSON.parse(body) as DiditSession;
+      return JSON.parse(body) as KycSession;
     }
-    return body as DiditSession;
+    return body as KycSession;
   } catch (err) {
     clearTimeout(timeoutId);
     if (err instanceof Error && err.name === 'AbortError') {
@@ -70,7 +72,9 @@ export async function createDiditSession(signal?: AbortSignal): Promise<DiditSes
   }
 }
 
-export async function launchDiditWebSdk(config: DiditLaunchConfig): Promise<() => void> {
+export async function launchKycWebSdk(
+  config: KycLaunchConfig,
+): Promise<() => void> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { DiditSdk } = (await import('@didit-protocol/sdk-web')) as any;
 

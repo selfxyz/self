@@ -50,4 +50,4 @@ Identity verification wallet using NFC passport scanning + zero-knowledge proofs
 - No Express/Nest/etc server
 - Smart contracts serve as "backend"
 - SDK core package handles proving/verification
-- External services: Firebase, Segment, Sentry, Sumsub KYC
+- External services: Firebase, Segment, Sentry, Didit KYC

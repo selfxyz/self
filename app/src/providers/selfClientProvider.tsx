@@ -23,7 +23,7 @@ import {
 } from '@selfxyz/mobile-sdk-alpha';
 
 import { logNFCEvent, logProofEvent } from '@/config/sentry';
-import { createSession, launchDidit } from '@/integrations/didit';
+import { createKycSession, launchKycVerification } from '@/integrations/kyc';
 import type { RootStackParamList } from '@/navigation';
 import { navigationRef } from '@/navigation';
 import {
@@ -354,8 +354,10 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
                     );
                   }
 
-                  const session = await createSession();
-                  const result = await launchDidit(session.sessionToken);
+                  const session = await createKycSession();
+                  const result = await launchKycVerification(
+                    session.sessionToken,
+                  );
 
                   console.log('[Didit] Result:', JSON.stringify(result));
 
