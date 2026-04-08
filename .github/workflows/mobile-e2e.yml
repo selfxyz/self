@@ -10,7 +10,7 @@ env:
   GH_CACHE_VERSION: v2 # Global cache version - bumped to invalidate caches
   GH_GEMS_CACHE_VERSION: v1 # Ruby gems cache version
   # Performance optimizations
-  YARN_CHILD_CONCURRENCY: 2 # Limit parallel native module builds to prevent OOM on self-hosted runners
+  YARN_TASK_POOL_CONCURRENCY: 2 # Limit parallel native module builds to prevent OOM on self-hosted runners
   GRADLE_OPTS: -Dorg.gradle.workers.max=4 -Dorg.gradle.parallel=true -Dorg.gradle.caching=true
   CI: true
   # Disable Maestro analytics in CI
