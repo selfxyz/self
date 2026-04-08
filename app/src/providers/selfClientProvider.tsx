@@ -316,7 +316,7 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
         documentTypes: string[];
       }) => {
         currentCountryCode = countryCode;
-        // Store country code early so it's available for Didit fallback flows
+        // Store country code early so it's available for KYC fallback flows
         useMRZStore.getState().update({ countryCode });
         navigateIfReady('IDPicker', { countryCode, documentTypes });
       },
@@ -346,12 +346,10 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
                   if (
                     useErrorInjectionStore
                       .getState()
-                      .shouldTrigger('didit_initialization')
+                      .shouldTrigger('kyc_initialization')
                   ) {
-                    console.log('[DEV] Injecting Didit initialization error');
-                    throw new Error(
-                      'Injected Didit initialization error for testing',
-                    );
+                    console.log('[DEV] Injecting KYC initialization error');
+                    throw new Error('Injected KYC initialization error for testing');
                   }
 
                   const session = await createKycSession();
@@ -359,12 +357,12 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
                     session.sessionToken,
                   );
 
-                  console.log('[Didit] Result:', JSON.stringify(result));
+                  console.log('[KYC] Result:', JSON.stringify(result));
 
                   // User cancelled/dismissed without completing verification
                   if (result.type === 'cancelled') {
                     console.log(
-                      '[Didit] User cancelled or closed without completing',
+                      '[KYC] User cancelled or closed without completing',
                     );
                     return;
                   }
@@ -372,7 +370,7 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
                   // Dev-only: Check for injected verification error
                   const shouldInjectVerificationError = useErrorInjectionStore
                     .getState()
-                    .shouldTrigger('didit_verification');
+                    .shouldTrigger('kyc_verification');
 
                   // Actual error from provider
                   if (
@@ -380,7 +378,7 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
                     shouldInjectVerificationError
                   ) {
                     if (shouldInjectVerificationError) {
-                      console.log('[DEV] Injecting Didit verification error');
+                      console.log('[DEV] Injecting KYC verification error');
                     } else {
                       const safeError = sanitizeErrorMessage(
                         result.error?.message ||
@@ -402,7 +400,7 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
                   // User completed verification
                   // Navigate to KYC success screen
                   console.log(
-                    '[Didit] Verification submitted, status:',
+                    '[KYC] Verification submitted, status:',
                     result.session?.status,
                   );
                   if (navigationRef.isReady()) {

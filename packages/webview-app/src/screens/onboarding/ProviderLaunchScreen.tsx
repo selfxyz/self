@@ -17,7 +17,7 @@ import { waitForKycAttestation } from '../../utils/kycAttestation';
 import { createKycSession, launchKycWebSdk } from '../../utils/kycProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
 
-const CONTAINER_ID = 'didit-sdk-container';
+const CONTAINER_ID = 'kyc-sdk-container';
 
 type Phase = 'loading' | 'active' | 'waiting' | 'error';
 
@@ -38,7 +38,7 @@ export const ProviderLaunchScreen: React.FC = () => {
 
   const defaultNextPath = nextPath ?? '/onboarding/provider-result';
   const isTunnelFlow = defaultNextPath.startsWith('/tunnel/') || backPath?.startsWith('/tunnel/') === true;
-  const verificationId = ctxVerificationId ?? `didit-${Date.now()}`;
+  const verificationId = ctxVerificationId ?? `kyc-${Date.now()}`;
 
   const [phase, setPhase] = useState<Phase>('loading');
   const [errorMessage, setErrorMessage] = useState('');

@@ -52,7 +52,7 @@ export async function createKycSession(
     clearTimeout(timeoutId);
 
     if (!response.ok) {
-      throw new Error(`Failed to create Didit session (HTTP ${response.status})`);
+      throw new Error(`Failed to create KYC session (HTTP ${response.status})`);
     }
 
     const body: unknown = await response.json();
@@ -63,12 +63,12 @@ export async function createKycSession(
   } catch (err) {
     clearTimeout(timeoutId);
     if (err instanceof Error && err.name === 'AbortError') {
-      throw new Error(`Didit session request timed out after ${FETCH_TIMEOUT_MS / 1000}s`);
+      throw new Error(`KYC session request timed out after ${FETCH_TIMEOUT_MS / 1000}s`);
     }
     if (err instanceof Error) {
-      throw new Error(`Failed to create Didit session: ${err.message}`);
+      throw new Error(`Failed to create KYC session: ${err.message}`);
     }
-    throw new Error('Failed to create Didit session: Unknown error');
+    throw new Error('Failed to create KYC session: Unknown error');
   }
 }
 
