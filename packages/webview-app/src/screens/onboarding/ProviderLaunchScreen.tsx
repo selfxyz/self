@@ -13,9 +13,9 @@ import { useSelfClient } from '../../providers/SelfClientProvider';
 import { useVerificationRequest } from '../../providers/VerificationRequestProvider';
 import type { KycProviderResult } from '../../types/kycProvider';
 import { buildKycDocument } from '../../utils/buildKycDocument';
+import { WEB_SAFE_AREA } from '../../utils/insets';
 import { waitForKycAttestation } from '../../utils/kycAttestation';
 import { createKycSession, launchKycWebSdk } from '../../utils/kycProvider';
-import { WEB_SAFE_AREA } from '../../utils/insets';
 
 const CONTAINER_ID = 'kyc-sdk-container';
 
@@ -57,9 +57,7 @@ export const ProviderLaunchScreen: React.FC = () => {
 
       if ((result.status === 'success' || result.status === 'partial') && sessionIdRef.current) {
         setPhase('waiting');
-        const attestationResult = await waitForKycAttestation(
-          sessionIdRef.current,
-        );
+        const attestationResult = await waitForKycAttestation(sessionIdRef.current);
 
         if (!mountedRef.current) return;
 

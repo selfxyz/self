@@ -14,6 +14,9 @@ import { navigationRef } from '@/navigation';
 import { storeDocumentWithDeduplication } from '@/providers/passportDataProvider';
 import { usePendingKycStore } from '@/stores/pendingKycStore';
 
+const redactSessionId = (id: string) =>
+  id.length > 8 ? `${id.slice(0, 4)}***${id.slice(-4)}` : '***';
+
 interface UseKycWebSocketOptions {
   onSuccess?: () => void;
   onError?: (error: string) => void;
@@ -52,7 +55,7 @@ export function useKycWebSocket(options: UseKycWebSocketOptions = {}) {
       if (subscribedSessionIdsRef.current.has(sessionId)) {
         console.log(
           '[KycWebSocket] Already subscribed to sessionId:',
-          sessionId,
+          redactSessionId(sessionId),
         );
         return;
       }
@@ -64,7 +67,7 @@ export function useKycWebSocket(options: UseKycWebSocketOptions = {}) {
       if (isProcessing) {
         console.log(
           '[KycWebSocket] Verification in processing state, skipping for sessionId:',
-          sessionId,
+          redactSessionId(sessionId),
         );
         return;
       }
@@ -72,7 +75,7 @@ export function useKycWebSocket(options: UseKycWebSocketOptions = {}) {
       if (!skipAddPending) {
         console.log(
           '[KycWebSocket] Adding pending verification for sessionId:',
-          sessionId,
+          redactSessionId(sessionId),
         );
         addPendingVerification(sessionId);
       }
@@ -88,7 +91,7 @@ export function useKycWebSocket(options: UseKycWebSocketOptions = {}) {
       socket.on('connect', () => {
         console.log(
           '[KycWebSocket] Connected, subscribing to user:',
-          sessionId,
+          redactSessionId(sessionId),
         );
         socket.emit('subscribe', sessionId);
       });
@@ -96,7 +99,7 @@ export function useKycWebSocket(options: UseKycWebSocketOptions = {}) {
       socket.on('success', async (data: ApplicantInfoSerialized) => {
         console.log(
           '[KycWebSocket] Received applicant info for sessionId:',
-          sessionId,
+          redactSessionId(sessionId),
         );
 
         try {
@@ -166,7 +169,10 @@ export function useKycWebSocket(options: UseKycWebSocketOptions = {}) {
       });
 
       socket.on('disconnect', () => {
-        console.log('[KycWebSocket] Disconnected for sessionId:', sessionId);
+        console.log(
+          '[KycWebSocket] Disconnected for sessionId:',
+          redactSessionId(sessionId),
+        );
       });
     },
     [

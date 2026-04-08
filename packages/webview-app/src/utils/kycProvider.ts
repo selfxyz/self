@@ -33,9 +33,7 @@ function buildProviderResult(verificationId: string, overrides: Partial<KycProvi
   };
 }
 
-export async function createKycSession(
-  signal?: AbortSignal,
-): Promise<KycSession> {
+export async function createKycSession(signal?: AbortSignal): Promise<KycSession> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
@@ -72,9 +70,7 @@ export async function createKycSession(
   }
 }
 
-export async function launchKycWebSdk(
-  config: KycLaunchConfig,
-): Promise<() => void> {
+export async function launchKycWebSdk(config: KycLaunchConfig): Promise<() => void> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { DiditSdk } = (await import('@didit-protocol/sdk-web')) as any;
 

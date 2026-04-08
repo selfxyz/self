@@ -359,7 +359,7 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
                     session.sessionToken,
                   );
 
-                  console.log('[KYC] Result:', JSON.stringify(result));
+                  console.log('[KYC] Result type:', result.type);
 
                   // User cancelled/dismissed without completing verification
                   if (result.type === 'cancelled') {
