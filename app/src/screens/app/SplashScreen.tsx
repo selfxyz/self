@@ -20,15 +20,24 @@ import type { RootStackParamList } from '@/navigation';
 import {
   getAndClearQueuedUrl,
   handleUrl,
+  peekQueuedUrl,
   setDeeplinkParentScreen,
 } from '@/navigation/deeplinks';
-import { migrateToSecureKeychain, useAuth } from '@/providers/authProvider';
+import {
+  hasSecretStored,
+  migrateToSecureKeychain,
+  useAuth,
+} from '@/providers/authProvider';
 import {
   checkAndUpdateRegistrationStates,
   checkIfAnyDocumentsNeedMigration,
   initializeNativeModules,
   migrateFromLegacyStorage,
 } from '@/providers/passportDataProvider';
+import {
+  getStartupNavigationTarget,
+  hasStartupRecoverySignal,
+} from '@/screens/app/startupRouting';
 import { useSettingStore } from '@/stores/settingStore';
 import { IS_DEV_MODE } from '@/utils/devUtils';
 
@@ -72,8 +81,22 @@ const SplashScreen: React.FC = ({}) => {
             await checkAndUpdateRegistrationStates(selfClient);
           }
 
-          await hasAnyValidRegisteredDocument(selfClient);
-          const parentScreen = 'Home';
+          const [hasRegisteredDocument, hasStoredSecret] = await Promise.all([
+            hasAnyValidRegisteredDocument(selfClient),
+            hasSecretStored(),
+          ]);
+          const settings = useSettingStore.getState();
+          const startupTarget = getStartupNavigationTarget({
+            hasPrivacyNoteBeenDismissed: settings.hasPrivacyNoteBeenDismissed,
+            hasRecoverySignal: hasStartupRecoverySignal({
+              cloudBackupEnabled: settings.cloudBackupEnabled,
+              hasViewedRecoveryPhrase: settings.hasViewedRecoveryPhrase,
+              pointsAddress: settings.pointsAddress,
+            }),
+            hasSecretStored: hasStoredSecret,
+            hasValidRegisteredDocument: hasRegisteredDocument,
+          });
+          const parentScreen = startupTarget.route;
 
           // Migrate keychain to secure storage with biometric protection
           try {
@@ -84,8 +107,10 @@ const SplashScreen: React.FC = ({}) => {
 
           setDeeplinkParentScreen(parentScreen);
 
-          const queuedUrl = getAndClearQueuedUrl();
-          if (queuedUrl) {
+          const queuedUrl = startupTarget.allowQueuedDeepLink
+            ? getAndClearQueuedUrl()
+            : peekQueuedUrl();
+          if (queuedUrl && startupTarget.allowQueuedDeepLink) {
             if (IS_DEV_MODE) {
               console.log('Processing queued deeplink:', queuedUrl);
             }

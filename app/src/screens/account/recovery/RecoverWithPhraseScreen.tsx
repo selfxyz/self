@@ -70,26 +70,22 @@ const RecoverWithPhraseScreen: React.FC = () => {
         trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_AUTH, {
           mnemonicLength: slimMnemonic.split(' ').length,
         });
-        navigation.navigate({ name: 'Home', params: {} });
         setRestoring(false);
         return;
       }
 
       const passportData = await loadPassportData();
-      const secret = getPrivateKeyFromMnemonic(slimMnemonic);
 
-      if (!passportData || !secret) {
+      if (!passportData) {
         console.warn(
-          'No passport data found on device. Please scan or import your document.',
+          'Recovered secret but no local document data was found. Prompting the user to import their document again.',
         );
-        trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_AUTH, {
-          reason: 'no_passport_data',
-        });
-        navigation.navigate({ name: 'Home', params: {} });
+        navigation.navigate('CountryPicker');
         setRestoring(false);
         return;
       }
       const passportDataParsed = JSON.parse(passportData);
+      const secret = getPrivateKeyFromMnemonic(slimMnemonic);
 
       const { isRegistered, csca } = await isUserRegisteredWithAlternativeCSCA(
         passportDataParsed,
@@ -124,7 +120,6 @@ const RecoverWithPhraseScreen: React.FC = () => {
           reason: 'document_not_registered',
           hasCSCA: !!csca,
         });
-        navigation.navigate({ name: 'Home', params: {} });
         setRestoring(false);
         return;
       }
@@ -143,7 +138,6 @@ const RecoverWithPhraseScreen: React.FC = () => {
         error: error instanceof Error ? error.message : 'unknown',
       });
       setRestoring(false);
-      navigation.navigate({ name: 'Home', params: {} });
     }
   }, [
     mnemonic,

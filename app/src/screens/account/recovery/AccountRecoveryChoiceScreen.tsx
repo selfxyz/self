@@ -82,25 +82,29 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
         if (!result) {
           console.warn('Failed to restore account');
           trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_UNKNOWN);
-          navigation.navigate({ name: 'Home', params: {} });
           setRestoring(false);
           return false;
         }
 
         const passportData = await loadPassportData();
-        const secret = getPrivateKeyFromMnemonic(mnemonic.phrase);
 
-        if (!passportData || !secret) {
-          console.warn('Failed to load passport data or secret');
-          trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_AUTH, {
-            reason: 'no_passport_data_or_secret',
+        if (!passportData) {
+          console.warn(
+            'Recovered secret but no local document data was found. Prompting the user to import their document again.',
+          );
+          if (isCloudRestore && !cloudBackupEnabled) {
+            toggleCloudBackupEnabled();
+          }
+          trackEvent(BackupEvents.CLOUD_RESTORE_SUCCESS, {
+            documentImportRequired: true,
           });
-          navigation.navigate({ name: 'Home', params: {} });
+          navigation.navigate('CountryPicker');
           setRestoring(false);
-          return false;
+          return true;
         }
 
         const passportDataParsed = JSON.parse(passportData);
+        const secret = getPrivateKeyFromMnemonic(mnemonic.phrase);
 
         const { isRegistered, csca } =
           await isUserRegisteredWithAlternativeCSCA(
@@ -140,7 +144,6 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
               hasCSCA: !!csca,
             },
           );
-          navigation.navigate({ name: 'Home', params: {} });
           setRestoring(false);
           return false;
         }
