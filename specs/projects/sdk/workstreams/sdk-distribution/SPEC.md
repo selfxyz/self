@@ -58,13 +58,13 @@
 
 ## Backlog
 
-| ID    | Title                            | Status | Priority | Depends On | Plan                                                                                 | PR  |
-| ----- | -------------------------------- | ------ | -------- | ---------- | ------------------------------------------------------------------------------------ | --- |
-| SD-01 | Android hosted URL loading       | Ready  | High     | NSL-01     | [plans/SD-01-android-hosted-url.md](./plans/SD-01-android-hosted-url.md)             | —   |
-| SD-02 | iOS hosted URL loading           | Ready  | High     | NSL-02     | [plans/SD-02-ios-hosted-url.md](./plans/SD-02-ios-hosted-url.md)                     | —   |
-| SD-03 | WebView app hosting setup        | Ready  | High     | —          | [plans/SD-03-hosting-setup.md](./plans/SD-03-hosting-setup.md)                       | —   |
-| SD-04 | Android Maven publishing         | Ready  | Medium   | SD-01      | [plans/SD-04-android-maven-publishing.md](./plans/SD-04-android-maven-publishing.md) | —   |
-| SD-05 | iOS publishing (SPM + CocoaPods) | Ready  | Medium   | SD-02      | [plans/SD-05-ios-spm-publishing.md](./plans/SD-05-ios-spm-publishing.md)             | —   |
+| ID    | Title                             | Status | Priority | Depends On | Plan                                                                                 | PR  |
+| ----- | --------------------------------- | ------ | -------- | ---------- | ------------------------------------------------------------------------------------ | --- |
+| SD-01 | Android hosted URL loading        | Ready  | High     | NSL-01     | [plans/SD-01-android-hosted-url.md](./plans/SD-01-android-hosted-url.md)             | —   |
+| SD-02 | iOS hosted URL loading            | Ready  | High     | NSL-02     | [plans/SD-02-ios-hosted-url.md](./plans/SD-02-ios-hosted-url.md)                     | —   |
+| SD-03 | WebView app hosting setup         | Ready  | High     | —          | [plans/SD-03-hosting-setup.md](./plans/SD-03-hosting-setup.md)                       | —   |
+| SD-04 | Android Maven publishing          | Ready  | Medium   | SD-01      | [plans/SD-04-android-maven-publishing.md](./plans/SD-04-android-maven-publishing.md) | —   |
+| SD-05 | iOS publishing (SPM + CocoaPods)  | Ready  | Medium   | SD-02      | [plans/SD-05-ios-spm-publishing.md](./plans/SD-05-ios-spm-publishing.md)             | —   |
 | SD-06 | KMP remote publishing (Maven+SPM) | Ready  | Medium   | KR-03      | [plans/SD-06-kmp-remote-publishing.md](./plans/SD-06-kmp-remote-publishing.md)       | —   |
 
 Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
@@ -105,11 +105,11 @@ Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 
 ## Related Specs
 
-| Spec                                                | Relationship                                             |
-| --------------------------------------------------- | -------------------------------------------------------- |
-| [SDK Overview](../../OVERVIEW.md)                   | Parent architecture                                      |
-| [Native Shells Lite](../native-shells-lite/SPEC.md) | Upstream — shells must exist before distribution changes |
-| [Build Pipeline](../build-pipeline/SPEC.md)         | Sibling — bundle script retained for local dev only      |
-| [WebView Spec](../webview/SPEC.md)                  | Upstream — produces the web app being hosted             |
-| [SDK Core Spec](../sdk-core/SPEC.md)                | Sibling — engine consumed by hosted web app              |
+| Spec                                                | Relationship                                                |
+| --------------------------------------------------- | ----------------------------------------------------------- |
+| [SDK Overview](../../OVERVIEW.md)                   | Parent architecture                                         |
+| [Native Shells Lite](../native-shells-lite/SPEC.md) | Upstream — shells must exist before distribution changes    |
+| [Build Pipeline](../build-pipeline/SPEC.md)         | Sibling — bundle script retained for local dev only         |
+| [WebView Spec](../webview/SPEC.md)                  | Upstream — produces the web app being hosted                |
+| [SDK Core Spec](../sdk-core/SPEC.md)                | Sibling — engine consumed by hosted web app                 |
 | [KMP Revival](../kmp-revival/SPEC.md)               | Upstream — KR-03 validates artifacts before SD-06 publishes |

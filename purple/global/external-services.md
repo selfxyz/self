@@ -8,7 +8,7 @@
 | Firebase Remote Config | `@react-native-firebase/remote-config` | Feature flags, remote config | `app/src/providers/remoteConfigProvider.tsx` |
 | Segment | `@segment/analytics-react-native` | Analytics / event tracking | `app/src/services/analytics.ts` |
 | Sentry | `@sentry/react-native` | Error tracking / crash reporting | `app/src/config/sentry.ts` |
-| Sumsub | `@sumsub/react-native-mobilesdk-module` | KYC identity verification | `app/src/integrations/sumsub/` |
+| Didit | `@didit-protocol/sdk-react-native` | KYC identity verification | `app/src/integrations/kyc/` |
 | Google Drive | `@robinbobin/react-native-google-drive-api-wrapper` | Cloud mnemonic backup | `app/src/services/cloud-backup/google.ts` |
 | Google OAuth | `react-native-app-auth` | OAuth 2.0 for Drive access | `app/src/services/cloud-backup/google.ts` |
 
@@ -29,7 +29,7 @@
 - Provides feature flags and runtime configuration
 - Fetched on app start, cached locally
 
-### KYC (Sumsub)
+### KYC (Didit)
 - Access token fetched per-session via TEE endpoint
 - 30-second timeout on token fetch
 - Token not persisted — fresh for each KYC session

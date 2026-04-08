@@ -8,7 +8,7 @@ export interface ApplicantInfoSerialized {
   pubkey: Array<string>;
 }
 
-export interface DiditVerificationResult {
+export interface KycVerificationResult {
   type: 'completed' | 'cancelled' | 'failed';
   session?: {
     status: string;

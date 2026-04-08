@@ -9,12 +9,15 @@ import { DIDIT_TEE_URL } from '@env';
 import { deserializeApplicantInfo } from '@selfxyz/common';
 import type { DocumentType, KycData } from '@selfxyz/common/utils/types';
 
-import type { ApplicantInfoSerialized } from '@/integrations/didit/types';
+import type { ApplicantInfoSerialized } from '@/integrations/kyc/types';
 import { navigationRef } from '@/navigation';
 import { storeDocumentWithDeduplication } from '@/providers/passportDataProvider';
 import { usePendingKycStore } from '@/stores/pendingKycStore';
 
-interface UseDiditWebSocketOptions {
+const redactSessionId = (id: string) =>
+  id.length > 8 ? `${id.slice(0, 4)}***${id.slice(-4)}` : '***';
+
+interface UseKycWebSocketOptions {
   onSuccess?: () => void;
   onError?: (error: string) => void;
   onVerificationFailed?: (reason: string) => void;
@@ -22,11 +25,11 @@ interface UseDiditWebSocketOptions {
 }
 
 /**
- * Shared hook for Didit websocket subscription logic.
+ * Shared hook for KYC websocket subscription logic.
  * Handles connecting to the TEE service, subscribing to a sessionId,
  * and processing verification results.
  */
-export function useDiditWebSocket(options: UseDiditWebSocketOptions = {}) {
+export function useKycWebSocket(options: UseKycWebSocketOptions = {}) {
   const {
     onSuccess,
     onError,
@@ -51,8 +54,8 @@ export function useDiditWebSocket(options: UseDiditWebSocketOptions = {}) {
     (sessionId: string) => {
       if (subscribedSessionIdsRef.current.has(sessionId)) {
         console.log(
-          '[DiditWebSocket] Already subscribed to sessionId:',
-          sessionId,
+          '[KycWebSocket] Already subscribed to sessionId:',
+          redactSessionId(sessionId),
         );
         return;
       }
@@ -63,22 +66,22 @@ export function useDiditWebSocket(options: UseDiditWebSocketOptions = {}) {
       // Don't retry 'processing' verifications as the proving machine is reading to be triggered.
       if (isProcessing) {
         console.log(
-          '[DiditWebSocket] Verification in processing state, skipping for sessionId:',
-          sessionId,
+          '[KycWebSocket] Verification in processing state, skipping for sessionId:',
+          redactSessionId(sessionId),
         );
         return;
       }
 
       if (!skipAddPending) {
         console.log(
-          '[DiditWebSocket] Adding pending verification for sessionId:',
-          sessionId,
+          '[KycWebSocket] Adding pending verification for sessionId:',
+          redactSessionId(sessionId),
         );
         addPendingVerification(sessionId);
       }
       subscribedSessionIdsRef.current.add(sessionId);
 
-      console.log('[DiditWebSocket] Connecting to WebSocket:', DIDIT_TEE_URL);
+      console.log('[KycWebSocket] Connecting to WebSocket:', DIDIT_TEE_URL);
       const socket = io(DIDIT_TEE_URL, {
         transports: ['websocket', 'polling'],
       });
@@ -87,16 +90,16 @@ export function useDiditWebSocket(options: UseDiditWebSocketOptions = {}) {
 
       socket.on('connect', () => {
         console.log(
-          '[DiditWebSocket] Connected, subscribing to user:',
-          sessionId,
+          '[KycWebSocket] Connected, subscribing to user:',
+          redactSessionId(sessionId),
         );
         socket.emit('subscribe', sessionId);
       });
 
       socket.on('success', async (data: ApplicantInfoSerialized) => {
         console.log(
-          '[DiditWebSocket] Received applicant info for sessionId:',
-          sessionId,
+          '[KycWebSocket] Received applicant info for sessionId:',
+          redactSessionId(sessionId),
         );
 
         try {
@@ -113,7 +116,7 @@ export function useDiditWebSocket(options: UseDiditWebSocketOptions = {}) {
           };
           const documentId = await storeDocumentWithDeduplication(kycData);
           console.log(
-            '[DiditWebSocket] KYC data stored successfully, documentId:',
+            '[KycWebSocket] KYC data stored successfully, documentId:',
             documentId,
           );
 
@@ -131,7 +134,7 @@ export function useDiditWebSocket(options: UseDiditWebSocketOptions = {}) {
           socket.emit('ack_success', sessionId);
           onSuccess?.();
         } catch (err) {
-          console.error('[DiditWebSocket] Failed to store KYC data:', err);
+          console.error('[KycWebSocket] Failed to store KYC data:', err);
           updateVerificationStatus(
             sessionId,
             'failed',
@@ -146,7 +149,7 @@ export function useDiditWebSocket(options: UseDiditWebSocketOptions = {}) {
       });
 
       socket.on('verification_failed', (reason: string) => {
-        console.log('[DiditWebSocket] Verification failed:', reason);
+        console.log('[KycWebSocket] Verification failed:', reason);
         updateVerificationStatus(sessionId, 'failed', reason);
         onVerificationFailed?.(reason);
 
@@ -156,7 +159,7 @@ export function useDiditWebSocket(options: UseDiditWebSocketOptions = {}) {
       });
 
       socket.on('error', (errorMessage: string) => {
-        console.error('[DiditWebSocket] Socket error:', errorMessage);
+        console.error('[KycWebSocket] Socket error:', errorMessage);
         updateVerificationStatus(sessionId, 'failed', errorMessage);
         onError?.(errorMessage);
 
@@ -166,7 +169,10 @@ export function useDiditWebSocket(options: UseDiditWebSocketOptions = {}) {
       });
 
       socket.on('disconnect', () => {
-        console.log('[DiditWebSocket] Disconnected for sessionId:', sessionId);
+        console.log(
+          '[KycWebSocket] Disconnected for sessionId:',
+          redactSessionId(sessionId),
+        );
       });
     },
     [

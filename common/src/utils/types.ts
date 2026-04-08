@@ -90,9 +90,9 @@ export interface PassportData extends BaseIDData {
   passportMetadata?: PassportMetadata;
 }
 
-// pending - pending didit verification
-// processing - didit verification completed and pending onchain confirmation
-// failed - didit verification failed
+// pending - pending KYC verification
+// processing - KYC verification completed and pending onchain confirmation
+// failed - KYC verification failed
 export type PendingKycStatus = 'pending' | 'processing' | 'failed';
 
 export interface PendingKycVerification {
