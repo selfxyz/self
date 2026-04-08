@@ -3891,9 +3891,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@didit-protocol/sdk-react-native@npm:^3.2.7":
-  version: 3.2.7
-  resolution: "@didit-protocol/sdk-react-native@npm:3.2.7"
+"@didit-protocol/sdk-react-native@npm:^3.2.8":
+  version: 3.2.8
+  resolution: "@didit-protocol/sdk-react-native@npm:3.2.8"
   peerDependencies:
     "@expo/config-plugins": ">=7.0.0"
     react: "*"
@@ -3901,7 +3901,7 @@ __metadata:
   peerDependenciesMeta:
     "@expo/config-plugins":
       optional: true
-  checksum: 10c0/e89270ecd50a7a1b3acb51981252acffb4b4a4e158ea0fea6ae1d14cfae5786f16f3c2696814542c6fb71f1f3a5eb8259fae9cbd34e782abca0a10478956a59e
+  checksum: 10c0/4130b963b61ccd1f633af5941dfde08ae28a4b514320760b81746b4f7cb9368fb8bcc9cd259f5751e579963164f09e271c003891a379bb89b566dac0322e0658
   languageName: node
   linkType: hard
 
@@ -9443,7 +9443,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native-google-signin/google-signin@npm:^16.1.1":
+"@react-native-google-signin/google-signin@npm:^16.1.2":
   version: 16.1.2
   resolution: "@react-native-google-signin/google-signin@npm:16.1.2"
   peerDependencies:
@@ -10134,15 +10134,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@robinbobin/react-native-google-drive-api-wrapper@npm:^2.2.3":
-  version: 2.2.5
-  resolution: "@robinbobin/react-native-google-drive-api-wrapper@npm:2.2.5"
+"@robinbobin/react-native-google-drive-api-wrapper@npm:^2.2.6":
+  version: 2.2.6
+  resolution: "@robinbobin/react-native-google-drive-api-wrapper@npm:2.2.6"
   dependencies:
     "@robinbobin/mimetype-constants": "npm:^2.0.3"
     base64-js: "npm:^1.5.1"
     radashi: "npm:^12.6.0"
     utf8: "npm:^3.0.0"
-  checksum: 10c0/e42b1a2c0ffd3462a20a81cbb6d8463e604fe3e085fa0e9a5eaeb921cd5a3ce1ebccc541623d41b6627b81025fa5e3445ec67dbf4241097f4bc7cddfdbaaeb01
+  checksum: 10c0/5b4c05c9087b1867e8a5d76c6325843b10c916c46eab4ba8a8d3abfba44d65a340de902aad051bd2d7b729b876c2dc663227c5fd8280df99d73e8e28c8f7968b
   languageName: node
   linkType: hard
 
@@ -10826,9 +10826,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@segment/analytics-react-native@npm:^2.21.2":
-  version: 2.21.4
-  resolution: "@segment/analytics-react-native@npm:2.21.4"
+"@segment/analytics-react-native@npm:^2.22.0":
+  version: 2.22.0
+  resolution: "@segment/analytics-react-native@npm:2.22.0"
   dependencies:
     "@segment/tsub": "npm:2.0.0"
     "@stdlib/number-float64-base-normalize": "npm:0.0.8"
@@ -10844,7 +10844,7 @@ __metadata:
   peerDependenciesMeta:
     "@react-native-async-storage/async-storage":
       optional: true
-  checksum: 10c0/ded24df92c32521e90fa9b2e1a93d59f2a3917eefd61a6fd26496d07e1bc9d2ae7efa7c16d0656dabde937ed6731dcf6f894365e0810bdff691f608b974d8973
+  checksum: 10c0/c8991c5129d26a0b1256697168888bcd5df398316833566581580f090ad690a235a79992c3c80c31284675f178f6bc65c79f746854330c8340b5a787ca309d5c
   languageName: node
   linkType: hard
 
@@ -11169,7 +11169,7 @@ __metadata:
     "@babel/preset-env": "npm:^7.29.2"
     "@babel/preset-react": "npm:^7.28.5"
     "@babel/runtime": "npm:^7.29.2"
-    "@didit-protocol/sdk-react-native": "npm:^3.2.7"
+    "@didit-protocol/sdk-react-native": "npm:^3.2.8"
     "@ethersproject/shims": "npm:^5.8.0"
     "@invertase/react-native-apple-authentication": "npm:^2.5.1"
     "@noble/hashes": "npm:^1.5.0"
@@ -11183,7 +11183,7 @@ __metadata:
     "@react-native-firebase/app": "npm:^21.14.0"
     "@react-native-firebase/messaging": "npm:^21.14.0"
     "@react-native-firebase/remote-config": "npm:^21.14.0"
-    "@react-native-google-signin/google-signin": "npm:^16.1.1"
+    "@react-native-google-signin/google-signin": "npm:^16.1.2"
     "@react-native/babel-preset": "npm:0.77.0"
     "@react-native/eslint-config": "npm:0.77.0"
     "@react-native/gradle-plugin": "npm:0.77.0"
@@ -11191,15 +11191,15 @@ __metadata:
     "@react-native/typescript-config": "npm:0.77.0"
     "@react-navigation/native": "npm:^7.0.14"
     "@react-navigation/native-stack": "npm:^7.2.0"
-    "@robinbobin/react-native-google-drive-api-wrapper": "npm:^2.2.3"
-    "@segment/analytics-react-native": "npm:^2.21.2"
+    "@robinbobin/react-native-google-drive-api-wrapper": "npm:^2.2.6"
+    "@segment/analytics-react-native": "npm:^2.22.0"
     "@segment/sovran-react-native": "npm:^1.1.3"
     "@selfxyz/common": "workspace:^"
     "@selfxyz/euclid": "npm:^0.6.1"
     "@selfxyz/mobile-sdk-alpha": "workspace:^"
     "@sentry/react": "npm:^9.32.0"
     "@sentry/react-native": "npm:7.0.0"
-    "@stablelib/cbor": "npm:^2.0.1"
+    "@stablelib/cbor": "npm:^2.0.4"
     "@tamagui/animations-css": "npm:1.126.14"
     "@tamagui/animations-react-native": "npm:1.126.14"
     "@tamagui/config": "npm:1.126.14"
@@ -11242,9 +11242,9 @@ __metadata:
     eslint-import-resolver-typescript: "npm:^3.7.0"
     eslint-plugin-ft-flow: "npm:^3.0.11"
     eslint-plugin-header: "npm:^3.1.1"
-    eslint-plugin-import: "npm:^2.31.0"
-    eslint-plugin-jest: "npm:^29.1.0"
-    eslint-plugin-prettier: "npm:^5.2.6"
+    eslint-plugin-import: "npm:^2.32.0"
+    eslint-plugin-jest: "npm:^29.15.1"
+    eslint-plugin-prettier: "npm:^5.5.5"
     eslint-plugin-simple-import-sort: "npm:^12.1.1"
     eslint-plugin-sort-exports: "npm:^0.9.1"
     ethers: "npm:^6.16.0"
@@ -11261,40 +11261,40 @@ __metadata:
     node-forge: "npm:^1.4.0"
     pkijs: "npm:^3.4.0"
     poseidon-lite: "npm:^0.2.0"
-    prettier: "npm:^3.5.3"
+    prettier: "npm:^3.8.1"
     prop-types: "npm:^15.8.1"
     react: "npm:^18.3.1"
     react-dom: "npm:^18.3.1"
     react-native: "npm:0.77.0"
-    react-native-app-auth: "npm:^8.0.3"
+    react-native-app-auth: "npm:^8.1.0"
     react-native-biometrics: "npm:^3.0.1"
     react-native-blur-effect: "npm:^1.1.3"
-    react-native-check-version: "npm:^1.3.0"
+    react-native-check-version: "npm:^1.4.0"
     react-native-cloud-storage: "npm:^2.2.2"
     react-native-device-info: "npm:^15.0.2"
     react-native-dotenv: "npm:^3.4.11"
-    react-native-edge-to-edge: "npm:^1.7.0"
+    react-native-edge-to-edge: "npm:^1.8.1"
     react-native-gesture-handler: "npm:~2.22.0"
     react-native-get-random-values: "npm:^1.11.0"
     react-native-haptic-feedback: "npm:^2.3.3"
-    react-native-inappbrowser-reborn: "npm:^3.7.0"
+    react-native-inappbrowser-reborn: "npm:^3.7.1"
     react-native-keychain: "npm:^10.0.0"
     react-native-linear-gradient: "npm:^2.8.3"
     react-native-localize: "npm:^3.7.0"
-    react-native-logs: "npm:^5.5.0"
+    react-native-logs: "npm:^5.6.0"
     react-native-nfc-manager: "npm:3.17.2"
     react-native-passkey: "npm:^3.3.3"
     react-native-passport-reader: "npm:1.0.3"
-    react-native-safe-area-context: "npm:^5.6.2"
+    react-native-safe-area-context: "npm:^5.7.0"
     react-native-screens: "npm:4.15.3"
     react-native-sqlite-storage: "npm:^6.0.1"
     react-native-svg: "npm:15.14.0"
-    react-native-svg-transformer: "npm:^1.5.2"
+    react-native-svg-transformer: "npm:^1.5.3"
     react-native-svg-web: "npm:1.0.9"
     react-native-url-polyfill: "npm:^3.0.0"
     react-native-web: "npm:^0.21.2"
-    react-native-webview: "npm:^13.16.0"
-    react-qr-barcode-scanner: "npm:^2.1.8"
+    react-native-webview: "npm:13.16.0"
+    react-qr-barcode-scanner: "npm:^2.1.25"
     react-test-renderer: "npm:^18.3.1"
     rollup-plugin-visualizer: "npm:^6.0.5"
     socket.io-client: "npm:^4.8.3"
@@ -12820,6 +12820,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@stablelib/cbor@npm:^2.0.4":
+  version: 2.0.4
+  resolution: "@stablelib/cbor@npm:2.0.4"
+  dependencies:
+    "@stablelib/bytereader": "npm:^2.0.1"
+    "@stablelib/bytewriter": "npm:^2.0.1"
+    "@stablelib/float": "npm:^2.0.1"
+    "@stablelib/int": "npm:^2.0.1"
+    "@stablelib/utf8": "npm:^2.1.0"
+  checksum: 10c0/447c83a67bc7b8fc58c3b126631eba8f8d012bb244b6150df695e1d930ff86ebe5423c577259c4572b9b4f49e923dbdd7abe80dd1c82c88ef981b552b1ad5b0c
+  languageName: node
+  linkType: hard
+
 "@stablelib/float@npm:^2.0.1":
   version: 2.0.1
   resolution: "@stablelib/float@npm:2.0.1"
@@ -12838,6 +12851,13 @@ __metadata:
   version: 2.0.1
   resolution: "@stablelib/utf8@npm:2.0.1"
   checksum: 10c0/b429c53b78ab0243ad4a679189d41f9b08561bd6e152ac36c32f7c0d05bc8b0d52a03025c1120f4bac630b6b9304a1abc62cdcd55904ae105d4a3694bc01fe64
+  languageName: node
+  linkType: hard
+
+"@stablelib/utf8@npm:^2.1.0":
+  version: 2.1.0
+  resolution: "@stablelib/utf8@npm:2.1.0"
+  checksum: 10c0/6d3bed06f32bd1fd57e96682bb85c3f4624817818973fd137ce85a498be9b7145b877ae8178b5421a5c53ae8acf1b095bd8b60bd121043281cb7414fa6bb6328
   languageName: node
   linkType: hard
 
@@ -23802,25 +23822,28 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-jest@npm:^29.1.0":
-  version: 29.11.0
-  resolution: "eslint-plugin-jest@npm:29.11.0"
+"eslint-plugin-jest@npm:^29.15.1":
+  version: 29.15.1
+  resolution: "eslint-plugin-jest@npm:29.15.1"
   dependencies:
     "@typescript-eslint/utils": "npm:^8.0.0"
   peerDependencies:
     "@typescript-eslint/eslint-plugin": ^8.0.0
-    eslint: ^8.57.0 || ^9.0.0
+    eslint: ^8.57.0 || ^9.0.0 || ^10.0.0
     jest: "*"
+    typescript: ">=4.8.4 <7.0.0"
   peerDependenciesMeta:
     "@typescript-eslint/eslint-plugin":
       optional: true
     jest:
       optional: true
-  checksum: 10c0/5e147ade48fb957adcccafd7c9be39013b64949d01d63fe7a2b99b332511eca6f40eeadccfc8fb9ef73bc924aafeb466b86b7b2af461016d7805978ed05bb323
+    typescript:
+      optional: true
+  checksum: 10c0/daa54dfa2246c4fc822ae565a77ee35c456a0b6d41de5af56279264c47ceadc72c88c70ebf72fcb4bc1e114ad52bc8196fb23574a06674946a7d560fb627d27c
   languageName: node
   linkType: hard
 
-"eslint-plugin-prettier@npm:^5.1.3, eslint-plugin-prettier@npm:^5.2.6, eslint-plugin-prettier@npm:^5.5.4":
+"eslint-plugin-prettier@npm:^5.1.3, eslint-plugin-prettier@npm:^5.5.4":
   version: 5.5.4
   resolution: "eslint-plugin-prettier@npm:5.5.4"
   dependencies:
@@ -23837,6 +23860,26 @@ __metadata:
     eslint-config-prettier:
       optional: true
   checksum: 10c0/5cc780e0ab002f838ad8057409e86de4ff8281aa2704a50fa8511abff87028060c2e45741bc9cbcbd498712e8d189de8026e70aed9e20e50fe5ba534ee5a8442
+  languageName: node
+  linkType: hard
+
+"eslint-plugin-prettier@npm:^5.5.5":
+  version: 5.5.5
+  resolution: "eslint-plugin-prettier@npm:5.5.5"
+  dependencies:
+    prettier-linter-helpers: "npm:^1.0.1"
+    synckit: "npm:^0.11.12"
+  peerDependencies:
+    "@types/eslint": ">=8.0.0"
+    eslint: ">=8.0.0"
+    eslint-config-prettier: ">= 7.0.0 <10.0.0 || >=10.1.0"
+    prettier: ">=3.0.0"
+  peerDependenciesMeta:
+    "@types/eslint":
+      optional: true
+    eslint-config-prettier:
+      optional: true
+  checksum: 10c0/091449b28c77ab2efbbf674e977181f2c8453d95a4df68218bddd87a4dfaa9ecc4eda60164e416f5986fb5d577e66e8d8e1e23d81e8555f8d735375598b03257
   languageName: node
   linkType: hard
 
@@ -33521,6 +33564,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"prettier-linter-helpers@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "prettier-linter-helpers@npm:1.0.1"
+  dependencies:
+    fast-diff: "npm:^1.1.2"
+  checksum: 10c0/91cea965681bc5f62c9d26bd3ca6358b81557261d4802e96ec1cf0acbd99d4b61632d53320cd2c3ec7d7f7805a81345644108a41ef46ddc9688e783a9ac792d1
+  languageName: node
+  linkType: hard
+
 "prettier-plugin-solidity@npm:^2.1.0":
   version: 2.2.1
   resolution: "prettier-plugin-solidity@npm:2.2.1"
@@ -33558,6 +33610,15 @@ __metadata:
   bin:
     prettier: bin/prettier.cjs
   checksum: 10c0/9675d2cd08eacb1faf1d1a2dbfe24bfab6a912b059fc9defdb380a408893d88213e794a40a2700bd29b140eb3172e0b07c852853f6e22f16f3374659a1a13389
+  languageName: node
+  linkType: hard
+
+"prettier@npm:^3.8.1":
+  version: 3.8.1
+  resolution: "prettier@npm:3.8.1"
+  bin:
+    prettier: bin/prettier.cjs
+  checksum: 10c0/33169b594009e48f570471271be7eac7cdcf88a209eed39ac3b8d6d78984039bfa9132f82b7e6ba3b06711f3bfe0222a62a1bfb87c43f50c25a83df1b78a2c42
   languageName: node
   linkType: hard
 
@@ -34140,7 +34201,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-app-auth@npm:^8.0.3":
+"react-native-app-auth@npm:^8.1.0":
   version: 8.1.0
   resolution: "react-native-app-auth@npm:8.1.0"
   dependencies:
@@ -34179,7 +34240,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-check-version@npm:^1.3.0":
+"react-native-check-version@npm:^1.4.0":
   version: 1.4.0
   resolution: "react-native-check-version@npm:1.4.0"
   peerDependencies:
@@ -34232,13 +34293,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-edge-to-edge@npm:^1.7.0":
-  version: 1.7.0
-  resolution: "react-native-edge-to-edge@npm:1.7.0"
+"react-native-edge-to-edge@npm:^1.8.1":
+  version: 1.8.1
+  resolution: "react-native-edge-to-edge@npm:1.8.1"
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 10c0/809dcf1c68f79cff788963ec7691b37024986e82470be5047bfbe42929fc2c7d45db23eab816321e776f0bb3a8295f7efa526377bce6a559c10681cd409d597d
+  checksum: 10c0/c51244f93d2b65fb1e09bcc780be36e7fc7fd05d56de80d22fe90c07b0045666fb2ab719ad799230affdce9ae565a0ae2f703f72c501fe4f98c6c33b2880e609
   languageName: node
   linkType: hard
 
@@ -34292,15 +34353,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-inappbrowser-reborn@npm:^3.7.0":
-  version: 3.7.0
-  resolution: "react-native-inappbrowser-reborn@npm:3.7.0"
+"react-native-inappbrowser-reborn@npm:^3.7.1":
+  version: 3.7.1
+  resolution: "react-native-inappbrowser-reborn@npm:3.7.1"
   dependencies:
     invariant: "npm:^2.2.4"
     opencollective-postinstall: "npm:^2.0.3"
   peerDependencies:
     react-native: ">=0.56"
-  checksum: 10c0/b14d564925eec2c95fc6f8931b68f9ae7c418b5ccad2494748282ee9f7460f7094eec3c6e3a6304062124277624c0f6f647f41a7950ab263b7ebb7c6b0d50d4d
+  checksum: 10c0/eb5560b9ee8ffba05f28d09b356076b5533a19fd115b2d35c55877e8dfe388666e2ab38b6224e1cdec8ab9db0d2f64c646b33ba20808e2ef31b7ef647644f129
   languageName: node
   linkType: hard
 
@@ -34372,10 +34433,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-logs@npm:^5.5.0":
-  version: 5.5.0
-  resolution: "react-native-logs@npm:5.5.0"
-  checksum: 10c0/38b011a5cff39c672821baa15bf09e6a98caeab0b64cf6778fcf765f89382799b04dcb604399d016940796106d4187411add84d1de485dd38655c5dc9fc078c9
+"react-native-logs@npm:^5.6.0":
+  version: 5.6.0
+  resolution: "react-native-logs@npm:5.6.0"
+  checksum: 10c0/2532a965053819ae9209fe59c1e1511397425f86a98ce2f1a28b34bdf0618b055248c5b59b7d382d6a8e422b4c647601cd24f68b401a322f48ed2e6aaf5ce806
   languageName: node
   linkType: hard
 
@@ -34415,6 +34476,16 @@ __metadata:
     react: "*"
     react-native: "*"
   checksum: 10c0/3c8df21a1dbac83116b9c9bd5d20b7c1bb7649ecef44a111af6fb6b237241f5f4d692189eec30a69f5701b857249257da3621b9e17165460a2bb71faac7b92ae
+  languageName: node
+  linkType: hard
+
+"react-native-safe-area-context@npm:^5.7.0":
+  version: 5.7.0
+  resolution: "react-native-safe-area-context@npm:5.7.0"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 10c0/c3799e17321b41df1e0a10492c98472f8f8225ef0bbaf8146c4a9acb9519aae9ac11429059143c215e4402c2808e8445274850a339f8477522ded2461e18da80
   languageName: node
   linkType: hard
 
@@ -34464,6 +34535,21 @@ __metadata:
     react-native: ">=0.59.0"
     react-native-svg: ">=12.0.0"
   checksum: 10c0/e8cd39feff6b1019db8a4e8319cb3ca04afd767cedaecbdc0959e0591800de5a0ae4d69fffb8b06ec7358bd8dcefdc8fee100b9c151f47ebe050ec5b5f24b0b8
+  languageName: node
+  linkType: hard
+
+"react-native-svg-transformer@npm:^1.5.3":
+  version: 1.5.3
+  resolution: "react-native-svg-transformer@npm:1.5.3"
+  dependencies:
+    "@svgr/core": "npm:^8.1.0"
+    "@svgr/plugin-jsx": "npm:^8.1.0"
+    "@svgr/plugin-svgo": "npm:^8.1.0"
+    path-dirname: "npm:^1.0.2"
+  peerDependencies:
+    react-native: ">=0.59.0"
+    react-native-svg: ">=12.0.0"
+  checksum: 10c0/0e2dd028c7e691a8db6f775c8142e07bd54f3f86473794a5512fbe8303d591f20eb35d7422ea7995347c8ea8776e32552be303499860699dc9325bd54ff1410f
   languageName: node
   linkType: hard
 
@@ -34738,16 +34824,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-qr-barcode-scanner@npm:^2.1.8":
-  version: 2.1.20
-  resolution: "react-qr-barcode-scanner@npm:2.1.20"
+"react-qr-barcode-scanner@npm:^2.1.25":
+  version: 2.1.25
+  resolution: "react-qr-barcode-scanner@npm:2.1.25"
   dependencies:
     "@zxing/library": "npm:^0.21.3"
     react-webcam: "npm:^7.2.0"
   peerDependencies:
     react: ">=18.0.0"
     react-dom: ">=18.0.0"
-  checksum: 10c0/029d983f11e15b3894d88ba220de83b8b92b4656e3192100d3109058d52fcc70ae198983ea093cb8fb8e6acacf97ae8ad317f375d5268a4d2e8c977a5b80d0fd
+  checksum: 10c0/bdf537e4ab904db976fd50d6f071b5ff1edf72ff7c2bae1956bf1a36f742649cefcfaec68f44af6b4ce9912cb1323ef7503e951e9cf092d677a3249d1b79d6d4
   languageName: node
   linkType: hard
 
@@ -37669,6 +37755,15 @@ __metadata:
   dependencies:
     get-port: "npm:^3.1.0"
   checksum: 10c0/2abaa0e6482fe8b72e29af1f7d5f484fac5a8ea0132969bf370f59b044c4f2eb109f95b222cb06e037f89b42b374a2918e5f90aff5fb7cf3e146d8088c56f6db
+  languageName: node
+  linkType: hard
+
+"synckit@npm:^0.11.12":
+  version: 0.11.12
+  resolution: "synckit@npm:0.11.12"
+  dependencies:
+    "@pkgr/core": "npm:^0.2.9"
+  checksum: 10c0/cc4d446806688ae0d728ae7bb3f53176d065cf9536647fb85bdd721dcefbd7bf94874df6799ff61580f2b03a392659219b778a9254ad499f9a1f56c34787c235
   languageName: node
   linkType: hard
 
