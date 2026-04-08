@@ -34,9 +34,20 @@ jobs:
 
       - uses: ./.github/actions/cache-gradle
 
-      - name: Set version
+      - name: Validate version
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
         run: |
-          sed -i "s/version = \".*\"/version = \"${{ inputs.version }}\"/" build.gradle.kts
+          [[ "$INPUT_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]] || {
+            echo "::error::Invalid version: $INPUT_VERSION"
+            exit 1
+          }
+
+      - name: Set version
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          sed -i "s/version = \".*\"/version = \"$INPUT_VERSION\"/" build.gradle.kts
 
       - name: Build
         run: ./gradlew build

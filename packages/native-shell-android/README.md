@@ -13,8 +13,8 @@ dependencyResolutionManagement {
         maven {
             url = uri("https://maven.pkg.github.com/selfxyz/self")
             credentials {
-                username = project.findProperty("gpr.user") as String?
-                password = project.findProperty("gpr.token") as String?
+                username = providers.gradleProperty("gpr.user").orNull
+                password = providers.gradleProperty("gpr.token").orNull
             }
         }
     }
