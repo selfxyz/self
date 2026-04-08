@@ -1,6 +1,13 @@
 appId: com.warroom.proofofpassport
 ---
 - launchApp
+- runFlow:
+    when:
+      visible:
+        id: "disclaimer-dismiss-button"
+    commands:
+      - tapOn:
+          id: "disclaimer-dismiss-button"
 - extendedWaitUntil:
     visible:
       id: "home-screen-root"

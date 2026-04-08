@@ -33,7 +33,10 @@ const DisclaimerScreen: React.FC = () => {
   }, []);
 
   return (
-    <ExpandableBottomLayout.Layout backgroundColor={black}>
+    <ExpandableBottomLayout.Layout
+      backgroundColor={black}
+      testID="disclaimer-screen-root"
+    >
       <ExpandableBottomLayout.TopSection backgroundColor={black}>
         <DelayedLottieView
           autoPlay
@@ -58,6 +61,7 @@ const DisclaimerScreen: React.FC = () => {
             Always verify an app's legitimacy before sharing your data.
           </Caution>
           <PrimaryButton
+            testID="disclaimer-dismiss-button"
             trackEvent={AppEvents.DISMISS_PRIVACY_DISCLAIMER}
             style={{ marginVertical: 30 }}
             onPress={() => {
