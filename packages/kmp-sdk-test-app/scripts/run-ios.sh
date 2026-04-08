@@ -64,7 +64,8 @@ xcodebuild -workspace iosApp.xcworkspace \
 BUILD_DIR=$(xcodebuild -workspace iosApp.xcworkspace \
     -scheme iosApp \
     -sdk iphonesimulator \
-    -showBuildSettings 2>/dev/null | grep ' BUILT_PRODUCTS_DIR' | awk '{print $3}')
+    -showBuildSettings -json 2>/dev/null \
+    | jq -r '.[] | select(.target == "iosApp") | .buildSettings.BUILT_PRODUCTS_DIR')
 APP_PATH="$BUILD_DIR/iosApp.app"
 
 if [ ! -d "$APP_PATH" ]; then
