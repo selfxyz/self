@@ -36,6 +36,7 @@ import {
   loadPassportData,
   reStorePassportDataWithRightCSCA,
 } from '@/providers/passportDataProvider';
+import { recoveryCopy } from '@/screens/account/recovery/recoveryCopy';
 
 const RecoverWithPhraseScreen: React.FC = () => {
   const navigation =
@@ -156,8 +157,7 @@ const RecoverWithPhraseScreen: React.FC = () => {
       style={styles.layout}
     >
       <Description style={{ color: slate300 }}>
-        Your recovery phrase has 24 words. Enter the words in the correct order,
-        separated by spaces.
+        {recoveryCopy.phrase.instructions}
       </Description>
       <View width="100%" position="relative">
         <TextArea
@@ -166,7 +166,7 @@ const RecoverWithPhraseScreen: React.FC = () => {
           color={slate400}
           borderWidth="$1"
           borderRadius="$5"
-          placeholder="Enter or paste your recovery phrase"
+          placeholder={recoveryCopy.phrase.placeholder}
           width="100%"
           minHeight={230}
           verticalAlign="top"
@@ -187,7 +187,7 @@ const RecoverWithPhraseScreen: React.FC = () => {
           onPress={onPaste}
         >
           <Paste color={white} height={20} width={20} />
-          <Text style={styles.pasteText}>PASTE</Text>
+          <Text style={styles.pasteText}>{recoveryCopy.phrase.paste}</Text>
         </XStack>
       </View>
 
@@ -195,7 +195,7 @@ const RecoverWithPhraseScreen: React.FC = () => {
         disabled={!mnemonic || restoring}
         onPress={restoreAccount}
       >
-        Continue
+        {recoveryCopy.phrase.submit}
       </SecondaryButton>
     </YStack>
   );
