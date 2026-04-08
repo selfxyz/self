@@ -18,6 +18,8 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+	<key>WEBVIEW_DEV_URL</key>
+	<string>$(WEBVIEW_DEV_URL)</string>
 	<key>com.apple.developer.nfc.readersession.iso7816.select-identifiers</key>
 	<array>
 		<string>A0000002471001</string>

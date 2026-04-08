@@ -13,6 +13,7 @@ import android.webkit.WebChromeClient
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import xyz.self.sdk.bridge.MessageRouter
 import xyz.self.sdk.handlers.CryptoBridgeHandler
@@ -29,6 +30,7 @@ class SelfVerificationActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         initVerificationFlow()
     }
 

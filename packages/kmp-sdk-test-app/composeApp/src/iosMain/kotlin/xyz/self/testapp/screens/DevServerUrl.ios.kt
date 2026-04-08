@@ -4,4 +4,10 @@
 
 package xyz.self.testapp.screens
 
-actual fun getDevServerUrl(): String? = null
+import platform.Foundation.NSBundle
+
+actual fun getDevServerUrl(): String? {
+    val value = NSBundle.mainBundle.objectForInfoDictionaryKey("WEBVIEW_DEV_URL") as? String
+    if (value.isNullOrBlank() || value.startsWith("$(")) return null
+    return value
+}

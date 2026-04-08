@@ -56,6 +56,7 @@ xcodebuild -project iosApp.xcodeproj \
     -destination "id=$SIMULATOR_ID" \
     ONLY_ACTIVE_ARCH=YES \
     ARCHS=arm64 \
+    WEBVIEW_DEV_URL="${WEBVIEW_DEV_URL:-}" \
     build \
     2>&1 | tail -5
 
