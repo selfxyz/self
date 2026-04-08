@@ -5,7 +5,7 @@ import UIKit
 import WebKit
 
 final class SelfWebViewHost: NSObject {
-    private static let defaultRemoteBaseURL = URL(string: "https://self-app-alpha.vercel.app")!
+    private static let defaultRemoteBaseURL = URL(string: "https://verify.self.xyz/v1/")!
 
     private var webView: WKWebView?
     private let router: MessageRouter

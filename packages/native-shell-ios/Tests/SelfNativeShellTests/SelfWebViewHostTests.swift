@@ -11,8 +11,8 @@ final class SelfWebViewHostTests: XCTestCase {
 
         let url = try XCTUnwrap(host.initialContentURL(queryParams: ""))
         XCTAssertEqual(url.scheme, "https")
-        XCTAssertEqual(url.host, "self-app-alpha.vercel.app")
-        XCTAssertTrue(url.path.contains("/tunnel/tour/1"))
+        XCTAssertEqual(url.host, "verify.self.xyz")
+        XCTAssertTrue(url.path.contains("/v1/tunnel/tour/1"))
     }
 
     func testDebugBuildUsesLocalhost() throws {
@@ -26,14 +26,14 @@ final class SelfWebViewHostTests: XCTestCase {
         XCTAssertTrue(url.absoluteString.hasPrefix("http://localhost:5173"))
     }
 
-    func testAllowedNavigationAcceptsRemoteAlphaOrigin() {
+    func testAllowedNavigationAcceptsRemoteOrigin() {
         let router = MessageRouter(sendToWebView: { _ in })
         let host = SelfWebViewHost(router: router, isDebugMode: false)
         _ = host.createWebView()
 
         XCTAssertTrue(
             host.isAllowedNavigationURL(
-                URL(string: "https://self-app-alpha.vercel.app/tunnel/tour/1")
+                URL(string: "https://verify.self.xyz/v1/tunnel/tour/1")
             )
         )
         XCTAssertTrue(
@@ -67,7 +67,7 @@ final class SelfWebViewHostTests: XCTestCase {
 
         XCTAssertTrue(
             host.isTrustedBridgeURL(
-                URL(string: "https://self-app-alpha.vercel.app/tunnel/tour/1")
+                URL(string: "https://verify.self.xyz/v1/tunnel/tour/1")
             )
         )
         XCTAssertFalse(
