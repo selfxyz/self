@@ -6,7 +6,7 @@ import type { KycProviderResult } from '../types/kycProvider';
 
 const FETCH_TIMEOUT_MS = 30_000;
 
-const DIDIT_TEE_URL = import.meta.env.VITE_DIDIT_TEE_URL ?? 'https://kyc.self.xyz';
+const KYC_TEE_URL = import.meta.env.VITE_KYC_TEE_URL ?? 'https://kyc.self.xyz';
 
 export interface KycLaunchConfig {
   url: string;
@@ -40,7 +40,7 @@ export async function createKycSession(signal?: AbortSignal): Promise<KycSession
   const combinedSignal = signal ? AbortSignal.any([signal, controller.signal]) : controller.signal;
 
   try {
-    const response = await fetch(`${DIDIT_TEE_URL}/session`, {
+    const response = await fetch(`${KYC_TEE_URL}/session`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({}),
