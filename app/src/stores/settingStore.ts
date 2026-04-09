@@ -167,3 +167,23 @@ export const useSettingStore = create<SettingsState>()(
     },
   ),
 );
+
+export function waitForSettingStoreHydration(): Promise<void> {
+  if (useSettingStore.persist.hasHydrated()) {
+    return Promise.resolve();
+  }
+  return new Promise<void>(resolve => {
+    let resolved = false;
+    const unsubscribe = useSettingStore.persist.onFinishHydration(() => {
+      resolved = true;
+      unsubscribe();
+      resolve();
+    });
+
+    if (useSettingStore.persist.hasHydrated() && !resolved) {
+      resolved = true;
+      unsubscribe();
+      resolve();
+    }
+  });
+}

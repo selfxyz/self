@@ -20,16 +20,28 @@ import type { RootStackParamList } from '@/navigation';
 import {
   getAndClearQueuedUrl,
   handleUrl,
+  peekQueuedUrl,
   setDeeplinkParentScreen,
 } from '@/navigation/deeplinks';
-import { migrateToSecureKeychain, useAuth } from '@/providers/authProvider';
+import {
+  hasSecretStored,
+  migrateToSecureKeychain,
+  useAuth,
+} from '@/providers/authProvider';
 import {
   checkAndUpdateRegistrationStates,
   checkIfAnyDocumentsNeedMigration,
   initializeNativeModules,
   migrateFromLegacyStorage,
 } from '@/providers/passportDataProvider';
-import { useSettingStore } from '@/stores/settingStore';
+import {
+  getStartupNavigationTarget,
+  hasStartupRecoverySignal,
+} from '@/screens/app/startupRouting';
+import {
+  useSettingStore,
+  waitForSettingStoreHydration,
+} from '@/stores/settingStore';
 import { IS_DEV_MODE } from '@/utils/devUtils';
 
 const INIT_TIMEOUT_MS = 30_000;
@@ -77,6 +89,7 @@ const SplashScreen: React.FC = ({}) => {
           console.log(
             `SplashScreen: migrateFromLegacyStorage complete (${elapsed()})`,
           );
+          await waitForSettingStoreHydration();
 
           const needsMigration = await checkIfAnyDocumentsNeedMigration();
           console.log(
@@ -89,11 +102,25 @@ const SplashScreen: React.FC = ({}) => {
             );
           }
 
-          await hasAnyValidRegisteredDocument(selfClient);
+          const [hasRegisteredDocument, hasStoredSecret] = await Promise.all([
+            hasAnyValidRegisteredDocument(selfClient),
+            hasSecretStored(),
+          ]);
           console.log(
             `SplashScreen: hasAnyValidRegisteredDocument complete (${elapsed()})`,
           );
-          const parentScreen = 'Home';
+          const settings = useSettingStore.getState();
+          const startupTarget = getStartupNavigationTarget({
+            hasPrivacyNoteBeenDismissed: settings.hasPrivacyNoteBeenDismissed,
+            hasRecoverySignal: hasStartupRecoverySignal({
+              cloudBackupEnabled: settings.cloudBackupEnabled,
+              hasViewedRecoveryPhrase: settings.hasViewedRecoveryPhrase,
+              pointsAddress: settings.pointsAddress,
+            }),
+            hasSecretStored: hasStoredSecret,
+            hasValidRegisteredDocument: hasRegisteredDocument,
+          });
+          const parentScreen = startupTarget.route;
 
           try {
             await migrateToSecureKeychain();
@@ -109,8 +136,10 @@ const SplashScreen: React.FC = ({}) => {
 
           setDeeplinkParentScreen(parentScreen);
 
-          const queuedUrl = getAndClearQueuedUrl();
-          if (queuedUrl) {
+          const queuedUrl = startupTarget.allowQueuedDeepLink
+            ? getAndClearQueuedUrl()
+            : peekQueuedUrl();
+          if (queuedUrl && startupTarget.allowQueuedDeepLink) {
             if (IS_DEV_MODE) {
               console.log('Processing queued deeplink:', queuedUrl);
             }
@@ -126,8 +155,12 @@ const SplashScreen: React.FC = ({}) => {
             `SplashScreen: initialization failed (${elapsed()})`,
             error,
           );
-          setDeeplinkParentScreen('Home');
-          setNextScreen('Home');
+          const fallbackScreen = useSettingStore.getState()
+            .hasPrivacyNoteBeenDismissed
+            ? 'Home'
+            : 'Disclaimer';
+          setDeeplinkParentScreen(fallbackScreen);
+          setNextScreen(fallbackScreen);
         }
       };
 
@@ -138,8 +171,12 @@ const SplashScreen: React.FC = ({}) => {
         console.error(
           `SplashScreen: initialization timed out after ${INIT_TIMEOUT_MS}ms`,
         );
-        setDeeplinkParentScreen('Home');
-        setNextScreen('Home');
+        const fallbackScreen = useSettingStore.getState()
+          .hasPrivacyNoteBeenDismissed
+          ? 'Home'
+          : 'Disclaimer';
+        setDeeplinkParentScreen(fallbackScreen);
+        setNextScreen(fallbackScreen);
       }, INIT_TIMEOUT_MS);
 
       loadDataAndDetermineNextScreen().finally(() => {

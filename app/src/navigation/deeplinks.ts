@@ -102,33 +102,10 @@ const createDeeplinkNavigationState = (
 // Store the correct parent screen determined by splash screen
 let correctParentScreen: string = 'Home';
 
-// Function for splash screen to get and clear the queued initial URL
 export const getAndClearQueuedUrl = (): string | null => {
   const url = queuedInitialUrl;
   queuedInitialUrl = null;
   return url;
-};
-
-const safeNavigate = (
-  navigationState: ReturnType<typeof createDeeplinkNavigationState>,
-): void => {
-  const targetScreen = navigationState.routes[1]?.name as
-    | keyof RootStackParamList
-    | undefined;
-
-  const currentRoute = navigationRef.getCurrentRoute();
-  const isColdLaunch = currentRoute?.name === 'Splash';
-
-  if (!isColdLaunch && targetScreen) {
-    // Use object syntax to satisfy TypeScript's strict typing for navigate
-    // The params will be undefined for screens that don't require them
-    navigationRef.navigate({
-      name: targetScreen,
-      params: undefined,
-    } as Parameters<typeof navigationRef.navigate>[0]);
-  } else {
-    navigationRef.reset(navigationState);
-  }
 };
 
 export const handleUrl = (selfClient: SelfClient, uri: string) => {
@@ -241,6 +218,28 @@ export const handleUrl = (selfClient: SelfClient, uri: string) => {
   }
 };
 
+const safeNavigate = (
+  navigationState: ReturnType<typeof createDeeplinkNavigationState>,
+): void => {
+  const targetScreen = navigationState.routes[1]?.name as
+    | keyof RootStackParamList
+    | undefined;
+
+  const currentRoute = navigationRef.getCurrentRoute();
+  const isColdLaunch = currentRoute?.name === 'Splash';
+
+  if (!isColdLaunch && targetScreen) {
+    // Use object syntax to satisfy TypeScript's strict typing for navigate
+    // The params will be undefined for screens that don't require them
+    navigationRef.navigate({
+      name: targetScreen,
+      params: undefined,
+    } as Parameters<typeof navigationRef.navigate>[0]);
+  } else {
+    navigationRef.reset(navigationState);
+  }
+};
+
 /**
  * Parses and validates query parameters from a URL
  * @param uri - The URL to parse
@@ -284,6 +283,9 @@ export const parseAndValidateUrlParams = (uri: string): ValidatedParams => {
 
   return validatedParams;
 };
+
+// Function for splash screen to get and clear the queued initial URL
+export const peekQueuedUrl = (): string | null => queuedInitialUrl;
 
 // Store the initial URL for splash screen to handle after initialization
 let queuedInitialUrl: string | null = null;
