@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useEffect } from 'react';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -33,9 +33,9 @@ const DisclaimerScreen: React.FC = () => {
   }, []);
 
   return (
+    <View testID="disclaimer-screen-root" style={styles.root}>
     <ExpandableBottomLayout.Layout
       backgroundColor={black}
-      testID="disclaimer-screen-root"
     >
       <ExpandableBottomLayout.TopSection backgroundColor={black}>
         <DelayedLottieView
@@ -75,12 +75,16 @@ const DisclaimerScreen: React.FC = () => {
         </YStack>
       </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>
+    </View>
   );
 };
 
 export default DisclaimerScreen;
 
 const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+  },
   animation: {
     position: 'absolute',
     width: '125%',
