@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { startVerification } from '@didit-protocol/sdk-react-native';
-import { DIDIT_TEE_URL } from '@env';
+import { KYC_TEE_URL } from '@env';
 
 import type {
   KycVerificationResult,
@@ -18,7 +18,7 @@ export interface KycLaunchConfig {
 const FETCH_TIMEOUT_MS = 30000;
 
 export const createKycSession = async (): Promise<SessionResponse> => {
-  const apiUrl = DIDIT_TEE_URL;
+  const apiUrl = KYC_TEE_URL;
   console.log('[Didit] createSession URL:', apiUrl);
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);

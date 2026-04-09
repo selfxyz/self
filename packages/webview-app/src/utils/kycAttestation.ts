@@ -6,7 +6,7 @@ import { io } from 'socket.io-client';
 
 import type { KycProviderAttestation } from '../types/kycProvider';
 
-const DIDIT_TEE_URL = import.meta.env.VITE_DIDIT_TEE_URL ?? 'https://kyc.self.xyz';
+const KYC_TEE_URL = import.meta.env.VITE_KYC_TEE_URL ?? 'https://kyc.self.xyz';
 
 const ATTESTATION_TIMEOUT_MS = 120_000; // 2 minutes
 
@@ -24,7 +24,7 @@ export interface AttestationResult {
  */
 export function waitForKycAttestation(sessionId: string, signal?: AbortSignal): Promise<AttestationResult> {
   return new Promise(resolve => {
-    const socket = io(DIDIT_TEE_URL, {
+    const socket = io(KYC_TEE_URL, {
       transports: ['websocket', 'polling'],
     });
 

@@ -715,7 +715,7 @@ jobs:
           SEGMENT_KEY: ${{ secrets.SEGMENT_KEY }}
           SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-          DIDIT_TEE_URL: ${{ secrets.DIDIT_TEE_URL }}
+          KYC_TEE_URL: ${{ secrets.KYC_TEE_URL }}
           TURNKEY_AUTH_PROXY_CONFIG_ID: ${{ secrets.TURNKEY_AUTH_PROXY_CONFIG_ID }}
           TURNKEY_GOOGLE_CLIENT_ID: ${{ secrets.TURNKEY_GOOGLE_CLIENT_ID }}
           TURNKEY_ORGANIZATION_ID: ${{ secrets.TURNKEY_ORGANIZATION_ID }}
@@ -1176,7 +1176,7 @@ jobs:
           NODE_OPTIONS: "--max-old-space-size=6144"
           SEGMENT_KEY: ${{ secrets.SEGMENT_KEY }}
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-          DIDIT_TEE_URL: ${{ secrets.DIDIT_TEE_URL }}
+          KYC_TEE_URL: ${{ secrets.KYC_TEE_URL }}
           TURNKEY_AUTH_PROXY_CONFIG_ID: ${{ secrets.TURNKEY_AUTH_PROXY_CONFIG_ID }}
           TURNKEY_GOOGLE_CLIENT_ID: ${{ secrets.TURNKEY_GOOGLE_CLIENT_ID }}
           TURNKEY_ORGANIZATION_ID: ${{ secrets.TURNKEY_ORGANIZATION_ID }}
