@@ -3,17 +3,16 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import Foundation
-import SelfSdk
 import UIKit
 import WebKit
 
 /// Swift implementation of WebViewProvider using WKWebView.
 /// Handles message passing between the WebView and the KMP bridge.
 public class WebViewProviderImpl: NSObject {
-    static let loopbackHost = SdkConstants.shared.LOOPBACK_HOST
-    static let diditHost = SdkConstants.shared.DIDIT_HOST
-    static let debugPort = Int(SdkConstants.shared.DEBUG_PORT)
-    private static let defaultRemoteBaseURL = URL(string: SdkConstants.shared.DEFAULT_REMOTE_WEB_APP_BASE_URL)!
+    static let loopbackHost = SdkConstants.loopbackHost
+    static let diditHost = SdkConstants.diditHost
+    static let debugPort = SdkConstants.debugPort
+    private static let defaultRemoteBaseURL = URL(string: SdkConstants.defaultRemoteWebAppBaseURL)!
 
     private var webView: WKWebView?
     private var viewController: UIViewController?
@@ -199,7 +198,7 @@ extension WebViewProviderImpl {
             components.scheme = baseURL.scheme
             components.host = baseURL.host
             components.port = baseURL.port
-            components.path = SdkConstants.shared.BUNDLED_TOUR_PATH
+            components.path = SdkConstants.bundledTourPath
             if let queryParams, !queryParams.isEmpty {
                 components.percentEncodedQuery = queryParams
             }
@@ -211,7 +210,7 @@ extension WebViewProviderImpl {
             components.scheme = "http"
             components.host = Self.loopbackHost
             components.port = Self.debugPort
-            components.path = SdkConstants.shared.BUNDLED_TOUR_PATH
+            components.path = SdkConstants.bundledTourPath
             if let queryParams, !queryParams.isEmpty {
                 components.percentEncodedQuery = queryParams
             }
@@ -224,7 +223,7 @@ extension WebViewProviderImpl {
         components.scheme = remoteWebAppBaseURL.scheme
         components.host = remoteWebAppBaseURL.host
         if let port = remoteWebAppBaseURL.port { components.port = port }
-        components.path = SdkConstants.shared.BUNDLED_TOUR_PATH
+        components.path = SdkConstants.bundledTourPath
         if let queryParams, !queryParams.isEmpty {
             components.percentEncodedQuery = queryParams
         }

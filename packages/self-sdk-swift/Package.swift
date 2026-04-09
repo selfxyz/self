@@ -18,14 +18,12 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "git@github.com:selfxyz/NFCPassportReader.git", branch: "main"),
-        .package(name: "SelfSdk", path: "../kmp-sdk"),
     ],
     targets: [
         .target(
             name: "SelfSdkSwift",
             dependencies: [
                 .product(name: "NFCPassportReader", package: "NFCPassportReader"),
-                .product(name: "SelfSdk", package: "SelfSdk"),
             ],
             path: "Sources/SelfSdkSwift"
         ),
