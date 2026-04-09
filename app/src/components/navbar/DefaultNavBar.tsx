@@ -47,9 +47,9 @@ export const DefaultNavBar = (props: NativeStackHeaderProps) => {
       <NavBar.Title
         color={headerTitleStyle?.color as string}
         style={{
-          fontFamily: headerTitleStyle?.fontFamily,
-          fontSize: headerTitleStyle?.fontSize,
-          fontWeight: headerTitleStyle?.fontWeight,
+          ...(headerTitleStyle?.fontFamily && { fontFamily: headerTitleStyle.fontFamily }),
+          ...(headerTitleStyle?.fontSize && { fontSize: headerTitleStyle.fontSize }),
+          ...(headerTitleStyle?.fontWeight && { fontWeight: headerTitleStyle.fontWeight }),
         }}
       >
         {props.options.title}
