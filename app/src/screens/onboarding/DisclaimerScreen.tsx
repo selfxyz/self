@@ -34,47 +34,45 @@ const DisclaimerScreen: React.FC = () => {
 
   return (
     <View testID="disclaimer-screen-root" style={styles.root}>
-    <ExpandableBottomLayout.Layout
-      backgroundColor={black}
-    >
-      <ExpandableBottomLayout.TopSection backgroundColor={black}>
-        <DelayedLottieView
-          autoPlay
-          loop={false}
-          source={warningAnimation}
-          style={styles.animation}
-          cacheComposition={true}
-          renderMode="HARDWARE"
-        />
-        <YStack flex={1} justifyContent="flex-end" paddingBottom="$4">
-          <SubHeader style={{ color: white }}>Caution</SubHeader>
-        </YStack>
-      </ExpandableBottomLayout.TopSection>
-      <ExpandableBottomLayout.BottomSection backgroundColor={white}>
-        <YStack gap="$2.5">
-          <Caution>
-            Apps that request sensitive or personally identifiable information
-            (like passwords, Social Security numbers, or financial details)
-            should be trusted only if they're secure and necessary.
-          </Caution>
-          <Caution style={{ marginTop: 10 }}>
-            Always verify an app's legitimacy before sharing your data.
-          </Caution>
-          <PrimaryButton
-            testID="disclaimer-dismiss-button"
-            trackEvent={AppEvents.DISMISS_PRIVACY_DISCLAIMER}
-            style={{ marginVertical: 30 }}
-            onPress={() => {
-              confirmTap();
-              dismissPrivacyNote();
-              navigation.navigate({ name: 'Home', params: {} });
-            }}
-          >
-            Dismiss
-          </PrimaryButton>
-        </YStack>
-      </ExpandableBottomLayout.BottomSection>
-    </ExpandableBottomLayout.Layout>
+      <ExpandableBottomLayout.Layout backgroundColor={black}>
+        <ExpandableBottomLayout.TopSection backgroundColor={black}>
+          <DelayedLottieView
+            autoPlay
+            loop={false}
+            source={warningAnimation}
+            style={styles.animation}
+            cacheComposition={true}
+            renderMode="HARDWARE"
+          />
+          <YStack flex={1} justifyContent="flex-end" paddingBottom="$4">
+            <SubHeader style={{ color: white }}>Caution</SubHeader>
+          </YStack>
+        </ExpandableBottomLayout.TopSection>
+        <ExpandableBottomLayout.BottomSection backgroundColor={white}>
+          <YStack gap="$2.5">
+            <Caution>
+              Apps that request sensitive or personally identifiable information
+              (like passwords, Social Security numbers, or financial details)
+              should be trusted only if they're secure and necessary.
+            </Caution>
+            <Caution style={{ marginTop: 10 }}>
+              Always verify an app's legitimacy before sharing your data.
+            </Caution>
+            <PrimaryButton
+              testID="disclaimer-dismiss-button"
+              trackEvent={AppEvents.DISMISS_PRIVACY_DISCLAIMER}
+              style={{ marginVertical: 30 }}
+              onPress={() => {
+                confirmTap();
+                dismissPrivacyNote();
+                navigation.navigate({ name: 'Home', params: {} });
+              }}
+            >
+              Dismiss
+            </PrimaryButton>
+          </YStack>
+        </ExpandableBottomLayout.BottomSection>
+      </ExpandableBottomLayout.Layout>
     </View>
   );
 };
