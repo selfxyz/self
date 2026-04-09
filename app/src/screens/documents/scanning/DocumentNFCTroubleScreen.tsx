@@ -17,10 +17,11 @@ import Tips from '@/components/Tips';
 import { useFeedbackAutoHide } from '@/hooks/useFeedbackAutoHide';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { useKycLauncher } from '@/hooks/useKycLauncher';
+import useOpenSupportForm from '@/hooks/useOpenSupportForm';
 import { selectionChange } from '@/integrations/haptics';
 import SimpleScrolledTitleLayout from '@/layouts/SimpleScrolledTitleLayout';
 import { flushAllAnalytics } from '@/services/analytics';
-import { openSupportForm, SUPPORT_FORM_BUTTON_TEXT } from '@/services/support';
+import { SUPPORT_FORM_BUTTON_TEXT } from '@/services/support';
 
 const tips: TipProps[] = [
   {
@@ -50,6 +51,7 @@ const tips: TipProps[] = [
 ];
 
 const DocumentNFCTroubleScreen: React.FC = () => {
+  const openSupportForm = useOpenSupportForm();
   const navigation = useNavigation();
   const handleDismiss = useCallback(() => {
     selectionChange();

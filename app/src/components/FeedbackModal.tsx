@@ -29,8 +29,8 @@ interface FeedbackModalProps {
 }
 
 const FeedbackModal: React.FC<FeedbackModalProps> = ({ visible, onClose }) => {
-  const handleSupportForm = async () => {
-    await openSupportForm();
+  const handleSupportForm = () => {
+    openSupportForm();
     onClose();
   };
 

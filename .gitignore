@@ -17,6 +17,7 @@ package-lock.json
 !.claude/skills/
 **/.claude/settings.json
 **/.claude/settings.local.json
+.mcp.json
 
 # CI-generated tarballs (don't commit these!)
 mobile-sdk-alpha-ci.tgz
