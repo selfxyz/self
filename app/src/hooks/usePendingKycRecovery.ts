@@ -4,7 +4,7 @@
 
 import { useCallback, useEffect, useRef } from 'react';
 
-import { useDiditWebSocket } from '@/hooks/useDiditWebSocket';
+import { useKycWebSocket } from '@/hooks/useKycWebSocket';
 import { navigationRef } from '@/navigation';
 import { usePendingKycStore } from '@/stores/pendingKycStore';
 
@@ -28,7 +28,7 @@ function getRecoveryIdentifier(verification: RecoveryVerification) {
  * 2. For each non-expired pending/processing verification, reconnects to websocket
  * 3. Subscribes to the sessionId to receive any cached results
  * 4. Updates verification status based on server response
- * 5. Initiates proving machine after document storage (handled in useDiditWebSocket)
+ * 5. Initiates proving machine after document storage (handled in useKycWebSocket)
  *
  * NOTE: This requires the TEE server to cache completed verification results
  * so they can be retrieved when the app reopens.
@@ -51,7 +51,7 @@ export function usePendingKycRecovery() {
     console.log('[PendingKycRecovery] Verification failed:', reason);
   }, []);
 
-  const { subscribe, unsubscribeAll } = useDiditWebSocket({
+  const { subscribe, unsubscribeAll } = useKycWebSocket({
     skipAddPending: true,
     onSuccess: handleSuccess,
     onError: handleError,

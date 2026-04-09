@@ -44,6 +44,8 @@ import {
 } from '@/stores/settingStore';
 import { IS_DEV_MODE } from '@/utils/devUtils';
 
+const INIT_TIMEOUT_MS = 30_000;
+
 const SplashScreen: React.FC = ({}) => {
   const selfClient = useSelfClient();
   const navigation =
@@ -56,6 +58,7 @@ const SplashScreen: React.FC = ({}) => {
   );
   const [queuedDeepLink, setQueuedDeepLink] = useState<string | null>(null);
   const dataLoadInitiatedRef = useRef(false);
+  const settledRef = useRef(false);
 
   useEffect(() => {
     if (!dataLoadInitiatedRef.current) {
@@ -68,9 +71,14 @@ const SplashScreen: React.FC = ({}) => {
         });
 
       const loadDataAndDetermineNextScreen = async () => {
+        const startTime = Date.now();
+        const elapsed = () => `${Date.now() - startTime}ms`;
+
         try {
-          // Initialize native modules first, before any data operations
           const modulesReady = await initializeNativeModules();
+          console.log(
+            `SplashScreen: initializeNativeModules complete (${elapsed()})`,
+          );
           if (!modulesReady) {
             console.warn(
               'Native modules not ready, proceeding with limited functionality',
@@ -78,17 +86,29 @@ const SplashScreen: React.FC = ({}) => {
           }
 
           await migrateFromLegacyStorage();
+          console.log(
+            `SplashScreen: migrateFromLegacyStorage complete (${elapsed()})`,
+          );
           await waitForSettingStoreHydration();
 
           const needsMigration = await checkIfAnyDocumentsNeedMigration();
+          console.log(
+            `SplashScreen: checkIfAnyDocumentsNeedMigration complete (${elapsed()})`,
+          );
           if (needsMigration) {
             await checkAndUpdateRegistrationStates(selfClient);
+            console.log(
+              `SplashScreen: checkAndUpdateRegistrationStates complete (${elapsed()})`,
+            );
           }
 
           const [hasRegisteredDocument, hasStoredSecret] = await Promise.all([
             hasAnyValidRegisteredDocument(selfClient),
             hasSecretStored(),
           ]);
+          console.log(
+            `SplashScreen: hasAnyValidRegisteredDocument complete (${elapsed()})`,
+          );
           const settings = useSettingStore.getState();
           const startupTarget = getStartupNavigationTarget({
             hasPrivacyNoteBeenDismissed: settings.hasPrivacyNoteBeenDismissed,
@@ -102,12 +122,17 @@ const SplashScreen: React.FC = ({}) => {
           });
           const parentScreen = startupTarget.route;
 
-          // Migrate keychain to secure storage with biometric protection
           try {
             await migrateToSecureKeychain();
+            console.log(
+              `SplashScreen: migrateToSecureKeychain complete (${elapsed()})`,
+            );
           } catch (error) {
             console.warn('Keychain migration failed, continuing:', error);
           }
+
+          if (settledRef.current) return;
+          settledRef.current = true;
 
           setDeeplinkParentScreen(parentScreen);
 
@@ -123,13 +148,32 @@ const SplashScreen: React.FC = ({}) => {
             setNextScreen(parentScreen);
           }
         } catch (error) {
-          console.error(`Error in SplashScreen data loading: ${error}`);
+          if (settledRef.current) return;
+          settledRef.current = true;
+
+          console.error(
+            `SplashScreen: initialization failed (${elapsed()})`,
+            error,
+          );
           setDeeplinkParentScreen('Home');
           setNextScreen('Home');
         }
       };
 
-      loadDataAndDetermineNextScreen();
+      const timeoutId = setTimeout(() => {
+        if (settledRef.current) return;
+        settledRef.current = true;
+
+        console.error(
+          `SplashScreen: initialization timed out after ${INIT_TIMEOUT_MS}ms`,
+        );
+        setDeeplinkParentScreen('Home');
+        setNextScreen('Home');
+      }, INIT_TIMEOUT_MS);
+
+      loadDataAndDetermineNextScreen().finally(() => {
+        clearTimeout(timeoutId);
+      });
     }
   }, [checkBiometricsAvailable, setBiometricsAvailable, selfClient]);
 

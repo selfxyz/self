@@ -44,8 +44,8 @@ jest.mock('react-native-edge-to-edge', () => ({
   SystemBars: () => null,
 }));
 
-jest.mock('@/hooks/useDiditWebSocket', () => ({
-  useDiditWebSocket: jest.fn(() => ({
+jest.mock('@/hooks/useKycWebSocket', () => ({
+  useKycWebSocket: jest.fn(() => ({
     subscribe: jest.fn(),
     unsubscribe: jest.fn(),
     unsubscribeAll: jest.fn(),

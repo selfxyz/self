@@ -8,7 +8,7 @@ const FETCH_TIMEOUT_MS = 30_000;
 
 const DIDIT_TEE_URL = import.meta.env.VITE_DIDIT_TEE_URL ?? 'https://kyc.self.xyz';
 
-export interface DiditLaunchConfig {
+export interface KycLaunchConfig {
   url: string;
   containerId: string;
   verificationId: string;
@@ -17,7 +17,7 @@ export interface DiditLaunchConfig {
   onEvent?: (event: string, payload: unknown) => void;
 }
 
-export interface DiditSession {
+export interface KycSession {
   sessionId: string;
   sessionToken: string;
   url: string;
@@ -33,7 +33,7 @@ function buildProviderResult(verificationId: string, overrides: Partial<KycProvi
   };
 }
 
-export async function createDiditSession(signal?: AbortSignal): Promise<DiditSession> {
+export async function createKycSession(signal?: AbortSignal): Promise<KycSession> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
@@ -50,27 +50,27 @@ export async function createDiditSession(signal?: AbortSignal): Promise<DiditSes
     clearTimeout(timeoutId);
 
     if (!response.ok) {
-      throw new Error(`Failed to create Didit session (HTTP ${response.status})`);
+      throw new Error(`Failed to create KYC session (HTTP ${response.status})`);
     }
 
     const body: unknown = await response.json();
     if (typeof body === 'string') {
-      return JSON.parse(body) as DiditSession;
+      return JSON.parse(body) as KycSession;
     }
-    return body as DiditSession;
+    return body as KycSession;
   } catch (err) {
     clearTimeout(timeoutId);
     if (err instanceof Error && err.name === 'AbortError') {
-      throw new Error(`Didit session request timed out after ${FETCH_TIMEOUT_MS / 1000}s`);
+      throw new Error(`KYC session request timed out after ${FETCH_TIMEOUT_MS / 1000}s`);
     }
     if (err instanceof Error) {
-      throw new Error(`Failed to create Didit session: ${err.message}`);
+      throw new Error(`Failed to create KYC session: ${err.message}`);
     }
-    throw new Error('Failed to create Didit session: Unknown error');
+    throw new Error('Failed to create KYC session: Unknown error');
   }
 }
 
-export async function launchDiditWebSdk(config: DiditLaunchConfig): Promise<() => void> {
+export async function launchKycWebSdk(config: KycLaunchConfig): Promise<() => void> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { DiditSdk } = (await import('@didit-protocol/sdk-web')) as any;
 

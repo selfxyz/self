@@ -21,7 +21,7 @@ import {
 import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
-import { useDiditWebSocket } from '@/hooks/useDiditWebSocket';
+import { useKycWebSocket } from '@/hooks/useKycWebSocket';
 import { buttonTap } from '@/integrations/haptics';
 import type { RootStackParamList } from '@/navigation';
 import {
@@ -66,7 +66,7 @@ const KycSuccessScreen: React.FC<KycSuccessRouteParams> = ({
     console.log('[KycSuccessScreen] Verification failed:', reason);
   }, []);
 
-  const { subscribe, unsubscribeAll } = useDiditWebSocket({
+  const { subscribe, unsubscribeAll } = useKycWebSocket({
     onSuccess: handleWebSocketSuccess,
     onError: handleWebSocketError,
     onVerificationFailed: handleVerificationFailed,

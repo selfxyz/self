@@ -4,15 +4,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable } from 'react-native';
-import {
-  Button,
-  ScrollView,
-  Spinner,
-  Text,
-  View,
-  XStack,
-  YStack,
-} from 'tamagui';
+import { ScrollView, Spinner, YStack } from 'tamagui';
 import {
   useFocusEffect,
   useIsFocused,
@@ -25,20 +17,10 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { DocumentCatalog, IDDocument } from '@selfxyz/common/utils/types';
 import type { DocumentMetadata } from '@selfxyz/mobile-sdk-alpha';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
-import {
-  DocumentEvents,
-  PointEvents,
-} from '@selfxyz/mobile-sdk-alpha/constants/analytics';
-import {
-  black,
-  blue600,
-  slate50,
-  slate300,
-} from '@selfxyz/mobile-sdk-alpha/constants/colors';
-import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
+import { DocumentEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { black, slate50 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 
-import LogoInversed from '@/assets/images/logo_inversed.svg';
 import EmptyIdCard from '@/components/homescreen/EmptyIdCard';
 import ExpiredIdCard from '@/components/homescreen/ExpiredIdCard';
 import IdCardLayout from '@/components/homescreen/IdCard';
@@ -46,9 +28,8 @@ import PendingIdCard from '@/components/homescreen/PendingIdCard';
 import UnregisteredIdCard from '@/components/homescreen/UnregisteredIdCard';
 import { useAppUpdates } from '@/hooks/useAppUpdates';
 import useConnectionModal from '@/hooks/useConnectionModal';
-import { useEarnPointsFlow } from '@/hooks/useEarnPointsFlow';
-import { usePoints } from '@/hooks/usePoints';
 import { useReferralConfirmation } from '@/hooks/useReferralConfirmation';
+import { useRegisterReferral } from '@/hooks/useRegisterReferral';
 import { useTestReferralFlow } from '@/hooks/useTestReferralFlow';
 import type { RootStackParamList } from '@/navigation';
 import { usePassport } from '@/providers/passportDataProvider';
@@ -95,8 +76,6 @@ const HomeScreen: React.FC = () => {
   const activePendingVerifications = pendingVerifications.filter(
     v => v.status === 'pending' || v.status === 'processing',
   );
-
-  const { amount: selfPoints } = usePoints();
 
   // DEV MODE: Test referral flow hook (only show alert when screen is focused)
   const isFocused = useIsFocused();
@@ -191,27 +170,27 @@ const HomeScreen: React.FC = () => {
   // Calculate bottom padding to prevent button bleeding into system navigation
   const bottomPadding = useSafeBottomPadding(20);
 
-  // Create a stable reference to avoid hook dependency issues
-  const onEarnPointsPressRef = useRef<
-    ((skipReferralFlow?: boolean) => Promise<void>) | null
-  >(null);
+  const { registerReferral } = useRegisterReferral();
 
-  const { isReferralConfirmed } = useReferralConfirmation({
+  const handleReferralConfirmed = useCallback(async () => {
+    if (!referrer) {
+      return;
+    }
+    const store = useUserStore.getState();
+    if (!store.isReferrerRegistered(referrer)) {
+      const result = await registerReferral(referrer);
+      if (!result.success) {
+        return;
+      }
+      store.markReferrerAsRegistered(referrer);
+    }
+    store.clearDeepLinkReferrer();
+  }, [referrer, registerReferral]);
+
+  useReferralConfirmation({
     hasReferrer,
-    onConfirmed: () => {
-      onEarnPointsPressRef.current?.(false);
-    },
+    onConfirmed: handleReferralConfirmed,
   });
-
-  const { onEarnPointsPress } = useEarnPointsFlow({
-    hasReferrer,
-    isReferralConfirmed,
-  });
-
-  // Update the ref whenever onEarnPointsPress changes
-  useEffect(() => {
-    onEarnPointsPressRef.current = onEarnPointsPress;
-  }, [onEarnPointsPress]);
 
   const handleDocumentPress = useCallback(
     (metadata: DocumentMetadata, documentData: IDDocument) => {
@@ -344,86 +323,6 @@ const HomeScreen: React.FC = () => {
           );
         })}
       </ScrollView>
-      <YStack
-        elevation={8}
-        backgroundColor="white"
-        width="100%"
-        paddingTop={20}
-        paddingHorizontal={20}
-        paddingBottom={bottomPadding}
-        borderTopLeftRadius={18}
-        borderTopRightRadius={18}
-        style={{
-          // Matches: box-shadow: 0 -6px 14px 0 rgba(0, 0, 0, 0.05);
-          shadowOffset: { width: 0, height: -2 },
-          shadowOpacity: 0.08,
-          shadowRadius: 14,
-          elevation: 8,
-        }}
-      >
-        <XStack marginBottom={32} gap={22}>
-          <View
-            width={68}
-            height={68}
-            borderRadius={12}
-            borderWidth={1}
-            borderColor={slate300}
-            alignItems="center"
-            justifyContent="center"
-          >
-            <LogoInversed width={33} height={33} />
-          </View>
-          <YStack gap={4}>
-            <Text
-              color={black}
-              fontFamily={dinot}
-              fontSize={20}
-              fontStyle="normal"
-              fontWeight="500"
-              lineHeight={22}
-              textTransform="uppercase"
-            >
-              {`${selfPoints} SELF POINTS`}
-            </Text>
-            <Text
-              color={black}
-              width="60%"
-              fontFamily={dinot}
-              fontSize={16}
-              fontStyle="normal"
-              fontWeight="500"
-              lineHeight={22}
-            >
-              Earn points by referring friends, disclosing proof requests, and
-              more.
-            </Text>
-          </YStack>
-        </XStack>
-        <Button
-          backgroundColor="white"
-          paddingHorizontal={22}
-          paddingVertical={24}
-          borderRadius={5}
-          borderWidth={1}
-          borderColor={slate300}
-          testID="earn-points-button"
-          onPress={() => {
-            selfClient.trackEvent(PointEvents.HOME_POINT_EARN_POINTS_OPENED);
-
-            onEarnPointsPress(true);
-          }}
-        >
-          <Text
-            color={blue600}
-            textAlign="center"
-            fontFamily={dinot}
-            fontSize={18}
-            height={22}
-          >
-            Earn points
-          </Text>
-        </Button>
-      </YStack>
     </YStack>
   );
 };

@@ -13,11 +13,11 @@ import { useSelfClient } from '../../providers/SelfClientProvider';
 import { useVerificationRequest } from '../../providers/VerificationRequestProvider';
 import type { KycProviderResult } from '../../types/kycProvider';
 import { buildKycDocument } from '../../utils/buildKycDocument';
-import { waitForAttestation } from '../../utils/diditAttestation';
-import { createDiditSession, launchDiditWebSdk } from '../../utils/diditProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
+import { waitForKycAttestation } from '../../utils/kycAttestation';
+import { createKycSession, launchKycWebSdk } from '../../utils/kycProvider';
 
-const CONTAINER_ID = 'didit-sdk-container';
+const CONTAINER_ID = 'kyc-sdk-container';
 
 type Phase = 'loading' | 'active' | 'waiting' | 'error';
 
@@ -38,7 +38,7 @@ export const ProviderLaunchScreen: React.FC = () => {
 
   const defaultNextPath = nextPath ?? '/onboarding/provider-result';
   const isTunnelFlow = defaultNextPath.startsWith('/tunnel/') || backPath?.startsWith('/tunnel/') === true;
-  const verificationId = ctxVerificationId ?? `didit-${Date.now()}`;
+  const verificationId = ctxVerificationId ?? `kyc-${Date.now()}`;
 
   const [phase, setPhase] = useState<Phase>('loading');
   const [errorMessage, setErrorMessage] = useState('');
@@ -57,7 +57,7 @@ export const ProviderLaunchScreen: React.FC = () => {
 
       if ((result.status === 'success' || result.status === 'partial') && sessionIdRef.current) {
         setPhase('waiting');
-        const attestationResult = await waitForAttestation(sessionIdRef.current);
+        const attestationResult = await waitForKycAttestation(sessionIdRef.current);
 
         if (!mountedRef.current) return;
 
@@ -163,12 +163,12 @@ export const ProviderLaunchScreen: React.FC = () => {
 
     (async () => {
       try {
-        const session = await createDiditSession(controller.signal);
+        const session = await createKycSession(controller.signal);
         if (cancelled) return;
 
         sessionIdRef.current = session.sessionId;
 
-        const destroy = await launchDiditWebSdk({
+        const destroy = await launchKycWebSdk({
           url: session.url,
           containerId: CONTAINER_ID,
           verificationId,

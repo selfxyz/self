@@ -8,28 +8,31 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { sanitizeErrorMessage } from '@selfxyz/mobile-sdk-alpha';
 
-import { createSession, launchDidit } from '@/integrations/didit';
-import type { DiditVerificationResult } from '@/integrations/didit/types';
+import {
+  createKycSession,
+  launchKycVerification as startKycVerification,
+} from '@/integrations/kyc';
+import type { KycVerificationResult } from '@/integrations/kyc/types';
 import type { RootStackParamList } from '@/navigation';
 
 export type FallbackErrorSource = 'mrz_scan_failed' | 'nfc_scan_failed';
 
-export interface UseDiditLauncherOptions {
+export interface UseKycLauncherOptions {
   /**
    * Country code for the user's document
    */
   countryCode: string;
   /**
-   * Error source to track where the Didit launch was initiated from
+   * Error source to track where the KYC launch was initiated from
    */
   errorSource: FallbackErrorSource;
   /**
    * Optional callback to handle successful verification.
-   * Receives the Didit result and the sessionId from the session.
+   * Receives the KYC result and the sessionId from the session.
    * If not provided, defaults to navigating to KycSuccess with the sessionId.
    */
   onSuccess?: (
-    result: DiditVerificationResult,
+    result: KycVerificationResult,
     sessionId: string,
   ) => void | Promise<void>;
   /**
@@ -41,42 +44,42 @@ export interface UseDiditLauncherOptions {
    */
   onError?: (
     error: unknown,
-    result?: DiditVerificationResult,
+    result?: KycVerificationResult,
   ) => void | Promise<void>;
 }
 
 /**
- * Custom hook for launching Didit verification with consistent error handling.
+ * Custom hook for launching KYC verification with consistent error handling.
  *
  * Abstracts the common pattern of:
  * 1. Creating a session
- * 2. Launching Didit SDK
+ * 2. Launching the provider SDK
  * 3. Handling errors by navigating to fallback screen
  * 4. Managing loading state
  *
  * @example
  * ```tsx
- * const { launchDiditVerification, isLoading } = useDiditLauncher({
+ * const { launchKycVerification, isLoading } = useKycLauncher({
  *   countryCode: 'US',
  *   errorSource: 'nfc_scan_failed',
  * });
  *
- * <Button onPress={launchDiditVerification} disabled={isLoading}>
+ * <Button onPress={launchKycVerification} disabled={isLoading}>
  *   {isLoading ? 'Loading...' : 'Try Alternative Verification'}
  * </Button>
  * ```
  */
-export const useDiditLauncher = (options: UseDiditLauncherOptions) => {
+export const useKycLauncher = (options: UseKycLauncherOptions) => {
   const { countryCode, errorSource, onSuccess, onCancel, onError } = options;
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [isLoading, setIsLoading] = useState(false);
 
-  const launchDiditVerification = useCallback(async () => {
+  const launchKycVerification = useCallback(async () => {
     setIsLoading(true);
     try {
-      const session = await createSession();
-      const result = await launchDidit(session.sessionToken);
+      const session = await createKycSession();
+      const result = await startKycVerification(session.sessionToken);
 
       // Handle user cancellation
       if (result.type === 'cancelled') {
@@ -89,7 +92,7 @@ export const useDiditLauncher = (options: UseDiditLauncherOptions) => {
         const error =
           result.error?.message || result.error?.type || 'Unknown error';
         const safeError = sanitizeErrorMessage(error);
-        console.error('Didit verification failed:', safeError);
+        console.error('KYC verification failed:', safeError);
 
         // Call custom error handler if provided, otherwise navigate to fallback screen
         if (onError) {
@@ -134,7 +137,7 @@ export const useDiditLauncher = (options: UseDiditLauncherOptions) => {
   }, [navigation, countryCode, errorSource, onSuccess, onCancel, onError]);
 
   return {
-    launchDiditVerification,
+    launchKycVerification,
     isLoading,
   };
 };

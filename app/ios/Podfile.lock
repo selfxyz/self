@@ -59,6 +59,11 @@ PODS:
     - Yoga
   - fast_float (6.1.4)
   - FBLazyVector (0.77.0)
+  - Firebase/Analytics (11.11.0):
+    - Firebase/Core
+  - Firebase/Core (11.11.0):
+    - Firebase/CoreOnly
+    - FirebaseAnalytics (~> 11.11.0)
   - Firebase/CoreOnly (11.11.0):
     - FirebaseCore (~> 11.11.0)
   - Firebase/Messaging (11.11.0):
@@ -69,6 +74,24 @@ PODS:
     - FirebaseRemoteConfig (~> 11.11.0)
   - FirebaseABTesting (11.11.0):
     - FirebaseCore (~> 11.11.0)
+  - FirebaseAnalytics (11.11.0):
+    - FirebaseAnalytics/AdIdSupport (= 11.11.0)
+    - FirebaseCore (~> 11.11.0)
+    - FirebaseInstallations (~> 11.0)
+    - GoogleUtilities/AppDelegateSwizzler (~> 8.0)
+    - GoogleUtilities/MethodSwizzler (~> 8.0)
+    - GoogleUtilities/Network (~> 8.0)
+    - "GoogleUtilities/NSData+zlib (~> 8.0)"
+    - nanopb (~> 3.30910.0)
+  - FirebaseAnalytics/AdIdSupport (11.11.0):
+    - FirebaseCore (~> 11.11.0)
+    - FirebaseInstallations (~> 11.0)
+    - GoogleAppMeasurement (= 11.11.0)
+    - GoogleUtilities/AppDelegateSwizzler (~> 8.0)
+    - GoogleUtilities/MethodSwizzler (~> 8.0)
+    - GoogleUtilities/Network (~> 8.0)
+    - "GoogleUtilities/NSData+zlib (~> 8.0)"
+    - nanopb (~> 3.30910.0)
   - FirebaseCore (11.11.0):
     - FirebaseCoreInternal (~> 11.11.0)
     - GoogleUtilities/Environment (~> 8.0)
@@ -103,6 +126,26 @@ PODS:
   - FirebaseSharedSwift (11.15.0)
   - fmt (11.0.2)
   - glog (0.3.5)
+  - GoogleAppMeasurement (11.11.0):
+    - GoogleAppMeasurement/AdIdSupport (= 11.11.0)
+    - GoogleUtilities/AppDelegateSwizzler (~> 8.0)
+    - GoogleUtilities/MethodSwizzler (~> 8.0)
+    - GoogleUtilities/Network (~> 8.0)
+    - "GoogleUtilities/NSData+zlib (~> 8.0)"
+    - nanopb (~> 3.30910.0)
+  - GoogleAppMeasurement/AdIdSupport (11.11.0):
+    - GoogleAppMeasurement/WithoutAdIdSupport (= 11.11.0)
+    - GoogleUtilities/AppDelegateSwizzler (~> 8.0)
+    - GoogleUtilities/MethodSwizzler (~> 8.0)
+    - GoogleUtilities/Network (~> 8.0)
+    - "GoogleUtilities/NSData+zlib (~> 8.0)"
+    - nanopb (~> 3.30910.0)
+  - GoogleAppMeasurement/WithoutAdIdSupport (11.11.0):
+    - GoogleUtilities/AppDelegateSwizzler (~> 8.0)
+    - GoogleUtilities/MethodSwizzler (~> 8.0)
+    - GoogleUtilities/Network (~> 8.0)
+    - "GoogleUtilities/NSData+zlib (~> 8.0)"
+    - nanopb (~> 3.30910.0)
   - GoogleDataTransport (10.1.0):
     - nanopb (~> 3.30910.0)
     - PromisesObjC (~> 2.4)
@@ -120,6 +163,9 @@ PODS:
     - GoogleUtilities/Privacy
   - GoogleUtilities/Logger (8.1.0):
     - GoogleUtilities/Environment
+    - GoogleUtilities/Privacy
+  - GoogleUtilities/MethodSwizzler (8.1.0):
+    - GoogleUtilities/Logger
     - GoogleUtilities/Privacy
   - GoogleUtilities/Network (8.1.0):
     - GoogleUtilities/Logger
@@ -142,12 +188,12 @@ PODS:
   - hermes-engine (0.77.0):
     - hermes-engine/Pre-built (= 0.77.0)
   - hermes-engine/Pre-built (0.77.0)
-  - lottie-ios (4.5.0)
-  - lottie-react-native (7.2.2):
+  - lottie-ios (4.6.0)
+  - lottie-react-native (7.3.6):
     - DoubleConversion
     - glog
     - hermes-engine
-    - lottie-ios (= 4.5.0)
+    - lottie-ios (= 4.6.0)
     - RCT-Folly (= 2024.11.18.00)
     - RCTRequired
     - RCTTypeSafety
@@ -1428,7 +1474,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-compat (2.23.1):
+  - react-native-compat (2.23.9):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1449,13 +1495,14 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+    - YttriumWrapper (= 0.10.50)
   - react-native-get-random-values (1.11.0):
     - React-Core
   - react-native-netinfo (11.4.1):
     - React-Core
   - react-native-nfc-manager (3.17.2):
     - React-Core
-  - react-native-passkey (3.3.2):
+  - react-native-passkey (3.3.3):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1476,7 +1523,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-safe-area-context (5.6.2):
+  - react-native-safe-area-context (5.7.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1489,8 +1536,8 @@ PODS:
     - React-featureflags
     - React-graphics
     - React-ImageManager
-    - react-native-safe-area-context/common (= 5.6.2)
-    - react-native-safe-area-context/fabric (= 5.6.2)
+    - react-native-safe-area-context/common (= 5.7.0)
+    - react-native-safe-area-context/fabric (= 5.7.0)
     - React-NativeModulesApple
     - React-RCTFabric
     - React-rendererdebug
@@ -1499,7 +1546,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-safe-area-context/common (5.6.2):
+  - react-native-safe-area-context/common (5.7.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1520,7 +1567,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-safe-area-context/fabric (5.6.2):
+  - react-native-safe-area-context/fabric (5.7.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1900,6 +1947,10 @@ PODS:
     - Yoga
   - RNDeviceInfo (15.0.2):
     - React-Core
+  - RNFBAnalytics (21.14.0):
+    - Firebase/Analytics (= 11.11.0)
+    - React-Core
+    - RNFBApp
   - RNFBApp (21.14.0):
     - Firebase/CoreOnly (= 11.11.0)
     - React-Core
@@ -1955,7 +2006,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNInAppBrowser (3.7.0):
+  - RNInAppBrowser (3.7.1):
     - React-Core
   - RNKeychain (10.0.0):
     - DoubleConversion
@@ -2131,7 +2182,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - SdkReactNative (3.2.7):
+  - SdkReactNative (3.2.8):
     - DiditSDK (~> 3.2)
     - DoubleConversion
     - glog
@@ -2153,7 +2204,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - segment-analytics-react-native (2.21.4):
+  - segment-analytics-react-native (2.22.0):
     - React-Core
     - sovran-react-native
   - SelfNFCPassportReader (2.1.1):
@@ -2166,6 +2217,7 @@ PODS:
   - SwiftQRScanner (1.1.6)
   - SwiftyTesseract (3.1.3)
   - Yoga (0.0.0)
+  - YttriumWrapper (0.10.50)
 
 DEPENDENCIES:
   - boost (from `../node_modules/react-native/third-party-podspecs/boost.podspec`)
@@ -2267,6 +2319,7 @@ DEPENDENCIES:
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
   - "RNCClipboard (from `../node_modules/@react-native-clipboard/clipboard`)"
   - RNDeviceInfo (from `../node_modules/react-native-device-info`)
+  - "RNFBAnalytics (from `../node_modules/@react-native-firebase/analytics`)"
   - "RNFBApp (from `../node_modules/@react-native-firebase/app`)"
   - "RNFBMessaging (from `../node_modules/@react-native-firebase/messaging`)"
   - "RNFBRemoteConfig (from `../node_modules/@react-native-firebase/remote-config`)"
@@ -2292,6 +2345,7 @@ SPEC REPOS:
     - AppCheckCore
     - Firebase
     - FirebaseABTesting
+    - FirebaseAnalytics
     - FirebaseCore
     - FirebaseCoreExtension
     - FirebaseCoreInternal
@@ -2300,6 +2354,7 @@ SPEC REPOS:
     - FirebaseRemoteConfig
     - FirebaseRemoteConfigInterop
     - FirebaseSharedSwift
+    - GoogleAppMeasurement
     - GoogleDataTransport
     - GoogleSignIn
     - GoogleUtilities
@@ -2315,6 +2370,7 @@ SPEC REPOS:
     - Sentry
     - SocketRocket
     - SwiftyTesseract
+    - YttriumWrapper
 
 EXTERNAL SOURCES:
   boost:
@@ -2504,6 +2560,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-clipboard/clipboard"
   RNDeviceInfo:
     :path: "../node_modules/react-native-device-info"
+  RNFBAnalytics:
+    :path: "../node_modules/@react-native-firebase/analytics"
   RNFBApp:
     :path: "../node_modules/@react-native-firebase/app"
   RNFBMessaging:
@@ -2570,6 +2628,7 @@ SPEC CHECKSUMS:
   FBLazyVector: 2bc03a5cf64e29c611bbc5d7eb9d9f7431f37ee6
   Firebase: 6a8f201c61eda24e98f1ce2b44b1b9c2caf525cc
   FirebaseABTesting: 8551c24eb28e300ce697f8eb72c1a519bb96eb40
+  FirebaseAnalytics: acfa848bf81e1a4dbf60ef1f0eddd7328fe6673e
   FirebaseCore: 2321536f9c423b1f857e047a82b8a42abc6d9e2c
   FirebaseCoreExtension: 3a64994969dd05f4bcb7e6896c654eded238e75b
   FirebaseCoreInternal: 31ee350d87b30a9349e907f84bf49ef8e6791e5a
@@ -2580,14 +2639,15 @@ SPEC CHECKSUMS:
   FirebaseSharedSwift: e17c654ef1f1a616b0b33054e663ad1035c8fd40
   fmt: a40bb5bd0294ea969aaaba240a927bd33d878cdd
   glog: eb93e2f488219332457c3c4eafd2738ddc7e80b8
+  GoogleAppMeasurement: 8a82b93a6400c8e6551c0bcd66a9177f2e067aed
   GoogleDataTransport: aae35b7ea0c09004c3797d53c8c41f66f219d6a7
   GoogleSignIn: fcee2257188d5eda57a5e2b6a715550ffff9206d
   GoogleUtilities: 00c88b9a86066ef77f0da2fab05f65d7768ed8e1
   GTMAppAuth: 217a876b249c3c585a54fd6f73e6b58c4f5c4238
   GTMSessionFetcher: 5aea5ba6bd522a239e236100971f10cb71b96ab6
   hermes-engine: 1f783c3d53940aed0d2c84586f0b7a85ab7827ef
-  lottie-ios: a881093fab623c467d3bce374367755c272bdd59
-  lottie-react-native: 6cb05b7b4ea463afe657e3b46784f067858e1a5d
+  lottie-ios: 8f959969761e9c45d70353667d00af0e5b9cadb3
+  lottie-react-native: d73a798e26348851f0ef349df3d40f2e27fd239b
   Mixpanel-swift: e9bef28a9648faff384d5ba6f48ecc2787eb24c0
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
   OpenSSL-Universal: 84efb8a29841f2764ac5403e0c4119a28b713346
@@ -2627,12 +2687,12 @@ SPEC CHECKSUMS:
   react-native-biometrics: 43ed5b828646a7862dbc7945556446be00798e7d
   react-native-blur: 745703f35133ed6a1210d4bbff358a631911f002
   react-native-cloud-storage: 796c793dc354bb49f9df27ca25eed0f79a15549e
-  react-native-compat: 10b5f906b469268eaceca83ea2393c177f1ce18a
+  react-native-compat: ad6a412f03632d1c4d97d47e56b22d0597116085
   react-native-get-random-values: d16467cf726c618e9c7a8c3c39c31faa2244bbba
   react-native-netinfo: cec9c4e86083cb5b6aba0e0711f563e2fbbff187
   react-native-nfc-manager: c8891e460b4943b695d63f7f4effc6345bbefc83
-  react-native-passkey: 8818f842d1b80e45c06e906a5c85964719782bf5
-  react-native-safe-area-context: 5b5d3eb6ec9ef848f16c064a4eab4a92c7d7895e
+  react-native-passkey: 3c07a93dc2608929d794b7298c0d29d01b379f01
+  react-native-safe-area-context: bf457bf5b3a617e9a3930d1ecd954a3335303cc7
   react-native-sqlite-storage: 0c84826214baaa498796c7e46a5ccc9a82e114ed
   react-native-webview: 05734d99f1e422c5ddfeefbd083d53abd78fccb1
   React-nativeconfig: 334c9961d74ddd3bc203afb92ee574ed01c7c755
@@ -2668,20 +2728,21 @@ SPEC CHECKSUMS:
   RNCAsyncStorage: 6a8127b6987dc9fbce778669b252b14c8355c7ce
   RNCClipboard: 9f7b908de4bf4353871fb454c15fc03db4917b88
   RNDeviceInfo: 4c852998208b60dc192ae3529e5867817719ad1e
-  RNFBApp: 4105e54d9ca4a1c10893a032268470f670181110
-  RNFBMessaging: 6857871d9dff8f26b0c325fc7d97ba69cb77d213
-  RNFBRemoteConfig: 8d3675f18c052483ce294bb97b857428467fb41e
+  RNFBAnalytics: 03c83ba4617a3754c99e66267983efcc908932a9
+  RNFBApp: a448037d2df74af9d374a0b765be12ff1e844dc0
+  RNFBMessaging: 0f0498a95c605e3afcf13ac5f349d0b201ea65f6
+  RNFBRemoteConfig: 4eb5fc9f21dc324153c7d3f5b48c935ab9031876
   RNGestureHandler: 36aca36e4ef19f55dbf97239199d00fd58494e34
   RNGoogleSignin: 60c3f470558dbff0ae54f2f164ef82a89d3eb561
-  RNInAppBrowser: 6d3eb68d471b9834335c664704719b8be1bfdb20
+  RNInAppBrowser: 904d24dc75e8e6c6c98a3160329192608946f9df
   RNKeychain: 35beaa17938f7d8e4990d8a38fad5f8a748fc47c
   RNLocalize: aa57bee9fcd545b98ce773a8e2404f9a36115b4a
   RNReactNativeHapticFeedback: eb5395b503c7a8f10de5e6722ef8afd3c61bc4f5
   RNScreens: b0811b109e1a0b8b579f3348018e177bee374840
   RNSentry: 98ab9f6a16c9596e36565ccf1a5871323f334766
   RNSVG: d926926b169d8b81eb06aeb69734076e1dd566a3
-  SdkReactNative: 7f65ca10a978bf9440730a537d54511e68ed50b4
-  segment-analytics-react-native: 0eae155b0e9fa560fa6b17d78941df64537c35b7
+  SdkReactNative: 34ba85b3f3060892c548b7415b06f0bd66fcba1c
+  segment-analytics-react-native: 8ab9c49df1859bbd6be93cf90a91ade17f20a0aa
   SelfNFCPassportReader: 8b53f9d483e0dd1f1a275953e3dc6dfc733694c5
   Sentry: 59993bffde4a1ac297ba6d268dc4bbce068d7c1b
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
@@ -2689,7 +2750,8 @@ SPEC CHECKSUMS:
   SwiftQRScanner: e85a25f9b843e9231dab89a96e441472fe54a724
   SwiftyTesseract: 1f3d96668ae92dc2208d9842c8a59bea9fad2cbb
   Yoga: c34725819ab0a5962e85455b9e56679b306910ee
+  YttriumWrapper: d7f63336830536f1da41b745ed8bacedb04228c4
 
-PODFILE CHECKSUM: 0b99fae2ec87b0be3e6d9b3fd87360fe0a84b25f
+PODFILE CHECKSUM: 83f631d1b6308502a035e656b2f9dfab30431ae3
 
 COCOAPODS: 1.16.2
