@@ -7,7 +7,6 @@ package xyz.self.sdk.api
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
-import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class QueryParamsBuilderTest {
@@ -25,15 +24,16 @@ class QueryParamsBuilderTest {
 
     @Test
     fun `includes all config params`() {
-        val config = SelfSdkConfig(
-            endpoint = "https://custom.api.xyz",
-            environment = SelfEnvironment.STG,
-            version = 2,
-            appName = "TestApp",
-            appEndpoint = "https://app.endpoint.xyz",
-            endpointType = "custom",
-            chainID = 42,
-        )
+        val config =
+            SelfSdkConfig(
+                endpoint = "https://custom.api.xyz",
+                environment = SelfEnvironment.STG,
+                version = 2,
+                appName = "TestApp",
+                appEndpoint = "https://app.endpoint.xyz",
+                endpointType = "custom",
+                chainID = 42,
+            )
         val result = QueryParamsBuilder.build(config, minimalRequest)
         assertNotNull(result)
         assertTrue(result.contains("appName=TestApp"))
@@ -48,24 +48,26 @@ class QueryParamsBuilderTest {
         val config = SelfSdkConfig(endpoint = "https://api.self.xyz", appEndpoint = null)
         val result = QueryParamsBuilder.build(config, minimalRequest)
         assertNotNull(result)
-        val params = result.split("&").associate {
-            val (k, v) = it.split("=", limit = 2)
-            k to v
-        }
+        val params =
+            result.split("&").associate {
+                val (k, v) = it.split("=", limit = 2)
+                k to v
+            }
         assertEquals(params["endpoint"], params["appEndpoint"])
     }
 
     @Test
     fun `includes all request params`() {
-        val request = VerificationRequest(
-            userId = "user-123",
-            scope = "identity",
-            verificationId = "ver-456",
-            resultType = "json",
-            userIdType = "email",
-            userDefinedData = "custom-data",
-            selfDefinedData = "self-data",
-        )
+        val request =
+            VerificationRequest(
+                userId = "user-123",
+                scope = "identity",
+                verificationId = "ver-456",
+                resultType = "json",
+                userIdType = "email",
+                userDefinedData = "custom-data",
+                selfDefinedData = "self-data",
+            )
         val result = QueryParamsBuilder.build(defaultConfig, request)
         assertNotNull(result)
         assertTrue(result.contains("userId=user-123"))

@@ -155,5 +155,4 @@ actual class SelfSdk private constructor(
         router.register(CryptoBridgeHandler())
         router.register(lifecycleHandler)
     }
-
 }

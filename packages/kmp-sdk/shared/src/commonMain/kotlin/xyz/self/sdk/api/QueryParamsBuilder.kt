@@ -5,7 +5,10 @@
 package xyz.self.sdk.api
 
 internal object QueryParamsBuilder {
-    fun build(config: SelfSdkConfig, request: VerificationRequest): String? {
+    fun build(
+        config: SelfSdkConfig,
+        request: VerificationRequest,
+    ): String? {
         val parts = mutableListOf<String>()
 
         // Config params (always present)
