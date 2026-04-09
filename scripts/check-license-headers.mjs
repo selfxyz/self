@@ -189,17 +189,18 @@ function fixLicenseHeader(filePath) {
 
   if (headerInfo.index === -1) {
     // No header exists - add the canonical header
-    // Preserve swift-tools-version as first line (required by SPM)
+    // Preserve shebang and swift-tools-version prefixes
     let insertIndex = 0;
-    if (lines[0]?.startsWith('// swift-tools-version')) {
-      insertIndex = 1;
+    if (lines[insertIndex]?.startsWith('#!')) {
+      insertIndex += 1;
+    }
+    if (lines[insertIndex]?.startsWith('// swift-tools-version')) {
+      insertIndex += 1;
       // Ensure blank line between tools-version and license header
-      if (lines[1]?.trim() !== '') {
-        lines.splice(1, 0, '');
-        insertIndex = 2;
-      } else {
-        insertIndex = 2;
+      if (lines[insertIndex]?.trim() !== '') {
+        lines.splice(insertIndex, 0, '');
       }
+      insertIndex += 1;
     }
     const newLines = [
       ...lines.slice(0, insertIndex),
