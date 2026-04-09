@@ -155,8 +155,12 @@ const SplashScreen: React.FC = ({}) => {
             `SplashScreen: initialization failed (${elapsed()})`,
             error,
           );
-          setDeeplinkParentScreen('Home');
-          setNextScreen('Home');
+          const fallbackScreen = useSettingStore.getState()
+            .hasPrivacyNoteBeenDismissed
+            ? 'Home'
+            : 'Disclaimer';
+          setDeeplinkParentScreen(fallbackScreen);
+          setNextScreen(fallbackScreen);
         }
       };
 
@@ -167,8 +171,12 @@ const SplashScreen: React.FC = ({}) => {
         console.error(
           `SplashScreen: initialization timed out after ${INIT_TIMEOUT_MS}ms`,
         );
-        setDeeplinkParentScreen('Home');
-        setNextScreen('Home');
+        const fallbackScreen = useSettingStore.getState()
+          .hasPrivacyNoteBeenDismissed
+          ? 'Home'
+          : 'Disclaimer';
+        setDeeplinkParentScreen(fallbackScreen);
+        setNextScreen(fallbackScreen);
       }, INIT_TIMEOUT_MS);
 
       loadDataAndDetermineNextScreen().finally(() => {
