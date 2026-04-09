@@ -73,7 +73,7 @@ Specs are agent-executable prompts. A new Claude Code session with no prior cont
 - **Make decisions, not options.** "Use local wrappers" not "Consider adding to Euclid or using local wrappers." Agents can't choose between approaches — tell them which one.
 - **Use second person.** "You are fixing X" not "X should be fixed."
 - **Be explicit about constraints.** "You will NOT modify..." not just "Focus on..."
-- **Provide exact file paths with line numbers.** `src/utils/sumsubProvider.ts:118` not "the provider file."
+- **Provide exact file paths with line numbers.** `src/utils/kycProvider.ts:118` not "the provider file."
 - **State the validation command.** Agents will run it. If it's not there, they'll skip validation.
 - **One spec = one PR.** Target the PR size from Key Rules (1k–3k LOC). If a spec would exceed that, split it.
 - **Mark items as required vs optional.** Don't let agents infer priority.

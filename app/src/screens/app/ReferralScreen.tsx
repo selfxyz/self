@@ -76,8 +76,8 @@ const ReferralScreen: React.FC = () => {
         gap={42}
       >
         <ReferralInfo
-          title="Invite friends and earn points"
-          description="When friends install Self and use your referral link you'll both receive exclusive points."
+          title="Invite friends to Self"
+          description="When friends install Self and use your referral link you'll both get rewarded."
           learnMoreText="Learn more"
         />
 

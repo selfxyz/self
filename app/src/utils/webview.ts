@@ -64,6 +64,7 @@ export const TRUSTED_DOMAINS = Object.freeze([
   'coinbase.com', // Coinbase - Main domain
   'karmahq.xyz', // Karma - Launch & fund projects
   'lemonade.social', // Lemonade - Events and communities
+  'notion.site', // Notion - Support/feedback forms
   'self.xyz', // Base domain and all subdomains (*.self.xyz) - includes espresso.self.xyz
   'talent.app', // Talent Protocol - Main app
   'talentprotocol.com', // Talent Protocol - Marketing/info site

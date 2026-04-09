@@ -61,6 +61,10 @@ def simulator_arm64_blockers
   end
 end
 
+# Build RNFirebase pods as static frameworks so vendored Firebase XCFrameworks
+# (e.g. GoogleAppMeasurement, FirebaseAnalytics) link correctly with use_frameworks!
+$RNFirebaseAsStaticFramework = true
+
 linkage = ENV["USE_FRAMEWORKS"]
 if linkage != nil
   Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
