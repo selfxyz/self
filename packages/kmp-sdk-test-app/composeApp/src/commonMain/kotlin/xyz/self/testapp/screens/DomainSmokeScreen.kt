@@ -182,4 +182,3 @@ private fun runStorageSmoke(): SmokeResult {
         SmokeResult(CheckStatus.FAIL, "Exception: ${e.message}")
     }
 }
-
