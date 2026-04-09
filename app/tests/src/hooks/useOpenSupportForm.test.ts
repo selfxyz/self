@@ -2,34 +2,31 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { useNavigation } from '@react-navigation/native';
 import { act, renderHook } from '@testing-library/react-native';
 
 import { supportFormUrl } from '@/consts/links';
 import useOpenSupportForm from '@/hooks/useOpenSupportForm';
 import { impactLight } from '@/integrations/haptics';
-
-jest.mock('@react-navigation/native', () => ({
-  useNavigation: jest.fn(),
-}));
+import { navigationRef } from '@/navigation';
 
 jest.mock('@/integrations/haptics', () => ({
   impactLight: jest.fn(),
-  impactMedium: jest.fn(),
-  selectionChange: jest.fn(),
+}));
+
+jest.mock('@/navigation', () => ({
+  navigationRef: {
+    isReady: jest.fn(),
+    navigate: jest.fn(),
+  },
 }));
 
 describe('useOpenSupportForm', () => {
-  const mockNavigate = jest.fn();
-
   beforeEach(() => {
     jest.clearAllMocks();
-    (useNavigation as jest.Mock).mockReturnValue({
-      navigate: mockNavigate,
-    });
+    (navigationRef.isReady as jest.Mock).mockReturnValue(true);
   });
 
-  it('navigates to the support form in the in-app WebView', () => {
+  it('triggers haptic feedback and navigates to the support form WebView', () => {
     const { result } = renderHook(() => useOpenSupportForm());
 
     act(() => {
@@ -37,7 +34,7 @@ describe('useOpenSupportForm', () => {
     });
 
     expect(impactLight).toHaveBeenCalledTimes(1);
-    expect(mockNavigate).toHaveBeenCalledWith('WebView', {
+    expect(navigationRef.navigate).toHaveBeenCalledWith('WebView', {
       url: supportFormUrl,
       title: 'Get Support',
     });

@@ -122,7 +122,10 @@ const SplashScreen: React.FC = ({}) => {
           if (settledRef.current) return;
           settledRef.current = true;
 
-          console.error(`SplashScreen: initialization failed (${elapsed()})`, error);
+          console.error(
+            `SplashScreen: initialization failed (${elapsed()})`,
+            error,
+          );
           setDeeplinkParentScreen('Home');
           setNextScreen('Home');
         }
@@ -139,7 +142,7 @@ const SplashScreen: React.FC = ({}) => {
         setNextScreen('Home');
       }, INIT_TIMEOUT_MS);
 
-      void loadDataAndDetermineNextScreen().finally(() => {
+      loadDataAndDetermineNextScreen().finally(() => {
         clearTimeout(timeoutId);
       });
     }

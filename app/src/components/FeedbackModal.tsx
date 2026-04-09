@@ -15,7 +15,7 @@ import {
 import { advercase, dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import ModalClose from '@/assets/icons/modal_close.svg';
-import useOpenSupportForm from '@/hooks/useOpenSupportForm';
+import { openSupportForm } from '@/services/support';
 
 interface FeedbackModalProps {
   visible: boolean;
@@ -29,7 +29,6 @@ interface FeedbackModalProps {
 }
 
 const FeedbackModal: React.FC<FeedbackModalProps> = ({ visible, onClose }) => {
-  const openSupportForm = useOpenSupportForm();
   const handleSupportForm = () => {
     openSupportForm();
     onClose();
