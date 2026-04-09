@@ -8,8 +8,8 @@ export const DEFAULT_DOE = undefined;
 
 export const DEFAULT_PNUMBER = undefined;
 
-export const DIDIT_TEE_URL =
-  process.env.DIDIT_TEE_URL || 'http://localhost:8080';
+export const KYC_TEE_URL =
+  process.env.KYC_TEE_URL || 'http://localhost:8080';
 
 export const ENABLE_DEBUG_LOGS = process.env.ENABLE_DEBUG_LOGS === 'true';
 

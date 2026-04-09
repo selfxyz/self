@@ -4,7 +4,7 @@
 
 import { useCallback, useRef } from 'react';
 import { io, type Socket } from 'socket.io-client';
-import { DIDIT_TEE_URL } from '@env';
+import { KYC_TEE_URL } from '@env';
 
 import { deserializeApplicantInfo } from '@selfxyz/common';
 import type { DocumentType, KycData } from '@selfxyz/common/utils/types';
@@ -81,8 +81,8 @@ export function useKycWebSocket(options: UseKycWebSocketOptions = {}) {
       }
       subscribedSessionIdsRef.current.add(sessionId);
 
-      console.log('[KycWebSocket] Connecting to WebSocket:', DIDIT_TEE_URL);
-      const socket = io(DIDIT_TEE_URL, {
+      console.log('[KycWebSocket] Connecting to WebSocket:', KYC_TEE_URL);
+      const socket = io(KYC_TEE_URL, {
         transports: ['websocket', 'polling'],
       });
 
