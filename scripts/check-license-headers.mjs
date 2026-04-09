@@ -89,6 +89,8 @@ function findLicenseHeaderIndex(lines) {
   let i = 0;
   // Skip shebang if present
   if (lines[i]?.startsWith('#!')) i++;
+  // Skip swift-tools-version (must be first line in Package.swift)
+  if (lines[i]?.startsWith('// swift-tools-version')) i++;
   // Skip leading blank lines
   while (i < lines.length && lines[i].trim() === '') i++;
 
@@ -187,10 +189,23 @@ function fixLicenseHeader(filePath) {
 
   if (headerInfo.index === -1) {
     // No header exists - add the canonical header
+    // Preserve swift-tools-version as first line (required by SPM)
+    let insertIndex = 0;
+    if (lines[0]?.startsWith('// swift-tools-version')) {
+      insertIndex = 1;
+      // Ensure blank line between tools-version and license header
+      if (lines[1]?.trim() !== '') {
+        lines.splice(1, 0, '');
+        insertIndex = 2;
+      } else {
+        insertIndex = 2;
+      }
+    }
     const newLines = [
+      ...lines.slice(0, insertIndex),
       ...CANONICAL_HEADER_LINES,
       '', // Add newline after header
-      ...lines,
+      ...lines.slice(insertIndex),
     ];
     const fixedContent = newLines.join('\n');
     writeFileSync(filePath, fixedContent, 'utf8');
