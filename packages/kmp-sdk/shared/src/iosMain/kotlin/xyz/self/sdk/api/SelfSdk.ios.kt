@@ -57,7 +57,7 @@ actual class SelfSdk private constructor(
         check(SdkProviderRegistry.isConfigured() && IosProviderRegistry.webView != null) {
             "SDK providers not configured. " +
                 "Call SelfSdkSwift.configure() from your iOS app before launching the SDK. " +
-                "Required: secureStorage, crypto, and webView providers."
+                "Required: secureStorage and webView providers."
         }
 
         // Store callback for later

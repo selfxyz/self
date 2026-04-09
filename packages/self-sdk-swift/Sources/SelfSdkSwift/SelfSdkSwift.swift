@@ -18,7 +18,6 @@ import Foundation
 /// SdkProviderRegistry.shared.biometric = SelfSdkSwift.biometric
 /// SdkProviderRegistry.shared.secureStorage = SelfSdkSwift.secureStorage
 /// SdkProviderRegistry.shared.haptic = SelfSdkSwift.haptic
-/// SdkProviderRegistry.shared.crypto = SelfSdkSwift.crypto
 /// SdkProviderRegistry.shared.documents = SelfSdkSwift.documents
 /// SdkProviderRegistry.shared.webView = SelfSdkSwift.webView
 /// SdkProviderRegistry.shared.nfc = SelfSdkSwift.nfc
@@ -30,7 +29,6 @@ public final class SelfSdkSwift {
     public static let biometric = BiometricProviderImpl()
     public static let secureStorage = SecureStorageProviderImpl()
     public static let haptic = HapticProviderImpl()
-    public static let crypto = CryptoProviderImpl()
     public static let documents = DocumentsProviderImpl()
     public static let webView = WebViewProviderImpl()
     public static let nfc = NfcProviderImpl()
