@@ -127,10 +127,10 @@ Any other domain request returns a `DOMAIN_NOT_FOUND` error response.
 
 ## Related Specs
 
-| Spec                                                             | Relationship                                        |
-| ---------------------------------------------------------------- | --------------------------------------------------- |
-| [SDK Overview](../../OVERVIEW.md)                                | Parent architecture                                 |
-| [Native Shells Lite](../native-shells-lite/SPEC.md)              | Sibling — serves non-KMP consumers                  |
-| [Paused Native Shells (KMP)](../../paused/native-shells/SPEC.md) | Historical KMP work — validated foundation          |
-| [Build Pipeline](../build-pipeline/SPEC.md)                      | Downstream — bundles webview-app into native assets |
+| Spec                                                             | Relationship                                                   |
+| ---------------------------------------------------------------- | -------------------------------------------------------------- |
+| [SDK Overview](../../OVERVIEW.md)                                | Parent architecture                                            |
+| [Native Shells Lite](../native-shells-lite/SPEC.md)              | Sibling — serves non-KMP consumers                             |
+| [Paused Native Shells (KMP)](../../paused/native-shells/SPEC.md) | Historical KMP work — validated foundation                     |
+| [Build Pipeline](../build-pipeline/SPEC.md)                      | Downstream — bundles webview-app into native assets            |
 | [SDK Distribution — SD-06](../sdk-distribution/SPEC.md)          | Downstream — remote publishing after KR-03 validates artifacts |

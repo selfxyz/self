@@ -6,18 +6,18 @@ import { startVerification } from '@didit-protocol/sdk-react-native';
 import { DIDIT_TEE_URL } from '@env';
 
 import type {
-  DiditVerificationResult,
+  KycVerificationResult,
   SessionResponse,
-} from '@/integrations/didit/types';
+} from '@/integrations/kyc/types';
 
-export interface DiditConfig {
+export interface KycLaunchConfig {
   locale?: string;
   debug?: boolean;
 }
 
 const FETCH_TIMEOUT_MS = 30000;
 
-export const createSession = async (): Promise<SessionResponse> => {
+export const createKycSession = async (): Promise<SessionResponse> => {
   const apiUrl = DIDIT_TEE_URL;
   console.log('[Didit] createSession URL:', apiUrl);
   const controller = new AbortController();
@@ -36,9 +36,7 @@ export const createSession = async (): Promise<SessionResponse> => {
     clearTimeout(timeoutId);
 
     if (!response.ok) {
-      throw new Error(
-        `Failed to create Didit session (HTTP ${response.status})`,
-      );
+      throw new Error(`Failed to create KYC session (HTTP ${response.status})`);
     }
 
     const body = await response.json();
@@ -54,24 +52,24 @@ export const createSession = async (): Promise<SessionResponse> => {
     if (err instanceof Error) {
       if (err.name === 'AbortError') {
         throw new Error(
-          `Request to Didit TEE timed out after ${FETCH_TIMEOUT_MS / 1000}s`,
+          `Request to KYC TEE timed out after ${FETCH_TIMEOUT_MS / 1000}s`,
         );
       }
-      throw new Error(`Failed to create Didit session: ${err.message}`);
+      throw new Error(`Failed to create KYC session: ${err.message}`);
     }
 
-    throw new Error('Failed to create Didit session: Unknown error');
+    throw new Error('Failed to create KYC session: Unknown error');
   }
 };
 
-export const launchDidit = async (
+export const launchKycVerification = async (
   sessionToken: string,
-  config?: DiditConfig,
-): Promise<DiditVerificationResult> => {
+  config?: KycLaunchConfig,
+): Promise<KycVerificationResult> => {
   const result = await startVerification(sessionToken, {
     languageCode: config?.locale ?? 'en',
     loggingEnabled: config?.debug ?? __DEV__,
   });
 
-  return result as DiditVerificationResult;
+  return result as KycVerificationResult;
 };
