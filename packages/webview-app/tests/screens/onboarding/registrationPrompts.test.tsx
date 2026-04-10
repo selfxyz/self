@@ -95,10 +95,21 @@ vi.mock('@selfxyz/euclid', () => ({
       </button>
     </div>
   ),
-  SocialSignOnMethodPickerScreen: ({ onDismiss }: { onDismiss: () => void }) => (
-    <button onClick={onDismiss} type="button">
-      Dismiss backup
-    </button>
+  SocialSignOnMethodPickerScreen: ({
+    onDismiss,
+    onSeedPhrase,
+  }: {
+    onDismiss: () => void;
+    onSeedPhrase: () => void;
+  }) => (
+    <div>
+      <button onClick={onDismiss} type="button">
+        Dismiss backup
+      </button>
+      <button onClick={onSeedPhrase} type="button">
+        Continue with seed phrase
+      </button>
+    </div>
   ),
   RecoveryPhraseScreen: ({
     onBack,
@@ -247,6 +258,18 @@ describe('registration prompt screens', () => {
     fireEvent.click(screen.getByRole('button', { name: /dismiss backup/i }));
 
     expectLocation('/onboarding/notifications?mock=existing-account');
+  });
+
+  it('routes the onboarding seed phrase action into the onboarding recovery phrase flow', () => {
+    renderWithRoutes(
+      ['/onboarding/backup?mock=existing-account'],
+      '/onboarding/backup',
+      <SocialSignOnMethodPickerScreen />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /continue with seed phrase/i }));
+
+    expectLocation('/onboarding/recovery-phrase?mock=existing-account');
   });
 
   it('continues the conflict placeholder flow through sign-in on the primary action', () => {
