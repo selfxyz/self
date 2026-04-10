@@ -21,6 +21,8 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <!-- Remove FOREGROUND_SERVICE_MICROPHONE merged in by the KYC SDK (VideoIdent is disabled) -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" tools:node="remove" />
+    <!-- Remove AD_ID merged in by Google Play Services/Firebase — app does not use advertising ID -->
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID" tools:node="remove" />
 
     <application
       android:name=".MainApplication"
