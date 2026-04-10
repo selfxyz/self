@@ -6,14 +6,13 @@ package xyz.self.sdk.providers
 
 object SdkProviderRegistry {
     var secureStorage: SecureStorageProvider? = null
-    var crypto: CryptoProvider? = null
+    internal var crypto: CryptoProvider? = null
 
     /**
-     * Returns true if the required 3-domain providers are configured.
-     * Only secureStorage and crypto are required — lifecycle is handler-only
-     * with no consumer-provided provider.
+     * Returns true if the required providers are configured.
+     * Only secureStorage is required — crypto is internal and lifecycle is handler-only.
      */
-    fun isConfigured(): Boolean = secureStorage != null && crypto != null
+    fun isConfigured(): Boolean = secureStorage != null
 
     fun reset() {
         secureStorage = null
