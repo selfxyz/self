@@ -26,7 +26,7 @@ enum class SelfEnvironment {
 
 @Serializable
 data class SelfSdkConfig(
-    val endpoint: String = "https://api.self.xyz",
+    val endpoint: String = SdkConstants.DEFAULT_ENDPOINT,
     val environment: SelfEnvironment = SelfEnvironment.PROD,
     val debug: Boolean = false,
     val version: Int = 1,
@@ -34,6 +34,6 @@ data class SelfSdkConfig(
     val appEndpoint: String? = null,
     val endpointType: String? = null,
     val chainID: Int? = null,
-    val remoteWebAppBaseUrl: String = "https://self-app-alpha.vercel.app",
+    val remoteWebAppBaseUrl: String = SdkConstants.DEFAULT_REMOTE_WEB_APP_BASE_URL,
     val devServerUrl: String? = null,
 )

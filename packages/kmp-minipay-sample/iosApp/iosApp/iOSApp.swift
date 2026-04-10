@@ -11,7 +11,6 @@ import SelfSdkSwift
 // exported from the ComposeApp (KMP) framework.
 
 extension SecureStorageProviderImpl: SecureStorageProvider {}
-extension CryptoProviderImpl: CryptoProvider {}
 
 @main
 struct iOSApp: App {
@@ -19,7 +18,6 @@ struct iOSApp: App {
         // Register all Swift provider implementations with the KMP SdkProviderRegistry
         let registry = SdkProviderRegistry.shared
         registry.secureStorage = SecureStorageProviderImpl()
-        registry.crypto = CryptoProviderImpl()
     }
 
     var body: some Scene {

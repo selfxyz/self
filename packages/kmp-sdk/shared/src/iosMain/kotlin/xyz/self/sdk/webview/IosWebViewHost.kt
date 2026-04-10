@@ -7,6 +7,7 @@ package xyz.self.sdk.webview
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.UIKit.UIView
 import platform.UIKit.UIViewController
+import xyz.self.sdk.api.SdkConstants
 import xyz.self.sdk.bridge.MessageRouter
 import xyz.self.sdk.providers.IosProviderRegistry
 
@@ -14,7 +15,7 @@ import xyz.self.sdk.providers.IosProviderRegistry
 class IosWebViewHost(
     private val router: MessageRouter,
     private val isDebugMode: Boolean = false,
-    private val remoteWebAppBaseUrl: String = "https://self-app-alpha.vercel.app",
+    private val remoteWebAppBaseUrl: String = SdkConstants.DEFAULT_REMOTE_WEB_APP_BASE_URL,
     private val devServerUrl: String? = null,
 ) {
     fun createWebView(queryParams: String? = null): UIView {
