@@ -51,7 +51,7 @@ export const TourScreen: React.FC = () => {
     case '3':
       return <LaunchTour3Screen {...WEB_SAFE_AREA} onNext={onNext} onRestore={onRestore} />;
     case '4':
-      return <LaunchTour4Screen {...WEB_SAFE_AREA} onNext={onNext} onRestore={onRestore} />;
+      return <LaunchTour4Screen {...WEB_SAFE_AREA} onNext={onNext} onSkip={onNext} onRestore={onRestore} />;
     default:
       return <Navigate to="/tunnel/tour/1" replace />;
   }
