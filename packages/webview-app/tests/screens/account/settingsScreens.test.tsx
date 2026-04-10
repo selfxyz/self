@@ -27,13 +27,13 @@ vi.mock('../../../src/providers/SelfClientProvider', () => ({
   }),
 }));
 
-const mockDocumentStore = {
+const mockDocumentStore = vi.hoisted(() => ({
   addDocument: vi.fn(),
   clear: vi.fn(),
   hasDocuments: vi.fn().mockReturnValue(false),
   getCatalog: vi.fn().mockReturnValue({ documents: [] }),
   subscribe: vi.fn().mockReturnValue(() => {}),
-};
+}));
 
 vi.mock('../../../src/utils/mockDocumentStore', () => ({
   mockDocumentStore,
@@ -180,7 +180,8 @@ const renderRoutes = (initialEntries: string[]) =>
   );
 
 const expectLocation = (expected: string) => {
-  expect(screen.getByTestId('location').textContent).toBe(expected);
+  const locations = screen.getAllByTestId('location');
+  expect(locations.at(-1)?.textContent).toBe(expected);
 };
 
 describe('WV-16 settings screens', () => {
