@@ -1,0 +1,42 @@
+name: Deploy WebView App
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'packages/webview-app/**'
+      - 'packages/webview-bridge/**'
+      - 'packages/mobile-sdk-alpha/**'
+      - 'common/**'
+  workflow_dispatch:
+
+concurrency:
+  group: webview-deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy to Vercel
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - uses: ./.github/actions/yarn-install
+
+      - name: Build workspace dependencies
+        run: |
+          yarn workspace @selfxyz/common build
+          yarn workspace @selfxyz/mobile-sdk-alpha build:ts-only
+          yarn workspace @selfxyz/webview-bridge build
+
+      - name: Build hosted bundle
+        run: yarn workspace @selfxyz/webview-app build:hosted
+
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@16e87c0a08142b0d0d33b76aeaf20823c381b9b9 # v25.2.0
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          working-directory: packages/webview-app
+          vercel-args: '--prod --prebuilt'

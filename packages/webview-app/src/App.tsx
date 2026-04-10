@@ -62,9 +62,15 @@ import { TunnelProvingScreen } from './screens/tunnel/TunnelProvingScreen';
 import { TunnelRecoveryRequiredScreen } from './screens/tunnel/TunnelRecoveryRequiredScreen';
 import { TunnelResultScreen } from './screens/tunnel/TunnelResultScreen';
 
+function getBasename(): string | undefined {
+  const base = import.meta.env.BASE_URL;
+  if (base === './' || base === '/') return undefined;
+  return base.replace(/\/$/, '');
+}
+
 export const App: React.FC = () => (
   <PasswordGate>
-    <BrowserRouter>
+    <BrowserRouter basename={getBasename()}>
       <VerificationRequestProvider>
         <SelfClientProvider>
           <Routes>

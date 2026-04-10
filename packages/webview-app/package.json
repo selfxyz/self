@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc --noEmit && vite build",
+    "build:hosted": "tsc --noEmit && VITE_BASE_PATH=/v1/ vite build && node scripts/prepare-hosted.mjs",
     "dev": "vite",
     "fmt": "prettier --check .",
     "fmt:fix": "prettier --write .",

@@ -209,7 +209,7 @@ class AndroidWebViewHost(
     companion object {
         const val FILE_CHOOSER_REQUEST_CODE = 1001
         const val CAMERA_PERMISSION_REQUEST_CODE = 1002
-        private const val DEFAULT_REMOTE_BASE_URL = "https://self-app-alpha.vercel.app"
+        private const val DEFAULT_REMOTE_BASE_URL = "https://verify.self.xyz/v1/"
         private const val BUNDLED_TOUR_PATH = "/tunnel/tour/1"
         private const val DEBUG_HOST = "127.0.0.1"
         private const val DEBUG_PORT = 5173

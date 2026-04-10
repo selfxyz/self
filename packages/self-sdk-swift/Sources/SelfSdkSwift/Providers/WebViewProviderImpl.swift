@@ -12,7 +12,7 @@ public class WebViewProviderImpl: NSObject {
     static let loopbackHost = "127.0.0.1"
     static let diditHost = "verify.didit.me"
     static let debugPort: UInt16 = 5173
-    private static let defaultRemoteBaseURL = URL(string: "https://self-app-alpha.vercel.app")!
+    private static let defaultRemoteBaseURL = URL(string: "https://verify.self.xyz/v1/")!
 
     private var webView: WKWebView?
     private var viewController: UIViewController?

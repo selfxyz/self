@@ -11,7 +11,7 @@ final class WebViewProviderImplTests: XCTestCase {
 
         let url = try XCTUnwrap(provider.initialContentURL(queryParams: nil))
         XCTAssertEqual(url.scheme, "https")
-        XCTAssertEqual(url.host, "self-app-alpha.vercel.app")
+        XCTAssertEqual(url.host, "verify.self.xyz")
         XCTAssertTrue(url.path.contains("/tunnel/tour/1"))
     }
 
@@ -28,7 +28,7 @@ final class WebViewProviderImplTests: XCTestCase {
 
     func testHttpBaseURLProducesNilInRelease() {
         let provider = WebViewProviderImpl()
-        provider.configureRemoteLoading(remoteWebAppBaseURL: "http://self-app-alpha.vercel.app")
+        provider.configureRemoteLoading(remoteWebAppBaseURL: "http://verify.self.xyz")
 
         XCTAssertNil(provider.initialContentURL(queryParams: nil))
     }
@@ -43,7 +43,7 @@ final class WebViewProviderImplTests: XCTestCase {
         )
         XCTAssertTrue(
             provider.isAllowedNavigationURL(
-                URL(string: "https://self-app-alpha.vercel.app/tunnel/tour/1")
+                URL(string: "https://verify.self.xyz/v1/tunnel/tour/1")
             )
         )
     }
@@ -78,7 +78,7 @@ final class WebViewProviderImplTests: XCTestCase {
 
         XCTAssertTrue(
             provider.isTrustedBridgeURL(
-                URL(string: "https://self-app-alpha.vercel.app/tunnel/tour/1")
+                URL(string: "https://verify.self.xyz/v1/tunnel/tour/1")
             )
         )
     }
