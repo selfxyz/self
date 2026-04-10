@@ -61,6 +61,15 @@ import { TunnelProofReceiptScreen } from './screens/tunnel/TunnelProofReceiptScr
 import { TunnelProvingScreen } from './screens/tunnel/TunnelProvingScreen';
 import { TunnelRecoveryRequiredScreen } from './screens/tunnel/TunnelRecoveryRequiredScreen';
 import { TunnelResultScreen } from './screens/tunnel/TunnelResultScreen';
+import { ENTRY_ROUTE_PATHS, getEntryRedirectPath } from './utils/entryRoute';
+
+const EntryRoute: React.FC = () => {
+  const redirectPath = getEntryRedirectPath(window.location.search);
+  if (redirectPath) {
+    return <Navigate to={redirectPath} replace />;
+  }
+  return <HomeScreen />;
+};
 
 export const App: React.FC = () => (
   <PasswordGate>
@@ -68,7 +77,9 @@ export const App: React.FC = () => (
       <VerificationRequestProvider>
         <SelfClientProvider>
           <Routes>
-            <Route path="/" element={<HomeScreen />} />
+            {ENTRY_ROUTE_PATHS.map(path => (
+              <Route key={path} path={path} element={<EntryRoute />} />
+            ))}
             <Route path="/onboarding/tour/:step" element={<TourScreen />} />
             <Route path="/onboarding/country" element={<CountryPickerScreen />} />
             <Route path="/onboarding/id-type" element={<IDSelectionScreen />} />
