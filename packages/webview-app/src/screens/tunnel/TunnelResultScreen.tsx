@@ -7,15 +7,16 @@ import { useCallback, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { ProofFailureScreen, ProofSuccessScreen, SelfLogo } from '@selfxyz/euclid';
-import type { VerificationResult } from '@selfxyz/webview-bridge';
+import type { BridgeError, VerificationResult } from '@selfxyz/webview-bridge';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { useVerificationRequest } from '../../providers/VerificationRequestProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
+import { normalizeError } from '../../utils/provingUtils';
 
 interface TunnelResultState {
   success?: boolean;
-  error?: string;
+  error?: BridgeError | string;
   source?: 'proving' | 'disclose';
 }
 
@@ -26,11 +27,12 @@ export const TunnelResultScreen: React.FC = () => {
   const { verificationId, request, appName, appEndpoint, timestamp } = useVerificationRequest();
 
   const { success = false, error, source = 'proving' } = (location.state as TunnelResultState) ?? {};
+  const normalizedError = normalizeError(error);
 
   useEffect(() => {
-    if (success || !error) return;
-    analytics.trackEvent('tunnel_result_failure', { error });
-  }, [success, error, analytics]);
+    if (success || !normalizedError) return;
+    analytics.trackEvent('tunnel_result_failure', { error: normalizedError.message });
+  }, [success, normalizedError, analytics]);
 
   const onContinue = useCallback(async () => {
     try {
@@ -89,7 +91,9 @@ export const TunnelResultScreen: React.FC = () => {
       documentType="passport"
       timestamp={timestamp}
       failureTitle="Verification Failed"
-      failureDescription={error ?? 'Something went wrong during verification. Please try again.'}
+      failureDescription={
+        normalizedError?.message ?? 'Something went wrong during verification. Please try again.'
+      }
       onRetry={onRetry}
       onViewDetails={onViewDetails}
       onClose={onCancel}

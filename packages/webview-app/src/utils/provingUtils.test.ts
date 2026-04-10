@@ -69,6 +69,13 @@ describe('provingUtils', () => {
         message: 'The proof request could not be completed.',
       });
     });
+
+    it('should humanize known contract error selectors', () => {
+      expect(getFailureState('failure', null, '0xda7bd3a6')).toEqual({
+        code: 'failure',
+        message: 'Invalid Vc And Disclose Proof',
+      });
+    });
   });
 
   describe('getIdCardProps', () => {
@@ -146,14 +153,30 @@ describe('provingUtils', () => {
       });
     });
 
-    it('should pass through a BridgeError object', () => {
+    it('should humanize selector strings when wrapping them into a BridgeError', () => {
+      expect(normalizeError('0xda7bd3a6')).toEqual({
+        code: 'proof_generation_failed',
+        message: 'Invalid Vc And Disclose Proof',
+      });
+    });
+
+    it('should normalize a BridgeError object', () => {
       const err = { code: 'custom', message: 'msg' };
-      expect(normalizeError(err)).toBe(err);
+      expect(normalizeError(err)).toEqual(err);
     });
 
     it('should preserve details on a BridgeError object', () => {
       const err = { code: 'custom', message: 'msg', details: { extra: true } };
-      expect(normalizeError(err)).toBe(err);
+      expect(normalizeError(err)).toEqual(err);
+    });
+
+    it('should humanize selector messages on a BridgeError object', () => {
+      const err = { code: 'custom', message: '0xda7bd3a6', details: { extra: true } };
+      expect(normalizeError(err)).toEqual({
+        code: 'custom',
+        message: 'Invalid Vc And Disclose Proof',
+        details: { extra: true },
+      });
     });
   });
 });

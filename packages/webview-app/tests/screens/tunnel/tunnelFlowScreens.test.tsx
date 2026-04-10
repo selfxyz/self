@@ -95,15 +95,18 @@ vi.mock('@selfxyz/euclid', () => ({
     </div>
   ),
   ProofFailureScreen: ({
+    failureDescription,
     onRetry,
     onViewDetails,
     onClose,
   }: {
+    failureDescription?: string;
     onRetry: () => void;
     onViewDetails: () => void;
     onClose: () => void;
   }) => (
     <div>
+      <div>{failureDescription}</div>
       <button onClick={onRetry} type="button">
         Retry
       </button>
@@ -261,6 +264,15 @@ describe('tunnel flow screens', () => {
     fireEvent.click(screen.getByRole('button', { name: /view details/i }));
 
     expectLocation('/tunnel/proof/receipt');
+  });
+
+  it('humanizes raw contract selectors on the tunnel failure screen', () => {
+    renderResultRoute({
+      pathname: '/tunnel/proof/result',
+      state: { success: false, error: '0xda7bd3a6', source: 'proving' },
+    });
+
+    expect(screen.getByText('Invalid Vc And Disclose Proof')).toBeTruthy();
   });
 
   it('routes account recovery choice to the recovery-required screen', async () => {
