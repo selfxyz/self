@@ -60,7 +60,8 @@ class AndroidWebViewHost(
                         override fun shouldOverrideUrlLoading(
                             view: WebView?,
                             request: WebResourceRequest?,
-                        ): Boolean = !isAllowedNavigationUrl(request?.url?.toString(), effectiveDebug, remoteWebAppBaseUrl, devServerUrl)
+                        ): Boolean =
+                            !UrlPolicy.isAllowedNavigationUrl(request?.url?.toString(), effectiveDebug, remoteWebAppBaseUrl, devServerUrl)
 
                         override fun onReceivedSslError(
                             view: WebView?,
@@ -80,7 +81,13 @@ class AndroidWebViewHost(
                                     request.deny()
                                     return
                                 }
-                            if (!isTrustedPermissionOrigin(origin.toString(), effectiveDebug, remoteWebAppBaseUrl, devServerUrl)) {
+                            if (!UrlPolicy.isTrustedPermissionOrigin(
+                                    origin.toString(),
+                                    effectiveDebug,
+                                    remoteWebAppBaseUrl,
+                                    devServerUrl,
+                                )
+                            ) {
                                 request.deny()
                                 return
                             }
@@ -153,7 +160,7 @@ class AndroidWebViewHost(
 
                 installBridge(webView = this, effectiveDebug = effectiveDebug)
 
-                loadUrl(initialContentUrl(queryParams, effectiveDebug, remoteWebAppBaseUrl, devServerUrl))
+                loadUrl(UrlPolicy.initialContentUrl(queryParams, effectiveDebug, remoteWebAppBaseUrl, devServerUrl))
             }
         return webView
     }
@@ -179,7 +186,7 @@ class AndroidWebViewHost(
         WebViewCompat.addWebMessageListener(
             webView,
             "SelfNativeAndroid",
-            buildAllowedOriginRules(effectiveDebug, remoteWebAppBaseUrl, devServerUrl),
+            buildAllowedOriginRules(effectiveDebug),
         ) { _, message: WebMessageCompat, sourceOrigin, isMainFrame, _ ->
             if (!isMainFrame) {
                 return@addWebMessageListener
@@ -188,151 +195,22 @@ class AndroidWebViewHost(
             val rawJson = message.data ?: return@addWebMessageListener
             router.onMessageReceived(
                 rawJson = rawJson,
-                isTrustedSource = isTrustedBridgeOrigin(sourceOrigin.toString(), effectiveDebug, remoteWebAppBaseUrl, devServerUrl),
+                isTrustedSource =
+                    UrlPolicy.isTrustedBridgeOrigin(
+                        sourceOrigin.toString(),
+                        effectiveDebug,
+                        remoteWebAppBaseUrl,
+                        devServerUrl,
+                    ),
             )
         }
     }
 
+    private fun buildAllowedOriginRules(effectiveDebug: Boolean): Set<String> =
+        UrlPolicy.allowedOrigins(effectiveDebug, remoteWebAppBaseUrl, devServerUrl)
+
     companion object {
         const val FILE_CHOOSER_REQUEST_CODE = 1001
         const val CAMERA_PERMISSION_REQUEST_CODE = 1002
-
-        internal fun initialContentUrl(
-            queryParams: String,
-            isDebugMode: Boolean,
-            remoteWebAppBaseUrl: String = SdkConstants.DEFAULT_REMOTE_WEB_APP_BASE_URL,
-            devServerUrl: String? = null,
-        ): String {
-            val baseUrl =
-                when {
-                    isDebugMode && devServerUrl != null -> devServerUrl.trimEnd('/')
-                    isDebugMode -> "http://${SdkConstants.LOOPBACK_HOST}:${SdkConstants.DEBUG_PORT}"
-                    else -> {
-                        require(remoteWebAppBaseUrl.startsWith("https://")) {
-                            "remoteWebAppBaseUrl must use HTTPS in release builds"
-                        }
-                        remoteWebAppBaseUrl.trimEnd('/')
-                    }
-                }
-            return buildString {
-                append(baseUrl).append(SdkConstants.BUNDLED_TOUR_PATH)
-                if (queryParams.isNotEmpty()) {
-                    append("?").append(queryParams)
-                }
-            }
-        }
-
-        internal fun isAllowedNavigationUrl(
-            rawUrl: String?,
-            isDebugMode: Boolean,
-            remoteWebAppBaseUrl: String? = null,
-            devServerUrl: String? = null,
-        ): Boolean =
-            isRemoteOrigin(rawUrl, remoteWebAppBaseUrl) ||
-                isDiditUrl(rawUrl) ||
-                (isDebugMode && isDebugLocalUrl(rawUrl)) ||
-                (isDebugMode && isDevServerUrl(rawUrl, devServerUrl))
-
-        internal fun isTrustedPermissionOrigin(
-            rawUrl: String?,
-            isDebugMode: Boolean,
-            remoteWebAppBaseUrl: String? = null,
-            devServerUrl: String? = null,
-        ): Boolean =
-            isRemoteOrigin(rawUrl, remoteWebAppBaseUrl) ||
-                isDiditUrl(rawUrl) ||
-                (isDebugMode && isDebugLocalUrl(rawUrl)) ||
-                (isDebugMode && isDevServerUrl(rawUrl, devServerUrl))
-
-        internal fun isTrustedBridgeOrigin(
-            rawUrl: String?,
-            isDebugMode: Boolean,
-            remoteWebAppBaseUrl: String? = null,
-            devServerUrl: String? = null,
-        ): Boolean =
-            isRemoteOrigin(rawUrl, remoteWebAppBaseUrl) ||
-                (isDebugMode && isDebugLocalUrl(rawUrl)) ||
-                (isDebugMode && isDevServerUrl(rawUrl, devServerUrl))
-
-        internal fun isRemoteOrigin(
-            rawUrl: String?,
-            remoteWebAppBaseUrl: String?,
-        ): Boolean {
-            if (rawUrl == null || remoteWebAppBaseUrl == null) return false
-            val url = parseUri(rawUrl) ?: return false
-            val remote = parseUri(remoteWebAppBaseUrl) ?: return false
-            return url.scheme == remote.scheme &&
-                (url.host ?: url.authority) == (remote.host ?: remote.authority) &&
-                resolvedPort(url) == resolvedPort(remote)
-        }
-
-        private fun isDiditUrl(rawUrl: String?): Boolean {
-            val port = uriPort(rawUrl)
-            return uriScheme(rawUrl) == "https" &&
-                uriHost(rawUrl) == SdkConstants.DIDIT_HOST &&
-                (port == null || port == 443)
-        }
-
-        private fun isDebugLocalUrl(rawUrl: String?): Boolean =
-            uriScheme(rawUrl) == "http" && uriHost(rawUrl) == SdkConstants.LOOPBACK_HOST && uriPort(rawUrl) == SdkConstants.DEBUG_PORT
-
-        private fun isDevServerUrl(
-            rawUrl: String?,
-            devServerUrl: String?,
-        ): Boolean {
-            if (rawUrl == null || devServerUrl == null) return false
-            val url = parseUri(rawUrl) ?: return false
-            val dev = parseUri(devServerUrl) ?: return false
-            return url.scheme == dev.scheme &&
-                (url.host ?: url.authority) == (dev.host ?: dev.authority) &&
-                resolvedPort(url) == resolvedPort(dev)
-        }
-
-        private fun buildAllowedOriginRules(
-            isDebugMode: Boolean,
-            remoteWebAppBaseUrl: String,
-            devServerUrl: String? = null,
-        ): Set<String> {
-            val remote = parseUri(remoteWebAppBaseUrl)
-            return buildSet {
-                if (remote != null && remote.scheme == "https") {
-                    val host = remote.host ?: remote.authority
-                    val port = resolvedPort(remote)
-                    val defaultPort = if (remote.scheme == "https") 443 else 80
-                    if (port != defaultPort) {
-                        add("${remote.scheme}://$host:$port")
-                    } else {
-                        add("${remote.scheme}://$host")
-                    }
-                }
-                if (isDebugMode) {
-                    add("http://${SdkConstants.LOOPBACK_HOST}:${SdkConstants.DEBUG_PORT}")
-                    devServerUrl?.let { parseUri(it) }?.let { dev ->
-                        val host = dev.host ?: dev.authority
-                        val port = resolvedPort(dev)
-                        val defaultPort = if (dev.scheme == "https") 443 else 80
-                        if (port != defaultPort) {
-                            add("${dev.scheme}://$host:$port")
-                        } else {
-                            add("${dev.scheme}://$host")
-                        }
-                    }
-                }
-            }
-        }
-
-        private fun resolvedPort(uri: java.net.URI): Int {
-            val port = uri.port
-            if (port != -1) return port
-            return if (uri.scheme == "https") 443 else 80
-        }
-
-        private fun uriScheme(rawUrl: String?): String? = parseUri(rawUrl)?.scheme
-
-        private fun uriHost(rawUrl: String?): String? = parseUri(rawUrl)?.host ?: parseUri(rawUrl)?.authority
-
-        private fun uriPort(rawUrl: String?): Int? = parseUri(rawUrl)?.port?.takeIf { it != -1 }
-
-        private fun parseUri(rawUrl: String?): java.net.URI? = rawUrl?.let { raw -> runCatching { java.net.URI(raw) }.getOrNull() }
     }
 }

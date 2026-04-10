@@ -11,6 +11,7 @@ object IosProviderRegistry {
     var nfc: NfcProvider? = null
     var cameraMrz: CameraMrzProvider? = null
     var webView: WebViewProvider? = null
+    var isDebugBuild: Boolean = false
 
     fun isFullyConfigured(): Boolean =
         SdkProviderRegistry.isConfigured() &&
@@ -28,5 +29,6 @@ object IosProviderRegistry {
         nfc = null
         cameraMrz = null
         webView = null
+        isDebugBuild = false
     }
 }

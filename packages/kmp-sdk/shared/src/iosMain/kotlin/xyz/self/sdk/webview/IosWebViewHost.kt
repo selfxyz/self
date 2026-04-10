@@ -23,18 +23,39 @@ class IosWebViewHost(
             IosProviderRegistry.webView
                 ?: throw IllegalStateException("WebView provider not configured")
 
-        provider.configureRemoteLoading(remoteWebAppBaseUrl)
-        provider.configureDevServer(devServerUrl)
+        val effectiveDebug = isDebugMode && IosProviderRegistry.isDebugBuild
+        val initialUrl =
+            UrlPolicy.initialContentUrl(
+                queryParams = queryParams ?: "",
+                effectiveDebug = effectiveDebug,
+                remoteWebAppBaseUrl = remoteWebAppBaseUrl,
+                devServerUrl = devServerUrl,
+            )
+
+        val navOrigins =
+            UrlPolicy
+                .navigationAllowedOrigins(
+                    effectiveDebug = effectiveDebug,
+                    remoteWebAppBaseUrl = remoteWebAppBaseUrl,
+                    devServerUrl = devServerUrl,
+                ).toList()
 
         return provider.createWebView(
-            onMessageReceived = { rawJson ->
+            onMessageReceived = { rawJson, frameOrigin ->
                 router.onMessageReceived(
                     rawJson = rawJson,
-                    isTrustedSource = provider.isBridgeRequestAllowed(),
+                    isTrustedSource =
+                        UrlPolicy.isTrustedBridgeOrigin(
+                            frameOrigin,
+                            effectiveDebug,
+                            remoteWebAppBaseUrl,
+                            devServerUrl,
+                        ),
                 )
             },
-            isDebugMode = isDebugMode,
-            queryParams = queryParams,
+            allowedNavigationOrigins = navOrigins,
+            isDebugMode = effectiveDebug,
+            initialUrl = initialUrl,
         )
     }
 

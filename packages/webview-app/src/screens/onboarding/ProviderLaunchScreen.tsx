@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type React from 'react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { Button, colors, Description, KycPendingScreen, spacing, Title } from '@selfxyz/euclid';
@@ -20,7 +20,6 @@ import { createKycSession, launchKycWebSdk } from '../../utils/kycProvider';
 const CONTAINER_ID = 'kyc-sdk-container';
 
 type Phase = 'loading' | 'active' | 'waiting' | 'error';
-
 interface ProviderLaunchState {
   backPath?: string;
   countryCode?: string;
@@ -38,7 +37,7 @@ export const ProviderLaunchScreen: React.FC = () => {
 
   const defaultNextPath = nextPath ?? '/onboarding/provider-result';
   const isTunnelFlow = defaultNextPath.startsWith('/tunnel/') || backPath?.startsWith('/tunnel/') === true;
-  const verificationId = ctxVerificationId ?? `kyc-${Date.now()}`;
+  const verificationId = useMemo(() => ctxVerificationId ?? `didit-${Date.now()}`, [ctxVerificationId]);
 
   const [phase, setPhase] = useState<Phase>('loading');
   const [errorMessage, setErrorMessage] = useState('');
@@ -295,6 +294,7 @@ export const ProviderLaunchScreen: React.FC = () => {
   return (
     <div
       style={{
+        width: '100%',
         height: '100vh',
         display: 'flex',
         flexDirection: 'column',

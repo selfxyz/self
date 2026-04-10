@@ -11,18 +11,13 @@ import platform.UIKit.UIViewController
 @OptIn(ExperimentalForeignApi::class)
 interface WebViewProvider {
     fun createWebView(
-        onMessageReceived: (String) -> Unit,
+        onMessageReceived: (rawJson: String, frameOrigin: String?) -> Unit,
+        allowedNavigationOrigins: List<String>,
         isDebugMode: Boolean,
-        queryParams: String? = null,
+        initialUrl: String,
     ): UIView
 
     fun evaluateJs(js: String)
 
     fun getViewController(): UIViewController
-
-    fun isBridgeRequestAllowed(): Boolean
-
-    fun configureRemoteLoading(remoteWebAppBaseURL: String?) {}
-
-    fun configureDevServer(devServerUrl: String?) {}
 }

@@ -16,6 +16,9 @@ struct iOSApp: App {
         // Register only the 3-domain required providers
         SdkProviderRegistry.shared.secureStorage = SecureStorageProviderImpl()
         IosProviderRegistry.shared.webView = WebViewProviderImpl()
+        #if DEBUG
+        IosProviderRegistry.shared.isDebugBuild = true
+        #endif
     }
 
     var body: some Scene {

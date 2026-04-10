@@ -6,146 +6,56 @@ package xyz.self.sdk.webview
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
-import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class AndroidWebViewHostSecurityTest {
     private val remoteUrl = "https://self-app-alpha.vercel.app"
 
     @Test
-    fun `release builds launch remote content`() {
-        assertEquals(
-            "https://self-app-alpha.vercel.app/tunnel/tour/1",
-            AndroidWebViewHost.initialContentUrl(queryParams = "", isDebugMode = false, remoteWebAppBaseUrl = remoteUrl),
-        )
-    }
-
-    @Test
-    fun `debug builds launch localhost content`() {
-        assertEquals(
-            "http://127.0.0.1:5173/tunnel/tour/1",
-            AndroidWebViewHost.initialContentUrl(queryParams = "", isDebugMode = true, remoteWebAppBaseUrl = remoteUrl),
-        )
-    }
-
-    @Test
-    fun `navigation allows remote origin and didit`() {
-        assertTrue(
-            AndroidWebViewHost.isAllowedNavigationUrl(
-                "https://self-app-alpha.vercel.app/tunnel/tour/1",
-                isDebugMode = false,
-                remoteWebAppBaseUrl = remoteUrl,
-            ),
-        )
-        assertTrue(
-            AndroidWebViewHost.isAllowedNavigationUrl(
-                "https://verify.didit.me/session/123",
-                isDebugMode = false,
-                remoteWebAppBaseUrl = remoteUrl,
-            ),
-        )
-        assertTrue(
-            AndroidWebViewHost.isAllowedNavigationUrl(
-                "http://127.0.0.1:5173/tunnel/tour/1",
-                isDebugMode = true,
-                remoteWebAppBaseUrl = remoteUrl,
-            ),
-        )
-    }
-
-    @Test
-    fun `navigation rejects arbitrary origins`() {
-        assertFalse(
-            AndroidWebViewHost.isAllowedNavigationUrl(
-                "https://evil.com/tunnel/tour/1",
-                isDebugMode = false,
-                remoteWebAppBaseUrl = remoteUrl,
-            ),
-        )
-        assertFalse(
-            AndroidWebViewHost.isAllowedNavigationUrl(
-                "http://example.com/test",
-                isDebugMode = false,
-                remoteWebAppBaseUrl = remoteUrl,
-            ),
-        )
-    }
-
-    @Test
-    fun `release build rejects HTTP base URL`() {
-        assertFailsWith<IllegalArgumentException> {
-            AndroidWebViewHost.initialContentUrl(
+    fun `effectiveDebug false when isDebuggable false`() {
+        // effectiveDebug = isDebugMode && isDebuggable
+        // When isDebuggable=false, effectiveDebug=false regardless of isDebugMode.
+        // This means the remote URL is used even if config.debug=true.
+        val url =
+            UrlPolicy.initialContentUrl(
                 queryParams = "",
-                isDebugMode = false,
-                remoteWebAppBaseUrl = "http://self-app-alpha.vercel.app",
+                effectiveDebug = false, // isDebugMode=true && isDebuggable=false → false
+                remoteWebAppBaseUrl = remoteUrl,
             )
-        }
+        assertEquals("https://self-app-alpha.vercel.app/tunnel/tour/1", url)
     }
 
     @Test
-    fun `didit on non-443 port is rejected`() {
-        assertFalse(
-            AndroidWebViewHost.isAllowedNavigationUrl(
-                "https://verify.didit.me:8443/session/123",
-                isDebugMode = false,
-                remoteWebAppBaseUrl = remoteUrl,
-            ),
-        )
-    }
-
-    @Test
-    fun `bridge trust is limited to remote origin in release`() {
-        assertTrue(
-            AndroidWebViewHost.isTrustedBridgeOrigin(
-                "https://self-app-alpha.vercel.app/tunnel/tour/1",
-                isDebugMode = false,
-                remoteWebAppBaseUrl = remoteUrl,
-            ),
-        )
-        assertFalse(
-            AndroidWebViewHost.isTrustedBridgeOrigin(
-                "https://verify.didit.me/session/123",
-                isDebugMode = false,
-                remoteWebAppBaseUrl = remoteUrl,
-            ),
-        )
-        assertFalse(
-            AndroidWebViewHost.isTrustedBridgeOrigin(
-                "https://evil.com/tunnel/tour/1",
-                isDebugMode = false,
-                remoteWebAppBaseUrl = remoteUrl,
-            ),
-        )
-    }
-
-    @Test
-    fun `isDebugMode true but isDebuggable false loads remote URL`() {
-        // This is the key security test: a release APK with config.debug=true
-        // must NOT load localhost — it should load the remote URL.
-        // The effectiveDebug = isDebugMode && isDebuggable guard ensures this.
-        // When isDebugMode=true but isDebuggable=false, effectiveDebug=false,
-        // so initialContentUrl with isDebugMode=false loads the remote URL.
-        assertEquals(
-            "https://self-app-alpha.vercel.app/tunnel/tour/1",
-            AndroidWebViewHost.initialContentUrl(
+    fun `effectiveDebug true when both flags true`() {
+        val url =
+            UrlPolicy.initialContentUrl(
                 queryParams = "",
-                isDebugMode = false, // effectiveDebug after isDebugMode && !isDebuggable
+                effectiveDebug = true, // isDebugMode=true && isDebuggable=true → true
                 remoteWebAppBaseUrl = remoteUrl,
-            ),
-        )
+            )
+        assertEquals("http://127.0.0.1:5173/tunnel/tour/1", url)
     }
 
     @Test
-    fun `isDebugMode true and isDebuggable true loads localhost`() {
-        // Both flags true means we're in a genuine debug build — localhost is allowed.
-        assertEquals(
-            "http://127.0.0.1:5173/tunnel/tour/1",
-            AndroidWebViewHost.initialContentUrl(
-                queryParams = "",
-                isDebugMode = true, // effectiveDebug after isDebugMode && isDebuggable
+    fun `buildAllowedOriginRules uses UrlPolicy allowedOrigins`() {
+        val origins =
+            UrlPolicy.allowedOrigins(
+                effectiveDebug = false,
                 remoteWebAppBaseUrl = remoteUrl,
-            ),
-        )
+            )
+        assertEquals(setOf("https://self-app-alpha.vercel.app"), origins)
+    }
+
+    @Test
+    fun `buildAllowedOriginRules includes debug origins`() {
+        val origins =
+            UrlPolicy.allowedOrigins(
+                effectiveDebug = true,
+                remoteWebAppBaseUrl = remoteUrl,
+                devServerUrl = "http://192.168.1.100:3000",
+            )
+        assertTrue(origins.contains("https://self-app-alpha.vercel.app"))
+        assertTrue(origins.contains("http://127.0.0.1:5173"))
+        assertTrue(origins.contains("http://192.168.1.100:3000"))
     }
 }
