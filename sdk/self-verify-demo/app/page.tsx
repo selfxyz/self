@@ -32,6 +32,12 @@ export default function Home() {
         </div>
 
         <ServerAuthSection />
+        <footer className="mt-16 pt-8 border-t border-gray-200 dark:border-gray-800 text-center text-xs text-gray-400 dark:text-gray-500 pb-8">
+          <p>Self Verify requires a modern browser (Chrome 113+, Safari 17+, Firefox 128+) for client-side token verification.</p>
+          <p className="mt-1">
+            <a href="https://self.xyz" className="underline hover:text-gray-600 dark:hover:text-gray-300">self.xyz</a>
+          </p>
+        </footer>
       </main>
       <EventLog events={events} />
     </div>
