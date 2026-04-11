@@ -1,10 +1,12 @@
 'use client';
 
-import '@selfxyz/widget'; // Side-effect: registers <self-verify> custom element
 import { useEffect, useRef, useState } from 'react';
 import type { PresetConfig } from '@/lib/presets';
 import { CodeSnippet } from '@/components/CodeSnippet';
 import { getSnippets } from '@/lib/snippets';
+
+// Track whether widget has been loaded (client-side only)
+let widgetLoaded = false;
 
 interface VerificationCardProps {
   preset: PresetConfig;
@@ -168,22 +170,36 @@ function WidgetModal({
 
   useEffect(() => {
     if (!containerRef.current || timedOut) return;
+    let cancelled = false;
+    let mountedEl: HTMLElement | null = null;
 
-    const el = document.createElement('self-verify');
-    el.setAttribute('app-name', 'Self Verify Demo');
-    el.setAttribute('app-scope', process.env.NEXT_PUBLIC_SELF_APP_SCOPE ?? 'self-verify-demo');
-    el.setAttribute('app-endpoint', process.env.NEXT_PUBLIC_VERIFY_SERVICE_URL ?? 'https://verify.self.xyz');
-    el.setAttribute('preset', preset.preset);
+    async function mount() {
+      if (!widgetLoaded) {
+        await import('@selfxyz/widget');
+        widgetLoaded = true;
+      }
+      if (cancelled || !containerRef.current) return;
 
-    el.addEventListener('self:success', ((e: CustomEvent) => onSuccessRef.current(e.detail)) as EventListener);
-    el.addEventListener('self:error', ((e: CustomEvent) => onErrorRef.current(e.detail)) as EventListener);
-    el.addEventListener('self:status', ((e: CustomEvent) => onStatusRef.current(e.detail)) as EventListener);
+      const el = document.createElement('self-verify');
+      el.setAttribute('app-name', 'Self Verify Demo');
+      el.setAttribute('app-scope', process.env.NEXT_PUBLIC_SELF_APP_SCOPE ?? 'self-verify-demo');
+      el.setAttribute('app-endpoint', process.env.NEXT_PUBLIC_VERIFY_SERVICE_URL ?? 'https://verify.self.xyz');
+      el.setAttribute('preset', preset.preset);
 
-    containerRef.current.appendChild(el);
+      el.addEventListener('self:success', ((e: CustomEvent) => onSuccessRef.current(e.detail)) as EventListener);
+      el.addEventListener('self:error', ((e: CustomEvent) => onErrorRef.current(e.detail)) as EventListener);
+      el.addEventListener('self:status', ((e: CustomEvent) => onStatusRef.current(e.detail)) as EventListener);
+
+      containerRef.current.appendChild(el);
+      mountedEl = el;
+    }
+
+    mount();
 
     return () => {
-      if (containerRef.current?.contains(el)) {
-        containerRef.current.removeChild(el);
+      cancelled = true;
+      if (mountedEl && containerRef.current?.contains(mountedEl)) {
+        containerRef.current.removeChild(mountedEl);
       }
     };
   }, [preset.preset, timedOut]);
