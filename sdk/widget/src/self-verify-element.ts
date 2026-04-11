@@ -348,7 +348,9 @@ export class SelfVerifyElement extends HTMLElement {
 
   // Session memory
   private getSessionKey(): string {
-    return `${SESSION_KEY_PREFIX}${this.getAttribute('app-scope') || ''}`;
+    const scope = this.getAttribute('app-scope') || '';
+    const preset = this.getAttribute('preset') || '';
+    return `${SESSION_KEY_PREFIX}${scope}::${preset}`;
   }
 
   private checkSessionMemory(): boolean {

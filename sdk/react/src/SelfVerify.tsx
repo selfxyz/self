@@ -1,3 +1,4 @@
+import '@selfxyz/widget'; // Register <self-verify> custom element
 import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
 import type { SelfVerifyProps } from './types.js';
 

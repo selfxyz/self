@@ -39,6 +39,9 @@
     "test": "echo 'no tests yet'",
     "types": "tsc --noEmit"
   },
+  "dependencies": {
+    "@selfxyz/widget": "workspace:^"
+  },
   "peerDependencies": {
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"

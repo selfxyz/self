@@ -37,7 +37,7 @@ export default defineConfig([
   // IIFE build for CDN (all deps bundled, self-registering)
   {
     ...sharedConfig,
-    entry: { 'self-verify': 'index.ts' },
+    entry: { 'self-verify': 'cdn-entry.ts' },
     format: ['iife'],
     outDir: path.resolve(__dirname, 'dist/cdn'),
     outExtension: () => ({ js: '.js' }),

@@ -99,10 +99,11 @@ async function fetchPublicKey(jwksUrl: string, kid?: string): Promise<CryptoKey>
  */
 export async function verifyToken(
   token: string,
-  options: { jwksUrl?: string; issuer?: string } = {},
+  options: { jwksUrl?: string; issuer?: string; audience?: string } = {},
 ): Promise<VerifyTokenResult> {
   const jwksUrl = options.jwksUrl || DEFAULT_JWKS_URL;
   const issuer = options.issuer || DEFAULT_ISSUER;
+  const audience = options.audience;
 
   try {
     const { header, payload, signatureInput, signature } = decodeJWTPayload(token);
@@ -129,6 +130,21 @@ export async function verifyToken(
       return { verified: false, error: `Invalid issuer: ${iss}` };
     }
 
+    // Check audience if provided
+    if (audience) {
+      const aud = payload.aud as string | string[] | undefined;
+      const audList = Array.isArray(aud) ? aud : aud ? [aud] : [];
+      if (!audList.includes(audience)) {
+        return { verified: false, error: `Invalid audience: ${aud}` };
+      }
+    }
+
+    // Check payload.self.verified is not explicitly false
+    const selfClaims = payload.self as Record<string, unknown> | undefined;
+    if (selfClaims && selfClaims.verified === false) {
+      return { verified: false, error: 'Token carries failed verification status' };
+    }
+
     // Fetch public key and verify signature
     const publicKey = await fetchPublicKey(jwksUrl, header.kid);
     const valid = await crypto.subtle.verify(
@@ -142,9 +158,6 @@ export async function verifyToken(
       return { verified: false, error: 'Invalid signature' };
     }
 
-    // Extract Self-specific claims
-    const selfClaims = (payload.self as Record<string, unknown>) || {};
-
     return {
       verified: true,
       claims: {
@@ -152,7 +165,7 @@ export async function verifyToken(
         aud: payload.aud,
         iat: payload.iat,
         exp: payload.exp,
-        ...selfClaims,
+        ...(selfClaims || {}),
       },
     };
   } catch (err) {

@@ -28,9 +28,12 @@ passport.use(new SelfStrategy({
   clientID: process.env.SELF_APP_ID,
   clientSecret: process.env.SELF_CLIENT_SECRET,
   callbackURL: '/auth/self/callback',
-}, (accessToken, refreshToken, profile, done) => {
-  // profile.self contains verified claims
-  return done(null, profile);
+}, (tokenResult, done) => {
+  // tokenResult contains { verified, claims, error }
+  if (tokenResult.verified) {
+    return done(null, tokenResult.claims);
+  }
+  return done(new Error(tokenResult.error || 'Verification failed'));
 }));
 
 app.get('/auth/self', passport.authenticate('self'));
@@ -45,21 +48,21 @@ app.get('/auth/self/callback', passport.authenticate('self', {
 import { SelfOAuth } from '@selfxyz/auth';
 
 const oauth = new SelfOAuth({
-  clientId: process.env.SELF_APP_ID,
+  appId: process.env.SELF_APP_ID,
   clientSecret: process.env.SELF_CLIENT_SECRET,
   redirectUri: 'https://myapp.com/callback',
 });
 
-// Step 1: Redirect user
+// Step 1: Generate authorization URL
 const { url, state, codeVerifier } = oauth.getAuthorizationUrl();
-// Save state + codeVerifier to session, then redirect to url
+// Save state + codeVerifier to session, redirect user to url
 
-// Step 2: Handle callback
-const { token, claims } = await oauth.handleCallback(code, {
-  state: savedState,
-  codeVerifier: savedCodeVerifier,
-});
-// claims.self contains verified identity data`,
+// Step 2: Handle OAuth callback
+const result = await oauth.handleCallback(
+  { code: query.code, state: query.state },
+  { state: savedState, codeVerifier: savedCodeVerifier },
+);
+// result contains { verified, claims, error }`,
   },
 ];
 

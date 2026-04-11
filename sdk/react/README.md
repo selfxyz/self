@@ -5,8 +5,10 @@ React component wrapper for the Self Verify identity verification widget.
 ## Installation
 
 ```bash
-npm install @selfxyz/react @selfxyz/widget
+npm install @selfxyz/react
 ```
+
+`@selfxyz/widget` is included as a dependency and the custom element registers automatically.
 
 ## Usage
 
