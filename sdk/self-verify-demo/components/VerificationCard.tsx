@@ -148,10 +148,16 @@ function WidgetModal({
   onStatus: (detail: unknown) => void;
   onClose: () => void;
 }) {
+  const [timedOut, setTimedOut] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    const timer = setTimeout(() => setTimedOut(true), 10 * 60 * 1000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (!containerRef.current || timedOut) return;
 
     const el = document.createElement('self-verify');
     el.setAttribute('app-name', 'Self Verify Demo');
@@ -170,7 +176,21 @@ function WidgetModal({
         containerRef.current.removeChild(el);
       }
     };
-  }, [preset.preset, onSuccess, onError, onStatus]);
+  }, [preset.preset, onSuccess, onError, onStatus, timedOut]);
+
+  if (timedOut) {
+    return (
+      <div className="text-center py-4">
+        <p className="text-sm text-amber-600 dark:text-amber-400 mb-3">Verification timed out</p>
+        <button
+          onClick={onClose}
+          className="py-2 px-4 text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+        >
+          Try Again
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div>
