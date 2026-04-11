@@ -110,7 +110,7 @@ function LoginView() {
       const el = document.createElement('self-verify');
       el.setAttribute('app-name', 'Self Verify Demo');
       el.setAttribute('app-scope', process.env.NEXT_PUBLIC_SELF_APP_SCOPE ?? 'self-verify-demo');
-      el.setAttribute('app-endpoint', process.env.NEXT_PUBLIC_VERIFY_SERVICE_URL ?? 'https://verify.self.xyz');
+      el.setAttribute('app-endpoint', `${process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'}/api/verify/proof`);
       el.setAttribute('preset', 'kyc-basic');
 
       el.addEventListener('self:success', ((e: CustomEvent) => onSuccessRef.current(e.detail)) as EventListener);
