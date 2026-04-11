@@ -4,8 +4,11 @@
   "description": "Framework-agnostic Self verification web component",
   "repository": {
     "type": "git",
-    "url": "https://github.com/selfxyz/self"
+    "url": "https://github.com/selfxyz/self.git",
+    "directory": "sdk/widget"
   },
+  "homepage": "https://self.xyz",
+  "keywords": ["self", "identity", "verification", "widget", "web-component", "kyc", "age-verification"],
   "license": "MIT",
   "author": "selfxyz",
   "sideEffects": [

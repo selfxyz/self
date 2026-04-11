@@ -4,8 +4,11 @@
   "description": "React component wrapper for Self verification widget",
   "repository": {
     "type": "git",
-    "url": "https://github.com/selfxyz/self"
+    "url": "https://github.com/selfxyz/self.git",
+    "directory": "sdk/react"
   },
+  "homepage": "https://self.xyz",
+  "keywords": ["self", "identity", "verification", "react", "component"],
   "license": "MIT",
   "author": "selfxyz",
   "type": "module",

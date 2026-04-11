@@ -4,8 +4,11 @@
   "description": "Self verification OAuth providers for NextAuth, Passport.js, and standalone use",
   "repository": {
     "type": "git",
-    "url": "https://github.com/selfxyz/self"
+    "url": "https://github.com/selfxyz/self.git",
+    "directory": "sdk/auth"
   },
+  "homepage": "https://self.xyz",
+  "keywords": ["self", "identity", "oauth", "nextauth", "passport", "authentication"],
   "license": "MIT",
   "author": "selfxyz",
   "type": "module",
