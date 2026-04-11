@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { Header } from '@/components/Header';
 import { VerificationCard, type CardEvent } from '@/components/VerificationCard';
 import { PRESETS } from '@/lib/presets';
+import { EventLog } from '@/components/EventLog';
+import { ServerAuthSection } from '@/components/ServerAuthSection';
 
 export default function Home() {
   const [events, setEvents] = useState<CardEvent[]>([]);
@@ -28,7 +30,10 @@ export default function Home() {
             <VerificationCard key={preset.id} preset={preset} onEvent={handleEvent} />
           ))}
         </div>
+
+        <ServerAuthSection />
       </main>
+      <EventLog events={events} />
     </div>
   );
 }
