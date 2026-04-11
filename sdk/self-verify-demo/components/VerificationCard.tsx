@@ -3,6 +3,8 @@
 import '@selfxyz/widget';
 import { useEffect, useRef, useState } from 'react';
 import type { PresetConfig } from '@/lib/presets';
+import { CodeSnippet } from '@/components/CodeSnippet';
+import { getSnippets } from '@/lib/snippets';
 
 interface VerificationCardProps {
   preset: PresetConfig;
@@ -22,6 +24,7 @@ export function VerificationCard({ preset, onEvent }: VerificationCardProps) {
   const storageKey = `sv-verified-${preset.id}`;
   const [state, setState] = useState<CardState>('idle');
   const [verifiedData, setVerifiedData] = useState<Record<string, unknown> | null>(null);
+  const [showCode, setShowCode] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem(storageKey);
@@ -95,6 +98,16 @@ export function VerificationCard({ preset, onEvent }: VerificationCardProps) {
           </button>
         </div>
       )}
+
+      <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+        <button
+          onClick={() => setShowCode(!showCode)}
+          className="text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+        >
+          {showCode ? 'Hide Code' : 'View Code'}
+        </button>
+        {showCode && <CodeSnippet snippets={getSnippets(preset.preset)} />}
+      </div>
     </div>
   );
 }
