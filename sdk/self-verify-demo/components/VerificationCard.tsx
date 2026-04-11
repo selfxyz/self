@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import '@selfxyz/widget';
+import { useEffect, useRef, useState } from 'react';
 import type { PresetConfig } from '@/lib/presets';
 
 interface VerificationCardProps {
@@ -134,11 +135,39 @@ function WidgetModal({
   onStatus: (detail: unknown) => void;
   onClose: () => void;
 }) {
-  // Placeholder — replaced with real widget in Task 6
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const el = document.createElement('self-verify');
+    el.setAttribute('app-name', 'Self Verify Demo');
+    el.setAttribute('app-scope', process.env.NEXT_PUBLIC_SELF_APP_SCOPE ?? 'self-verify-demo');
+    el.setAttribute('app-endpoint', process.env.NEXT_PUBLIC_VERIFY_SERVICE_URL ?? 'https://verify.self.xyz');
+    el.setAttribute('preset', preset.preset);
+
+    el.addEventListener('self:success', ((e: CustomEvent) => onSuccess(e.detail)) as EventListener);
+    el.addEventListener('self:error', ((e: CustomEvent) => onError(e.detail)) as EventListener);
+    el.addEventListener('self:status', ((e: CustomEvent) => onStatus(e.detail)) as EventListener);
+
+    containerRef.current.appendChild(el);
+
+    return () => {
+      if (containerRef.current?.contains(el)) {
+        containerRef.current.removeChild(el);
+      }
+    };
+  }, [preset.preset, onSuccess, onError, onStatus]);
+
   return (
-    <div className="text-center py-4">
-      <p className="text-sm text-gray-500">Widget loading...</p>
-      <button onClick={onClose} className="mt-2 text-xs text-gray-400 underline">Cancel</button>
+    <div>
+      <div ref={containerRef} />
+      <button
+        onClick={onClose}
+        className="mt-3 w-full text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+      >
+        Cancel
+      </button>
     </div>
   );
 }
