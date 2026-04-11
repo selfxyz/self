@@ -32,7 +32,7 @@ function LoginView() {
   const onErrorRef = useRef<(detail: unknown) => void>(() => {});
   const onStatusRef = useRef<(detail: unknown) => void>(() => {});
 
-  onSuccessRef.current = async (detail: Record<string, unknown>) => {
+  onSuccessRef.current = async () => {
     const sessionId = serverSessionIdRef.current;
     if (!sessionId) {
       setError('No server session. Please try again.');
@@ -41,27 +41,16 @@ function LoginView() {
     }
 
     try {
-      // Step 1: POST claims to server to mark the session as verified
-      const callbackRes = await fetch('/api/verify/callback', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId, claims: detail.claims || detail }),
-      });
-
-      if (!callbackRes.ok) {
-        setError('Server verification failed. Please try again.');
-        setVerifying(false);
-        return;
-      }
-
-      // Step 2: Now sign in — authorize() will check the server-side verified session
+      // The proof endpoint (/api/verify/proof) was already called by the Self app
+      // (server-to-server, not from this browser). The session should now be
+      // marked as verified in the server store. We just ask NextAuth to check it.
       const result = await signIn('self-verify', {
         sessionId,
         redirect: false,
       });
 
       if (result?.error) {
-        setError('Session creation failed. Please try again.');
+        setError('Verification not confirmed by server. Please try again.');
         setVerifying(false);
       }
       // On success, useSession will update automatically
@@ -112,6 +101,7 @@ function LoginView() {
       el.setAttribute('app-scope', process.env.NEXT_PUBLIC_SELF_APP_SCOPE ?? 'self-verify-demo');
       el.setAttribute('app-endpoint', `${process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'}/api/verify/proof`);
       el.setAttribute('preset', 'kyc-basic');
+      el.setAttribute('user-id', serverSessionIdRef.current!);
 
       el.addEventListener('self:success', ((e: CustomEvent) => onSuccessRef.current(e.detail)) as EventListener);
       el.addEventListener('self:error', ((e: CustomEvent) => onErrorRef.current(e.detail)) as EventListener);
