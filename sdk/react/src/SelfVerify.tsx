@@ -41,6 +41,14 @@ const SKIP_PROPS = new Set(['className', 'style', ...CALLBACK_PROPS]);
  */
 export const SelfVerify = forwardRef<HTMLElement, SelfVerifyProps>(function SelfVerify(props, ref) {
   const elementRef = useRef<HTMLElement>(null);
+  const onSuccessRef = useRef(props.onSuccess);
+  const onErrorRef = useRef(props.onError);
+  const onStatusRef = useRef(props.onStatus);
+  const onAlreadyVerifiedRef = useRef(props.onAlreadyVerified);
+  onSuccessRef.current = props.onSuccess;
+  onErrorRef.current = props.onError;
+  onStatusRef.current = props.onStatus;
+  onAlreadyVerifiedRef.current = props.onAlreadyVerified;
 
   useImperativeHandle(ref, () => elementRef.current!, []);
 
@@ -63,35 +71,28 @@ export const SelfVerify = forwardRef<HTMLElement, SelfVerifyProps>(function Self
     }
   });
 
-  // Attach event listeners
+  // Attach event listeners (stable refs — never re-attached)
   useEffect(() => {
     const el = elementRef.current;
     if (!el) return;
 
-    const listeners: Array<[string, EventListener]> = [];
-
-    const eventMap: Array<[string, keyof SelfVerifyProps]> = [
-      ['self:success', 'onSuccess'],
-      ['self:error', 'onError'],
-      ['self:status', 'onStatus'],
-      ['self:already-verified', 'onAlreadyVerified'],
+    const handlers: Array<[string, EventListener]> = [
+      ['self:success', (e: Event) => onSuccessRef.current?.((e as CustomEvent).detail)],
+      ['self:error', (e: Event) => onErrorRef.current?.((e as CustomEvent).detail)],
+      ['self:status', (e: Event) => onStatusRef.current?.((e as CustomEvent).detail)],
+      ['self:already-verified', (e: Event) => onAlreadyVerifiedRef.current?.((e as CustomEvent).detail)],
     ];
 
-    for (const [eventName, propName] of eventMap) {
-      const callback = props[propName] as ((detail: unknown) => void) | undefined;
-      if (callback) {
-        const handler = (e: Event) => callback((e as CustomEvent).detail);
-        el.addEventListener(eventName, handler);
-        listeners.push([eventName, handler]);
-      }
+    for (const [eventName, handler] of handlers) {
+      el.addEventListener(eventName, handler);
     }
 
     return () => {
-      for (const [eventName, handler] of listeners) {
+      for (const [eventName, handler] of handlers) {
         el.removeEventListener(eventName, handler);
       }
     };
-  }, [props.onSuccess, props.onError, props.onStatus, props.onAlreadyVerified]);
+  }, []);
 
   return (
     <self-verify

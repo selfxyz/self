@@ -37,8 +37,8 @@ function App() {
       appScope="my-app-id"
       appEndpoint="https://verify.self.xyz"
       preset="${preset}"
-      onSuccess={(e) => console.log('Verified:', e.detail)}
-      onError={(e) => console.error('Failed:', e.detail)}
+      onSuccess={(detail) => console.log('Verified:', detail.claims)}
+      onError={(detail) => console.error('Failed:', detail.reason)}
     />
   );
 }`,
