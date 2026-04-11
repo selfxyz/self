@@ -139,9 +139,12 @@ export async function verifyToken(
       }
     }
 
-    // Check payload.self.verified is not explicitly false
+    // Require the self claim — without it this is not a Self verification token
     const selfClaims = payload.self as Record<string, unknown> | undefined;
-    if (selfClaims && selfClaims.verified === false) {
+    if (!selfClaims || typeof selfClaims !== 'object') {
+      return { verified: false, error: 'Missing self claim — not a Self verification token' };
+    }
+    if (selfClaims.verified === false) {
       return { verified: false, error: 'Token carries failed verification status' };
     }
 

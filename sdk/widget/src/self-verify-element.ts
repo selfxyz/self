@@ -350,7 +350,18 @@ export class SelfVerifyElement extends HTMLElement {
   private getSessionKey(): string {
     const scope = this.getAttribute('app-scope') || '';
     const preset = this.getAttribute('preset') || '';
-    return `${SESSION_KEY_PREFIX}${scope}::${preset}`;
+    const disclosures = this.getAttribute('disclosures') || '';
+    // Normalize: sorted JSON keys so equivalent configs produce the same key
+    let disclosureHash = '';
+    if (disclosures) {
+      try {
+        const obj = JSON.parse(disclosures);
+        disclosureHash = JSON.stringify(obj, Object.keys(obj).sort());
+      } catch {
+        disclosureHash = disclosures;
+      }
+    }
+    return `${SESSION_KEY_PREFIX}${scope}::${preset}::${disclosureHash}`;
   }
 
   private checkSessionMemory(): boolean {

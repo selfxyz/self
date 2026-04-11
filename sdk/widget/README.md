@@ -49,9 +49,9 @@ import '@selfxyz/widget';
 
 | Event | Payload | Description |
 |-------|---------|-------------|
-| `self:status` | `{ step, message }` | Progress updates |
-| `self:success` | `{ sessionId, token, self }` | Verification complete |
-| `self:error` | `{ code, message }` | Verification failed |
+| `self:status` | `{ step, label }` | Progress updates |
+| `self:success` | `{ verified, sessionId, token, claims }` | Verification complete |
+| `self:error` | `{ errorCode, reason }` | Verification failed |
 
 ## Programmatic API
 

@@ -85,6 +85,7 @@ export function openModal(options: ModalOptions): Promise<ModalResult> {
 
     function cleanup() {
       backdrop.remove();
+      document.removeEventListener('keydown', onKeydown);
     }
 
     function close() {
@@ -121,10 +122,7 @@ export function openModal(options: ModalOptions): Promise<ModalResult> {
     });
 
     function onKeydown(e: KeyboardEvent) {
-      if (e.key === 'Escape') {
-        close();
-        document.removeEventListener('keydown', onKeydown);
-      }
+      if (e.key === 'Escape') close();
     }
     document.addEventListener('keydown', onKeydown);
 
