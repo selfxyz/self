@@ -1,6 +1,6 @@
 'use client';
 
-import '@selfxyz/widget';
+import '@selfxyz/widget'; // Side-effect: registers <self-verify> custom element
 import { useEffect, useRef, useState } from 'react';
 import type { PresetConfig } from '@/lib/presets';
 import { CodeSnippet } from '@/components/CodeSnippet';
@@ -38,8 +38,8 @@ export function VerificationCard({ preset, onEvent }: VerificationCardProps) {
     }
   }, [storageKey]);
 
-  function handleSuccess(detail: { sessionId: string; token?: string; self?: Record<string, unknown> }) {
-    const data = detail.self ?? {};
+  function handleSuccess(detail: { sessionId: string; token?: string; claims?: Record<string, unknown> }) {
+    const data = detail.claims ?? {};
     localStorage.setItem(storageKey, JSON.stringify(data));
     setState('verified');
     setVerifiedData(data);
@@ -147,7 +147,7 @@ function WidgetModal({
   onClose,
 }: {
   preset: PresetConfig;
-  onSuccess: (detail: { sessionId: string; token?: string; self?: Record<string, unknown> }) => void;
+  onSuccess: (detail: { sessionId: string; token?: string; claims?: Record<string, unknown> }) => void;
   onError: (detail: unknown) => void;
   onStatus: (detail: unknown) => void;
   onClose: () => void;
