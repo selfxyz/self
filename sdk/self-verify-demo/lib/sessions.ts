@@ -42,3 +42,11 @@ export function verifySession(id: string, claims: Record<string, unknown>): bool
   session.claims = claims;
   return true;
 }
+
+/** Returns claims only if the session exists and has been verified server-side. */
+export function getVerifiedClaims(id: string): Record<string, unknown> | null {
+  cleanup();
+  const session = sessions.get(id);
+  if (!session || session.status !== 'verified' || !session.claims) return null;
+  return session.claims;
+}

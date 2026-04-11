@@ -27,15 +27,36 @@ function LoginView() {
   const [verifying, setVerifying] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const serverSessionIdRef = useRef<string | null>(null);
   const onSuccessRef = useRef<(detail: Record<string, unknown>) => void>(() => {});
   const onErrorRef = useRef<(detail: unknown) => void>(() => {});
   const onStatusRef = useRef<(detail: unknown) => void>(() => {});
 
   onSuccessRef.current = async (detail: Record<string, unknown>) => {
+    const sessionId = serverSessionIdRef.current;
+    if (!sessionId) {
+      setError('No server session. Please try again.');
+      setVerifying(false);
+      return;
+    }
+
     try {
+      // Step 1: POST claims to server to mark the session as verified
+      const callbackRes = await fetch('/api/verify/callback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId, claims: detail.claims || detail }),
+      });
+
+      if (!callbackRes.ok) {
+        setError('Server verification failed. Please try again.');
+        setVerifying(false);
+        return;
+      }
+
+      // Step 2: Now sign in — authorize() will check the server-side verified session
       const result = await signIn('self-verify', {
-        claims: JSON.stringify(detail.claims || detail),
-        sessionId: detail.sessionId as string,
+        sessionId,
         redirect: false,
       });
 
@@ -63,6 +84,23 @@ function LoginView() {
     let mountedEl: HTMLElement | null = null;
 
     async function mount() {
+      // Step 0: Create a server-side session first
+      try {
+        const res = await fetch('/api/verify/session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ preset: 'kyc-basic' }),
+        });
+        const { sessionId } = await res.json();
+        serverSessionIdRef.current = sessionId;
+      } catch {
+        if (!cancelled) {
+          setError('Failed to create verification session.');
+          setVerifying(false);
+        }
+        return;
+      }
+
       if (!widgetLoaded) {
         await import('@selfxyz/widget');
         widgetLoaded = true;

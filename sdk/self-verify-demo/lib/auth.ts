@@ -1,15 +1,29 @@
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
+import { getVerifiedClaims } from './sessions';
+
+// Validated at runtime in authorize() — build-time check would crash Next.js static analysis
+const SECRET = process.env.NEXTAUTH_SECRET;
+if (!SECRET && process.env.NODE_ENV === 'production') {
+  console.error('@selfxyz/self-verify-demo: NEXTAUTH_SECRET is required in production.');
+}
 
 /**
- * NextAuth config using a Credentials provider.
+ * NextAuth config using a Credentials provider backed by server-side session
+ * verification.
  *
- * In production, the SelfProvider OAuth flow handles everything. But since the
- * verify-service token endpoint is currently down, this demo uses the websocket
- * verification flow: the widget gets the proof via websocket, the client POSTs
- * the verified claims to our /api/auth endpoint, and NextAuth creates a session.
+ * The flow:
+ * 1. Client calls POST /api/verify/session → server creates pending session
+ * 2. Widget connects to websocket relayer, user completes verification in Self app
+ * 3. Relayer delivers proof → widget fires self:success
+ * 4. Client calls POST /api/verify/callback with sessionId + claims →
+ *    server marks session as verified
+ * 5. Client calls signIn('self-verify', { sessionId }) →
+ *    authorize() checks the server-side session store and only mints a cookie
+ *    if the session was verified server-side
  *
- * The flow: widget → websocket proof → self:success → POST claims → session cookie
+ * This means calling signIn() from the console with a fake sessionId will fail
+ * because there is no matching verified session in the server store.
  */
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -17,26 +31,26 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       id: 'self-verify',
       name: 'Self Verify',
       credentials: {
-        claims: { type: 'text' },
         sessionId: { type: 'text' },
       },
       async authorize(credentials) {
-        if (!credentials?.claims) return null;
-
-        try {
-          const claims = JSON.parse(credentials.claims as string) as Record<string, unknown>;
-
-          // In production, you'd verify the JWT signature here using @selfxyz/core.
-          // For this demo, we trust the websocket relay delivery.
-          return {
-            id: (claims.sub as string) || credentials.sessionId as string || 'self-user',
-            name: claims.name as string | undefined,
-            verified: true,
-            claims,
-          };
-        } catch {
+        if (!process.env.NEXTAUTH_SECRET) {
+          console.error('NEXTAUTH_SECRET not set — refusing to create session');
           return null;
         }
+        const sessionId = credentials?.sessionId as string | undefined;
+        if (!sessionId) return null;
+
+        // Only accept claims from server-verified sessions — not client input
+        const claims = getVerifiedClaims(sessionId);
+        if (!claims) return null;
+
+        return {
+          id: (claims.sub as string) || sessionId,
+          name: claims.name as string | undefined,
+          verified: true,
+          claims,
+        };
       },
     }),
   ],
@@ -59,5 +73,5 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   pages: {
     signIn: '/',
   },
-  secret: process.env.NEXTAUTH_SECRET || 'dev-secret-change-in-production',
+  secret: SECRET || 'MISSING-SET-NEXTAUTH_SECRET',
 });
