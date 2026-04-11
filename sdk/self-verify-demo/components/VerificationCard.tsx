@@ -29,8 +29,12 @@ export function VerificationCard({ preset, onEvent }: VerificationCardProps) {
   useEffect(() => {
     const stored = localStorage.getItem(storageKey);
     if (stored) {
-      setState('verified');
-      setVerifiedData(JSON.parse(stored));
+      try {
+        setState('verified');
+        setVerifiedData(JSON.parse(stored));
+      } catch {
+        localStorage.removeItem(storageKey);
+      }
     }
   }, [storageKey]);
 
@@ -150,6 +154,12 @@ function WidgetModal({
 }) {
   const [timedOut, setTimedOut] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const onSuccessRef = useRef(onSuccess);
+  const onErrorRef = useRef(onError);
+  const onStatusRef = useRef(onStatus);
+  onSuccessRef.current = onSuccess;
+  onErrorRef.current = onError;
+  onStatusRef.current = onStatus;
 
   useEffect(() => {
     const timer = setTimeout(() => setTimedOut(true), 10 * 60 * 1000);
@@ -165,9 +175,9 @@ function WidgetModal({
     el.setAttribute('app-endpoint', process.env.NEXT_PUBLIC_VERIFY_SERVICE_URL ?? 'https://verify.self.xyz');
     el.setAttribute('preset', preset.preset);
 
-    el.addEventListener('self:success', ((e: CustomEvent) => onSuccess(e.detail)) as EventListener);
-    el.addEventListener('self:error', ((e: CustomEvent) => onError(e.detail)) as EventListener);
-    el.addEventListener('self:status', ((e: CustomEvent) => onStatus(e.detail)) as EventListener);
+    el.addEventListener('self:success', ((e: CustomEvent) => onSuccessRef.current(e.detail)) as EventListener);
+    el.addEventListener('self:error', ((e: CustomEvent) => onErrorRef.current(e.detail)) as EventListener);
+    el.addEventListener('self:status', ((e: CustomEvent) => onStatusRef.current(e.detail)) as EventListener);
 
     containerRef.current.appendChild(el);
 
@@ -176,7 +186,7 @@ function WidgetModal({
         containerRef.current.removeChild(el);
       }
     };
-  }, [preset.preset, onSuccess, onError, onStatus, timedOut]);
+  }, [preset.preset, timedOut]);
 
   if (timedOut) {
     return (
