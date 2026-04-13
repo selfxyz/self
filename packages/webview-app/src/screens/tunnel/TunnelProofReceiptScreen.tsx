@@ -21,14 +21,6 @@ export const TunnelProofReceiptScreen: React.FC = () => {
   const { backPath = '/tunnel/proof/result', backState } =
     (location.state as { backPath?: string; backState?: Record<string, unknown> } | null) ?? {};
 
-  const showConfirm = backPath !== '/tunnel/proof/result' || backState?.success === true;
-
-  const onConfirm = useCallback(() => {
-    haptic.trigger('selection');
-    analytics.trackEvent('tunnel_proof_receipt_confirmed');
-    navigate('/tunnel/proof/disclose');
-  }, [navigate, haptic, analytics]);
-
   const proofItems = useMemo(() => {
     if (displayLabels && displayLabels.length > 0) {
       return displayLabels.map(label => ({ label }));
@@ -49,7 +41,6 @@ export const TunnelProofReceiptScreen: React.FC = () => {
       {...WEB_SAFE_AREA}
       variant="default"
       onClose={onClose}
-      onConfirm={showConfirm ? onConfirm : undefined}
       appIcon={<SelfLogo size={40} />}
       appName={appName}
       appEndpoint={appEndpoint}

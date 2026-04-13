@@ -31,18 +31,6 @@ const getTunnelBackPath = (source: TunnelResultState['source']): string => {
   }
 };
 
-const getTunnelClosePath = (source: TunnelResultState['source']): string => {
-  switch (source) {
-    case 'disclose':
-      return '/tunnel/proof/disclose';
-    case 'kyc':
-      return '/tunnel/kyc';
-    case 'proving':
-    default:
-      return '/tunnel/tour/4';
-  }
-};
-
 export const TunnelResultScreen: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -84,9 +72,24 @@ export const TunnelResultScreen: React.FC = () => {
     });
   }, [location.pathname, location.state, navigate]);
 
-  const onCancel = useCallback(() => {
-    navigate(getTunnelClosePath(source), { replace: true });
-  }, [navigate, source]);
+  const onCancel = useCallback(async () => {
+    try {
+      const result: VerificationResult = {
+        success: false,
+        userId: request.userId,
+        verificationId,
+        errorCode: 'VERIFICATION_FAILED',
+        errorMessage: error ?? 'Verification failed',
+      };
+      await lifecycle.setResult(result);
+      analytics.trackEvent('tunnel_result_cancelled', { source });
+      lifecycle.dismiss();
+    } catch (err) {
+      analytics.trackEvent('tunnel_result_cancel_failed', {
+        error: err instanceof Error ? err.message : 'Failed to send cancel result',
+      });
+    }
+  }, [request.userId, verificationId, error, lifecycle, analytics, source]);
 
   if (success) {
     return (
