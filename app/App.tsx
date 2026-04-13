@@ -5,7 +5,7 @@
 // CI/CD Pipeline Test - July 31, 2025 - With Permissions Fix
 import React from 'react';
 import { Platform } from 'react-native';
-import { YStack } from 'tamagui';
+import { Theme, YStack } from 'tamagui';
 import type {
   TurnkeyCallbacks,
   TurnkeyProviderConfig,
@@ -90,30 +90,32 @@ export const TURNKEY_CONFIG: TurnkeyProviderConfig = {
 function App(): React.JSX.Element {
   return (
     <ErrorBoundary>
-      <YStack flex={1} height="100%" width="100%">
-        <RemoteConfigProvider>
-          <LoggerProvider>
-            <SelfClientProvider>
-              <AuthProvider>
-                <PassportProvider>
-                  <DatabaseProvider>
-                    <NotificationTrackingProvider>
-                      <FeedbackProvider>
-                        <TurnkeyProvider
-                          config={TURNKEY_CONFIG}
-                          callbacks={TURNKEY_CALLBACKS}
-                        >
-                          <AppNavigation />
-                        </TurnkeyProvider>
-                      </FeedbackProvider>
-                    </NotificationTrackingProvider>
-                  </DatabaseProvider>
-                </PassportProvider>
-              </AuthProvider>
-            </SelfClientProvider>
-          </LoggerProvider>
-        </RemoteConfigProvider>
-      </YStack>
+      <Theme name="light">
+        <YStack flex={1} height="100%" width="100%">
+          <RemoteConfigProvider>
+            <LoggerProvider>
+              <SelfClientProvider>
+                <AuthProvider>
+                  <PassportProvider>
+                    <DatabaseProvider>
+                      <NotificationTrackingProvider>
+                        <FeedbackProvider>
+                          <TurnkeyProvider
+                            config={TURNKEY_CONFIG}
+                            callbacks={TURNKEY_CALLBACKS}
+                          >
+                            <AppNavigation />
+                          </TurnkeyProvider>
+                        </FeedbackProvider>
+                      </NotificationTrackingProvider>
+                    </DatabaseProvider>
+                  </PassportProvider>
+                </AuthProvider>
+              </SelfClientProvider>
+            </LoggerProvider>
+          </RemoteConfigProvider>
+        </YStack>
+      </Theme>
     </ErrorBoundary>
   );
 }
