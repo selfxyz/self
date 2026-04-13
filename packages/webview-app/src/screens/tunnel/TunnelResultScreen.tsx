@@ -78,8 +78,10 @@ export const TunnelResultScreen: React.FC = () => {
         success: false,
         userId: request.userId,
         verificationId,
-        errorCode: 'VERIFICATION_FAILED',
-        errorMessage: error ?? 'Verification failed',
+        error: {
+          code: 'VERIFICATION_FAILED',
+          message: error ?? 'Verification failed',
+        },
       };
       await lifecycle.setResult(result);
       analytics.trackEvent('tunnel_result_cancelled', { source });
@@ -88,6 +90,7 @@ export const TunnelResultScreen: React.FC = () => {
       analytics.trackEvent('tunnel_result_cancel_failed', {
         error: err instanceof Error ? err.message : 'Failed to send cancel result',
       });
+      lifecycle.dismiss();
     }
   }, [request.userId, verificationId, error, lifecycle, analytics, source]);
 
