@@ -8,8 +8,8 @@ import { usePendingKycRecovery } from '@/hooks/usePendingKycRecovery';
 import { navigationRef } from '@/navigation';
 
 // Mock dependencies
-jest.mock('@/hooks/useDiditWebSocket', () => ({
-  useDiditWebSocket: jest.fn(() => ({
+jest.mock('@/hooks/useKycWebSocket', () => ({
+  useKycWebSocket: jest.fn(() => ({
     subscribe: jest.fn(),
     unsubscribeAll: jest.fn(),
   })),
@@ -39,8 +39,8 @@ describe('usePendingKycRecovery', () => {
     jest.useFakeTimers();
 
     // Setup default mocks
-    const { useDiditWebSocket } = jest.requireMock('@/hooks/useDiditWebSocket');
-    useDiditWebSocket.mockReturnValue({
+    const { useKycWebSocket } = jest.requireMock('@/hooks/useKycWebSocket');
+    useKycWebSocket.mockReturnValue({
       subscribe: mockSubscribe,
       unsubscribeAll: mockUnsubscribeAll,
     });

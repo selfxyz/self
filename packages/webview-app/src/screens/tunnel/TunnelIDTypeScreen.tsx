@@ -51,7 +51,7 @@ export const TunnelIDTypeScreen: React.FC = () => {
       countryName={getCountryName(countryCode)}
       idTypes={idTypes}
       onIDTypeSelect={onIDTypeSelect}
-      onBack={() => navigate(-1)}
+      onBack={() => navigate('/tunnel/registration/country')}
       renderFlag={renderFlag}
       renderIDTypeIcon={renderIDTypeIcon}
     />

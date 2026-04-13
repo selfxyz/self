@@ -116,5 +116,3 @@ export const getPromptMockSearch = (mock: PromptMockState = DEFAULT_PROMPT_MOCK)
 
 export const getProviderPath = (outcome: MockRegistrationOutcome): string =>
   `/onboarding/provider${getMockOutcomeSearch(outcome)}`;
-
-export const shouldUseHistoryBack = (): boolean => window.history.length > 1;

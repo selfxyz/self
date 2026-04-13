@@ -24,7 +24,7 @@ export const ProofSuccessBackupScreen: React.FC = () => {
   const onBackupAccount = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('proof_success_backup_pressed');
-    navigate('/settings/security');
+    navigate('/settings/recovery-phrase');
   }, [navigate, haptic, analytics]);
 
   return (

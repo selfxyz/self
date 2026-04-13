@@ -24,15 +24,15 @@ export const TunnelKycSuccessScreen: React.FC = () => {
     if (!providerResult) return;
 
     if (providerResult.status === 'cancel') {
-      navigate(-1);
+      navigate('/tunnel/tour/4', { replace: true });
       return;
     }
 
     if (providerResult.status === 'error') {
       if (providerResult.error?.retryable === false) {
-        navigate('/onboarding/failure', { replace: true });
+        navigate('/tunnel/tour/4', { replace: true });
       } else {
-        navigate('/tunnel/kyc', { replace: true });
+        navigate('/tunnel/kyc-failure', { replace: true, state: { providerResult } });
       }
       return;
     }

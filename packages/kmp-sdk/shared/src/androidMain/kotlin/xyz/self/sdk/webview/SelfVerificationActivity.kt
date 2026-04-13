@@ -5,11 +5,20 @@
 package xyz.self.sdk.webview
 
 import android.content.Intent
+import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Bundle
+import android.view.ViewGroup
 import android.webkit.WebChromeClient
+import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import xyz.self.sdk.api.QueryParamsBuilder
+import xyz.self.sdk.api.SelfSdkConfig
+import xyz.self.sdk.api.VerificationRequest
+import xyz.self.sdk.api.verificationResultJson
 import xyz.self.sdk.bridge.MessageRouter
 import xyz.self.sdk.handlers.CryptoBridgeHandler
 import xyz.self.sdk.handlers.LifecycleBridgeHandler
@@ -21,14 +30,46 @@ import xyz.self.sdk.providers.SdkProviderRegistry
 class SelfVerificationActivity : AppCompatActivity() {
     private lateinit var webViewHost: AndroidWebViewHost
     private lateinit var router: MessageRouter
+    private var container: FrameLayout? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         initVerificationFlow()
     }
 
     private fun initVerificationFlow() {
-        val isDebugMode = intent.getBooleanExtra(EXTRA_DEBUG_MODE, false)
+        val configJson = intent.getStringExtra(EXTRA_CONFIG) ?: "{}"
+        val requestJson = intent.getStringExtra(EXTRA_VERIFICATION_REQUEST)
+
+        val config =
+            try {
+                verificationResultJson.decodeFromString(SelfSdkConfig.serializer(), configJson)
+            } catch (_: Exception) {
+                null
+            }
+        val request =
+            if (requestJson != null) {
+                try {
+                    verificationResultJson.decodeFromString(VerificationRequest.serializer(), requestJson)
+                } catch (_: Exception) {
+                    null
+                }
+            } else {
+                null
+            }
+
+        if (config == null || request == null) {
+            setResult(
+                RESULT_CODE_ERROR,
+                Intent().apply {
+                    putExtra(EXTRA_ERROR_CODE, "INVALID_BOOTSTRAP")
+                    putExtra(EXTRA_ERROR_MESSAGE, "Invalid verification request/config payload")
+                },
+            )
+            finish()
+            return
+        }
 
         // Register default providers if consumer hasn't set custom ones
         if (SdkProviderRegistry.secureStorage == null) {
@@ -49,86 +90,43 @@ class SelfVerificationActivity : AppCompatActivity() {
 
         registerHandlers()
 
-        // Build query params from VerificationRequest JSON
-        val queryParams = buildQueryParams()
-        if (queryParams == null) {
-            setResult(
-                RESULT_CODE_ERROR,
-                Intent().apply {
-                    putExtra(EXTRA_ERROR_CODE, "INVALID_BOOTSTRAP")
-                    putExtra(EXTRA_ERROR_MESSAGE, "Invalid verification request/config payload")
-                },
-            )
-            finish()
-            return
-        }
+        val queryParams = QueryParamsBuilder.build(config, request)
+        val isDebuggable = (applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
 
-        webViewHost = AndroidWebViewHost(this, router, isDebugMode)
-        val webView = webViewHost.createWebView(queryParams)
-        setContentView(webView)
+        webViewHost = AndroidWebViewHost(this, router, config.debug, isDebuggable, config.remoteWebAppBaseUrl, config.devServerUrl)
+        val webView = webViewHost.createWebView(queryParams ?: "")
+        val wrapper =
+            FrameLayout(this).apply {
+                addView(
+                    webView,
+                    ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                    ),
+                )
+            }
+        this.container = wrapper
+        setContentView(wrapper)
+
+        ViewCompat.setOnApplyWindowInsetsListener(wrapper) { view, insets ->
+            val systemInsets =
+                insets.getInsets(
+                    WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout(),
+                )
+            view.setPadding(
+                systemInsets.left,
+                systemInsets.top,
+                systemInsets.right,
+                systemInsets.bottom,
+            )
+            WindowInsetsCompat.CONSUMED
+        }
     }
 
     private fun registerHandlers() {
         router.register(SecureStorageBridgeHandler())
         router.register(CryptoBridgeHandler())
         router.register(LifecycleBridgeHandler(this))
-    }
-
-    private fun buildQueryParams(): String? {
-        val requestJson = intent.getStringExtra(EXTRA_VERIFICATION_REQUEST) ?: return null
-        val configJson = intent.getStringExtra(EXTRA_CONFIG) ?: "{}"
-        return try {
-            val json = org.json.JSONObject(requestJson)
-            val config = org.json.JSONObject(configJson)
-            buildString {
-                var first = true
-
-                fun append(
-                    key: String,
-                    value: String?,
-                ) {
-                    if (value.isNullOrEmpty()) return
-                    if (!first) append("&")
-                    append("$key=${Uri.encode(value)}")
-                    first = false
-                }
-
-                // Config params (always present)
-                val endpoint = config.optString("endpoint", "https://api.self.xyz")
-                append("endpoint", endpoint)
-                val appEndpoint = config.optString("appEndpoint", null)
-                append("appEndpoint", if (appEndpoint.isNullOrEmpty()) endpoint else appEndpoint)
-                append("environment", config.optString("environment", "prod"))
-                append("version", config.optInt("version", 1).toString())
-
-                // Optional config params
-                append("appName", config.optString("appName", null))
-                append("endpointType", config.optString("endpointType", null))
-                val chainID = config.optInt("chainID", 0)
-                if (chainID != 0) append("chainID", chainID.toString())
-
-                // Request params
-                append("verificationId", json.optString("verificationId", null))
-                append("userId", json.optString("userId", null))
-                append("scope", json.optString("scope", null))
-                val disclosures = json.optJSONArray("disclosures")
-                if (disclosures != null && disclosures.length() > 0) {
-                    val items = (0 until disclosures.length()).map { disclosures.getString(it) }
-                    append("disclosures", items.joinToString(","))
-                }
-                append("resultType", json.optString("resultType", null))
-                val excludedCountries = json.optJSONArray("excludedCountries")
-                if (excludedCountries != null && excludedCountries.length() > 0) {
-                    val items = (0 until excludedCountries.length()).map { excludedCountries.getString(it) }
-                    append("excludedCountries", items.joinToString(","))
-                }
-                append("userIdType", json.optString("userIdType", null))
-                append("userDefinedData", json.optString("userDefinedData", null))
-                append("selfDefinedData", json.optString("selfDefinedData", null))
-            }
-        } catch (_: Exception) {
-            null
-        }
     }
 
     override fun onRequestPermissionsResult(
@@ -169,6 +167,7 @@ class SelfVerificationActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
+        container?.let { ViewCompat.setOnApplyWindowInsetsListener(it, null) }
         if (::webViewHost.isInitialized) {
             webViewHost.destroy()
         }
@@ -176,7 +175,6 @@ class SelfVerificationActivity : AppCompatActivity() {
     }
 
     companion object {
-        const val EXTRA_DEBUG_MODE = "xyz.self.sdk.DEBUG_MODE"
         const val EXTRA_VERIFICATION_REQUEST = "xyz.self.sdk.VERIFICATION_REQUEST"
         const val EXTRA_CONFIG = "xyz.self.sdk.CONFIG"
 

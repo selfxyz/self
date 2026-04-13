@@ -9,7 +9,6 @@ import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ComingSoonScreen } from '../../src/screens/ComingSoonScreen';
-import { shouldUseHistoryBack } from '../../src/utils/mockOnboardingFlow';
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 
@@ -26,10 +25,6 @@ vi.mock('../../src/providers/SelfClientProvider', () => ({
 vi.mock('../../src/utils/countryFlags', () => ({
   getCountryName: () => '',
   renderFlag: () => null,
-}));
-
-vi.mock('../../src/utils/mockOnboardingFlow', () => ({
-  shouldUseHistoryBack: vi.fn(),
 }));
 
 vi.mock('@selfxyz/euclid', () => ({
@@ -53,7 +48,6 @@ const renderComingSoon = (initialEntries: string[], initialIndex = initialEntrie
   render(
     <MemoryRouter initialEntries={initialEntries} initialIndex={initialIndex}>
       <Routes>
-        <Route path="/onboarding/backup" element={<LocationDisplay />} />
         <Route path="/coming-soon" element={<ComingSoonScreen />} />
         <Route path="/" element={<LocationDisplay />} />
       </Routes>
@@ -69,17 +63,7 @@ describe('ComingSoonScreen', () => {
     cleanup();
   });
 
-  it('uses browser history when returning from a previous screen', () => {
-    vi.mocked(shouldUseHistoryBack).mockReturnValue(true);
-    renderComingSoon(['/onboarding/backup?mock=default', '/coming-soon']);
-
-    fireEvent.click(screen.getByRole('button', { name: /go back/i }));
-
-    expect(screen.getByTestId('location').textContent).toBe('/onboarding/backup?mock=default');
-  });
-
-  it('falls back to home when directly loaded', () => {
-    vi.mocked(shouldUseHistoryBack).mockReturnValue(false);
+  it('navigates to home when dismissed', () => {
     renderComingSoon(['/coming-soon']);
 
     fireEvent.click(screen.getByRole('button', { name: /go back/i }));

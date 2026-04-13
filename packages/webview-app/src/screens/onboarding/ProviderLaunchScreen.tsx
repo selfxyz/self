@@ -13,14 +13,16 @@ import { useSelfClient } from '../../providers/SelfClientProvider';
 import { useVerificationRequest } from '../../providers/VerificationRequestProvider';
 import type { KycProviderResult } from '../../types/kycProvider';
 import { buildKycDocument } from '../../utils/buildKycDocument';
-import { waitForAttestation } from '../../utils/diditAttestation';
-import { createDiditSession, launchDiditWebSdk } from '../../utils/diditProvider';
+import { WEB_SAFE_AREA } from '../../utils/insets';
+import { waitForKycAttestation } from '../../utils/kycAttestation';
+import { createKycSession, launchKycWebSdk } from '../../utils/kycProvider';
 
-const CONTAINER_ID = 'didit-sdk-container';
+const CONTAINER_ID = 'kyc-sdk-container';
 
 type Phase = 'loading' | 'active' | 'waiting' | 'error';
 
 interface ProviderLaunchState {
+  backPath?: string;
   countryCode?: string;
   documentType?: string;
   nextPath?: string;
@@ -32,10 +34,11 @@ export const ProviderLaunchScreen: React.FC = () => {
   const { client, analytics, haptic, lifecycle } = useSelfClient();
   const { verificationId: ctxVerificationId, environment } = useVerificationRequest();
 
-  const { countryCode = '', documentType = '', nextPath } = (location.state as ProviderLaunchState) || {};
+  const { backPath, countryCode = '', documentType = '', nextPath } = (location.state as ProviderLaunchState) || {};
 
   const defaultNextPath = nextPath ?? '/onboarding/provider-result';
-  const verificationId = ctxVerificationId ?? `didit-${Date.now()}`;
+  const isTunnelFlow = defaultNextPath.startsWith('/tunnel/') || backPath?.startsWith('/tunnel/') === true;
+  const verificationId = ctxVerificationId ?? `kyc-${Date.now()}`;
 
   const [phase, setPhase] = useState<Phase>('loading');
   const [errorMessage, setErrorMessage] = useState('');
@@ -54,7 +57,7 @@ export const ProviderLaunchScreen: React.FC = () => {
 
       if ((result.status === 'success' || result.status === 'partial') && sessionIdRef.current) {
         setPhase('waiting');
-        const attestationResult = await waitForAttestation(sessionIdRef.current);
+        const attestationResult = await waitForKycAttestation(sessionIdRef.current);
 
         if (!mountedRef.current) return;
 
@@ -160,12 +163,12 @@ export const ProviderLaunchScreen: React.FC = () => {
 
     (async () => {
       try {
-        const session = await createDiditSession(controller.signal);
+        const session = await createKycSession(controller.signal);
         if (cancelled) return;
 
         sessionIdRef.current = session.sessionId;
 
-        const destroy = await launchDiditWebSdk({
+        const destroy = await launchKycWebSdk({
           url: session.url,
           containerId: CONTAINER_ID,
           verificationId,
@@ -222,13 +225,20 @@ export const ProviderLaunchScreen: React.FC = () => {
       countryCode,
       documentType,
     });
+
+    if (isTunnelFlow) {
+      navigate(backPath ?? '/tunnel/tour/4', { replace: true });
+      return;
+    }
+
     lifecycle.dismiss({ reason: 'back' });
     if (window.history.length > 1) {
       navigate(-1);
-    } else {
-      navigate('/', { state: { skipOnboardingRedirect: true } });
+      return;
     }
-  }, [analytics, countryCode, documentType, haptic, lifecycle, navigate]);
+
+    navigate('/', { state: { skipOnboardingRedirect: true } });
+  }, [analytics, backPath, countryCode, documentType, haptic, isTunnelFlow, lifecycle, navigate]);
 
   const handleRetry = useCallback(() => {
     haptic.trigger('selection');
@@ -285,20 +295,33 @@ export const ProviderLaunchScreen: React.FC = () => {
   return (
     <div
       style={{
-        minHeight: '100vh',
+        height: '100vh',
         display: 'flex',
         flexDirection: 'column',
+        position: 'relative',
         backgroundColor: colors.white,
+        overflow: 'hidden',
       }}
     >
       {phase === 'waiting' && (
-        <KycPendingScreen
-          insets={{ top: 0, bottom: 0 }}
-          onCheckBackLater={handleBack}
-          onReceiveLiveUpdates={() => {
-            // TODO: wire up push notifications
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            zIndex: 1,
+            overflow: 'hidden',
+            display: 'flex',
+            flexDirection: 'column',
           }}
-        />
+        >
+          <KycPendingScreen
+            insets={WEB_SAFE_AREA.insets}
+            onCheckBackLater={handleBack}
+            onReceiveLiveUpdates={() => {
+              // TODO: wire up push notifications
+            }}
+          />
+        </div>
       )}
       {phase === 'loading' && (
         <div
@@ -327,18 +350,18 @@ export const ProviderLaunchScreen: React.FC = () => {
         </div>
       )}
       <style>{`
-        .shadow-card {
+        #${CONTAINER_ID} .shadow-card {
           width: 100% !important;
           max-width: 100% !important;
           height: 100% !important;
           max-height: 100% !important;
           border-radius: 0 !important;
         }
-        iframe[class*="in-iframe"] {
+        #${CONTAINER_ID} iframe[class*="in-iframe"] {
           width: 100% !important;
           height: 100% !important;
         }
-        div[class*="size-full"] {
+        #${CONTAINER_ID} div[class*="size-full"] {
           width: 100vw !important;
           max-width: 100vw !important;
         }

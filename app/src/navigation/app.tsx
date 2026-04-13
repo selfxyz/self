@@ -9,7 +9,6 @@ import type { DocumentCategory } from '@selfxyz/common/utils/types';
 
 import { SystemBars } from '@/components/SystemBars';
 import DeferredLinkingInfoScreen from '@/screens/app/DeferredLinkingInfoScreen';
-import GratificationScreen from '@/screens/app/GratificationScreen';
 import LoadingScreen from '@/screens/app/LoadingScreen';
 import type { ModalNavigationParams } from '@/screens/app/ModalScreen';
 import ModalScreen from '@/screens/app/ModalScreen';
@@ -48,16 +47,6 @@ const appScreens = {
     screen: SplashScreen,
     options: {
       header: () => <SystemBars style="light" />,
-    },
-  },
-  Gratification: {
-    screen: GratificationScreen,
-    options: {
-      headerShown: false,
-      contentStyle: { backgroundColor: '#000000' },
-    } as NativeStackNavigationOptions,
-    params: {} as {
-      points?: number;
     },
   },
 };

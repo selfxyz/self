@@ -25,7 +25,7 @@ import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 
 import WarningIcon from '@/assets/images/warning.svg';
 import { NavBar } from '@/components/navbar/BaseNavBar';
-import { useDiditLauncher } from '@/hooks/useDiditLauncher';
+import { useKycLauncher } from '@/hooks/useKycLauncher';
 import { buttonTap } from '@/integrations/haptics';
 import type { RootStackParamList } from '@/navigation';
 import { extraYPadding } from '@/utils/styleUtils';
@@ -66,7 +66,7 @@ const RegistrationFallbackMRZScreen: React.FC = () => {
 
   const headerTitle = getHeaderTitle(documentType);
 
-  const { launchDiditVerification, isLoading: isRetrying } = useDiditLauncher({
+  const { launchKycVerification, isLoading: isRetrying } = useKycLauncher({
     countryCode,
     errorSource: 'mrz_scan_failed',
     onCancel: () => {
@@ -87,8 +87,8 @@ const RegistrationFallbackMRZScreen: React.FC = () => {
     trackEvent('REGISTRATION_FALLBACK_TRY_ALTERNATIVE', {
       errorSource: 'mrz_scan_failed',
     });
-    await launchDiditVerification();
-  }, [launchDiditVerification, trackEvent]);
+    await launchKycVerification();
+  }, [launchKycVerification, trackEvent]);
 
   const handleRetryOriginal = useCallback(() => {
     trackEvent('REGISTRATION_FALLBACK_RETRY_ORIGINAL', {

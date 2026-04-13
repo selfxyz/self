@@ -11,6 +11,7 @@ export const CONTRACT_IDS = [
   "IdentityRegistry",
   "IdentityRegistryIdCard",
   "IdentityRegistryAadhaar",
+  "IdentityRegistryKyc",
   "PCR0Manager",
   "VerifyAll",
   "DummyContract",
