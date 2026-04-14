@@ -257,9 +257,12 @@ const SuccessScreen: React.FC = () => {
         <PrimaryButton
           trackEvent={ProofEvents.PROOF_RESULT_ACKNOWLEDGED}
           disabled={
-            currentState !== 'completed' &&
-            currentState !== 'error' &&
-            currentState !== 'failure'
+            (currentState !== 'completed' &&
+              currentState !== 'error' &&
+              currentState !== 'failure') ||
+            (currentState === 'completed' &&
+              whitelistedPoints === undefined &&
+              !(countdown !== null && countdown > 0))
           }
           onPress={
             countdown !== null && countdown > 0
@@ -273,6 +276,8 @@ const SuccessScreen: React.FC = () => {
             <Spinner />
           ) : countdown !== null && countdown > 0 ? (
             'Cancel'
+          ) : whitelistedPoints === undefined ? (
+            <Spinner />
           ) : (
             'OK'
           )}
