@@ -84,7 +84,14 @@ const SuccessScreen: React.FC = () => {
         }
       }, 2000);
     }
-  }, [whitelistedPoints, navigation, goHome, selfClient, sessionId, useProvingStore]);
+  }, [
+    whitelistedPoints,
+    navigation,
+    goHome,
+    selfClient,
+    sessionId,
+    useProvingStore,
+  ]);
 
   function cancelDeeplinkCallbackRedirect() {
     setCountdown(null);
