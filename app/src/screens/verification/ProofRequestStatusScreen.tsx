@@ -65,21 +65,26 @@ const SuccessScreen: React.FC = () => {
 
   const onOkPress = useCallback(async () => {
     buttonTap();
+    const completedSessionId = sessionId;
 
     if (whitelistedPoints !== null) {
       navigation.navigate('Gratification', {
         points: whitelistedPoints,
       });
       setTimeout(() => {
-        selfClient.getSelfAppState().cleanSelfApp();
+        if (useProvingStore.getState().uuid === completedSessionId) {
+          selfClient.getSelfAppState().cleanSelfApp();
+        }
       }, 2000);
     } else {
       goHome();
       setTimeout(() => {
-        selfClient.getSelfAppState().cleanSelfApp();
+        if (useProvingStore.getState().uuid === completedSessionId) {
+          selfClient.getSelfAppState().cleanSelfApp();
+        }
       }, 2000);
     }
-  }, [whitelistedPoints, navigation, goHome, selfClient]);
+  }, [whitelistedPoints, navigation, goHome, selfClient, sessionId, useProvingStore]);
 
   function cancelDeeplinkCallbackRedirect() {
     setCountdown(null);
