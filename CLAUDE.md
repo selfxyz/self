@@ -45,6 +45,10 @@ nvm use && corepack enable && yarn install
 - **Constraint tie-breaker.** If rules conflict: correctness and security first, then scope/clarity (small PRs, small files), then reuse. Document the tradeoff in the spec.
 - **Linear issue descriptions are immutable after creation.** Never overwrite an issue description with `save_issue` to add updates, status notes, or context. Issue descriptions are the original scope set at creation time. All subsequent updates — status changes, progress notes, discovered context, blockers, decision records — go in **comments** via `save_comment`. The only valid use of `save_issue` on an existing issue is to change structured fields (status, priority, assignee, labels). If you need to correct a factual error in the description, add a comment explaining the correction rather than silently rewriting history.
 
+## Project Dictionary
+
+When asked about an unfamiliar project term, **look it up in the [Self Dictionary](https://www.notion.so/34257801cd1280a4b348d01fac82a2be) in Notion first** — before searching the codebase. The dictionary is the authoritative source for project terminology.
+
 ## Specs & Planning
 
 **Every feature — even minor ones — needs a spec.** For SDK work (`packages/`, `webview-app`, `webview-bridge`), specs live in **both** the repo (`specs/`) and Linear. The repo spec is the canonical, version-controlled execution plan. The Linear issue is the tracking and discovery layer. For app-only or non-SDK work, a Linear issue with inline scope is sufficient — no repo spec required.
