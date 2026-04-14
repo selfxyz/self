@@ -334,7 +334,7 @@ const Points: React.FC = () => {
             </Text>
           </YStack>
         </YStack>
-        {incomingPoints && (
+        {incomingPoints.amount > 0 && incomingPoints.expectedDate && (
           <XStack style={styles.incomingPointsBar}>
             <ClockIcon width={16} height={16} />
             <Text style={styles.incomingPointsAmount}>

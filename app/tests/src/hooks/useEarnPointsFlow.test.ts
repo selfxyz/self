@@ -336,7 +336,7 @@ describe('useEarnPointsFlow', () => {
       expect(mockNavigate).toHaveBeenCalledWith('Points');
     });
 
-    it('should not navigate when user has completed all checks, has referrer, but skipReferralFlow is true', async () => {
+    it('should navigate to Points when user has completed all checks, has referrer, but skipReferralFlow is true', async () => {
       const referrer = '0x1234567890123456789012345678901234567890';
       useUserStore.getState().setDeepLinkReferrer(referrer);
       mockHasUserAnIdentityDocumentRegistered.mockResolvedValue(true);
@@ -353,9 +353,7 @@ describe('useEarnPointsFlow', () => {
         await result.current.onEarnPointsPress(true);
       });
 
-      // Should not navigate to Points or Gratification
-      expect(mockNavigate).not.toHaveBeenCalledWith('Points');
-      expect(mockNavigate).not.toHaveBeenCalledWith('Gratification');
+      expect(mockNavigate).toHaveBeenCalledWith('Points');
     });
   });
 

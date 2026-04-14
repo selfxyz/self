@@ -183,10 +183,7 @@ export const useEarnPointsFlow = ({
       if (!skipReferralFlow && hasReferrer && isReferralConfirmed === true) {
         await handleReferralFlow();
       } else {
-        // Just go to points upon pressing "Earn Points" button
-        if (!hasReferrer) {
-          navigation.navigate('Points');
-        }
+        navigation.navigate('Points');
       }
     },
     [

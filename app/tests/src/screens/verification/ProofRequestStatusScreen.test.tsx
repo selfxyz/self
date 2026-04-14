@@ -297,6 +297,10 @@ describe('ProofRequestStatusScreen', () => {
   it('does not clear self app state if a newer session replaces the completed one', async () => {
     render(<ProofRequestStatusScreen />);
 
+    await waitFor(() => {
+      expect(mockUpdateProofStatus).toHaveBeenCalled();
+    });
+
     fireEvent.press(screen.getByTestId('primary-button'));
     provingState.uuid = 'session-2';
 
