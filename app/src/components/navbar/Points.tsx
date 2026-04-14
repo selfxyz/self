@@ -76,18 +76,17 @@ const Points: React.FC = () => {
     navigation.navigate('PointsInfo');
   };
 
-  //TODO - uncomment after merging - https://github.com/selfxyz/self/pull/1363/
-  // useEffect(() => {
-  //   const backupEvent = usePointEventStore
-  //     .getState()
-  //     .events.find(
-  //       event => event.type === 'backup' && event.status === 'completed',
-  //     );
+  useEffect(() => {
+    const backupEvent = usePointEventStore
+      .getState()
+      .events.find(
+        event => event.type === 'backup' && event.status === 'completed',
+      );
 
-  //   if (backupEvent && !hasCompletedBackupForPoints) {
-  //     setBackupForPointsCompleted();
-  //   }
-  // }, [setBackupForPointsCompleted, hasCompletedBackupForPoints]);
+    if (backupEvent && !hasCompletedBackupForPoints) {
+      setBackupForPointsCompleted();
+    }
+  }, [setBackupForPointsCompleted, hasCompletedBackupForPoints]);
 
   // Track if we should check for backup completion on next focus
   const shouldCheckBackupRef = React.useRef(false);
