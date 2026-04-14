@@ -8,6 +8,7 @@ import type { NativeStackHeaderProps } from '@react-navigation/native-stack';
 
 import { Text, View } from '@selfxyz/mobile-sdk-alpha/components';
 import { black, slate50 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import { NavBar } from '@/components/navbar/BaseNavBar';
 import { buttonTap } from '@/integrations/haptics';
@@ -39,7 +40,7 @@ export const PointsNavBar = (props: NativeStackHeaderProps) => {
           color={black}
           fontSize={15}
           fontWeight="500"
-          fontFamily="DINOT-Medium"
+          fontFamily={dinot}
           textAlign="center"
           style={{
             letterSpacing: 0.6,
