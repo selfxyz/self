@@ -26,7 +26,7 @@ export const createMockProviderResult = ({
   verificationId?: string;
 }): KycProviderResult => {
   if (!MOCKS_ENABLED) {
-    return { status: 'success', verificationId: '', provider: '', completedAt: new Date().toISOString() };
+    throw new Error('createMockProviderResult must not be called outside dev mode');
   }
 
   const resolvedVerificationId = verificationId ?? 'mock-verification';
