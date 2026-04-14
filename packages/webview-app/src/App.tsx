@@ -113,7 +113,7 @@ export const App: React.FC = () => (
             <Route path="/coming-soon" element={<ComingSoonScreen />} />
             <Route path="/tunnel/tour/:step" element={<TunnelTourScreen />} />
             <Route path="/tunnel/kyc" element={<TunnelKycWrapper />} />
-            <Route path="/tunnel/kyc-pending" element={<TunnelKycPendingScreen />} />
+            {import.meta.env.DEV && <Route path="/tunnel/kyc-pending" element={<TunnelKycPendingScreen />} />}
             <Route path="/tunnel/kyc-failure" element={<TunnelKycFailureScreen />} />
             <Route path="/tunnel/kyc-success" element={<TunnelKycSuccessScreen />} />
             <Route path="/tunnel/registration/country" element={<TunnelCountryPickerScreen />} />

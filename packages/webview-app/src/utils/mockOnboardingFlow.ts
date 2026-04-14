@@ -25,6 +25,10 @@ export const createMockProviderResult = ({
   outcome: MockRegistrationOutcome;
   verificationId?: string;
 }): KycProviderResult => {
+  if (!MOCKS_ENABLED) {
+    return { status: 'success', verificationId: '', provider: '', completedAt: new Date().toISOString() };
+  }
+
   const resolvedVerificationId = verificationId ?? 'mock-verification';
 
   switch (outcome) {
