@@ -56,6 +56,7 @@ const Points: React.FC = () => {
   const incomingPoints = useIncomingPoints();
   const { amount: points } = usePoints();
   const loadEvents = usePointEventStore(state => state.loadEvents);
+  const events = usePointEventStore(state => state.events);
   const { hasCompletedBackupForPoints, setBackupForPointsCompleted } =
     useSettingStore();
   const [isBackingUp, setIsBackingUp] = useState(false);
@@ -77,16 +78,14 @@ const Points: React.FC = () => {
   };
 
   useEffect(() => {
-    const backupEvent = usePointEventStore
-      .getState()
-      .events.find(
-        event => event.type === 'backup' && event.status === 'completed',
-      );
+    const backupEvent = events.find(
+      event => event.type === 'backup' && event.status === 'completed',
+    );
 
     if (backupEvent && !hasCompletedBackupForPoints) {
       setBackupForPointsCompleted();
     }
-  }, [setBackupForPointsCompleted, hasCompletedBackupForPoints]);
+  }, [events, setBackupForPointsCompleted, hasCompletedBackupForPoints]);
 
   // Track if we should check for backup completion on next focus
   const shouldCheckBackupRef = React.useRef(false);
