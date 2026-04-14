@@ -4,7 +4,7 @@
 
 import type React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import type { ProofGenerationStep } from '@selfxyz/euclid';
 import { ProofGenerationScreen } from '@selfxyz/euclid';
@@ -14,8 +14,40 @@ import { loadSelectedDocument, useProvingStore } from '@selfxyz/mobile-sdk-alpha
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { useVerificationRequest } from '../../providers/VerificationRequestProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
+import { isDemoMode } from '../../utils/mockOnboardingFlow';
 import { getIdCardProps } from '../../utils/provingUtils';
 import { initSelfAppFromRequest } from '../../utils/selfAppContext';
+
+const DEMO_PROVING_STEPS: ProofGenerationStep[] = ['readingRegistry', 'generatingProof'];
+
+const DemoTunnelProvingScreen: React.FC<{ search: string }> = ({ search }) => {
+  const navigate = useNavigate();
+  const [stepIndex, setStepIndex] = useState(0);
+
+  const advance = useCallback(() => {
+    if (stepIndex < DEMO_PROVING_STEPS.length - 1) {
+      setStepIndex(i => i + 1);
+    } else {
+      navigate(`/tunnel/proof/disclose${search}`, { replace: true });
+    }
+  }, [stepIndex, navigate, search]);
+
+  return (
+    <div
+      style={{
+        width: '100vw',
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        position: 'relative',
+        overflow: 'hidden',
+      }}
+    >
+      <ProofGenerationScreen {...WEB_SAFE_AREA} step={DEMO_PROVING_STEPS[stepIndex]} />
+      <div onClick={advance} style={{ position: 'absolute', inset: 0, zIndex: 1, cursor: 'pointer' }} />
+    </div>
+  );
+};
 
 type Phase = 'dsc' | 'register';
 
@@ -43,7 +75,12 @@ function mapProvingStateToStep(state: ProvingStateType | null, phase: Phase): Pr
 }
 
 export const TunnelProvingScreen: React.FC = () => {
+  const location = useLocation();
   const navigate = useNavigate();
+
+  if (isDemoMode(location.search)) {
+    return <DemoTunnelProvingScreen search={location.search} />;
+  }
   const { client, analytics, haptic } = useSelfClient();
   const verificationCtx = useVerificationRequest();
   const currentState = useProvingStore(s => s.currentState);

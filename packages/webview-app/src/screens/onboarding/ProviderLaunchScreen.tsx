@@ -127,7 +127,7 @@ export const ProviderLaunchScreen: React.FC = () => {
     let cancelled = false;
     const controller = new AbortController();
 
-    if (environment !== 'prod') {
+    if (environment !== 'prod' && !defaultNextPath.includes('mock=demo')) {
       (async () => {
         try {
           setPhase('waiting');

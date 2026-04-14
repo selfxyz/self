@@ -4,7 +4,7 @@
 
 import type React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import type { ProofGenerationStep } from '@selfxyz/euclid';
 import { ProofProgressScreen, SelfLogo } from '@selfxyz/euclid';
@@ -14,7 +14,53 @@ import { useProvingStore } from '@selfxyz/mobile-sdk-alpha/browser';
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { useVerificationRequest } from '../../providers/VerificationRequestProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
+import { isDemoMode } from '../../utils/mockOnboardingFlow';
 import { initSelfAppFromRequest } from '../../utils/selfAppContext';
+
+const DEMO_DISCLOSE_STEPS: ProofGenerationStep[] = [
+  'readingRegistry',
+  'generatingProof',
+  'awaitingVerification',
+  'finishingUp',
+];
+
+const DemoTunnelDiscloseScreen: React.FC<{ search: string }> = ({ search }) => {
+  const navigate = useNavigate();
+  const { appName, appEndpoint, timestamp } = useVerificationRequest();
+  const [stepIndex, setStepIndex] = useState(0);
+
+  const advance = useCallback(() => {
+    if (stepIndex < DEMO_DISCLOSE_STEPS.length - 1) {
+      setStepIndex(i => i + 1);
+    } else {
+      navigate(`/tunnel/proof/result${search}`, { replace: true, state: { success: true } });
+    }
+  }, [stepIndex, navigate, search]);
+
+  return (
+    <div
+      style={{
+        width: '100vw',
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        position: 'relative',
+        overflow: 'hidden',
+      }}
+    >
+      <ProofProgressScreen
+        {...WEB_SAFE_AREA}
+        appIcon={<SelfLogo size={40} />}
+        appName={appName}
+        appEndpoint={appEndpoint}
+        documentType="passport"
+        timestamp={timestamp}
+        step={DEMO_DISCLOSE_STEPS[stepIndex]}
+      />
+      <div onClick={advance} style={{ position: 'absolute', inset: 0, zIndex: 1, cursor: 'pointer' }} />
+    </div>
+  );
+};
 
 const MAX_DISCLOSE_RETRIES = 3;
 const DISCLOSE_RETRY_DELAY_MS = 3000;
@@ -43,7 +89,12 @@ function mapDiscloseStateToStep(state: ProvingStateType | null): ProofGeneration
 }
 
 export const TunnelDiscloseScreen: React.FC = () => {
+  const location = useLocation();
   const navigate = useNavigate();
+
+  if (isDemoMode(location.search)) {
+    return <DemoTunnelDiscloseScreen search={location.search} />;
+  }
   const { client, analytics, haptic } = useSelfClient();
   const verificationCtx = useVerificationRequest();
   const { appName, appEndpoint, timestamp } = verificationCtx;
