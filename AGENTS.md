@@ -220,6 +220,11 @@ The `specs/` folder contains architecture and implementation specs for the Self 
 - Use suffixed variants (for example `SPEC-<TOPIC>.md`) only when multiple specs of the same type are required in the same folder.
 - When renaming/moving spec files, update all references in `specs/`, `AGENTS.md`, and `CLAUDE.md` in the same change.
 
+### Spec Writing Rules
+
+- Qualify coverage claims. Distinguish unit-tested/shared-utility coverage from handler-level, integration, or end-to-end coverage; do not say "tested" without naming the actual coverage level.
+- Flag invariant departures. If a spec intentionally departs from active architecture rules or repo invariants, call out the conflict explicitly, justify the departure, and list the docs that must be updated if the direction is accepted.
+
 **Start here:** [specs/README.md](./specs/README.md) — table of contents and reading order.
 
 Key files:

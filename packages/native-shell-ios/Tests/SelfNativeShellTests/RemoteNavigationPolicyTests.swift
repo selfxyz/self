@@ -73,6 +73,16 @@ final class RemoteNavigationPolicyTests: XCTestCase {
         )
     }
 
+    func testSubframeRejectsDiditOnNonStandardPort() {
+        XCTAssertFalse(
+            RemoteNavigationPolicy.isAllowedSubframeNavigation(
+                url: URL(string: "https://verify.didit.me:8443/flow")!,
+                remoteWebAppBaseURL: nil,
+                isDebugMode: false
+            )
+        )
+    }
+
     func testMakeEntryURLAppendsHostedPathAndQuery() {
         XCTAssertEqual(
             RemoteNavigationPolicy.makeEntryURL(

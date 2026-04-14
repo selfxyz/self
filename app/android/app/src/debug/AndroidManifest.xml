@@ -14,7 +14,7 @@
         tools:ignore="GoogleAppIndexingWarning"
         tools:replace="android:usesCleartextTraffic">
         
-        <!-- Override conflicting ML Kit dependencies from passportreader (ocr) and Sumsub SDK (face) -->
+        <!-- Override conflicting ML Kit dependencies from passportreader (ocr) and the KYC SDK (face) -->
         <meta-data
             android:name="com.google.mlkit.vision.DEPENDENCIES"
             android:value="ocr,face"

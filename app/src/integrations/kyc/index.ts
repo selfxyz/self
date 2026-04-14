@@ -4,11 +4,11 @@
 
 export type {
   ApplicantInfoSerialized,
-  DiditVerificationResult,
+  KycVerificationResult,
   SessionResponse,
-} from '@/integrations/didit/types';
+} from '@/integrations/kyc/types';
 export {
-  type DiditConfig,
-  createSession,
-  launchDidit,
-} from '@/integrations/didit/diditService';
+  type KycLaunchConfig,
+  createKycSession,
+  launchKycVerification,
+} from '@/integrations/kyc/kycService';

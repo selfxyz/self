@@ -25,8 +25,8 @@ import { advercase, dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 import EPassportLogo from '@/assets/icons/epassport_logo.svg';
 import { DocumentFlowNavBar } from '@/components/navbar/DocumentFlowNavBar';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
-import { createSession, launchDidit } from '@/integrations/didit';
 import { buttonTap } from '@/integrations/haptics';
+import { createKycSession, launchKycVerification } from '@/integrations/kyc';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
 import { useFeedback } from '@/providers/feedbackProvider';
@@ -58,8 +58,8 @@ const LogoConfirmationScreen: React.FC = () => {
       buttonText: 'Proceed with an external verifier',
       onButtonPress: async () => {
         try {
-          const session = await createSession();
-          const result = await launchDidit(session.sessionToken);
+          const session = await createKycSession();
+          const result = await launchKycVerification(session.sessionToken);
 
           // User cancelled/dismissed without completing verification
           if (result.type === 'cancelled') {
@@ -69,7 +69,7 @@ const LogoConfirmationScreen: React.FC = () => {
           // Verification failed (provider error/rejection)
           if (result.type === 'failed') {
             console.error(
-              'Didit verification failed:',
+              'KYC verification failed:',
               result.error?.type ?? 'unknown',
             );
             navigation.navigate('KycFailure', {
@@ -82,7 +82,7 @@ const LogoConfirmationScreen: React.FC = () => {
           // Verification succeeded - navigate to KycSuccessScreen
           navigation.navigate('KycSuccess', { sessionId: session.sessionId });
         } catch {
-          console.error('Error launching Didit verification');
+          console.error('Error launching KYC verification');
           showModal({
             titleText: 'Error',
             bodyText: 'Unable to start verification. Please try again.',

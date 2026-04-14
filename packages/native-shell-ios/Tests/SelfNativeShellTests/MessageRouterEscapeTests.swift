@@ -45,7 +45,8 @@ final class MessageRouterEscapeTests: XCTestCase {
         router.onMessageReceived(
             rawJson: """
             {"type":"request","version":1,"id":"req-1","domain":"secureStorage","method":"get","timestamp":1000}
-            """
+            """,
+            isTrustedSource: true
         )
 
         waitForExpectations(timeout: 2)

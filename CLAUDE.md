@@ -73,11 +73,13 @@ Specs are agent-executable prompts. A new Claude Code session with no prior cont
 - **Make decisions, not options.** "Use local wrappers" not "Consider adding to Euclid or using local wrappers." Agents can't choose between approaches — tell them which one.
 - **Use second person.** "You are fixing X" not "X should be fixed."
 - **Be explicit about constraints.** "You will NOT modify..." not just "Focus on..."
-- **Provide exact file paths with line numbers.** `src/utils/sumsubProvider.ts:118` not "the provider file."
+- **Provide exact file paths with line numbers.** `src/utils/kycProvider.ts:118` not "the provider file."
 - **State the validation command.** Agents will run it. If it's not there, they'll skip validation.
 - **One spec = one PR.** Target the PR size from Key Rules (1k–3k LOC). If a spec would exceed that, split it.
 - **Mark items as required vs optional.** Don't let agents infer priority.
 - **Include out-of-scope sections.** These are as important as in-scope sections for preventing drift.
+- **Qualify coverage claims precisely.** "Complete, tested" means handler-level integration tests pass end-to-end. If only shared parsers or utilities are tested, say that. Overclaimed coverage propagates into execution plans and skips real testing work.
+- **Flag invariant departures explicitly.** If a spec's approach conflicts with an active rule in CLAUDE.md, OVERVIEW.md, or a sibling workstream SPEC.md, the spec must call out the conflict, justify the departure, and list the parent docs that need updating. Silent contradictions cause repo-wide drift.
 - **Use `--remote` for medium+ work.** Medium and large specs benefit from `claude --remote` so work continues in the background.
 
 ### Audit Pipeline Skills

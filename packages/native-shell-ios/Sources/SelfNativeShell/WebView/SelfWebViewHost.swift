@@ -1,31 +1,25 @@
 // SPDX-License-Identifier: BUSL-1.1
 
-import CryptoKit
 import Foundation
 import UIKit
 import WebKit
 
 final class SelfWebViewHost: NSObject {
-    static let bundledScheme = "self-sdk"
-    static let bundledHost = "app"
-    fileprivate static let bundledRootFolder = "self-sdk-web"
+    private static let defaultRemoteBaseURL = URL(string: "https://self-app-alpha.vercel.app")!
 
     private var webView: WKWebView?
     private let router: MessageRouter
     private let isDebugMode: Bool
-    private let remoteWebAppBaseURL: URL?
-    private let remoteWebAppIntegritySha256: String?
+    private let remoteWebAppBaseURL: URL
 
     init(
         router: MessageRouter,
         isDebugMode: Bool = false,
-        remoteWebAppBaseURL: URL? = nil,
-        remoteWebAppIntegritySha256: String? = nil
+        remoteWebAppBaseURL: URL? = nil
     ) {
         self.router = router
         self.isDebugMode = isDebugMode
-        self.remoteWebAppBaseURL = remoteWebAppBaseURL
-        self.remoteWebAppIntegritySha256 = remoteWebAppIntegritySha256
+        self.remoteWebAppBaseURL = remoteWebAppBaseURL ?? Self.defaultRemoteBaseURL
         super.init()
     }
 
@@ -37,7 +31,6 @@ final class SelfWebViewHost: NSObject {
         config.preferences.javaScriptCanOpenWindowsAutomatically = false
         config.allowsInlineMediaPlayback = true
         config.mediaTypesRequiringUserActionForPlayback = []
-        config.setURLSchemeHandler(SelfBundledAssetSchemeHandler(), forURLScheme: SelfWebViewHost.bundledScheme)
 
         let webView = WKWebView(frame: .zero, configuration: config)
         webView.scrollView.bounces = false
@@ -49,14 +42,12 @@ final class SelfWebViewHost: NSObject {
             webView.isInspectable = isDebugMode
         }
 
-        webView.navigationDelegate = self
         self.webView = webView
         return webView
     }
 
     func loadContent(queryParams: String) {
         guard let webView = webView else { return }
-
         if isDebugMode {
             let debugBase = URL(string: "http://localhost:5173")
             if let url = RemoteNavigationPolicy.makeEntryURL(baseURL: debugBase, queryParams: queryParams) {
@@ -64,83 +55,16 @@ final class SelfWebViewHost: NSObject {
             }
             return
         }
-
-        if let bundledURL = makeBundledEntryURL(queryParams: queryParams) {
-            webView.load(URLRequest(url: bundledURL))
+        guard remoteWebAppBaseURL.scheme == "https" else { return }
+        if let url = RemoteNavigationPolicy.makeEntryURL(baseURL: remoteWebAppBaseURL, queryParams: queryParams) {
+            webView.load(URLRequest(url: url))
         }
-
-        loadVerifiedRemoteContent(queryParams: queryParams)
     }
 
     func evaluateJs(_ js: String) {
         DispatchQueue.main.async { [weak self] in
             self?.webView?.evaluateJavaScript(js, completionHandler: nil)
         }
-    }
-
-    private func makeBundledEntryURL(queryParams: String) -> URL? {
-        RemoteNavigationPolicy.makeEntryURL(
-            baseURL: URL(string: "\(SelfWebViewHost.bundledScheme)://\(SelfWebViewHost.bundledHost)"),
-            queryParams: queryParams
-        )
-    }
-
-    private func loadVerifiedRemoteContent(queryParams: String) {
-        guard let baseURL = remoteWebAppBaseURL,
-              baseURL.scheme == "https",
-              baseURL.host != nil,
-              let expectedSha256 = remoteWebAppIntegritySha256?.trimmingCharacters(in: .whitespacesAndNewlines),
-              !expectedSha256.isEmpty,
-              let remoteURL = RemoteNavigationPolicy.makeEntryURL(baseURL: baseURL, queryParams: queryParams) else {
-            return
-        }
-
-        Task.detached { [weak self] in
-            guard let self else { return }
-            guard let verifiedHTML = await self.fetchAndVerifyRemoteEntry(
-                url: remoteURL, expectedSha256: expectedSha256
-            ) else {
-                return
-            }
-
-            await MainActor.run {
-                self.webView?.loadHTMLString(verifiedHTML, baseURL: remoteURL)
-            }
-        }
-    }
-
-    private static let maxRemoteEntryBytes = 5 * 1024 * 1024
-
-    private func fetchAndVerifyRemoteEntry(url: URL, expectedSha256: String) async -> String? {
-        do {
-            let configuration = URLSessionConfiguration.ephemeral
-            configuration.timeoutIntervalForRequest = 5
-            configuration.timeoutIntervalForResource = 5
-            let session = URLSession(configuration: configuration)
-            let (data, response) = try await session.data(from: url)
-            guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
-                return nil
-            }
-            guard RemoteContentIntegrity.isAcceptableMimeType(response.mimeType) else {
-                return nil
-            }
-            guard data.count <= SelfWebViewHost.maxRemoteEntryBytes else {
-                return nil
-            }
-
-            let digest = SHA256.hash(data: data)
-            let actualHash = digest.map { String(format: "%02x", $0) }.joined()
-            guard actualHash == normalizeSha256(expectedSha256) else {
-                return nil
-            }
-            return String(data: data, encoding: .utf8)
-        } catch {
-            return nil
-        }
-    }
-
-    private func normalizeSha256(_ value: String) -> String {
-        RemoteContentIntegrity.normalizeSha256(value)
     }
 
     private func isAllowedNavigation(url: URL) -> Bool {
@@ -190,84 +114,63 @@ extension SelfWebViewHost: WKScriptMessageHandler {
         didReceive message: WKScriptMessage
     ) {
         guard message.name == "SelfNativeIOS",
+              message.frameInfo.isMainFrame,
+              isTrustedBridgeFrameInfo(message.frameInfo.securityOrigin),
               let body = message.body as? String else {
             return
         }
-        router.onMessageReceived(rawJson: body)
+        router.onMessageReceived(rawJson: body, isTrustedSource: true)
     }
 }
 
-private final class SelfBundledAssetSchemeHandler: NSObject, WKURLSchemeHandler {
-    func webView(_ webView: WKWebView, start urlSchemeTask: WKURLSchemeTask) {
-        guard let requestURL = urlSchemeTask.request.url,
-              let rootURL = Bundle.module.resourceURL?.appendingPathComponent(
-                SelfWebViewHost.bundledRootFolder,
-                isDirectory: true
-              ),
-              let fileURL = resolveFileURL(for: requestURL, rootURL: rootURL) else {
-            urlSchemeTask.didFailWithError(NSError(domain: NSURLErrorDomain, code: NSURLErrorFileDoesNotExist))
-            return
+private extension SelfWebViewHost {
+    func isTrustedBridgeOrigin(_ url: URL?) -> Bool {
+        guard let url else { return false }
+        if isDebugMode {
+            return url.scheme == "http" &&
+                url.host == "localhost" &&
+                resolvedPort(for: url) == 5173
         }
+        return url.scheme == remoteWebAppBaseURL.scheme &&
+            url.host == remoteWebAppBaseURL.host &&
+            resolvedPort(for: url) == resolvedPort(for: remoteWebAppBaseURL)
+    }
+}
 
-        do {
-            let data = try Data(contentsOf: fileURL)
-            let response = URLResponse(
-                url: requestURL,
-                mimeType: mimeType(for: fileURL.pathExtension),
-                expectedContentLength: data.count,
-                textEncodingName: textEncodingName(for: fileURL.pathExtension)
-            )
-            urlSchemeTask.didReceive(response)
-            urlSchemeTask.didReceive(data)
-            urlSchemeTask.didFinish()
-        } catch {
-            urlSchemeTask.didFailWithError(error)
+extension SelfWebViewHost {
+    func initialContentURL(queryParams: String) -> URL? {
+        if isDebugMode {
+            let debugBase = URL(string: "http://localhost:5173")
+            return RemoteNavigationPolicy.makeEntryURL(baseURL: debugBase, queryParams: queryParams)
         }
+        guard remoteWebAppBaseURL.scheme == "https" else { return nil }
+        return RemoteNavigationPolicy.makeEntryURL(baseURL: remoteWebAppBaseURL, queryParams: queryParams)
     }
 
-    func webView(_ webView: WKWebView, stop urlSchemeTask: WKURLSchemeTask) {}
-
-    private func resolveFileURL(for requestURL: URL, rootURL: URL) -> URL? {
-        BundledAssetPathResolver.resolveFileURL(for: requestURL, rootURL: rootURL)
+    func isAllowedNavigationURL(_ url: URL?, host: String? = nil) -> Bool {
+        guard let url else { return false }
+        return isAllowedNavigation(url: url) || isAllowedSubframeNavigation(url: url)
     }
 
-    private func mimeType(for pathExtension: String) -> String {
-        switch pathExtension.lowercased() {
-        case "html":
-            return "text/html"
-        case "js":
-            return "application/javascript"
-        case "css":
-            return "text/css"
-        case "json":
-            return "application/json"
-        case "svg":
-            return "image/svg+xml"
-        case "png":
-            return "image/png"
-        case "jpg", "jpeg":
-            return "image/jpeg"
-        case "woff2":
-            return "font/woff2"
-        case "woff":
-            return "font/woff"
-        case "ttf":
-            return "font/ttf"
-        case "otf":
-            return "font/otf"
-        case "wav":
-            return "audio/wav"
-        default:
-            return "application/octet-stream"
+    func isTrustedBridgeURL(_ url: URL?) -> Bool {
+        isTrustedBridgeOrigin(url)
+    }
+
+    func isTrustedBridgeFrameInfo(_ origin: WKSecurityOrigin) -> Bool {
+        if isDebugMode {
+            return origin.protocol == "http" && origin.host == "localhost" && origin.port == 5173
         }
+        return origin.protocol == remoteWebAppBaseURL.scheme &&
+            origin.host == remoteWebAppBaseURL.host &&
+            resolvedSecurityOriginPort(origin) == resolvedPort(for: remoteWebAppBaseURL)
     }
 
-    private func textEncodingName(for pathExtension: String) -> String? {
-        switch pathExtension.lowercased() {
-        case "html", "js", "css", "json", "svg":
-            return "utf-8"
-        default:
-            return nil
+    private func resolvedSecurityOriginPort(_ origin: WKSecurityOrigin) -> Int {
+        if origin.port != 0 { return origin.port }
+        switch origin.protocol {
+        case "https": return 443
+        case "http": return 80
+        default: return 0
         }
     }
 }

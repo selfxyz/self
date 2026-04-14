@@ -419,8 +419,13 @@ export function getPrivateKeyFromMnemonic(mnemonic: string) {
 }
 
 export async function hasSecretStored() {
-  const seed = await Keychain.getGenericPassword({ service: SERVICE_NAME });
-  return !!seed;
+  try {
+    const seed = await Keychain.getGenericPassword({ service: SERVICE_NAME });
+    return !!seed;
+  } catch (error) {
+    console.warn('Error checking for stored secret:', error);
+    return false;
+  }
 }
 
 // Migrates existing mnemonic to use new security settings with accessControl.

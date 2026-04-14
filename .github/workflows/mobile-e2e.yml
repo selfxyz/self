@@ -10,6 +10,7 @@ env:
   GH_CACHE_VERSION: v2 # Global cache version - bumped to invalidate caches
   GH_GEMS_CACHE_VERSION: v1 # Ruby gems cache version
   # Performance optimizations
+  YARN_TASK_POOL_CONCURRENCY: 2 # Limit parallel native module builds to prevent OOM on self-hosted runners
   GRADLE_OPTS: -Dorg.gradle.workers.max=4 -Dorg.gradle.parallel=true -Dorg.gradle.caching=true
   CI: true
   # Disable Maestro analytics in CI
@@ -822,6 +823,12 @@ jobs:
           # Use the dynamic simulator ID
           SIMULATOR_ID="${IOS_SIMULATOR_ID:-iPhone SE (3rd generation)}"
           echo "Installing on simulator: $SIMULATOR_ID"
+
+          echo "Erasing simulator to ensure clean state..."
+          xcrun simctl shutdown "$SIMULATOR_ID" 2>/dev/null || true
+          xcrun simctl erase "$SIMULATOR_ID"
+          xcrun simctl boot "$SIMULATOR_ID" || true
+          xcrun simctl bootstatus "$SIMULATOR_ID" -b
 
           echo "Removing any existing app installation..."
           xcrun simctl uninstall "$SIMULATOR_ID" "$IOS_BUNDLE_ID" 2>/dev/null || true

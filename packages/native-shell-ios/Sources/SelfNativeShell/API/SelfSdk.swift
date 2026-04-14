@@ -65,8 +65,7 @@ final class SelfSdkViewController: UIViewController {
         let host = SelfWebViewHost(
             router: router,
             isDebugMode: config.isDebugMode,
-            remoteWebAppBaseURL: config.remoteWebAppBaseURL,
-            remoteWebAppIntegritySha256: config.remoteWebAppIntegritySha256
+            remoteWebAppBaseURL: config.remoteWebAppBaseURL
         )
         self.webViewHost = host
 

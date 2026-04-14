@@ -74,6 +74,7 @@ fun SdkLaunchScreen(navController: NavController) {
                 SelfSdkConfig(
                     environment = environment,
                     debug = true,
+                    version = if (useMockDocument) 1 else 2,
                     appName = appName.ifBlank { null },
                     appEndpoint = appEndpoint.ifBlank { null },
                     devServerUrl = devServerUrl,
