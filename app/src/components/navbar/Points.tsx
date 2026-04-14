@@ -4,8 +4,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Button, Image, Text, View, XStack, YStack, ZStack } from 'tamagui';
+import { Image, Text, View, XStack, YStack, ZStack } from 'tamagui';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { HelpCircle } from '@tamagui/lucide-icons';
@@ -29,7 +28,6 @@ import StarBlackIcon from '@/assets/icons/star_black.svg';
 import LogoInversed from '@/assets/images/logo_inversed.svg';
 import MajongImage from '@/assets/images/majong.png';
 import { PointHistoryList } from '@/components/PointHistoryList';
-import { appsUrl } from '@/consts/links';
 import { useIncomingPoints, usePoints } from '@/hooks/usePoints';
 import { usePointsGuardrail } from '@/hooks/usePointsGuardrail';
 import type { RootStackParamList } from '@/navigation';
@@ -51,8 +49,6 @@ import { registerModalCallbacks } from '@/utils/modalCallbackRegistry';
 
 const Points: React.FC = () => {
   const selfClient = useSelfClient();
-
-  const { bottom } = useSafeAreaInsets();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [isGeneralSubscribed, setIsGeneralSubscribed] = useState(false);
@@ -418,25 +414,7 @@ const Points: React.FC = () => {
 
   return (
     <YStack flex={1} backgroundColor={slate50}>
-      <ZStack flex={1}>
-        <PointHistoryList ListHeaderComponent={ListHeader} />
-        <YStack
-          style={[styles.exploreButtonContainer, { bottom: bottom + 20 }]}
-        >
-          <Button
-            style={styles.exploreButton}
-            onPress={() => {
-              selfClient.trackEvent(PointEvents.EXPLORE_APPS);
-              navigation.navigate('WebView', {
-                url: appsUrl,
-                title: 'Explore Apps',
-              });
-            }}
-          >
-            <Text style={styles.exploreButtonText}>Explore apps</Text>
-          </Button>
-        </YStack>
-      </ZStack>
+      <PointHistoryList ListHeaderComponent={ListHeader} />
     </YStack>
   );
 };
@@ -563,31 +541,6 @@ const styles = StyleSheet.create({
     fontFamily: dinot,
     fontSize: 16,
     color: blue600,
-  },
-  blurView: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 100,
-  },
-  exploreButtonContainer: {
-    position: 'absolute',
-    left: 20,
-    right: 20,
-  },
-  exploreButton: {
-    backgroundColor: black,
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-    borderRadius: 5,
-    height: 52,
-  },
-  exploreButtonText: {
-    fontFamily: dinot,
-    fontSize: 16,
-    color: white,
-    textAlign: 'center',
   },
   helpButton: {
     position: 'absolute',
