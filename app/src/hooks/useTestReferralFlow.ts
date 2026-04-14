@@ -13,7 +13,8 @@ const TEST_REFERRER = '0x1234567890123456789012345678901234567890';
  * Hook for testing referral flow in DEV mode.
  * Provides automatic timeout trigger (3 seconds) and manual trigger function.
  *
- * Flow: Sets referrer → shows confirmation modal → on confirm → registers referral
+ * Flow: Sets referrer → shows confirmation modal → on confirm, checks prerequisites
+ * → if identity doc & points disclosure done → registers referral → navigates to Gratification
  *
  * @param shouldAutoTrigger - Whether to automatically trigger the flow after 3 seconds (default: false)
  */

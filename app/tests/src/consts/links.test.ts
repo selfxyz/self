@@ -62,6 +62,7 @@ describe('links', () => {
       expect(links.selfUrl).toContain('self.xyz');
       expect(links.privacyUrl).toContain('self.xyz');
       expect(links.termsUrl).toContain('self.xyz');
+      expect(links.appsUrl).toContain('self.xyz');
       expect(links.referralBaseUrl).toContain('self.xyz');
       expect(links.apiBaseUrl).toContain('self.xyz');
       expect(links.pointsApiBaseUrl).toContain('self.xyz');

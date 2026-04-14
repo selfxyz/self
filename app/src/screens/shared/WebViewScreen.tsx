@@ -51,7 +51,7 @@ type WebViewScreenProps = NativeStackScreenProps<
 >;
 
 const defaultUrl = selfUrl;
-const fallbackUrl = 'https://self.xyz';
+const fallbackUrl = 'https://apps.self.xyz';
 
 const styles = StyleSheet.create({
   webViewContainer: {

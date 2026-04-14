@@ -6,7 +6,8 @@ import type { LottieViewProps } from 'lottie-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Linking, StyleSheet, View } from 'react-native';
 import { ScrollView, Spinner } from 'tamagui';
-import { useIsFocused } from '@react-navigation/native';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { DelayedLottieView, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import loadingAnimation from '@selfxyz/mobile-sdk-alpha/animations/loading/misc.json';
@@ -29,6 +30,8 @@ import {
   notificationSuccess,
 } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
+import type { RootStackParamList } from '@/navigation';
+import { getWhiteListedDisclosureAddresses } from '@/services/points/utils';
 import { useProofHistoryStore } from '@/stores/proofHistoryStore';
 import { ProofStatus } from '@/stores/proofTypes';
 
@@ -39,6 +42,8 @@ const SuccessScreen: React.FC = () => {
   const selfApp = useSelfAppStore(state => state.selfApp);
   const appName = selfApp?.appName;
   const goHome = useHapticNavigation('Home');
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const { updateProofStatus } = useProofHistoryStore();
 
@@ -53,18 +58,28 @@ const SuccessScreen: React.FC = () => {
     useState<LottieViewProps['source']>(loadingAnimation);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [countdownStarted, setCountdownStarted] = useState(false);
+  const [whitelistedPoints, setWhitelistedPoints] = useState<number | null>(
+    null,
+  );
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const onOkPress = useCallback(async () => {
     buttonTap();
-    goHome();
-    const completedSessionId = sessionId;
-    setTimeout(() => {
-      if (useProvingStore.getState().uuid === completedSessionId) {
+
+    if (whitelistedPoints !== null) {
+      navigation.navigate('Gratification', {
+        points: whitelistedPoints,
+      });
+      setTimeout(() => {
         selfClient.getSelfAppState().cleanSelfApp();
-      }
-    }, 2000);
-  }, [goHome, selfClient, sessionId, useProvingStore]);
+      }, 2000);
+    } else {
+      goHome();
+      setTimeout(() => {
+        selfClient.getSelfAppState().cleanSelfApp();
+      }, 2000);
+    }
+  }, [whitelistedPoints, navigation, goHome, selfClient]);
 
   function cancelDeeplinkCallbackRedirect() {
     setCountdown(null);
@@ -89,6 +104,27 @@ const SuccessScreen: React.FC = () => {
         sessionId,
         appName,
       });
+
+      if (selfApp?.endpoint && whitelistedPoints === null) {
+        const checkWhitelist = async () => {
+          try {
+            const whitelistedContracts =
+              await getWhiteListedDisclosureAddresses();
+            const endpoint = selfApp.endpoint.toLowerCase();
+            const whitelistedContract = whitelistedContracts.find(
+              c => c.contract_address.toLowerCase() === endpoint,
+            );
+
+            if (whitelistedContract) {
+              setWhitelistedPoints(whitelistedContract.points_per_disclosure);
+            }
+          } catch (error) {
+            console.error('Error checking whitelist:', error);
+          }
+        };
+
+        checkWhitelist();
+      }
 
       if (isFocused && !countdownStarted && selfApp?.deeplinkCallback) {
         if (selfApp?.deeplinkCallback) {
@@ -134,7 +170,9 @@ const SuccessScreen: React.FC = () => {
     reason,
     updateProofStatus,
     selfApp?.deeplinkCallback,
+    selfApp?.endpoint,
     countdownStarted,
+    whitelistedPoints,
   ]);
 
   useEffect(() => {
