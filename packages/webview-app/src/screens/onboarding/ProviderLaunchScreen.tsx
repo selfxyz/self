@@ -127,7 +127,7 @@ export const ProviderLaunchScreen: React.FC = () => {
     let cancelled = false;
     const controller = new AbortController();
 
-    if (environment !== 'prod') {
+    if (environment !== 'prod' && !defaultNextPath.includes('mock=demo')) {
       (async () => {
         try {
           setPhase('waiting');
@@ -306,12 +306,12 @@ export const ProviderLaunchScreen: React.FC = () => {
       {phase === 'waiting' && (
         <div
           style={{
-            position: 'absolute',
-            inset: 0,
-            zIndex: 1,
-            overflow: 'hidden',
+            width: '100vw',
+            height: '100vh',
             display: 'flex',
             flexDirection: 'column',
+            position: 'relative',
+            overflow: 'hidden',
           }}
         >
           <KycPendingScreen
