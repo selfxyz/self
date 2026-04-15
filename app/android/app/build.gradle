@@ -123,12 +123,6 @@ android {
 
     namespace "com.proofofpassportapp"
 
-    // Build optimizations
-    dexOptions {
-        javaMaxHeapSize "4g"
-        preDexLibraries false
-    }
-
     buildFeatures {
         buildConfig = true
         viewBinding = true
