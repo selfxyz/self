@@ -74,13 +74,8 @@ function mapProvingStateToStep(state: ProvingStateType | null, phase: Phase): Pr
   }
 }
 
-export const TunnelProvingScreen: React.FC = () => {
-  const location = useLocation();
+const StandardTunnelProvingScreen: React.FC = () => {
   const navigate = useNavigate();
-
-  if (isDemoMode(location.search)) {
-    return <DemoTunnelProvingScreen search={location.search} />;
-  }
   const { client, analytics, haptic } = useSelfClient();
   const verificationCtx = useVerificationRequest();
   const currentState = useProvingStore(s => s.currentState);
@@ -156,4 +151,14 @@ export const TunnelProvingScreen: React.FC = () => {
       idCardProps={getIdCardProps(passportData?.documentCategory)}
     />
   );
+};
+
+export const TunnelProvingScreen: React.FC = () => {
+  const location = useLocation();
+
+  if (isDemoMode(location.search)) {
+    return <DemoTunnelProvingScreen search={location.search} />;
+  }
+
+  return <StandardTunnelProvingScreen />;
 };

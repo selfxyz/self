@@ -88,13 +88,8 @@ function mapDiscloseStateToStep(state: ProvingStateType | null): ProofGeneration
   }
 }
 
-export const TunnelDiscloseScreen: React.FC = () => {
-  const location = useLocation();
+const StandardTunnelDiscloseScreen: React.FC = () => {
   const navigate = useNavigate();
-
-  if (isDemoMode(location.search)) {
-    return <DemoTunnelDiscloseScreen search={location.search} />;
-  }
   const { client, analytics, haptic } = useSelfClient();
   const verificationCtx = useVerificationRequest();
   const { appName, appEndpoint, timestamp } = verificationCtx;
@@ -201,4 +196,14 @@ export const TunnelDiscloseScreen: React.FC = () => {
       step={mapDiscloseStateToStep(currentState)}
     />
   );
+};
+
+export const TunnelDiscloseScreen: React.FC = () => {
+  const location = useLocation();
+
+  if (isDemoMode(location.search)) {
+    return <DemoTunnelDiscloseScreen search={location.search} />;
+  }
+
+  return <StandardTunnelDiscloseScreen />;
 };
