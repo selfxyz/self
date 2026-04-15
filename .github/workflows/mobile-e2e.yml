@@ -485,6 +485,8 @@ jobs:
       # mobile-deploy.yml uses secrets for production deployment
       IOS_PROJECT_NAME: "Self"
       IOS_PROJECT_SCHEME: "OpenPassport"
+      IOS_SIMULATOR_DEVICE: "iPhone SE (3rd generation)"
+      IOS_SIMULATOR_RUNTIME: "18.4"
     steps:
       - uses: actions/checkout@v6
       - name: Read and sanitize Node.js version
@@ -696,79 +698,61 @@ jobs:
         env:
           SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
           E2E_TESTING: 1
+      - name: Find iOS Simulator
+        id: find-ios-simulator
+        uses: ./.github/actions/find-ios-simulator
+        with:
+          preferred-device: ${{ env.IOS_SIMULATOR_DEVICE }}
+          preferred-runtime: ${{ env.IOS_SIMULATOR_RUNTIME }}
       - name: Setup iOS Simulator
         run: |
           echo "Setting up iOS Simulator..."
 
           # Ensure simulator directories exist
           mkdir -p "$HOME/Library/Developer/CoreSimulator/Devices"
-
-          # First, check what simulators are actually available
-          echo "Available simulators:"
-          xcrun simctl list devices available || {
-            echo "❌ Failed to list available devices"
-            echo "Trying to list all devices:"
-            xcrun simctl list devices || {
-              echo "❌ Failed to list any devices"
-              exit 1
-            }
+          wait_for_simulator() {
+            local simulator_id="$1"
+            for attempt in {1..24}; do
+              if xcrun simctl spawn "$simulator_id" launchctl print system >/dev/null 2>&1; then
+                return 0
+              fi
+              echo "Simulator not ready yet (attempt $attempt/24)..."
+              sleep 5
+            done
+            return 1
           }
 
-          # Find iPhone SE (3rd generation) simulator
-          echo "Finding iPhone SE (3rd generation) simulator..."
-          AVAILABLE_SIMULATOR=$(xcrun simctl list devices available | grep "iPhone SE (3rd generation)" | head -1 | sed -E 's/.*\(([A-F0-9-]+)\).*/\1/')
+          echo "Available simulators:"
+          xcrun simctl list devices available
 
-          if [ -z "$AVAILABLE_SIMULATOR" ]; then
-            echo "iPhone SE (3rd generation) not found, trying any iPhone SE..."
-            AVAILABLE_SIMULATOR=$(xcrun simctl list devices available | grep "iPhone SE" | head -1 | sed -E 's/.*\(([A-F0-9-]+)\).*/\1/')
+          SIMULATOR_ID="${{ steps.find-ios-simulator.outputs.id }}"
+          SIMULATOR_NAME="${{ steps.find-ios-simulator.outputs.name }}"
+          SIMULATOR_RUNTIME="${{ steps.find-ios-simulator.outputs.runtime }}"
+
+          if [ -z "$SIMULATOR_ID" ]; then
+            echo "❌ No matching iPhone simulator found for ${IOS_SIMULATOR_DEVICE} on iOS ${IOS_SIMULATOR_RUNTIME}"
+            exit 1
           fi
 
-          if [ -z "$AVAILABLE_SIMULATOR" ]; then
-            echo "No iPhone SE found, trying any iPhone..."
-            AVAILABLE_SIMULATOR=$(xcrun simctl list devices available | grep "iPhone" | head -1 | sed -E 's/.*\(([A-F0-9-]+)\).*/\1/')
-          fi
+          echo "Using simulator: $SIMULATOR_NAME ($SIMULATOR_ID) [$SIMULATOR_RUNTIME]"
+          echo "Resetting simulator to a clean state before boot..."
+          xcrun simctl shutdown "$SIMULATOR_ID" 2>/dev/null || true
+          xcrun simctl erase "$SIMULATOR_ID"
+          xcrun simctl boot "$SIMULATOR_ID" || true
+          xcrun simctl bootstatus "$SIMULATOR_ID" -b
 
-          if [ -z "$AVAILABLE_SIMULATOR" ]; then
-            echo "❌ No available iPhone simulator found"
-            echo "Creating a new iPhone SE (3rd generation) simulator..."
-            # Create a new iPhone SE (3rd generation) simulator
-            xcrun simctl create "iPhone SE (3rd generation)" "iPhone SE (3rd generation)" || {
-              echo "❌ Failed to create iPhone SE (3rd generation) simulator"
-              echo "Trying to create any iPhone SE simulator..."
-              xcrun simctl create "iPhone SE" "iPhone SE" || {
-                echo "❌ Failed to create simulator"
-                exit 1
-              }
-            }
-            AVAILABLE_SIMULATOR=$(xcrun simctl list devices | grep "iPhone SE" | sed -E 's/.*\(([A-F0-9-]+)\).*/\1/')
-          fi
-
-          echo "Using simulator: $AVAILABLE_SIMULATOR"
-
-          # Get simulator name for display
-          SIMULATOR_NAME=$(xcrun simctl list devices | grep "$AVAILABLE_SIMULATOR" | sed -E 's/^[[:space:]]*([^(]+).*/\1/' | xargs)
-          echo "Simulator name: $SIMULATOR_NAME"
-
-          # Boot simulator and wait for it to be ready
-          echo "Booting simulator..."
-          xcrun simctl boot "$AVAILABLE_SIMULATOR" || {
-            echo "❌ Failed to boot simulator"
+          echo "Waiting for simulator services to be ready..."
+          wait_for_simulator "$SIMULATOR_ID" || {
+            echo "❌ Simulator failed readiness checks"
             exit 1
           }
 
-          echo "Waiting for simulator to be ready..."
-          xcrun simctl bootstatus "$AVAILABLE_SIMULATOR" -b
-
-          # Wait for simulator to be fully ready
-          echo "Waiting for simulator to be fully ready..."
-          sleep 15
-
           echo "Simulator status:"
-          xcrun simctl list devices | grep "$AVAILABLE_SIMULATOR"
+          xcrun simctl list devices | grep "$SIMULATOR_ID"
 
-          # Store simulator ID for later use
-          echo "IOS_SIMULATOR_ID=$AVAILABLE_SIMULATOR" >> $GITHUB_ENV
-          echo "IOS_SIMULATOR_NAME=$SIMULATOR_NAME" >> $GITHUB_ENV
+          echo "IOS_SIMULATOR_ID=$SIMULATOR_ID" >> "$GITHUB_ENV"
+          echo "IOS_SIMULATOR_NAME=$SIMULATOR_NAME" >> "$GITHUB_ENV"
+          echo "IOS_SIMULATOR_RUNTIME=$SIMULATOR_RUNTIME" >> "$GITHUB_ENV"
       - name: Resolve iOS workspace
         run: |
           WORKSPACE_OPEN="app/ios/OpenPassport.xcworkspace"
@@ -827,6 +811,25 @@ jobs:
         continue-on-error: true
         id: maestro-test
         run: |
+          wait_for_app_install() {
+            local simulator_id="$1"
+            local bundle_id="$2"
+            for attempt in {1..12}; do
+              if xcrun simctl get_app_container "$simulator_id" "$bundle_id" app >/dev/null 2>&1; then
+                return 0
+              fi
+              echo "App container not ready yet (attempt $attempt/12)..."
+              sleep 5
+            done
+            return 1
+          }
+
+          run_maestro() {
+            MAESTRO_DEVICE_ID="$SIMULATOR_ID" \
+            MAESTRO_DRIVER_STARTUP_TIMEOUT=180000 \
+            maestro test app/tests/e2e/launch.ios.flow.yaml --format junit --output app/maestro-results.xml 2>&1
+          }
+
           echo "Installing app on simulator..."
           APP_PATH=$(find app/ios/build/Build/Products/Debug-iphonesimulator -name "*.app" | head -1)
           [ -z "$APP_PATH" ] && { echo "❌ Could not find built iOS app"; exit 1; }
@@ -840,12 +843,6 @@ jobs:
           # Use the dynamic simulator ID
           SIMULATOR_ID="${IOS_SIMULATOR_ID:-iPhone SE (3rd generation)}"
           echo "Installing on simulator: $SIMULATOR_ID"
-
-          echo "Erasing simulator to ensure clean state..."
-          xcrun simctl shutdown "$SIMULATOR_ID" 2>/dev/null || true
-          xcrun simctl erase "$SIMULATOR_ID"
-          xcrun simctl boot "$SIMULATOR_ID" || true
-          xcrun simctl bootstatus "$SIMULATOR_ID" -b
 
           echo "Removing any existing app installation..."
           xcrun simctl uninstall "$SIMULATOR_ID" "$IOS_BUNDLE_ID" 2>/dev/null || true
@@ -875,9 +872,7 @@ jobs:
           }
 
           echo "⏰ Checking simulator readiness..."
-          sleep 10
-          # Final readiness check (suppress errors to avoid annotations)
-          xcrun simctl get_app_container "$SIMULATOR_ID" "$IOS_BUNDLE_ID" app >/dev/null 2>&1 || sleep 5
+          wait_for_app_install "$SIMULATOR_ID" "$IOS_BUNDLE_ID" || echo "⚠️ App container readiness check timed out"
 
           echo ""
           echo "╔════════════════════════════════════════════════════════════════╗"
@@ -982,10 +977,16 @@ jobs:
           echo ""
 
           set +e  # Don't exit on error
-          # Run with explicit device ID, increased timeout, and verbose output
-          # Note: exit code 2 typically means Maestro couldn't connect to device or daemon
-          MAESTRO_OUTPUT=$(MAESTRO_DEVICE_ID="$SIMULATOR_ID" MAESTRO_DRIVER_STARTUP_TIMEOUT=180000 maestro test app/tests/e2e/launch.ios.flow.yaml --format junit --output app/maestro-results.xml 2>&1)
+          # Run with explicit device ID, increased timeout, and retry once for known startup flakes.
+          MAESTRO_OUTPUT=$(run_maestro)
           MAESTRO_EXIT_CODE=$?
+          if [ $MAESTRO_EXIT_CODE -ne 0 ] && printf '%s' "$MAESTRO_OUTPUT" | grep -Eq "MaestroDriverStartupException|IOSDriverTimeoutException"; then
+            echo "⚠️ Maestro driver startup failed, retrying once after 30s..."
+            sleep 30
+            MAESTRO_OUTPUT_RETRY=$(run_maestro)
+            MAESTRO_EXIT_CODE=$?
+            MAESTRO_OUTPUT=$(printf '%s\n\n===== RETRY AFTER DRIVER STARTUP FAILURE =====\n\n%s' "$MAESTRO_OUTPUT" "$MAESTRO_OUTPUT_RETRY")
+          fi
           set -e
 
           echo "Maestro command completed with exit code: $MAESTRO_EXIT_CODE"
@@ -1112,11 +1113,21 @@ jobs:
             fi
           fi
       - name: Upload test results
-        if: always() && env.ENABLE_MAESTRO_RECORDING == 'true'
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: maestro-results-ios
           path: app/maestro-results.xml
+          if-no-files-found: warn
+      - name: Upload test logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maestro-logs-ios
+          path: |
+            app/test-artifacts/maestro-output.log
+            app/test-artifacts/simulator-system.log
+            app/test-artifacts/*.crash
           if-no-files-found: warn
       - name: Upload test artifacts (video and screenshots)
         if: always() && env.ENABLE_MAESTRO_RECORDING == 'true'
