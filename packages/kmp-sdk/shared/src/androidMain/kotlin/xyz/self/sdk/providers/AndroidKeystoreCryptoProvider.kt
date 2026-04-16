@@ -12,7 +12,7 @@ import java.security.KeyStore
 import java.security.Signature
 import java.security.spec.ECGenParameterSpec
 
-class AndroidKeystoreCryptoProvider : CryptoProvider {
+internal class AndroidKeystoreCryptoProvider : CryptoProvider {
     private val keyStore: KeyStore = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
 
     override fun generateKey(keyRef: String) {

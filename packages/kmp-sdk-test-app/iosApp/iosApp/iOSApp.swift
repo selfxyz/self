@@ -8,7 +8,6 @@ import SelfSdkSwift
 
 // MARK: - Protocol conformance for required providers
 extension SecureStorageProviderImpl: SecureStorageProvider {}
-extension CryptoProviderImpl: CryptoProvider {}
 extension WebViewProviderImpl: WebViewProvider {}
 
 @main
@@ -16,7 +15,6 @@ struct iOSApp: App {
     init() {
         // Register only the 3-domain required providers
         SdkProviderRegistry.shared.secureStorage = SecureStorageProviderImpl()
-        SdkProviderRegistry.shared.crypto = CryptoProviderImpl()
         IosProviderRegistry.shared.webView = WebViewProviderImpl()
     }
 

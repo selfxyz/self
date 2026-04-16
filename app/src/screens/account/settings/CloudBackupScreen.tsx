@@ -40,6 +40,7 @@ type NextScreen = keyof Pick<RootStackParamList, 'SaveRecoveryPhrase'>;
 type CloudBackupScreenProps = StaticScreenProps<
   | {
       nextScreen?: NextScreen;
+      returnToScreen?: 'Points';
     }
   | undefined
 >;
@@ -174,6 +175,10 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
       await upload(storedMnemonic.data);
       toggleCloudBackupEnabled();
       trackEvent(BackupEvents.CLOUD_BACKUP_ENABLED_DONE);
+
+      if (params?.returnToScreen) {
+        navigation.navigate(params.returnToScreen);
+      }
     } catch (error) {
       console.error('iCloud backup error', error);
     } finally {
@@ -186,6 +191,8 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
     upload,
     toggleCloudBackupEnabled,
     trackEvent,
+    navigation,
+    params,
     selfClient,
     showNoRegisteredAccountModal,
   ]);
@@ -219,6 +226,9 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
   //     await backupAccount(mnemonics.data.phrase);
   //     setTurnkeyPending(false);
 
+  //     if (params?.returnToScreen) {
+  //       navigation.navigate(params.returnToScreen);
+  //     }
   //   } catch (error) {
   //     if (error instanceof Error && error.message === 'already_exists') {
   //       console.log('Already signed in with Turnkey');
@@ -228,7 +238,9 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
   //       error.message === 'already_backed_up'
   //     ) {
   //       console.log('Already backed up with Turnkey');
-  //       if (params?.nextScreen) {
+  //       if (params?.returnToScreen) {
+  //         navigation.navigate(params.returnToScreen);
+  //       } else if (params?.nextScreen) {
   //         navigation.navigate(params.nextScreen);
   //       } else {
   //         showAlreadyBackedUpModal();
