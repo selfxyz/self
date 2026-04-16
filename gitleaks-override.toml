@@ -6,6 +6,7 @@ description = "Project-specific overrides"
 paths = [
     '''(?:^|/)Podfile\.lock$''',
     '''(?:^|/)app/src/services/points/constants\.ts$''',
+    '''(?:^|/)packages/native-shell-android/src/main/assets/self-wallet/assets/.*\.js$''',
 ]
 regexes = [
     '''(?i)(?:token|key|address)[\w\s]*contract[\w\s]*=\s*['"]0x[a-f0-9]{40}['"]''',

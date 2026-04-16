@@ -66,6 +66,18 @@ describe('CameraHandler', () => {
     }
   });
 
+  it('scanMRZ throws MRZ_SCAN_CANCELLED when scanner cancellation is reported', async () => {
+    startScanning.mockRejectedValue({ code: 'MRZ_SCAN_CANCELLED' });
+
+    try {
+      await handler.handle('scanMRZ', {});
+      expect.unreachable('Should have thrown');
+    } catch (err: unknown) {
+      expect((err as { code: string }).code).toBe('MRZ_SCAN_CANCELLED');
+      expect((err as Error).message).toBe('MRZ scan cancelled');
+    }
+  });
+
   it('unknown method throws METHOD_NOT_FOUND', async () => {
     await expect(handler.handle('foo', {})).rejects.toThrow('Unknown camera method: foo');
   });

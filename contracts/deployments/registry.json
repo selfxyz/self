@@ -1,6 +1,6 @@
 {
   "$schema": "./registry.schema.json",
-  "lastUpdated": "2026-02-09T11:26:31.105Z",
+  "lastUpdated": "2026-03-02T10:19:46.004Z",
   "contracts": {
     "IdentityVerificationHub": {
       "source": "IdentityVerificationHubImplV2",
@@ -96,6 +96,30 @@
           "proxy": "0x16ECBA51e18a4a7e61fdC417f0d47AFEeDfbed74",
           "currentVersion": "2.13.0",
           "currentImpl": "0x244c93516Abd58E1952452d3D8C4Ce7D454776B8"
+        },
+        "IdentityRegistry": {
+          "proxy": "0x1651ec77c3dC5997eC05f3EE6C2B0b904b516d1d",
+          "currentVersion": "1.2.0",
+          "currentImpl": "0x873b1289b69C452Fd8349DbAfc748183eB5314ec"
+        },
+        "IdentityRegistryIdCard": {
+          "proxy": "0x6B39222c3b98003010695cE0A31C9b1a61e07DdC",
+          "currentVersion": "1.2.0",
+          "currentImpl": "0xF4781c7e801D1E49aa3A95537FaEF7718f4499Cd"
+        },
+        "IdentityRegistryAadhaar": {
+          "proxy": "0x9cbB71468f93672DBF50f511c038eAF9fAB04732",
+          "currentVersion": "1.2.0",
+          "currentImpl": "0x74A2848D945eCffeE325dAbc9E0b72c118fAD327"
+        },
+        "IdentityRegistryKyc": {
+          "proxy": "0x90e907E4AaB6e9bcFB94997Af4A097e8CAadBdf3",
+          "currentVersion": "1.2.0",
+          "currentImpl": "0x6E2889Bc9baa6F53bDdf4843675155811F0AAAEd"
+        },
+        "PCR0Manager": {
+          "address": "0xf2810D5E9938816D42F0Ae69D33F013a23C0aED2",
+          "currentVersion": "1.2.0"
         }
       }
     },
@@ -158,20 +182,6 @@
         "changelog": "Upgrade to v2.13.0",
         "gitTag": "identityverificationhub-v2.13.0",
         "deployments": {
-          "celo-sepolia": {
-            "impl": "0x244c93516Abd58E1952452d3D8C4Ce7D454776B8",
-            "deployedAt": "2026-02-02T14:47:21.882Z",
-            "deployedBy": "0x82D8DaC3a386dec55a0a44DffBd3113e8A7D139B",
-            "gitCommit": "33bca485"
-          }
-        }
-      },
-      "2.13.0": {
-        "initializerVersion": 12,
-        "initializerFunction": "",
-        "changelog": "Upgrade to v2.13.0",
-        "gitTag": "identityverificationhub-v2.13.0",
-        "deployments": {
           "celo": {
             "impl": "0x0D911083b2F2236D79EF20bb58AAf6009a1220B5",
             "deployedAt": "2026-02-09T11:26:30.941Z",
@@ -192,6 +202,12 @@
             "impl": "0x81E7F74560FAF7eE8DE3a36A5a68B6cbc429Cd36",
             "deployedAt": "2025-12-10T05:53:12.534Z",
             "deployedBy": "0xCaEe7aAF115F04D836E2D362A7c07F04db436bd0",
+            "gitCommit": ""
+          },
+          "celo-sepolia": {
+            "impl": "0x873b1289b69C452Fd8349DbAfc748183eB5314ec",
+            "deployedAt": "2025-09-16T04:37:22.000Z",
+            "deployedBy": "0x82D8DaC3a386dec55a0a44DffBd3113e8A7D139B",
             "gitCommit": ""
           }
         }
@@ -223,6 +239,12 @@
             "deployedAt": "2025-12-10T05:45:56.772Z",
             "deployedBy": "0xCaEe7aAF115F04D836E2D362A7c07F04db436bd0",
             "gitCommit": ""
+          },
+          "celo-sepolia": {
+            "impl": "0xF4781c7e801D1E49aa3A95537FaEF7718f4499Cd",
+            "deployedAt": "2025-09-16T04:38:58.000Z",
+            "deployedBy": "0x82D8DaC3a386dec55a0a44DffBd3113e8A7D139B",
+            "gitCommit": ""
           }
         }
       },
@@ -252,6 +274,12 @@
             "impl": "0xbD861A9cecf7B0A9631029d55A8CE1155e50697c",
             "deployedAt": "2025-12-10T05:47:22.844Z",
             "deployedBy": "0xCaEe7aAF115F04D836E2D362A7c07F04db436bd0",
+            "gitCommit": ""
+          },
+          "celo-sepolia": {
+            "impl": "0x74A2848D945eCffeE325dAbc9E0b72c118fAD327",
+            "deployedAt": "2025-09-16T04:41:01.000Z",
+            "deployedBy": "0x82D8DaC3a386dec55a0a44DffBd3113e8A7D139B",
             "gitCommit": ""
           }
         }
@@ -283,6 +311,12 @@
             "deployedAt": "2025-12-10T06:17:50.863Z",
             "deployedBy": "0xCaEe7aAF115F04D836E2D362A7c07F04db436bd0",
             "gitCommit": "5787cff3bcbea870b50eccd7164fbd45b758568e"
+          },
+          "celo-sepolia": {
+            "impl": "0xf2810D5E9938816D42F0Ae69D33F013a23C0aED2",
+            "deployedAt": "2026-02-01T08:26:56.000Z",
+            "deployedBy": "0x82D8DaC3a386dec55a0a44DffBd3113e8A7D139B",
+            "gitCommit": ""
           }
         }
       }
@@ -299,6 +333,40 @@
             "deployedAt": "2026-02-09T00:00:00.000Z",
             "deployedBy": "",
             "gitCommit": "03876a86284b0ed794fbff7aae142e62a3212624"
+          },
+          "celo-sepolia": {
+            "impl": "0x94f6DE38E10140B9E3963a770B5B769b38459a3B",
+            "deployedAt": "2026-02-01T08:27:21.000Z",
+            "deployedBy": "0x82D8DaC3a386dec55a0a44DffBd3113e8A7D139B",
+            "gitCommit": ""
+          }
+        }
+      },
+      "1.1.0": {
+        "initializerVersion": 1,
+        "initializerFunction": "",
+        "changelog": "Add TEE-attested OFAC root updates via updateOfacRootsWithProof",
+        "gitTag": "identityregistrykyc-v1.1.0",
+        "deployments": {
+          "celo-sepolia": {
+            "impl": "0x530eEA7E5b286108926B05510491560c4bAE018e",
+            "deployedAt": "2026-03-02T05:00:49.070Z",
+            "deployedBy": "0xC1C860804EFdA544fe79194d1a37e60b846CEdeb",
+            "gitCommit": ""
+          }
+        }
+      },
+      "1.2.0": {
+        "initializerVersion": 1,
+        "initializerFunction": "",
+        "changelog": "Add rolling OFAC root window: store previous roots alongside current, accept either in checkOfacRoots for graceful mid-verification transitions",
+        "gitTag": "identityregistrykyc-v1.2.0",
+        "deployments": {
+          "celo-sepolia": {
+            "impl": "0x6E2889Bc9baa6F53bDdf4843675155811F0AAAEd",
+            "deployedAt": "2026-03-02T10:19:45.990Z",
+            "deployedBy": "0x82D8DaC3a386dec55a0a44DffBd3113e8A7D139B",
+            "gitCommit": "611c30d21"
           }
         }
       }

@@ -26,12 +26,15 @@
 		8FBA8FA051DB77C9C52EDDF3 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A78F43717F170EC139960991 /* ExpoModulesProvider.swift */; };
 		905B70052A72767900AFA232 /* PassportReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 905B70042A72767900AFA232 /* PassportReader.swift */; };
 		905B70072A72774000AFA232 /* PassportReader.m in Sources */ = {isa = PBXBuildFile; fileRef = 905B70062A72774000AFA232 /* PassportReader.m */; };
+		90D1C0012F00000000AFA232 /* PassportReaderCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90D1C0002F00000000AFA232 /* PassportReaderCore.swift */; };
 		97E31F23A5A11A2C115FE2BB /* Pods_Self.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C0823092D57FC544FD63682A /* Pods_Self.framework */; };
 		AE6147EC2DC95A8D00445C0F /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = AE6147EB2DC95A8D00445C0F /* GoogleService-Info.plist */; };
 		B49D2B112E28AA7900946F64 /* IBMPlexMono-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = B49D2B102E28AA7900946F64 /* IBMPlexMono-Regular.otf */; };
+		BB000002000000000000001A /* MrzOcrCorrection.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB000002000000000000001B /* MrzOcrCorrection.swift */; };
+		BB000003000000000000001A /* MrzResultMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB000003000000000000001B /* MrzResultMapper.swift */; };
 		BF1044812DD53540009B3688 /* LiveMRZScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF1044802DD53540009B3688 /* LiveMRZScannerView.swift */; };
 		BF1044832DD5354F009B3688 /* CameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF1044822DD5354F009B3688 /* CameraView.swift */; };
-		BF1044852DD53570009B3688 /* MRZScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF1044842DD53570009B3688 /* MRZScanner.swift */; };
+		BF1044852DD53570009B3688 /* MrzScanEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF1044842DD53570009B3688 /* MrzScanEngine.swift */; };
 		BF5649262F43B1EB00DE07A1 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF5649252F43B1E700DE07A1 /* AppDelegate.swift */; };
 		BF6F0D552E38ED81008EA85C /* SelfAnalytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6F0D542E38ED81008EA85C /* SelfAnalytics.swift */; };
 		BFBA0C772E339D2B00E82A52 /* NativeLoggerBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFBA0C762E339D2B00E82A52 /* NativeLoggerBridge.swift */; };
@@ -69,14 +72,17 @@
 		905B70042A72767900AFA232 /* PassportReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassportReader.swift; sourceTree = "<group>"; };
 		905B70062A72774000AFA232 /* PassportReader.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PassportReader.m; sourceTree = "<group>"; };
 		905B70082A729CD400AFA232 /* OpenPassport.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = OpenPassport.entitlements; path = OpenPassport/OpenPassport.entitlements; sourceTree = "<group>"; };
+		90D1C0002F00000000AFA232 /* PassportReaderCore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassportReaderCore.swift; sourceTree = "<group>"; };
 		9BF744D9A73A4BAC96EC569A /* DINOT-Medium.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "DINOT-Medium.otf"; path = "../src/assets/fonts/DINOT-Medium.otf"; sourceTree = "<group>"; };
 		A1B2C3D4E5F6A7B8C9D0E1F2 /* DINOT-Bold.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "DINOT-Bold.otf"; path = "../src/assets/fonts/DINOT-Bold.otf"; sourceTree = "<group>"; };
 		A78F43717F170EC139960991 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-Self/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 		AE6147EB2DC95A8D00445C0F /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		B49D2B102E28AA7900946F64 /* IBMPlexMono-Regular.otf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "IBMPlexMono-Regular.otf"; path = "../src/assets/fonts/IBMPlexMono-Regular.otf"; sourceTree = SOURCE_ROOT; };
+		BB000002000000000000001B /* MrzOcrCorrection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MrzOcrCorrection.swift; sourceTree = "<group>"; };
+		BB000003000000000000001B /* MrzResultMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MrzResultMapper.swift; sourceTree = "<group>"; };
 		BF1044802DD53540009B3688 /* LiveMRZScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveMRZScannerView.swift; sourceTree = "<group>"; };
 		BF1044822DD5354F009B3688 /* CameraView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraView.swift; sourceTree = "<group>"; };
-		BF1044842DD53570009B3688 /* MRZScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRZScanner.swift; sourceTree = "<group>"; };
+		BF1044842DD53570009B3688 /* MrzScanEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MrzScanEngine.swift; sourceTree = "<group>"; };
 		BF5649252F43B1E700DE07A1 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		BF6F0D542E38ED81008EA85C /* SelfAnalytics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelfAnalytics.swift; sourceTree = "<group>"; };
 		BFBA0C762E339D2B00E82A52 /* NativeLoggerBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeLoggerBridge.swift; sourceTree = "<group>"; };
@@ -110,7 +116,9 @@
 				BF6F0D542E38ED81008EA85C /* SelfAnalytics.swift */,
 				BFBA0C782E33A01F00E82A52 /* NativeLoggerBridge.m */,
 				BFBA0C762E339D2B00E82A52 /* NativeLoggerBridge.swift */,
-				BF1044842DD53570009B3688 /* MRZScanner.swift */,
+				BF1044842DD53570009B3688 /* MrzScanEngine.swift */,
+				BB000002000000000000001B /* MrzOcrCorrection.swift */,
+				BB000003000000000000001B /* MrzResultMapper.swift */,
 				BF1044822DD5354F009B3688 /* CameraView.swift */,
 				BF1044802DD53540009B3688 /* LiveMRZScannerView.swift */,
 				AE6147EB2DC95A8D00445C0F /* GoogleService-Info.plist */,
@@ -124,6 +132,7 @@
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				905B70042A72767900AFA232 /* PassportReader.swift */,
+				90D1C0002F00000000AFA232 /* PassportReaderCore.swift */,
 				165E76C22B8DC8370000FA90 /* ScannerHostingController.swift */,
 				905B70062A72774000AFA232 /* PassportReader.m */,
 				165E76BC2B8DC4A00000FA90 /* MRZScannerModule.swift */,
@@ -435,9 +444,12 @@
 				905B70072A72774000AFA232 /* PassportReader.m in Sources */,
 				BFBA0C792E33A01F00E82A52 /* NativeLoggerBridge.m in Sources */,
 				16E6646E2B8D292500FDD6A0 /* QKMRZScannerViewRepresentable.swift in Sources */,
-				BF1044852DD53570009B3688 /* MRZScanner.swift in Sources */,
+				BF1044852DD53570009B3688 /* MrzScanEngine.swift in Sources */,
+				BB000002000000000000001A /* MrzOcrCorrection.swift in Sources */,
+				BB000003000000000000001A /* MrzResultMapper.swift in Sources */,
 				165E76BF2B8DC53A0000FA90 /* MRZScannerModule.m in Sources */,
 				905B70052A72767900AFA232 /* PassportReader.swift in Sources */,
+				90D1C0012F00000000AFA232 /* PassportReaderCore.swift in Sources */,
 				BF5649262F43B1EB00DE07A1 /* AppDelegate.swift in Sources */,
 				165E76C32B8DC8370000FA90 /* ScannerHostingController.swift in Sources */,
 				E9F9A99C2D57FE2900E1362E /* PassportOCRViewManager.m in Sources */,
@@ -465,7 +477,7 @@
 				CODE_SIGN_ENTITLEMENTS = OpenPassport/OpenPassportDebug.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 189;
+				CURRENT_PROJECT_VERSION = 218;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_BITCODE = NO;
@@ -569,7 +581,7 @@
 				INFOPLIST_FILE = OpenPassport/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = OpenPassport;
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Needed only if you want to upload QRcodes";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -581,7 +593,7 @@
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/MoproKit/Libs",
 				);
-				MARKETING_VERSION = 2.9.16;
+				MARKETING_VERSION = 2.9.17;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -608,7 +620,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = OpenPassport/OpenPassport.entitlements;
-				CURRENT_PROJECT_VERSION = 189;
+				CURRENT_PROJECT_VERSION = 218;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_RESOURCE_ACCESS_CAMERA = YES;
@@ -712,7 +724,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = OpenPassport;
 				INFOPLIST_KEY_NSDocumentsFolderUsageDescription = "";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Needed only if you want to upload QRcodes";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -723,7 +735,7 @@
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/MoproKit/Libs",
 				);
-				MARKETING_VERSION = 2.9.16;
+				MARKETING_VERSION = 2.9.17;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -812,7 +824,7 @@
 					"${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers",
 				);
 				INFOPLIST_KEY_NSCameraUsageDescription = "Needed to scan your passport MRZ, you can however enter it manually.";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.4;
 				LD = "";
 				LDPLUSPLUS = "";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -909,7 +921,7 @@
 					"${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers",
 				);
 				INFOPLIST_KEY_NSCameraUsageDescription = "Needed to scan your passport MRZ, you can however enter it manually.";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.4;
 				LD = "";
 				LDPLUSPLUS = "";
 				LD_RUNPATH_SEARCH_PATHS = (

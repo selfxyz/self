@@ -1,22 +1,23 @@
 import { wasm as wasmTester } from 'circom_tester';
 import * as path from 'path';
 import {
-  NON_OFAC_DUMMY_INPUT,
-  OFAC_DUMMY_INPUT,
-  KYC_MAX_LENGTH,
-  serializeKycData,
-} from '@selfxyz/common';
+  NON_OFAC_DUMMY_KYC_DATA,
+  OFAC_DUMMY_KYC_DATA,
+} from '@selfxyz/new-common/src/testing/genMockKycData.js';
+import { serializeKycData } from '@selfxyz/new-common/src/documents/kyc/types.js';
+import { KYC_MAX_LENGTH } from '@selfxyz/new-common/src/documents/kyc/constants.js';
+import { generateKycDiscloseInputFromDummy } from '@selfxyz/new-common/src/circuits/inputs/disclose-kyc.js';
+import type { KycField } from '@selfxyz/new-common/src/documents/kyc/constants.js';
 import { SMT } from '@openpassport/zk-kit-smt';
 import { poseidon2 } from 'poseidon-lite';
-import { unpackReveal } from '@selfxyz/common/utils/circuits/formatOutputs.js';
+import { unpackReveal } from '@selfxyz/new-common/src/circuits/outputs/format.js';
 import { deepEqual } from 'assert';
 import { expect } from 'chai';
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
-import { generateKycDiscloseInput } from '@selfxyz/common/utils/kyc/generateInputs';
-import { KycField } from '@selfxyz/common/utils/kyc/constants';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
 
-const __dirname = path.dirname(__filename);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Load KYC OFAC trees at module level
 const nameAndDobKycjson = JSON.parse(
@@ -80,7 +81,7 @@ describe('VC_AND_DISCLOSE KYC Circuit Tests', () => {
 
   it('should verify for correct Circuit Input and output', async function () {
     this.timeout(0);
-    const input = generateKycDiscloseInput(
+    const input = generateKycDiscloseInputFromDummy(
       false,
       namedob_smt,
       nameyob_smt,
@@ -100,7 +101,7 @@ describe('VC_AND_DISCLOSE KYC Circuit Tests', () => {
 
   it('should fail for invalid msg ascii', async function () {
     this.timeout(0);
-    const input = generateKycDiscloseInput(
+    const input = generateKycDiscloseInputFromDummy(
       false,
       namedob_smt,
       nameyob_smt,
@@ -130,7 +131,7 @@ describe('VC_AND_DISCLOSE KYC Circuit Tests', () => {
 
   it('should return 0 for an OFAC person', async function () {
     this.timeout(0);
-    const input = generateKycDiscloseInput(
+    const input = generateKycDiscloseInputFromDummy(
       true,
       namedob_smt,
       nameyob_smt,
@@ -148,7 +149,7 @@ describe('VC_AND_DISCLOSE KYC Circuit Tests', () => {
     await circuit.checkConstraints(witness);
 
     const revealedData_packed = await getRevealedDataPacked(witness);
-    const revealedDataUnpacked = unpackReveal(revealedData_packed, 'id');
+    const revealedDataUnpacked = unpackReveal(revealedData_packed);
     const ofac_results = revealedDataUnpacked.slice(maxLength, maxLength + 2);
 
     deepEqual(ofac_results, ['\x00', '\x00']);
@@ -156,7 +157,7 @@ describe('VC_AND_DISCLOSE KYC Circuit Tests', () => {
 
   it('should return 0 for an OFAC person with reverse', async function () {
     this.timeout(0);
-    const input = generateKycDiscloseInput(
+    const input = generateKycDiscloseInputFromDummy(
       true,
       namedob_smt,
       nameyob_smt,
@@ -175,7 +176,7 @@ describe('VC_AND_DISCLOSE KYC Circuit Tests', () => {
     await circuit.checkConstraints(witness);
 
     const revealedData_packed = await getRevealedDataPacked(witness);
-    const revealedDataUnpacked = unpackReveal(revealedData_packed, 'id');
+    const revealedDataUnpacked = unpackReveal(revealedData_packed);
     const ofac_results = revealedDataUnpacked.slice(maxLength, maxLength + 2);
 
     deepEqual(ofac_results, ['\x00', '\x00']);
@@ -183,7 +184,7 @@ describe('VC_AND_DISCLOSE KYC Circuit Tests', () => {
 
   it('should return 1 for a non OFAC person', async function () {
     this.timeout(0);
-    const input = generateKycDiscloseInput(
+    const input = generateKycDiscloseInputFromDummy(
       false,
       namedob_smt,
       nameyob_smt,
@@ -201,7 +202,7 @@ describe('VC_AND_DISCLOSE KYC Circuit Tests', () => {
     await circuit.checkConstraints(witness);
 
     const revealedData_packed = await getRevealedDataPacked(witness);
-    const revealedDataUnpacked = unpackReveal(revealedData_packed, 'id');
+    const revealedDataUnpacked = unpackReveal(revealedData_packed);
     const ofac_results = revealedDataUnpacked.slice(maxLength, maxLength + 2);
 
     deepEqual(ofac_results, ['\x01', '\x01']);
@@ -223,7 +224,7 @@ describe('VC_AND_DISCLOSE KYC Circuit Tests', () => {
       'GENDER',
       'ADDRESS',
     ];
-    const input = generateKycDiscloseInput(
+    const input = generateKycDiscloseInputFromDummy(
       false,
       namedob_smt,
       nameyob_smt,
@@ -241,9 +242,9 @@ describe('VC_AND_DISCLOSE KYC Circuit Tests', () => {
     await circuit.checkConstraints(witness);
 
     const revealedData_packed = await getRevealedDataPacked(witness);
-    const revealedDataUnpacked = unpackReveal(revealedData_packed, 'id');
+    const revealedDataUnpacked = unpackReveal(revealedData_packed);
 
-    const serializedData = Buffer.from(serializeKycData(NON_OFAC_DUMMY_INPUT), 'utf8');
+    const serializedData = Buffer.from(serializeKycData(NON_OFAC_DUMMY_KYC_DATA), 'utf8');
     const serializedArray = Array.from(serializedData);
 
     for (let i = 0; i < Math.min(serializedArray.length, maxLength); i++) {
@@ -280,7 +281,7 @@ describe('VC_AND_DISCLOSE KYC Circuit Tests', () => {
       'GENDER',
       'ADDRESS',
     ];
-    const input = generateKycDiscloseInput(
+    const input = generateKycDiscloseInputFromDummy(
       true,
       namedob_smt,
       nameyob_smt,
@@ -299,9 +300,9 @@ describe('VC_AND_DISCLOSE KYC Circuit Tests', () => {
     await circuit.checkConstraints(witness);
 
     const revealedData_packed = await getRevealedDataPacked(witness);
-    const revealedDataUnpacked = unpackReveal(revealedData_packed, 'id');
+    const revealedDataUnpacked = unpackReveal(revealedData_packed);
 
-    const serializedData = Buffer.from(serializeKycData(OFAC_DUMMY_INPUT), 'utf8');
+    const serializedData = Buffer.from(serializeKycData(OFAC_DUMMY_KYC_DATA), 'utf8');
     const serializedArray = Array.from(serializedData);
 
     for (let i = 0; i < Math.min(serializedArray.length, maxLength); i++) {

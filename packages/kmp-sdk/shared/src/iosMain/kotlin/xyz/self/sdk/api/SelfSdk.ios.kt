@@ -14,15 +14,10 @@ import platform.UIKit.UIWindowScene
 import platform.darwin.dispatch_async
 import platform.darwin.dispatch_get_main_queue
 import xyz.self.sdk.bridge.MessageRouter
-import xyz.self.sdk.handlers.AnalyticsBridgeHandler
-import xyz.self.sdk.handlers.BiometricBridgeHandler
-import xyz.self.sdk.handlers.CameraMrzBridgeHandler
 import xyz.self.sdk.handlers.CryptoBridgeHandler
-import xyz.self.sdk.handlers.DocumentsBridgeHandler
-import xyz.self.sdk.handlers.HapticBridgeHandler
 import xyz.self.sdk.handlers.LifecycleBridgeHandler
-import xyz.self.sdk.handlers.NfcBridgeHandler
 import xyz.self.sdk.handlers.SecureStorageBridgeHandler
+import xyz.self.sdk.providers.IosProviderRegistry
 import xyz.self.sdk.providers.SdkProviderRegistry
 import xyz.self.sdk.webview.IosWebViewHost
 
@@ -44,10 +39,12 @@ actual class SelfSdk private constructor(
 
     actual companion object {
         private var instance: SelfSdk? = null
+        private var configuredWith: SelfSdkConfig? = null
 
         actual fun configure(config: SelfSdkConfig): SelfSdk {
-            if (instance == null) {
+            if (instance == null || configuredWith != config) {
                 instance = SelfSdk(config)
+                configuredWith = config
             }
             return instance!!
         }
@@ -57,9 +54,10 @@ actual class SelfSdk private constructor(
         request: VerificationRequest,
         callback: SelfSdkCallback,
     ) {
-        check(SdkProviderRegistry.isConfigured()) {
-            "SdkProviderRegistry is not configured. " +
-                "Call SelfSdkSwift.configure() from your iOS app before launching the SDK."
+        check(SdkProviderRegistry.isConfigured() && IosProviderRegistry.webView != null) {
+            "SDK providers not configured. " +
+                "Call SelfSdkSwift.configure() from your iOS app before launching the SDK. " +
+                "Required: secureStorage and webView providers."
         }
 
         // Store callback for later
@@ -95,17 +93,26 @@ actual class SelfSdk private constructor(
             )
         }
 
-        // Register all iOS bridge handlers
+        // Register 3-domain bridge handlers
         registerHandlers(router!!, lifecycleHandler)
 
+        // Build query params from config + request
+        val queryParams = QueryParamsBuilder.build(config, request)
+
         // Create WebView host and the web view
-        webViewHost = IosWebViewHost(router!!, config.debug)
-        webViewHost!!.createWebView()
+        webViewHost =
+            IosWebViewHost(
+                router!!,
+                config.debug,
+                remoteWebAppBaseUrl = config.remoteWebAppBaseUrl,
+                devServerUrl = config.devServerUrl,
+            )
+        webViewHost!!.createWebView(queryParams)
 
         // Get the ViewController from the WebView provider and present it
         val sdkVC =
             (
-                SdkProviderRegistry.webView
+                IosProviderRegistry.webView
                     ?: throw IllegalStateException("WebView provider not configured. Call SelfSdkSwift.configure() first.")
             ).getViewController()
         sdkVC.setModalPresentationStyle(UIModalPresentationFullScreen)
@@ -144,14 +151,8 @@ actual class SelfSdk private constructor(
         router: MessageRouter,
         lifecycleHandler: LifecycleBridgeHandler,
     ) {
-        router.register(BiometricBridgeHandler())
         router.register(SecureStorageBridgeHandler())
         router.register(CryptoBridgeHandler())
-        router.register(HapticBridgeHandler())
-        router.register(AnalyticsBridgeHandler())
         router.register(lifecycleHandler)
-        router.register(DocumentsBridgeHandler())
-        router.register(CameraMrzBridgeHandler())
-        router.register(NfcBridgeHandler(router))
     }
 }

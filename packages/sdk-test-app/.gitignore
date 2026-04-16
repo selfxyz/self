@@ -1,0 +1,14 @@
+# Android
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+
+# iOS
+ios/SelfTestApp.xcodeproj/
+ios/build/
+ios/.build/
+ios/DerivedData/
+
+# Gradle wrapper jar (binary)
+android/gradle/wrapper/gradle-wrapper.jar

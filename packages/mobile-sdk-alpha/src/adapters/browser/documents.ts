@@ -12,6 +12,17 @@ const DOCUMENTS_STORE = 'documents';
 const CATALOG_STORE = 'catalog';
 const CATALOG_KEY = 'current';
 
+export function cloneForStorage<T>(value: T): T {
+  if (typeof globalThis.structuredClone === 'function') {
+    try {
+      return globalThis.structuredClone(value);
+    } catch {
+      // Fall through to the JSON clone for WebViews with partial implementations.
+    }
+  }
+  return JSON.parse(JSON.stringify(value)) as T;
+}
+
 function openDB(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
@@ -83,7 +94,7 @@ export function createIndexedDBDocumentsAdapter(): DocumentsAdapter {
 
     async saveDocumentCatalog(catalog: DocumentCatalog): Promise<void> {
       const db = await getDB();
-      await txPut(db, CATALOG_STORE, CATALOG_KEY, structuredClone(catalog));
+      await txPut(db, CATALOG_STORE, CATALOG_KEY, cloneForStorage(catalog));
     },
 
     async loadDocumentById(id: string): Promise<IDDocument | null> {
@@ -94,7 +105,7 @@ export function createIndexedDBDocumentsAdapter(): DocumentsAdapter {
 
     async saveDocument(id: string, passportData: IDDocument): Promise<void> {
       const db = await getDB();
-      await txPut(db, DOCUMENTS_STORE, id, structuredClone(passportData));
+      await txPut(db, DOCUMENTS_STORE, id, cloneForStorage(passportData));
     },
 
     async deleteDocument(id: string): Promise<void> {

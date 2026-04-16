@@ -35,7 +35,7 @@ repos/self/
 │   ├── rn-sdk/                 # React Native SDK wrapper (consumer-facing)
 │   ├── mobile-sdk-demo/        # SDK demo application
 │   ├── kmp-sdk/                # Kotlin Multiplatform SDK (future architecture)
-│   ├── kmp-test-app/           # KMP test application
+│   ├── kmp-sdk-test-app/           # KMP test application
 │   └── self-sdk-swift/         # Swift SDK
 │
 ├── sdk/

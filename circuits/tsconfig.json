@@ -13,16 +13,15 @@
     "baseUrl": ".",
     "composite": false,
     "paths": {
-      "@selfxyz/common/utils/*": ["../common/src/utils/*"],
-      "@selfxyz/common/constants/*": ["../common/src/constants/*"],
-      "@selfxyz/common": ["../common/index.ts"]
+      "@selfxyz/new-common/src/*": ["../new-common/src/*"],
+      "@selfxyz/new-common": ["../new-common/src/index.ts"]
     }
   },
-  "include": ["tests/**/*", "tests/**/*.json", "src/**/*", "../common/src/**/*"],
+  "include": ["tests/**/*", "tests/**/*.json", "src/**/*"],
   "exclude": ["node_modules"],
   "references": [
     {
-      "path": "../common"
+      "path": "../new-common"
     }
   ]
 }

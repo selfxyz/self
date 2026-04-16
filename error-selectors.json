@@ -3,798 +3,840 @@
     "name": "REGISTERED_COMMITMENT",
     "signature": "REGISTERED_COMMITMENT()",
     "selector": "0x034acfcc",
-    "file": "contracts/contracts/registry/IdentityRegistryAadhaarImplV1.sol",
-    "line": 136
+    "file": "contracts/contracts/registry/IdentityRegistryAadhaarImplV1.sol"
   },
   {
     "name": "REGISTERED_COMMITMENT",
     "signature": "REGISTERED_COMMITMENT()",
     "selector": "0x034acfcc",
-    "file": "contracts/contracts/registry/IdentityRegistryIdCardImplV1.sol",
-    "line": 144
+    "file": "contracts/contracts/registry/IdentityRegistryIdCardImplV1.sol"
   },
   {
     "name": "REGISTERED_COMMITMENT",
     "signature": "REGISTERED_COMMITMENT()",
     "selector": "0x034acfcc",
-    "file": "contracts/contracts/registry/IdentityRegistryImplV1.sol",
-    "line": 151
+    "file": "contracts/contracts/registry/IdentityRegistryImplV1.sol"
   },
   {
     "name": "REGISTERED_COMMITMENT",
     "signature": "REGISTERED_COMMITMENT()",
     "selector": "0x034acfcc",
-    "file": "contracts/contracts/registry/IdentityRegistryKycImplV1.sol",
-    "line": 179
+    "file": "contracts/contracts/registry/IdentityRegistryKycImplV1.sol"
   },
   {
     "name": "InvalidProof",
     "signature": "InvalidProof()",
     "selector": "0x09bde339",
-    "file": "contracts/contracts/example/Airdrop.sol",
-    "line": 57
+    "file": "contracts/contracts/example/Airdrop.sol"
   },
   {
     "name": "InvalidProof",
     "signature": "InvalidProof()",
     "selector": "0x09bde339",
-    "file": "contracts/contracts/tests/TestAirdrop.sol",
-    "line": 35
+    "file": "contracts/contracts/tests/TestAirdrop.sol"
   },
   {
     "name": "InvalidPubSignalsLength",
     "signature": "InvalidPubSignalsLength(uint256,uint256)",
     "selector": "0x0b42b970",
-    "file": "contracts/contracts/libraries/RegisterProofVerifierLib.sol",
-    "line": 43
+    "file": "contracts/contracts/libraries/RegisterProofVerifierLib.sol"
   },
   {
     "name": "NoVerifierSet",
     "signature": "NoVerifierSet()",
     "selector": "0x0ee78d58",
-    "file": "contracts/contracts/IdentityVerificationHubImplV2.sol",
-    "line": 151
+    "file": "contracts/contracts/IdentityVerificationHubImplV2.sol"
   },
   {
     "name": "NoVerifierSet",
     "signature": "NoVerifierSet()",
     "selector": "0x0ee78d58",
-    "file": "contracts/contracts/libraries/DscProofVerifierLib.sol",
-    "line": 17
+    "file": "contracts/contracts/libraries/DscProofVerifierLib.sol"
   },
   {
     "name": "NoVerifierSet",
     "signature": "NoVerifierSet()",
     "selector": "0x0ee78d58",
-    "file": "contracts/contracts/libraries/RegisterProofVerifierLib.sol",
-    "line": 22
+    "file": "contracts/contracts/libraries/RegisterProofVerifierLib.sol"
   },
   {
     "name": "INVALID_TIMESTAMP",
     "signature": "INVALID_TIMESTAMP()",
     "selector": "0x118818d1",
-    "file": "contracts/contracts/registry/IdentityRegistryKycImplV1.sol",
-    "line": 189
+    "file": "contracts/contracts/registry/IdentityRegistryAadhaarImplV1.sol"
+  },
+  {
+    "name": "INVALID_TIMESTAMP",
+    "signature": "INVALID_TIMESTAMP()",
+    "selector": "0x118818d1",
+    "file": "contracts/contracts/registry/IdentityRegistryIdCardImplV1.sol"
+  },
+  {
+    "name": "INVALID_TIMESTAMP",
+    "signature": "INVALID_TIMESTAMP()",
+    "selector": "0x118818d1",
+    "file": "contracts/contracts/registry/IdentityRegistryImplV1.sol"
+  },
+  {
+    "name": "INVALID_TIMESTAMP",
+    "signature": "INVALID_TIMESTAMP()",
+    "selector": "0x118818d1",
+    "file": "contracts/contracts/registry/IdentityRegistryKycImplV1.sol"
+  },
+  {
+    "name": "InvalidRootsCount",
+    "signature": "InvalidRootsCount()",
+    "selector": "0x128781c2",
+    "file": "contracts/contracts/registry/IdentityRegistryAadhaarImplV1.sol"
+  },
+  {
+    "name": "InvalidRootsCount",
+    "signature": "InvalidRootsCount()",
+    "selector": "0x128781c2",
+    "file": "contracts/contracts/registry/IdentityRegistryIdCardImplV1.sol"
+  },
+  {
+    "name": "InvalidRootsCount",
+    "signature": "InvalidRootsCount()",
+    "selector": "0x128781c2",
+    "file": "contracts/contracts/registry/IdentityRegistryImplV1.sol"
+  },
+  {
+    "name": "InvalidRootsCount",
+    "signature": "InvalidRootsCount()",
+    "selector": "0x128781c2",
+    "file": "contracts/contracts/registry/IdentityRegistryKycImplV1.sol"
   },
   {
     "name": "InvalidAttestationId",
     "signature": "InvalidAttestationId()",
     "selector": "0x12ec75fe",
-    "file": "contracts/contracts/IdentityVerificationHubImplV2.sol",
-    "line": 183
+    "file": "contracts/contracts/IdentityVerificationHubImplV2.sol"
   },
   {
     "name": "InvalidAttestationId",
     "signature": "InvalidAttestationId()",
     "selector": "0x12ec75fe",
-    "file": "contracts/contracts/libraries/CustomVerifier.sol",
-    "line": 10
+    "file": "contracts/contracts/libraries/CustomVerifier.sol"
   },
   {
     "name": "InvalidAttestationId",
     "signature": "InvalidAttestationId()",
     "selector": "0x12ec75fe",
-    "file": "contracts/contracts/libraries/DscProofVerifierLib.sol",
-    "line": 26
+    "file": "contracts/contracts/libraries/DscProofVerifierLib.sol"
   },
   {
     "name": "InvalidAttestationId",
     "signature": "InvalidAttestationId()",
     "selector": "0x12ec75fe",
-    "file": "contracts/contracts/libraries/OfacCheckLib.sol",
-    "line": 22
+    "file": "contracts/contracts/libraries/OfacCheckLib.sol"
   },
   {
     "name": "InvalidAttestationId",
     "signature": "InvalidAttestationId()",
     "selector": "0x12ec75fe",
-    "file": "contracts/contracts/libraries/ProofVerifierLib.sol",
-    "line": 21
+    "file": "contracts/contracts/libraries/ProofVerifierLib.sol"
   },
   {
     "name": "InvalidAttestationId",
     "signature": "InvalidAttestationId()",
     "selector": "0x12ec75fe",
-    "file": "contracts/contracts/libraries/RegisterProofVerifierLib.sol",
-    "line": 31
+    "file": "contracts/contracts/libraries/RegisterProofVerifierLib.sol"
   },
   {
     "name": "InvalidAttestationId",
     "signature": "InvalidAttestationId()",
     "selector": "0x12ec75fe",
-    "file": "contracts/contracts/libraries/RootCheckLib.sol",
-    "line": 22
+    "file": "contracts/contracts/libraries/RootCheckLib.sol"
   },
   {
     "name": "RegistrationNotOpen",
     "signature": "RegistrationNotOpen()",
     "selector": "0x153745d3",
-    "file": "contracts/contracts/example/Airdrop.sol",
-    "line": 66
+    "file": "contracts/contracts/example/Airdrop.sol"
   },
   {
     "name": "RegistrationNotOpen",
     "signature": "RegistrationNotOpen()",
     "selector": "0x153745d3",
-    "file": "contracts/contracts/tests/TestAirdrop.sol",
-    "line": 38
+    "file": "contracts/contracts/tests/TestAirdrop.sol"
   },
   {
     "name": "InvalidDscProof",
     "signature": "InvalidDscProof()",
     "selector": "0x1644e049",
-    "file": "contracts/contracts/IdentityVerificationHubImplV2.sol",
-    "line": 163
+    "file": "contracts/contracts/IdentityVerificationHubImplV2.sol"
   },
   {
     "name": "InvalidDscProof",
     "signature": "InvalidDscProof()",
     "selector": "0x1644e049",
-    "file": "contracts/contracts/libraries/DscProofVerifierLib.sol",
-    "line": 20
+    "file": "contracts/contracts/libraries/DscProofVerifierLib.sol"
   },
   {
     "name": "InvalidYearRange",
     "signature": "InvalidYearRange()",
     "selector": "0x16f40c94",
-    "file": "contracts/contracts/libraries/Formatter.sol",
-    "line": 12
+    "file": "contracts/contracts/libraries/Formatter.sol"
   },
   {
     "name": "InvalidDateDigit",
     "signature": "InvalidDateDigit()",
     "selector": "0x17af8154",
-    "file": "contracts/contracts/libraries/Formatter.sol",
-    "line": 16
+    "file": "contracts/contracts/libraries/Formatter.sol"
   },
   {
     "name": "INVALID_OFAC_ROOT",
     "signature": "INVALID_OFAC_ROOT()",
     "selector": "0x1ce3d3ca",
-    "file": "contracts/contracts/IdentityVerificationHubImplV1.sol",
-    "line": 176
+    "file": "contracts/contracts/IdentityVerificationHubImplV1.sol"
   },
   {
     "name": "HUB_ADDRESS_ZERO",
     "signature": "HUB_ADDRESS_ZERO()",
     "selector": "0x22697ffa",
-    "file": "contracts/contracts/registry/IdentityRegistryAadhaarImplV1.sol",
-    "line": 138
+    "file": "contracts/contracts/registry/IdentityRegistryAadhaarImplV1.sol"
   },
   {
     "name": "HUB_ADDRESS_ZERO",
     "signature": "HUB_ADDRESS_ZERO()",
     "selector": "0x22697ffa",
-    "file": "contracts/contracts/registry/IdentityRegistryKycImplV1.sol",
-    "line": 181
+    "file": "contracts/contracts/registry/IdentityRegistryKycImplV1.sol"
   },
   {
     "name": "RegisteredNullifier",
     "signature": "RegisteredNullifier()",
     "selector": "0x22cbc6a2",
-    "file": "contracts/contracts/example/Airdrop.sol",
-    "line": 81
+    "file": "contracts/contracts/example/Airdrop.sol"
   },
   {
     "name": "RegisteredNullifier",
     "signature": "RegisteredNullifier()",
     "selector": "0x22cbc6a2",
-    "file": "contracts/contracts/tests/TestAirdrop.sol",
-    "line": 43
+    "file": "contracts/contracts/tests/TestAirdrop.sol"
   },
   {
     "name": "InvalidMonthRange",
     "signature": "InvalidMonthRange()",
     "selector": "0x25e62788",
-    "file": "contracts/contracts/libraries/Formatter.sol",
-    "line": 13
+    "file": "contracts/contracts/libraries/Formatter.sol"
   },
   {
     "name": "ONLY_TEE_CAN_ACCESS",
     "signature": "ONLY_TEE_CAN_ACCESS()",
     "selector": "0x2822d0cb",
-    "file": "contracts/contracts/registry/IdentityRegistryKycImplV1.sol",
-    "line": 177
+    "file": "contracts/contracts/registry/IdentityRegistryAadhaarImplV1.sol"
+  },
+  {
+    "name": "ONLY_TEE_CAN_ACCESS",
+    "signature": "ONLY_TEE_CAN_ACCESS()",
+    "selector": "0x2822d0cb",
+    "file": "contracts/contracts/registry/IdentityRegistryIdCardImplV1.sol"
+  },
+  {
+    "name": "ONLY_TEE_CAN_ACCESS",
+    "signature": "ONLY_TEE_CAN_ACCESS()",
+    "selector": "0x2822d0cb",
+    "file": "contracts/contracts/registry/IdentityRegistryImplV1.sol"
+  },
+  {
+    "name": "ONLY_TEE_CAN_ACCESS",
+    "signature": "ONLY_TEE_CAN_ACCESS()",
+    "selector": "0x2822d0cb",
+    "file": "contracts/contracts/registry/IdentityRegistryKycImplV1.sol"
   },
   {
     "name": "UserIdentifierAlreadyRegistered",
     "signature": "UserIdentifierAlreadyRegistered()",
     "selector": "0x29393238",
-    "file": "contracts/contracts/example/Airdrop.sol",
-    "line": 78
+    "file": "contracts/contracts/example/Airdrop.sol"
   },
   {
     "name": "UserIdentifierAlreadyRegistered",
     "signature": "UserIdentifierAlreadyRegistered()",
     "selector": "0x29393238",
-    "file": "contracts/contracts/tests/TestAirdrop.sol",
-    "line": 42
+    "file": "contracts/contracts/tests/TestAirdrop.sol"
+  },
+  {
+    "name": "InvalidRootsHash",
+    "signature": "InvalidRootsHash()",
+    "selector": "0x372c4a4b",
+    "file": "contracts/contracts/registry/IdentityRegistryAadhaarImplV1.sol"
+  },
+  {
+    "name": "InvalidRootsHash",
+    "signature": "InvalidRootsHash()",
+    "selector": "0x372c4a4b",
+    "file": "contracts/contracts/registry/IdentityRegistryIdCardImplV1.sol"
+  },
+  {
+    "name": "InvalidRootsHash",
+    "signature": "InvalidRootsHash()",
+    "selector": "0x372c4a4b",
+    "file": "contracts/contracts/registry/IdentityRegistryImplV1.sol"
+  },
+  {
+    "name": "InvalidRootsHash",
+    "signature": "InvalidRootsHash()",
+    "selector": "0x372c4a4b",
+    "file": "contracts/contracts/registry/IdentityRegistryKycImplV1.sol"
   },
   {
     "name": "InvalidFieldElement",
     "signature": "InvalidFieldElement()",
     "selector": "0x3ae4ed6b",
-    "file": "contracts/contracts/libraries/Formatter.sol",
-    "line": 15
+    "file": "contracts/contracts/libraries/Formatter.sol"
   },
   {
     "name": "InvalidPubkey",
     "signature": "InvalidPubkey()",
     "selector": "0x422cc3b7",
-    "file": "contracts/contracts/IdentityVerificationHubImplV2.sol",
-    "line": 211
+    "file": "contracts/contracts/IdentityVerificationHubImplV2.sol"
   },
   {
     "name": "InvalidPubkey",
     "signature": "InvalidPubkey()",
     "selector": "0x422cc3b7",
-    "file": "contracts/contracts/libraries/RegisterProofVerifierLib.sol",
-    "line": 34
+    "file": "contracts/contracts/libraries/RegisterProofVerifierLib.sol"
   },
   {
     "name": "InvalidOlderThan",
     "signature": "InvalidOlderThan()",
     "selector": "0x49aecbc2",
-    "file": "contracts/contracts/libraries/CustomVerifier.sol",
-    "line": 13
+    "file": "contracts/contracts/libraries/CustomVerifier.sol"
   },
   {
     "name": "InvalidDscCommitmentRoot",
     "signature": "InvalidDscCommitmentRoot()",
     "selector": "0x4cb305bb",
-    "file": "contracts/contracts/IdentityVerificationHubImplV2.sol",
-    "line": 175
+    "file": "contracts/contracts/IdentityVerificationHubImplV2.sol"
   },
   {
     "name": "InvalidDscCommitmentRoot",
     "signature": "InvalidDscCommitmentRoot()",
     "selector": "0x4cb305bb",
-    "file": "contracts/contracts/libraries/RegisterProofVerifierLib.sol",
-    "line": 28
+    "file": "contracts/contracts/libraries/RegisterProofVerifierLib.sol"
   },
   {
     "name": "HUB_NOT_SET",
     "signature": "HUB_NOT_SET()",
     "selector": "0x4ffa9998",
-    "file": "contracts/contracts/registry/IdentityRegistryAadhaarImplV1.sol",
-    "line": 132
+    "file": "contracts/contracts/registry/IdentityRegistryAadhaarImplV1.sol"
   },
   {
     "name": "HUB_NOT_SET",
     "signature": "HUB_NOT_SET()",
     "selector": "0x4ffa9998",
-    "file": "contracts/contracts/registry/IdentityRegistryIdCardImplV1.sol",
-    "line": 140
+    "file": "contracts/contracts/registry/IdentityRegistryIdCardImplV1.sol"
   },
   {
     "name": "HUB_NOT_SET",
     "signature": "HUB_NOT_SET()",
     "selector": "0x4ffa9998",
-    "file": "contracts/contracts/registry/IdentityRegistryImplV1.sol",
-    "line": 147
+    "file": "contracts/contracts/registry/IdentityRegistryImplV1.sol"
   },
   {
     "name": "HUB_NOT_SET",
     "signature": "HUB_NOT_SET()",
     "selector": "0x4ffa9998",
-    "file": "contracts/contracts/registry/IdentityRegistryKycImplV1.sol",
-    "line": 171
+    "file": "contracts/contracts/registry/IdentityRegistryKycImplV1.sol"
   },
   {
     "name": "INVALID_COMMITMENT_ROOT",
     "signature": "INVALID_COMMITMENT_ROOT()",
     "selector": "0x52906601",
-    "file": "contracts/contracts/IdentityVerificationHubImplV1.sol",
-    "line": 172
+    "file": "contracts/contracts/IdentityVerificationHubImplV1.sol"
   },
   {
     "name": "UnauthorizedCaller",
     "signature": "UnauthorizedCaller()",
     "selector": "0x5c427cd9",
-    "file": "contracts/contracts/abstract/SelfVerificationRoot.sol",
-    "line": 49
+    "file": "contracts/contracts/abstract/SelfVerificationRoot.sol"
   },
   {
     "name": "UnauthorizedCaller",
     "signature": "UnauthorizedCaller()",
     "selector": "0x5c427cd9",
-    "file": "contracts/contracts/abstract/SelfVerificationRootUpgradeable.sol",
-    "line": 69
+    "file": "contracts/contracts/abstract/SelfVerificationRootUpgradeable.sol"
   },
   {
     "name": "UserIdentifierAlreadyMinted",
     "signature": "UserIdentifierAlreadyMinted()",
     "selector": "0x5dd09265",
-    "file": "contracts/contracts/example/SelfIdentityERC721.sol",
-    "line": 51
+    "file": "contracts/contracts/example/SelfIdentityERC721.sol"
   },
   {
     "name": "UserIdentifierAlreadyMinted",
     "signature": "UserIdentifierAlreadyMinted()",
     "selector": "0x5dd09265",
-    "file": "contracts/contracts/example/SelfPassportERC721.sol",
-    "line": 48
+    "file": "contracts/contracts/example/SelfPassportERC721.sol"
   },
   {
     "name": "InvalidOfacCheck",
     "signature": "InvalidOfacCheck()",
     "selector": "0x5fb542f4",
-    "file": "contracts/contracts/libraries/CustomVerifier.sol",
-    "line": 11
+    "file": "contracts/contracts/libraries/CustomVerifier.sol"
   },
   {
     "name": "CrossChainIsNotSupportedYet",
     "signature": "CrossChainIsNotSupportedYet()",
     "selector": "0x61296fbb",
-    "file": "contracts/contracts/IdentityVerificationHubImplV2.sol",
-    "line": 191
+    "file": "contracts/contracts/IdentityVerificationHubImplV2.sol"
   },
   {
     "name": "AlreadyClaimed",
     "signature": "AlreadyClaimed()",
     "selector": "0x646cf558",
-    "file": "contracts/contracts/example/Airdrop.sol",
-    "line": 60
+    "file": "contracts/contracts/example/Airdrop.sol"
   },
   {
     "name": "AlreadyClaimed",
     "signature": "AlreadyClaimed()",
     "selector": "0x646cf558",
-    "file": "contracts/contracts/example/HappyBirthday.sol",
-    "line": 67
+    "file": "contracts/contracts/example/HappyBirthday.sol"
   },
   {
     "name": "AlreadyClaimed",
     "signature": "AlreadyClaimed()",
     "selector": "0x646cf558",
-    "file": "contracts/contracts/tests/TestAirdrop.sol",
-    "line": 36
+    "file": "contracts/contracts/tests/TestAirdrop.sol"
   },
   {
     "name": "InputTooShort",
     "signature": "InputTooShort()",
     "selector": "0x65ec0cf1",
-    "file": "contracts/contracts/IdentityVerificationHubImplV2.sol",
-    "line": 195
+    "file": "contracts/contracts/IdentityVerificationHubImplV2.sol"
   },
   {
     "name": "InvalidRegisterProof",
     "signature": "InvalidRegisterProof()",
     "selector": "0x67b61dc7",
-    "file": "contracts/contracts/IdentityVerificationHubImplV2.sol",
-    "line": 159
+    "file": "contracts/contracts/IdentityVerificationHubImplV2.sol"
   },
   {
     "name": "InvalidRegisterProof",
     "signature": "InvalidRegisterProof()",
     "selector": "0x67b61dc7",
-    "file": "contracts/contracts/libraries/RegisterProofVerifierLib.sol",
-    "line": 25
+    "file": "contracts/contracts/libraries/RegisterProofVerifierLib.sol"
   },
   {
     "name": "RegistrationNotClosed",
     "signature": "RegistrationNotClosed()",
     "selector": "0x697e379b",
-    "file": "contracts/contracts/example/Airdrop.sol",
-    "line": 69
+    "file": "contracts/contracts/example/Airdrop.sol"
   },
   {
     "name": "RegistrationNotClosed",
     "signature": "RegistrationNotClosed()",
     "selector": "0x697e379b",
-    "file": "contracts/contracts/tests/TestAirdrop.sol",
-    "line": 39
+    "file": "contracts/contracts/tests/TestAirdrop.sol"
   },
   {
     "name": "INVALID_DSC_PROOF",
     "signature": "INVALID_DSC_PROOF()",
     "selector": "0x6a86dd76",
-    "file": "contracts/contracts/IdentityVerificationHubImplV1.sol",
-    "line": 164
+    "file": "contracts/contracts/IdentityVerificationHubImplV1.sol"
   },
   {
     "name": "ClaimNotOpen",
     "signature": "ClaimNotOpen()",
     "selector": "0x6b687806",
-    "file": "contracts/contracts/example/Airdrop.sol",
-    "line": 72
+    "file": "contracts/contracts/example/Airdrop.sol"
   },
   {
     "name": "ClaimNotOpen",
     "signature": "ClaimNotOpen()",
     "selector": "0x6b687806",
-    "file": "contracts/contracts/tests/TestAirdrop.sol",
-    "line": 40
+    "file": "contracts/contracts/tests/TestAirdrop.sol"
   },
   {
     "name": "InvalidUidaiTimestamp",
     "signature": "InvalidUidaiTimestamp(uint256,uint256)",
     "selector": "0x6f26ab8d",
-    "file": "contracts/contracts/IdentityVerificationHubImplV2.sol",
-    "line": 215
+    "file": "contracts/contracts/IdentityVerificationHubImplV2.sol"
   },
   {
     "name": "InvalidUidaiTimestamp",
     "signature": "InvalidUidaiTimestamp(uint256,uint256)",
     "selector": "0x6f26ab8d",
-    "file": "contracts/contracts/libraries/RegisterProofVerifierLib.sol",
-    "line": 37
+    "file": "contracts/contracts/libraries/RegisterProofVerifierLib.sol"
   },
   {
     "name": "INVALID_PROOF",
     "signature": "INVALID_PROOF()",
     "selector": "0x712eb087",
-    "file": "contracts/contracts/registry/IdentityRegistryKycImplV1.sol",
-    "line": 183
+    "file": "contracts/contracts/registry/IdentityRegistryAadhaarImplV1.sol"
+  },
+  {
+    "name": "INVALID_PROOF",
+    "signature": "INVALID_PROOF()",
+    "selector": "0x712eb087",
+    "file": "contracts/contracts/registry/IdentityRegistryIdCardImplV1.sol"
+  },
+  {
+    "name": "INVALID_PROOF",
+    "signature": "INVALID_PROOF()",
+    "selector": "0x712eb087",
+    "file": "contracts/contracts/registry/IdentityRegistryImplV1.sol"
+  },
+  {
+    "name": "INVALID_PROOF",
+    "signature": "INVALID_PROOF()",
+    "selector": "0x712eb087",
+    "file": "contracts/contracts/registry/IdentityRegistryKycImplV1.sol"
   },
   {
     "name": "INVALID_OFAC",
     "signature": "INVALID_OFAC()",
     "selector": "0x71b125ed",
-    "file": "contracts/contracts/IdentityVerificationHubImplV1.sol",
-    "line": 156
+    "file": "contracts/contracts/IdentityVerificationHubImplV1.sol"
   },
   {
     "name": "INVALID_IMAGE",
     "signature": "INVALID_IMAGE()",
     "selector": "0x7f91b413",
-    "file": "contracts/contracts/registry/IdentityRegistryKycImplV1.sol",
-    "line": 187
+    "file": "contracts/contracts/registry/IdentityRegistryAadhaarImplV1.sol"
+  },
+  {
+    "name": "INVALID_IMAGE",
+    "signature": "INVALID_IMAGE()",
+    "selector": "0x7f91b413",
+    "file": "contracts/contracts/registry/IdentityRegistryIdCardImplV1.sol"
+  },
+  {
+    "name": "INVALID_IMAGE",
+    "signature": "INVALID_IMAGE()",
+    "selector": "0x7f91b413",
+    "file": "contracts/contracts/registry/IdentityRegistryImplV1.sol"
+  },
+  {
+    "name": "INVALID_IMAGE",
+    "signature": "INVALID_IMAGE()",
+    "selector": "0x7f91b413",
+    "file": "contracts/contracts/registry/IdentityRegistryKycImplV1.sol"
   },
   {
     "name": "InvalidForbiddenCountries",
     "signature": "InvalidForbiddenCountries()",
     "selector": "0x82cba848",
-    "file": "contracts/contracts/libraries/CustomVerifier.sol",
-    "line": 12
+    "file": "contracts/contracts/libraries/CustomVerifier.sol"
   },
   {
     "name": "InsufficientCharcodeLen",
     "signature": "InsufficientCharcodeLen()",
     "selector": "0x86d41225",
-    "file": "contracts/contracts/libraries/CircuitAttributeHandler.sol",
-    "line": 15
+    "file": "contracts/contracts/libraries/CircuitAttributeHandler.sol"
   },
   {
     "name": "InsufficientCharcodeLen",
     "signature": "InsufficientCharcodeLen()",
     "selector": "0x86d41225",
-    "file": "contracts/contracts/libraries/CircuitAttributeHandlerV2.sol",
-    "line": 17
+    "file": "contracts/contracts/libraries/CircuitAttributeHandlerV2.sol"
   },
   {
     "name": "InsufficientCharcodeLen",
     "signature": "InsufficientCharcodeLen()",
     "selector": "0x86d41225",
-    "file": "contracts/contracts/libraries/IdCardAttributeHandler.sol",
-    "line": 16
+    "file": "contracts/contracts/libraries/IdCardAttributeHandler.sol"
   },
   {
     "name": "InvalidDayRange",
     "signature": "InvalidDayRange()",
     "selector": "0x8930acef",
-    "file": "contracts/contracts/libraries/Formatter.sol",
-    "line": 14
+    "file": "contracts/contracts/libraries/Formatter.sol"
   },
   {
     "name": "LENGTH_MISMATCH",
     "signature": "LENGTH_MISMATCH()",
     "selector": "0x899ef10d",
-    "file": "contracts/contracts/IdentityVerificationHubImplV1.sol",
-    "line": 136
+    "file": "contracts/contracts/IdentityVerificationHubImplV1.sol"
   },
   {
     "name": "NO_VERIFIER_SET",
     "signature": "NO_VERIFIER_SET()",
     "selector": "0x8e727f46",
-    "file": "contracts/contracts/IdentityVerificationHubImplV1.sol",
-    "line": 140
+    "file": "contracts/contracts/IdentityVerificationHubImplV1.sol"
   },
   {
     "name": "InvalidCscaRoot",
     "signature": "InvalidCscaRoot()",
     "selector": "0x8f1b44c7",
-    "file": "contracts/contracts/IdentityVerificationHubImplV2.sol",
-    "line": 179
+    "file": "contracts/contracts/IdentityVerificationHubImplV2.sol"
   },
   {
     "name": "InvalidCscaRoot",
     "signature": "InvalidCscaRoot()",
     "selector": "0x8f1b44c7",
-    "file": "contracts/contracts/libraries/DscProofVerifierLib.sol",
-    "line": 23
+    "file": "contracts/contracts/libraries/DscProofVerifierLib.sol"
   },
   {
     "name": "INVALID_REGISTER_PROOF",
     "signature": "INVALID_REGISTER_PROOF()",
     "selector": "0x9003ac4d",
-    "file": "contracts/contracts/IdentityVerificationHubImplV1.sol",
-    "line": 160
+    "file": "contracts/contracts/IdentityVerificationHubImplV1.sol"
   },
   {
     "name": "UserContextDataTooShort",
     "signature": "UserContextDataTooShort()",
     "selector": "0x94ec3503",
-    "file": "contracts/contracts/IdentityVerificationHubImplV2.sol",
-    "line": 199
+    "file": "contracts/contracts/IdentityVerificationHubImplV2.sol"
   },
   {
     "name": "NotWithinBirthdayWindow",
     "signature": "NotWithinBirthdayWindow()",
     "selector": "0x9b7983d7",
-    "file": "contracts/contracts/example/HappyBirthday.sol",
-    "line": 66
+    "file": "contracts/contracts/example/HappyBirthday.sol"
   },
   {
     "name": "INVALID_CSCA_ROOT",
     "signature": "INVALID_CSCA_ROOT()",
     "selector": "0xa294ad3c",
-    "file": "contracts/contracts/IdentityVerificationHubImplV1.sol",
-    "line": 180
+    "file": "contracts/contracts/IdentityVerificationHubImplV1.sol"
   },
   {
     "name": "InvalidDataFormat",
     "signature": "InvalidDataFormat()",
     "selector": "0xa512e2ff",
-    "file": "contracts/contracts/abstract/SelfVerificationRoot.sol",
-    "line": 45
+    "file": "contracts/contracts/abstract/SelfVerificationRoot.sol"
   },
   {
     "name": "InvalidDataFormat",
     "signature": "InvalidDataFormat()",
     "selector": "0xa512e2ff",
-    "file": "contracts/contracts/abstract/SelfVerificationRootUpgradeable.sol",
-    "line": 65
+    "file": "contracts/contracts/abstract/SelfVerificationRootUpgradeable.sol"
   },
   {
     "name": "ConfigNotSet",
     "signature": "ConfigNotSet()",
     "selector": "0xace124bc",
-    "file": "contracts/contracts/IdentityVerificationHubImplV2.sol",
-    "line": 207
+    "file": "contracts/contracts/IdentityVerificationHubImplV2.sol"
   },
   {
     "name": "InvalidDateLength",
     "signature": "InvalidDateLength()",
     "selector": "0xb3375953",
-    "file": "contracts/contracts/libraries/Formatter.sol",
-    "line": 11
+    "file": "contracts/contracts/libraries/Formatter.sol"
   },
   {
     "name": "ONLY_HUB_CAN_ACCESS",
     "signature": "ONLY_HUB_CAN_ACCESS()",
     "selector": "0xba0318cb",
-    "file": "contracts/contracts/registry/IdentityRegistryAadhaarImplV1.sol",
-    "line": 134
+    "file": "contracts/contracts/registry/IdentityRegistryAadhaarImplV1.sol"
   },
   {
     "name": "ONLY_HUB_CAN_ACCESS",
     "signature": "ONLY_HUB_CAN_ACCESS()",
     "selector": "0xba0318cb",
-    "file": "contracts/contracts/registry/IdentityRegistryIdCardImplV1.sol",
-    "line": 142
+    "file": "contracts/contracts/registry/IdentityRegistryIdCardImplV1.sol"
   },
   {
     "name": "ONLY_HUB_CAN_ACCESS",
     "signature": "ONLY_HUB_CAN_ACCESS()",
     "selector": "0xba0318cb",
-    "file": "contracts/contracts/registry/IdentityRegistryImplV1.sol",
-    "line": 149
+    "file": "contracts/contracts/registry/IdentityRegistryImplV1.sol"
   },
   {
     "name": "ONLY_HUB_CAN_ACCESS",
     "signature": "ONLY_HUB_CAN_ACCESS()",
     "selector": "0xba0318cb",
-    "file": "contracts/contracts/registry/IdentityRegistryKycImplV1.sol",
-    "line": 173
+    "file": "contracts/contracts/registry/IdentityRegistryKycImplV1.sol"
   },
   {
     "name": "INVALID_FORBIDDEN_COUNTRIES",
     "signature": "INVALID_FORBIDDEN_COUNTRIES()",
     "selector": "0xbf21b11c",
-    "file": "contracts/contracts/IdentityVerificationHubImplV1.sol",
-    "line": 152
+    "file": "contracts/contracts/IdentityVerificationHubImplV1.sol"
   },
   {
     "name": "NotRegistered",
     "signature": "NotRegistered(address)",
     "selector": "0xbfc6c337",
-    "file": "contracts/contracts/example/Airdrop.sol",
-    "line": 63
+    "file": "contracts/contracts/example/Airdrop.sol"
   },
   {
     "name": "NotRegistered",
     "signature": "NotRegistered(address)",
     "selector": "0xbfc6c337",
-    "file": "contracts/contracts/tests/TestAirdrop.sol",
-    "line": 37
+    "file": "contracts/contracts/tests/TestAirdrop.sol"
   },
   {
     "name": "InvalidOfacRoots",
     "signature": "InvalidOfacRoots()",
     "selector": "0xc67a44d2",
-    "file": "contracts/contracts/IdentityVerificationHubImplV2.sol",
-    "line": 223
+    "file": "contracts/contracts/IdentityVerificationHubImplV2.sol"
   },
   {
     "name": "InvalidOfacRoots",
     "signature": "InvalidOfacRoots()",
     "selector": "0xc67a44d2",
-    "file": "contracts/contracts/libraries/OfacCheckLib.sol",
-    "line": 19
+    "file": "contracts/contracts/libraries/OfacCheckLib.sol"
   },
   {
     "name": "CurrentDateNotInValidRange",
     "signature": "CurrentDateNotInValidRange()",
     "selector": "0xcf46551c",
-    "file": "contracts/contracts/IdentityVerificationHubImplV2.sol",
-    "line": 155
+    "file": "contracts/contracts/IdentityVerificationHubImplV2.sol"
   },
   {
     "name": "INVALID_VC_AND_DISCLOSE_PROOF",
     "signature": "INVALID_VC_AND_DISCLOSE_PROOF()",
     "selector": "0xd4d37a7a",
-    "file": "contracts/contracts/IdentityVerificationHubImplV1.sol",
-    "line": 168
+    "file": "contracts/contracts/IdentityVerificationHubImplV1.sol"
   },
   {
     "name": "AttestationIdMismatch",
     "signature": "AttestationIdMismatch()",
     "selector": "0xd7ca437d",
-    "file": "contracts/contracts/IdentityVerificationHubImplV2.sol",
-    "line": 219
+    "file": "contracts/contracts/IdentityVerificationHubImplV2.sol"
   },
   {
     "name": "InvalidVcAndDiscloseProof",
     "signature": "InvalidVcAndDiscloseProof()",
     "selector": "0xda7bd3a6",
-    "file": "contracts/contracts/IdentityVerificationHubImplV2.sol",
-    "line": 167
+    "file": "contracts/contracts/IdentityVerificationHubImplV2.sol"
   },
   {
     "name": "InvalidVcAndDiscloseProof",
     "signature": "InvalidVcAndDiscloseProof()",
     "selector": "0xda7bd3a6",
-    "file": "contracts/contracts/libraries/ProofVerifierLib.sol",
-    "line": 18
+    "file": "contracts/contracts/libraries/ProofVerifierLib.sol"
   },
   {
     "name": "RegistryNotSet",
     "signature": "RegistryNotSet()",
     "selector": "0xe048e710",
-    "file": "contracts/contracts/libraries/RootCheckLib.sol",
-    "line": 25
+    "file": "contracts/contracts/libraries/RootCheckLib.sol"
   },
   {
     "name": "INVALID_REVEALED_DATA_TYPE",
     "signature": "INVALID_REVEALED_DATA_TYPE()",
     "selector": "0xe0f15544",
-    "file": "contracts/contracts/IdentityVerificationHubImplV1.sol",
-    "line": 184
+    "file": "contracts/contracts/IdentityVerificationHubImplV1.sol"
   },
   {
     "name": "ScopeMismatch",
     "signature": "ScopeMismatch()",
     "selector": "0xe7bee380",
-    "file": "contracts/contracts/IdentityVerificationHubImplV2.sol",
-    "line": 187
+    "file": "contracts/contracts/IdentityVerificationHubImplV2.sol"
   },
   {
     "name": "InvalidUserIdentifierInProof",
     "signature": "InvalidUserIdentifierInProof()",
     "selector": "0xebbcc178",
-    "file": "contracts/contracts/IdentityVerificationHubImplV2.sol",
-    "line": 203
+    "file": "contracts/contracts/IdentityVerificationHubImplV2.sol"
   },
   {
     "name": "InvalidPubkeyCommitment",
     "signature": "InvalidPubkeyCommitment()",
     "selector": "0xebc2fedc",
-    "file": "contracts/contracts/IdentityVerificationHubImplV2.sol",
-    "line": 227
+    "file": "contracts/contracts/IdentityVerificationHubImplV2.sol"
   },
   {
     "name": "InvalidPubkeyCommitment",
     "signature": "InvalidPubkeyCommitment()",
     "selector": "0xebc2fedc",
-    "file": "contracts/contracts/libraries/RegisterProofVerifierLib.sol",
-    "line": 40
+    "file": "contracts/contracts/libraries/RegisterProofVerifierLib.sol"
   },
   {
     "name": "CURRENT_DATE_NOT_IN_VALID_RANGE",
     "signature": "CURRENT_DATE_NOT_IN_VALID_RANGE()",
     "selector": "0xed8cf9ff",
-    "file": "contracts/contracts/IdentityVerificationHubImplV1.sol",
-    "line": 144
+    "file": "contracts/contracts/IdentityVerificationHubImplV1.sol"
   },
   {
     "name": "INVALID_ROOT_CA",
     "signature": "INVALID_ROOT_CA()",
     "selector": "0xee57533e",
-    "file": "contracts/contracts/registry/IdentityRegistryKycImplV1.sol",
-    "line": 185
+    "file": "contracts/contracts/registry/IdentityRegistryAadhaarImplV1.sol"
+  },
+  {
+    "name": "INVALID_ROOT_CA",
+    "signature": "INVALID_ROOT_CA()",
+    "selector": "0xee57533e",
+    "file": "contracts/contracts/registry/IdentityRegistryIdCardImplV1.sol"
+  },
+  {
+    "name": "INVALID_ROOT_CA",
+    "signature": "INVALID_ROOT_CA()",
+    "selector": "0xee57533e",
+    "file": "contracts/contracts/registry/IdentityRegistryImplV1.sol"
+  },
+  {
+    "name": "INVALID_ROOT_CA",
+    "signature": "INVALID_ROOT_CA()",
+    "selector": "0xee57533e",
+    "file": "contracts/contracts/registry/IdentityRegistryKycImplV1.sol"
   },
   {
     "name": "InvalidUserIdentifier",
     "signature": "InvalidUserIdentifier()",
     "selector": "0xf0c426db",
-    "file": "contracts/contracts/example/Airdrop.sol",
-    "line": 75
+    "file": "contracts/contracts/example/Airdrop.sol"
   },
   {
     "name": "InvalidUserIdentifier",
     "signature": "InvalidUserIdentifier()",
     "selector": "0xf0c426db",
-    "file": "contracts/contracts/example/SelfIdentityERC721.sol",
-    "line": 52
+    "file": "contracts/contracts/example/SelfIdentityERC721.sol"
   },
   {
     "name": "InvalidUserIdentifier",
     "signature": "InvalidUserIdentifier()",
     "selector": "0xf0c426db",
-    "file": "contracts/contracts/example/SelfPassportERC721.sol",
-    "line": 49
+    "file": "contracts/contracts/example/SelfPassportERC721.sol"
   },
   {
     "name": "InvalidUserIdentifier",
     "signature": "InvalidUserIdentifier()",
     "selector": "0xf0c426db",
-    "file": "contracts/contracts/tests/TestAirdrop.sol",
-    "line": 41
+    "file": "contracts/contracts/tests/TestAirdrop.sol"
   },
   {
     "name": "INVALID_OLDER_THAN",
     "signature": "INVALID_OLDER_THAN()",
     "selector": "0xf0e539b9",
-    "file": "contracts/contracts/IdentityVerificationHubImplV1.sol",
-    "line": 148
+    "file": "contracts/contracts/IdentityVerificationHubImplV1.sol"
   },
   {
     "name": "InvalidIdentityCommitmentRoot",
     "signature": "InvalidIdentityCommitmentRoot()",
     "selector": "0xf53393a7",
-    "file": "contracts/contracts/IdentityVerificationHubImplV2.sol",
-    "line": 171
+    "file": "contracts/contracts/IdentityVerificationHubImplV2.sol"
   },
   {
     "name": "InvalidIdentityCommitmentRoot",
     "signature": "InvalidIdentityCommitmentRoot()",
     "selector": "0xf53393a7",
-    "file": "contracts/contracts/libraries/RootCheckLib.sol",
-    "line": 19
+    "file": "contracts/contracts/libraries/RootCheckLib.sol"
   },
   {
     "name": "TEE_NOT_SET",
     "signature": "TEE_NOT_SET()",
     "selector": "0xfc833fc6",
-    "file": "contracts/contracts/registry/IdentityRegistryKycImplV1.sol",
-    "line": 175
+    "file": "contracts/contracts/registry/IdentityRegistryAadhaarImplV1.sol"
+  },
+  {
+    "name": "TEE_NOT_SET",
+    "signature": "TEE_NOT_SET()",
+    "selector": "0xfc833fc6",
+    "file": "contracts/contracts/registry/IdentityRegistryIdCardImplV1.sol"
+  },
+  {
+    "name": "TEE_NOT_SET",
+    "signature": "TEE_NOT_SET()",
+    "selector": "0xfc833fc6",
+    "file": "contracts/contracts/registry/IdentityRegistryImplV1.sol"
+  },
+  {
+    "name": "TEE_NOT_SET",
+    "signature": "TEE_NOT_SET()",
+    "selector": "0xfc833fc6",
+    "file": "contracts/contracts/registry/IdentityRegistryKycImplV1.sol"
   },
   {
     "name": "LengthMismatch",
     "signature": "LengthMismatch()",
     "selector": "0xff633a38",
-    "file": "contracts/contracts/IdentityVerificationHubImplV2.sol",
-    "line": 147
+    "file": "contracts/contracts/IdentityVerificationHubImplV2.sol"
   }
 ]

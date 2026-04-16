@@ -1,61 +1,38 @@
-# Self SDK — Spec System
+# Specs
 
-> Table of contents for the spec folder. Start here.
+> Table of contents for all specs. Start here.
 
-## What This Is
+## How Specs Are Organized
 
-A three-tier spec system designed for parallel AI agent execution:
+- `specs/projects/` — active project specs you implement against
+- `specs/topics/` — standalone docs (not full projects)
+- `specs/framework/` — templates for writing new specs
+- `specs/archive/` — retired specs
 
-1. **Project Overview** — architecture, contracts, cross-workstream dependencies
-2. **Workstream Overviews** — orientation for each person/scope (what you own, context, status)
-3. **Implementation Specs** — exact code changes, I/O examples, token-budgeted chunks
+## Projects
 
-Specs double as AI agent prompts. Written in second person, sized for single context windows, with validation commands after every chunk.
+- **[SDK](./projects/sdk/INDEX.md)** — active WebView-first scope, paused native tracks, execution status
 
-## Meta-Framework
+## Topics
 
-| File                                   | Purpose                                               | When to Read                            |
-| -------------------------------------- | ----------------------------------------------------- | --------------------------------------- |
-| [SPEC-GUIDE.md](./SPEC-GUIDE.md)       | How to write specs (generic, portable to any project) | Before writing or reviewing any spec    |
-| [TEMPLATES.md](./TEMPLATES.md)         | Copy-paste templates for all three tiers              | When creating a new spec                |
-| [PROJECT-RULES.md](./PROJECT-RULES.md) | Project-specific rules and guardrails                 | Before starting any implementation work |
+No active topic docs. See [Spec Archive](./ARCHIVE.md) for retired topics.
 
-## Project-Level Specs
+## Framework
 
-| File                                 | Purpose                                                                | When to Read                               |
-| ------------------------------------ | ---------------------------------------------------------------------- | ------------------------------------------ |
-| [SDK-OVERVIEW.md](./SDK-OVERVIEW.md) | Architecture, bridge protocol, module table, decision matrix, glossary | First. Always.                             |
-| [WAVE-PLAN.md](./WAVE-PLAN.md)       | Dependency-ordered execution plan for parallel agent work              | When planning which chunks to execute next |
+- [Templates](./framework/TEMPLATES.md) — copy-paste templates for all three tiers
+- [Spec Execution Model](./framework/SPEC-EXECUTION-MODEL.md) — stable context plus one plan file per PR
+- [Product Spec Enhancement Prompt](./framework/PRODUCT-SPEC-ENHANCEMENT-PROMPT.md) — Figma cross-reference agent prompt
 
-## Workstream Specs
+Project rules and spec-writing guidelines are consolidated in the root `CLAUDE.md`.
 
-Each workstream has two files: `OVERVIEW.md` (stable orientation) and `SPEC.md` (living implementation details).
+## Other
 
-| Workstream                             | Overview                                        | Implementation Spec                                           | Status                                          |
-| -------------------------------------- | ----------------------------------------------- | ------------------------------------------------------------- | ----------------------------------------------- |
-| Person 1 — WebView UI + Bridge         | [OVERVIEW](./person1-webview/OVERVIEW.md)       | [SPEC](./person1-webview/SPEC.md)                             | 28/29 done, 1 pending (dynamic proving config)   |
-| Person 2 — Native Shells (KMP + Swift) | [OVERVIEW](./person2-native-shells/OVERVIEW.md) | [SPEC](./person2-native-shells/SPEC.md)                       | 27/28 done, 1 pending (KMP test app validation)  |
-| Person 3 — Integrations                | [OVERVIEW](./person3-integrations/OVERVIEW.md)  | [MiniPay Spec](./person3-integrations/SPEC-MINIPAY-SAMPLE.md) | 25/26 done, 1 pending (physical-device NFC E2E)  |
-| Person 4 — SDK Core                    | [OVERVIEW](./person4-sdk-core/OVERVIEW.md)      | [SPEC](./person4-sdk-core/SPEC.md)                            | 23/25 done, 2 pending (adapter dedup, crypto)    |
-| Person 5 — RN SDK                      | [OVERVIEW](./person5-rn-sdk/OVERVIEW.md)        | [SPEC](./person5-rn-sdk/SPEC.md)                              | 21/23 done, 2 pending (wallet integration, npm)  |
+- [Spec Archive](./ARCHIVE.md) — append-only log of retired specs
 
 ## Reading Order
 
-**New to the project?**
-
-1. This README
-2. [SDK-OVERVIEW.md](./SDK-OVERVIEW.md) — understand the architecture
-3. Your workstream's `OVERVIEW.md` — understand what you own
-4. Your workstream's `SPEC.md` — understand what to build
-
-**Starting a work session?**
-
-1. [WAVE-PLAN.md](./WAVE-PLAN.md) — find the next available chunk
-2. Your workstream's `SPEC.md` — read the chunk, check status
-3. [PROJECT-RULES.md](./PROJECT-RULES.md) — refresh on guardrails
-
-**Writing a new spec?**
-
-1. [SPEC-GUIDE.md](./SPEC-GUIDE.md) — how to write specs
-2. [TEMPLATES.md](./TEMPLATES.md) — copy-paste the right template
-3. [PROJECT-RULES.md](./PROJECT-RULES.md) — project-specific constraints
+1. This file (`specs/README.md`)
+2. `specs/projects/sdk/INDEX.md` — find your active workstream or paused native track
+3. The workstream `SPEC.md` — find the backlog row and active plan
+4. The linked `plans/<BACKLOG-ID>-<slug>.md` file — execute from this file
+5. `specs/projects/sdk/OVERVIEW.md` — if you need architecture context

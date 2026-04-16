@@ -2,15 +2,16 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import {
-  HomeScreen as EuclidHomeScreen,
-  GearIcon,
-} from '@selfxyz/euclid-web';
-import type { IDCardVariant } from '@selfxyz/euclid-web';
+import type React from 'react';
+import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+
+import type { IDCardVariant } from '@selfxyz/euclid';
+import { GearIcon, HomeScreen as EuclidHomeScreen } from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
+import { WEB_SAFE_AREA } from '../../utils/insets';
+import { mockDocumentStore } from '../../utils/mockDocumentStore';
 
 interface DocumentEntry {
   id: string;
@@ -54,9 +55,11 @@ const docCategoryToTitle = (category: string): string => {
 
 export const HomeScreen: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { documents, analytics, haptic } = useSelfClient();
   const [catalog, setCatalog] = useState<DocumentCatalog | null>(null);
   const [loading, setLoading] = useState(true);
+  const mockCatalog = useSyncExternalStore(mockDocumentStore.subscribe, () => mockDocumentStore.getCatalog());
 
   const loadCatalog = useCallback(async () => {
     try {
@@ -73,13 +76,23 @@ export const HomeScreen: React.FC = () => {
     loadCatalog();
   }, [loadCatalog]);
 
-  const hasDocuments = catalog && catalog.documents.length > 0;
-  const firstDoc = hasDocuments ? catalog.documents[0] : undefined;
+  const allDocuments = [...(catalog?.documents ?? []), ...mockCatalog.documents];
+  const hasDocuments = allDocuments.length > 0;
+  const firstDoc = hasDocuments ? allDocuments[0] : undefined;
+  const skipOnboardingRedirect = Boolean(
+    (location.state as { skipOnboardingRedirect?: boolean } | null)?.skipOnboardingRedirect,
+  );
+
+  useEffect(() => {
+    if (!loading && !hasDocuments && !skipOnboardingRedirect) {
+      navigate('/onboarding/tour/1', { replace: true });
+    }
+  }, [hasDocuments, loading, navigate, skipOnboardingRedirect]);
 
   const onAddDocument = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('home_add_document_pressed');
-    navigate('/onboarding/country');
+    navigate('/onboarding/tour/1');
   }, [navigate, haptic, analytics]);
 
   const onSettings = useCallback(() => {
@@ -87,7 +100,13 @@ export const HomeScreen: React.FC = () => {
     navigate('/settings');
   }, [navigate, haptic]);
 
-  if (loading) {
+  const onRestartOnboarding = useCallback(() => {
+    haptic.trigger('selection');
+    mockDocumentStore.clear();
+    navigate('/onboarding/tour/1');
+  }, [haptic, navigate]);
+
+  if (loading || (!hasDocuments && !skipOnboardingRedirect)) {
     return (
       <div
         style={{
@@ -113,27 +132,51 @@ export const HomeScreen: React.FC = () => {
   }
 
   return (
-    <EuclidHomeScreen
-      insets={{ top: 0, bottom: 0 }}
-      idCard={
-        firstDoc
-          ? {
-              variant: docCategoryToVariant(firstDoc.documentCategory),
-              title: docCategoryToTitle(firstDoc.documentCategory),
-              subtitle: firstDoc.isRegistered
-                ? 'Registered'
-                : 'Pending registration',
-            }
-          : undefined
-      }
-      pointsCardProps={{ points: 0 }}
-      showAddIdCTA={!hasDocuments}
-      onAddIdPress={onAddDocument}
-      topNavigationPrimaryButton={{
-        variant: 'secondary-icon',
-        icon: ({ size, color }) => <GearIcon size={size} color={color} />,
-        onPress: onSettings,
-      }}
-    />
+    <>
+      {import.meta.env.DEV && (
+        <button
+          type="button"
+          onClick={onRestartOnboarding}
+          style={{
+            position: 'fixed',
+            bottom: 16,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 10,
+            border: '1px solid rgba(15, 23, 42, 0.16)',
+            borderRadius: 999,
+            background: 'rgba(255, 255, 255, 0.94)',
+            color: '#0F172A',
+            padding: '8px 12px',
+            fontSize: 12,
+            fontWeight: 600,
+            cursor: 'pointer',
+            boxShadow: '0 8px 24px rgba(15, 23, 42, 0.12)',
+          }}
+        >
+          Restart onboarding
+        </button>
+      )}
+      <EuclidHomeScreen
+        {...WEB_SAFE_AREA}
+        idCard={
+          firstDoc
+            ? {
+                variant: docCategoryToVariant(firstDoc.documentCategory),
+                title: docCategoryToTitle(firstDoc.documentCategory),
+                subtitle: firstDoc.isRegistered ? 'Registered' : 'Pending registration',
+              }
+            : undefined
+        }
+        pointsCardProps={{ points: 0 }}
+        showAddIdCTA={!hasDocuments}
+        onAddIdPress={onAddDocument}
+        topNavigationPrimaryButton={{
+          variant: 'secondary-icon',
+          icon: ({ size, color }) => <GearIcon size={size} color={color} />,
+          onPress: onSettings,
+        }}
+      />
+    </>
   );
 };

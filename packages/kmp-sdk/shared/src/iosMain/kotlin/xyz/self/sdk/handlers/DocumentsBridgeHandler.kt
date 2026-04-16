@@ -13,7 +13,7 @@ import kotlinx.serialization.json.put
 import xyz.self.sdk.bridge.BridgeDomain
 import xyz.self.sdk.bridge.BridgeHandler
 import xyz.self.sdk.bridge.BridgeHandlerException
-import xyz.self.sdk.providers.SdkProviderRegistry
+import xyz.self.sdk.providers.IosProviderRegistry
 
 class DocumentsBridgeHandler : BridgeHandler {
     override val domain = BridgeDomain.DOCUMENTS
@@ -36,7 +36,7 @@ class DocumentsBridgeHandler : BridgeHandler {
 
     private fun loadCatalog(): JsonElement {
         val provider =
-            SdkProviderRegistry.documents
+            IosProviderRegistry.documents
                 ?: throw BridgeHandlerException("NOT_CONFIGURED", "Documents provider not configured")
 
         val catalogJson =
@@ -50,7 +50,7 @@ class DocumentsBridgeHandler : BridgeHandler {
 
     private fun saveCatalog(params: Map<String, JsonElement>): JsonElement? {
         val provider =
-            SdkProviderRegistry.documents
+            IosProviderRegistry.documents
                 ?: throw BridgeHandlerException("NOT_CONFIGURED", "Documents provider not configured")
 
         val catalogData =
@@ -67,7 +67,7 @@ class DocumentsBridgeHandler : BridgeHandler {
 
     private fun loadById(params: Map<String, JsonElement>): JsonElement {
         val provider =
-            SdkProviderRegistry.documents
+            IosProviderRegistry.documents
                 ?: throw BridgeHandlerException("NOT_CONFIGURED", "Documents provider not configured")
 
         val id =
@@ -85,7 +85,7 @@ class DocumentsBridgeHandler : BridgeHandler {
 
     private fun save(params: Map<String, JsonElement>): JsonElement? {
         val provider =
-            SdkProviderRegistry.documents
+            IosProviderRegistry.documents
                 ?: throw BridgeHandlerException("NOT_CONFIGURED", "Documents provider not configured")
 
         val id =
@@ -109,7 +109,7 @@ class DocumentsBridgeHandler : BridgeHandler {
 
     private fun delete(params: Map<String, JsonElement>): JsonElement? {
         val provider =
-            SdkProviderRegistry.documents
+            IosProviderRegistry.documents
                 ?: throw BridgeHandlerException("NOT_CONFIGURED", "Documents provider not configured")
 
         val id =

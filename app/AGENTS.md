@@ -117,6 +117,38 @@ yarn types # Verify type checking
 - For Android: Ensure emulator is running or device is connected before `yarn android`
 - Metro bundler starts automatically; use `yarn start` to run it separately
 
+#### iOS Simulator Selection
+
+`yarn ios` now selects a simulator by UDID, shuts down stale booted simulators, explicitly boots the chosen device, waits for boot completion, then starts the React Native iOS build against that simulator.
+
+| Env var | Purpose |
+|---|---|
+| `IOS_SIMULATOR_DEVICE` | Case-insensitive iPhone name substring filter, for example `iPhone 16 Pro` |
+| `IOS_SIMULATOR_RUNTIME` | iOS runtime version filter, for example `18.4` or `18-4` |
+
+Default device priority when no env vars are set:
+
+- `iPhone 16 Pro`
+- `iPhone 16`
+- `iPhone 15 Pro`
+- `iPhone 15`
+- First available iPhone on the newest installed iOS runtime
+
+`IOS_SIMULATOR_DEVICE` uses a case-insensitive substring match. If multiple devices match, the launcher uses the first match from the newest matching runtime after applying the default priority order.
+
+Examples:
+
+```bash
+yarn ios
+IOS_SIMULATOR_DEVICE="iPhone 16 Pro" yarn ios
+IOS_SIMULATOR_RUNTIME="18.4" yarn ios
+IOS_SIMULATOR_DEVICE="iPhone 15" IOS_SIMULATOR_RUNTIME="18-4" yarn ios
+```
+
+If a pinned simulator cannot be found, the launcher exits with a readable error that includes the available iPhone simulators for the matching runtimes.
+
+The launcher currently shuts down all booted simulators before booting the selected one. If you keep other simulators open for unrelated work, relaunch them after `yarn ios`.
+
 ## E2E Testing
 
 The app uses Maestro for end-to-end testing. **E2E tests run automatically in CI/CD pipelines - they are not required to run locally.**
@@ -254,9 +286,19 @@ grep -r "require('react-native')" app/tests/
 
 See `.cursor/rules/test-memory-optimization.mdc` for comprehensive guidelines, examples, and anti-patterns.
 
+## Linear Issue Interaction
+
+When working with Linear issues during development:
+
+- **`save_comment`** for: status updates, progress notes, blockers, linking PRs, corrections, decision records
+- **`save_issue`** for: changing status, priority, assignee, labels (structured fields only)
+- **`create_document`** for: attaching specs as Linear documents
+
+**Never overwrite an issue description.** Descriptions are the original scope set at creation time. All subsequent context goes in comments. If the description has a factual error, add a comment explaining the correction — do not silently rewrite it.
+
 ## SDK Architecture
 
 The Self Wallet app serves as a **test environment** for the SDK refactor. For SDK architecture context:
 
-- **[SDK Specs](../specs/README.md)** — Table of contents and reading order
-- **[SDK Overview](../specs/SDK-OVERVIEW.md)** — System architecture, bridge protocol, decision matrix
+- **[SDK Overview](../specs/projects/sdk/OVERVIEW.md)** — System architecture, bridge protocol, decision matrix (read-only reference)
+- **Implementation specs** — Canonical source is `specs/projects/sdk/workstreams/<scope>/plans/` (version-controlled). Linear documents attached to issues are mirrored copies for tracking/discovery. When in doubt, trust the repo spec.

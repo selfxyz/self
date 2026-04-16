@@ -27,5 +27,10 @@ let package = Package(
             ],
             path: "Sources/SelfSdkSwift"
         ),
+        .testTarget(
+            name: "SelfSdkSwiftTests",
+            dependencies: ["SelfSdkSwift"],
+            path: "Tests/SelfSdkSwiftTests"
+        ),
     ]
 )

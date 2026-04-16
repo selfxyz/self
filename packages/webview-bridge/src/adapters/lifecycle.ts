@@ -3,26 +3,30 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type { WebViewBridge } from '../bridge';
+import type { VerificationDismissPayload, VerificationResult } from '../types';
 
 export interface BridgeLifecycleAdapter {
-  ready(): void;
-  dismiss(): void;
-  setResult(result: Record<string, unknown>): Promise<void>;
+  ready(payload?: Record<string, unknown>): void;
+  dismiss(payload?: VerificationDismissPayload): void;
+  setResult(result: VerificationResult): Promise<void>;
 }
 
-export function bridgeLifecycleAdapter(
-  bridge: WebViewBridge,
-): BridgeLifecycleAdapter {
+export function bridgeLifecycleAdapter(bridge: WebViewBridge): BridgeLifecycleAdapter {
   return {
-    ready(): void {
-      bridge.fire('lifecycle', 'ready', {});
+    ready(payload: Record<string, unknown> = {}): void {
+      bridge.fire('lifecycle', 'ready', payload);
     },
 
-    dismiss(): void {
-      bridge.fire('lifecycle', 'dismiss', {});
+    dismiss(payload: VerificationDismissPayload = {}): void {
+      bridge.fire('lifecycle', 'dismiss', payload);
     },
 
-    async setResult(result: Record<string, unknown>): Promise<void> {
+    async setResult(result: VerificationResult): Promise<void> {
+      if (bridge.usesBrowserHostTransport) {
+        bridge.fire('lifecycle', 'setResult', result);
+        return;
+      }
+
       await bridge.request('lifecycle', 'setResult', result);
     },
   };

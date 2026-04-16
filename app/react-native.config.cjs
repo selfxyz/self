@@ -6,9 +6,9 @@ const dependencies = {
   '@selfxyz/mobile-sdk-alpha': { platforms: { android: null, ios: null } },
 };
 
-// Disable Sumsub SDK autolinking during E2E testing to avoid build issues
+// Disable Didit SDK autolinking during E2E testing to avoid build issues
 if (process.env.E2E_TESTING === '1') {
-  dependencies['@sumsub/react-native-mobilesdk-module'] = {
+  dependencies['@didit-protocol/sdk-react-native'] = {
     platforms: { android: null, ios: null },
   };
 }

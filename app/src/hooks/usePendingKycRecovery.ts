@@ -4,9 +4,21 @@
 
 import { useCallback, useEffect, useRef } from 'react';
 
-import { useSumsubWebSocket } from '@/hooks/useSumsubWebSocket';
+import { useKycWebSocket } from '@/hooks/useKycWebSocket';
 import { navigationRef } from '@/navigation';
 import { usePendingKycStore } from '@/stores/pendingKycStore';
+
+type RecoveryVerification = {
+  sessionId?: string;
+  userId?: string;
+  status: 'pending' | 'processing' | 'failed';
+  timeoutAt: number;
+  documentId?: string;
+};
+
+function getRecoveryIdentifier(verification: RecoveryVerification) {
+  return verification.sessionId ?? verification.userId;
+}
 
 /**
  * Hook to recover pending KYC verifications on app restart.
@@ -14,9 +26,9 @@ import { usePendingKycStore } from '@/stores/pendingKycStore';
  * This hook runs on app startup and:
  * 1. Checks for any pending verifications in the store
  * 2. For each non-expired pending/processing verification, reconnects to websocket
- * 3. Subscribes to the userId to receive any cached results
+ * 3. Subscribes to the sessionId to receive any cached results
  * 4. Updates verification status based on server response
- * 5. Initiates proving machine after document storage (handled in useSumsubWebSocket)
+ * 5. Initiates proving machine after document storage (handled in useKycWebSocket)
  *
  * NOTE: This requires the TEE server to cache completed verification results
  * so they can be retrieved when the app reopens.
@@ -39,7 +51,7 @@ export function usePendingKycRecovery() {
     console.log('[PendingKycRecovery] Verification failed:', reason);
   }, []);
 
-  const { subscribe, unsubscribeAll } = useSumsubWebSocket({
+  const { subscribe, unsubscribeAll } = useKycWebSocket({
     skipAddPending: true,
     onSuccess: handleSuccess,
     onError: handleError,
@@ -56,7 +68,7 @@ export function usePendingKycRecovery() {
 
   useEffect(() => {
     console.log(
-      '[PendingKycRecovery] Already attempted userIds:',
+      '[PendingKycRecovery] Already attempted sessionIds:',
       Array.from(hasAttemptedRecoveryRef.current),
     );
 
@@ -65,39 +77,46 @@ export function usePendingKycRecovery() {
         v.status === 'processing' &&
         v.documentId &&
         v.timeoutAt > Date.now() &&
-        !hasAttemptedRecoveryRef.current.has(v.userId),
+        !!getRecoveryIdentifier(v) &&
+        !hasAttemptedRecoveryRef.current.has(getRecoveryIdentifier(v)!),
     );
 
     if (processingWithDocument) {
+      const recoveryId = getRecoveryIdentifier(processingWithDocument);
+
+      if (!recoveryId) {
+        return;
+      }
+
       console.log(
         '[PendingKycRecovery] Resuming processing verification, navigating to KYCVerified:',
-        processingWithDocument.userId,
+        recoveryId,
       );
       if (navigationRef.isReady()) {
         navigationRef.navigate('KYCVerified', {
           documentId: processingWithDocument.documentId,
         });
         // Only mark as attempted after successful navigation
-        hasAttemptedRecoveryRef.current.add(processingWithDocument.userId);
+        hasAttemptedRecoveryRef.current.add(recoveryId);
         return;
       }
 
       // Navigation not ready yet - poll until ready
       console.log(
         '[PendingKycRecovery] Navigation not ready, polling for readiness:',
-        processingWithDocument.userId,
+        recoveryId,
       );
 
       const pollInterval = setInterval(() => {
         if (navigationRef.isReady()) {
           console.log(
             '[PendingKycRecovery] Navigation ready, navigating for:',
-            processingWithDocument.userId,
+            recoveryId,
           );
           navigationRef.navigate('KYCVerified', {
             documentId: processingWithDocument.documentId,
           });
-          hasAttemptedRecoveryRef.current.add(processingWithDocument.userId);
+          hasAttemptedRecoveryRef.current.add(recoveryId);
           clearInterval(pollInterval);
         }
       }, 100); // Poll every 100ms
@@ -112,16 +131,23 @@ export function usePendingKycRecovery() {
       v =>
         v.status === 'pending' &&
         v.timeoutAt > Date.now() &&
-        !hasAttemptedRecoveryRef.current.has(v.userId),
+        !!getRecoveryIdentifier(v) &&
+        !hasAttemptedRecoveryRef.current.has(getRecoveryIdentifier(v)!),
     );
 
     if (firstPending) {
-      hasAttemptedRecoveryRef.current.add(firstPending.userId);
+      const recoveryId = getRecoveryIdentifier(firstPending);
+
+      if (!recoveryId) {
+        return;
+      }
+
+      hasAttemptedRecoveryRef.current.add(recoveryId);
       console.log(
         '[PendingKycRecovery] Recovering pending verification:',
-        firstPending.userId,
+        recoveryId,
       );
-      subscribe(firstPending.userId);
+      subscribe(recoveryId);
     }
   }, [pendingVerifications, subscribe, unsubscribeAll]);
 }

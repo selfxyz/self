@@ -23,7 +23,7 @@ import {
 } from '@selfxyz/mobile-sdk-alpha';
 
 import { logNFCEvent, logProofEvent } from '@/config/sentry';
-import { fetchAccessToken, launchSumsub } from '@/integrations/sumsub';
+import { createKycSession, launchKycVerification } from '@/integrations/kyc';
 import type { RootStackParamList } from '@/navigation';
 import { navigationRef } from '@/navigation';
 import {
@@ -158,6 +158,16 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
         async sign(_data: Uint8Array, _keyRef: string): Promise<Uint8Array> {
           throw new Error(
             `crypto.sign adapter not implemented for keyRef: ${_keyRef}`,
+          );
+        },
+        async generateKey(_keyRef: string): Promise<{ keyRef: string }> {
+          throw new Error(
+            'Key generation is not implemented in the app crypto adapter.',
+          );
+        },
+        async getPublicKey(_keyRef: string): Promise<Uint8Array> {
+          throw new Error(
+            'Public key retrieval is not implemented in the app crypto adapter.',
           );
         },
       },
@@ -306,7 +316,7 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
         documentTypes: string[];
       }) => {
         currentCountryCode = countryCode;
-        // Store country code early so it's available for Sumsub fallback flows
+        // Store country code early so it's available for KYC fallback flows
         useMRZStore.getState().update({ countryCode });
         navigateIfReady('IDPicker', { countryCode, documentTypes });
       },
@@ -336,33 +346,25 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
                   if (
                     useErrorInjectionStore
                       .getState()
-                      .shouldTrigger('sumsub_initialization')
+                      .shouldTrigger('kyc_initialization')
                   ) {
-                    console.log('[DEV] Injecting Sumsub initialization error');
+                    console.log('[DEV] Injecting KYC initialization error');
                     throw new Error(
-                      'Injected Sumsub initialization error for testing',
+                      'Injected KYC initialization error for testing',
                     );
                   }
 
-                  const accessToken = await fetchAccessToken();
-                  const result = await launchSumsub({
-                    accessToken: accessToken.token,
-                  });
+                  const session = await createKycSession();
+                  const result = await launchKycVerification(
+                    session.sessionToken,
+                  );
 
-                  console.log('[Sumsub] Result:', JSON.stringify(result));
+                  console.log('[KYC] Result type:', result.type);
 
                   // User cancelled/dismissed without completing verification
-                  // Status values: 'Initial' (never started), 'Incomplete' (started but not finished),
-                  // 'Interrupted' (explicitly cancelled)
-                  const cancelledStatuses = [
-                    'Initial',
-                    'Incomplete',
-                    'Interrupted',
-                  ];
-                  if (cancelledStatuses.includes(result.status)) {
+                  if (result.type === 'cancelled') {
                     console.log(
-                      '[Sumsub] User cancelled or closed without completing, status:',
-                      result.status,
+                      '[KYC] User cancelled or closed without completing',
                     );
                     return;
                   }
@@ -370,15 +372,20 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
                   // Dev-only: Check for injected verification error
                   const shouldInjectVerificationError = useErrorInjectionStore
                     .getState()
-                    .shouldTrigger('sumsub_verification');
+                    .shouldTrigger('kyc_verification');
 
                   // Actual error from provider
-                  if (!result.success || shouldInjectVerificationError) {
+                  if (
+                    result.type === 'failed' ||
+                    shouldInjectVerificationError
+                  ) {
                     if (shouldInjectVerificationError) {
-                      console.log('[DEV] Injecting Sumsub verification error');
+                      console.log('[DEV] Injecting KYC verification error');
                     } else {
                       const safeError = sanitizeErrorMessage(
-                        result.errorMsg || result.errorType || 'unknown_error',
+                        result.error?.message ||
+                          result.error?.type ||
+                          'unknown_error',
                       );
                       console.error('KYC provider failed:', safeError);
                     }
@@ -392,15 +399,15 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
                     return;
                   }
 
-                  // User completed verification (status: 'Pending', 'Approved', etc.)
+                  // User completed verification
                   // Navigate to KYC success screen
                   console.log(
-                    '[Sumsub] Verification submitted, status:',
-                    result.status,
+                    '[KYC] Verification submitted, status:',
+                    result.session?.status,
                   );
                   if (navigationRef.isReady()) {
                     navigationRef.navigate('KycSuccess', {
-                      userId: accessToken.userId,
+                      sessionId: session.sessionId,
                     });
                   }
                 } catch (error) {

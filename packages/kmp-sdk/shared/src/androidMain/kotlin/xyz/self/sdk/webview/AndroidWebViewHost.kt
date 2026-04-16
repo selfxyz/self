@@ -4,113 +4,63 @@
 
 package xyz.self.sdk.webview
 
+import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
+import android.content.pm.PackageManager
+import android.net.Uri
 import android.net.http.SslError
-import android.webkit.JavascriptInterface
+import android.webkit.PermissionRequest
 import android.webkit.SslErrorHandler
+import android.webkit.ValueCallback
+import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
-import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import androidx.webkit.WebViewAssetLoader
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.webkit.WebMessageCompat
+import androidx.webkit.WebViewCompat
+import androidx.webkit.WebViewFeature
+import xyz.self.sdk.api.SdkConstants
 import xyz.self.sdk.bridge.MessageRouter
 
-/**
- * Manages an Android WebView instance for hosting the Self verification UI.
- * Handles bidirectional communication between WebView JavaScript and native Kotlin code.
- *
- * Uses WebViewAssetLoader to serve bundled assets under https://appassets.androidplatform.net/
- * so the WebView has a proper origin for History API, CORS, and other web platform features.
- */
 class AndroidWebViewHost(
     private val context: Context,
     private val router: MessageRouter,
     private val isDebugMode: Boolean = false,
+    private val isDebuggable: Boolean = false,
+    private val remoteWebAppBaseUrl: String = SdkConstants.DEFAULT_REMOTE_WEB_APP_BASE_URL,
+    private val devServerUrl: String? = null,
 ) {
     private lateinit var webView: WebView
+    var pendingPermissionRequest: PermissionRequest? = null
+    var fileUploadCallback: ValueCallback<Array<Uri>>? = null
 
-    /**
-     * Creates and configures the WebView with security settings and bridge communication.
-     */
     @SuppressLint("SetJavaScriptEnabled")
-    fun createWebView(): WebView {
-        // WebViewAssetLoader serves files from android_asset/ under a proper https:// domain,
-        // avoiding file:// origin issues with History API, CORS, etc.
-        // Custom PathHandler that serves from the self-wallet/ subdirectory of assets.
-        // This way, a request to /assets/foo.js resolves to self-wallet/assets/foo.js
-        // and /index.html resolves to self-wallet/index.html.
-        val selfWalletHandler =
-            WebViewAssetLoader.PathHandler { path ->
-                try {
-                    val assetPath = "self-wallet/$path"
-                    val inputStream = context.assets.open(assetPath)
-                    val mimeType =
-                        when {
-                            path.endsWith(".js") -> "application/javascript"
-                            path.endsWith(".css") -> "text/css"
-                            path.endsWith(".html") -> "text/html"
-                            path.endsWith(".json") -> "application/json"
-                            path.endsWith(".woff2") -> "font/woff2"
-                            path.endsWith(".woff") -> "font/woff"
-                            path.endsWith(".otf") -> "font/otf"
-                            path.endsWith(".ttf") -> "font/ttf"
-                            path.endsWith(".png") -> "image/png"
-                            path.endsWith(".svg") -> "image/svg+xml"
-                            else -> "application/octet-stream"
-                        }
-                    WebResourceResponse(mimeType, "UTF-8", inputStream)
-                } catch (e: Exception) {
-                    null
-                }
-            }
-
-        val assetLoader =
-            WebViewAssetLoader
-                .Builder()
-                .addPathHandler("/", selfWalletHandler)
-                .build()
-
+    fun createWebView(queryParams: String = ""): WebView {
+        val effectiveDebug = isDebugMode && isDebuggable
         webView =
             WebView(context).apply {
                 settings.apply {
-                    // Enable JavaScript for bridge communication
                     javaScriptEnabled = true
                     domStorageEnabled = true
-
-                    // File access not needed — assets served via WebViewAssetLoader
                     allowFileAccess = false
                     allowContentAccess = false
-
-                    // Media playback
                     mediaPlaybackRequiresUserGesture = false
 
-                    // Enable debugging in debug mode
-                    if (isDebugMode) {
+                    if (effectiveDebug) {
                         WebView.setWebContentsDebuggingEnabled(true)
                     }
                 }
 
                 webViewClient =
                     object : WebViewClient() {
-                        override fun shouldInterceptRequest(
-                            view: WebView?,
-                            request: WebResourceRequest?,
-                        ): WebResourceResponse? {
-                            request ?: return null
-                            return assetLoader.shouldInterceptRequest(request.url)
-                        }
-
                         override fun shouldOverrideUrlLoading(
                             view: WebView?,
                             request: WebResourceRequest?,
-                        ): Boolean {
-                            val url = request?.url?.toString() ?: return true
-                            val assetHost = "https://appassets.androidplatform.net/"
-                            if (url.startsWith(assetHost)) return false
-                            if (isDebugMode && url.startsWith("http://10.0.2.2:5173")) return false
-                            return true // block everything else
-                        }
+                        ): Boolean = !isAllowedNavigationUrl(request?.url?.toString(), effectiveDebug, remoteWebAppBaseUrl, devServerUrl)
 
                         override fun onReceivedSslError(
                             view: WebView?,
@@ -121,30 +71,93 @@ class AndroidWebViewHost(
                         }
                     }
 
-                // Register JS interface: WebView → Native communication
-                // JavaScript can call: window.SelfNativeAndroid.postMessage(json)
-                addJavascriptInterface(BridgeJsInterface(), "SelfNativeAndroid")
+                webChromeClient =
+                    object : WebChromeClient() {
+                        override fun onPermissionRequest(request: PermissionRequest?) {
+                            request ?: return
+                            val origin =
+                                request.origin ?: run {
+                                    request.deny()
+                                    return
+                                }
+                            if (!isTrustedPermissionOrigin(origin.toString(), effectiveDebug, remoteWebAppBaseUrl, devServerUrl)) {
+                                request.deny()
+                                return
+                            }
 
-                // Load appropriate URL based on mode
-                if (isDebugMode) {
-                    // Development mode: connect to Vite dev server
-                    // Android emulator uses 10.0.2.2 to access host machine's localhost
-                    loadUrl("http://10.0.2.2:5173")
-                } else {
-                    // Production mode: load via WebViewAssetLoader.
-                    // The custom PathHandler prepends self-wallet/ to all paths,
-                    // so /index.html → self-wallet/index.html in assets,
-                    // and /assets/foo.js → self-wallet/assets/foo.js in assets.
-                    loadUrl("https://appassets.androidplatform.net/index.html")
-                }
+                            val activity =
+                                context as? Activity ?: run {
+                                    request.deny()
+                                    return
+                                }
+
+                            val allowedResources =
+                                request.resources.filter {
+                                    it == PermissionRequest.RESOURCE_VIDEO_CAPTURE ||
+                                        it == PermissionRequest.RESOURCE_AUDIO_CAPTURE
+                                }
+                            if (allowedResources.size != request.resources.size) {
+                                request.deny()
+                                return
+                            }
+
+                            val neededPermissions = mutableListOf<String>()
+                            if (allowedResources.contains(PermissionRequest.RESOURCE_VIDEO_CAPTURE)) {
+                                neededPermissions.add(Manifest.permission.CAMERA)
+                            }
+                            if (allowedResources.contains(PermissionRequest.RESOURCE_AUDIO_CAPTURE)) {
+                                neededPermissions.add(Manifest.permission.RECORD_AUDIO)
+                            }
+
+                            val missingPermissions =
+                                neededPermissions.filter {
+                                    ContextCompat.checkSelfPermission(activity, it) != PackageManager.PERMISSION_GRANTED
+                                }
+
+                            if (missingPermissions.isNotEmpty()) {
+                                pendingPermissionRequest = request
+                                ActivityCompat.requestPermissions(
+                                    activity,
+                                    missingPermissions.toTypedArray(),
+                                    CAMERA_PERMISSION_REQUEST_CODE,
+                                )
+                                return
+                            }
+
+                            request.grant(allowedResources.toTypedArray())
+                        }
+
+                        override fun onShowFileChooser(
+                            webView: WebView?,
+                            filePathCallback: ValueCallback<Array<Uri>>?,
+                            fileChooserParams: FileChooserParams?,
+                        ): Boolean {
+                            fileUploadCallback?.onReceiveValue(null)
+                            fileUploadCallback = filePathCallback
+                            val intent = fileChooserParams?.createIntent() ?: return false
+                            val activity =
+                                context as? Activity ?: run {
+                                    fileUploadCallback = null
+                                    return false
+                                }
+                            try {
+                                @Suppress("DEPRECATION")
+                                activity.startActivityForResult(intent, FILE_CHOOSER_REQUEST_CODE)
+                            } catch (e: Exception) {
+                                fileUploadCallback = null
+                                return false
+                            }
+                            return true
+                        }
+                    }
+
+                installBridge(webView = this, effectiveDebug = effectiveDebug)
+
+                loadUrl(initialContentUrl(queryParams, effectiveDebug, remoteWebAppBaseUrl, devServerUrl))
             }
         return webView
     }
 
-    /**
-     * Sends JavaScript code to the WebView for execution.
-     * Used for Native → WebView communication (responses and events).
-     */
     fun evaluateJs(js: String) {
         if (!::webView.isInitialized) return
         webView.evaluateJavascript(js, null)
@@ -155,19 +168,171 @@ class AndroidWebViewHost(
         webView.destroy()
     }
 
-    /**
-     * JavaScript interface exposed to WebView.
-     * Allows WebView to send bridge messages to native code.
-     */
-    inner class BridgeJsInterface {
-        /**
-         * Called from JavaScript when a bridge request is sent.
-         * JavaScript usage: window.SelfNativeAndroid.postMessage(JSON.stringify(message))
-         */
-        @JavascriptInterface
-        fun postMessage(json: String) {
-            // Forward to MessageRouter for processing
-            router.onMessageReceived(json)
+    private fun installBridge(
+        webView: WebView,
+        effectiveDebug: Boolean,
+    ) {
+        check(WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)) {
+            "WEB_MESSAGE_LISTENER not supported — native bridge unavailable on this device"
         }
+
+        WebViewCompat.addWebMessageListener(
+            webView,
+            "SelfNativeAndroid",
+            buildAllowedOriginRules(effectiveDebug, remoteWebAppBaseUrl, devServerUrl),
+        ) { _, message: WebMessageCompat, sourceOrigin, isMainFrame, _ ->
+            if (!isMainFrame) {
+                return@addWebMessageListener
+            }
+
+            val rawJson = message.data ?: return@addWebMessageListener
+            router.onMessageReceived(
+                rawJson = rawJson,
+                isTrustedSource = isTrustedBridgeOrigin(sourceOrigin.toString(), effectiveDebug, remoteWebAppBaseUrl, devServerUrl),
+            )
+        }
+    }
+
+    companion object {
+        const val FILE_CHOOSER_REQUEST_CODE = 1001
+        const val CAMERA_PERMISSION_REQUEST_CODE = 1002
+
+        internal fun initialContentUrl(
+            queryParams: String,
+            isDebugMode: Boolean,
+            remoteWebAppBaseUrl: String = SdkConstants.DEFAULT_REMOTE_WEB_APP_BASE_URL,
+            devServerUrl: String? = null,
+        ): String {
+            val baseUrl =
+                when {
+                    isDebugMode && devServerUrl != null -> devServerUrl.trimEnd('/')
+                    isDebugMode -> "http://${SdkConstants.LOOPBACK_HOST}:${SdkConstants.DEBUG_PORT}"
+                    else -> {
+                        require(remoteWebAppBaseUrl.startsWith("https://")) {
+                            "remoteWebAppBaseUrl must use HTTPS in release builds"
+                        }
+                        remoteWebAppBaseUrl.trimEnd('/')
+                    }
+                }
+            return buildString {
+                append(baseUrl).append(SdkConstants.BUNDLED_TOUR_PATH)
+                if (queryParams.isNotEmpty()) {
+                    append("?").append(queryParams)
+                }
+            }
+        }
+
+        internal fun isAllowedNavigationUrl(
+            rawUrl: String?,
+            isDebugMode: Boolean,
+            remoteWebAppBaseUrl: String? = null,
+            devServerUrl: String? = null,
+        ): Boolean =
+            isRemoteOrigin(rawUrl, remoteWebAppBaseUrl) ||
+                isDiditUrl(rawUrl) ||
+                (isDebugMode && isDebugLocalUrl(rawUrl)) ||
+                (isDebugMode && isDevServerUrl(rawUrl, devServerUrl))
+
+        internal fun isTrustedPermissionOrigin(
+            rawUrl: String?,
+            isDebugMode: Boolean,
+            remoteWebAppBaseUrl: String? = null,
+            devServerUrl: String? = null,
+        ): Boolean =
+            isRemoteOrigin(rawUrl, remoteWebAppBaseUrl) ||
+                isDiditUrl(rawUrl) ||
+                (isDebugMode && isDebugLocalUrl(rawUrl)) ||
+                (isDebugMode && isDevServerUrl(rawUrl, devServerUrl))
+
+        internal fun isTrustedBridgeOrigin(
+            rawUrl: String?,
+            isDebugMode: Boolean,
+            remoteWebAppBaseUrl: String? = null,
+            devServerUrl: String? = null,
+        ): Boolean =
+            isRemoteOrigin(rawUrl, remoteWebAppBaseUrl) ||
+                (isDebugMode && isDebugLocalUrl(rawUrl)) ||
+                (isDebugMode && isDevServerUrl(rawUrl, devServerUrl))
+
+        internal fun isRemoteOrigin(
+            rawUrl: String?,
+            remoteWebAppBaseUrl: String?,
+        ): Boolean {
+            if (rawUrl == null || remoteWebAppBaseUrl == null) return false
+            val url = parseUri(rawUrl) ?: return false
+            val remote = parseUri(remoteWebAppBaseUrl) ?: return false
+            return url.scheme == remote.scheme &&
+                (url.host ?: url.authority) == (remote.host ?: remote.authority) &&
+                resolvedPort(url) == resolvedPort(remote)
+        }
+
+        private fun isDiditUrl(rawUrl: String?): Boolean {
+            val port = uriPort(rawUrl)
+            return uriScheme(rawUrl) == "https" &&
+                uriHost(rawUrl) == SdkConstants.DIDIT_HOST &&
+                (port == null || port == 443)
+        }
+
+        private fun isDebugLocalUrl(rawUrl: String?): Boolean =
+            uriScheme(rawUrl) == "http" && uriHost(rawUrl) == SdkConstants.LOOPBACK_HOST && uriPort(rawUrl) == SdkConstants.DEBUG_PORT
+
+        private fun isDevServerUrl(
+            rawUrl: String?,
+            devServerUrl: String?,
+        ): Boolean {
+            if (rawUrl == null || devServerUrl == null) return false
+            val url = parseUri(rawUrl) ?: return false
+            val dev = parseUri(devServerUrl) ?: return false
+            return url.scheme == dev.scheme &&
+                (url.host ?: url.authority) == (dev.host ?: dev.authority) &&
+                resolvedPort(url) == resolvedPort(dev)
+        }
+
+        private fun buildAllowedOriginRules(
+            isDebugMode: Boolean,
+            remoteWebAppBaseUrl: String,
+            devServerUrl: String? = null,
+        ): Set<String> {
+            val remote = parseUri(remoteWebAppBaseUrl)
+            return buildSet {
+                if (remote != null && remote.scheme == "https") {
+                    val host = remote.host ?: remote.authority
+                    val port = resolvedPort(remote)
+                    val defaultPort = if (remote.scheme == "https") 443 else 80
+                    if (port != defaultPort) {
+                        add("${remote.scheme}://$host:$port")
+                    } else {
+                        add("${remote.scheme}://$host")
+                    }
+                }
+                if (isDebugMode) {
+                    add("http://${SdkConstants.LOOPBACK_HOST}:${SdkConstants.DEBUG_PORT}")
+                    devServerUrl?.let { parseUri(it) }?.let { dev ->
+                        val host = dev.host ?: dev.authority
+                        val port = resolvedPort(dev)
+                        val defaultPort = if (dev.scheme == "https") 443 else 80
+                        if (port != defaultPort) {
+                            add("${dev.scheme}://$host:$port")
+                        } else {
+                            add("${dev.scheme}://$host")
+                        }
+                    }
+                }
+            }
+        }
+
+        private fun resolvedPort(uri: java.net.URI): Int {
+            val port = uri.port
+            if (port != -1) return port
+            return if (uri.scheme == "https") 443 else 80
+        }
+
+        private fun uriScheme(rawUrl: String?): String? = parseUri(rawUrl)?.scheme
+
+        private fun uriHost(rawUrl: String?): String? = parseUri(rawUrl)?.host ?: parseUri(rawUrl)?.authority
+
+        private fun uriPort(rawUrl: String?): Int? = parseUri(rawUrl)?.port?.takeIf { it != -1 }
+
+        private fun parseUri(rawUrl: String?): java.net.URI? = rawUrl?.let { raw -> runCatching { java.net.URI(raw) }.getOrNull() }
     }
 }

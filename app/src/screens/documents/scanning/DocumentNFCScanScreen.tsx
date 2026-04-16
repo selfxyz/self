@@ -57,6 +57,7 @@ import { logNFCEvent } from '@/config/sentry';
 import { useErrorInjection } from '@/hooks/useErrorInjection';
 import { useFeedbackAutoHide } from '@/hooks/useFeedbackAutoHide';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
+import useOpenSupportForm from '@/hooks/useOpenSupportForm';
 import {
   buttonTap,
   feedbackSuccess,
@@ -75,7 +76,6 @@ import {
   trackNfcEvent,
 } from '@/services/analytics';
 import {
-  openSupportForm,
   SUPPORT_FORM_BUTTON_TEXT,
   SUPPORT_FORM_MESSAGE,
 } from '@/services/support';
@@ -103,6 +103,7 @@ type DocumentNFCScanRoute = RouteProp<
 const DocumentNFCScanScreen: React.FC = () => {
   const selfClient = useSelfClient();
   const { trackEvent, useMRZStore } = selfClient;
+  const openSupportForm = useOpenSupportForm();
 
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -139,7 +140,11 @@ const DocumentNFCScanScreen: React.FC = () => {
   const animationRef = useRef<LottieView>(null);
 
   useEffect(() => {
-    animationRef.current?.play();
+    const timer = setTimeout(() => {
+      animationRef.current?.play();
+    }, 100);
+
+    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
@@ -177,7 +182,7 @@ const DocumentNFCScanScreen: React.FC = () => {
 
   const onReportIssue = useCallback(() => {
     openSupportForm();
-  }, []);
+  }, [openSupportForm]);
 
   const openErrorModal = useCallback(
     (message: string) => {

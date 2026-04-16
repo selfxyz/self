@@ -210,6 +210,8 @@ const network: NetworkAdapter = {
 const crypto: CryptoAdapter = {
   hash: async () => new Uint8Array(),
   sign: async () => new Uint8Array(),
+  generateKey: async (keyRef: string) => ({ keyRef }),
+  getPublicKey: async () => new Uint8Array(),
 };
 
 const auth: AuthAdapter = {

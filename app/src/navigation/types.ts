@@ -71,6 +71,7 @@ export type AppRoutesParamList = {
 export type DevRoutesParamList = {
   CreateMock: undefined;
   MockDataDeepLink: undefined;
+  SocialLoginDemo: undefined;
 };
 
 // =============================================================================
@@ -152,7 +153,7 @@ export type OnboardingRoutesParamList = {
   Disclaimer: undefined;
   KycSuccess:
     | {
-        userId?: string;
+        sessionId?: string;
       }
     | undefined;
   KYCVerified:

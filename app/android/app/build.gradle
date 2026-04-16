@@ -24,6 +24,10 @@ react {
     //   The list of variants to that are debuggable. For those we're going to
     //   skip the bundling of the JS bundle and the assets. By default is just 'debug'.
     //   If you add flavors like lite, prod, etc. you'll have to list your debuggableVariants.
+    if (System.env.E2E_BUILD == "true") {
+        // For E2E/CI builds: bundle JS into the debug APK (no Metro server available)
+        debuggableVariants = []
+    }
     // debuggableVariants = ["liteDebug", "prodDebug"]
 
     /* Bundling */
@@ -134,8 +138,8 @@ android {
         applicationId "com.proofofpassportapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 142
-        versionName "2.9.16"
+        versionCode 148
+        versionName "2.9.17"
         manifestPlaceholders = [appAuthRedirectScheme: 'com.proofofpassportapp']
         externalNativeBuild {
             cmake {

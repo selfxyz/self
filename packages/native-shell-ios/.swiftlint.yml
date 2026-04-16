@@ -1,0 +1,17 @@
+excluded:
+  - build
+  - DerivedData
+  - Resources
+  - .build
+
+disabled_rules:
+  - type_name
+  - force_try
+  - non_optional_string_data_conversion
+
+identifier_name:
+  min_length: 2
+
+cyclomatic_complexity:
+  warning: 15
+  error: 20

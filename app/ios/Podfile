@@ -1,20 +1,5 @@
 source "https://cdn.cocoapods.org/"
 
-# Skip Sumsub configuration for E2E testing
-unless ENV["E2E_TESTING"] == "1"
-  source "https://github.com/SumSubstance/Specs.git"
-
-  # Enable Fisherman (Device Intelligence) module for fraud detection
-  # Privacy: Device ID collection declared in app/ios/PrivacyInfo.xcprivacy
-  ENV["IDENSIC_WITH_FISHERMAN"] = "true"
-
-  # VideoIdent module disabled for current release
-  # This feature provides liveness checks via live video calls with human agents
-  # Disabled to avoid microphone permission requirements on both platforms
-  # TODO: Re-enable for future release when liveness checks are needed
-  # ENV["IDENSIC_WITH_VIDEOIDENT"] = "true"
-end
-
 use_frameworks!
 require "tmpdir"
 
@@ -30,13 +15,55 @@ require File.join(File.dirname(`node --print "require.resolve('expo/package.json
 project "Self.xcodeproj"
 
 # Define consistent iOS deployment target
-IOS_DEPLOYMENT_TARGET = "15.1"
+IOS_DEPLOYMENT_TARGET = "15.4"
 
 platform :ios, IOS_DEPLOYMENT_TARGET if !ENV["ACT"]
 prepare_react_native_project!
 
 flipper_enabled = ENV["NO_FLIPPER"] != "1"
 flipper_config = { "Flipper" => flipper_enabled ? "~> 0.125.0" : nil }
+
+def ios_simulator_arm64_supported?(xcframework_path)
+  return false unless Dir.exist?(xcframework_path)
+
+  Dir.children(xcframework_path).any? do |slice_name|
+    slice_name.include?("simulator") && slice_name.include?("arm64")
+  end
+end
+
+def simulator_arm64_audit_entries
+  [
+    {
+      name: "FingerprintPro",
+      path: "Pods/FingerprintPro/FingerprintPro.xcframework",
+    },
+    {
+      name: "OpenSSL",
+      path: "Pods/OpenSSL-Universal/Frameworks/OpenSSL.xcframework",
+    },
+    {
+      name: "libtesseract",
+      path: "Pods/SwiftyTesseract/SwiftyTesseract/libtesseract.xcframework",
+    },
+    {
+      name: "Hermes",
+      path: "Pods/hermes-engine/destroot/Library/Frameworks/universal/hermes.xcframework",
+    },
+  ]
+end
+
+def simulator_arm64_blockers
+  simulator_arm64_audit_entries.filter_map do |entry|
+    full_path = File.join(Dir.pwd, entry[:path])
+    next if ios_simulator_arm64_supported?(full_path)
+
+    "#{entry[:name]} (#{entry[:path]})"
+  end
+end
+
+# Build RNFirebase pods as static frameworks so vendored Firebase XCFrameworks
+# (e.g. GoogleAppMeasurement, FirebaseAnalytics) link correctly with use_frameworks!
+$RNFirebaseAsStaticFramework = true
 
 linkage = ENV["USE_FRAMEWORKS"]
 if linkage != nil
@@ -60,14 +87,14 @@ target "Self" do
   use_expo_modules!
   # Native module exclusion for E2E testing is handled in react-native.config.cjs
   config = use_native_modules!
-  # Skip NFCPassportReader for e2e testing to avoid build issues
+  # Skip SelfNFCPassportReader for e2e testing to avoid build issues
   unless ENV["E2E_TESTING"] == "1"
     # Check if we're running in a selfxyz repo or an external fork
     is_selfxyz_repo = ENV["GITHUB_REPOSITORY"]&.start_with?("selfxyz/") || ENV["GITHUB_REPOSITORY"].nil?
 
     if !is_selfxyz_repo
-      # External fork - use public NFCPassportReader repository (placeholder)
-      # TODO: Replace with actual public NFCPassportReader repository URL
+      # External fork - use public SelfNFCPassportReader repository (placeholder)
+      # TODO: Replace with actual public SelfNFCPassportReader repository URL
       nfc_repo_url = "https://github.com/PLACEHOLDER/NFCPassportReader.git"
     elsif ENV["GITHUB_ACTIONS"] == "true"
       # CI: NEVER embed credentials in URLs. Rely on workflow-provided auth via:
@@ -81,15 +108,17 @@ target "Self" do
       nfc_repo_url = "git@github.com:selfxyz/NFCPassportReader.git"
     end
 
-    pod "NFCPassportReader", git: nfc_repo_url, commit: "9eff7c4e3a9037fdc1e03301584e0d5dcf14d76b"
+    pod "SelfNFCPassportReader", git: nfc_repo_url, commit: "2cdc50a5c27b75594b94b27fdc4bb6172ada0f96"
   end
 
   # Explicitly declare Mixpanel to ensure it's available even in E2E builds
-  # (NFCPassportReader also includes Mixpanel, but is skipped during E2E testing)
-  pod "Mixpanel-swift", :modular_headers => true
+  # (SelfNFCPassportReader also includes Mixpanel, but is skipped during E2E testing)
+  pod "Mixpanel-swift", "~> 5.0.0", :modular_headers => true
 
   pod "QKMRZScanner"
   pod "lottie-ios"
+  pod 'DiditSDK', :podspec => './local-pods/DiditSDK/DiditSDK.podspec'
+  pod 'OpenSSL-Universal', '~> 1.1.1900'
   pod "SwiftQRScanner", :git => "https://github.com/vinodiOS/SwiftQRScanner"
   # RNReactNativeHapticFeedback is handled by autolinking
 
@@ -101,17 +130,23 @@ target "Self" do
     # Flipper設定は削除
   )
 
-  pod "Firebase", :modular_headers => true
-  pod "FirebaseCore", :modular_headers => true
-  pod "FirebaseCoreInternal", :modular_headers => true
-  pod "GoogleUtilities", :modular_headers => true
-  pod "FirebaseMessaging"
+  # Firebase pods removed - handled automatically by RNFirebase autolinking
+  # This resolves GoogleUtilities 7.x vs 8.x version conflicts
 
   if flipper_enabled
     pod "RCT-Folly", :podspec => "#{config[:reactNativePath]}/third-party-podspecs/RCT-Folly.podspec"
   end
 
   post_install do |installer|
+    simulator_arm64_blocking_pods = simulator_arm64_blockers
+    use_rosetta_simulator_builds = simulator_arm64_blocking_pods.any?
+
+    if use_rosetta_simulator_builds
+      Pod::UI.puts "Using Rosetta iOS simulator builds; arm64 simulator slices missing for: #{simulator_arm64_blocking_pods.join(', ')}".yellow
+    else
+      Pod::UI.puts "All audited binary pods include arm64 simulator slices; enabling native arm64 iOS simulator builds.".green
+    end
+
     installer.generated_projects.each do |project|
       project.targets.each do |target|
         if target.name == "RNZipArchive"
@@ -138,7 +173,7 @@ target "Self" do
       system(command)
     end
 
-    # Only strip OpenSSL bitcode if NFCPassportReader is included (not in e2e testing)
+    # Only strip OpenSSL bitcode if SelfNFCPassportReader is included (not in e2e testing)
     unless ENV["E2E_TESTING"] == "1"
       framework_paths = [
         "Pods/OpenSSL-Universal/Frameworks/OpenSSL.xcframework/ios-arm64/OpenSSL.framework/OpenSSL",
@@ -176,6 +211,7 @@ target "Self" do
           config.build_settings["GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS"] = "NO"
         end
       end
+
     end
 
     # update QKCutoutView.swift to hide OCR border
@@ -197,8 +233,24 @@ target "Self" do
       target.build_configurations.each do |config|
         config.build_settings["CODE_SIGNING_ALLOWED"] = "NO"
 
-        # Fix for Rosetta emulator builds - exclude arm64 for simulator
-        config.build_settings["EXCLUDED_ARCHS[sdk=iphonesimulator*]"] = "arm64"
+        # Keep the current simulator flow stable until every audited binary pod ships arm64 simulator slices.
+        config.build_settings["EXCLUDED_ARCHS[sdk=iphonesimulator*]"] = use_rosetta_simulator_builds ? "arm64" : ""
+      end
+    end
+
+    # Fix fmt consteval error on Xcode 26 — clang enables FMT_USE_CONSTEVAL but
+    # has a bug evaluating consteval calls. Patch the detection block in base.h to
+    # always resolve to 0. Safe on all Xcode versions (fmt falls back to constexpr).
+    fmt_base_h = "Pods/fmt/include/fmt/base.h"
+    if File.exist?(fmt_base_h)
+      system("chmod u+w #{fmt_base_h}")
+      text = File.read(fmt_base_h)
+      unless text.include?("// Patched: force-disable FMT_USE_CONSTEVAL")
+        patched = text.gsub(
+          /^#  define FMT_USE_CONSTEVAL 1.*$/,
+          "#  define FMT_USE_CONSTEVAL 0  // Patched: force-disable FMT_USE_CONSTEVAL"
+        )
+        File.write(fmt_base_h, patched) if patched != text
       end
     end
 

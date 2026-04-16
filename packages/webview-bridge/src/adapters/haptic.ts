@@ -8,18 +8,10 @@ export interface BridgeHapticAdapter {
   trigger(type: string): void;
 }
 
-export function bridgeHapticAdapter(
-  bridge: WebViewBridge,
-): BridgeHapticAdapter {
+export function bridgeHapticAdapter(bridge: WebViewBridge): BridgeHapticAdapter {
   return {
     trigger(type: string): void {
       bridge.fire('haptic', 'trigger', { type });
     },
-  };
-}
-
-export function noOpHapticAdapter(): BridgeHapticAdapter {
-  return {
-    trigger(): void {},
   };
 }

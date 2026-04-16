@@ -12,8 +12,10 @@ export type {
   ClockAdapter,
   Config,
   CryptoAdapter,
+  DocumentCatalog,
   DocumentsAdapter,
   HttpAdapter,
+  IDDocument,
   LogLevel,
   LoggerAdapter,
   MRZInfo,
@@ -37,10 +39,15 @@ export type {
 export type { BaseContext, NFCScanContext, ProofContext } from './proving/internal/logging';
 export type { DG1, DG2, ParsedNFCResponse } from './nfc';
 export type { PassportValidationCallbacks } from './validation/document';
-export type { ProvingStateType, provingMachineCircuitType } from './proving/provingMachine';
+export type { ProvingState, ProvingStateType, provingMachineCircuitType } from './proving/provingMachine';
+export type { RecoveryValidationResult } from './proving/recoveryValidation';
 export type { SDKEvent, SDKEventMap } from './types/events';
+
 export type { SdkErrorCategory } from './errors';
 
+// Re-export common types needed for SelfApp context construction
+export type { SelfApp, SelfAppDisclosureConfig } from '@selfxyz/common';
+export type { SelfAppState } from './stores/selfAppStore';
 export type { WebAnalyticsOptions } from './adapters/browser';
 
 export {
@@ -76,6 +83,7 @@ export {
   createNoOpHapticAdapter,
   createWebAnalyticsAdapter,
   createWebCryptoAdapter,
+  createWebNetworkAdapter,
 } from './adapters/browser';
 
 export { createListenersMap, createSelfClient } from './client';
@@ -85,7 +93,10 @@ export { defaultConfig } from './config/defaults';
 
 export { extractMRZInfo, extractNameFromMRZ, formatDateToYYMMDD } from './mrz';
 
+export { finalizeRecoveredDocumentRegistration, validateRecoverySecretForDocument } from './proving/recoveryValidation';
+
 export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
+export { getPostVerificationRoute, useProvingStore } from './proving/provingMachine';
 
 export { isPassportDataValid } from './validation/document';
 

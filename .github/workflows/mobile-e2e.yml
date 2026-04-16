@@ -3,13 +3,14 @@ name: Mobile E2E
 env:
   # Build environment versions
   JAVA_VERSION: 17
-  ANDROID_API_LEVEL: 33
+  ANDROID_API_LEVEL: 34
   ANDROID_NDK_VERSION: 27.0.12077973
   XCODE_VERSION: 26
   # Cache versions
   GH_CACHE_VERSION: v2 # Global cache version - bumped to invalidate caches
   GH_GEMS_CACHE_VERSION: v1 # Ruby gems cache version
   # Performance optimizations
+  YARN_TASK_POOL_CONCURRENCY: 2 # Limit parallel native module builds to prevent OOM on self-hosted runners
   GRADLE_OPTS: -Dorg.gradle.workers.max=4 -Dorg.gradle.parallel=true -Dorg.gradle.caching=true
   CI: true
   # Disable Maestro analytics in CI
@@ -28,6 +29,7 @@ on:
     paths:
       - "app/**"
       - "packages/mobile-sdk-alpha/**"
+      - "patches/**"
       - ".github/workflows/mobile-e2e.yml"
   pull_request:
     branches:
@@ -37,18 +39,20 @@ on:
     paths:
       - "app/**"
       - "packages/mobile-sdk-alpha/**"
+      - "patches/**"
       - ".github/workflows/mobile-e2e.yml"
   workflow_dispatch:
 
 jobs:
-  android-build-test:
-    # Currently build-only for Android with private repos. E2E steps are preserved but skipped (if: false).
-    # To re-enable full E2E: change `if: false` to `if: true` on Maestro and emulator steps.
+  e2e-android:
     concurrency:
       group: ${{ github.workflow }}-android-${{ github.ref }}
       cancel-in-progress: true
     timeout-minutes: 120
-    runs-on: ubuntu-latest
+    runs-on:
+      - "self-hosted"
+      - "selfxyz-org"
+      - "ubuntu-24-04"
     steps:
       - uses: actions/checkout@v6
       - name: Read and sanitize Node.js version
@@ -91,54 +95,212 @@ jobs:
           app-id: ${{ vars.GH_WORKFLOWS_CROSS_ACCESS_ID }}
           private-key: ${{ secrets.GH_WORKFLOWS_CROSS_ACCESS_KEY }}
           configure-netrc: "true"
+      - name: Check for nested require() in tests
+        run: node scripts/check-test-requires.cjs
+        working-directory: ./app
       - name: Install deps (internal PRs and protected branches)
         if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
-        uses: nick-fields/retry@v3
-        with:
-          timeout_minutes: 10
-          max_attempts: 3
-          retry_wait_seconds: 5
-          command: yarn install --immutable --silent
+        shell: bash
         env:
           SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
+        run: |
+          set -euo pipefail
+
+          log_resources() {
+            echo "=== Runner resource snapshot ($1) ==="
+            free -h || true
+            df -h / || true
+            nproc || true
+
+            if [ -f /sys/fs/cgroup/memory.current ]; then
+              echo "cgroup memory.current: $(cat /sys/fs/cgroup/memory.current)"
+            fi
+            if [ -f /sys/fs/cgroup/memory.max ]; then
+              echo "cgroup memory.max: $(cat /sys/fs/cgroup/memory.max)"
+            fi
+            if [ -f /sys/fs/cgroup/memory.events ]; then
+              echo "cgroup memory.events:"
+              cat /sys/fs/cgroup/memory.events || true
+            fi
+
+            echo "=== dmesg OOM check ==="
+            dmesg 2>/dev/null | grep -i "oom\|killed process\|out of memory" | tail -5 || true
+            echo "=== End resource snapshot ==="
+          }
+
+          check_network() {
+            echo "Checking network prerequisites for Yarn install..."
+            for host in github.com api.github.com classic.yarnpkg.com repo.maven.apache.org; do
+              echo "Resolving ${host}..."
+              getent hosts "${host}" || true
+            done
+          }
+
+          monitored_install() {
+            log_resources "pre-install"
+            check_network
+
+            (
+              while true; do
+                timestamp="$(date -u +%H:%M:%S)"
+                mem_line="$(free -h | awk '/^Mem:/{print "Mem: used="$3" free="$4" avail="$7}')"
+                disk_line="$(df -h / | awk 'NR==2{print "Disk: used="$3" avail="$4}')"
+                cgroup_current="$(cat /sys/fs/cgroup/memory.current 2>/dev/null || echo n/a)"
+                cgroup_max="$(cat /sys/fs/cgroup/memory.max 2>/dev/null || echo n/a)"
+                oom_events="$(tr '\n' ' ' < /sys/fs/cgroup/memory.events 2>/dev/null || echo n/a)"
+                echo "[resource-monitor] ${timestamp} | ${mem_line} | ${disk_line} | cgroup.current=${cgroup_current} cgroup.max=${cgroup_max} | memory.events=${oom_events}"
+                sleep 30
+              done
+            ) &
+            MONITOR_PID=$!
+            trap 'kill "${MONITOR_PID}" 2>/dev/null || true' EXIT
+
+            for attempt in 1 2 3; do
+              echo "Starting yarn install attempt ${attempt}/3..."
+              if timeout 20m yarn install --immutable; then
+                echo "yarn install completed successfully on attempt ${attempt}."
+                kill "${MONITOR_PID}" 2>/dev/null || true
+                trap - EXIT
+                return 0
+              else
+                exit_code=$?
+              fi
+
+              echo "yarn install failed on attempt ${attempt} with exit code ${exit_code}."
+              log_resources "post-failure"
+
+              if [ "${attempt}" -eq 3 ]; then
+                kill "${MONITOR_PID}" 2>/dev/null || true
+                trap - EXIT
+                return "${exit_code}"
+              fi
+
+              echo "Retrying in 5 seconds..."
+              sleep 5
+            done
+          }
+
+          monitored_install
       - name: Install deps (forked PRs - no secrets)
         if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == true }}
-        uses: nick-fields/retry@v3
-        with:
-          timeout_minutes: 10
-          max_attempts: 3
-          retry_wait_seconds: 5
-          command: yarn install --immutable --silent
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          log_resources() {
+            echo "=== Runner resource snapshot ($1) ==="
+            free -h || true
+            df -h / || true
+            nproc || true
+
+            if [ -f /sys/fs/cgroup/memory.current ]; then
+              echo "cgroup memory.current: $(cat /sys/fs/cgroup/memory.current)"
+            fi
+            if [ -f /sys/fs/cgroup/memory.max ]; then
+              echo "cgroup memory.max: $(cat /sys/fs/cgroup/memory.max)"
+            fi
+            if [ -f /sys/fs/cgroup/memory.events ]; then
+              echo "cgroup memory.events:"
+              cat /sys/fs/cgroup/memory.events || true
+            fi
+
+            echo "=== dmesg OOM check ==="
+            dmesg 2>/dev/null | grep -i "oom\|killed process\|out of memory" | tail -5 || true
+            echo "=== End resource snapshot ==="
+          }
+
+          check_network() {
+            echo "Checking network prerequisites for Yarn install..."
+            for host in github.com api.github.com classic.yarnpkg.com repo.maven.apache.org; do
+              echo "Resolving ${host}..."
+              getent hosts "${host}" || true
+            done
+          }
+
+          monitored_install() {
+            log_resources "pre-install"
+            check_network
+
+            (
+              while true; do
+                timestamp="$(date -u +%H:%M:%S)"
+                mem_line="$(free -h | awk '/^Mem:/{print "Mem: used="$3" free="$4" avail="$7}')"
+                disk_line="$(df -h / | awk 'NR==2{print "Disk: used="$3" avail="$4}')"
+                cgroup_current="$(cat /sys/fs/cgroup/memory.current 2>/dev/null || echo n/a)"
+                cgroup_max="$(cat /sys/fs/cgroup/memory.max 2>/dev/null || echo n/a)"
+                oom_events="$(tr '\n' ' ' < /sys/fs/cgroup/memory.events 2>/dev/null || echo n/a)"
+                echo "[resource-monitor] ${timestamp} | ${mem_line} | ${disk_line} | cgroup.current=${cgroup_current} cgroup.max=${cgroup_max} | memory.events=${oom_events}"
+                sleep 30
+              done
+            ) &
+            MONITOR_PID=$!
+            trap 'kill "${MONITOR_PID}" 2>/dev/null || true' EXIT
+
+            for attempt in 1 2 3; do
+              echo "Starting yarn install attempt ${attempt}/3..."
+              if timeout 20m yarn install --immutable; then
+                echo "yarn install completed successfully on attempt ${attempt}."
+                kill "${MONITOR_PID}" 2>/dev/null || true
+                trap - EXIT
+                return 0
+              else
+                exit_code=$?
+              fi
+
+              echo "yarn install failed on attempt ${attempt} with exit code ${exit_code}."
+              log_resources "post-failure"
+
+              if [ "${attempt}" -eq 3 ]; then
+                kill "${MONITOR_PID}" 2>/dev/null || true
+                trap - EXIT
+                return "${exit_code}"
+              fi
+
+              echo "Retrying in 5 seconds..."
+              sleep 5
+            done
+          }
+
+          monitored_install
+
       - name: Validate Maestro test file
-        if: false # Skip for build-only test - keep logic for future E2E
         run: |
           [ -f app/tests/e2e/launch.android.flow.yaml ] || { echo "❌ Android E2E test file missing"; exit 1; }
       - name: Cache Maestro
-        if: false # Skip for build-only test - keep logic for future E2E
         id: cache-maestro
         uses: actions/cache@v4
         with:
           path: ~/.maestro
           key: ${{ runner.os }}-maestro-${{ env.MAESTRO_VERSION }}
-      - name: Install Maestro
-        if: false # Skip for build-only test - keep logic for future E2E
-        run: curl -Ls "https://get.maestro.mobile.dev" | bash
-      - name: Add Maestro to path
-        if: false # Skip for build-only test - keep logic for future E2E
-        run: echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
-      - name: Free up disk space
-        uses: ./.github/actions/free-disk-space
+      - name: Check Java installation
+        run: |
+          echo "INSTALL_JAVA=false" >> "$GITHUB_ENV"
+          if command -v java &> /dev/null && java -version &> /dev/null; then
+            echo "Java already installed: $(java -version 2>&1 | head -n 1)"
+          else
+            echo "Java not found or not working, will install..."
+            echo "INSTALL_JAVA=true" >> "$GITHUB_ENV"
+          fi
       - name: Setup Java environment
+        if: env.INSTALL_JAVA == 'true'
         uses: actions/setup-java@v4
         with:
           distribution: "temurin"
           java-version: ${{ env.JAVA_VERSION }}
+      - name: Install Maestro
+        run: curl -Ls "https://get.maestro.mobile.dev" | bash
+      - name: Add Maestro to path
+        run: echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+      - name: Free up disk space
+        if: false # We should be fine for self-hosted
+        uses: ./.github/actions/free-disk-space
       - name: Cache Gradle packages
         uses: ./.github/actions/cache-gradle
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
           accept-android-sdk-licenses: true
+
       - name: Install NDK
         uses: nick-fields/retry@v3
         with:
@@ -146,6 +308,7 @@ jobs:
           max_attempts: 3
           retry_wait_seconds: 10
           command: sdkmanager "ndk;${{ env.ANDROID_NDK_VERSION }}"
+
       - name: Build dependencies (outside emulator)
         run: |
           echo "Building dependencies..."
@@ -165,8 +328,12 @@ jobs:
         run: |
           echo "Building Android APK..."
           chmod +x app/android/gradlew
-          (cd app/android && ./gradlew assembleDebug --quiet --parallel --build-cache --no-configuration-cache) || { echo "❌ Android build failed"; exit 1; }
+          (
+            cd app/android &&
+            E2E_BUILD=true ./gradlew assembleDebug -PbundleInDebug=true --quiet --parallel --build-cache --no-configuration-cache
+          ) || { echo "❌ Android build failed"; exit 1; }
           echo "✅ Android build succeeded"
+
       - name: Clean up Gradle build artifacts
         uses: ./.github/actions/cleanup-gradle-artifacts
       - name: Verify APK and android-passport-nfc-reader integration
@@ -208,32 +375,80 @@ jobs:
           fi
 
           echo "🎉 Build verification completed successfully!"
-          echo "ℹ️  Emulator testing is temporarily disabled - build testing only"
+      - name: Check KVM access
+        id: kvm
+        run: |
+          if [ ! -e /dev/kvm ]; then
+            echo "::warning::/dev/kvm not found — emulator will run in software mode (slow). Enable nested virtualization for better performance."
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ -w /dev/kvm ]; then
+            echo "✅ /dev/kvm is already writable"
+          elif [ -d /etc/udev/rules.d ]; then
+            echo "Setting KVM permissions via udev..."
+            echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+            sudo udevadm control --reload-rules
+            sudo udevadm trigger --name-match=kvm
+          else
+            echo "No udev available, setting /dev/kvm permissions directly..."
+            sudo chmod 666 /dev/kvm
+          fi
+          ls -la /dev/kvm
+          echo "available=true" >> "$GITHUB_OUTPUT"
+      - name: Install emulator runtime dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq \
+            libx11-6 libgl1 libpulse0 libnss3 \
+            libxcomposite1 libxcursor1 libxi6 libxtst6 \
+            libxrandr2 libxss1 libxdamage1 libxfixes3 \
+            libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 \
+            libgbm1 libgtk-3-0 libpango-1.0-0 libcairo2 \
+            > /dev/null 2>&1
+      - name: Create E2E test script
+        run: |
+          cat > /tmp/run-e2e.sh << 'EOF'
+          #!/bin/bash
+          set -euo pipefail
+          APP_ID="com.proofofpassportapp"
+          echo "Installing app on emulator..."
+          APK_PATH="app/android/app/build/outputs/apk/debug/app-debug.apk"
+          [ -f "$APK_PATH" ] || { echo "❌ APK not found at $APK_PATH"; exit 1; }
+          adb uninstall "$APP_ID" >/dev/null 2>&1 || true
+          adb install -r "$APK_PATH" || { echo "❌ App installation failed"; exit 1; }
+          adb shell pm clear "$APP_ID" >/dev/null 2>&1 || true
+          echo "✅ App installed successfully"
+          echo "⏰ Giving the emulator a moment to settle..."
+          sleep 5
+          echo "🎭 Running Maestro tests..."
+          export MAESTRO_DRIVER_STARTUP_TIMEOUT=180000
+          export LAUNCH_WAIT_MS=180000
+          if ! maestro test app/tests/e2e/launch.android.flow.yaml --format junit --output app/maestro-results.xml; then
+            echo "❌ Maestro failed - dumping Android diagnostics"
+            adb shell dumpsys activity activities | sed -n '1,240p' || true
+            adb logcat -d | tail -n 400 || true
+            exit 1
+          fi
+          EOF
+          chmod +x /tmp/run-e2e.sh
       - name: Install and Test on Android
-        if: false # Skip emulator/E2E for build-only test - keep logic for future E2E
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ env.ANDROID_API_LEVEL }}
           arch: x86_64
-          target: google_apis
-          force-avd-creation: false
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none -memory 8192 -cores 4 -accel on
+          target: default
+          channel: stable
+          force-avd-creation: true
+          emulator-options: >-
+            -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+            -camera-back none -camera-front none -memory 8192 -cores 4
+            ${{ steps.kvm.outputs.available == 'true' && '-accel on' || '-accel off' }}
           disable-animations: true
-          script: |
-            echo "Installing app on emulator..."
-            APK_PATH="app/android/app/build/outputs/apk/debug/app-debug.apk"
-            [ -f "$APK_PATH" ] || { echo "❌ APK not found at $APK_PATH"; exit 1; }
-            adb install -r "$APK_PATH" || { echo "❌ App installation failed"; exit 1; }
-            echo "✅ App installed successfully"
+          script: /tmp/run-e2e.sh
 
-            echo "⏰ Giving the emulator a moment to settle..."
-            sleep 5
-
-            echo "🎭 Running Maestro tests..."
-            export MAESTRO_DRIVER_STARTUP_TIMEOUT=180000
-            maestro test app/tests/e2e/launch.android.flow.yaml --format junit --output app/maestro-results.xml
       - name: Upload test results
-        if: false # Skip for build-only test - keep logic for future E2E
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: maestro-results-android
@@ -310,6 +525,9 @@ jobs:
           app-id: ${{ vars.GH_WORKFLOWS_CROSS_ACCESS_ID }}
           private-key: ${{ secrets.GH_WORKFLOWS_CROSS_ACCESS_KEY }}
           configure-netrc: "true"
+      - name: Check for nested require() in tests
+        run: node scripts/check-test-requires.cjs
+        working-directory: ./app
       - name: Install deps (internal PRs and protected branches)
         if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
         uses: nick-fields/retry@v3
@@ -605,6 +823,12 @@ jobs:
           # Use the dynamic simulator ID
           SIMULATOR_ID="${IOS_SIMULATOR_ID:-iPhone SE (3rd generation)}"
           echo "Installing on simulator: $SIMULATOR_ID"
+
+          echo "Erasing simulator to ensure clean state..."
+          xcrun simctl shutdown "$SIMULATOR_ID" 2>/dev/null || true
+          xcrun simctl erase "$SIMULATOR_ID"
+          xcrun simctl boot "$SIMULATOR_ID" || true
+          xcrun simctl bootstatus "$SIMULATOR_ID" -b
 
           echo "Removing any existing app installation..."
           xcrun simctl uninstall "$SIMULATOR_ID" "$IOS_BUNDLE_ID" 2>/dev/null || true

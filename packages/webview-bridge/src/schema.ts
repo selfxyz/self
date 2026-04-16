@@ -2,13 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import type {
-  BridgeMessage,
-  BridgeRequest,
-  BridgeResponse,
-  BridgeEvent,
-  BridgeDomain,
-} from './types';
+import type { BridgeDomain, BridgeEvent, BridgeMessage, BridgeRequest, BridgeResponse } from './types';
 import { BRIDGE_PROTOCOL_VERSION } from './types';
 
 const VALID_DOMAINS: BridgeDomain[] = [
@@ -39,18 +33,55 @@ function isObject(value: unknown): value is Record<string, unknown> {
 
 function assertString(obj: Record<string, unknown>, field: string): void {
   if (typeof obj[field] !== 'string') {
-    throw new ValidationError(
-      `Missing or invalid field: ${field} (expected string)`,
-    );
+    throw new ValidationError(`Missing or invalid field: ${field} (expected string)`);
   }
 }
 
 function assertNumber(obj: Record<string, unknown>, field: string): void {
   if (typeof obj[field] !== 'number') {
-    throw new ValidationError(
-      `Missing or invalid field: ${field} (expected number)`,
-    );
+    throw new ValidationError(`Missing or invalid field: ${field} (expected number)`);
   }
+}
+
+export function isEvent(msg: BridgeMessage): msg is BridgeEvent {
+  return msg.type === 'event';
+}
+
+function validateRequest(obj: Record<string, unknown>): BridgeRequest {
+  assertString(obj, 'method');
+  if (!isObject(obj.params)) {
+    throw new ValidationError('Request params must be an object');
+  }
+  return obj as unknown as BridgeRequest;
+}
+
+function validateResponse(obj: Record<string, unknown>): BridgeResponse {
+  assertString(obj, 'requestId');
+  if (typeof obj.success !== 'boolean') {
+    throw new ValidationError('Response success must be a boolean');
+  }
+  if (!obj.success && obj.error) {
+    if (!isObject(obj.error)) {
+      throw new ValidationError('Response error must be an object');
+    }
+    if (typeof obj.error.code !== 'string' || typeof obj.error.message !== 'string') {
+      throw new ValidationError('Response error must have code and message strings');
+    }
+  }
+  return obj as unknown as BridgeResponse;
+}
+
+function validateEvent(obj: Record<string, unknown>): BridgeEvent {
+  assertString(obj, 'event');
+  return obj as unknown as BridgeEvent;
+}
+
+export function isRequest(msg: BridgeMessage): msg is BridgeRequest {
+  return msg.type === 'request';
+}
+
+export function isResponse(msg: BridgeMessage): msg is BridgeResponse {
+  return msg.type === 'response';
 }
 
 export function parseMessage(json: string): BridgeMessage {
@@ -72,9 +103,7 @@ export function parseMessage(json: string): BridgeMessage {
 
   assertNumber(parsed, 'version');
   if (parsed.version !== BRIDGE_PROTOCOL_VERSION) {
-    throw new ValidationError(
-      `Unsupported protocol version: ${parsed.version}`,
-    );
+    throw new ValidationError(`Unsupported protocol version: ${parsed.version}`);
   }
 
   assertString(parsed, 'id');
@@ -95,50 +124,4 @@ export function parseMessage(json: string): BridgeMessage {
     default:
       throw new ValidationError(`Unknown message type: ${String(type)}`);
   }
-}
-
-function validateRequest(obj: Record<string, unknown>): BridgeRequest {
-  assertString(obj, 'method');
-  if (!isObject(obj.params)) {
-    throw new ValidationError('Request params must be an object');
-  }
-  return obj as unknown as BridgeRequest;
-}
-
-function validateResponse(obj: Record<string, unknown>): BridgeResponse {
-  assertString(obj, 'requestId');
-  if (typeof obj.success !== 'boolean') {
-    throw new ValidationError('Response success must be a boolean');
-  }
-  if (!obj.success && obj.error) {
-    if (!isObject(obj.error)) {
-      throw new ValidationError('Response error must be an object');
-    }
-    if (
-      typeof obj.error.code !== 'string' ||
-      typeof obj.error.message !== 'string'
-    ) {
-      throw new ValidationError(
-        'Response error must have code and message strings',
-      );
-    }
-  }
-  return obj as unknown as BridgeResponse;
-}
-
-function validateEvent(obj: Record<string, unknown>): BridgeEvent {
-  assertString(obj, 'event');
-  return obj as unknown as BridgeEvent;
-}
-
-export function isRequest(msg: BridgeMessage): msg is BridgeRequest {
-  return msg.type === 'request';
-}
-
-export function isResponse(msg: BridgeMessage): msg is BridgeResponse {
-  return msg.type === 'response';
-}
-
-export function isEvent(msg: BridgeMessage): msg is BridgeEvent {
-  return msg.type === 'event';
 }

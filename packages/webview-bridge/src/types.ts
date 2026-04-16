@@ -2,8 +2,14 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-export const BRIDGE_PROTOCOL_VERSION = 1;
-export const DEFAULT_TIMEOUT_MS = 30_000;
+export type AnalyticsMethod = 'trackEvent' | 'trackNfcEvent' | 'logNfcEvent';
+
+export interface BiometricAuthParams {
+  reason: string;
+  fallbackLabel?: string;
+}
+
+export type BiometricsMethod = 'authenticate' | 'isAvailable' | 'getBiometryType';
 
 export type BridgeDomain =
   | 'nfc'
@@ -17,13 +23,25 @@ export type BridgeDomain =
   | 'documents'
   | 'navigation';
 
-export type BridgeMessageType = 'request' | 'response' | 'event';
-
 export interface BridgeError {
   code: string;
   message: string;
   details?: Record<string, unknown>;
 }
+
+export interface BridgeEvent {
+  type: 'event';
+  version: number;
+  id: string;
+  domain: BridgeDomain;
+  event: string;
+  data: unknown;
+  timestamp: number;
+}
+
+export type BridgeMessage = BridgeRequest | BridgeResponse | BridgeEvent;
+
+export type BridgeMessageType = 'request' | 'response' | 'event';
 
 export interface BridgeRequest {
   type: 'request';
@@ -47,40 +65,33 @@ export interface BridgeResponse {
   timestamp: number;
 }
 
-export interface BridgeEvent {
-  type: 'event';
-  version: number;
-  id: string;
-  domain: BridgeDomain;
-  event: string;
-  data: unknown;
-  timestamp: number;
+export interface BrowserHostOptions {
+  targetOrigin?: string;
 }
 
-export type BridgeMessage = BridgeRequest | BridgeResponse | BridgeEvent;
-
-// Domain-specific method types
-export type NfcMethod = 'scan' | 'cancelScan' | 'isSupported';
-export type NfcEvent = 'scanProgress' | 'tagDiscovered' | 'scanError';
-export type BiometricsMethod =
-  | 'authenticate'
-  | 'isAvailable'
-  | 'getBiometryType';
-export type SecureStorageMethod = 'get' | 'set' | 'remove';
 export type CameraMethod = 'scanMRZ' | 'isAvailable';
+
 export type CryptoMethod = 'sign' | 'generateKey' | 'getPublicKey';
+
+export type DocumentsMethod = 'loadCatalog' | 'saveCatalog' | 'loadById' | 'save' | 'delete';
+
+export type EventHandler = (data: unknown) => void;
+
 export type HapticMethod = 'trigger';
-export type AnalyticsMethod = 'trackEvent' | 'trackNfcEvent' | 'logNfcEvent';
+
 export type LifecycleMethod = 'ready' | 'dismiss' | 'setResult';
-export type DocumentsMethod =
-  | 'loadCatalog'
-  | 'saveCatalog'
-  | 'loadById'
-  | 'save'
-  | 'delete';
+
+export interface NativeTransport {
+  postMessage(json: string): void;
+  kind?: 'native' | 'browser-host';
+}
+
 export type NavigationMethod = 'goBack' | 'goTo';
 
-// NFC-specific param/result types
+export type NfcEvent = 'scanProgress' | 'tagDiscovered' | 'scanError';
+
+export type NfcMethod = 'scan' | 'cancelScan' | 'isSupported';
+
 export interface NfcScanParams {
   passportNumber: string;
   dateOfBirth: string;
@@ -101,10 +112,27 @@ export interface NfcScanProgress {
   message?: string;
 }
 
-export interface BiometricAuthParams {
-  reason: string;
-  fallbackLabel?: string;
+export interface PendingRequest {
+  resolve: (value: unknown) => void;
+  reject: (reason: unknown) => void;
+  timeout: ReturnType<typeof setTimeout>;
 }
+
+export type SecureStorageMethod = 'get' | 'set' | 'remove';
+
+export interface SelfHostMessage<TPayload extends object = Record<string, unknown>> {
+  type: SelfHostMessageType;
+  version: 1;
+  payload: TPayload;
+}
+
+export type SelfHostMessageType = 'self:ready' | 'self:result' | 'self:dismiss' | 'self:cancel';
+
+export interface VerificationDismissPayload {
+  reason?: VerificationDismissReason;
+}
+
+export type VerificationDismissReason = 'user_cancel' | 'back' | 'timeout';
 
 export interface VerificationResult {
   success: boolean;
@@ -115,22 +143,12 @@ export interface VerificationResult {
   error?: BridgeError;
 }
 
-// Transport interface
-export interface NativeTransport {
-  postMessage(json: string): void;
-}
-
 export interface WebViewBridgeOptions {
   debug?: boolean;
   transport?: NativeTransport;
+  browserHost?: BrowserHostOptions;
 }
 
-// Pending request tracker
-export interface PendingRequest {
-  resolve: (value: unknown) => void;
-  reject: (reason: unknown) => void;
-  timeout: ReturnType<typeof setTimeout>;
-}
+export const BRIDGE_PROTOCOL_VERSION = 1;
 
-// Event listener
-export type EventHandler = (data: unknown) => void;
+export const DEFAULT_TIMEOUT_MS = 30_000;

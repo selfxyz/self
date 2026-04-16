@@ -1,0 +1,16 @@
+# Spec Archive
+
+Append-only log of retired specs. When a spec is fully done and no longer needed for active reference, add a row here.
+
+For full retirement process, see [SPECS-REORG-PLAN.md](./archive/SPECS-REORG-PLAN.md) placement rule 6.
+
+| Spec                                            | Retired    | Outcome                                    | Key decisions / lessons                                                                                                                                                             | Final PR(s) |
+| ----------------------------------------------- | ---------- | ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
+| `specs/SPECS-REORG-PLAN.md`                     | 2026-03-05 | Reorganization completed and stabilized    | Project-first structure adopted; singleton status folder removed; project-level naming standardized                                                                                 | N/A         |
+| `specs/projects/sdk/SPEC-AGENT-OPTIMIZATION.md` | 2026-03-05 | Agent-optimization rollout completed       | All 6 execution chunks marked done; canonical guidance consolidated and stale scaffold reduced                                                                                      | N/A         |
+| `specs/projects/kmp/*`                          | 2026-03-05 | KMP specs retired from active project tree | KMP planning/execution remains under SDK workstreams; historical KMP context kept in `specs/archive/kmp/`                                                                           | N/A         |
+| `specs/topics/CI-COVERAGE-GAPS.md`              | 2026-03-06 | CI coverage expansion delivered            | Added dedicated CI coverage workflows across webview, KMP, RN test app, and Swift package; moved to archive after rollout                                                           | N/A         |
+| `specs/ios-crash-fix/SPEC.md`                   | 2026-03-10 | iOS simulator crash mitigation delivered   | Shipped deterministic simulator launch, simulator-only Sentry replay/screenshot reduction, and a binary-pod arm64 simulator audit with Rosetta fallback retained for `libtesseract` | N/A         |
+| `specs/topics/EUCLID-WEB-CONSOLIDATION.md`      | 2026-03-12 | Superseded by WebView SPEC.md scope reset  | Phased migration plan replaced by WV-01 through WV-04; `euclid-web` renamed to `webview-app`                                                                                        | N/A         |
+| `specs/topics/LOTTIE-DOTLOTTIE-REVIEW.md`       | 2026-03-12 | Branch review for reverted migration       | One-off review of `justin/lottie-dotlottie-conversion`; migration reverted in PR #1848                                                                                              | N/A         |
+| `specs/topics/SECURITY-HARDENING.md`            | 2026-03-12 | All items re-homed to owning backlogs      | APDU hardening done in NS-04/RN-03; crypto surface done in SC-02; file was already context-only                                                                                     | N/A         |

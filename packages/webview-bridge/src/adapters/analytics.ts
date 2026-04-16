@@ -15,9 +15,7 @@ export interface BridgeAnalyticsAdapter {
   ): void;
 }
 
-export function bridgeAnalyticsAdapter(
-  bridge: WebViewBridge,
-): BridgeAnalyticsAdapter {
+export function bridgeAnalyticsAdapter(bridge: WebViewBridge): BridgeAnalyticsAdapter {
   return {
     trackEvent(event: string, payload?: Record<string, unknown>): void {
       bridge.fire('analytics', 'trackEvent', { event, payload });

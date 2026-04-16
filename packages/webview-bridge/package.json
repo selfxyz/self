@@ -32,15 +32,33 @@
   ],
   "scripts": {
     "build": "tsup",
+    "fmt": "prettier --check .",
+    "fmt:fix": "prettier --write .",
+    "format": "yarn nice",
+    "lint": "eslint . --max-warnings=0",
+    "lint:fix": "eslint . --fix --max-warnings=0",
+    "nice": "prettier --write . && eslint . --fix && tsc --noEmit",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "types": "tsup"
   },
   "dependencies": {
+    "@selfxyz/mobile-sdk-alpha": "workspace:^",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@types/node": "^22.18.3",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-import-resolver-typescript": "^4.4.4",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-prettier": "^5.5.4",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
+    "eslint-plugin-sort-exports": "^0.9.1",
     "fake-indexeddb": "^6.2.5",
+    "prettier": "^3.5.3",
     "tsup": "^8.0.1",
     "typescript": "^5.9.3",
     "vitest": "^2.1.8"

@@ -4,105 +4,170 @@
 
 package xyz.self.sdk.webview
 
-import android.Manifest
+import android.content.Intent
+import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.os.Bundle
-import androidx.activity.result.contract.ActivityResultContracts
+import android.view.ViewGroup
+import android.webkit.WebChromeClient
+import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import xyz.self.sdk.api.QueryParamsBuilder
+import xyz.self.sdk.api.SelfSdkConfig
+import xyz.self.sdk.api.VerificationRequest
+import xyz.self.sdk.api.verificationResultJson
 import xyz.self.sdk.bridge.MessageRouter
-import xyz.self.sdk.handlers.BiometricBridgeHandler
-import xyz.self.sdk.handlers.CameraMrzBridgeHandler
+import xyz.self.sdk.handlers.CryptoBridgeHandler
 import xyz.self.sdk.handlers.LifecycleBridgeHandler
-import xyz.self.sdk.handlers.NfcBridgeHandler
 import xyz.self.sdk.handlers.SecureStorageBridgeHandler
+import xyz.self.sdk.providers.AndroidKeystoreCryptoProvider
+import xyz.self.sdk.providers.EncryptedSharedPreferencesProvider
+import xyz.self.sdk.providers.SdkProviderRegistry
 
-/**
- * Activity that hosts the Self verification WebView.
- * This is the main entry point for the verification flow.
- * Host apps launch this Activity via SelfSdk.launch().
- */
 class SelfVerificationActivity : AppCompatActivity() {
     private lateinit var webViewHost: AndroidWebViewHost
     private lateinit var router: MessageRouter
-
-    private val requiredPermissions =
-        arrayOf(
-            Manifest.permission.CAMERA,
-            Manifest.permission.NFC,
-        )
-
-    private val permissionLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
-            // Permissions granted or denied — proceed either way.
-            // Individual handlers will fail gracefully if their permission was denied.
-            initVerificationFlow()
-        }
+    private var container: FrameLayout? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // Request runtime permissions before initializing the WebView.
-        // Camera and NFC are dangerous permissions that require user consent.
-        val missingPermissions =
-            requiredPermissions.filter {
-                ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
-            }
-
-        if (missingPermissions.isNotEmpty()) {
-            permissionLauncher.launch(missingPermissions.toTypedArray())
-        } else {
-            initVerificationFlow()
-        }
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        initVerificationFlow()
     }
 
     private fun initVerificationFlow() {
-        // Determine if we're in debug mode
-        val isDebugMode = intent.getBooleanExtra(EXTRA_DEBUG_MODE, false)
+        val configJson = intent.getStringExtra(EXTRA_CONFIG) ?: "{}"
+        val requestJson = intent.getStringExtra(EXTRA_VERIFICATION_REQUEST)
 
-        // Create router with callback to send JavaScript to WebView
+        val config =
+            try {
+                verificationResultJson.decodeFromString(SelfSdkConfig.serializer(), configJson)
+            } catch (_: Exception) {
+                null
+            }
+        val request =
+            if (requestJson != null) {
+                try {
+                    verificationResultJson.decodeFromString(VerificationRequest.serializer(), requestJson)
+                } catch (_: Exception) {
+                    null
+                }
+            } else {
+                null
+            }
+
+        if (config == null || request == null) {
+            setResult(
+                RESULT_CODE_ERROR,
+                Intent().apply {
+                    putExtra(EXTRA_ERROR_CODE, "INVALID_BOOTSTRAP")
+                    putExtra(EXTRA_ERROR_MESSAGE, "Invalid verification request/config payload")
+                },
+            )
+            finish()
+            return
+        }
+
+        // Register default providers if consumer hasn't set custom ones
+        if (SdkProviderRegistry.secureStorage == null) {
+            SdkProviderRegistry.secureStorage = EncryptedSharedPreferencesProvider(this)
+        }
+        if (SdkProviderRegistry.crypto == null) {
+            SdkProviderRegistry.crypto = AndroidKeystoreCryptoProvider()
+        }
+
         router =
             MessageRouter(
                 sendToWebView = { js ->
-                    // Ensure we're on the UI thread
                     runOnUiThread {
                         webViewHost.evaluateJs(js)
                     }
                 },
             )
 
-        // Register all native bridge handlers
-        // These handlers implement the bridge protocol domains
         registerHandlers()
 
-        // Create and display WebView
-        webViewHost = AndroidWebViewHost(this, router, isDebugMode)
-        val webView = webViewHost.createWebView()
-        setContentView(webView)
+        val queryParams = QueryParamsBuilder.build(config, request)
+        val isDebuggable = (applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
+
+        webViewHost = AndroidWebViewHost(this, router, config.debug, isDebuggable, config.remoteWebAppBaseUrl, config.devServerUrl)
+        val webView = webViewHost.createWebView(queryParams ?: "")
+        val wrapper =
+            FrameLayout(this).apply {
+                addView(
+                    webView,
+                    ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                    ),
+                )
+            }
+        this.container = wrapper
+        setContentView(wrapper)
+
+        ViewCompat.setOnApplyWindowInsetsListener(wrapper) { view, insets ->
+            val systemInsets =
+                insets.getInsets(
+                    WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout(),
+                )
+            view.setPadding(
+                systemInsets.left,
+                systemInsets.top,
+                systemInsets.right,
+                systemInsets.bottom,
+            )
+            WindowInsetsCompat.CONSUMED
+        }
     }
 
-    /**
-     * Registers all bridge handlers with the MessageRouter.
-     * Each handler implements a specific domain of the bridge protocol.
-     */
     private fun registerHandlers() {
-        // NFC - Passport scanning
-        router.register(NfcBridgeHandler(this, router))
-
-        // Camera - MRZ scanning
-        router.register(CameraMrzBridgeHandler(this))
-
-        // Biometrics - Fingerprint/Face authentication
-        router.register(BiometricBridgeHandler(this))
-
-        // Secure Storage - Encrypted key-value storage
-        router.register(SecureStorageBridgeHandler(this))
-
-        // Lifecycle - WebView lifecycle management
+        router.register(SecureStorageBridgeHandler())
+        router.register(CryptoBridgeHandler())
         router.register(LifecycleBridgeHandler(this))
     }
 
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray,
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == AndroidWebViewHost.CAMERA_PERMISSION_REQUEST_CODE) {
+            val pending = webViewHost.pendingPermissionRequest ?: return
+            if (grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
+                pending.grant(pending.resources)
+            } else {
+                pending.deny()
+            }
+            webViewHost.pendingPermissionRequest = null
+        }
+    }
+
+    @Deprecated("Use Activity Result API")
+    override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?,
+    ) {
+        @Suppress("DEPRECATION")
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == AndroidWebViewHost.FILE_CHOOSER_REQUEST_CODE) {
+            val results =
+                if (resultCode == RESULT_OK && data != null) {
+                    WebChromeClient.FileChooserParams.parseResult(resultCode, data)
+                } else {
+                    null
+                }
+            webViewHost.fileUploadCallback?.onReceiveValue(results)
+            webViewHost.fileUploadCallback = null
+        }
+    }
+
     override fun onDestroy() {
+        container?.let { ViewCompat.setOnApplyWindowInsetsListener(it, null) }
         if (::webViewHost.isInitialized) {
             webViewHost.destroy()
         }
@@ -110,16 +175,13 @@ class SelfVerificationActivity : AppCompatActivity() {
     }
 
     companion object {
-        const val EXTRA_DEBUG_MODE = "xyz.self.sdk.DEBUG_MODE"
         const val EXTRA_VERIFICATION_REQUEST = "xyz.self.sdk.VERIFICATION_REQUEST"
         const val EXTRA_CONFIG = "xyz.self.sdk.CONFIG"
 
-        // Activity result codes
         const val RESULT_CODE_SUCCESS = RESULT_OK
         const val RESULT_CODE_ERROR = RESULT_FIRST_USER
         const val RESULT_CODE_CANCELLED = RESULT_CANCELED
 
-        // Result extras
         const val EXTRA_RESULT_DATA = "xyz.self.sdk.RESULT_DATA"
         const val EXTRA_RESULT_TYPE = "xyz.self.sdk.RESULT_TYPE"
         const val EXTRA_ERROR_CODE = "xyz.self.sdk.ERROR_CODE"

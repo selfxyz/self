@@ -1,0 +1,84 @@
+name: WebView Bridge CI
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    paths:
+      - "common/**"
+      - "packages/mobile-sdk-alpha/**"
+      - "packages/webview-bridge/**"
+      - ".github/workflows/webview-bridge-ci.yml"
+      - ".github/actions/**"
+  push:
+    branches: [dev, staging, main]
+    paths:
+      - "common/**"
+      - "packages/mobile-sdk-alpha/**"
+      - "packages/webview-bridge/**"
+      - ".github/workflows/webview-bridge-ci.yml"
+      - ".github/actions/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install dependencies
+        uses: ./.github/actions/yarn-install
+      - name: Build common
+        run: yarn workspace @selfxyz/common build
+      - name: Build mobile-sdk-alpha
+        run: yarn workspace @selfxyz/mobile-sdk-alpha build
+      - name: Build
+        run: yarn workspace @selfxyz/webview-bridge build
+
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install dependencies
+        uses: ./.github/actions/yarn-install
+      - name: Build common
+        run: yarn workspace @selfxyz/common build
+      - name: Build mobile-sdk-alpha
+        run: yarn workspace @selfxyz/mobile-sdk-alpha build
+      - name: Run linter
+        run: yarn workspace @selfxyz/webview-bridge lint
+
+  format:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install dependencies
+        uses: ./.github/actions/yarn-install
+      - name: Check Prettier formatting
+        run: yarn workspace @selfxyz/webview-bridge fmt
+
+  types:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install dependencies
+        uses: ./.github/actions/yarn-install
+      - name: Build common
+        run: yarn workspace @selfxyz/common build
+      - name: Build mobile-sdk-alpha
+        run: yarn workspace @selfxyz/mobile-sdk-alpha build
+      - name: Typecheck
+        run: yarn workspace @selfxyz/webview-bridge types
+
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install dependencies
+        uses: ./.github/actions/yarn-install
+      - name: Test
+        run: yarn workspace @selfxyz/webview-bridge test

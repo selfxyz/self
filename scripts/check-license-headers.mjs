@@ -9,7 +9,13 @@
  * Ensures there's a newline after license headers
  */
 
-import { readdirSync, statSync, readFileSync, writeFileSync } from 'fs';
+import {
+  existsSync,
+  readdirSync,
+  statSync,
+  readFileSync,
+  writeFileSync,
+} from 'fs';
 import path from 'path';
 
 // Legacy composite format (being phased out)
@@ -29,6 +35,10 @@ function findFiles(
 ) {
   const files = [];
 
+  function isNestedGitRepo(currentDir) {
+    return existsSync(path.join(currentDir, '.git'));
+  }
+
   function traverse(currentDir) {
     const items = readdirSync(currentDir);
 
@@ -37,6 +47,12 @@ function findFiles(
       const stat = statSync(fullPath);
 
       if (stat.isDirectory()) {
+        // Skip nested git repos/submodules. The parent repo should not rewrite or
+        // lint files owned by another repository.
+        if (isNestedGitRepo(fullPath)) {
+          continue;
+        }
+
         // Skip node_modules, .git, and other common directories
         if (
           ![
@@ -54,6 +70,7 @@ function findFiles(
             'Pods',
             '.gradle',
             'vendor',
+            'assets',
           ].includes(item)
         ) {
           traverse(fullPath);
@@ -72,6 +89,8 @@ function findLicenseHeaderIndex(lines) {
   let i = 0;
   // Skip shebang if present
   if (lines[i]?.startsWith('#!')) i++;
+  // Skip swift-tools-version (must be first line in Package.swift)
+  if (lines[i]?.startsWith('// swift-tools-version')) i++;
   // Skip leading blank lines
   while (i < lines.length && lines[i].trim() === '') i++;
 
@@ -107,7 +126,7 @@ function shouldRequireHeader(filePath, projectRoot) {
   return (
     relativePath.startsWith('app/') ||
     relativePath.startsWith('packages/mobile-sdk-alpha/') ||
-    relativePath.startsWith('packages/kmp-test-app/') ||
+    relativePath.startsWith('packages/kmp-sdk-test-app/') ||
     relativePath.startsWith('packages/kmp-sdk/')
   );
 }
@@ -170,10 +189,24 @@ function fixLicenseHeader(filePath) {
 
   if (headerInfo.index === -1) {
     // No header exists - add the canonical header
+    // Preserve shebang and swift-tools-version prefixes
+    let insertIndex = 0;
+    if (lines[insertIndex]?.startsWith('#!')) {
+      insertIndex += 1;
+    }
+    if (lines[insertIndex]?.startsWith('// swift-tools-version')) {
+      insertIndex += 1;
+      // Ensure blank line between tools-version and license header
+      if (lines[insertIndex]?.trim() !== '') {
+        lines.splice(insertIndex, 0, '');
+      }
+      insertIndex += 1;
+    }
     const newLines = [
+      ...lines.slice(0, insertIndex),
       ...CANONICAL_HEADER_LINES,
       '', // Add newline after header
-      ...lines,
+      ...lines.slice(insertIndex),
     ];
     const fixedContent = newLines.join('\n');
     writeFileSync(filePath, fixedContent, 'utf8');
@@ -246,7 +279,7 @@ function main() {
     const requiredDirs = [
       'app/',
       'packages/mobile-sdk-alpha/',
-      'packages/kmp-test-app/',
+      'packages/kmp-sdk-test-app/',
       'packages/kmp-sdk/',
     ];
     console.log(`📋 License headers required in: ${requiredDirs.join(', ')}`);

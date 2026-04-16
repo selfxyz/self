@@ -68,7 +68,11 @@ export const DocumentNFCScreen: React.FC<DocumentNFCScreenProps> = (props: Docum
   const animationRef = useRef<LottieView>(null);
 
   useEffect(() => {
-    animationRef.current?.play();
+    const timer = setTimeout(() => {
+      animationRef.current?.play();
+    }, 100);
+
+    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
@@ -305,13 +309,11 @@ export const DocumentNFCScreen: React.FC<DocumentNFCScreenProps> = (props: Docum
     baseContext,
     isNfcEnabled,
     isNfcSupported,
-    {
-      canNumber: props.canNumber,
-      useCan: props.useCan,
-      skipPACE: props.skipPACE,
-      skipCA: props.skipCA,
-      extendedMode: props.extendedMode,
-    },
+    props.canNumber,
+    props.useCan,
+    props.skipPACE,
+    props.skipCA,
+    props.extendedMode,
     passportNumber,
     dateOfBirth,
     dateOfExpiry,

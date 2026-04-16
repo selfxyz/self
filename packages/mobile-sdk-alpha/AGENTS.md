@@ -142,15 +142,24 @@ yarn types # Verify type checking
 yarn build # Confirm build still works
 ```
 
-## SDK Architecture Specs
+## Linear Issue Interaction
 
-For architecture context, implementation details, and workstream coordination:
+When working with Linear issues during development:
 
-- **[SDK Overview](../../specs/SDK-OVERVIEW.md)** — System architecture, bridge protocol, decision matrix
-- **[Person 4 (SDK Core) Spec](../../specs/person4-sdk-core/SPEC.md)** — Implementation chunks for this package (mobile-sdk-alpha)
-- **[Person 4 Overview](../../specs/person4-sdk-core/OVERVIEW.md)** — What this workstream owns, dependencies, status
+- **`save_comment`** for: status updates, progress notes, blockers, linking PRs, corrections, decision records
+- **`save_issue`** for: changing status, priority, assignee, labels (structured fields only)
+- **`create_document`** for: attaching specs as Linear documents
 
-Before implementing SDK work, read `specs/PROJECT-RULES.md` and `specs/person4-sdk-core/SPEC.md` for constraints and validation commands.
+**Never overwrite an issue description.** Descriptions are the original scope set at creation time. All subsequent context goes in comments.
+
+## SDK Architecture
+
+For architecture context:
+
+- **[SDK Overview](../../specs/projects/sdk/OVERVIEW.md)** — System architecture, bridge protocol, decision matrix (read-only reference)
+- **Implementation specs** — Canonical source is `specs/projects/sdk/workstreams/<scope>/plans/` (version-controlled). Linear documents attached to issues are mirrored copies for tracking/discovery. When in doubt, trust the repo spec.
+
+Before implementing SDK work, read `CLAUDE.md` Key Rules for constraints and validation commands.
 
 ## Notes
 

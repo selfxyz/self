@@ -241,7 +241,12 @@ const HomeScreen: React.FC = () => {
   }
 
   return (
-    <YStack backgroundColor={'#F8FAFC'} flex={1} alignItems="center">
+    <YStack
+      backgroundColor={'#F8FAFC'}
+      flex={1}
+      alignItems="center"
+      testID="home-screen-root"
+    >
       <ScrollView
         showsVerticalScrollIndicator={false}
         flex={1}
@@ -255,7 +260,7 @@ const HomeScreen: React.FC = () => {
         {/* Show pending KYC cards at the top */}
         {activePendingVerifications.map(verification => (
           <PendingIdCard
-            key={verification.userId}
+            key={verification.sessionId}
             onClick={() => {
               if (
                 verification.status === 'processing' &&

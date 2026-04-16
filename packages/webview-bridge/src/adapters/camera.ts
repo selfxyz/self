@@ -4,25 +4,29 @@
 
 import type { WebViewBridge } from '../bridge';
 
-export interface MrzScanResult {
-  documentNumber: string;
-  dateOfBirth: string;
-  dateOfExpiry: string;
-}
-
 export interface BridgeCameraAdapter {
-  scanMRZ(): Promise<MrzScanResult>;
+  scanMRZ(params?: MrzScanParams): Promise<MrzScanResult>;
   isAvailable(): Promise<boolean>;
 }
 
-export function bridgeCameraAdapter(
-  bridge: WebViewBridge,
-): BridgeCameraAdapter {
+export interface MrzScanParams {
+  documentType?: string;
+  countryCode?: string;
+  [key: string]: unknown;
+}
+
+export interface MrzScanResult {
+  documentNumber?: string;
+  dateOfBirth?: string;
+  dateOfExpiry?: string;
+}
+
+export function bridgeCameraAdapter(bridge: WebViewBridge): BridgeCameraAdapter {
   return {
-    async scanMRZ(): Promise<MrzScanResult> {
+    async scanMRZ(params?: MrzScanParams): Promise<MrzScanResult> {
       // Native handler parses the MRZ JSON string into a JsonElement,
       // which arrives as an object with documentNumber, dateOfBirth, dateOfExpiry.
-      return bridge.request<MrzScanResult>('camera', 'scanMRZ', {});
+      return bridge.request<MrzScanResult>('camera', 'scanMRZ', params ?? {});
     },
 
     async isAvailable(): Promise<boolean> {

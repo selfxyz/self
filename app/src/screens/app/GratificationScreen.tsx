@@ -42,15 +42,15 @@ const GratificationScreen: React.FC = () => {
 
   const handleExploreRewards = () => {
     // Navigate to Points screen
-    navigation.navigate('Points' as never);
+    navigation.navigate('Points');
   };
 
   const handleInviteFriend = () => {
-    navigation.navigate('Referral' as never);
+    navigation.navigate('Referral');
   };
 
   const handleBackPress = () => {
-    navigation.navigate('Points' as never);
+    navigation.goBack();
   };
 
   const handleAnimationFinish = useCallback(() => {

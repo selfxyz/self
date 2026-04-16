@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { createIndexedDBDocumentsAdapter } from '../../../src/adapters/browser/documents';
+import { cloneForStorage, createIndexedDBDocumentsAdapter } from '../../../src/adapters/browser/documents';
 import type { DocumentsAdapter } from '../../../src/types/public';
 
 import 'fake-indexeddb/auto';
@@ -66,5 +66,19 @@ describe('createIndexedDBDocumentsAdapter', () => {
   it('should handle deleting a non-existent document (idempotent)', async () => {
     // Should not throw
     await adapter.deleteDocument('non-existent');
+  });
+
+  it('should fall back when structuredClone throws', () => {
+    const structuredCloneSpy = vi.spyOn(globalThis, 'structuredClone').mockImplementation(() => {
+      throw new Error('structuredClone unavailable');
+    });
+
+    const catalog = { documents: [{ id: 'doc-1' }] };
+    const clonedCatalog = cloneForStorage(catalog);
+    catalog.documents.push({ id: 'doc-2' });
+
+    expect(clonedCatalog.documents).toHaveLength(1);
+
+    structuredCloneSpy.mockRestore();
   });
 });

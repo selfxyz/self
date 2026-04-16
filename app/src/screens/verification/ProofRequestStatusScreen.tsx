@@ -3,14 +3,13 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type { LottieViewProps } from 'lottie-react-native';
-import LottieView from 'lottie-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Linking, StyleSheet, View } from 'react-native';
 import { ScrollView, Spinner } from 'tamagui';
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { DelayedLottieView, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import loadingAnimation from '@selfxyz/mobile-sdk-alpha/animations/loading/misc.json';
 import {
   BodyText,
@@ -59,28 +58,41 @@ const SuccessScreen: React.FC = () => {
     useState<LottieViewProps['source']>(loadingAnimation);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [countdownStarted, setCountdownStarted] = useState(false);
-  const [whitelistedPoints, setWhitelistedPoints] = useState<number | null>(
-    null,
-  );
+  const [whitelistedPoints, setWhitelistedPoints] = useState<
+    number | null | undefined
+  >(undefined);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const onOkPress = useCallback(async () => {
+    if (whitelistedPoints === undefined) return;
     buttonTap();
+    const completedSessionId = sessionId;
 
     if (whitelistedPoints !== null) {
       navigation.navigate('Gratification', {
         points: whitelistedPoints,
       });
       setTimeout(() => {
-        selfClient.getSelfAppState().cleanSelfApp();
+        if (useProvingStore.getState().uuid === completedSessionId) {
+          selfClient.getSelfAppState().cleanSelfApp();
+        }
       }, 2000);
     } else {
       goHome();
       setTimeout(() => {
-        selfClient.getSelfAppState().cleanSelfApp();
+        if (useProvingStore.getState().uuid === completedSessionId) {
+          selfClient.getSelfAppState().cleanSelfApp();
+        }
       }, 2000);
     }
-  }, [whitelistedPoints, navigation, goHome, selfClient]);
+  }, [
+    whitelistedPoints,
+    navigation,
+    goHome,
+    selfClient,
+    sessionId,
+    useProvingStore,
+  ]);
 
   function cancelDeeplinkCallbackRedirect() {
     setCountdown(null);
@@ -95,8 +107,33 @@ const SuccessScreen: React.FC = () => {
   }
 
   useEffect(() => {
-    if (isFocused) {
+    if (currentState !== 'completed') return;
+
+    if (!selfApp?.endpoint) {
+      setWhitelistedPoints(null);
+      return;
     }
+
+    const checkWhitelist = async () => {
+      try {
+        const whitelistedContracts = await getWhiteListedDisclosureAddresses();
+        const endpoint = selfApp.endpoint.toLowerCase();
+        const whitelistedContract = whitelistedContracts.find(
+          c => c.contract_address.toLowerCase() === endpoint,
+        );
+        setWhitelistedPoints(
+          whitelistedContract?.points_per_disclosure ?? null,
+        );
+      } catch (error) {
+        console.error('Error checking whitelist:', error);
+        setWhitelistedPoints(null);
+      }
+    };
+
+    checkWhitelist();
+  }, [currentState, selfApp?.endpoint]);
+
+  useEffect(() => {
     if (currentState === 'completed') {
       notificationSuccess();
       setAnimationSource(succesAnimation);
@@ -106,40 +143,17 @@ const SuccessScreen: React.FC = () => {
         appName,
       });
 
-      if (selfApp?.endpoint && whitelistedPoints === null) {
-        const checkWhitelist = async () => {
-          try {
-            const whitelistedContracts =
-              await getWhiteListedDisclosureAddresses();
-            const endpoint = selfApp.endpoint.toLowerCase();
-            const whitelistedContract = whitelistedContracts.find(
-              c => c.contract_address.toLowerCase() === endpoint,
-            );
-
-            if (whitelistedContract) {
-              setWhitelistedPoints(whitelistedContract.points_per_disclosure);
-            }
-          } catch (error) {
-            console.error('Error checking whitelist:', error);
-          }
-        };
-
-        checkWhitelist();
-      }
-
       if (isFocused && !countdownStarted && selfApp?.deeplinkCallback) {
-        if (selfApp?.deeplinkCallback) {
-          try {
-            const url = new URL(selfApp.deeplinkCallback);
-            if (url) {
-              setCountdown(5);
-              setCountdownStarted(true);
-            }
-          } catch {
-            console.warn(
-              'Invalid deep link URL provided (URL sanitized for security)',
-            );
+        try {
+          const url = new URL(selfApp.deeplinkCallback);
+          if (url) {
+            setCountdown(5);
+            setCountdownStarted(true);
           }
+        } catch {
+          console.warn(
+            'Invalid deep link URL provided (URL sanitized for security)',
+          );
         }
       }
     } else if (currentState === 'failure' || currentState === 'error') {
@@ -171,9 +185,7 @@ const SuccessScreen: React.FC = () => {
     reason,
     updateProofStatus,
     selfApp?.deeplinkCallback,
-    selfApp?.endpoint,
     countdownStarted,
-    whitelistedPoints,
   ]);
 
   useEffect(() => {
@@ -214,7 +226,7 @@ const SuccessScreen: React.FC = () => {
         marginTop={20}
         backgroundColor={black}
       >
-        <LottieView
+        <DelayedLottieView
           autoPlay
           loop={animationSource === loadingAnimation}
           source={animationSource}
@@ -245,9 +257,12 @@ const SuccessScreen: React.FC = () => {
         <PrimaryButton
           trackEvent={ProofEvents.PROOF_RESULT_ACKNOWLEDGED}
           disabled={
-            currentState !== 'completed' &&
-            currentState !== 'error' &&
-            currentState !== 'failure'
+            (currentState !== 'completed' &&
+              currentState !== 'error' &&
+              currentState !== 'failure') ||
+            (currentState === 'completed' &&
+              whitelistedPoints === undefined &&
+              !(countdown !== null && countdown > 0))
           }
           onPress={
             countdown !== null && countdown > 0
@@ -261,6 +276,8 @@ const SuccessScreen: React.FC = () => {
             <Spinner />
           ) : countdown !== null && countdown > 0 ? (
             'Cancel'
+          ) : whitelistedPoints === undefined ? (
+            <Spinner />
           ) : (
             'OK'
           )}

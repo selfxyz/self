@@ -33,5 +33,19 @@ export function createWebCryptoAdapter(): CryptoAdapter {
           'Signing requires native keychain access via the bridge.',
       );
     },
+
+    async generateKey(_keyRef: string): Promise<{ keyRef: string }> {
+      throw new Error(
+        'Key generation is not implemented in the browser crypto adapter. ' +
+          'Key generation requires native keychain access via the bridge.',
+      );
+    },
+
+    async getPublicKey(_keyRef: string): Promise<Uint8Array> {
+      throw new Error(
+        'Public key retrieval is not implemented in the browser crypto adapter. ' +
+          'Public key retrieval requires native keychain access via the bridge.',
+      );
+    },
   };
 }
