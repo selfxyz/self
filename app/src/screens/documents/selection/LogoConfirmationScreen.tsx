@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -26,14 +26,10 @@ import EPassportLogo from '@/assets/icons/epassport_logo.svg';
 import { DocumentFlowNavBar } from '@/components/navbar/DocumentFlowNavBar';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { buttonTap } from '@/integrations/haptics';
-import {
-  fetchAccessToken,
-  launchSumsub,
-} from '@/integrations/sumsub/sumsubService';
+import { createKycSession, launchKycVerification } from '@/integrations/kyc';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
 import { useFeedback } from '@/providers/feedbackProvider';
-import { useSettingStore } from '@/stores/settingStore';
 
 type LogoConfirmationScreenRouteProp = RouteProp<
   RootStackParamList,
@@ -42,12 +38,11 @@ type LogoConfirmationScreenRouteProp = RouteProp<
 
 const LogoConfirmationScreen: React.FC = () => {
   const route = useRoute<LogoConfirmationScreenRouteProp>();
-  const { documentType, countryCode } = route.params;
+  const { countryCode } = route.params;
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { showModal } = useFeedback();
   const navigateToOnboarding = useHapticNavigation('DocumentOnboarding');
-  const kycEnabled = useSettingStore(state => state.kycEnabled);
 
   const handleConfirm = useCallback(() => {
     buttonTap();
@@ -63,24 +58,31 @@ const LogoConfirmationScreen: React.FC = () => {
       buttonText: 'Proceed with an external verifier',
       onButtonPress: async () => {
         try {
-          const accessToken = await fetchAccessToken();
-          const result = await launchSumsub({
-            accessToken: accessToken.token,
-            // Pre-select document type and country based on user's earlier selection
-            documentType: documentType as 'p' | 'i',
-            countryCode,
-          });
+          const session = await createKycSession();
+          const result = await launchKycVerification(session.sessionToken);
 
           // User cancelled/dismissed without completing verification
-          const cancelledStatuses = ['Initial', 'Incomplete', 'Interrupted'];
-          if (cancelledStatuses.includes(result.status)) {
+          if (result.type === 'cancelled') {
             return;
           }
 
-          // User completed verification - navigate to KycSuccessScreen
-          navigation.navigate('KycSuccess', { userId: accessToken.userId });
+          // Verification failed (provider error/rejection)
+          if (result.type === 'failed') {
+            console.error(
+              'KYC verification failed:',
+              result.error?.type ?? 'unknown',
+            );
+            navigation.navigate('KycFailure', {
+              countryCode,
+              canRetry: true,
+            });
+            return;
+          }
+
+          // Verification succeeded - navigate to KycSuccessScreen
+          navigation.navigate('KycSuccess', { sessionId: session.sessionId });
         } catch {
-          console.error('Error launching Sumsub verification');
+          console.error('Error launching KYC verification');
           showModal({
             titleText: 'Error',
             bodyText: 'Unable to start verification. Please try again.',
@@ -90,7 +92,7 @@ const LogoConfirmationScreen: React.FC = () => {
         }
       },
     });
-  }, [documentType, countryCode, navigation, showModal]);
+  }, [countryCode, navigation, showModal]);
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={slate100}>
@@ -138,9 +140,7 @@ const LogoConfirmationScreen: React.FC = () => {
       <ExpandableBottomLayout.BottomSection backgroundColor={slate100}>
         <ButtonsContainer>
           <PrimaryButton onPress={handleConfirm}>Yes</PrimaryButton>
-          {kycEnabled && (
-            <SecondaryButton onPress={handleNotFound}>No</SecondaryButton>
-          )}
+          <SecondaryButton onPress={handleNotFound}>No</SecondaryButton>
         </ButtonsContainer>
       </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>

@@ -3,7 +3,7 @@
 # run from root
 # first argument should register | dsc | disclose
 if [[  $1 != "register" && $1 != "dsc" && $1 != "disclose" && $1 != "register_id" && $1 != "register_aadhaar" && $1 != "register_kyc" ]]; then
-    echo "first argument should be register | dsc | disclose | register_id | register_aadhaar"
+    echo "first argument should be register | dsc | disclose | register_id | register_aadhaar | register_kyc"
     exit 1
 fi
 

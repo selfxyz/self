@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -22,17 +22,12 @@ import { forwardRef, useEffect, useRef } from 'react';
  * <DelayedLottieView autoPlay loop source={animation} style={styles.animation} />
  */
 export const DelayedLottieView = forwardRef<LottieView, LottieViewProps>((props, forwardedRef) => {
-  // If LottieView is undefined (peer dependency not installed), return null
-  if (typeof LottieView === 'undefined') {
-    return null;
-  }
-
   const internalRef = useRef<LottieView>(null);
   const ref = (forwardedRef as React.RefObject<LottieView>) || internalRef;
 
   useEffect(() => {
-    // Only auto-trigger for autoPlay animations
-    if (props.autoPlay) {
+    // Only auto-trigger for autoPlay animations when LottieView is available
+    if (props.autoPlay && typeof LottieView !== 'undefined') {
       const timer = setTimeout(() => {
         ref.current?.play();
       }, 100);
@@ -40,6 +35,11 @@ export const DelayedLottieView = forwardRef<LottieView, LottieViewProps>((props,
       return () => clearTimeout(timer);
     }
   }, [props.autoPlay, ref]);
+
+  // If LottieView is undefined (peer dependency not installed), return null
+  if (typeof LottieView === 'undefined') {
+    return null;
+  }
 
   // For autoPlay animations, disable native autoPlay and control it ourselves
   const modifiedProps = props.autoPlay ? { ...props, autoPlay: false } : props;

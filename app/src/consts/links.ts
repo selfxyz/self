@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -14,7 +14,6 @@ export const apiBaseUrl = 'https://api.self.xyz';
 export const apiPingUrl = 'https://api.self.xyz/ping';
 export const appStoreUrl = 'https://apps.apple.com/app/self-zk/id6478563710';
 export const appleICloudDocsUrl = 'https://support.apple.com/en-us/102651';
-export const appsUrl = 'https://apps.self.xyz';
 export const discordUrl = 'https://discord.gg/selfxyz';
 export const gitHubUrl = 'https://github.com/selfxyz/self';
 export const googleDriveAppDataScope =

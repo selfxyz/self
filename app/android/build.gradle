@@ -6,9 +6,10 @@ buildscript {
         minSdkVersion = 24
         compileSdkVersion = 36
         targetSdkVersion = 36
-        // Updated NDK to support 16k page size devices
-        ndkVersion = "27.0.12077973"
-        kotlinVersion = "2.0.0"
+        // Updated NDK to support 16k page size devices (RN 0.77)
+        ndkVersion = "28.0.13004108"
+        // ndkVersion = "27.1.12297006"
+        kotlinVersion = "2.0.21"
         firebaseMessagingVersion = "23.4.0"
         firebaseBomVersion = "32.7.3"
     }
@@ -41,7 +42,7 @@ allprojects {
             url("$rootDir/../../node_modules/jsc-android/dist")
         }
         maven { url 'https://jitpack.io' }
-        maven { url "https://maven.sumsub.com/repository/maven-public/" }
+        maven { url "https://raw.githubusercontent.com/didit-protocol/sdk-android/main/repository" }
     }
     configurations.configureEach {
         resolutionStrategy.dependencySubstitution {

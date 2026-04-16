@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -10,15 +10,11 @@ import { ParameterSection } from '@/screens/dev/components/ParameterSection';
 import { TopicToggleButton } from '@/screens/dev/components/TopicToggleButton';
 
 interface DevTogglesSectionProps {
-  kycEnabled: boolean;
-  setKycEnabled: (enabled: boolean) => void;
   useStrongBox: boolean;
   setUseStrongBox: (useStrongBox: boolean) => void;
 }
 
 export const DevTogglesSection: React.FC<DevTogglesSectionProps> = ({
-  kycEnabled,
-  setKycEnabled,
   useStrongBox,
   setUseStrongBox,
 }) => {
@@ -44,11 +40,6 @@ export const DevTogglesSection: React.FC<DevTogglesSectionProps> = ({
       title="Options"
       description="Development and security options"
     >
-      <TopicToggleButton
-        label="KYC Flow"
-        isSubscribed={kycEnabled}
-        onToggle={() => setKycEnabled(!kycEnabled)}
-      />
       {Platform.OS === 'android' && (
         <TopicToggleButton
           label="Use StrongBox"

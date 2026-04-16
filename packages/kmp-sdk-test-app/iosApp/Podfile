@@ -1,0 +1,8 @@
+# Podfile for Self KMP Test App
+
+platform :ios, '16.0'
+
+target 'iosApp' do
+  use_frameworks!
+
+end

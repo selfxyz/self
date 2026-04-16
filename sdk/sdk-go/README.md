@@ -143,6 +143,7 @@ The SDK supports two attestation types:
 ## Network Configuration
 
 ### Mainnet (Production)
+
 ```go
 verifier, err := self.NewBackendVerifier(
     scope, endpoint, false, // mockPassport = false for mainnet
@@ -151,6 +152,7 @@ verifier, err := self.NewBackendVerifier(
 ```
 
 ### Testnet (Development)
+
 ```go
 verifier, err := self.NewBackendVerifier(
     scope, endpoint, true, // mockPassport = true for testnet

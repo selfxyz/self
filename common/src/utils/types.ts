@@ -46,6 +46,7 @@ export interface DocumentMetadata {
   mock: boolean; // whether this is a mock document
   isRegistered?: boolean; // whether the document is registered onChain
   registeredAt?: number; // timestamp (epoch ms) when document was registered
+  hasExpirationDate?: boolean; // whether the document has an expiration date
   idType?: string; // for KYC documents: the ID type used (e.g. "passport", "drivers_licence")
 }
 
@@ -89,13 +90,13 @@ export interface PassportData extends BaseIDData {
   passportMetadata?: PassportMetadata;
 }
 
-// pending - pending sumsub verification
-// processing - sumsub verification completed and pending onchain confirmation
-// failed - sumsub verification failed
+// pending - pending KYC verification
+// processing - KYC verification completed and pending onchain confirmation
+// failed - KYC verification failed
 export type PendingKycStatus = 'pending' | 'processing' | 'failed';
 
 export interface PendingKycVerification {
-  userId: string; // Correlation key from fetchAccessToken()
+  sessionId: string; // Correlation key from createSession()
   createdAt: number; // Timestamp when verification started
   status: PendingKycStatus; // Current status
   errorMessage?: string; // Error message if failed

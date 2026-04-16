@@ -1,0 +1,10 @@
+.build/
+.swiftpm/
+Package.resolved
+*.xcodeproj/
+xcuserdata/
+.DS_Store
+
+# WebView build output copied in at build time (ignore contents, keep directory marker)
+Sources/SelfSdkSwift/Resources/self-sdk-web/*
+!Sources/SelfSdkSwift/Resources/self-sdk-web/.gitkeep

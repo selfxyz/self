@@ -15,6 +15,9 @@ paths_ignore:
   - "common/src/mock_certificates/aadhaar/mockAadhaarCert.ts"
   - "common/src/utils/passports/genMockIdDoc.ts"
 
+  # Test files with mock credentials
+  - "**/rn-sdk/src/__tests__/**"
+
   # Test data files
   - "**/test/**/*.key"
   - "**/test/**/*.crt"

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -25,10 +25,9 @@ import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 
 import WarningIcon from '@/assets/images/warning.svg';
 import { NavBar } from '@/components/navbar/BaseNavBar';
-import { useSumsubLauncher } from '@/hooks/useSumsubLauncher';
+import { useKycLauncher } from '@/hooks/useKycLauncher';
 import { buttonTap } from '@/integrations/haptics';
 import type { RootStackParamList } from '@/navigation';
-import { useSettingStore } from '@/stores/settingStore';
 import { extraYPadding } from '@/utils/styleUtils';
 
 type RegistrationFallbackMRZRouteParams = {
@@ -61,30 +60,23 @@ const RegistrationFallbackMRZScreen: React.FC = () => {
   const { trackEvent, useMRZStore } = selfClient;
   const storeCountryCode = useMRZStore(state => state.countryCode);
   const documentType = useMRZStore(state => state.documentType);
-  const kycEnabled = useSettingStore(state => state.kycEnabled);
 
   // Use country code from route params, or fall back to MRZ store
   const countryCode = route.params?.countryCode || storeCountryCode || '';
 
   const headerTitle = getHeaderTitle(documentType);
 
-  const { launchSumsubVerification, isLoading: isRetrying } = useSumsubLauncher(
-    {
-      countryCode,
-      errorSource: 'mrz_scan_failed',
-      onCancel: () => {
-        navigation.goBack();
-      },
-      onError: (_error, _result) => {
-        // Stay on this screen - user can try again
-        // Error is already logged in the hook
-      },
-      onSuccess: () => {
-        // Success - provider handles its own success UI
-        // The screen will be navigated away by the provider's flow
-      },
+  const { launchKycVerification, isLoading: isRetrying } = useKycLauncher({
+    countryCode,
+    errorSource: 'mrz_scan_failed',
+    onCancel: () => {
+      navigation.goBack();
     },
-  );
+    onError: (_error, _result) => {
+      // Stay on this screen - user can try again
+      // Error is already logged in the hook
+    },
+  });
 
   const handleClose = useCallback(() => {
     buttonTap();
@@ -95,8 +87,8 @@ const RegistrationFallbackMRZScreen: React.FC = () => {
     trackEvent('REGISTRATION_FALLBACK_TRY_ALTERNATIVE', {
       errorSource: 'mrz_scan_failed',
     });
-    await launchSumsubVerification();
-  }, [launchSumsubVerification, trackEvent]);
+    await launchKycVerification();
+  }, [launchKycVerification, trackEvent]);
 
   const handleRetryOriginal = useCallback(() => {
     trackEvent('REGISTRATION_FALLBACK_RETRY_ORIGINAL', {
@@ -216,44 +208,40 @@ const RegistrationFallbackMRZScreen: React.FC = () => {
         paddingBottom={paddingBottom}
         gap={10}
       >
-        {kycEnabled && (
-          <>
-            {/* Secondary Button - White fill, black text, rounded */}
-            <Button
-              backgroundColor={white}
-              borderWidth={1}
-              borderColor={slate200}
-              borderRadius={100}
-              height={52}
-              pressStyle={{ opacity: 0.8 }}
-              onPress={handleTryAlternative}
-              disabled={isRetrying}
-            >
-              <BodyText
-                style={{
-                  fontSize: 17,
-                  fontWeight: '500',
-                  fontFamily: dinot,
-                  color: black,
-                }}
-              >
-                {isRetrying ? 'Loading...' : 'Try a different method'}
-              </BodyText>
-            </Button>
+        {/* Secondary Button - White fill, black text, rounded */}
+        <Button
+          backgroundColor={white}
+          borderWidth={1}
+          borderColor={slate200}
+          borderRadius={100}
+          height={52}
+          pressStyle={{ opacity: 0.8 }}
+          onPress={handleTryAlternative}
+          disabled={isRetrying}
+        >
+          <BodyText
+            style={{
+              fontSize: 17,
+              fontWeight: '500',
+              fontFamily: dinot,
+              color: black,
+            }}
+          >
+            {isRetrying ? 'Loading...' : 'Try a different method'}
+          </BodyText>
+        </Button>
 
-            {/* Footer Text - Not italic */}
-            <BodyText
-              style={{
-                fontSize: 16,
-                textAlign: 'center',
-                color: slate500,
-              }}
-            >
-              Registering with alternative methods may take longer to verify
-              your document.
-            </BodyText>
-          </>
-        )}
+        {/* Footer Text - Not italic */}
+        <BodyText
+          style={{
+            fontSize: 16,
+            textAlign: 'center',
+            color: slate500,
+          }}
+        >
+          Registering with alternative methods may take longer to verify your
+          document.
+        </BodyText>
       </YStack>
     </YStack>
   );

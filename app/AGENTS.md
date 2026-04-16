@@ -15,6 +15,7 @@
 Before creating a PR for the mobile app:
 
 ### Code Quality
+
 - [ ] `yarn nice` passes (fixes linting and formatting)
 - [ ] `yarn types` passes (TypeScript validation)
 - [ ] `yarn test` passes (unit tests)
@@ -22,6 +23,7 @@ Before creating a PR for the mobile app:
 - [ ] App builds successfully on target platforms
 
 ### Mobile-Specific Validation
+
 - [ ] iOS build succeeds: `yarn ios` (simulator)
 - [ ] Android build succeeds: `yarn android` (emulator/device)
 - [ ] Web build succeeds: `yarn web`
@@ -30,6 +32,7 @@ Before creating a PR for the mobile app:
 - [ ] E2E tests run in CI (not required locally - CI will run E2E tests automatically)
 
 ### AI Review Preparation
+
 - [ ] Complex native module changes documented
 - [ ] Platform-specific code paths explained
 - [ ] Security-sensitive operations flagged
@@ -40,12 +43,14 @@ Before creating a PR for the mobile app:
 After PR creation:
 
 ### Automated Checks
+
 - [ ] CI pipeline passes all stages
 - [ ] No new linting/formatting issues
 - [ ] Type checking passes
 - [ ] Build artifacts generated successfully
 
 ### Mobile-Specific Checks
+
 - [ ] App launches without crashes
 - [ ] Core functionality works on target platforms
 - [ ] No memory leaks introduced (including test memory patterns - see Test Memory Optimization section)
@@ -55,6 +60,7 @@ After PR creation:
 - [ ] Platform-specific code paths tested (iOS/Android/Web)
 
 ### Review Integration
+
 - [ ] Address CodeRabbitAI feedback
 - [ ] Resolve any security warnings
 - [ ] Confirm no sensitive data exposed
@@ -78,6 +84,7 @@ yarn test
 ## Workflow Commands
 
 ### Pre-PR Validation
+
 ```bash
 # Run all checks before PR
 yarn nice
@@ -89,6 +96,7 @@ yarn android  # Test Android build
 ```
 
 ### Post-PR Cleanup
+
 ```bash
 # After addressing review feedback
 yarn nice  # Fix any formatting issues
@@ -109,6 +117,38 @@ yarn types # Verify type checking
 - For Android: Ensure emulator is running or device is connected before `yarn android`
 - Metro bundler starts automatically; use `yarn start` to run it separately
 
+#### iOS Simulator Selection
+
+`yarn ios` now selects a simulator by UDID, shuts down stale booted simulators, explicitly boots the chosen device, waits for boot completion, then starts the React Native iOS build against that simulator.
+
+| Env var | Purpose |
+|---|---|
+| `IOS_SIMULATOR_DEVICE` | Case-insensitive iPhone name substring filter, for example `iPhone 16 Pro` |
+| `IOS_SIMULATOR_RUNTIME` | iOS runtime version filter, for example `18.4` or `18-4` |
+
+Default device priority when no env vars are set:
+
+- `iPhone 16 Pro`
+- `iPhone 16`
+- `iPhone 15 Pro`
+- `iPhone 15`
+- First available iPhone on the newest installed iOS runtime
+
+`IOS_SIMULATOR_DEVICE` uses a case-insensitive substring match. If multiple devices match, the launcher uses the first match from the newest matching runtime after applying the default priority order.
+
+Examples:
+
+```bash
+yarn ios
+IOS_SIMULATOR_DEVICE="iPhone 16 Pro" yarn ios
+IOS_SIMULATOR_RUNTIME="18.4" yarn ios
+IOS_SIMULATOR_DEVICE="iPhone 15" IOS_SIMULATOR_RUNTIME="18-4" yarn ios
+```
+
+If a pinned simulator cannot be found, the launcher exits with a readable error that includes the available iPhone simulators for the matching runtimes.
+
+The launcher currently shuts down all booted simulators before booting the selected one. If you keep other simulators open for unrelated work, relaunch them after `yarn ios`.
+
 ## E2E Testing
 
 The app uses Maestro for end-to-end testing. **E2E tests run automatically in CI/CD pipelines - they are not required to run locally.**
@@ -124,12 +164,14 @@ The app uses Maestro for end-to-end testing. **E2E tests run automatically in CI
 If you need to run E2E tests locally for debugging:
 
 **Prerequisites:**
+
 - Maestro CLI installed: `curl -Ls "https://get.maestro.mobile.dev" | bash`
 - iOS: Simulator running or device connected
 - Android: Emulator running or device connected
 - App built and installed on target device/simulator
 
 **Running Locally:**
+
 ```bash
 # iOS E2E tests
 yarn test:e2e:ios
@@ -143,6 +185,7 @@ yarn test:e2e:android
 ```
 
 **E2E Test Files:**
+
 - iOS: `tests/e2e/launch.ios.flow.yaml`
 - Android: `tests/e2e/launch.android.flow.yaml`
 
@@ -220,7 +263,9 @@ The project has multiple layers of protection:
 3. **CI Fast-Fail**: GitHub Actions checks for nested requires before running tests
 
 ### Quick Check
+
 Before committing, verify no nested requires:
+
 ```bash
 # Automated check (recommended)
 node scripts/check-test-requires.cjs
@@ -231,10 +276,29 @@ grep -r "require('react-native')" app/tests/
 ```
 
 ### Best Practices
+
 - **Always use ES6 `import` statements** - Never use `require('react')` or `require('react-native')` in test files
 - Put all imports at the top of the file - No dynamic imports in hooks
 - Avoid `require()` calls in `beforeEach`/`afterEach` hooks
 - React and React Native are already mocked in `jest.setup.js` - use imports in test files
 
 ### Detailed Guidelines
+
 See `.cursor/rules/test-memory-optimization.mdc` for comprehensive guidelines, examples, and anti-patterns.
+
+## Linear Issue Interaction
+
+When working with Linear issues during development:
+
+- **`save_comment`** for: status updates, progress notes, blockers, linking PRs, corrections, decision records
+- **`save_issue`** for: changing status, priority, assignee, labels (structured fields only)
+- **`create_document`** for: attaching specs as Linear documents
+
+**Never overwrite an issue description.** Descriptions are the original scope set at creation time. All subsequent context goes in comments. If the description has a factual error, add a comment explaining the correction — do not silently rewrite it.
+
+## SDK Architecture
+
+The Self Wallet app serves as a **test environment** for the SDK refactor. For SDK architecture context:
+
+- **[SDK Overview](../specs/projects/sdk/OVERVIEW.md)** — System architecture, bridge protocol, decision matrix (read-only reference)
+- **Implementation specs** — Canonical source is `specs/projects/sdk/workstreams/<scope>/plans/` (version-controlled). Linear documents attached to issues are mirrored copies for tracking/discovery. When in doubt, trust the repo spec.

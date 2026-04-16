@@ -1,8 +1,8 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { YStack } from 'tamagui';
@@ -33,11 +33,18 @@ const KYCVerifiedScreen: React.FC = () => {
   const selfClient = useSelfClient();
   const { pendingVerifications, removePendingVerification } =
     usePendingKycStore();
+  const [isLoading, setIsLoading] = useState(false);
 
   const documentId = route.params?.documentId;
 
   const handleGenerateProof = async () => {
+    // Prevent multiple concurrent proof generations
+    if (isLoading) {
+      return;
+    }
+
     buttonTap();
+    setIsLoading(true);
 
     try {
       if (!documentId) {
@@ -68,7 +75,7 @@ const KYCVerifiedScreen: React.FC = () => {
       //TODO improvement: instead of removing it here, we could do it in provingMachine's final state(error/completed)
       //if we do that, the card will still be displayed in Homescreen as 'Pending' if user click back midway during provingMachine
       if (pendingVerification) {
-        removePendingVerification(pendingVerification.userId);
+        removePendingVerification(pendingVerification.sessionId);
       }
 
       const documentMetadata: {
@@ -83,6 +90,8 @@ const KYCVerifiedScreen: React.FC = () => {
       selfClient.emit(SdkEvents.DOCUMENT_OWNERSHIP_CONFIRMED, documentMetadata);
     } catch (err) {
       console.error('[KYCVerifiedScreen] Failed to trigger registration:', err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -107,8 +116,9 @@ const KYCVerifiedScreen: React.FC = () => {
           bgColor={white}
           color={black}
           onPress={handleGenerateProof}
+          disabled={isLoading}
         >
-          Generate proof
+          {isLoading ? 'Generating...' : 'Generate proof'}
         </AbstractButton>
       </YStack>
     </View>

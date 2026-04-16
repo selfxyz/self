@@ -6,6 +6,9 @@ on:
       - staging
       - main
 
+env:
+  GH_HARDHAT_CACHE_VERSION: v1
+
 concurrency:
   group: contracts-ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -29,6 +32,8 @@ jobs:
             echo "Running for ${{ github.base_ref }} - no path filter"
           else
             # For dev branch, check if contracts or common files changed
+            # Fetch the base branch to ensure it's available for comparison
+            git fetch origin ${{ github.base_ref }} --depth=1
             CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD) || {
               echo "Error: Failed to diff against base branch"
               exit 1
@@ -68,14 +73,26 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
+      - name: Cache Hardhat compilers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/hardhat-nodejs/compilers-v2
+          key: ${{ runner.os }}-hardhat-compilers-${{ env.GH_HARDHAT_CACHE_VERSION }}-${{ hashFiles('contracts/hardhat.config.ts', 'contracts/package.json', 'yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-hardhat-compilers-${{ env.GH_HARDHAT_CACHE_VERSION }}-
       - name: Prettier Check - Code Formatting
         run: yarn prettier:check
         working-directory: ./contracts
       - name: Build Common Dependencies
         run: yarn workspace @selfxyz/common build
       - name: Build Contracts
-        run: yarn build
-        working-directory: ./contracts
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 15
+          max_attempts: 3
+          retry_wait_seconds: 15
+          command: yarn build
+          working_directory: ./contracts
       - name: Run Tests (Contracts)
         working-directory: ./contracts
         # skip until they get fixed

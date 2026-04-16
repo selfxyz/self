@@ -1,5 +1,5 @@
 import { Signer } from "ethers";
-import type { PassportData } from "@selfxyz/common/utils/types";
+import type { PassportData } from "@selfxyz/new-common/src/foundation/types/document";
 
 import type { PublicSignals, Groth16Proof } from "snarkjs";
 
@@ -37,7 +37,7 @@ import {
   IdentityRegistryKycImplV1,
 } from "../../typechain-types";
 
-import { DscVerifierId, RegisterVerifierId } from "@selfxyz/common";
+import { DscVerifierId, RegisterVerifierId } from "@selfxyz/new-common/src/foundation/constants/identity";
 
 export type PassportProof = IIdentityVerificationHubV1.PassportProofStruct;
 export type RegisterCircuitProof = IRegisterCircuitVerifier.RegisterCircuitProofStruct;

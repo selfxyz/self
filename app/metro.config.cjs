@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -43,6 +43,8 @@ const config = {
   resolver: {
     // Prevent Haste module naming collisions from duplicate package.json files
     blockList: [
+      // Ignore Claude Code worktrees to prevent duplicate Haste module entries
+      /\.claude\//,
       // Ignore built package.json files to prevent Haste collisions
       /.*\/dist\/package\.json$/,
       /.*\/dist\/esm\/package\.json$/,

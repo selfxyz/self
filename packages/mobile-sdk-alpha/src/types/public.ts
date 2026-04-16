@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -16,6 +16,24 @@ import type { SDKEvent, SDKEventMap } from './events';
 
 export type { PassportValidationCallbacks } from '../validation/document';
 export type { DocumentCatalog, IDDocument, PassportData };
+
+export interface VerificationRequest {
+  userId?: string;
+  scope?: string;
+  disclosures?: string[];
+  selfApp?: unknown;
+}
+
+export interface SdkInitialConfig {
+  /** Verification request payload passed from the embedding host. */
+  verificationRequest?: VerificationRequest;
+  /** Optional environment override used when bootstrapping proving state. */
+  env?: 'prod' | 'stg';
+  /** Platform identifier for logging, diagnostics, and analytics context. */
+  platform?: string;
+  /** Debug mode flag for development-only behavior. */
+  debug?: boolean;
+}
 export interface Config {
   /**
    * Optional knobs to tweak SDK behaviour. All values are nullable so consumers
@@ -47,6 +65,16 @@ export interface Config {
      */
     shouldTrigger?: (errorType: string) => boolean;
   };
+  /**
+   * Platform identifier used for structured logging and observability.
+   * Hosts can provide explicit values like `ios`, `android`, or `webview`.
+   */
+  platform?: string;
+  /**
+   * Development toggle for non-production diagnostics and relaxed checks.
+   * This must remain `false` in production environments.
+   */
+  debug?: boolean;
 }
 
 /**
@@ -69,6 +97,16 @@ export interface CryptoAdapter {
    * `AbortError`.
    */
   sign(data: Uint8Array, keyRef: string): Promise<Uint8Array>;
+  /**
+   * Generates a new key pair in native secure storage and returns the opaque
+   * reference used to locate it. The key material never leaves the keychain.
+   */
+  generateKey(keyRef: string): Promise<{ keyRef: string }>;
+  /**
+   * Retrieves the raw public key bytes for the key referenced by `keyRef`.
+   * The adapter is responsible for decoding any transport encoding (e.g. base64).
+   */
+  getPublicKey(keyRef: string): Promise<Uint8Array>;
 }
 
 /**
@@ -331,6 +369,8 @@ export interface SelfClient {
   goBack(): void;
   goTo(routeName: RouteName, params?: Record<string, unknown>): void;
   navigation: NavigationAdapter;
+  /** Exposes the host networking adapter for internal SDK workflows. */
+  network: NetworkAdapter;
 
   /**
    * Convenience wrapper around {@link AnalyticsAdapter.trackEvent}. Calls are

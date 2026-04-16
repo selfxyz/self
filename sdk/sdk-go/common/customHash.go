@@ -55,7 +55,8 @@ func StringToBigInt(str string) (*big.Int, error) {
 	return result, nil
 }
 
-// FormatEndpoint removes protocol and path from URL, keeping only the domain
+// FormatEndpoint removes protocol and path from URL, keeping only the domain.
+// Contract addresses (starting with 0x) are lowercased to match Solidity's addressToHexString.
 func FormatEndpoint(endpoint string) string {
 	if endpoint == "" {
 		return ""
@@ -67,7 +68,13 @@ func FormatEndpoint(endpoint string) string {
 
 	// Split by '/' and take only the first part (domain)
 	parts := strings.Split(formatted, "/")
-	return parts[0]
+	result := parts[0]
+
+	// Contract addresses must be lowercased to match Solidity's addressToHexString
+	if strings.HasPrefix(result, "0x") {
+		return strings.ToLower(result)
+	}
+	return result
 }
 
 // HashEndpointWithScope implements the hashEndpointWithScope function from TypeScript

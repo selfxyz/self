@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -28,7 +28,7 @@ module.exports = {
     'import/resolver': {
       typescript: {
         alwaysTryTypes: true,
-        project: './tsconfig.json',
+        project: './tsconfig.eslint.json',
         extensions: ['.js', '.jsx', '.ts', '.tsx'],
       },
       node: {
@@ -84,6 +84,22 @@ module.exports = {
     'react/prop-types': 'off',
   },
   overrides: [
+    {
+      // Enable TypeScript project service for source files (required by consistent-type-exports)
+      files: ['src/**/*.{ts,tsx}'],
+      parserOptions: {
+        project: true,
+        EXPERIMENTAL_useProjectService: true,
+      },
+      rules: {
+        '@typescript-eslint/consistent-type-exports': [
+          'error',
+          {
+            fixMixedExportsWithInlineTypeSpecifier: false,
+          },
+        ],
+      },
+    },
     {
       files: ['*.cjs'],
       env: {

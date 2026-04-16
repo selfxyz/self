@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -58,6 +58,7 @@ const accountScreens = {
     screen: CloudBackupScreen,
     options: {
       title: 'Account Backup',
+      headerTintColor: black,
       headerStyle: {
         backgroundColor: white,
       },
@@ -70,6 +71,7 @@ const accountScreens = {
     screen: ProofSettingsScreen,
     options: {
       title: 'Proof Settings',
+      headerTintColor: black,
       headerStyle: {
         backgroundColor: white,
       },
@@ -83,6 +85,8 @@ const accountScreens = {
     options: {
       animation: 'slide_from_bottom',
       title: 'Settings',
+      headerBackTitle: 'close',
+      headerTintColor: black,
       headerStyle: {
         backgroundColor: white,
       },
@@ -106,6 +110,7 @@ const accountScreens = {
         } as NativeStackNavigationOptions)
       : ({
           title: 'Recovery Phrase',
+          headerTintColor: black,
           headerStyle: {
             backgroundColor: white,
           },

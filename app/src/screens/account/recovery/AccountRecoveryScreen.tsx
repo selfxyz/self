@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -21,6 +21,7 @@ import {
 import RestoreAccountSvg from '@/assets/icons/restore_account.svg';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
+import { recoveryCopy } from '@/screens/account/recovery/recoveryCopy';
 
 const AccountRecoveryScreen: React.FC = () => {
   const onRestoreAccountPress = useHapticNavigation('AccountRecoveryChoice');
@@ -44,24 +45,21 @@ const AccountRecoveryScreen: React.FC = () => {
       </ExpandableBottomLayout.TopSection>
       <ExpandableBottomLayout.BottomSection backgroundColor={white}>
         <YStack alignItems="center" gap="$2.5" paddingBottom="$2.5">
-          <Title>Restore your Self account</Title>
-          <Description>
-            By continuing, you certify that this passport belongs to you and is
-            not stolen or forged.
-          </Description>
+          <Title>{recoveryCopy.entry.title}</Title>
+          <Description>{recoveryCopy.entry.description}</Description>
 
           <YStack gap="$2.5" width="100%" paddingTop="$6">
             <PrimaryButton
               trackEvent={BackupEvents.ACCOUNT_RECOVERY_STARTED}
               onPress={onRestoreAccountPress}
             >
-              Restore my account
+              {recoveryCopy.entry.actions.recover}
             </PrimaryButton>
             <SecondaryButton
               trackEvent={BackupEvents.CREATE_NEW_ACCOUNT}
               onPress={onCreateAccountPress}
             >
-              Create new account
+              {recoveryCopy.entry.actions.register}
             </SecondaryButton>
           </YStack>
         </YStack>

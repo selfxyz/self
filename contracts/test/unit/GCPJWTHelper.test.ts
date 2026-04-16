@@ -214,7 +214,7 @@ describe("MockGCPJWTVerifier", function () {
     [3n, 4n],
   ];
   const mockProofC: [bigint, bigint] = [1n, 2n];
-  const mockPubSignals: [bigint, bigint, bigint, bigint, bigint, bigint, bigint] = [1n, 2n, 3n, 4n, 5n, 6n, 7n];
+  const mockPubSignals: bigint[] = [1n, 2n, 3n, 4n, 5n, 6n, 7n, 8n, 0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n];
 
   describe("Default behavior", function () {
     it("should return true by default", async function () {

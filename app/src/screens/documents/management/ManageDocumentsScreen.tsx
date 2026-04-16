@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -159,18 +159,18 @@ const PassportDataSelector = () => {
       return 'Verified ID';
     }
 
-    switch (applicantInfo.idType) {
-      case 'ID_CARD':
-        return 'ID Card';
-      case 'DRIVERS_LICENCE':
-        return "Driver's Licence";
-      case 'PASSPORT':
-        return 'Passport';
-      case 'AADHAAR':
-        return 'Aadhaar';
-      default:
-        return 'Verified ID';
-    }
+    // Normalize idType for fuzzy matching (handles "drivers_licence", "NATIONAL ID", etc.)
+    const normalized = applicantInfo.idType
+      .toLowerCase()
+      .replace(/[_\s]+/g, ' ')
+      .trim();
+
+    if (normalized.includes('driver')) return "Driver's Licence";
+    if (normalized.includes('passport')) return 'Passport';
+    if (normalized.includes('aadhaar')) return 'Aadhaar';
+    if (normalized.includes('national')) return 'National ID';
+    if (normalized.includes('residence')) return 'Residence Permit';
+    return 'ID Card';
   };
 
   const getDisplayName = (metadata: DocumentMetadata): string => {

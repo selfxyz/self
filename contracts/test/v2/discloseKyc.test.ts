@@ -1,21 +1,18 @@
-import {
-  calculateUserIdentifierHash,
-  hashEndpointWithScope,
-  KYC_ID_NUMBER_INDEX,
-  KYC_ID_NUMBER_LENGTH,
-  packBytesAndPoseidon,
-} from "@selfxyz/common";
-import { Country3LetterCode } from "@selfxyz/common/constants/countries";
+import { calculateUserIdentifierHash } from "@selfxyz/new-common/src/crypto/identity";
+import { hashEndpointWithScope } from "@selfxyz/new-common/src/crypto/scope";
+import { KYC_ID_NUMBER_INDEX, KYC_ID_NUMBER_LENGTH } from "@selfxyz/new-common/src/documents/kyc/constants";
+import { packBytesAndPoseidon } from "@selfxyz/new-common/src/crypto/hash/poseidon";
+import { Country3LetterCode } from "@selfxyz/new-common/src/data/countries";
 import { DeployedActorsV2 } from "../utils/types";
 import { deploySystemFixturesV2 } from "../utils/deploymentV2";
 import { ethers } from "hardhat";
 import { expect } from "chai";
-import { generateKycDiscloseInput } from "@selfxyz/common";
+import { generateKycDiscloseInputFromDummy } from "@selfxyz/new-common/src/circuits/inputs/disclose-kyc";
 import { getSMTs } from "../utils/generateProof";
-import { getPackedForbiddenCountries } from "@selfxyz/common/utils/contracts/forbiddenCountries";
+import { getPackedForbiddenCountries } from "@selfxyz/new-common/src/blockchain/forbiddenCountries";
 import { BigNumberish } from "ethers";
 import { generateVcAndDiscloseKycProof } from "../utils/generateProof";
-import { KYC_ATTESTATION_ID } from "@selfxyz/common/constants/constants";
+import { KYC_ATTESTATION_ID } from "@selfxyz/new-common/src/foundation/constants/identity";
 import { poseidon2 } from "poseidon-lite";
 
 // KYC circuit indices - matches CircuitConstantsV2.getDiscloseIndices(KYC_ID_CARD)
@@ -58,7 +55,7 @@ describe("Self Verification Flow V2 - KYC", () => {
     const LeanIMT = await import("@openpassport/zk-kit-lean-imt").then((mod) => mod.LeanIMT);
     tree = new LeanIMT<bigint>((a, b) => poseidon2([a, b]), []);
 
-    const testInputs = generateKycDiscloseInput(
+    const testInputs = generateKycDiscloseInputFromDummy(
       false,
       nameAndDob_smt,
       nameAndYob_smt,
@@ -167,6 +164,63 @@ describe("Self Verification Flow V2 - KYC", () => {
       const expectedUserData = ethers.solidityPacked(["bytes"], [userData]);
       const actualUserData = await deployedActors.testSelfVerificationRoot.lastUserData();
       expect(actualUserData).to.equal(expectedUserData);
+    });
+
+    it("should complete full KYC verification flow with non-empty forbidden countries", async () => {
+      const destChainId = 31337;
+      const user1Address = await deployedActors.user1.getAddress();
+      const userData = "test-user-data-for-verification";
+
+      const fcListStrings = ["IRN", "PRK", "RUS"];
+
+      // Reuse the same tree so the merkle root matches the on-chain registry
+      const fcTestInputs = generateKycDiscloseInputFromDummy(
+        false,
+        nameAndDob_smt,
+        nameAndYob_smt,
+        tree,
+        false,
+        scopeAsBigInt.toString(),
+        userIdentifierHash.toString(),
+        ["GENDER", "FULL_NAME", "DOB", "ID_NUMBER", "ISSUANCE_DATE", "EXPIRY_DATE", "COUNTRY", "GENDER", "ADDRESS"],
+        fcListStrings,
+        0,
+        false,
+        KYC_ATTESTATION_ID,
+      );
+
+      const fcPacked = getPackedForbiddenCountries(fcListStrings as any);
+      const fcConfig = {
+        olderThanEnabled: true,
+        olderThan: "00",
+        forbiddenCountriesEnabled: true,
+        forbiddenCountriesListPacked: fcPacked as [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
+        ofacEnabled: [false, false, false] as [boolean, boolean, boolean],
+      };
+
+      await deployedActors.testSelfVerificationRoot.setVerificationConfig(fcConfig);
+
+      const fcProof = await generateVcAndDiscloseKycProof(fcTestInputs);
+
+      const destChainIdHex = ethers.zeroPadValue(ethers.toBeHex(destChainId), 32);
+      const userContextData = ethers.solidityPacked(
+        ["bytes32", "bytes32", "bytes"],
+        [destChainIdHex, ethers.zeroPadValue(user1Address, 32), ethers.toUtf8Bytes(userData)],
+      );
+
+      const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(KYC_ATTESTATION_ID)), 32);
+      const encodedProof = ethers.AbiCoder.defaultAbiCoder().encode(
+        ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[] pubSignals)"],
+        [[fcProof.a, fcProof.b, fcProof.c, fcProof.pubSignals]],
+      );
+      const proofData = ethers.solidityPacked(["bytes32", "bytes"], [attestationId, encodedProof]);
+
+      await deployedActors.testSelfVerificationRoot.resetTestState();
+
+      const tx = await deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData);
+
+      await expect(tx).to.emit(deployedActors.testSelfVerificationRoot, "VerificationCompleted");
+      expect(await deployedActors.testSelfVerificationRoot.verificationSuccessful()).to.be.true;
     });
 
     it("should not verify if the config is not set", async () => {
@@ -718,7 +772,7 @@ describe("Self Verification Flow V2 - KYC", () => {
 
       await deployedActors.testSelfVerificationRoot.setVerificationConfig(verificationConfigV2);
 
-      const inputs = generateKycDiscloseInput(
+      const inputs = generateKycDiscloseInputFromDummy(
         false,
         nameAndDob_smt,
         nameAndYob_smt,

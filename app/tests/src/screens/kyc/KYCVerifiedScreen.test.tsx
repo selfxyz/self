@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -174,5 +174,80 @@ describe('KYCVerifiedScreen', () => {
     const { root } = render(<KYCVerifiedScreen />);
     // Component should render without errors when documentId is provided
     expect(root).toBeTruthy();
+  });
+
+  describe('Loading state', () => {
+    it('should show "Generating..." text while loading', async () => {
+      const { root } = render(<KYCVerifiedScreen />);
+      const button = root.findAllByType('button')[0];
+
+      // Initially shows "Generate proof"
+      expect(button.props.children).toBe('Generate proof');
+      expect(button.props.disabled).toBeFalsy();
+
+      // Press the button
+      fireEvent.press(button);
+
+      // Should show "Generating..." while loading
+      await waitFor(() => {
+        const updatedButton = root.findAllByType('button')[0];
+        expect(updatedButton.props.children).toBe('Generating...');
+        expect(updatedButton.props.disabled).toBe(true);
+      });
+    });
+
+    it('should prevent multiple concurrent proof generations', async () => {
+      const { root } = render(<KYCVerifiedScreen />);
+      const button = root.findAllByType('button')[0];
+
+      // Press the button multiple times rapidly
+      fireEvent.press(button);
+      fireEvent.press(button);
+      fireEvent.press(button);
+
+      await waitFor(() => {
+        // Emit should only be called once
+        expect(mockEmit).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    it('should re-enable button after proof generation completes', async () => {
+      const { root } = render(<KYCVerifiedScreen />);
+      const button = root.findAllByType('button')[0];
+
+      fireEvent.press(button);
+
+      // Wait for async operations to complete
+      await waitFor(() => {
+        expect(mockEmit).toHaveBeenCalled();
+      });
+
+      // Button should be re-enabled after completion
+      await waitFor(() => {
+        const updatedButton = root.findAllByType('button')[0];
+        expect(updatedButton.props.disabled).toBeFalsy();
+        expect(updatedButton.props.children).toBe('Generate proof');
+      });
+    });
+
+    it('should re-enable button after error', async () => {
+      // Mock an error in setSelectedDocument
+      const { setSelectedDocument } = jest.requireMock(
+        '@/providers/passportDataProvider',
+      );
+      setSelectedDocument.mockRejectedValueOnce(new Error('Test error'));
+
+      const { root } = render(<KYCVerifiedScreen />);
+      const button = root.findAllByType('button')[0];
+
+      fireEvent.press(button);
+
+      // Wait for error handling
+      await waitFor(() => {
+        const updatedButton = root.findAllByType('button')[0];
+        expect(updatedButton.props.disabled).toBeFalsy();
+        expect(updatedButton.props.children).toBe('Generate proof');
+      });
+    });
   });
 });

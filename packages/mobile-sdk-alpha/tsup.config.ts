@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -37,6 +37,7 @@ const flowEntries = findFlowFiles('src/flows');
 const entry = {
   index: 'src/index.ts',
   browser: 'src/browser.ts',
+  'adapters/browser/index': 'src/adapters/browser/index.ts',
   'constants/analytics': 'src/constants/analytics.ts',
   'constants/colors': 'src/constants/colors.ts',
   'constants/fonts': 'src/constants/fonts.ts',
@@ -45,6 +46,7 @@ const entry = {
   'hooks/useSafeBottomPadding': 'src/hooks/useSafeBottomPadding.ts',
   stores: 'src/stores/index.ts',
   'utils/utils': 'src/utils/utils.ts',
+  'adapters/react-native/index': 'src/adapters/react-native/index.ts',
   ...flowEntries,
 };
 
@@ -65,6 +67,7 @@ export default defineConfig([
       // Externalize all React Native sub-modules and internals
       /^react-native\/.*/,
       '@selfxyz/common',
+      /^@selfxyz\/common\/.*/,
       // Common crypto dependencies (already in main app)
       'elliptic',
       'js-sha256',
@@ -78,6 +81,12 @@ export default defineConfig([
       'lottie-react-native',
       'react-native-haptic-feedback',
       'react-native-localize',
+      // Optional RN adapter peer dependencies
+      '@react-native-async-storage/async-storage',
+      'react-native-keychain',
+      'react-native-get-random-values',
+      '@noble/hashes',
+      /^@noble\/hashes\/.*/,
       // SVG files should be handled by React Native's SVG transformer
       /\.svg$/,
     ],
@@ -116,6 +125,7 @@ export default defineConfig([
       // Externalize all React Native sub-modules and internals
       /^react-native\/.*/,
       '@selfxyz/common',
+      /^@selfxyz\/common\/.*/,
       // Common crypto dependencies (already in main app)
       'elliptic',
       'js-sha256',
@@ -129,6 +139,12 @@ export default defineConfig([
       'lottie-react-native',
       'react-native-haptic-feedback',
       'react-native-localize',
+      // Optional RN adapter peer dependencies
+      '@react-native-async-storage/async-storage',
+      'react-native-keychain',
+      'react-native-get-random-values',
+      '@noble/hashes',
+      /^@noble\/hashes\/.*/,
       // SVG files should be handled by React Native's SVG transformer
       /\.svg$/,
     ],

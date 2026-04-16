@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -15,10 +15,10 @@ import { Bug, FileText, Settings2 } from '@tamagui/lucide-icons';
 
 import { BodyText, pressedStyle } from '@selfxyz/mobile-sdk-alpha/components';
 import {
-  amber500,
   black,
   neutral700,
   slate800,
+  warmCream,
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
@@ -42,9 +42,9 @@ import {
   telegramUrl,
   xUrl,
 } from '@/consts/links';
+import useOpenSupportForm from '@/hooks/useOpenSupportForm';
 import { impactLight } from '@/integrations/haptics';
 import { usePassport } from '@/providers/passportDataProvider';
-import { openSupportForm } from '@/services/support';
 import { useSettingStore } from '@/stores/settingStore';
 import { extraYPadding } from '@/utils/styleUtils';
 
@@ -58,6 +58,7 @@ interface MenuButtonProps extends PropsWithChildren {
 interface SocialButtonProps {
   Icon: React.FC<SvgProps>;
   href: string;
+  onPress?: () => void;
 }
 
 // Avoid importing RootStackParamList; we only need string route names plus a few literals
@@ -139,8 +140,12 @@ const MenuButton: React.FC<MenuButtonProps> = ({ children, Icon, onPress }) => (
   </Button>
 );
 
-const SocialButton: React.FC<SocialButtonProps> = ({ Icon, href }) => {
-  const onPress = useCallback(() => {
+const SocialButton: React.FC<SocialButtonProps> = ({
+  Icon,
+  href,
+  onPress: customOnPress,
+}) => {
+  const defaultOnPress = useCallback(() => {
     impactLight();
     Linking.openURL(href);
   }, [href]);
@@ -149,17 +154,22 @@ const SocialButton: React.FC<SocialButtonProps> = ({ Icon, href }) => {
     <Button
       unstyled
       hitSlop={8}
-      onPress={onPress}
-      icon={<Icon height={32} width={32} color={amber500} />}
+      onPress={customOnPress ?? defaultOnPress}
+      icon={<Icon height={32} width={32} color={warmCream} />}
     />
   );
 };
 
 const SettingsScreen: React.FC = () => {
   const { isDevMode, setDevModeOn } = useSettingStore();
+  const openSupportForm = useOpenSupportForm();
   const navigation =
     useNavigation<NativeStackNavigationProp<MinimalRootStackParamList>>();
   const { loadDocumentCatalog } = usePassport();
+  const openSelfWebsite = useCallback(() => {
+    impactLight();
+    navigation.navigate('WebView', { url: selfUrl, title: 'Self' });
+  }, [navigation]);
   const [hasRealDocument, setHasRealDocument] = useState<boolean | null>(null);
 
   const refreshDocumentAvailability = useCallback(async () => {
@@ -221,16 +231,7 @@ const SettingsScreen: React.FC = () => {
             break;
 
           case 'support_form':
-            try {
-              await openSupportForm();
-            } catch (error) {
-              console.warn(
-                'SettingsScreen: failed to open support form:',
-                error instanceof Error ? error.message : String(error),
-              );
-              // Error is already handled and displayed to user in openSupportForm,
-              // but we log here for debugging purposes
-            }
+            openSupportForm();
             break;
 
           case 'ManageDocuments':
@@ -243,7 +244,7 @@ const SettingsScreen: React.FC = () => {
         }
       };
     },
-    [navigation],
+    [navigation, openSupportForm],
   );
   const { bottom } = useSafeAreaInsets();
   return (
@@ -306,10 +307,15 @@ const SettingsScreen: React.FC = () => {
               </Button>
               <XStack gap={32}>
                 {social.map(([Icon, href], i) => (
-                  <SocialButton key={i} Icon={Icon} href={href} />
+                  <SocialButton
+                    key={i}
+                    Icon={Icon}
+                    href={href}
+                    onPress={href === selfUrl ? openSelfWebsite : undefined}
+                  />
                 ))}
               </XStack>
-              <BodyText style={{ color: amber500, fontSize: 15 }}>
+              <BodyText style={{ color: warmCream, fontSize: 15 }}>
                 SELF
               </BodyText>
               {/* Dont remove if not viewing on ios */}

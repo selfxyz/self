@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -52,6 +52,7 @@ import type {
 import {
   brutforceSignatureAlgorithmDsc,
   calculateContentHash,
+  inferDocumentCategory,
 } from '@selfxyz/common/utils';
 import { parseCertificateSimple } from '@selfxyz/common/utils/certificate_parsing/parseCertificateSimple';
 import type {
@@ -869,6 +870,12 @@ export async function storeDocumentWithDeduplication(
   // Store new document using contentHash as service name
   await storeDocumentDirectlyToKeychain(contentHash, passportData);
 
+  const documentCategory =
+    passportData.documentCategory ||
+    inferDocumentCategory(
+      (passportData as PassportData | AadhaarData).documentType,
+    );
+
   // Add to catalog
   let dataField: string;
   if (isMRZDocument(passportData)) {
@@ -886,6 +893,8 @@ export async function storeDocumentWithDeduplication(
     data: dataField,
     mock: passportData.mock || false,
     isRegistered: false,
+    hasExpirationDate:
+      documentCategory === 'id_card' || documentCategory === 'passport',
     ...(isKycDocument(passportData)
       ? (() => {
           try {

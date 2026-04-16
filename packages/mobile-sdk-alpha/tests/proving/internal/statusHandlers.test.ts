@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -86,6 +86,34 @@ describe('handleStatusCode', () => {
       expect(result.actorEvent).toEqual({ type: 'PROVE_FAILURE' });
       expect(result.stateUpdate?.error_code).toBe('E002');
       expect(result.stateUpdate?.reason).toBeUndefined();
+    });
+  });
+
+  describe('registered commitment (status 5 + REGISTERED_COMMITMENT)', () => {
+    it('routes to PROVE_ALREADY_REGISTERED', () => {
+      const data: StatusMessage = {
+        status: 5,
+        error_code: 'REGISTERED_COMMITMENT',
+      };
+
+      const result = handleStatusCode(data, 'register');
+
+      expect(result.shouldDisconnect).toBe(true);
+      expect(result.actorEvent).toEqual({ type: 'PROVE_ALREADY_REGISTERED' });
+      expect(result.stateUpdate).toBeUndefined();
+    });
+
+    it('still returns PROVE_FAILURE for status 5 with other error_code', () => {
+      const data: StatusMessage = {
+        status: 5,
+        error_code: 'SOME_OTHER_ERROR',
+      };
+
+      const result = handleStatusCode(data, 'register');
+
+      expect(result.shouldDisconnect).toBe(true);
+      expect(result.actorEvent).toEqual({ type: 'PROVE_FAILURE' });
+      expect(result.stateUpdate?.error_code).toBe('SOME_OTHER_ERROR');
     });
   });
 

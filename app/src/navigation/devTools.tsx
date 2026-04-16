@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -13,6 +13,7 @@ import DevHapticFeedbackScreen from '@/screens/dev/DevHapticFeedbackScreen';
 import DevLoadingScreen from '@/screens/dev/DevLoadingScreen';
 import DevPrivateKeyScreen from '@/screens/dev/DevPrivateKeyScreen';
 import DevSettingsScreen from '@/screens/dev/DevSettingsScreen';
+import SocialLoginDemoScreen from '@/screens/dev/SocialLoginDemoScreen';
 
 const devHeaderOptions: NativeStackNavigationOptions = {
   headerStyle: {
@@ -79,6 +80,13 @@ const devScreens = {
     options: {
       ...devHeaderOptions,
       title: 'Dev Loading Screen',
+    } as NativeStackNavigationOptions,
+  },
+  SocialLoginDemo: {
+    screen: SocialLoginDemoScreen,
+    options: {
+      ...devHeaderOptions,
+      title: 'Social Login Demo',
     } as NativeStackNavigationOptions,
   },
 };

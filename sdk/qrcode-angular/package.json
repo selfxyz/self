@@ -32,7 +32,6 @@
     "lint:fix": "ng lint --fix",
     "nice": "yarn format && yarn lint",
     "prepublishOnly": "yarn build",
-    "publish": "yarn npm publish --access public",
     "test": "ng test"
   },
   "dependencies": {

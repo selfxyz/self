@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -41,9 +41,12 @@ export function deserializeApplicantInfo(
   const country = applicantInfo
     .slice(KYC_COUNTRY_INDEX, KYC_COUNTRY_INDEX + KYC_COUNTRY_LENGTH)
     .replace(/\x00/g, '');
-  const idType = applicantInfo
-    .slice(KYC_ID_TYPE_INDEX, KYC_ID_TYPE_INDEX + KYC_ID_TYPE_LENGTH)
-    .replace(/\x00/g, '');
+  const idTypeRaw = applicantInfo.slice(KYC_ID_TYPE_INDEX, KYC_ID_TYPE_INDEX + KYC_ID_TYPE_LENGTH);
+  const nsLen = idTypeRaw.charCodeAt(0);
+  const idType =
+    nsLen > 0 && nsLen < KYC_ID_TYPE_LENGTH
+      ? idTypeRaw.slice(1 + nsLen).replace(/\x00/g, '')
+      : idTypeRaw.replace(/\x00/g, '');
   const idNumber = applicantInfo
     .slice(KYC_ID_NUMBER_INDEX, KYC_ID_NUMBER_INDEX + KYC_ID_NUMBER_LENGTH)
     .replace(/\x00/g, '');

@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
-import type { TextStyle, ViewStyle } from 'react-native';
+import type { ViewStyle } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackHeaderProps } from '@react-navigation/native-stack';
 
@@ -18,7 +19,7 @@ export const DefaultNavBar = (props: NativeStackHeaderProps) => {
   const { options } = props;
   const headerStyle = (options.headerStyle || {}) as ViewStyle;
   const insets = useSafeAreaInsets();
-  const headerTitleStyle = (options.headerTitleStyle || {}) as TextStyle;
+  const headerTitleStyle = StyleSheet.flatten(options.headerTitleStyle);
 
   return (
     <NavBar.Container
@@ -44,8 +45,18 @@ export const DefaultNavBar = (props: NativeStackHeaderProps) => {
         color={options.headerTintColor as string}
       />
       <NavBar.Title
-        color={headerTitleStyle.color as string}
-        style={headerTitleStyle}
+        color={headerTitleStyle?.color as string}
+        style={{
+          ...(headerTitleStyle?.fontFamily && {
+            fontFamily: headerTitleStyle.fontFamily,
+          }),
+          ...(headerTitleStyle?.fontSize && {
+            fontSize: headerTitleStyle.fontSize,
+          }),
+          ...(headerTitleStyle?.fontWeight && {
+            fontWeight: headerTitleStyle.fontWeight,
+          }),
+        }}
       >
         {props.options.title}
       </NavBar.Title>

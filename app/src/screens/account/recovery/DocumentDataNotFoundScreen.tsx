@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -46,7 +46,7 @@ const DocumentDataNotFoundScreen: React.FC = () => {
     <ExpandableBottomLayout.Layout backgroundColor={black}>
       <ExpandableBottomLayout.TopSection backgroundColor={black}>
         <Title style={{ textAlign: 'center', color: white }}>
-          ✨ Are you new here?
+          No document found
         </Title>
         <Description
           style={{
@@ -55,7 +55,8 @@ const DocumentDataNotFoundScreen: React.FC = () => {
             color: slate200,
           }}
         >
-          It seems like you need to go through the registration flow first.
+          We couldn't find a registered document on this device. Register your
+          ID to continue.
         </Description>
       </ExpandableBottomLayout.TopSection>
       <ExpandableBottomLayout.BottomSection
@@ -63,7 +64,7 @@ const DocumentDataNotFoundScreen: React.FC = () => {
         height={150}
         backgroundColor={white}
       >
-        <PrimaryButton onPress={onPress}>Go to Registration</PrimaryButton>
+        <PrimaryButton onPress={onPress}>Continue</PrimaryButton>
       </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>
   );

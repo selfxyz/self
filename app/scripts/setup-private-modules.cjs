@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -33,6 +33,7 @@ const isCI = process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true';
 const repoToken = process.env.SELFXYZ_INTERNAL_REPO_PAT;
 const appToken = process.env.SELFXYZ_APP_TOKEN; // GitHub App installation token
 const isDryRun = process.env.DRY_RUN === 'true';
+const forceAndroidDeps = process.env.FORCE_ANDROID_DEPS === '1';
 
 // Platform detection for Android-specific modules
 function shouldSetupAndroidModule() {
@@ -146,7 +147,7 @@ function usingHTTPSGitAuth() {
   }
 }
 
-function clonePrivateRepo(repoName, localPath) {
+function clonePrivateRepo(repoName, localPath, commit) {
   log(`Setting up ${repoName}...`, 'info');
 
   let cloneUrl;
@@ -181,7 +182,16 @@ function clonePrivateRepo(repoName, localPath) {
   const isCredentialedUrl = isCI && (appToken || repoToken);
   const quietFlag = isCredentialedUrl ? '--quiet' : '';
   const targetDir = path.basename(localPath);
-  const cloneCommand = `git clone --branch ${BRANCH} --single-branch --depth 1 ${quietFlag} "${cloneUrl}" "${targetDir}"`;
+
+  // If commit is specified, clone without branch restriction and checkout commit
+  // Otherwise, clone the branch as before
+  let cloneCommand;
+  if (commit) {
+    log(`Using specific commit: ${commit}`, 'info');
+    cloneCommand = `git clone ${quietFlag} "${cloneUrl}" "${targetDir}"`;
+  } else {
+    cloneCommand = `git clone --branch ${BRANCH} --single-branch --depth 1 ${quietFlag} "${cloneUrl}" "${targetDir}"`;
+  }
 
   try {
     if (isCredentialedUrl) {
@@ -190,6 +200,18 @@ function clonePrivateRepo(repoName, localPath) {
     } else {
       runCommand(cloneCommand);
     }
+
+    // If commit is specified, checkout that commit
+    if (commit) {
+      const checkoutCommand = `cd "${targetDir}" && git checkout ${commit}`;
+      if (isCredentialedUrl) {
+        runCommand(checkoutCommand, { stdio: 'pipe' });
+      } else {
+        runCommand(checkoutCommand);
+      }
+      log(`Checked out commit ${commit}`, 'success');
+    }
+
     log(`Successfully cloned ${repoName}`, 'success');
     return true; // Return true to indicate successful clone
   } catch (error) {
@@ -219,15 +241,119 @@ function validateSetup(modulePath, validationFiles, repoName) {
   log(`${repoName} validation passed`, 'success');
 }
 
-function setupPrivateModule(module) {
+function isExistingModuleReusable(module) {
   const { repoName, localPath, validationFiles } = module;
+
+  if (!fs.existsSync(localPath)) {
+    return false;
+  }
+
+  if (!fs.existsSync(path.join(localPath, '.git'))) {
+    log(
+      `Existing ${repoName} checkout is missing .git metadata; recloning`,
+      'warning',
+    );
+    return false;
+  }
+
+  try {
+    validateSetup(localPath, validationFiles, repoName);
+  } catch (error) {
+    log(
+      `Existing ${repoName} checkout is invalid: ${error.message}`,
+      'warning',
+    );
+    return false;
+  }
+
+  try {
+    const remoteUrl = execSync('git remote get-url origin', {
+      cwd: localPath,
+      stdio: ['ignore', 'pipe', 'pipe'],
+      encoding: 'utf8',
+    }).trim();
+
+    const canonicalOriginPattern = new RegExp(
+      `^(git@github\\.com:|https://github\\.com/|ssh://git@github\\.com/)${GITHUB_ORG}/${repoName}(\\.git)?$`,
+    );
+    if (!canonicalOriginPattern.test(remoteUrl)) {
+      const safeUrl = remoteUrl.replace(/\/\/[^@]+@/, '//***@');
+      log(
+        `Existing ${repoName} checkout points at unexpected origin ${safeUrl}; recloning`,
+        'warning',
+      );
+      return false;
+    }
+  } catch (error) {
+    log(
+      `Could not inspect origin for existing ${repoName} checkout: ${error.message}`,
+      'warning',
+    );
+    return false;
+  }
+
+  // Reject dirty checkouts — uncommitted changes compromise integrity
+  try {
+    const status = execSync('git status --porcelain', {
+      cwd: localPath,
+      stdio: ['ignore', 'pipe', 'pipe'],
+      encoding: 'utf8',
+    }).trim();
+
+    if (status.length > 0) {
+      log(
+        `Existing ${repoName} checkout has uncommitted changes; recloning`,
+        'warning',
+      );
+      return false;
+    }
+  } catch (error) {
+    log(
+      `Could not check dirty state for ${repoName}: ${error.message}`,
+      'warning',
+    );
+    return false;
+  }
+
+  // When a specific commit is pinned, verify HEAD matches
+  if (module.commit) {
+    try {
+      const head = execSync('git rev-parse HEAD', {
+        cwd: localPath,
+        stdio: ['ignore', 'pipe', 'pipe'],
+        encoding: 'utf8',
+      }).trim();
+
+      if (head !== module.commit) {
+        log(
+          `Existing ${repoName} is at ${head.slice(0, 12)} but expected ${module.commit.slice(0, 12)}; recloning`,
+          'warning',
+        );
+        return false;
+      }
+    } catch (error) {
+      log(`Could not read HEAD for ${repoName}: ${error.message}`, 'warning');
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function setupPrivateModule(module) {
+  const { repoName, localPath, validationFiles, commit } = module;
   log(`Starting setup of ${repoName}...`, 'info');
+
+  if (!forceAndroidDeps && isExistingModuleReusable(module)) {
+    log(`${repoName} already present; reusing existing checkout`, 'success');
+    return true;
+  }
 
   // Remove existing module
   removeExistingModule(localPath, repoName);
 
   // Clone the private repository
-  const cloneSuccessful = clonePrivateRepo(repoName, localPath);
+  const cloneSuccessful = clonePrivateRepo(repoName, localPath, commit);
 
   // If clone was skipped (e.g., in forked PRs), exit gracefully
   if (cloneSuccessful === false) {
@@ -323,5 +449,6 @@ if (require.main === module) {
 module.exports = {
   setupAndroidPassportReader,
   removeExistingModule,
+  isExistingModuleReusable,
   PRIVATE_MODULES,
 };

@@ -13,6 +13,29 @@ on:
       - main
 
 jobs:
+  generated-artifacts:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Cache Yarn dependencies
+        uses: ./.github/actions/cache-yarn
+        with:
+          path: |
+            .yarn/cache
+            node_modules
+            */node_modules
+            packages/*/node_modules
+          cache-version: v1
+
+      - name: Install Dependencies
+        uses: ./.github/actions/yarn-install
+
+      - name: Verify generated contract error selectors
+        run: yarn workspace @selfxyz/contracts check:error-selectors
+
   workspace-build:
     runs-on: ubuntu-latest
     permissions:
@@ -90,6 +113,12 @@ jobs:
 
       - name: Install Dependencies
         uses: ./.github/actions/yarn-install
+
+      - name: Install SwiftLint
+        run: |
+          curl -sL "https://github.com/realm/SwiftLint/releases/download/0.57.1/swiftlint_linux.zip" -o /tmp/swiftlint.zip
+          unzip -o /tmp/swiftlint.zip -d /tmp/swiftlint
+          sudo install /tmp/swiftlint/swiftlint /usr/local/bin/swiftlint
 
       - name: Build workspace dependencies
         run: yarn build

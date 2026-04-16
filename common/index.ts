@@ -25,6 +25,9 @@ export type { Country3LetterCode } from './src/constants/index.js';
 export type { Environment } from './src/utils/types.js';
 
 // Utils exports
+export type { KycData } from './src/utils/kyc/types.js';
+
+// Type exports
 export {
   AADHAAR_ATTESTATION_ID,
   API_URL,
@@ -62,7 +65,6 @@ export {
   getCountryISO2,
 } from './src/constants/index.js';
 
-// Type exports
 export {
   EndpointType,
   Mode,
@@ -107,10 +109,6 @@ export {
   KYC_ID_NUMBER_LENGTH,
   KYC_MAX_LENGTH,
 } from './src/utils/kyc/constants.js';
-
-export type { KycData } from './src/utils/kyc/types.js';
-export { serializeKycData } from './src/utils/kyc/types.js';
-
 export {
   NON_OFAC_DUMMY_INPUT,
   OFAC_DUMMY_INPUT,
@@ -138,8 +136,8 @@ export {
   hash,
   packBytesAndPoseidon,
 } from './src/utils/hash.js';
-export { deserializeApplicantInfo } from './src/utils/kyc/api.js';
 
+export { deserializeApplicantInfo } from './src/utils/kyc/api.js';
 export { generateTestData, testCustomData } from './src/utils/aadhaar/utils.js';
 
 export { isAadhaarDocument, isKycDocument, isMRZDocument } from './src/utils/index.js';
@@ -150,3 +148,5 @@ export {
   prepareAadhaarRegisterData,
   prepareAadhaarRegisterTestData,
 } from './src/utils/aadhaar/mockData.js';
+
+export { serializeKycData } from './src/utils/kyc/types.js';

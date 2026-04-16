@@ -1,15 +1,14 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
+import { black } from '@selfxyz/mobile-sdk-alpha/constants/colors';
+
 import { HomeNavBar } from '@/components/navbar';
-import PointsScreen from '@/components/navbar/Points';
-import { PointsNavBar } from '@/components/navbar/PointsNavBar';
 import ReferralScreen from '@/screens/app/ReferralScreen';
 import HomeScreen from '@/screens/home/HomeScreen';
-import PointsInfoScreen from '@/screens/home/PointsInfoScreen';
 import ProofHistoryDetailScreen from '@/screens/home/ProofHistoryDetailScreen';
 import ProofHistoryScreen from '@/screens/home/ProofHistoryScreen';
 
@@ -19,14 +18,6 @@ const homeScreens = {
     options: {
       title: 'Self',
       header: HomeNavBar,
-      presentation: 'card',
-    } as NativeStackNavigationOptions,
-  },
-  Points: {
-    screen: PointsScreen,
-    options: {
-      title: 'Self Points',
-      header: PointsNavBar,
       presentation: 'card',
     } as NativeStackNavigationOptions,
   },
@@ -41,20 +32,14 @@ const homeScreens = {
     options: {
       title: 'Approved Requests',
       headerBackTitle: 'close',
-    },
+      headerTintColor: black,
+    } as NativeStackNavigationOptions,
   },
   ProofHistoryDetail: {
     screen: ProofHistoryDetailScreen,
     options: {
       title: 'Approval',
-    },
-  },
-  PointsInfo: {
-    screen: PointsInfoScreen,
-    options: {
-      headerBackTitle: 'close',
-      title: 'Self Points',
-      animation: 'slide_from_bottom',
+      headerTintColor: black,
     } as NativeStackNavigationOptions,
   },
 };

@@ -3,6 +3,7 @@
 **/.yarn/**
 **/dist/**
 **/build/**
+.gradle-home/**
 **/coverage/**
 **/Pods/**
 app/vendor/**
@@ -10,5 +11,6 @@ circuits/build/**
 contracts/artifacts/**
 contracts/cache/**
 contracts/typechain-types/**
+packages/webview-app/public/animations/**
 .nvmrc
 .watchmanconfig

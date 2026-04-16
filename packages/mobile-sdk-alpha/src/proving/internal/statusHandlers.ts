@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -10,7 +10,7 @@ export interface StatusHandlerResult {
     socketConnection?: null;
   };
   actorEvent?: {
-    type: 'PROVE_FAILURE' | 'PROVE_SUCCESS';
+    type: 'PROVE_FAILURE' | 'PROVE_SUCCESS' | 'PROVE_ALREADY_REGISTERED';
   };
   analytics?: Array<{
     event: string;
@@ -36,6 +36,23 @@ export function handleStatusCode(data: StatusMessage, circuitType: string): Stat
     shouldDisconnect: false,
     analytics: [],
   };
+
+  // Status 5 with REGISTERED_COMMITMENT → route to recovery flow
+  if (data.status === 5 && data.error_code === 'REGISTERED_COMMITMENT') {
+    return {
+      shouldDisconnect: true,
+      actorEvent: { type: 'PROVE_ALREADY_REGISTERED' },
+      analytics: [
+        {
+          event: 'SOCKETIO_PROOF_FAILURE',
+          data: {
+            error_code: data.error_code,
+            reason: data.reason,
+          },
+        },
+      ],
+    };
+  }
 
   // Failure statuses (3 or 5)
   if (data.status === 3 || data.status === 5) {

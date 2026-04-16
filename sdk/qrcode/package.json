@@ -1,6 +1,6 @@
 {
   "name": "@selfxyz/qrcode",
-  "version": "1.0.21",
+  "version": "1.0.22",
   "repository": {
     "type": "git",
     "url": "https://github.com/selfxyz/self"
@@ -62,7 +62,6 @@
     "nice": "yarn format && yarn lint:imports",
     "nice:check": "yarn lint && yarn lint:imports:check",
     "prepublishOnly": "yarn build",
-    "publish": "yarn npm publish --access public",
     "test": "echo 'no tests found'",
     "types": "yarn workspace @selfxyz/sdk-common build && tsc -p tsconfig.json --noEmit"
   },

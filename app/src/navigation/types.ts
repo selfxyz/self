@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -40,7 +40,6 @@ export type AccountRoutesParamList = {
   CloudBackupSettings:
     | {
         nextScreen?: 'SaveRecoveryPhrase';
-        returnToScreen?: 'Points';
       }
     | undefined;
   ProofSettings: undefined;
@@ -58,9 +57,6 @@ export type AppRoutesParamList = {
     curveOrExponent?: string;
   };
   Modal: ModalNavigationParams;
-  Gratification: {
-    points?: number;
-  };
   StarfallPushCode: undefined;
 };
 
@@ -71,6 +67,7 @@ export type AppRoutesParamList = {
 export type DevRoutesParamList = {
   CreateMock: undefined;
   MockDataDeepLink: undefined;
+  SocialLoginDemo: undefined;
 };
 
 // =============================================================================
@@ -130,13 +127,6 @@ export type HomeRoutesParamList = {
   Home: {
     testReferralFlow?: boolean;
   };
-  Points: undefined;
-  PointsInfo:
-    | {
-        showNextButton?: boolean;
-        callbackId?: number;
-      }
-    | undefined;
 };
 
 /**
@@ -152,7 +142,7 @@ export type OnboardingRoutesParamList = {
   Disclaimer: undefined;
   KycSuccess:
     | {
-        userId?: string;
+        sessionId?: string;
       }
     | undefined;
   KYCVerified:

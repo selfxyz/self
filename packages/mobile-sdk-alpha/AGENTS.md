@@ -142,6 +142,25 @@ yarn types # Verify type checking
 yarn build # Confirm build still works
 ```
 
+## Linear Issue Interaction
+
+When working with Linear issues during development:
+
+- **`save_comment`** for: status updates, progress notes, blockers, linking PRs, corrections, decision records
+- **`save_issue`** for: changing status, priority, assignee, labels (structured fields only)
+- **`create_document`** for: attaching specs as Linear documents
+
+**Never overwrite an issue description.** Descriptions are the original scope set at creation time. All subsequent context goes in comments.
+
+## SDK Architecture
+
+For architecture context:
+
+- **[SDK Overview](../../specs/projects/sdk/OVERVIEW.md)** — System architecture, bridge protocol, decision matrix (read-only reference)
+- **Implementation specs** — Canonical source is `specs/projects/sdk/workstreams/<scope>/plans/` (version-controlled). Linear documents attached to issues are mirrored copies for tracking/discovery. When in doubt, trust the repo spec.
+
+Before implementing SDK work, read `CLAUDE.md` Key Rules for constraints and validation commands.
+
 ## Notes
 
 - This package uses TypeScript with strict type checking

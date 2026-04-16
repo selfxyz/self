@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -11,10 +11,10 @@ import { slate500 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import type { TipProps } from '@/components/Tips';
 import Tips from '@/components/Tips';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
+import useOpenSupportForm from '@/hooks/useOpenSupportForm';
 import SimpleScrolledTitleLayout from '@/layouts/SimpleScrolledTitleLayout';
 import { flushAllAnalytics } from '@/services/analytics';
 import {
-  openSupportForm,
   SUPPORT_FORM_BUTTON_TEXT,
   SUPPORT_FORM_TIP_MESSAGE,
 } from '@/services/support';
@@ -50,6 +50,7 @@ const tipsDeeplink: TipProps[] = [
 ];
 
 const QRCodeTrouble: React.FC = () => {
+  const openSupportForm = useOpenSupportForm();
   const go = useHapticNavigation('Home', { action: 'cancel' });
 
   // error screen, flush analytics

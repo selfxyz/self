@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -16,12 +16,12 @@ import type { TipProps } from '@/components/Tips';
 import Tips from '@/components/Tips';
 import { useFeedbackAutoHide } from '@/hooks/useFeedbackAutoHide';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
-import { useSumsubLauncher } from '@/hooks/useSumsubLauncher';
+import { useKycLauncher } from '@/hooks/useKycLauncher';
+import useOpenSupportForm from '@/hooks/useOpenSupportForm';
 import { selectionChange } from '@/integrations/haptics';
 import SimpleScrolledTitleLayout from '@/layouts/SimpleScrolledTitleLayout';
 import { flushAllAnalytics } from '@/services/analytics';
-import { openSupportForm, SUPPORT_FORM_BUTTON_TEXT } from '@/services/support';
-import { useSettingStore } from '@/stores/settingStore';
+import { SUPPORT_FORM_BUTTON_TEXT } from '@/services/support';
 
 const tips: TipProps[] = [
   {
@@ -51,6 +51,7 @@ const tips: TipProps[] = [
 ];
 
 const DocumentNFCTroubleScreen: React.FC = () => {
+  const openSupportForm = useOpenSupportForm();
   const navigation = useNavigation();
   const handleDismiss = useCallback(() => {
     selectionChange();
@@ -62,8 +63,7 @@ const DocumentNFCTroubleScreen: React.FC = () => {
   const selfClient = useSelfClient();
   const { useMRZStore } = selfClient;
   const { countryCode } = useMRZStore();
-  const kycEnabled = useSettingStore(state => state.kycEnabled);
-  const { launchSumsubVerification, isLoading } = useSumsubLauncher({
+  const { launchKycVerification, isLoading } = useKycLauncher({
     countryCode,
     errorSource: 'nfc_scan_failed',
   });
@@ -97,16 +97,14 @@ const DocumentNFCTroubleScreen: React.FC = () => {
             {SUPPORT_FORM_BUTTON_TEXT}
           </SecondaryButton>
 
-          {kycEnabled && (
-            <SecondaryButton
-              onPress={launchSumsubVerification}
-              disabled={isLoading}
-              textColor={slate700}
-              style={{ marginBottom: 0 }}
-            >
-              {isLoading ? 'Loading...' : 'Try Alternative Verification'}
-            </SecondaryButton>
-          )}
+          <SecondaryButton
+            onPress={launchKycVerification}
+            disabled={isLoading}
+            textColor={slate700}
+            style={{ marginBottom: 0 }}
+          >
+            {isLoading ? 'Loading...' : 'Try Alternative Verification'}
+          </SecondaryButton>
         </YStack>
       }
     >

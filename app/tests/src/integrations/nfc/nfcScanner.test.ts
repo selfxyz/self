@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -7,7 +7,8 @@
 // This pattern avoids hoisting issues with jest.mock
 import { Buffer } from 'buffer';
 
-import { scan } from '@/integrations/nfc/nfcScanner';
+import { logNFCEvent } from '@/config/sentry';
+import { parseScanResponse, scan } from '@/integrations/nfc/nfcScanner';
 import { PassportReader } from '@/integrations/nfc/passportReader';
 
 // Declare global variable for platform OS that can be modified per-test
@@ -34,25 +35,12 @@ jest.mock('react-native', () => ({
   },
 }));
 
+jest.mock('@/config/sentry', () => ({
+  logNFCEvent: jest.fn(),
+}));
+
 // Ensure the Node Buffer implementation is available to the module under test
 global.Buffer = Buffer;
-
-// The static import above captures Platform.OS at load time. To test different platforms,
-// we need to clear the module cache and re-import with the current global.mockPlatformOS.
-const getFreshParseScanResponse = () => {
-  jest.resetModules();
-  jest.doMock('react-native', () => ({
-    Platform: {
-      get OS() {
-        return global.mockPlatformOS;
-      },
-      Version: 14,
-      select: (obj: Record<string, unknown>) =>
-        obj[global.mockPlatformOS] || obj.default,
-    },
-  }));
-  return require('@/integrations/nfc/nfcScanner').parseScanResponse;
-};
 
 describe('parseScanResponse', () => {
   beforeEach(() => {
@@ -63,7 +51,6 @@ describe('parseScanResponse', () => {
 
   it('parses iOS response', () => {
     // Platform.OS is already mocked as 'ios' by default
-    const parseScanResponse = getFreshParseScanResponse();
     const mrz =
       'P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<L898902C<3UTO6908061F9406236ZE184226B<<<<<14';
     const response = JSON.stringify({
@@ -128,7 +115,6 @@ describe('parseScanResponse', () => {
   it('parses Android response', () => {
     // Set Platform.OS to android for this test
     global.mockPlatformOS = 'android';
-    const parseScanResponse = getFreshParseScanResponse();
 
     const mrz =
       'P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<L898902C<3UTO6908061F9406236ZE184226B<<<<<14';
@@ -196,7 +182,6 @@ describe('parseScanResponse', () => {
 
   it('handles malformed iOS response', () => {
     // Platform.OS is already mocked as 'ios' by default
-    const parseScanResponse = getFreshParseScanResponse();
     const response = '{"invalid": "json"';
 
     expect(() => parseScanResponse(response)).toThrow();
@@ -205,7 +190,6 @@ describe('parseScanResponse', () => {
   it('handles malformed Android response', () => {
     // Set Platform.OS to android for this test
     global.mockPlatformOS = 'android';
-    const parseScanResponse = getFreshParseScanResponse();
 
     const response = {
       mrz: 'valid_mrz',
@@ -218,7 +202,6 @@ describe('parseScanResponse', () => {
 
   it('handles missing required fields', () => {
     // Platform.OS is already mocked as 'ios' by default
-    const parseScanResponse = getFreshParseScanResponse();
     const response = JSON.stringify({
       // Providing minimal data but missing critical passportMRZ field
       dataGroupHashes: JSON.stringify({
@@ -238,7 +221,6 @@ describe('parseScanResponse', () => {
 
   it('handles invalid hex data in dataGroupHashes', () => {
     // Platform.OS is already mocked as 'ios' by default
-    const parseScanResponse = getFreshParseScanResponse();
     const response = JSON.stringify({
       dataGroupHashes: JSON.stringify({
         DG1: { sodHash: 'invalid_hex' },
@@ -399,6 +381,119 @@ describe('scan', () => {
       await scan(mockInputs);
 
       expect(mockScanPassport).toHaveBeenCalled();
+    });
+  });
+
+  describe('Error propagation and availability', () => {
+    it('should propagate scan errors and log scan_failed event', async () => {
+      const scanError = new Error('native scan failed');
+      const mockScanPassport = jest.fn().mockRejectedValue(scanError);
+
+      Object.defineProperty(PassportReader, 'scanPassport', {
+        writable: true,
+        configurable: true,
+        value: mockScanPassport,
+      });
+
+      await expect(scan(mockInputs)).rejects.toThrow('native scan failed');
+      expect(logNFCEvent).toHaveBeenCalledWith(
+        'error',
+        'scan_failed',
+        expect.objectContaining({
+          stage: 'scan',
+          sessionId: 'test-session',
+          platform: 'ios',
+          scanType: 'mrz',
+        }),
+        expect.objectContaining({ error: 'native scan failed' }),
+      );
+    });
+
+    it('should reject with unavailable error when ios module is unavailable', async () => {
+      // Module unavailability must be tested via resetModules because the
+      // scan/scanDocument binding is captured at module init time.
+      jest.resetModules();
+      global.mockPlatformOS = 'ios';
+
+      jest.doMock('@/integrations/nfc/passportReader', () => ({
+        PassportReader: null,
+        scan: null,
+        reset: jest.fn(),
+      }));
+
+      const { scan: isolatedScan } = require('@/integrations/nfc/nfcScanner');
+
+      await expect(isolatedScan(mockInputs)).rejects.toMatchObject({
+        message:
+          'NFC scanning is currently unavailable. Please ensure the app is properly installed.',
+      });
+    });
+
+    it('should reject with unavailable error when android module is unavailable', async () => {
+      // Module unavailability must be tested via resetModules because the
+      // scan/scanDocument binding is captured at module init time.
+      jest.resetModules();
+      global.mockPlatformOS = 'android';
+
+      jest.doMock('@/integrations/nfc/passportReader', () => ({
+        PassportReader: {},
+        scan: null,
+        reset: jest.fn(),
+      }));
+
+      const { scan: isolatedScan } = require('@/integrations/nfc/nfcScanner');
+
+      await expect(isolatedScan(mockInputs)).rejects.toMatchObject({
+        message: 'NFC scanning is currently unavailable.',
+      });
+    });
+  });
+
+  describe('Platform dispatch', () => {
+    it('should dispatch to iOS PassportReader.scanPassport on iOS', async () => {
+      jest.resetModules();
+      global.mockPlatformOS = 'ios';
+
+      const mockScanPassport = jest.fn().mockResolvedValue({ ok: true });
+      const mockCrossPlatformScan = jest.fn().mockResolvedValue({ ok: true });
+
+      jest.doMock('@/integrations/nfc/passportReader', () => ({
+        PassportReader: { scanPassport: mockScanPassport },
+        scan: mockCrossPlatformScan,
+        reset: jest.fn(),
+      }));
+
+      const { scan: isolatedScan } = require('@/integrations/nfc/nfcScanner');
+      await isolatedScan(mockInputs);
+
+      expect(mockScanPassport).toHaveBeenCalledTimes(1);
+      expect(mockCrossPlatformScan).not.toHaveBeenCalled();
+    });
+
+    it('should dispatch to Android scan() on android', async () => {
+      jest.resetModules();
+      global.mockPlatformOS = 'android';
+
+      const mockAndroidScan = jest.fn().mockResolvedValue({ ok: true });
+      const mockReset = jest.fn();
+
+      jest.doMock('@/integrations/nfc/passportReader', () => ({
+        PassportReader: {},
+        scan: mockAndroidScan,
+        reset: mockReset,
+      }));
+
+      const { scan: isolatedScan } = require('@/integrations/nfc/nfcScanner');
+      await isolatedScan(mockInputs);
+
+      expect(mockReset).toHaveBeenCalledTimes(1);
+      expect(mockAndroidScan).toHaveBeenCalledWith(
+        expect.objectContaining({
+          documentNumber: 'L898902C3',
+          dateOfBirth: '640812',
+          dateOfExpiry: '251031',
+        }),
+      );
     });
   });
 });

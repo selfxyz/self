@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
@@ -22,12 +22,12 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import useHapticNavigation from '@/hooks/useHapticNavigation';
+import useOpenSupportForm from '@/hooks/useOpenSupportForm';
 import { notificationError } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { SharedRoutesParamList } from '@/navigation/types';
 import { flush as flushAnalytics } from '@/services/analytics';
 import {
-  openSupportForm,
   SUPPORT_FORM_COMING_SOON_BUTTON_TEXT,
   SUPPORT_FORM_COMING_SOON_MESSAGE,
 } from '@/services/support';
@@ -39,6 +39,7 @@ type ComingSoonScreenProps = NativeStackScreenProps<
 
 const ComingSoonScreen: React.FC<ComingSoonScreenProps> = ({ route }) => {
   const navigateToHome = useHapticNavigation('Home');
+  const openSupportForm = useOpenSupportForm();
 
   const { countryName, countryCode, documentTypeText } = useMemo(() => {
     try {
@@ -85,12 +86,8 @@ const ComingSoonScreen: React.FC<ComingSoonScreenProps> = ({ route }) => {
     navigateToHome();
   };
 
-  const onNotifyMe = async () => {
-    try {
-      await openSupportForm();
-    } catch (error) {
-      console.error('Failed to open support form:', error);
-    }
+  const onNotifyMe = () => {
+    openSupportForm();
   };
 
   useEffect(() => {
