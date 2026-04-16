@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useEffect, useRef } from 'react';
-import { StyleSheet, View } from 'react-native';
 import {
+  type BarcodeScanningResult,
   CameraView,
   useCameraPermissions,
-  type BarcodeScanningResult,
 } from 'expo-camera';
+import React, { useCallback, useEffect, useRef } from 'react';
+import { StyleSheet, View } from 'react-native';
 
 export interface QRCodeScannerViewProps {
   isMounted: boolean;
@@ -35,11 +35,14 @@ export const QRCodeScannerView: React.FC<QRCodeScannerViewProps> = ({
     }
   }, [permission, onQRData]);
 
+  const hasScanned = useRef(false);
+
   const handleBarcodeScanned = useCallback(
     (result: BarcodeScanningResult) => {
-      if (!isMounted) {
+      if (!isMounted || hasScanned.current) {
         return;
       }
+      hasScanned.current = true;
       onQRData(null, result.data);
     },
     [onQRData, isMounted],
