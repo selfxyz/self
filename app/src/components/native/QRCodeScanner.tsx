@@ -44,10 +44,6 @@ export const QRCodeScannerView: React.FC<QRCodeScannerViewProps> = ({
     [onQRData, isMounted],
   );
 
-  if (!permission?.granted) {
-    return null;
-  }
-
   const handleMountError = useCallback(
     (event: { message: string }) => {
       if (!isMounted) return;
@@ -55,6 +51,10 @@ export const QRCodeScannerView: React.FC<QRCodeScannerViewProps> = ({
     },
     [isMounted, onQRData],
   );
+
+  if (!permission?.granted) {
+    return null;
+  }
 
   return (
     <View style={styles.container}>
