@@ -11,7 +11,7 @@ export interface MockOnboardingNavigationState {
   nextPath?: string;
 }
 
-export type MockRegistrationOutcome = 'success' | 'kyc-failure' | 'registration-failure' | 'cancel';
+export type MockRegistrationOutcome = 'success' | 'kyc-failure' | 'registration-failure' | 'cancel' | 'demo';
 export type PromptMockState = 'default' | 'existing-account';
 
 const DEFAULT_OUTCOME: MockRegistrationOutcome = 'success';
@@ -25,6 +25,10 @@ export const createMockProviderResult = ({
   outcome: MockRegistrationOutcome;
   verificationId?: string;
 }): KycProviderResult => {
+  if (!MOCKS_ENABLED) {
+    throw new Error('createMockProviderResult must not be called outside dev mode');
+  }
+
   const resolvedVerificationId = verificationId ?? 'mock-verification';
 
   switch (outcome) {
@@ -71,6 +75,13 @@ export const createMockProviderResult = ({
           retryable: true,
         },
       };
+    case 'demo':
+      return {
+        status: 'success',
+        verificationId: resolvedVerificationId,
+        provider: 'mock-provider',
+        completedAt: new Date().toISOString(),
+      };
   }
 };
 
@@ -86,6 +97,7 @@ export const getMockOutcomeFromSearch = (search: string): MockRegistrationOutcom
     case 'kyc-failure':
     case 'registration-failure':
     case 'cancel':
+    case 'demo':
       return value;
     default:
       return DEFAULT_OUTCOME;
@@ -117,4 +129,5 @@ export const getPromptMockSearch = (mock: PromptMockState = DEFAULT_PROMPT_MOCK)
 export const getProviderPath = (outcome: MockRegistrationOutcome): string =>
   `/onboarding/provider${getMockOutcomeSearch(outcome)}`;
 
-export const shouldUseHistoryBack = (): boolean => window.history.length > 1;
+export const isDemoMode = (search: string): boolean =>
+  MOCKS_ENABLED && new URLSearchParams(search).get('mock') === 'demo';

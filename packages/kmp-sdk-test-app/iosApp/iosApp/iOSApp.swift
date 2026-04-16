@@ -6,32 +6,16 @@ import SwiftUI
 import ComposeApp
 import SelfSdkSwift
 
-// MARK: - Protocol conformance declarations
-// These bridge the SelfSdkSwift implementations to the Kotlin provider protocols
-// exported from the ComposeApp (KMP) framework.
-
-extension BiometricProviderImpl: BiometricProvider {}
+// MARK: - Protocol conformance for required providers
 extension SecureStorageProviderImpl: SecureStorageProvider {}
-extension HapticProviderImpl: HapticProvider {}
-extension CryptoProviderImpl: CryptoProvider {}
-extension DocumentsProviderImpl: DocumentsProvider {}
 extension WebViewProviderImpl: WebViewProvider {}
-extension NfcProviderImpl: NfcProvider {}
-extension CameraMrzProviderImpl: CameraMrzProvider {}
 
 @main
 struct iOSApp: App {
     init() {
-        // Register all Swift provider implementations with the KMP SdkProviderRegistry
-        let registry = SdkProviderRegistry.shared
-        registry.biometric = BiometricProviderImpl()
-        registry.secureStorage = SecureStorageProviderImpl()
-        registry.haptic = HapticProviderImpl()
-        registry.crypto = CryptoProviderImpl()
-        registry.documents = DocumentsProviderImpl()
-        registry.webView = WebViewProviderImpl()
-        registry.nfc = NfcProviderImpl()
-        registry.cameraMrz = CameraMrzProviderImpl()
+        // Register only the 3-domain required providers
+        SdkProviderRegistry.shared.secureStorage = SecureStorageProviderImpl()
+        IosProviderRegistry.shared.webView = WebViewProviderImpl()
     }
 
     var body: some Scene {

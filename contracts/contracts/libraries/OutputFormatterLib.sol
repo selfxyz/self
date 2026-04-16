@@ -109,6 +109,13 @@ library OutputFormatterLib {
         }
         aadhaarOutput.revealedDataPacked = Formatter.fieldElementsToBytesAadhaar(revealedDataPacked);
 
+        // Extract forbidden countries list
+        for (uint256 i = 0; i < 4; i++) {
+            aadhaarOutput.forbiddenCountriesListPacked[i] = vcAndDiscloseProof.pubSignals[
+                indices.forbiddenCountriesListPackedIndex + i
+            ];
+        }
+
         return abi.encode(aadhaarOutput);
     }
 
@@ -131,11 +138,18 @@ library OutputFormatterLib {
         kycOutput.userIdentifier = userIdentifier;
         kycOutput.nullifier = vcAndDiscloseProof.pubSignals[indices.nullifierIndex];
 
-        uint256[11] memory revealedDataPacked;
-        for (uint256 i = 0; i < 11; i++) {
+        uint256[10] memory revealedDataPacked;
+        for (uint256 i = 0; i < 10; i++) {
             revealedDataPacked[i] = vcAndDiscloseProof.pubSignals[indices.revealedDataPackedIndex + i];
         }
         kycOutput.revealedDataPacked = Formatter.fieldElementsToBytesKyc(revealedDataPacked);
+
+        // Extract forbidden countries list
+        for (uint256 i = 0; i < 4; i++) {
+            kycOutput.forbiddenCountriesListPacked[i] = vcAndDiscloseProof.pubSignals[
+                indices.forbiddenCountriesListPackedIndex + i
+            ];
+        }
 
         return abi.encode(kycOutput);
     }

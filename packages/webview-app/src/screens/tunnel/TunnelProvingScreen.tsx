@@ -4,7 +4,7 @@
 
 import type React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import type { ProofGenerationStep } from '@selfxyz/euclid';
 import { ProofGenerationScreen } from '@selfxyz/euclid';
@@ -14,8 +14,40 @@ import { loadSelectedDocument, useProvingStore } from '@selfxyz/mobile-sdk-alpha
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { useVerificationRequest } from '../../providers/VerificationRequestProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
+import { isDemoMode } from '../../utils/mockOnboardingFlow';
 import { getIdCardProps } from '../../utils/provingUtils';
 import { initSelfAppFromRequest } from '../../utils/selfAppContext';
+
+const DEMO_PROVING_STEPS: ProofGenerationStep[] = ['readingRegistry', 'generatingProof'];
+
+const DemoTunnelProvingScreen: React.FC<{ search: string }> = ({ search }) => {
+  const navigate = useNavigate();
+  const [stepIndex, setStepIndex] = useState(0);
+
+  const advance = useCallback(() => {
+    if (stepIndex < DEMO_PROVING_STEPS.length - 1) {
+      setStepIndex(i => i + 1);
+    } else {
+      navigate(`/tunnel/proof/disclose${search}`, { replace: true });
+    }
+  }, [stepIndex, navigate, search]);
+
+  return (
+    <div
+      style={{
+        width: '100vw',
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        position: 'relative',
+        overflow: 'hidden',
+      }}
+    >
+      <ProofGenerationScreen {...WEB_SAFE_AREA} step={DEMO_PROVING_STEPS[stepIndex]} />
+      <div onClick={advance} style={{ position: 'absolute', inset: 0, zIndex: 1, cursor: 'pointer' }} />
+    </div>
+  );
+};
 
 type Phase = 'dsc' | 'register';
 
@@ -42,7 +74,7 @@ function mapProvingStateToStep(state: ProvingStateType | null, phase: Phase): Pr
   }
 }
 
-export const TunnelProvingScreen: React.FC = () => {
+const StandardTunnelProvingScreen: React.FC = () => {
   const navigate = useNavigate();
   const { client, analytics, haptic } = useSelfClient();
   const verificationCtx = useVerificationRequest();
@@ -104,19 +136,13 @@ export const TunnelProvingScreen: React.FC = () => {
         state: currentState,
       });
       navigateToError(reason ?? errorCode ?? currentState);
-    } else if (currentState === 'completed' && phase === 'dsc') {
-      setPhase('register');
-      analytics.trackEvent('tunnel_proving_registration_complete', { previousPhase: 'dsc' });
-      void Promise.resolve(init(client, 'register', true)).catch(err => {
-        const message = err instanceof Error ? err.message : 'Register init failed';
-        analytics.trackEvent('tunnel_proving_init_failed', { error: message, phase: 'register' });
-        navigateToError(message);
-      });
-    } else if (currentState === 'completed' && phase === 'register') {
-      analytics.trackEvent('tunnel_proving_registration_complete', { previousPhase: 'register' });
-      navigate('/tunnel/proof/disclose', { replace: true });
+    } else if (currentState === 'completed') {
+      analytics.trackEvent('tunnel_proving_registration_complete', { previousPhase: phase });
+      // Brief delay to allow tree reader to index the on-chain commitment
+      // before disclose fetches the identity tree.
+      setTimeout(() => navigate('/tunnel/proof/disclose', { replace: true }), 5000);
     }
-  }, [currentState, initDone, phase, client, init, analytics, haptic, navigate, errorCode, reason, navigateToError]);
+  }, [currentState, initDone, phase, analytics, haptic, navigate, errorCode, reason, navigateToError]);
 
   return (
     <ProofGenerationScreen
@@ -125,4 +151,14 @@ export const TunnelProvingScreen: React.FC = () => {
       idCardProps={getIdCardProps(passportData?.documentCategory)}
     />
   );
+};
+
+export const TunnelProvingScreen: React.FC = () => {
+  const location = useLocation();
+
+  if (isDemoMode(location.search)) {
+    return <DemoTunnelProvingScreen search={location.search} />;
+  }
+
+  return <StandardTunnelProvingScreen />;
 };

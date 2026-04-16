@@ -6,6 +6,7 @@ import React from 'react';
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
 import type { DocumentCategory } from '@selfxyz/common/utils/types';
+import { black } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import { SystemBars } from '@/components/SystemBars';
 import DeferredLinkingInfoScreen from '@/screens/app/DeferredLinkingInfoScreen';
@@ -54,7 +55,7 @@ const appScreens = {
     screen: GratificationScreen,
     options: {
       headerShown: false,
-      contentStyle: { backgroundColor: '#000000' },
+      contentStyle: { backgroundColor: black },
     } as NativeStackNavigationOptions,
     params: {} as {
       points?: number;

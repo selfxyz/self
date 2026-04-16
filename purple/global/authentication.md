@@ -56,7 +56,7 @@ Platform adapters implement this — React Native uses keychain, web uses volati
 | Service        | Method       | Purpose              | Token Persistence |
 |----------------|-------------|----------------------|-------------------|
 | Google Drive   | OAuth 2.0   | Mnemonic backup      | Per-session       |
-| Sumsub KYC     | API token   | Identity verification | Per-session       |
+| Didit KYC      | API token   | Identity verification | Per-session       |
 | Turnkey        | Google OAuth | Wallet backup        | DISABLED          |
 
 ## Keychain Security Levels (Adaptive)

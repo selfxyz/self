@@ -12,12 +12,25 @@ import type { VerificationResult } from '@selfxyz/webview-bridge';
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { useVerificationRequest } from '../../providers/VerificationRequestProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
+import { isDemoMode } from '../../utils/mockOnboardingFlow';
 
 interface TunnelResultState {
   success?: boolean;
   error?: string;
-  source?: 'proving' | 'disclose';
+  source?: 'disclose' | 'kyc' | 'proving';
 }
+
+const getTunnelBackPath = (source: TunnelResultState['source']): string => {
+  switch (source) {
+    case 'disclose':
+      return '/tunnel/proof/disclose';
+    case 'kyc':
+      return '/tunnel/kyc';
+    case 'proving':
+    default:
+      return '/tunnel/proof/generating';
+  }
+};
 
 export const TunnelResultScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -32,7 +45,22 @@ export const TunnelResultScreen: React.FC = () => {
     analytics.trackEvent('tunnel_result_failure', { error });
   }, [success, error, analytics]);
 
+  const demo = isDemoMode(location.search);
+
   const onContinue = useCallback(async () => {
+    if (demo) {
+      const demoResult: VerificationResult = {
+        success: true,
+        userId: request.userId,
+        verificationId,
+        claims: { resultType: 'proofRequested' },
+      };
+      await lifecycle.setResult(demoResult);
+      analytics.trackEvent('tunnel_result_success');
+      lifecycle.dismiss();
+      return;
+    }
+
     try {
       const result: VerificationResult = {
         success: true,
@@ -48,20 +76,39 @@ export const TunnelResultScreen: React.FC = () => {
         error: err instanceof Error ? err.message : 'Failed to send result',
       });
     }
-  }, [request.userId, verificationId, lifecycle, analytics]);
+  }, [demo, request.userId, verificationId, lifecycle, analytics]);
 
   const onRetry = useCallback(() => {
-    navigate(source === 'disclose' ? '/tunnel/proof/disclose' : '/tunnel/proof/generating');
+    navigate(getTunnelBackPath(source), { replace: true });
   }, [navigate, source]);
 
   const onViewDetails = useCallback(() => {
-    navigate('/tunnel/proof/receipt');
-  }, [navigate]);
+    navigate('/tunnel/proof/receipt', {
+      state: { backPath: location.pathname, backState: location.state },
+    });
+  }, [location.pathname, location.state, navigate]);
 
-  const onCancel = useCallback(() => {
-    lifecycle.dismiss({ reason: 'back' });
-    navigate('/');
-  }, [lifecycle, navigate]);
+  const onCancel = useCallback(async () => {
+    try {
+      const result: VerificationResult = {
+        success: false,
+        userId: request.userId,
+        verificationId,
+        error: {
+          code: 'VERIFICATION_FAILED',
+          message: error ?? 'Verification failed',
+        },
+      };
+      await lifecycle.setResult(result);
+      analytics.trackEvent('tunnel_result_cancelled', { source });
+      lifecycle.dismiss();
+    } catch (err) {
+      analytics.trackEvent('tunnel_result_cancel_failed', {
+        error: err instanceof Error ? err.message : 'Failed to send cancel result',
+      });
+      lifecycle.dismiss();
+    }
+  }, [request.userId, verificationId, error, lifecycle, analytics, source]);
 
   if (success) {
     return (

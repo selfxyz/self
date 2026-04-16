@@ -9,10 +9,17 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import xyz.self.sdk.api.SelfSdk
+import xyz.self.sdk.providers.EncryptedSharedPreferencesProvider
+import xyz.self.sdk.providers.SdkProviderRegistry
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Register default providers so DomainSmokeScreen can test them directly
+        if (SdkProviderRegistry.secureStorage == null) {
+            SdkProviderRegistry.secureStorage = EncryptedSharedPreferencesProvider(this)
+        }
         SelfSdk.bindActivity(this)
         enableEdgeToEdge()
         setContent {

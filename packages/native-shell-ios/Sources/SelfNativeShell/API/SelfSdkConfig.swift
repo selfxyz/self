@@ -19,6 +19,7 @@ public struct SelfSdkConfig {
     public let chainID: Int?
     public let userDefinedData: String?
     public let selfDefinedData: String?
+    public let remoteWebAppBaseURL: URL?
     public let secureStorageProvider: SecureStorageProvider
 
     public init(
@@ -38,6 +39,7 @@ public struct SelfSdkConfig {
         chainID: Int? = nil,
         userDefinedData: String? = nil,
         selfDefinedData: String? = nil,
+        remoteWebAppBaseURL: URL? = nil,
         secureStorageProvider: SecureStorageProvider
     ) {
         self.verificationId = verificationId
@@ -56,6 +58,7 @@ public struct SelfSdkConfig {
         self.chainID = chainID
         self.userDefinedData = userDefinedData
         self.selfDefinedData = selfDefinedData
+        self.remoteWebAppBaseURL = remoteWebAppBaseURL
         self.secureStorageProvider = secureStorageProvider
     }
 
@@ -65,7 +68,7 @@ public struct SelfSdkConfig {
             URLQueryItem(name: "environment", value: environment),
             URLQueryItem(name: "verificationId", value: verificationId),
             URLQueryItem(name: "userId", value: userId),
-            URLQueryItem(name: "version", value: String(version)),
+            URLQueryItem(name: "version", value: String(version))
         ]
         if let scope = scope {
             items.append(URLQueryItem(name: "scope", value: scope))

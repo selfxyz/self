@@ -19,12 +19,17 @@ data class SelfSdkConfig(
     val chainID: Int? = null,
     val userDefinedData: String? = null,
     val selfDefinedData: String? = null,
+    val remoteWebAppBaseUrl: String = "https://self-app-alpha.vercel.app",
 )
 
-class SelfSdkException(message: String) : Exception(message)
+class SelfSdkException(
+    message: String,
+) : Exception(message)
 
 interface SelfSdkCallback {
     fun onSuccess(resultJson: String)
+
     fun onFailure(error: SelfSdkException)
+
     fun onCancelled()
 }

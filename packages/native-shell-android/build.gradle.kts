@@ -2,6 +2,18 @@ plugins {
     id("com.android.library") version "8.2.2"
     id("org.jetbrains.kotlin.android") version "1.9.22"
     id("org.jetbrains.kotlin.plugin.serialization") version "1.9.22"
+    id("org.jlleitschuh.gradle.ktlint") version "12.1.2"
+}
+
+ktlint {
+    version.set("1.5.0")
+    android.set(true)
+    outputToConsole.set(true)
+    ignoreFailures.set(false)
+    filter {
+        exclude("**/generated/**")
+        exclude("**/build/**")
+    }
 }
 
 group = "xyz.self.sdk"
@@ -21,7 +33,7 @@ android {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
@@ -34,23 +46,11 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
-}
 
-tasks.register("validateWebViewBundle") {
-    doLast {
-        val bundleDir = file("src/main/assets/self-wallet")
-        val indexFile = file("src/main/assets/self-wallet/index.html")
-        if (!bundleDir.exists() || !indexFile.exists()) {
-            throw GradleException(
-                "WebView bundle not found at src/main/assets/self-wallet/index.html. " +
-                "Run ./scripts/build-webview-bundle.sh from the repo root first."
-            )
-        }
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+        unitTests.isIncludeAndroidResources = true
     }
-}
-
-tasks.named("preBuild") {
-    dependsOn("validateWebViewBundle")
 }
 
 dependencies {
@@ -58,4 +58,9 @@ dependencies {
     implementation("androidx.webkit:webkit:1.9.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.jetbrains.kotlin:kotlin-test:1.9.22")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+    testImplementation("org.robolectric:robolectric:4.12.2")
 }

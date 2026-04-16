@@ -13,9 +13,16 @@ interface WebViewProvider {
     fun createWebView(
         onMessageReceived: (String) -> Unit,
         isDebugMode: Boolean,
+        queryParams: String? = null,
     ): UIView
 
     fun evaluateJs(js: String)
 
     fun getViewController(): UIViewController
+
+    fun isBridgeRequestAllowed(): Boolean
+
+    fun configureRemoteLoading(remoteWebAppBaseURL: String?) {}
+
+    fun configureDevServer(devServerUrl: String?) {}
 }

@@ -17,6 +17,7 @@ package-lock.json
 !.claude/skills/
 **/.claude/settings.json
 **/.claude/settings.local.json
+.mcp.json
 
 # CI-generated tarballs (don't commit these!)
 mobile-sdk-alpha-ci.tgz
@@ -57,6 +58,12 @@ contracts/broadcast/
 !packages/rn-sdk-test-app/react-native.config.cjs
 packages/native-shell-android/.gradle/
 packages/native-shell-android/build/
+# WebView bundles — built from webview-app, not checked in
+packages/native-shell-android/src/main/assets/self-wallet/
+packages/native-shell-ios/Resources/self-sdk-web/
+packages/self-sdk-swift/Sources/SelfSdkSwift/Resources/self-sdk-web/
+# Isolated Gradle home for format tasks
+.gradle-home/
 
 app/build/*
 packages/mobile-sdk-alpha-source/android/.gradle/*

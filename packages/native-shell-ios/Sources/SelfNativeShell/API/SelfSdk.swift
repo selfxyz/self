@@ -16,7 +16,7 @@ public final class SelfSdk {
 
 final class SelfSdkViewController: UIViewController {
     private let config: SelfSdkConfig
-    private weak var callback: SelfSdkCallback?
+    private let callback: SelfSdkCallback
     private var webViewHost: SelfWebViewHost?
 
     init(config: SelfSdkConfig, callback: SelfSdkCallback) {
@@ -37,17 +37,21 @@ final class SelfSdkViewController: UIViewController {
     }
 
     private func setupWebView() {
+        let callback = self.callback
         let lifecycleHandler = LifecycleHandler(
             viewController: self,
-            onResult: { [weak self] result in
+            onResult: { result in
                 if let dict = result as? [String: Any] {
-                    self?.callback?.onSuccess(result: dict)
+                    callback.onSuccess(result: dict)
                 } else {
-                    self?.callback?.onSuccess(result: [:])
+                    callback.onSuccess(result: [:])
                 }
             },
-            onDismiss: { [weak self] in
-                self?.callback?.onCancelled()
+            onFailure: { error in
+                callback.onFailure(error: error)
+            },
+            onDismiss: {
+                callback.onCancelled()
             }
         )
 
@@ -58,7 +62,11 @@ final class SelfSdkViewController: UIViewController {
         router.register(handler: CryptoHandler())
         router.register(handler: lifecycleHandler)
 
-        let host = SelfWebViewHost(router: router, isDebugMode: config.isDebugMode)
+        let host = SelfWebViewHost(
+            router: router,
+            isDebugMode: config.isDebugMode,
+            remoteWebAppBaseURL: config.remoteWebAppBaseURL
+        )
         self.webViewHost = host
 
         let webView = host.createWebView()

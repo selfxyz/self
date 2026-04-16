@@ -126,6 +126,7 @@ const documentsScreens = {
     screen: ManageDocumentsScreen,
     options: {
       title: 'Manage Documents',
+      headerTintColor: black,
       headerStyle: {
         backgroundColor: white,
       },
@@ -138,6 +139,7 @@ const documentsScreens = {
     screen: DocumentDataInfoScreen,
     options: {
       title: 'Document Data Info',
+      headerTintColor: black,
       headerStyle: {
         backgroundColor: white,
       },

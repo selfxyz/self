@@ -10,7 +10,7 @@ import { ConflictDetectedScreen as EuclidConflictDetectedScreen } from '@selfxyz
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
-import { getPromptMockFromSearch, getPromptMockSearch, shouldUseHistoryBack } from '../../utils/mockOnboardingFlow';
+import { getPromptMockFromSearch, getPromptMockSearch } from '../../utils/mockOnboardingFlow';
 
 export const ConflictDetectedScreen: React.FC = () => {
   const location = useLocation();
@@ -32,11 +32,6 @@ export const ConflictDetectedScreen: React.FC = () => {
 
   const onClose = useCallback(() => {
     haptic.trigger('selection');
-    if (shouldUseHistoryBack()) {
-      navigate(-1);
-      return;
-    }
-
     navigate(`/onboarding/signin${getPromptMockSearch(mock === 'existing-account' ? mock : 'default')}`);
   }, [mock, navigate, haptic]);
 
