@@ -4,8 +4,5 @@
 
 module.exports = {
   CameraView: 'CameraView',
-  useCameraPermissions: () => [
-    { granted: true, canAskAgain: true },
-    jest.fn(),
-  ],
+  useCameraPermissions: () => [{ granted: true, canAskAgain: true }, jest.fn()],
 };

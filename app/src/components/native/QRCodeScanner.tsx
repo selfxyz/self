@@ -20,20 +20,16 @@ export const QRCodeScannerView: React.FC<QRCodeScannerViewProps> = ({
   isMounted,
 }) => {
   const [permission, requestPermission] = useCameraPermissions();
-  const hasRequestedPermission = useRef(false);
 
   useEffect(() => {
-    if (!hasRequestedPermission.current && !permission?.granted) {
-      hasRequestedPermission.current = true;
-      requestPermission();
+    if (permission && !permission.granted) {
+      if (permission.canAskAgain) {
+        requestPermission();
+      } else {
+        onQRData(new Error('Camera permission denied'));
+      }
     }
-  }, [permission, requestPermission]);
-
-  useEffect(() => {
-    if (permission && !permission.granted && !permission.canAskAgain) {
-      onQRData(new Error('Camera permission denied'));
-    }
-  }, [permission, onQRData]);
+  }, [permission, requestPermission, onQRData]);
 
   const hasScanned = useRef(false);
 
@@ -52,6 +48,14 @@ export const QRCodeScannerView: React.FC<QRCodeScannerViewProps> = ({
     return null;
   }
 
+  const handleMountError = useCallback(
+    (event: { message: string }) => {
+      if (!isMounted) return;
+      onQRData(new Error(event.message));
+    },
+    [isMounted, onQRData],
+  );
+
   return (
     <View style={styles.container}>
       <CameraView
@@ -59,6 +63,7 @@ export const QRCodeScannerView: React.FC<QRCodeScannerViewProps> = ({
         facing="back"
         barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
         onBarcodeScanned={handleBarcodeScanned}
+        onMountError={handleMountError}
       />
     </View>
   );
