@@ -5,7 +5,7 @@
 import type React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 
-import { createMockProviderResult, getMockOutcomeFromSearch } from '../../utils/mockOnboardingFlow';
+import { createMockProviderResult, getMockOutcomeFromSearch, isDemoMode } from '../../utils/mockOnboardingFlow';
 
 /**
  * Redirects `/tunnel/kyc` to `ProviderLaunchScreen` at `/onboarding/provider`
@@ -18,6 +18,21 @@ export const TunnelKycWrapper: React.FC = () => {
   const location = useLocation();
   const incomingState = (location.state as Record<string, unknown>) ?? {};
   const mockOutcome = getMockOutcomeFromSearch(location.search);
+
+  if (isDemoMode(location.search)) {
+    const pendingPath = `/tunnel/kyc-pending${location.search}`;
+    return (
+      <Navigate
+        to="/onboarding/provider"
+        replace
+        state={{
+          ...incomingState,
+          backPath: pendingPath,
+          nextPath: pendingPath,
+        }}
+      />
+    );
+  }
 
   if (import.meta.env.DEV && location.search.includes('mock=')) {
     return (
