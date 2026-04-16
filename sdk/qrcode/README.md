@@ -25,9 +25,9 @@ import SelfQRcodeWrapper, { SelfAppBuilder } from '@selfxyz/qrcode';
 ```tsx
 const selfApp = SelfAppBuilder.forContract({
   appName: 'My DApp',
-  contractAddress: '0x1234...abcd',  // Your SelfVerificationRoot contract
-  scopeSeed: 'my-scope-seed',        // Must match the scopeSeed used in contract deployment
-  disclosures: 'basic-kyc',          // Preset: name, nationality, DOB, OFAC
+  contractAddress: '0x1234...abcd', // Your SelfVerificationRoot contract
+  scopeSeed: 'my-scope-seed', // Must match the scopeSeed used in contract deployment
+  disclosures: 'basic-kyc', // Preset: name, nationality, DOB, OFAC
 }).build();
 ```
 
@@ -49,9 +49,10 @@ const selfApp = new SelfAppBuilder({
   appName: 'My App',
   scope: 'my-app-scope',
   endpoint: 'https://myapp.com/api/verify',
-  userId: uuidv4(),         // Optional — auto-generated if omitted
+  userId: uuidv4(), // Optional — auto-generated if omitted
   logoBase64: 'base64Logo', // Optional
-  disclosures: {            // Or use a preset: 'basic-kyc', 'age-verification', 'full-passport', 'ofac-only'
+  disclosures: {
+    // Or use a preset: 'basic-kyc', 'age-verification', 'full-passport', 'ofac-only'
     name: true,
     nationality: true,
     date_of_birth: true,
@@ -86,13 +87,13 @@ function MyComponent() {
 
 The `SelfAppBuilder` allows you to configure your application's verification requirements:
 
-| Parameter     | Type   | Required | Description                                    |
-| ------------- | ------ | -------- | ---------------------------------------------- |
-| `appName`     | string | Yes      | The name of your application                   |
-| `scope`       | string | Yes      | A unique identifier for your application       |
-| `endpoint`    | string | Yes      | The endpoint that will verify the proof        |
-| `logoBase64`  | string | No       | Base64-encoded logo to display in the Self app |
-| `userId`      | string | No       | Unique identifier for the user (auto-generated if omitted) |
+| Parameter     | Type   | Required | Description                                                                                                                                                            |
+| ------------- | ------ | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `appName`     | string | Yes      | The name of your application                                                                                                                                           |
+| `scope`       | string | Yes      | A unique identifier for your application                                                                                                                               |
+| `endpoint`    | string | Yes      | The endpoint that will verify the proof                                                                                                                                |
+| `logoBase64`  | string | No       | Base64-encoded logo to display in the Self app                                                                                                                         |
+| `userId`      | string | No       | Unique identifier for the user (auto-generated if omitted)                                                                                                             |
 | `disclosures` | object | No       | Disclosure and verification requirements. Accepts a preset string (`'basic-kyc'`, `'age-verification'`, `'full-passport'`, `'ofac-only'`) or a full disclosure object. |
 
 ### Disclosure Options
@@ -145,7 +146,7 @@ function VerificationPage() {
         scope: 'my-application-scope',
         disclosures: 'basic-kyc',
       }).build(),
-    [],
+    []
   );
 
   return (
