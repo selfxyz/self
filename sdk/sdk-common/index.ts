@@ -1,10 +1,5 @@
 export { DISCLOSURE_PRESETS, resolveDisclosures } from '@selfxyz/new-common/src/app/presets';
-export type {
-  DisclosurePresetName,
-  SelfApp,
-  SelfAppBuilderConfig,
-  SelfAppDisclosureConfig,
-} from '@selfxyz/new-common/src/foundation/types/app';
+export type { DisclosurePresetName, SelfAppBuilderConfig } from '@selfxyz/new-common/src/foundation/types/app';
 
 export type EndpointType = 'https' | 'celo' | 'staging_celo' | 'staging_https';
 export type UserIdType = 'hex' | 'uuid';
@@ -271,6 +266,37 @@ export const countries = {
   SMOM: 'XOM',
 } as const;
 
+export interface SelfAppDisclosureConfig {
+  issuing_state?: boolean;
+  name?: boolean;
+  passport_number?: boolean;
+  nationality?: boolean;
+  date_of_birth?: boolean;
+  gender?: boolean;
+  expiry_date?: boolean;
+  ofac?: boolean;
+  excludedCountries?: Country3LetterCode[];
+  minimumAge?: number;
+}
+
+export interface SelfApp {
+  appName: string;
+  logoBase64: string;
+  endpointType: EndpointType;
+  endpoint: string;
+  deeplinkCallback: string;
+  header: string;
+  scope: string;
+  sessionId: string;
+  userId: string;
+  userIdType: UserIdType;
+  devMode: boolean;
+  disclosures: SelfAppDisclosureConfig;
+  version: number;
+  chainID: 42220 | 11142220;
+  userDefinedData: string;
+  selfDefinedData: string;
+}
 
 export const countryCodes = {
   AFG: 'Afghanistan',

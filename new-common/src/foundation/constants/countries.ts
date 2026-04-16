@@ -252,6 +252,11 @@ export const countryCodes = {
   YEM: 'Yemen',
   ZMB: 'Zambia',
   ZWE: 'Zimbabwe',
+  EUE: 'European Union',
+  UNO: 'United Nations',
+  XCE: 'Council of Europe',
+  XPO: 'Interpol',
+  XOM: 'Sovereign Military Order of Malta',
 };
 
 export function getCountryCode(countryName: string): string {
