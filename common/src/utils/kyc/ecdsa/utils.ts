@@ -15,10 +15,9 @@ export function bigintTo64bitLimbs(x: bigint): bigint[] {
 }
 
 export const generateRandomsg = (): number[] => {
-  const randomNumbers: number[] = Array.from({ length: 298 }, () =>
-    Math.floor(Math.random() * 128)
-  );
-  return randomNumbers;
+  const bytes = new Uint8Array(298);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (b) => b % 128);
 };
 
 /**
