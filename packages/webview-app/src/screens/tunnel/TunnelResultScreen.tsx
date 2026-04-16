@@ -28,11 +28,12 @@ export const TunnelResultScreen: React.FC = () => {
 
   const { success = false, error, source = 'proving' } = (location.state as TunnelResultState) ?? {};
   const normalizedError = normalizeError(error);
+  const normalizedErrorMessage = normalizedError?.message;
 
   useEffect(() => {
-    if (success || !normalizedError) return;
-    analytics.trackEvent('tunnel_result_failure', { error: normalizedError.message });
-  }, [success, normalizedError, analytics]);
+    if (success || !normalizedErrorMessage) return;
+    analytics.trackEvent('tunnel_result_failure', { error: normalizedErrorMessage });
+  }, [success, normalizedErrorMessage, analytics]);
 
   const onContinue = useCallback(async () => {
     try {
@@ -91,9 +92,7 @@ export const TunnelResultScreen: React.FC = () => {
       documentType="passport"
       timestamp={timestamp}
       failureTitle="Verification Failed"
-      failureDescription={
-        normalizedError?.message ?? 'Something went wrong during verification. Please try again.'
-      }
+      failureDescription={normalizedError?.message ?? 'Something went wrong during verification. Please try again.'}
       onRetry={onRetry}
       onViewDetails={onViewDetails}
       onClose={onCancel}
