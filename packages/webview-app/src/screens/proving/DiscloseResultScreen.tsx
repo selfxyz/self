@@ -26,7 +26,7 @@ export const DiscloseResultScreen: React.FC = () => {
   const { analytics, haptic, lifecycle } = useSelfClient();
   const { request, verificationId } = useVerificationRequest();
 
-  const { success = true, error, resultSent = false } = (location.state as DiscloseResultLocationState | null) ?? {};
+  const { success = false, error, resultSent = false } = (location.state as DiscloseResultLocationState | null) ?? {};
   const normalizedError = normalizeError(error);
   const result = useMemo<VerificationResult>(
     () =>

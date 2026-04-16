@@ -100,7 +100,11 @@ describe('handleStatusCode', () => {
 
       expect(result.shouldDisconnect).toBe(true);
       expect(result.actorEvent).toEqual({ type: 'PROVE_ALREADY_REGISTERED' });
-      expect(result.stateUpdate).toBeUndefined();
+      expect(result.stateUpdate).toEqual({
+        error_code: 'REGISTERED_COMMITMENT',
+        reason: undefined,
+        socketConnection: null,
+      });
     });
 
     it('still returns PROVE_FAILURE for status 5 with other error_code', () => {

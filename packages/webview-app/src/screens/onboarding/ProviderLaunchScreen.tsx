@@ -35,7 +35,8 @@ export const ProviderLaunchScreen: React.FC = () => {
   const { countryCode = '', documentType = '', nextPath } = (location.state as ProviderLaunchState) || {};
 
   const defaultNextPath = nextPath ?? '/onboarding/provider-result';
-  const verificationId = ctxVerificationId ?? `didit-${Date.now()}`;
+  const fallbackVerificationIdRef = useRef(ctxVerificationId ?? `didit-${Date.now()}`);
+  const verificationId = ctxVerificationId ?? fallbackVerificationIdRef.current;
 
   const [phase, setPhase] = useState<Phase>('loading');
   const [errorMessage, setErrorMessage] = useState('');

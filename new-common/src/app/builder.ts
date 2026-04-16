@@ -75,9 +75,9 @@ export class SelfAppBuilder {
         : '';
       throw new Error(`endpoint must start with https://.${suggestion}`);
     }
-    if (endpointType === 'celo' && !config.endpoint.startsWith('0x')) {
+    if ((endpointType === 'celo' || endpointType === 'staging_celo') && !config.endpoint.startsWith('0x')) {
       throw new Error(
-        `Endpoint must be a valid contract address (starting with 0x) for endpointType 'celo'. Got: '${config.endpoint}'`,
+        `Endpoint must be a valid contract address (starting with 0x) for endpointType '${endpointType}'. Got: '${config.endpoint}'`,
       );
     }
     if (

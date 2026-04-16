@@ -26,7 +26,6 @@ export const TourScreen: React.FC = () => {
 
     const selectedDoc = await loadSelectedDocument(client);
 
-    console.log('selected Doc', selectedDoc);
     const isRegisteredRealDoc = selectedDoc?.metadata?.isRegistered === true;
 
     if (isRegisteredRealDoc) {

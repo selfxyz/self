@@ -83,8 +83,8 @@ export const SelfClientProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
   useEffect(() => {
     const storage = bridgeStorageAdapter(bridge);
-    ensureSecret(storage).catch(() => {
-      console.error('Failed to ensure secret');
+    ensureSecret(storage).catch(err => {
+      console.error('Failed to ensure secret:', err);
     });
   }, [bridge]);
 

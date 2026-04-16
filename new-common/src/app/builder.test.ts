@@ -124,6 +124,17 @@ describe('SelfAppBuilder', () => {
           }),
       ).toThrow('valid contract address');
     });
+
+    it('throws when staging_celo endpoint does not start with 0x', () => {
+      expect(
+        () =>
+          new SelfAppBuilder({
+            ...validConfig,
+            endpointType: 'staging_celo',
+            endpoint: 'not-an-address',
+          }),
+      ).toThrow('valid contract address');
+    });
   });
 
   describe('getUniversalLink', () => {

@@ -29,7 +29,7 @@ export const DISCLOSURE_PRESETS: Record<DisclosurePresetName, SelfAppDisclosureC
 export function resolveDisclosures(
   input: SelfAppDisclosureConfig | DisclosurePresetName | undefined,
 ): SelfAppDisclosureConfig {
-  if (!input) return {};
+  if (input == null) return {};
   if (typeof input === 'string') {
     const preset = DISCLOSURE_PRESETS[input];
     if (!preset) {
