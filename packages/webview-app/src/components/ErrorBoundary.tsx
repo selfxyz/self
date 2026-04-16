@@ -27,7 +27,11 @@ class ErrorBoundaryInner extends Component<ErrorBoundaryProps, ErrorBoundaryStat
   }
 
   componentDidCatch(error: Error, info: React.ErrorInfo): void {
-    console.error('[ErrorBoundary] Unhandled error:', error, info.componentStack);
+    if (import.meta.env.DEV) {
+      console.error('[ErrorBoundary] Unhandled error:', error, info.componentStack);
+    } else {
+      console.error('[ErrorBoundary] Unhandled error');
+    }
   }
 
   handleRetry = (): void => {
