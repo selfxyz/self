@@ -366,9 +366,11 @@ describe('analytics', () => {
       expect(mockSegmentClient.identify).toHaveBeenCalledWith('uuid-1');
     });
 
-    it('resets and re-identifies on resetAnalyticsIdentityForSupportUuid', () => {
+    it('resets and re-identifies on resetAnalyticsIdentityForSupportUuid', async () => {
       resetAnalyticsIdentityForSupportUuid('uuid-2');
       expect(mockSegmentClient.reset).toHaveBeenCalled();
+      await Promise.resolve();
+      await Promise.resolve();
       expect(mockSegmentClient.identify).toHaveBeenCalledWith('uuid-2');
     });
   });

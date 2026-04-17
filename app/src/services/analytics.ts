@@ -225,8 +225,8 @@ export const flushAllAnalytics = () => {
 };
 
 const identifyInSegment = (nextSupportUuid: string) => {
-  if (!segmentClient) return;
-  segmentClient.identify(nextSupportUuid).catch(err => {
+  if (!segmentClient) return Promise.resolve();
+  return segmentClient.identify(nextSupportUuid).catch(err => {
     if (__DEV__) console.warn('Failed to identify Segment user:', err);
   });
 };
@@ -237,11 +237,15 @@ export const resetAnalyticsIdentityForSupportUuid = (
   supportUuid = nextSupportUuid;
 
   if (segmentClient) {
-    segmentClient.reset().catch(err => {
-      if (__DEV__) console.warn('Failed to reset Segment identity:', err);
-    });
+    segmentClient
+      .reset()
+      .catch(err => {
+        if (__DEV__) console.warn('Failed to reset Segment identity:', err);
+      })
+      .then(() => identifyInSegment(nextSupportUuid));
+  } else {
+    identifyInSegment(nextSupportUuid);
   }
-  identifyInSegment(nextSupportUuid);
 
   if (PassportReader && typeof PassportReader.resetIdentity === 'function') {
     try {

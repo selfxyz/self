@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { Alert } from 'react-native';
 import { Button, YStack } from 'tamagui';
 
@@ -23,8 +23,11 @@ import {
 import { useSettingStore } from '@/stores/settingStore';
 
 const SupportUuidScreen: React.FC = () => {
-  const supportUuid =
-    useSettingStore(state => state.supportUuid) ?? getSupportUuid();
+  const supportUuid = useSettingStore(state => state.supportUuid);
+
+  useEffect(() => {
+    if (!supportUuid) getSupportUuid();
+  }, [supportUuid]);
 
   const handleCopy = useCallback(() => {
     copySupportUuid();
