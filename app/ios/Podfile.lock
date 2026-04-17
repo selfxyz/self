@@ -27,6 +27,10 @@ PODS:
     - React-Core
   - ExpoAsset (11.0.5):
     - ExpoModulesCore
+  - ExpoCamera (16.0.18):
+    - ExpoModulesCore
+    - ZXingObjC/OneD
+    - ZXingObjC/PDF417
   - ExpoFileSystem (18.0.12):
     - ExpoModulesCore
   - ExpoFont (13.0.4):
@@ -2218,6 +2222,11 @@ PODS:
   - SwiftyTesseract (3.1.3)
   - Yoga (0.0.0)
   - YttriumWrapper (0.10.50)
+  - ZXingObjC/Core (3.6.9)
+  - ZXingObjC/OneD (3.6.9):
+    - ZXingObjC/Core
+  - ZXingObjC/PDF417 (3.6.9):
+    - ZXingObjC/Core
 
 DEPENDENCIES:
   - boost (from `../node_modules/react-native/third-party-podspecs/boost.podspec`)
@@ -2229,6 +2238,7 @@ DEPENDENCIES:
   - Expo (from `../node_modules/expo`)
   - "ExpoAdapterGoogleSignIn (from `../node_modules/@react-native-google-signin/google-signin/expo/ios`)"
   - ExpoAsset (from `../node_modules/expo-asset/ios`)
+  - ExpoCamera (from `../node_modules/expo-camera/ios`)
   - ExpoFileSystem (from `../node_modules/expo-file-system/ios`)
   - ExpoFont (from `../node_modules/expo-font/ios`)
   - ExpoKeepAwake (from `../node_modules/expo-keep-awake/ios`)
@@ -2371,6 +2381,7 @@ SPEC REPOS:
     - SocketRocket
     - SwiftyTesseract
     - YttriumWrapper
+    - ZXingObjC
 
 EXTERNAL SOURCES:
   boost:
@@ -2391,6 +2402,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-google-signin/google-signin/expo/ios"
   ExpoAsset:
     :path: "../node_modules/expo-asset/ios"
+  ExpoCamera:
+    :path: "../node_modules/expo-camera/ios"
   ExpoFileSystem:
     :path: "../node_modules/expo-file-system/ios"
   ExpoFont:
@@ -2620,6 +2633,7 @@ SPEC CHECKSUMS:
   Expo: 4bb70893882e6382b41d1e910d7226c6a1b85f0a
   ExpoAdapterGoogleSignIn: ab4d9fc38cb91077a4138d178395525ec65d0c2e
   ExpoAsset: 48386d40d53a8c1738929b3ed509bcad595b5516
+  ExpoCamera: 0a3e78de7b1ca8c438ee6784fa6f22c5b1b36966
   ExpoFileSystem: 42d363d3b96f9afab980dcef60d5657a4443c655
   ExpoFont: f354e926f8feae5e831ec8087f36652b44a0b188
   ExpoKeepAwake: b0171a73665bfcefcfcc311742a72a956e6aa680
@@ -2751,6 +2765,7 @@ SPEC CHECKSUMS:
   SwiftyTesseract: 1f3d96668ae92dc2208d9842c8a59bea9fad2cbb
   Yoga: c34725819ab0a5962e85455b9e56679b306910ee
   YttriumWrapper: d7f63336830536f1da41b745ed8bacedb04228c4
+  ZXingObjC: 8898711ab495761b2dbbdec76d90164a6d7e14c5
 
 PODFILE CHECKSUM: 83f631d1b6308502a035e656b2f9dfab30431ae3
 
