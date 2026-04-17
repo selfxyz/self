@@ -100,10 +100,10 @@ if File.exist?(wc_podspec)
   end
 end
 
-Dir.glob(File.join(wc_compat_dir, "ios", "RNWalletConnectPay*")).each do |f|
+files_removed = Dir.glob(File.join(wc_compat_dir, "ios", "RNWalletConnectPay*")).each do |f|
   FileUtils.rm(f)
 end
-Pod::UI.puts "Removed WalletConnect Pay source files (not used)".yellow if File.exist?(wc_compat_dir)
+Pod::UI.puts "Removed WalletConnect Pay source files (not used)".yellow if files_removed.any?
 
 # ── Haptic feedback AudioToolbox fix ────────────────────────────────────────
 # react-native-haptic-feedback uses AudioServicesPlaySystemSound but its
