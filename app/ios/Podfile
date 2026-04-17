@@ -144,7 +144,7 @@ target "Self" do
       nfc_repo_url = "git@github.com:selfxyz/NFCPassportReader.git"
     end
 
-    pod "SelfNFCPassportReader", git: nfc_repo_url, commit: "2cdc50a5c27b75594b94b27fdc4bb6172ada0f96"
+    pod "SelfNFCPassportReader", git: nfc_repo_url, commit: "b478e1f1320e86f72c5755bc5adf156fff950585"
   end
 
   # Explicitly declare Mixpanel to ensure it's available even in E2E builds

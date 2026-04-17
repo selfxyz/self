@@ -88,12 +88,11 @@ const sendBatch = async (
     });
 
     if (!response.ok) {
-      console.warn(
-        `Loki transport failed: ${response.status} ${response.statusText}`,
-      );
+      // Silently fail — console.warn here would trigger consoleInterceptor
+      // feedback loop when logger is enabled in dev
     }
-  } catch (error) {
-    console.warn('Loki transport error:', error);
+  } catch {
+    // Silently fail — same feedback loop risk
   }
 };
 
