@@ -11,6 +11,7 @@ import { KycVerificationSuccessScreen } from '@selfxyz/euclid';
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import type { KycProviderResult } from '../../types/kycProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
+import { isDemoMode } from '../../utils/mockOnboardingFlow';
 
 export const TunnelKycSuccessScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -20,8 +21,10 @@ export const TunnelKycSuccessScreen: React.FC = () => {
   const state = location.state as { providerResult?: KycProviderResult } | null;
   const providerResult = state?.providerResult;
 
+  const demo = isDemoMode(location.search);
+
   useEffect(() => {
-    if (!providerResult) return;
+    if (demo || !providerResult) return;
 
     if (providerResult.status === 'cancel') {
       navigate('/tunnel/tour/4', { replace: true });
@@ -36,13 +39,13 @@ export const TunnelKycSuccessScreen: React.FC = () => {
       }
       return;
     }
-  }, [providerResult, navigate]);
+  }, [demo, providerResult, navigate]);
 
   const onGenerateProof = useCallback(() => {
     haptic.trigger('success');
     analytics.trackEvent('tunnel_kyc_success_generate_proof');
-    navigate('/tunnel/proof/generating');
-  }, [navigate, haptic, analytics]);
+    navigate(`/tunnel/proof/generating${location.search}`);
+  }, [navigate, location.search, haptic, analytics]);
 
   return <KycVerificationSuccessScreen insets={WEB_SAFE_AREA.insets} onGenerateProof={onGenerateProof} />;
 };

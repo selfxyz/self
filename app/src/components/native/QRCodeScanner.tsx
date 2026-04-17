@@ -2,36 +2,13 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback } from 'react';
-import type { NativeSyntheticEvent, StyleProp, ViewStyle } from 'react-native';
-import { PixelRatio, Platform, requireNativeComponent } from 'react-native';
-
-import { RCTFragment } from '@/components/native/RCTFragment';
-
-interface NativeQRCodeScannerViewProps {
-  onQRData: (event: NativeSyntheticEvent<{ data: string }>) => void;
-  onError: (
-    event: NativeSyntheticEvent<{
-      error: string;
-      errorMessage: string;
-      stackTrace: string;
-    }>,
-  ) => void;
-  style?: StyleProp<ViewStyle>;
-}
-
-const QRCodeNativeComponent = Platform.select({
-  ios: requireNativeComponent<NativeQRCodeScannerViewProps>(
-    'QRCodeScannerView',
-  ),
-  android: requireNativeComponent<NativeQRCodeScannerViewProps>(
-    'QRCodeScannerViewManager',
-  ),
-});
-
-if (!QRCodeNativeComponent) {
-  throw new Error('QRCodeScannerView not registered for this platform');
-}
+import {
+  type BarcodeScanningResult,
+  CameraView,
+  useCameraPermissions,
+} from 'expo-camera';
+import React, { useCallback, useEffect, useRef } from 'react';
+import { StyleSheet, View } from 'react-native';
 
 export interface QRCodeScannerViewProps {
   isMounted: boolean;
@@ -42,70 +19,62 @@ export const QRCodeScannerView: React.FC<QRCodeScannerViewProps> = ({
   onQRData,
   isMounted,
 }) => {
-  const _onError = useCallback(
-    (
-      event: NativeSyntheticEvent<{
-        error: string;
-        errorMessage: string;
-        stackTrace: string;
-      }>,
-    ) => {
-      if (!isMounted) {
+  const [permission, requestPermission] = useCameraPermissions();
+
+  useEffect(() => {
+    if (permission && !permission.granted) {
+      if (permission.canAskAgain) {
+        requestPermission();
+      } else {
+        onQRData(new Error('Camera permission denied'));
+      }
+    }
+  }, [permission, requestPermission, onQRData]);
+
+  const hasScanned = useRef(false);
+
+  const handleBarcodeScanned = useCallback(
+    (result: BarcodeScanningResult) => {
+      if (!isMounted || hasScanned.current) {
         return;
       }
-      const {
-        error: nativeError,
-        errorMessage,
-        stackTrace,
-      } = event.nativeEvent;
-      const e = new Error(errorMessage);
-      e.name = nativeError;
-      e.stack = stackTrace;
-      onQRData(e);
+      hasScanned.current = true;
+      onQRData(null, result.data);
     },
     [onQRData, isMounted],
   );
 
-  const _onQRData = useCallback(
-    (event: NativeSyntheticEvent<{ data: string }>) => {
-      if (!isMounted) {
-        return;
-      }
-      onQRData(null, event.nativeEvent.data);
+  const handleMountError = useCallback(
+    (event: { message: string }) => {
+      if (!isMounted) return;
+      onQRData(new Error(event.message));
     },
-    [onQRData, isMounted],
+    [isMounted, onQRData],
   );
 
-  if (Platform.OS === 'ios') {
-    return (
-      <QRCodeNativeComponent
-        onQRData={_onQRData}
-        onError={_onError}
-        style={{
-          width: '110%',
-          height: '110%',
-        }}
-      />
-    );
-  } else {
-    // For Android, wrap the native component inside your RCTFragment to preserve existing functionality.
-    const Fragment = RCTFragment as React.FC<
-      React.ComponentProps<typeof RCTFragment> & NativeQRCodeScannerViewProps
-    >;
-    return (
-      <Fragment
-        RCTFragmentViewManager={
-          QRCodeNativeComponent as ReturnType<typeof requireNativeComponent>
-        }
-        fragmentComponentName="QRCodeScannerViewManager"
-        isMounted={isMounted}
-        style={{
-          height: PixelRatio.getPixelSizeForLayoutSize(800),
-          width: PixelRatio.getPixelSizeForLayoutSize(400),
-        }}
-        onError={_onError}
-        onQRData={_onQRData}
-      />
-    );
+  if (!permission?.granted) {
+    return null;
   }
+
+  return (
+    <View style={styles.container}>
+      <CameraView
+        style={styles.camera}
+        facing="back"
+        barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
+        onBarcodeScanned={handleBarcodeScanned}
+        onMountError={handleMountError}
+      />
+    </View>
+  );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    width: '110%',
+    height: '110%',
+  },
+  camera: {
+    flex: 1,
+  },
+});
