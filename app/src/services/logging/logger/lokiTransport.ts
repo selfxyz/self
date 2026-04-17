@@ -29,6 +29,9 @@ interface LokiPayload {
   streams: LokiStream[];
 }
 
+// Per-session ID for grouping logs in Grafana (not persistent, not user-identifiable)
+const sessionId = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+
 // Batch management state
 let batch: LokiLogEntry[] = [];
 let batchTimer: NodeJS.Timeout | null = null;
@@ -63,6 +66,7 @@ const sendBatch = async (
           app: 'self-mobile',
           platform: 'react-native',
           level,
+          session_id: sessionId,
         },
         values,
       }),
