@@ -175,18 +175,18 @@ const val BRIDGE_DEMO_HTML =
     <!doctype html>
     <html>
       <head>
-        <meta charset=\"utf-8\" />
-        <meta name=\"viewport\" content=\"width=device-width,initial-scale=1\" />
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
         <title>MiniPay Bridge PoC</title>
       </head>
-      <body style=\"font-family: sans-serif; padding: 16px;\">
+      <body style="font-family: sans-serif; padding: 16px;">
         <h2>MiniPay Bridge PoC</h2>
         <p>Uses <code>window.ethereum.request</code> through native bridge.</p>
-        <button onclick=\"runEcho()\">demo_echo</button>
-        <button onclick=\"runReject()\">demo_reject</button>
-        <button onclick=\"runUnknown()\">foo (unknown)</button>
-        <button onclick=\"runConcurrent()\">concurrent demo</button>
-        <pre id=\"output\" style=\"margin-top: 16px; white-space: pre-wrap;\"></pre>
+        <button onclick="runEcho()">demo_echo</button>
+        <button onclick="runReject()">demo_reject</button>
+        <button onclick="runUnknown()">foo (unknown)</button>
+        <button onclick="runConcurrent()">concurrent demo</button>
+        <pre id="output" style="margin-top: 16px; white-space: pre-wrap;"></pre>
 
         <script>
           const output = document.getElementById('output');

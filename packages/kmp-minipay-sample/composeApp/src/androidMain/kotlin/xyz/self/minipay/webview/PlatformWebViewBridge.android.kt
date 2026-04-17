@@ -44,10 +44,17 @@ private fun createWebView(
     return WebView(context).apply {
         settings.javaScriptEnabled = true
         settings.domStorageEnabled = true
-        webViewClient = WebViewClient()
+        webViewClient =
+            object : WebViewClient() {
+                override fun onPageFinished(
+                    view: WebView,
+                    url: String?,
+                ) {
+                    view.evaluateJavascript(ETHEREUM_BRIDGE_STUB, null)
+                }
+            }
         addJavascriptInterface(bridge, ETHEREUM_BRIDGE_CHANNEL)
         bridge.attach(this)
-        evaluateJavascript(ETHEREUM_BRIDGE_STUB, null)
         loadDataWithBaseURL("https://localhost/", BRIDGE_DEMO_HTML, "text/html", "utf-8", null)
     }
 }

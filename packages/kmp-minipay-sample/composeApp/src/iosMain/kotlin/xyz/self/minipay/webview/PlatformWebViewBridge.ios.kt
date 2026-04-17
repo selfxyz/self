@@ -7,8 +7,10 @@ package xyz.self.minipay.screens
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.interop.UIKitView
+import kotlin.native.ref.WeakReference
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.readValue
+import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
 import platform.CoreGraphics.CGRectZero
 import platform.darwin.NSObject
@@ -39,7 +41,10 @@ actual fun PlatformWebViewBridge(registry: MethodRegistry) {
         factory = {
             val bridge = IosEthereumBridge(registry)
             val userContentController = WKUserContentController()
-            userContentController.addScriptMessageHandler(bridge, ETHEREUM_BRIDGE_CHANNEL)
+            userContentController.addScriptMessageHandler(
+                WeakMessageHandlerProxy(bridge),
+                ETHEREUM_BRIDGE_CHANNEL,
+            )
             userContentController.addUserScript(
                 WKUserScript(
                     source = ETHEREUM_BRIDGE_STUB,
@@ -111,8 +116,22 @@ private class IosEthereumBridge(
 
     private fun sendResponseToJs(response: ProviderResponse) {
         val responseJson = json.encodeToString(ProviderResponse.serializer(), response)
-        val escaped = responseJson.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n")
-        val script = "window.__selfEthereumResolve(\"$escaped\");"
+        val jsStringLiteral = json.encodeToString(String.serializer(), responseJson)
+        val script = "window.__selfEthereumResolve($jsStringLiteral);"
         webView?.evaluateJavaScript(script, completionHandler = null)
+    }
+}
+
+@OptIn(ExperimentalForeignApi::class, kotlin.experimental.ExperimentalNativeApi::class)
+private class WeakMessageHandlerProxy(
+    handler: WKScriptMessageHandlerProtocol,
+) : NSObject(), WKScriptMessageHandlerProtocol {
+    private val weakHandler = WeakReference(handler)
+
+    override fun userContentController(
+        userContentController: WKUserContentController,
+        didReceiveScriptMessage: WKScriptMessage,
+    ) {
+        weakHandler.get()?.userContentController(userContentController, didReceiveScriptMessage)
     }
 }
