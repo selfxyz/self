@@ -198,11 +198,13 @@ const lokiTransport: transportFunctionType<LokiTransportOptions> = props => {
     level: string;
     message: string;
     timestamp: string;
+    session_id: string;
     data?: unknown;
   } = {
     level: level.text,
     message: actualMessage,
     timestamp,
+    session_id: sessionId,
   };
 
   if (actualData) {
