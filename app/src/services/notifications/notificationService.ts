@@ -18,8 +18,12 @@ export const SELF_UUID_NAMESPACE = '00000000-0000-8000-8000-531f00000000';
 
 const REGISTER_TOKEN_TIMEOUT_MS = 10000;
 const REGISTER_TOKEN_MAX_ATTEMPTS = 3;
-const REGISTER_TOKEN_BASE_BACKOFF_MS = 500;
+const REGISTER_TOKEN_BACKOFF_MS = 500;
 
+// Retry only on TypeError (pure transport failure before the request body
+// reached the server). 5xx and AbortError are not retried because the server
+// may already have processed the request, and /register-token is not known to
+// be idempotent — retrying could create duplicate registrations.
 async function fetchRegisterToken(
   url: string,
   body: string,
@@ -45,16 +49,14 @@ async function fetchRegisterToken(
         signal: controller.signal,
       });
       clearTimeout(timeoutId);
-
-      // Retry only on 5xx; return 2xx/4xx directly for caller to handle.
-      if (response.status < 500) {
-        return response;
-      }
-
-      lastError = new Error(`HTTP ${response.status}`);
+      return response;
     } catch (err) {
       clearTimeout(timeoutId);
       lastError = err;
+
+      if (!(err instanceof TypeError)) {
+        break;
+      }
     }
 
     attempt += 1;
@@ -63,8 +65,7 @@ async function fetchRegisterToken(
     }
 
     const backoff =
-      REGISTER_TOKEN_BASE_BACKOFF_MS * 2 ** (attempt - 1) +
-      Math.random() * REGISTER_TOKEN_BASE_BACKOFF_MS;
+      REGISTER_TOKEN_BACKOFF_MS + Math.random() * REGISTER_TOKEN_BACKOFF_MS;
     await new Promise(resolve => setTimeout(resolve, backoff));
   }
 

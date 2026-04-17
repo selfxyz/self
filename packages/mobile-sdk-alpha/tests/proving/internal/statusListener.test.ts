@@ -183,4 +183,20 @@ describe('Socket.IO status handler wiring', () => {
     expect(actorMock.send).toHaveBeenCalledWith({ type: 'PROVE_ERROR' });
     expect(useProvingStore.getState().socketConnection).toBe(null);
   });
+
+  it('does not emit PROVE_ERROR when disconnect follows a terminal status', async () => {
+    useProvingStore.setState({ currentState: 'listening_for_status' } as any);
+
+    const store = useProvingStore.getState();
+    store._startSocketIOStatusListener('test-uuid', 'https', mockSelfClient);
+
+    await new Promise(resolve => setImmediate(resolve));
+
+    (mockSocket as any).emit('status', { status: 4 });
+    (mockSocket as any).emit('disconnect', 'io client disconnect');
+
+    expect(actorMock.send).toHaveBeenCalledWith({ type: 'PROVE_SUCCESS' });
+    expect(actorMock.send).not.toHaveBeenCalledWith({ type: 'PROVE_ERROR' });
+    expect(useProvingStore.getState().socketConnection).toBe(null);
+  });
 });
