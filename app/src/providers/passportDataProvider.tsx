@@ -101,8 +101,12 @@ function handleKeychainReadError({
   error: unknown;
   throwOnUserCancel?: boolean;
 }) {
+  const safeLabel = contextLabel.startsWith('document ')
+    ? 'document'
+    : contextLabel;
+
   if (isUserCancellation(error)) {
-    console.log(`User cancelled authentication for ${contextLabel}`);
+    console.log(`User cancelled authentication for ${safeLabel}`);
     notifyKeychainFailure('user_cancelled');
 
     if (throwOnUserCancel) {
@@ -112,16 +116,14 @@ function handleKeychainReadError({
 
   if (isKeychainCryptoError(error)) {
     const err = getKeychainErrorIdentity(error);
-    console.error(`Keychain crypto error loading ${contextLabel}:`, {
+    console.error(`Keychain crypto error loading ${safeLabel}:`, {
       code: err?.code,
       name: err?.name,
     });
     if (error instanceof Error) {
       captureException(error, {
         module: 'passport-data-provider',
-        contextLabel: contextLabel.startsWith('document ')
-          ? 'document'
-          : contextLabel,
+        contextLabel: safeLabel,
         errorCode: err?.code,
         errorName: err?.name,
       });
@@ -130,7 +132,7 @@ function handleKeychainReadError({
     notifyKeychainFailure('crypto_failed');
   }
 
-  console.log(`Error loading ${contextLabel}:`, error);
+  console.log(`Error loading ${safeLabel}:`, error);
 }
 
 // Create safe wrapper functions to prevent undefined errors during early initialization

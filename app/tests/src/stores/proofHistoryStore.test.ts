@@ -55,7 +55,14 @@ describe('proofHistoryStore', () => {
 
     mockSocket = {
       emit: jest.fn(),
-      on: jest.fn(),
+      on: jest.fn().mockImplementation(function (this: any) {
+        return this;
+      }),
+      timeout: jest.fn().mockImplementation(function (this: any) {
+        return this;
+      }),
+      disconnect: jest.fn(),
+      connected: false,
     };
     mockIo.mockReturnValue(mockSocket);
   });
@@ -314,6 +321,103 @@ describe('proofHistoryStore', () => {
       });
 
       expect(mockDatabase.getHistory).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('syncProofHistoryStatus (via initDatabase)', () => {
+    const pendingProof = {
+      id: '1',
+      sessionId: 'session-abc',
+      appName: 'TestApp',
+      endpointType: 'celo',
+      status: ProofStatus.PENDING,
+      errorCode: null,
+      errorReason: null,
+      timestamp: Date.now(),
+      disclosures: '{}',
+      logoBase64: null,
+      userId: 'u',
+      userIdType: 'uuid',
+    };
+
+    const getHandler = (event: string) => {
+      const call = (mockSocket.on as jest.Mock).mock.calls.find(
+        ([name]) => name === event,
+      );
+      return call?.[1] as ((...args: any[]) => void) | undefined;
+    };
+
+    let nowSpy: jest.SpyInstance;
+    let testClock = Date.now();
+
+    beforeEach(() => {
+      testClock += 10 * 60 * 1000;
+      nowSpy = jest.spyOn(Date, 'now').mockImplementation(() => testClock);
+
+      mockDatabase.init.mockResolvedValue(undefined);
+      mockDatabase.updateStaleProofs.mockResolvedValue(undefined);
+      mockDatabase.getHistory.mockResolvedValue({ rows: [], total_count: 0 });
+      mockDatabase.getPendingProofs.mockResolvedValue({ rows: [pendingProof] });
+    });
+
+    afterEach(() => {
+      nowSpy.mockRestore();
+    });
+
+    it('does not unsubscribe on non-terminal status', async () => {
+      await act(async () => {
+        await useProofHistoryStore.getState().initDatabase();
+      });
+
+      const statusHandler = getHandler('status');
+      expect(statusHandler).toBeDefined();
+
+      (mockSocket.emit as jest.Mock).mockClear();
+      statusHandler!({ status: 1, request_id: 'session-abc' });
+
+      expect(mockSocket.emit).not.toHaveBeenCalledWith(
+        'unsubscribe',
+        expect.anything(),
+      );
+      expect(mockDatabase.updateProofStatus).not.toHaveBeenCalled();
+    });
+
+    it('unsubscribes on terminal status', async () => {
+      await act(async () => {
+        await useProofHistoryStore.getState().initDatabase();
+      });
+
+      const statusHandler = getHandler('status');
+      (mockSocket.emit as jest.Mock).mockClear();
+      statusHandler!({ status: 4, request_id: 'session-abc' });
+
+      expect(mockSocket.emit).toHaveBeenCalledWith(
+        'unsubscribe',
+        'session-abc',
+      );
+    });
+
+    it('disconnects after timeout even when never connected', async () => {
+      const setTimeoutSpy = jest.spyOn(global, 'setTimeout');
+
+      await act(async () => {
+        await useProofHistoryStore.getState().initDatabase();
+      });
+
+      mockSocket.connected = false;
+      expect(mockSocket.disconnect).not.toHaveBeenCalled();
+
+      const disconnectCall = setTimeoutSpy.mock.calls.find(
+        ([, delay]) => delay === 30 * 1000 * 4,
+      );
+      expect(disconnectCall).toBeDefined();
+
+      const disconnectTimer = disconnectCall?.[0] as (() => void) | undefined;
+      disconnectTimer?.();
+
+      expect(mockSocket.disconnect).toHaveBeenCalled();
+
+      setTimeoutSpy.mockRestore();
     });
   });
 
