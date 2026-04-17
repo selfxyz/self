@@ -52,8 +52,7 @@ const ERROR_MESSAGES: Record<RecoveryError, string> = {
     'We couldn’t restore your account with this phrase. Please double-check and try again.',
   not_registered:
     'This recovery phrase doesn’t match a registered ID. If you registered with a different phrase, try that one instead.',
-  unexpected_error:
-    'Something went wrong. Please try again.',
+  unexpected_error: 'Something went wrong. Please try again.',
 };
 
 const RecoverWithPhraseScreen: React.FC = () => {
@@ -219,9 +218,7 @@ const RecoverWithPhraseScreen: React.FC = () => {
         </Pressable>
       </View>
 
-      {error && (
-        <Text style={styles.errorText}>{ERROR_MESSAGES[error]}</Text>
-      )}
+      {error && <Text style={styles.errorText}>{ERROR_MESSAGES[error]}</Text>}
 
       <SecondaryButton
         disabled={!mnemonic || restoring}
