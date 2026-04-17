@@ -83,6 +83,7 @@ const RecoverWithPhraseScreen: React.FC = () => {
 
   const restoreAccount = useCallback(async () => {
     Keyboard.dismiss();
+    setError(null);
     try {
       setRestoring(true);
       const slimMnemonic = mnemonic?.trim();
