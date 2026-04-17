@@ -15,7 +15,6 @@ import {
   init as sentryInit,
   mobileReplayIntegration,
   setTag,
-  setUser,
   withScope,
   wrap,
 } from '@sentry/react-native';
@@ -306,14 +305,7 @@ export const setSupportUuidInSentry = (supportUuid: string | null) => {
     return;
   }
 
-  if (!supportUuid) {
-    setUser(null);
-    setTag('support_uuid', 'unset');
-    return;
-  }
-
-  setUser({ support_uuid: supportUuid });
-  setTag('support_uuid', supportUuid);
+  setTag('support_uuid', supportUuid ?? 'unset');
 };
 
 export const wrapWithSentry = (App: React.ComponentType) => {

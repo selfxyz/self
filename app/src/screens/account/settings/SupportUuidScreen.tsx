@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback } from 'react';
 import { Alert } from 'react-native';
 import { Button, YStack } from 'tamagui';
 
@@ -20,9 +20,11 @@ import {
   getSupportUuid,
   regenerateSupportUuid,
 } from '@/services/supportUuid';
+import { useSettingStore } from '@/stores/settingStore';
 
 const SupportUuidScreen: React.FC = () => {
-  const [supportUuid, setSupportUuid] = useState(() => getSupportUuid());
+  const supportUuid =
+    useSettingStore(state => state.supportUuid) ?? getSupportUuid();
 
   const handleCopy = useCallback(() => {
     copySupportUuid();
@@ -39,8 +41,7 @@ const SupportUuidScreen: React.FC = () => {
           text: 'Regenerate',
           style: 'destructive',
           onPress: () => {
-            const nextUuid = regenerateSupportUuid();
-            setSupportUuid(nextUuid);
+            regenerateSupportUuid();
             Alert.alert('Updated', 'Diagnostic ID regenerated successfully.');
           },
         },

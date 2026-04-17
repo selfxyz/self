@@ -224,10 +224,24 @@ export const flushAllAnalytics = () => {
   }
 };
 
+const identifyInSegment = (nextSupportUuid: string) => {
+  if (!segmentClient) return;
+  segmentClient.identify(nextSupportUuid).catch(err => {
+    if (__DEV__) console.warn('Failed to identify Segment user:', err);
+  });
+};
+
 export const resetAnalyticsIdentityForSupportUuid = (
   nextSupportUuid: string,
 ) => {
   supportUuid = nextSupportUuid;
+
+  if (segmentClient) {
+    segmentClient.reset().catch(err => {
+      if (__DEV__) console.warn('Failed to reset Segment identity:', err);
+    });
+  }
+  identifyInSegment(nextSupportUuid);
 
   if (PassportReader && typeof PassportReader.resetIdentity === 'function') {
     try {
@@ -252,6 +266,8 @@ export const resetAnalyticsIdentityForSupportUuid = (
 
 export const setAnalyticsSupportUuid = (nextSupportUuid: string) => {
   supportUuid = nextSupportUuid;
+
+  identifyInSegment(nextSupportUuid);
 
   if (PassportReader && typeof PassportReader.setDistinctId === 'function') {
     try {
