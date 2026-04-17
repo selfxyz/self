@@ -166,7 +166,7 @@ const RecoverWithPhraseScreen: React.FC = () => {
     } catch (restoreError) {
       trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_UNKNOWN, {
         reason: 'unexpected_error',
-        error: restoreError instanceof Error ? restoreError.message : 'unknown',
+        error: restoreError instanceof Error ? restoreError.name : 'unknown',
       });
       setError('unexpected_error');
       setRestoring(false);

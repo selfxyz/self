@@ -119,7 +119,9 @@ function handleKeychainReadError({
     if (error instanceof Error) {
       captureException(error, {
         module: 'passport-data-provider',
-        contextLabel,
+        contextLabel: contextLabel.startsWith('document ')
+          ? 'document'
+          : contextLabel,
         errorCode: err?.code,
         errorName: err?.name,
       });

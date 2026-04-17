@@ -73,9 +73,7 @@ export const useProofHistoryStore = create<ProofHistoryState>()((set, get) => {
       });
 
       const disconnectTimer = setTimeout(() => {
-        if (websocket.connected) {
-          websocket.disconnect();
-        }
+        websocket.disconnect();
         // disconnect after 2 minutes
       }, SYNC_THROTTLE_MS * 4);
 
@@ -115,11 +113,13 @@ export const useProofHistoryStore = create<ProofHistoryState>()((set, get) => {
           return;
         }
 
-        if (status === 3) {
-          get().updateProofStatus(requestId, ProofStatus.FAILURE);
-        } else if (status === 4) {
+        if (status !== 3 && status !== 4 && status !== 5) {
+          return;
+        }
+
+        if (status === 4) {
           get().updateProofStatus(requestId, ProofStatus.SUCCESS);
-        } else if (status === 5) {
+        } else {
           get().updateProofStatus(requestId, ProofStatus.FAILURE);
         }
 
