@@ -67,6 +67,10 @@ export const useProofHistoryStore = create<ProofHistoryState>()((set, get) => {
         return;
       }
 
+      const pendingSessionIds = new Set(
+        pendingProofs.rows.map(proof => proof.sessionId),
+      );
+
       const websocket = io(WS_DB_RELAYER, {
         path: '/',
         transports: ['websocket'],
@@ -78,7 +82,9 @@ export const useProofHistoryStore = create<ProofHistoryState>()((set, get) => {
       }, SYNC_THROTTLE_MS * 4);
 
       websocket.on('disconnect', () => {
-        clearTimeout(disconnectTimer);
+        if (!websocket.active) {
+          clearTimeout(disconnectTimer);
+        }
       });
 
       websocket.on('connect_error', error => {
@@ -106,16 +112,20 @@ export const useProofHistoryStore = create<ProofHistoryState>()((set, get) => {
           typeof data.request_id === 'string' ? data.request_id : undefined;
 
         if (!requestId) {
-          console.error(
-            'Proof history status message missing request_id',
-            data,
-          );
+          console.error('Proof history status message missing request_id');
+          return;
+        }
+
+        if (!pendingSessionIds.has(requestId)) {
+          console.error('Proof history status message for unknown request_id');
           return;
         }
 
         if (status !== 3 && status !== 4 && status !== 5) {
           return;
         }
+
+        pendingSessionIds.delete(requestId);
 
         if (status === 4) {
           get().updateProofStatus(requestId, ProofStatus.SUCCESS);

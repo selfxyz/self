@@ -62,6 +62,7 @@ describe('proofHistoryStore', () => {
         return this;
       }),
       disconnect: jest.fn(),
+      active: false,
       connected: false,
     };
     mockIo.mockReturnValue(mockSocket);
@@ -397,27 +398,72 @@ describe('proofHistoryStore', () => {
       );
     });
 
-    it('disconnects after timeout even when never connected', async () => {
-      const setTimeoutSpy = jest.spyOn(global, 'setTimeout');
-
+    it('ignores terminal status updates for unknown request ids', async () => {
       await act(async () => {
         await useProofHistoryStore.getState().initDatabase();
       });
 
-      mockSocket.connected = false;
-      expect(mockSocket.disconnect).not.toHaveBeenCalled();
+      const statusHandler = getHandler('status');
+      (mockSocket.emit as jest.Mock).mockClear();
+      mockDatabase.updateProofStatus.mockClear();
 
-      const disconnectCall = setTimeoutSpy.mock.calls.find(
-        ([, delay]) => delay === 30 * 1000 * 4,
+      statusHandler!({ status: 4, request_id: 'session-other' });
+
+      expect(mockSocket.emit).not.toHaveBeenCalledWith(
+        'unsubscribe',
+        expect.anything(),
       );
-      expect(disconnectCall).toBeDefined();
+      expect(mockDatabase.updateProofStatus).not.toHaveBeenCalled();
+      expect(console.error).toHaveBeenCalledWith(
+        'Proof history status message for unknown request_id',
+      );
+    });
 
-      const disconnectTimer = disconnectCall?.[0] as (() => void) | undefined;
-      disconnectTimer?.();
+    it('keeps the timeout active across reconnectable disconnects', async () => {
+      nowSpy.mockRestore();
+      jest.useFakeTimers();
+      jest.setSystemTime(testClock);
 
-      expect(mockSocket.disconnect).toHaveBeenCalled();
+      try {
+        await act(async () => {
+          await useProofHistoryStore.getState().initDatabase();
+        });
 
-      setTimeoutSpy.mockRestore();
+        const disconnectHandler = getHandler('disconnect');
+        expect(disconnectHandler).toBeDefined();
+
+        mockSocket.active = true;
+        disconnectHandler!();
+
+        await jest.advanceTimersByTimeAsync(30 * 1000 * 4);
+
+        expect(mockSocket.disconnect).toHaveBeenCalled();
+      } finally {
+        jest.useRealTimers();
+        nowSpy = jest.spyOn(Date, 'now').mockImplementation(() => testClock);
+      }
+    });
+
+    it('disconnects after timeout even when never connected', async () => {
+      nowSpy.mockRestore();
+      jest.useFakeTimers();
+      jest.setSystemTime(testClock);
+
+      try {
+        await act(async () => {
+          await useProofHistoryStore.getState().initDatabase();
+        });
+
+        mockSocket.connected = false;
+        expect(mockSocket.disconnect).not.toHaveBeenCalled();
+
+        await jest.advanceTimersByTimeAsync(30 * 1000 * 4);
+
+        expect(mockSocket.disconnect).toHaveBeenCalled();
+      } finally {
+        jest.useRealTimers();
+        nowSpy = jest.spyOn(Date, 'now').mockImplementation(() => testClock);
+      }
     });
   });
 
