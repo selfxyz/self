@@ -16,6 +16,7 @@ export interface KycLaunchConfig {
 }
 
 const FETCH_TIMEOUT_MS = 30000;
+const VERIFICATION_TIMEOUT_MS = 30000;
 
 export const createKycSession = async (): Promise<SessionResponse> => {
   const apiUrl = KYC_TEE_URL;
@@ -66,10 +67,29 @@ export const launchKycVerification = async (
   sessionToken: string,
   config?: KycLaunchConfig,
 ): Promise<KycVerificationResult> => {
-  const result = await startVerification(sessionToken, {
-    languageCode: config?.locale ?? 'en',
-    loggingEnabled: config?.debug ?? __DEV__,
-  });
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
-  return result as KycVerificationResult;
+  try {
+    const result = await Promise.race([
+      startVerification(sessionToken, {
+        languageCode: config?.locale ?? 'en',
+        loggingEnabled: config?.debug ?? __DEV__,
+      }),
+      new Promise<never>((_, reject) => {
+        timeoutId = setTimeout(() => {
+          reject(
+            new Error(
+              `KYC verification timed out after ${VERIFICATION_TIMEOUT_MS / 1000}s`,
+            ),
+          );
+        }, VERIFICATION_TIMEOUT_MS);
+      }),
+    ]);
+
+    return result as KycVerificationResult;
+  } finally {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+  }
 };

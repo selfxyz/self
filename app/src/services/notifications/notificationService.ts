@@ -16,6 +16,63 @@ import { useSettingStore } from '@/stores/settingStore';
 
 export const SELF_UUID_NAMESPACE = '00000000-0000-8000-8000-531f00000000';
 
+const REGISTER_TOKEN_TIMEOUT_MS = 10000;
+const REGISTER_TOKEN_MAX_ATTEMPTS = 3;
+const REGISTER_TOKEN_BASE_BACKOFF_MS = 500;
+
+async function fetchRegisterToken(
+  url: string,
+  body: string,
+): Promise<Response> {
+  let attempt = 0;
+  let lastError: unknown;
+
+  while (attempt < REGISTER_TOKEN_MAX_ATTEMPTS) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(
+      () => controller.abort(),
+      REGISTER_TOKEN_TIMEOUT_MS,
+    );
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body,
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+
+      // Retry only on 5xx; return 2xx/4xx directly for caller to handle.
+      if (response.status < 500) {
+        return response;
+      }
+
+      lastError = new Error(`HTTP ${response.status}`);
+    } catch (err) {
+      clearTimeout(timeoutId);
+      lastError = err;
+    }
+
+    attempt += 1;
+    if (attempt >= REGISTER_TOKEN_MAX_ATTEMPTS) {
+      break;
+    }
+
+    const backoff =
+      REGISTER_TOKEN_BASE_BACKOFF_MS * 2 ** (attempt - 1) +
+      Math.random() * REGISTER_TOKEN_BASE_BACKOFF_MS;
+    await new Promise(resolve => setTimeout(resolve, backoff));
+  }
+
+  throw lastError instanceof Error
+    ? lastError
+    : new Error(String(lastError ?? 'register-token request failed'));
+}
+
 export async function getFCMToken(): Promise<string | null> {
   try {
     const token = await messaging().getToken();
@@ -137,14 +194,10 @@ export async function registerDeviceToken(
       );
     }
 
-    const response = await fetch(`${baseUrl}/register-token`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
-      body: JSON.stringify(deviceTokenRegistration),
-    });
+    const response = await fetchRegisterToken(
+      `${baseUrl}/register-token`,
+      JSON.stringify(deviceTokenRegistration),
+    );
 
     if (!response.ok) {
       const errorText = await response.text();

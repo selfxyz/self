@@ -733,12 +733,14 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
       socket.on('disconnect', (_reason: string) => {
         const currentActor = actor;
+        const currentState = get().currentState;
         selfClient.logProofEvent('warn', 'Socket.IO disconnected', context);
-        if (get().currentState === 'ready_to_prove' && currentActor) {
-          console.error('SocketIO disconnected unexpectedly during proof listening.');
+        if (currentActor && (currentState === 'ready_to_prove' || currentState === 'listening_for_status')) {
+          console.error(`SocketIO disconnected unexpectedly during ${currentState}.`);
           selfClient.trackEvent(ProofEvents.SOCKETIO_DISCONNECT_UNEXPECTED);
           selfClient.logProofEvent('error', 'Socket.IO disconnected unexpectedly', context, {
             failure: 'PROOF_FAILED_CONNECTION',
+            state: currentState,
           });
           currentActor.send({ type: 'PROVE_ERROR' });
         }

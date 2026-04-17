@@ -66,6 +66,7 @@ import { isKycDocument, isMRZDocument } from '@selfxyz/common/utils/types';
 import type { DocumentsAdapter, SelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { getAllDocuments, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
+import { captureException } from '@/config/sentry';
 import { createKeychainOptions } from '@/integrations/keychain';
 import { unsafe_getPrivateKey, useAuth } from '@/providers/authProvider';
 import type { KeychainErrorType } from '@/utils/keychainErrors';
@@ -115,6 +116,14 @@ function handleKeychainReadError({
       code: err?.code,
       name: err?.name,
     });
+    if (error instanceof Error) {
+      captureException(error, {
+        module: 'passport-data-provider',
+        contextLabel,
+        errorCode: err?.code,
+        errorName: err?.name,
+      });
+    }
 
     notifyKeychainFailure('crypto_failed');
   }
