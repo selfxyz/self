@@ -5,17 +5,18 @@
 package xyz.self.minipay.screens
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.interop.UIKitView
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.readValue
 import kotlinx.serialization.json.Json
 import platform.CoreGraphics.CGRectZero
-import platform.Foundation.NSObject
+import platform.darwin.NSObject
 import platform.WebKit.WKScriptMessage
 import platform.WebKit.WKScriptMessageHandlerProtocol
 import platform.WebKit.WKUserContentController
 import platform.WebKit.WKUserScript
-import platform.WebKit.WKUserScriptInjectionTimeAtDocumentStart
+import platform.WebKit.WKUserScriptInjectionTime.WKUserScriptInjectionTimeAtDocumentStart
 import platform.WebKit.WKWebView
 import platform.WebKit.WKWebViewConfiguration
 import xyz.self.minipay.webview.BRIDGE_DEMO_HTML
@@ -34,6 +35,7 @@ private val json = Json { ignoreUnknownKeys = true }
 @Composable
 actual fun PlatformWebViewBridge(registry: MethodRegistry) {
     UIKitView(
+        modifier = Modifier,
         factory = {
             val bridge = IosEthereumBridge(registry)
             val userContentController = WKUserContentController()
@@ -108,7 +110,7 @@ private class IosEthereumBridge(
     }
 
     private fun sendResponseToJs(response: ProviderResponse) {
-        val responseJson = json.encodeToString(response)
+        val responseJson = json.encodeToString(ProviderResponse.serializer(), response)
         val escaped = responseJson.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n")
         val script = "window.__selfEthereumResolve(\"$escaped\");"
         webView?.evaluateJavaScript(script, completionHandler = null)

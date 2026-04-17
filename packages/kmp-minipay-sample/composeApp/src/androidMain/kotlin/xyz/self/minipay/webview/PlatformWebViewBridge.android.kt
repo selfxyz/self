@@ -111,7 +111,7 @@ private class AndroidEthereumBridge(
     }
 
     private fun sendResponseToJs(response: ProviderResponse) {
-        val payload = json.encodeToString(response)
+        val payload = json.encodeToString(ProviderResponse.serializer(), response)
         val escaped = JSONObject.quote(payload)
         webView?.post {
             webView?.evaluateJavascript("window.__selfEthereumResolve($escaped);", null)

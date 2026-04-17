@@ -6,6 +6,7 @@ package xyz.self.minipay.screens
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import xyz.self.minipay.webview.BridgeMethodException
@@ -22,7 +23,7 @@ fun WebViewBridgeScreen() {
                     Result.success(
                         buildJsonObject {
                             put("ok", JsonPrimitive(true))
-                            put("echo", params)
+                            put("echo", params ?: JsonNull)
                         },
                     )
                 }

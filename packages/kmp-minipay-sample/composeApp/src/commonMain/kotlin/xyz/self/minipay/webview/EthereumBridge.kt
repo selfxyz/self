@@ -191,7 +191,7 @@ const val BRIDGE_DEMO_HTML =
         <script>
           const output = document.getElementById('output');
           const log = (label, value) => {
-            output.textContent += `${label}: ${JSON.stringify(value)}\\n`;
+            output.textContent += `${'$'}{label}: ${'$'}{JSON.stringify(value)}\\n`;
           };
 
           async function runEcho() {
