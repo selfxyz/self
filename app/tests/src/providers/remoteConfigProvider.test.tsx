@@ -6,6 +6,7 @@ import type { ReactNode } from 'react';
 import { render, waitFor } from '@testing-library/react-native';
 
 import { initRemoteConfig } from '@/config/remoteConfig';
+import { captureException } from '@/config/sentry';
 import {
   RemoteConfigProvider,
   useRemoteConfig,
@@ -16,8 +17,15 @@ jest.mock('@/config/remoteConfig', () => ({
   initRemoteConfig: jest.fn(),
 }));
 
+jest.mock('@/config/sentry', () => ({
+  captureException: jest.fn(),
+}));
+
 const mockInitRemoteConfig = initRemoteConfig as jest.MockedFunction<
   typeof initRemoteConfig
+>;
+const mockCaptureException = captureException as jest.MockedFunction<
+  typeof captureException
 >;
 
 // Test component that uses the hook
@@ -92,6 +100,9 @@ describe('RemoteConfigProvider', () => {
       'Failed to initialize remote config:',
       expect.any(Error),
     );
+    expect(mockCaptureException).toHaveBeenCalledWith(expect.any(Error), {
+      module: 'remote-config-provider',
+    });
   });
 
   it('should handle non-Error rejection gracefully', async () => {

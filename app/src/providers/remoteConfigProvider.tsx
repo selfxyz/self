@@ -5,6 +5,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 import { initRemoteConfig } from '@/config/remoteConfig';
+import { captureException } from '@/config/sentry';
 
 interface RemoteConfigContextValue {
   isInitialized: boolean;
@@ -29,6 +30,9 @@ export const RemoteConfigProvider: React.FC<{ children: React.ReactNode }> = ({
         setIsInitialized(true);
       } catch (err) {
         console.error('Failed to initialize remote config:', err);
+        if (err instanceof Error) {
+          captureException(err, { module: 'remote-config-provider' });
+        }
         setError(err instanceof Error ? err.message : 'Unknown error');
         // Still set as initialized to not block the app
         setIsInitialized(true);
