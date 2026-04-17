@@ -38,6 +38,7 @@ import {
   getStartupNavigationTarget,
   hasStartupRecoverySignal,
 } from '@/screens/app/startupRouting';
+import { initializeSupportUuidContext } from '@/services/supportUuid';
 import {
   useSettingStore,
   waitForSettingStoreHydration,
@@ -90,6 +91,7 @@ const SplashScreen: React.FC = ({}) => {
             `SplashScreen: migrateFromLegacyStorage complete (${elapsed()})`,
           );
           await waitForSettingStoreHydration();
+          initializeSupportUuidContext();
 
           const needsMigration = await checkIfAnyDocumentsNeedMigration();
           console.log(

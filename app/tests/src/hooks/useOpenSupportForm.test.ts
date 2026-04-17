@@ -34,9 +34,15 @@ describe('useOpenSupportForm', () => {
     });
 
     expect(impactLight).toHaveBeenCalledTimes(1);
-    expect(navigationRef.navigate).toHaveBeenCalledWith('WebView', {
-      url: supportFormUrl,
-      title: 'Get Support',
-    });
+    expect(navigationRef.navigate).toHaveBeenCalledWith(
+      'WebView',
+      expect.objectContaining({
+        title: 'Get Support',
+      }),
+    );
+
+    const [, params] = (navigationRef.navigate as jest.Mock).mock.calls[0];
+    expect(params.url).toContain(supportFormUrl);
+    expect(params.url).toContain('support_uuid=');
   });
 });

@@ -6,6 +6,7 @@ import { Linking } from 'react-native';
 
 import { supportFormUrl } from '@/consts/links';
 import { navigationRef } from '@/navigation';
+import { appendSupportUuidToUrl } from '@/services/supportUuid';
 
 export const SUPPORT_FORM_BUTTON_TEXT = 'Send feedback';
 
@@ -24,13 +25,15 @@ export const SUPPORT_FORM_TIP_MESSAGE = 'Have feedback? Let us know.';
  * Falls back to opening the URL in the system browser if navigation is not ready.
  */
 export const openSupportForm = (): void => {
+  const supportUrl = appendSupportUuidToUrl(supportFormUrl);
+
   if (navigationRef.isReady()) {
     navigationRef.navigate('WebView', {
-      url: supportFormUrl,
+      url: supportUrl,
       title: 'Get Support',
     });
   } else {
-    Linking.openURL(supportFormUrl).catch(err =>
+    Linking.openURL(supportUrl).catch(err =>
       console.warn('Failed to open support form URL:', err),
     );
   }

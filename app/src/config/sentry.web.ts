@@ -195,9 +195,6 @@ export const initSentry = () => {
 
 export const isSentryDisabled = !SENTRY_DSN;
 
-type LogLevel = 'info' | 'warn' | 'error';
-type LogCategory = 'proof' | 'nfc';
-
 export const logEvent = (
   level: LogLevel,
   category: LogCategory,
@@ -253,6 +250,9 @@ export const logEvent = (
   }
 };
 
+type LogLevel = 'info' | 'warn' | 'error';
+type LogCategory = 'proof' | 'nfc';
+
 export const logNFCEvent = (
   level: LogLevel,
   message: string,
@@ -266,6 +266,8 @@ export const logProofEvent = (
   context: ProofContext,
   extra?: Record<string, unknown>,
 ) => logEvent(level, 'proof', message, context, extra);
+
+export const setSupportUuidInSentry = (_supportUuid: string | null) => {};
 
 export const wrapWithSentry = (App: React.ComponentType) => {
   return isSentryDisabled ? App : withProfiler(App);

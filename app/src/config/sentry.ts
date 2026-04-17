@@ -14,6 +14,8 @@ import {
   feedbackIntegration,
   init as sentryInit,
   mobileReplayIntegration,
+  setTag,
+  setUser,
   withScope,
   wrap,
 } from '@sentry/react-native';
@@ -227,9 +229,6 @@ export const isIosSimulator = () =>
 
 export const isSentryDisabled = !SENTRY_DSN;
 
-type LogLevel = 'info' | 'warn' | 'error';
-type LogCategory = 'proof' | 'nfc';
-
 export const logEvent = (
   level: LogLevel,
   category: LogCategory,
@@ -285,6 +284,9 @@ export const logEvent = (
   }
 };
 
+type LogLevel = 'info' | 'warn' | 'error';
+type LogCategory = 'proof' | 'nfc';
+
 export const logNFCEvent = (
   level: LogLevel,
   message: string,
@@ -298,6 +300,21 @@ export const logProofEvent = (
   context: ProofContext,
   extra?: Record<string, unknown>,
 ) => logEvent(level, 'proof', message, context, extra);
+
+export const setSupportUuidInSentry = (supportUuid: string | null) => {
+  if (isSentryDisabled) {
+    return;
+  }
+
+  if (!supportUuid) {
+    setUser(null);
+    setTag('support_uuid', 'unset');
+    return;
+  }
+
+  setUser({ support_uuid: supportUuid });
+  setTag('support_uuid', supportUuid);
+};
 
 export const wrapWithSentry = (App: React.ComponentType) => {
   return isSentryDisabled ? App : wrap(App);

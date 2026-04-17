@@ -19,6 +19,7 @@ import {
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
+import SupportUuidRow from '@/components/support/SupportUuidRow';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { flush as flushAnalytics } from '@/services/analytics';
@@ -64,6 +65,7 @@ const DocumentDataNotFoundScreen: React.FC = () => {
         height={150}
         backgroundColor={white}
       >
+        <SupportUuidRow />
         <PrimaryButton onPress={onPress}>Continue</PrimaryButton>
       </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>

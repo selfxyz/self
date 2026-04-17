@@ -79,6 +79,7 @@ const routes =
         [Cloud, 'Cloud backup', 'CloudBackupSettings'],
         [Settings2 as React.FC<SvgProps>, 'Proof settings', 'ProofSettings'],
         [Feedback, 'Get support', 'support_form'],
+        [Data, 'Diagnostic ID', 'SupportUuid'],
         [ShareIcon, 'Share Self app', 'share'],
         [
           FileText as React.FC<SvgProps>,
@@ -90,6 +91,7 @@ const routes =
         [Data, 'View document info', 'DocumentDataInfo'],
         [Settings2 as React.FC<SvgProps>, 'Proof settings', 'ProofSettings'],
         [Feedback, 'Get support', 'support_form'],
+        [Data, 'Diagnostic ID', 'SupportUuid'],
         [
           FileText as React.FC<SvgProps>,
           'Manage ID documents',
