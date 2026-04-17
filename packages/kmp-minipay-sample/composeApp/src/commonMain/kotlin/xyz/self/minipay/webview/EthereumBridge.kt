@@ -142,8 +142,9 @@ const val ETHEREUM_BRIDGE_STUB =
 
       window.ethereum = {
         __selfBridgeReady: true,
-        request({ method, params } = {}) {
+        request(args) {
           return new Promise((resolve, reject) => {
+            const { method, params } = args || {};
             if (!method || typeof method !== 'string') {
               rejectWithProviderError(reject, {
                 code: -32602,
