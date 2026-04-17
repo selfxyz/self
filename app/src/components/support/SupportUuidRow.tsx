@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Alert } from 'react-native';
 import { Button, XStack, YStack } from 'tamagui';
 
@@ -15,6 +15,7 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import { copySupportUuid, getSupportUuid } from '@/services/supportUuid';
+import { useSettingStore } from '@/stores/settingStore';
 
 interface SupportUuidRowProps {
   collapsedByDefault?: boolean;
@@ -26,7 +27,8 @@ const SupportUuidRow: React.FC<SupportUuidRowProps> = ({
   title = 'Diagnostic ID',
 }) => {
   const [expanded, setExpanded] = useState(!collapsedByDefault);
-  const supportUuid = useMemo(() => getSupportUuid(), []);
+  const supportUuid =
+    useSettingStore(state => state.supportUuid) ?? getSupportUuid();
 
   const handleCopy = useCallback(() => {
     copySupportUuid();

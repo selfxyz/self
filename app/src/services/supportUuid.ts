@@ -32,8 +32,12 @@ export const appendSupportUuidToUrl = (url: string): string => {
     return parsed.toString();
   } catch {
     // Fallback for malformed URLs / unsupported URL parsing edge-cases.
-    const separator = url.includes('?') ? '&' : '?';
-    return `${url}${separator}support_uuid=${encodeURIComponent(supportUuid)}`;
+    // Preserve any fragment by appending the query before `#`.
+    const hashIndex = url.indexOf('#');
+    const baseUrl = hashIndex === -1 ? url : url.slice(0, hashIndex);
+    const hash = hashIndex === -1 ? '' : url.slice(hashIndex);
+    const separator = baseUrl.includes('?') ? '&' : '?';
+    return `${baseUrl}${separator}support_uuid=${encodeURIComponent(supportUuid)}${hash}`;
   }
 };
 
@@ -59,7 +63,6 @@ export const regenerateSupportUuid = (): string => {
   const state = useSettingStore.getState();
   state.setSupportUuid(nextUuid);
 
-  setSupportUuidInSentry(null);
   setSupportUuidInSentry(nextUuid);
   resetAnalyticsIdentityForSupportUuid(nextUuid);
 

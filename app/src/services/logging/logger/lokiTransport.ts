@@ -67,8 +67,6 @@ const sendBatch = async (
           app: 'self-mobile',
           platform: 'react-native',
           level,
-          session_id: sessionId,
-          support_uuid: useSettingStore.getState().supportUuid ?? 'unset',
         },
         values,
       }),
