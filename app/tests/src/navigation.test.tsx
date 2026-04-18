@@ -109,6 +109,7 @@ describe('navigation', () => {
         'SocialLoginDemo',
         'Splash',
         'StarfallPushCode',
+        'SupportUuid',
         'WebView',
       ]);
     });

@@ -22,6 +22,7 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import ShieldErrorIcon from '@/assets/icons/shield_error.svg';
+import SupportUuidRow from '@/components/support/SupportUuidRow';
 import { buttonTap } from '@/integrations/haptics';
 import type { RootStackParamList } from '@/navigation';
 
@@ -75,6 +76,7 @@ const KycFailureScreen: React.FC = () => {
         </Description>
       </YStack>
       <YStack gap={12} paddingHorizontal={24} paddingBottom={32}>
+        <SupportUuidRow />
         <AbstractButton
           bgColor="transparent"
           color={white}

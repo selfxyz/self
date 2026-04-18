@@ -12,6 +12,7 @@ import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { Caption, SecondaryButton } from '@selfxyz/mobile-sdk-alpha/components';
 import { slate500, slate700 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
+import SupportUuidRow from '@/components/support/SupportUuidRow';
 import type { TipProps } from '@/components/Tips';
 import Tips from '@/components/Tips';
 import { useFeedbackAutoHide } from '@/hooks/useFeedbackAutoHide';
@@ -89,6 +90,11 @@ const DocumentNFCTroubleScreen: React.FC = () => {
       onSecondaryButtonPress={goToNFCMethodSelection}
       footer={
         <YStack gap="$3">
+          <SupportUuidRow
+            collapsedByDefault={false}
+            title="Support diagnostic ID"
+          />
+
           <SecondaryButton
             onPress={openSupportForm}
             textColor={slate700}

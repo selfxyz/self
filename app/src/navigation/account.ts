@@ -19,6 +19,7 @@ import CloudBackupScreen from '@/screens/account/settings/CloudBackupScreen';
 import { ProofSettingsScreen } from '@/screens/account/settings/ProofSettingsScreen';
 import SettingsScreen from '@/screens/account/settings/SettingsScreen';
 import ShowRecoveryPhraseScreen from '@/screens/account/settings/ShowRecoveryPhraseScreen';
+import SupportUuidScreen from '@/screens/account/settings/SupportUuidScreen';
 import { IS_EUCLID_ENABLED } from '@/utils/devUtils';
 
 const accountScreens = {
@@ -71,6 +72,20 @@ const accountScreens = {
     screen: ProofSettingsScreen,
     options: {
       title: 'Proof Settings',
+      headerTintColor: black,
+      headerStyle: {
+        backgroundColor: white,
+      },
+      headerTitleStyle: {
+        color: black,
+      },
+    } as NativeStackNavigationOptions,
+  },
+
+  SupportUuid: {
+    screen: SupportUuidScreen,
+    options: {
+      title: 'Diagnostic ID',
       headerTintColor: black,
       headerStyle: {
         backgroundColor: white,

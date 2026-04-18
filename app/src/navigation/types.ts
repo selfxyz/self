@@ -44,6 +44,7 @@ export type AccountRoutesParamList = {
       }
     | undefined;
   ProofSettings: undefined;
+  SupportUuid: undefined;
   AccountVerifiedSuccess: undefined;
 };
 
