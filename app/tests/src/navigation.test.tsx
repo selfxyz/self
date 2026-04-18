@@ -111,6 +111,7 @@ describe('navigation', () => {
         'Splash',
         'StarfallPushCode',
         'Support',
+        'SupportUuid',
         'WebView',
       ]);
     });
