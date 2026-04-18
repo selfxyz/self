@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback } from 'react';
 import { Alert } from 'react-native';
 import { Button, ScrollView, YStack } from 'tamagui';
 
@@ -16,25 +16,17 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import useOpenSupportForm from '@/hooks/useOpenSupportForm';
-import {
-  copySupportUuid,
-  getSupportUuid,
-  regenerateSupportUuid,
-} from '@/services/supportUuid';
-import { useSettingStore } from '@/stores/settingStore';
+import { useSupportUuid } from '@/hooks/useSupportUuid';
 
 const SupportScreen: React.FC = () => {
-  const supportUuid = useSettingStore(state => state.supportUuid);
+  const { supportUuid, copy, regenerate } = useSupportUuid();
   const openSupportForm = useOpenSupportForm();
-
-  useEffect(() => {
-    if (!supportUuid) getSupportUuid();
-  }, [supportUuid]);
+  const diagnosticIdText = supportUuid ?? 'Loading diagnostic ID...';
 
   const handleCopy = useCallback(() => {
-    copySupportUuid();
+    copy();
     Alert.alert('Copied', 'Diagnostic ID copied to clipboard.');
-  }, []);
+  }, [copy]);
 
   const handleRegenerate = useCallback(() => {
     Alert.alert(
@@ -46,13 +38,13 @@ const SupportScreen: React.FC = () => {
           text: 'Regenerate',
           style: 'destructive',
           onPress: () => {
-            regenerateSupportUuid();
+            regenerate();
             Alert.alert('Updated', 'Diagnostic ID regenerated successfully.');
           },
         },
       ],
     );
-  }, []);
+  }, [regenerate]);
 
   return (
     <ScrollView flex={1} backgroundColor={slate100}>
@@ -83,7 +75,7 @@ const SupportScreen: React.FC = () => {
               Diagnostic ID
             </BodyText>
             <BodyText style={{ color: slate500, fontSize: 14 }}>
-              {supportUuid}
+              {diagnosticIdText}
             </BodyText>
           </YStack>
 

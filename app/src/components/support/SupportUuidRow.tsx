@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Alert } from 'react-native';
 import { Button, XStack, YStack } from 'tamagui';
 
@@ -14,8 +14,7 @@ import {
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
-import { copySupportUuid, getSupportUuid } from '@/services/supportUuid';
-import { useSettingStore } from '@/stores/settingStore';
+import { useSupportUuid } from '@/hooks/useSupportUuid';
 
 interface SupportUuidRowProps {
   collapsedByDefault?: boolean;
@@ -27,16 +26,13 @@ const SupportUuidRow: React.FC<SupportUuidRowProps> = ({
   title = 'Diagnostic ID',
 }) => {
   const [expanded, setExpanded] = useState(!collapsedByDefault);
-  const supportUuid = useSettingStore(state => state.supportUuid);
-
-  useEffect(() => {
-    if (!supportUuid) getSupportUuid();
-  }, [supportUuid]);
+  const { supportUuid, copy } = useSupportUuid();
+  const diagnosticIdText = supportUuid ?? 'Loading diagnostic ID...';
 
   const handleCopy = useCallback(() => {
-    copySupportUuid();
+    copy();
     Alert.alert('Copied', 'Diagnostic ID copied to clipboard.');
-  }, []);
+  }, [copy]);
 
   if (!expanded) {
     return (
@@ -65,7 +61,7 @@ const SupportUuidRow: React.FC<SupportUuidRowProps> = ({
     >
       <BodyText style={{ color: black, fontSize: 14 }}>{title}</BodyText>
       <BodyText style={{ color: slate500, fontSize: 13 }}>
-        {supportUuid}
+        {diagnosticIdText}
       </BodyText>
       <XStack justifyContent="space-between" alignItems="center">
         {collapsedByDefault ? (

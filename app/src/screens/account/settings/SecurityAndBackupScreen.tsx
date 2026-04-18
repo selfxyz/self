@@ -31,6 +31,22 @@ interface MenuButtonProps extends PropsWithChildren {
   onPress: () => void;
 }
 
+const MenuSkeletonRow: React.FC = () => (
+  <YStack
+    width="100%"
+    paddingVertical={20}
+    paddingHorizontal={10}
+    borderBottomColor={neutral700}
+    borderBottomWidth={1}
+    opacity={0.5}
+  >
+    <View flexDirection="row" gap={6} alignItems="center">
+      <View width={21} height={24} borderRadius={6} backgroundColor={white} />
+      <View width={170} height={18} borderRadius={6} backgroundColor={white} />
+    </View>
+  </YStack>
+);
+
 const MenuButton: React.FC<MenuButtonProps> = ({ children, Icon, onPress }) => (
   <Button
     unstyled
@@ -69,6 +85,7 @@ const SecurityAndBackupScreen: React.FC = () => {
   // Matches prior Settings gating: iOS always shows Cloud backup; Android
   // shows it only when a real (non-mock) document is present. Recovery phrase
   // is shown on both platforms only when a real document is present.
+  const isAndroidLoading = Platform.OS === 'android' && hasRealDocument === null;
   const showCloudBackup = Platform.OS !== 'android' || hasRealDocument === true;
   const showRecoveryPhrase = hasRealDocument === true;
 
@@ -83,15 +100,24 @@ const SecurityAndBackupScreen: React.FC = () => {
         >
           <ScrollView>
             <YStack alignItems="flex-start" width="100%">
-              {showCloudBackup && (
-                <MenuButton Icon={Cloud} onPress={go('CloudBackupSettings')}>
-                  Cloud backup
-                </MenuButton>
-              )}
-              {showRecoveryPhrase && (
-                <MenuButton Icon={Lock} onPress={go('ShowRecoveryPhrase')}>
-                  Reveal recovery phrase
-                </MenuButton>
+              {isAndroidLoading ? (
+                <>
+                  <MenuSkeletonRow />
+                  <MenuSkeletonRow />
+                </>
+              ) : (
+                <>
+                  {showCloudBackup && (
+                    <MenuButton Icon={Cloud} onPress={go('CloudBackupSettings')}>
+                      Cloud backup
+                    </MenuButton>
+                  )}
+                  {showRecoveryPhrase && (
+                    <MenuButton Icon={Lock} onPress={go('ShowRecoveryPhrase')}>
+                      Reveal recovery phrase
+                    </MenuButton>
+                  )}
+                </>
               )}
             </YStack>
           </ScrollView>
