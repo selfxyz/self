@@ -21,7 +21,6 @@ import SecurityAndBackupScreen from '@/screens/account/settings/SecurityAndBacku
 import SettingsScreen from '@/screens/account/settings/SettingsScreen';
 import ShowRecoveryPhraseScreen from '@/screens/account/settings/ShowRecoveryPhraseScreen';
 import SupportScreen from '@/screens/account/settings/SupportScreen';
-import SupportUuidScreen from '@/screens/account/settings/SupportUuidScreen';
 import { IS_EUCLID_ENABLED } from '@/utils/devUtils';
 
 const accountScreens = {
@@ -87,19 +86,6 @@ const accountScreens = {
     screen: SupportScreen,
     options: {
       title: 'Get support',
-      headerTintColor: black,
-      headerStyle: {
-        backgroundColor: white,
-      },
-      headerTitleStyle: {
-        color: black,
-      },
-    } as NativeStackNavigationOptions,
-  },
-  SupportUuid: {
-    screen: SupportUuidScreen,
-    options: {
-      title: 'Diagnostic ID',
       headerTintColor: black,
       headerStyle: {
         backgroundColor: white,

@@ -8,28 +8,12 @@ import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import SettingsScreen from '@/screens/account/settings/SettingsScreen';
 import SupportScreen from '@/screens/account/settings/SupportScreen';
-import SupportUuidScreen from '@/screens/account/settings/SupportUuidScreen';
 
 const accountScreens = {
   Support: {
     screen: SupportScreen,
     options: {
       title: 'Get support',
-      headerStyle: {
-        backgroundColor: white,
-      },
-      headerTitleStyle: {
-        color: black,
-      },
-    } as NativeStackNavigationOptions,
-    config: {
-      screens: {},
-    },
-  },
-  SupportUuid: {
-    screen: SupportUuidScreen,
-    options: {
-      title: 'Diagnostic ID',
       headerStyle: {
         backgroundColor: white,
       },
