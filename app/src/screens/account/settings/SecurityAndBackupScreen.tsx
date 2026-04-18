@@ -85,7 +85,8 @@ const SecurityAndBackupScreen: React.FC = () => {
   // Matches prior Settings gating: iOS always shows Cloud backup; Android
   // shows it only when a real (non-mock) document is present. Recovery phrase
   // is shown on both platforms only when a real document is present.
-  const isAndroidLoading = Platform.OS === 'android' && hasRealDocument === null;
+  const isAndroidLoading =
+    Platform.OS === 'android' && hasRealDocument === null;
   const showCloudBackup = Platform.OS !== 'android' || hasRealDocument === true;
   const showRecoveryPhrase = hasRealDocument === true;
 
@@ -108,7 +109,10 @@ const SecurityAndBackupScreen: React.FC = () => {
               ) : (
                 <>
                   {showCloudBackup && (
-                    <MenuButton Icon={Cloud} onPress={go('CloudBackupSettings')}>
+                    <MenuButton
+                      Icon={Cloud}
+                      onPress={go('CloudBackupSettings')}
+                    >
                       Cloud backup
                     </MenuButton>
                   )}
