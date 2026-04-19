@@ -34,11 +34,13 @@ const SupportUuidRow: React.FC<SupportUuidRowProps> = ({
     Alert.alert('Copied', 'Diagnostic ID copied to clipboard.');
   }, [copy]);
 
+  const toggle = useCallback(() => setExpanded(prev => !prev), []);
+
   if (!expanded) {
     return (
       <Button
         unstyled
-        onPress={() => setExpanded(true)}
+        onPress={toggle}
         borderWidth={1}
         borderColor={slate200}
         borderRadius={12}
@@ -59,18 +61,13 @@ const SupportUuidRow: React.FC<SupportUuidRowProps> = ({
       gap={8}
       backgroundColor={white}
     >
-      <BodyText style={{ color: black, fontSize: 14 }}>{title}</BodyText>
+      <Button unstyled onPress={toggle} hitSlop={6}>
+        <BodyText style={{ color: black, fontSize: 14 }}>{title}</BodyText>
+      </Button>
       <BodyText style={{ color: slate500, fontSize: 13 }}>
         {diagnosticIdText}
       </BodyText>
-      <XStack justifyContent="space-between" alignItems="center">
-        {collapsedByDefault ? (
-          <Button unstyled onPress={() => setExpanded(false)}>
-            <BodyText style={{ color: slate500 }}>Hide</BodyText>
-          </Button>
-        ) : (
-          <YStack />
-        )}
+      <XStack justifyContent="flex-end" alignItems="center">
         <Button unstyled onPress={handleCopy}>
           <BodyText style={{ color: black }}>Copy</BodyText>
         </Button>

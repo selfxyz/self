@@ -158,10 +158,7 @@ const ComingSoonScreen: React.FC<ComingSoonScreenProps> = ({ route }) => {
         paddingTop={20}
         paddingBottom={20}
       >
-        <SupportUuidRow
-          collapsedByDefault={false}
-          title="Support diagnostic ID"
-        />
+        <SupportUuidRow title="Support diagnostic ID" />
         <PrimaryButton
           onPress={onNotifyMe}
           trackEvent={PassportEvents.NOTIFY_COMING_SOON}

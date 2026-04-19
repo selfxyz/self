@@ -98,6 +98,8 @@ const SecurityAndBackupScreen: React.FC = () => {
           height="100%"
           paddingHorizontal={20}
           paddingBottom={bottom + extraYPadding}
+          borderTopLeftRadius={30}
+          borderTopRightRadius={30}
         >
           <ScrollView>
             <YStack alignItems="flex-start" width="100%">
