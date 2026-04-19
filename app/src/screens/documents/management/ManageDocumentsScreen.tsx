@@ -28,6 +28,7 @@ import {
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
+import useHasRealDocument from '@/hooks/useHasRealDocument';
 import { impactLight } from '@/integrations/haptics';
 import type { RootStackParamList } from '@/navigation';
 import { usePassport } from '@/providers/passportDataProvider';
@@ -400,6 +401,7 @@ const ManageDocumentsScreen: React.FC = () => {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { bottom } = useSafeAreaInsets();
   const { trackEvent } = useSelfClient();
+  const { hasRealDocument } = useHasRealDocument();
 
   useEffect(() => {
     trackEvent(DocumentEvents.MANAGE_SCREEN_OPENED);
@@ -415,6 +417,11 @@ const ManageDocumentsScreen: React.FC = () => {
     impactLight();
     trackEvent(DocumentEvents.ADD_NEW_MOCK_SELECTED);
     navigation.navigate('CreateMock');
+  };
+
+  const handleViewInfo = () => {
+    impactLight();
+    navigation.navigate('DocumentDataInfo');
   };
 
   return (
@@ -434,6 +441,11 @@ const ManageDocumentsScreen: React.FC = () => {
             <PrimaryButton onPress={handleAddDocument}>
               Add New Document
             </PrimaryButton>
+            {hasRealDocument === true && (
+              <SecondaryButton onPress={handleViewInfo}>
+                View Document Info
+              </SecondaryButton>
+            )}
             <SecondaryButton onPress={handleGenerateMock}>
               Generate Mock Document
             </SecondaryButton>

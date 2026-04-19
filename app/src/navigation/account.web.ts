@@ -7,13 +7,13 @@ import type { NativeStackNavigationOptions } from '@react-navigation/native-stac
 import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import SettingsScreen from '@/screens/account/settings/SettingsScreen';
-import SupportUuidScreen from '@/screens/account/settings/SupportUuidScreen';
+import SupportScreen from '@/screens/account/settings/SupportScreen';
 
 const accountScreens = {
-  SupportUuid: {
-    screen: SupportUuidScreen,
+  Support: {
+    screen: SupportScreen,
     options: {
-      title: 'Diagnostic ID',
+      title: 'Get support',
       headerStyle: {
         backgroundColor: white,
       },

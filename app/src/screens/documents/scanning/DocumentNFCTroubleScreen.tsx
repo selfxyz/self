@@ -90,10 +90,7 @@ const DocumentNFCTroubleScreen: React.FC = () => {
       onSecondaryButtonPress={goToNFCMethodSelection}
       footer={
         <YStack gap="$3">
-          <SupportUuidRow
-            collapsedByDefault={false}
-            title="Support diagnostic ID"
-          />
+          <SupportUuidRow title="Support diagnostic ID" />
 
           <SecondaryButton
             onPress={openSupportForm}
