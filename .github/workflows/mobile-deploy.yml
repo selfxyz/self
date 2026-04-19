@@ -1290,9 +1290,9 @@ jobs:
 
           # Fetch PR metadata so the Slack card is informative
           PR_JSON=$(gh api "repos/${{ github.repository }}/pulls/${PR_NUMBER}" --jq '{title,html_url,user:.user.login,body}')
-          PR_TITLE=$(echo "$PR_JSON" | python3 -c 'import json,sys;print(json.load(sys.stdin)["title"])')
-          PR_URL=$(echo "$PR_JSON" | python3 -c 'import json,sys;print(json.load(sys.stdin)["html_url"])')
-          PR_USER=$(echo "$PR_JSON" | python3 -c 'import json,sys;print(json.load(sys.stdin)["user"])')
+          export PR_TITLE=$(echo "$PR_JSON" | python3 -c 'import json,sys;print(json.load(sys.stdin)["title"])')
+          export PR_URL=$(echo "$PR_JSON" | python3 -c 'import json,sys;print(json.load(sys.stdin)["html_url"])')
+          export PR_USER=$(echo "$PR_JSON" | python3 -c 'import json,sys;print(json.load(sys.stdin)["user"])')
 
           python3 <<'PY'
           import json, os, urllib.request

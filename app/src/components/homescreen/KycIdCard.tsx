@@ -201,7 +201,7 @@ const KycIdCard: FC<KycIdCardProps> = ({ idDocument, selected, hidden }) => {
             <YStack
               width={imageSize.width}
               height={imageSize.height}
-              backgroundColor="#F5F5F5"
+              backgroundColor={slate100}
               borderRadius={revealedBorderRadius * 0.5}
               justifyContent="center"
               alignItems="center"
