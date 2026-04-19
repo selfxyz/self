@@ -1,13 +1,30 @@
 name: Find iOS Simulator
-description: Finds an available iPhone simulator on the runner and outputs its UUID.
+description: >-
+  Finds an iPhone simulator to use for an iOS build. If a workspace and scheme
+  are provided, uses `xcodebuild -showdestinations` so only simulators the
+  scheme can actually build for are eligible. Falls back to `simctl list`
+  when no scheme is supplied.
 
 inputs:
   preferred-device:
-    description: Preferred iPhone device name.
+    description: Preferred iPhone device name (substring match allowed).
     required: false
     default: iPhone SE (3rd generation)
   preferred-runtime:
-    description: Preferred iOS runtime version (for example 18.4).
+    description: >-
+      Preferred iOS runtime version (for example 18.4). Soft preference —
+      used as a tiebreaker, not a hard filter, so runner image bumps don't
+      break the pipeline.
+    required: false
+    default: ""
+  workspace:
+    description: >-
+      Path to the .xcworkspace. When set together with `scheme`, eligible
+      simulators are restricted to destinations the scheme supports.
+    required: false
+    default: ""
+  scheme:
+    description: Scheme to query via xcodebuild -showdestinations.
     required: false
     default: ""
 
@@ -19,7 +36,7 @@ outputs:
     description: Name of the selected iPhone simulator
     value: ${{ steps.find.outputs.name }}
   runtime:
-    description: Runtime identifier of the selected iPhone simulator
+    description: Runtime identifier (or OS version) of the selected simulator
     value: ${{ steps.find.outputs.runtime }}
 
 runs:
@@ -28,75 +45,130 @@ runs:
     - id: find
       shell: bash
       run: |
+        set -u
         PREFERRED_DEVICE="${{ inputs.preferred-device }}"
         PREFERRED_RUNTIME="${{ inputs.preferred-runtime }}"
+        WORKSPACE="${{ inputs.workspace }}"
+        SCHEME="${{ inputs.scheme }}"
 
-        SIM_JSON=$(xcrun simctl list devices available -j)
-        SIM_SELECTION=$(SIM_JSON="$SIM_JSON" PREFERRED_DEVICE="$PREFERRED_DEVICE" PREFERRED_RUNTIME="$PREFERRED_RUNTIME" python3 - <<'PY'
+        SOURCE=""
+        PAYLOAD=""
+
+        if [ -n "$WORKSPACE" ] && [ -n "$SCHEME" ]; then
+          echo "Querying xcodebuild -showdestinations for $WORKSPACE / $SCHEME"
+          # -showdestinations writes destinations to stdout; also prints build
+          # settings chatter we don't care about. Capture everything; the
+          # parser filters by `platform:iOS Simulator`.
+          if PAYLOAD=$(xcodebuild -showdestinations -workspace "$WORKSPACE" -scheme "$SCHEME" 2>&1); then
+            SOURCE="xcodebuild"
+          else
+            echo "xcodebuild -showdestinations failed; falling back to simctl" >&2
+          fi
+        fi
+
+        if [ -z "$SOURCE" ]; then
+          echo "Listing simulators via simctl"
+          PAYLOAD=$(xcrun simctl list devices available -j)
+          SOURCE="simctl"
+        fi
+
+        SIM_SELECTION=$(
+          SOURCE="$SOURCE" \
+          PAYLOAD="$PAYLOAD" \
+          PREFERRED_DEVICE="$PREFERRED_DEVICE" \
+          PREFERRED_RUNTIME="$PREFERRED_RUNTIME" \
+          python3 - <<'PY'
         import json
         import os
         import re
         import sys
 
-        data = json.loads(os.environ["SIM_JSON"])
+        source = os.environ["SOURCE"]
+        payload = os.environ["PAYLOAD"]
         preferred_device = os.environ.get("PREFERRED_DEVICE", "").strip().lower()
-        preferred_runtime = os.environ.get("PREFERRED_RUNTIME", "").strip().lower().replace("-", ".")
+        preferred_runtime = os.environ.get("PREFERRED_RUNTIME", "").strip()
+        # Tolerate full runtime identifiers like
+        # "com.apple.CoreSimulator.SimRuntime.iOS-18-4" — reduce to "18.4".
+        rt_match = re.search(r"(\d+(?:[-.]\d+)+)", preferred_runtime)
+        preferred_runtime = rt_match.group(1).replace("-", ".") if rt_match else ""
 
         candidates = []
-        for runtime, devices in data["devices"].items():
-            if "iOS" not in runtime:
-                continue
-            version_match = re.search(r"iOS[- ](\d+(?:[-.]\d+)*)", runtime)
-            runtime_version = version_match.group(1).replace("-", ".") if version_match else ""
-            for device in devices:
-                if not device.get("isAvailable"):
-                    continue
-                if "iPhone" not in device.get("name", ""):
+        if source == "xcodebuild":
+            # Lines look like:
+            # { platform:iOS Simulator, arch:arm64, id:UDID, OS:18.6, name:iPhone 16 }
+            pattern = re.compile(
+                r"platform:iOS Simulator[^}]*?id:([0-9A-Fa-f-]+)[^}]*?OS:([0-9.]+)[^}]*?name:([^,}]+?)\s*(?:,|})"
+            )
+            for match in pattern.finditer(payload):
+                udid, os_version, name = match.groups()
+                name = name.strip()
+                if "iPhone" not in name:
                     continue
                 candidates.append(
                     {
-                        "id": device["udid"],
-                        "name": device["name"],
-                        "runtime": runtime,
-                        "runtime_version": runtime_version,
+                        "id": udid,
+                        "name": name,
+                        "runtime": os_version,
+                        "runtime_version": os_version,
                     }
                 )
+        else:
+            data = json.loads(payload)
+            for runtime, devices in data["devices"].items():
+                if "iOS" not in runtime:
+                    continue
+                version_match = re.search(r"iOS[- ](\d+(?:[-.]\d+)*)", runtime)
+                runtime_version = (
+                    version_match.group(1).replace("-", ".") if version_match else ""
+                )
+                for device in devices:
+                    if not device.get("isAvailable"):
+                        continue
+                    if "iPhone" not in device.get("name", ""):
+                        continue
+                    candidates.append(
+                        {
+                            "id": device["udid"],
+                            "name": device["name"],
+                            "runtime": runtime,
+                            "runtime_version": runtime_version,
+                        }
+                    )
 
-        def runtime_score(candidate):
+        if not candidates:
+            sys.exit(1)
+
+        def version_tuple(candidate):
             version = candidate["runtime_version"]
             if not version:
                 return ()
             return tuple(int(part) for part in version.split("."))
 
-        exact = []
-        partial = []
-        runtime_only = []
-        fallback = []
-        for candidate in candidates:
-            version_ok = not preferred_runtime or candidate["runtime_version"] == preferred_runtime
-            exact_name = preferred_device and candidate["name"].lower() == preferred_device
-            partial_name = preferred_device and preferred_device in candidate["name"].lower()
-            if version_ok and exact_name:
-                exact.append(candidate)
-            elif version_ok and partial_name:
-                partial.append(candidate)
-            elif version_ok:
-                runtime_only.append(candidate)
-            else:
-                fallback.append(candidate)
+        def score(candidate):
+            name_lower = candidate["name"].lower()
+            exact_name = bool(preferred_device) and name_lower == preferred_device
+            partial_name = bool(preferred_device) and preferred_device in name_lower
+            runtime_match = (
+                bool(preferred_runtime)
+                and candidate["runtime_version"] == preferred_runtime
+            )
+            # Higher tuple wins. Name match dominates so we never pick a random
+            # iPhone over the preferred one; runtime match is a soft tiebreaker;
+            # newest OS breaks remaining ties.
+            return (
+                int(exact_name),
+                int(partial_name),
+                int(runtime_match),
+                version_tuple(candidate),
+            )
 
-        for pool in (exact, partial, runtime_only, fallback):
-            if pool:
-                best = sorted(pool, key=runtime_score, reverse=True)[0]
-                print(f'{best["id"]}\t{best["name"]}\t{best["runtime"]}')
-                sys.exit(0)
-
-        sys.exit(1)
+        best = max(candidates, key=score)
+        print(f'{best["id"]}\t{best["name"]}\t{best["runtime"]}')
         PY
         )
 
         if [ -z "$SIM_SELECTION" ]; then
-          echo "No available iPhone simulators found"
+          echo "No eligible iPhone simulators found (source=$SOURCE)"
           exit 1
         fi
 
@@ -104,7 +176,7 @@ runs:
         SIM_NAME=$(printf '%s' "$SIM_SELECTION" | cut -f2)
         SIM_RUNTIME=$(printf '%s' "$SIM_SELECTION" | cut -f3)
 
-        echo "Found simulator: $SIM_NAME ($SIM_ID) [$SIM_RUNTIME]"
+        echo "Selected simulator: $SIM_NAME ($SIM_ID) [$SIM_RUNTIME] via $SOURCE"
         echo "id=$SIM_ID" >> "$GITHUB_OUTPUT"
         echo "name=$SIM_NAME" >> "$GITHUB_OUTPUT"
         echo "runtime=$SIM_RUNTIME" >> "$GITHUB_OUTPUT"
