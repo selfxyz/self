@@ -215,6 +215,23 @@ describe('useReadMRZ', () => {
     });
   });
 
+  it('routes native scan errors into the MRZ fallback flow', () => {
+    const { result } = renderHook(() => useReadMRZ(scanStartTimeRef));
+    const { onPassportRead } = result.current;
+
+    onPassportRead(new Error('Camera crashed'));
+
+    expect(mockSelfClient.trackEvent).toHaveBeenCalledWith(
+      PassportEvents.CAMERA_SCAN_FAILED,
+      expect.objectContaining({
+        reason: 'unknown_error',
+        error: 'Camera crashed',
+        duration_seconds: expect.any(Number),
+      }),
+    );
+    expect(mockSelfClient.emit).toHaveBeenCalledWith(SdkEvents.DOCUMENT_MRZ_READ_FAILURE);
+  });
+
   it('calculates scan duration correctly', () => {
     const { result } = renderHook(() => useReadMRZ(scanStartTimeRef));
     const { onPassportRead } = result.current;

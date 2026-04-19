@@ -40,9 +40,12 @@ export type AccountRoutesParamList = {
   CloudBackupSettings:
     | {
         nextScreen?: 'SaveRecoveryPhrase';
+        returnToScreen?: 'Points';
       }
     | undefined;
   ProofSettings: undefined;
+  Support: undefined;
+  SecurityAndBackup: undefined;
   AccountVerifiedSuccess: undefined;
 };
 
@@ -57,6 +60,9 @@ export type AppRoutesParamList = {
     curveOrExponent?: string;
   };
   Modal: ModalNavigationParams;
+  Gratification: {
+    points?: number;
+  };
   StarfallPushCode: undefined;
 };
 
@@ -127,6 +133,13 @@ export type HomeRoutesParamList = {
   Home: {
     testReferralFlow?: boolean;
   };
+  Points: undefined;
+  PointsInfo:
+    | {
+        showNextButton?: boolean;
+        callbackId?: number;
+      }
+    | undefined;
 };
 
 /**

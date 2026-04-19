@@ -3,13 +3,13 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type { PropsWithChildren } from 'react';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { Linking, Platform, Share, View as RNView } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { SvgProps } from 'react-native-svg';
 import { Button, ScrollView, View, XStack, YStack } from 'tamagui';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Bug, FileText, Settings2 } from '@tamagui/lucide-icons';
 
@@ -24,8 +24,6 @@ import {
 
 import Discord from '@/assets/icons/discord.svg';
 import Github from '@/assets/icons/github.svg';
-import Cloud from '@/assets/icons/settings_cloud_backup.svg';
-import Data from '@/assets/icons/settings_data.svg';
 import Feedback from '@/assets/icons/settings_feedback.svg';
 import Lock from '@/assets/icons/settings_lock.svg';
 import ShareIcon from '@/assets/icons/share.svg';
@@ -42,9 +40,13 @@ import {
   telegramUrl,
   xUrl,
 } from '@/consts/links';
-import useOpenSupportForm from '@/hooks/useOpenSupportForm';
+import useHasRealDocument from '@/hooks/useHasRealDocument';
 import { impactLight } from '@/integrations/haptics';
-import { usePassport } from '@/providers/passportDataProvider';
+import type {
+  SettingsPlatform,
+  SettingsRouteKey,
+} from '@/screens/account/settings/settingsMenu';
+import { buildSettingsMenu } from '@/screens/account/settings/settingsMenu';
 import { useSettingStore } from '@/stores/settingStore';
 import { extraYPadding } from '@/utils/styleUtils';
 
@@ -61,9 +63,6 @@ interface SocialButtonProps {
   onPress?: () => void;
 }
 
-// Avoid importing RootStackParamList; we only need string route names plus a few literals
-type RouteOption = string | 'share' | 'support_form' | 'ManageDocuments';
-
 const storeURL = Platform.OS === 'ios' ? appStoreUrl : playStoreUrl;
 
 const goToStore = () => {
@@ -71,45 +70,17 @@ const goToStore = () => {
   Linking.openURL(storeURL);
 };
 
-const routes =
-  Platform.OS !== 'web'
-    ? ([
-        [Data, 'View document info', 'DocumentDataInfo'],
-        [Lock, 'Reveal recovery phrase', 'ShowRecoveryPhrase'],
-        [Cloud, 'Cloud backup', 'CloudBackupSettings'],
-        [Settings2 as React.FC<SvgProps>, 'Proof settings', 'ProofSettings'],
-        [Feedback, 'Get support', 'support_form'],
-        [ShareIcon, 'Share Self app', 'share'],
-        [
-          FileText as React.FC<SvgProps>,
-          'Manage ID documents',
-          'ManageDocuments',
-        ],
-      ] satisfies [React.FC<SvgProps>, string, RouteOption][])
-    : ([
-        [Data, 'View document info', 'DocumentDataInfo'],
-        [Settings2 as React.FC<SvgProps>, 'Proof settings', 'ProofSettings'],
-        [Feedback, 'Get support', 'support_form'],
-        [
-          FileText as React.FC<SvgProps>,
-          'Manage ID documents',
-          'ManageDocuments',
-        ],
-      ] satisfies [React.FC<SvgProps>, string, RouteOption][]);
+const CURRENT_PLATFORM: SettingsPlatform =
+  Platform.OS === 'ios' ? 'ios' : Platform.OS === 'android' ? 'android' : 'web';
 
-// get the actual type of the routes so we can use in the onMenuPress function so it
-// doesnt worry about us linking to screens with required props which we dont want to go to anyway
-type RouteLinks = (typeof routes)[number][2] | (typeof DEBUG_MENU)[number][2];
-
-const DEBUG_MENU: [React.FC<SvgProps>, string, RouteOption][] = [
-  [Bug as React.FC<SvgProps>, 'Debug menu', 'DevSettings'],
-];
-
-const DOCUMENT_DEPENDENT_ROUTES: RouteOption[] = [
-  'DocumentDataInfo',
-  'ShowRecoveryPhrase',
-];
-const CLOUD_BACKUP_ROUTE: RouteOption = 'CloudBackupSettings';
+const ROUTE_ICONS: Record<SettingsRouteKey, React.FC<SvgProps>> = {
+  ManageDocuments: FileText as React.FC<SvgProps>,
+  SecurityAndBackup: Lock,
+  ProofSettings: Settings2 as React.FC<SvgProps>,
+  Support: Feedback,
+  share: ShareIcon,
+  DevSettings: Bug as React.FC<SvgProps>,
+};
 
 const social = [
   [X, xUrl],
@@ -162,54 +133,23 @@ const SocialButton: React.FC<SocialButtonProps> = ({
 
 const SettingsScreen: React.FC = () => {
   const { isDevMode, setDevModeOn } = useSettingStore();
-  const openSupportForm = useOpenSupportForm();
   const navigation =
     useNavigation<NativeStackNavigationProp<MinimalRootStackParamList>>();
-  const { loadDocumentCatalog } = usePassport();
+  const { hasRealDocument } = useHasRealDocument('SettingsScreen');
   const openSelfWebsite = useCallback(() => {
     impactLight();
     navigation.navigate('WebView', { url: selfUrl, title: 'Self' });
   }, [navigation]);
-  const [hasRealDocument, setHasRealDocument] = useState<boolean | null>(null);
 
-  const refreshDocumentAvailability = useCallback(async () => {
-    try {
-      const catalog = await loadDocumentCatalog();
-      if (!catalog?.documents || !Array.isArray(catalog.documents)) {
-        console.warn('SettingsScreen: invalid catalog structure');
-        setHasRealDocument(false);
-        return;
-      }
-      setHasRealDocument(catalog.documents.some(doc => !doc.mock));
-    } catch {
-      console.warn('SettingsScreen: failed to load document catalog');
-      setHasRealDocument(false);
-    }
-  }, [loadDocumentCatalog]);
-
-  useFocusEffect(
-    useCallback(() => {
-      refreshDocumentAvailability();
-    }, [refreshDocumentAvailability]),
+  const screenRoutes = useMemo(
+    () =>
+      buildSettingsMenu({
+        platform: CURRENT_PLATFORM,
+        hasRealDocument: hasRealDocument === true,
+        isDevMode,
+      }),
+    [hasRealDocument, isDevMode],
   );
-
-  const screenRoutes = useMemo(() => {
-    const baseRoutes = isDevMode ? [...routes, ...DEBUG_MENU] : routes;
-    const shouldHideCloudBackup = Platform.OS === 'android';
-    const hasConfirmedRealDocument = hasRealDocument === true;
-
-    return baseRoutes.filter(([, , route]) => {
-      if (DOCUMENT_DEPENDENT_ROUTES.includes(route)) {
-        return hasConfirmedRealDocument;
-      }
-
-      if (shouldHideCloudBackup && route === CLOUD_BACKUP_ROUTE) {
-        return hasConfirmedRealDocument;
-      }
-
-      return true;
-    });
-  }, [hasRealDocument, isDevMode]);
 
   const devModeTap = Gesture.Tap()
     .numberOfTaps(5)
@@ -218,7 +158,7 @@ const SettingsScreen: React.FC = () => {
     });
 
   const onMenuPress = useCallback(
-    (menuRoute: RouteLinks) => {
+    (menuRoute: SettingsRouteKey) => {
       return async () => {
         impactLight();
         switch (menuRoute) {
@@ -230,21 +170,13 @@ const SettingsScreen: React.FC = () => {
             );
             break;
 
-          case 'support_form':
-            openSupportForm();
-            break;
-
-          case 'ManageDocuments':
-            navigation.navigate('ManageDocuments');
-            break;
-
           default:
             navigation.navigate(menuRoute as never);
             break;
         }
       };
     },
-    [navigation, openSupportForm],
+    [navigation],
   );
   const { bottom } = useSafeAreaInsets();
   return (
@@ -267,15 +199,13 @@ const SettingsScreen: React.FC = () => {
                 justifyContent="flex-start"
                 width="100%"
               >
-                {screenRoutes.map(([Icon, menuText, menuRoute], idx) => (
+                {screenRoutes.map(({ label, route }) => (
                   <MenuButton
-                    key={
-                      typeof menuRoute === 'string' ? menuRoute : String(idx)
-                    }
-                    Icon={Icon}
-                    onPress={onMenuPress(menuRoute)}
+                    key={route}
+                    Icon={ROUTE_ICONS[route]}
+                    onPress={onMenuPress(route)}
                   >
-                    {menuText}
+                    {label}
                   </MenuButton>
                 ))}
               </YStack>

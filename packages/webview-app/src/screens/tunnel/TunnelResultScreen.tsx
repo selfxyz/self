@@ -12,6 +12,7 @@ import type { VerificationResult } from '@selfxyz/webview-bridge';
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { useVerificationRequest } from '../../providers/VerificationRequestProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
+import { isDemoMode } from '../../utils/mockOnboardingFlow';
 
 interface TunnelResultState {
   success?: boolean;
@@ -44,7 +45,22 @@ export const TunnelResultScreen: React.FC = () => {
     analytics.trackEvent('tunnel_result_failure', { error });
   }, [success, error, analytics]);
 
+  const demo = isDemoMode(location.search);
+
   const onContinue = useCallback(async () => {
+    if (demo) {
+      const demoResult: VerificationResult = {
+        success: true,
+        userId: request.userId,
+        verificationId,
+        claims: { resultType: 'proofRequested' },
+      };
+      await lifecycle.setResult(demoResult);
+      analytics.trackEvent('tunnel_result_success');
+      lifecycle.dismiss();
+      return;
+    }
+
     try {
       const result: VerificationResult = {
         success: true,
@@ -60,7 +76,7 @@ export const TunnelResultScreen: React.FC = () => {
         error: err instanceof Error ? err.message : 'Failed to send result',
       });
     }
-  }, [request.userId, verificationId, lifecycle, analytics]);
+  }, [demo, request.userId, verificationId, lifecycle, analytics]);
 
   const onRetry = useCallback(() => {
     navigate(getTunnelBackPath(source), { replace: true });

@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
-import { useIsFocused } from '@react-navigation/native';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
 import {
   act,
   fireEvent,
@@ -47,6 +47,7 @@ jest.mock('react-native', () => ({
 
 jest.mock('@react-navigation/native', () => ({
   useIsFocused: jest.fn(),
+  useNavigation: jest.fn(),
 }));
 
 jest.mock('tamagui', () => ({
@@ -126,6 +127,10 @@ jest.mock('@/layouts/ExpandableBottomLayout', () => ({
   },
 }));
 
+jest.mock('@/services/points/utils', () => ({
+  getWhiteListedDisclosureAddresses: jest.fn(),
+}));
+
 jest.mock('@/stores/proofHistoryStore', () => ({
   useProofHistoryStore: jest.fn(),
 }));
@@ -147,6 +152,11 @@ const { buttonTap, notificationSuccess } = jest.requireMock(
   buttonTap: jest.Mock;
   notificationSuccess: jest.Mock;
 };
+const { getWhiteListedDisclosureAddresses } = jest.requireMock(
+  '@/services/points/utils',
+) as {
+  getWhiteListedDisclosureAddresses: jest.Mock;
+};
 const { useProofHistoryStore } = jest.requireMock(
   '@/stores/proofHistoryStore',
 ) as {
@@ -155,6 +165,7 @@ const { useProofHistoryStore } = jest.requireMock(
 
 describe('ProofRequestStatusScreen', () => {
   const mockGoHome = jest.fn();
+  const mockNavigate = jest.fn();
   const mockTrackEvent = jest.fn();
   const mockCleanSelfApp = jest.fn();
   const mockUpdateProofStatus = jest.fn();
@@ -169,6 +180,7 @@ describe('ProofRequestStatusScreen', () => {
     selfApp: {
       appName: string;
       deeplinkCallback: string | null;
+      endpoint?: string | null;
     };
   };
 
@@ -186,14 +198,19 @@ describe('ProofRequestStatusScreen', () => {
       selfApp: {
         appName: 'Verifier',
         deeplinkCallback: null,
+        endpoint: null,
       },
     };
 
     (useIsFocused as jest.Mock).mockReturnValue(true);
+    (useNavigation as jest.Mock).mockReturnValue({
+      navigate: mockNavigate,
+    });
     useHapticNavigation.mockReturnValue(mockGoHome);
     useProofHistoryStore.mockReturnValue({
       updateProofStatus: mockUpdateProofStatus,
     });
+    getWhiteListedDisclosureAddresses.mockResolvedValue([]);
 
     const useProvingStore = Object.assign(
       (selector: (state: typeof provingState) => unknown) =>
@@ -248,8 +265,41 @@ describe('ProofRequestStatusScreen', () => {
     });
   });
 
+  it('navigates to Gratification when the endpoint is whitelisted for points', async () => {
+    selfAppState.selfApp.endpoint = '0xABC';
+    getWhiteListedDisclosureAddresses.mockResolvedValue([
+      {
+        contract_address: '0xabc',
+        points_per_disclosure: 25,
+      },
+    ]);
+
+    render(<ProofRequestStatusScreen />);
+
+    await waitFor(() => {
+      expect(getWhiteListedDisclosureAddresses).toHaveBeenCalledTimes(1);
+    });
+
+    fireEvent.press(screen.getByTestId('primary-button'));
+
+    expect(mockNavigate).toHaveBeenCalledWith('Gratification', {
+      points: 25,
+    });
+    expect(mockGoHome).not.toHaveBeenCalled();
+
+    act(() => {
+      jest.advanceTimersByTime(2000);
+    });
+
+    expect(mockCleanSelfApp).toHaveBeenCalledTimes(1);
+  });
+
   it('does not clear self app state if a newer session replaces the completed one', async () => {
     render(<ProofRequestStatusScreen />);
+
+    await waitFor(() => {
+      expect(mockUpdateProofStatus).toHaveBeenCalled();
+    });
 
     fireEvent.press(screen.getByTestId('primary-button'));
     provingState.uuid = 'session-2';

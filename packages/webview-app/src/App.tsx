@@ -55,6 +55,7 @@ import { TunnelCountryPickerScreen } from './screens/tunnel/TunnelCountryPickerS
 import { TunnelDiscloseScreen } from './screens/tunnel/TunnelDiscloseScreen';
 import { TunnelIDTypeScreen } from './screens/tunnel/TunnelIDTypeScreen';
 import { TunnelKycFailureScreen } from './screens/tunnel/TunnelKycFailureScreen';
+import { TunnelKycPendingScreen } from './screens/tunnel/TunnelKycPendingScreen';
 import { TunnelKycSuccessScreen } from './screens/tunnel/TunnelKycSuccessScreen';
 import { TunnelKycWrapper } from './screens/tunnel/TunnelKycWrapper';
 import { TunnelProofReceiptScreen } from './screens/tunnel/TunnelProofReceiptScreen';
@@ -112,6 +113,7 @@ export const App: React.FC = () => (
             <Route path="/coming-soon" element={<ComingSoonScreen />} />
             <Route path="/tunnel/tour/:step" element={<TunnelTourScreen />} />
             <Route path="/tunnel/kyc" element={<TunnelKycWrapper />} />
+            {import.meta.env.DEV && <Route path="/tunnel/kyc-pending" element={<TunnelKycPendingScreen />} />}
             <Route path="/tunnel/kyc-failure" element={<TunnelKycFailureScreen />} />
             <Route path="/tunnel/kyc-success" element={<TunnelKycSuccessScreen />} />
             <Route path="/tunnel/registration/country" element={<TunnelCountryPickerScreen />} />

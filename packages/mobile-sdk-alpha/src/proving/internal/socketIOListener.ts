@@ -38,6 +38,10 @@ export const startSocketIOStatusListener = (
   const context = createProofContext(selfClient, '_startSocketIOStatusListener');
   selfClient.logProofEvent('info', 'Socket.IO listener started', context, { url });
 
+  // Guards against racing the intentional post-terminal-status disconnect
+  // into a spurious PROVE_ERROR in the disconnect handler.
+  let terminalStatusHandled = false;
+
   socket.on('connect', () => {
     socket?.emit('subscribe', receivedUuid);
     selfClient.trackEvent(ProofEvents.SOCKETIO_SUBSCRIBED);
@@ -59,12 +63,18 @@ export const startSocketIOStatusListener = (
 
   socket.on('disconnect', (_reason: string) => {
     const currentActor = deps.getActor();
+    const currentState = get().currentState;
     selfClient.logProofEvent('warn', 'Socket.IO disconnected', context);
-    if (get().currentState === 'ready_to_prove' && currentActor) {
-      console.error('SocketIO disconnected unexpectedly during proof listening.');
+    if (terminalStatusHandled) {
+      set({ socketConnection: null });
+      return;
+    }
+    if (currentActor && (currentState === 'ready_to_prove' || currentState === 'listening_for_status')) {
+      console.error(`SocketIO disconnected unexpectedly during ${currentState}.`);
       selfClient.trackEvent(ProofEvents.SOCKETIO_DISCONNECT_UNEXPECTED);
       selfClient.logProofEvent('error', 'Socket.IO disconnected unexpectedly', context, {
         failure: 'PROOF_FAILED_CONNECTION',
+        state: currentState,
       });
       currentActor.send({ type: 'PROVE_ERROR' });
     }
@@ -114,6 +124,7 @@ export const startSocketIOStatusListener = (
 
       // Handle disconnection
       if (result.shouldDisconnect) {
+        terminalStatusHandled = true;
         socket?.disconnect();
       }
     } catch (error) {
