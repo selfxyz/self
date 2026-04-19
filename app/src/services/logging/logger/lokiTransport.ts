@@ -7,6 +7,7 @@ import { AppState } from 'react-native';
 import type { transportFunctionType } from 'react-native-logs';
 
 import { registerDocumentChangeCallback } from '@/providers/passportDataProvider';
+import { useSettingStore } from '@/stores/settingStore';
 
 import {
   GRAFANA_LOKI_PASSWORD,
@@ -66,7 +67,6 @@ const sendBatch = async (
           app: 'self-mobile',
           platform: 'react-native',
           level,
-          session_id: sessionId,
         },
         values,
       }),
@@ -199,12 +199,14 @@ const lokiTransport: transportFunctionType<LokiTransportOptions> = props => {
     message: string;
     timestamp: string;
     session_id: string;
+    support_uuid: string;
     data?: unknown;
   } = {
     level: level.text,
     message: actualMessage,
     timestamp,
     session_id: sessionId,
+    support_uuid: useSettingStore.getState().supportUuid ?? 'unset',
   };
 
   if (actualData) {

@@ -38,6 +38,7 @@ import {
   getStartupNavigationTarget,
   hasStartupRecoverySignal,
 } from '@/screens/app/startupRouting';
+import { initializeSupportUuidContext } from '@/services/supportUuid';
 import {
   useSettingStore,
   waitForSettingStoreHydration,
@@ -90,6 +91,14 @@ const SplashScreen: React.FC = ({}) => {
             `SplashScreen: migrateFromLegacyStorage complete (${elapsed()})`,
           );
           await waitForSettingStoreHydration();
+          try {
+            initializeSupportUuidContext();
+          } catch (error) {
+            console.warn(
+              'SplashScreen: failed to initialize support UUID context',
+              error,
+            );
+          }
 
           const needsMigration = await checkIfAnyDocumentsNeedMigration();
           console.log(

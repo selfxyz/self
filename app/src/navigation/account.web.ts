@@ -7,8 +7,24 @@ import type { NativeStackNavigationOptions } from '@react-navigation/native-stac
 import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import SettingsScreen from '@/screens/account/settings/SettingsScreen';
+import SupportUuidScreen from '@/screens/account/settings/SupportUuidScreen';
 
 const accountScreens = {
+  SupportUuid: {
+    screen: SupportUuidScreen,
+    options: {
+      title: 'Diagnostic ID',
+      headerStyle: {
+        backgroundColor: white,
+      },
+      headerTitleStyle: {
+        color: black,
+      },
+    } as NativeStackNavigationOptions,
+    config: {
+      screens: {},
+    },
+  },
   Settings: {
     screen: SettingsScreen,
     options: {
