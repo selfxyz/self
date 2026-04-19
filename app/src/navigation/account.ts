@@ -17,9 +17,10 @@ import DocumentDataNotFoundScreen from '@/screens/account/recovery/DocumentDataN
 import RecoverWithPhraseScreen from '@/screens/account/recovery/RecoverWithPhraseScreen';
 import CloudBackupScreen from '@/screens/account/settings/CloudBackupScreen';
 import { ProofSettingsScreen } from '@/screens/account/settings/ProofSettingsScreen';
+import SecurityAndBackupScreen from '@/screens/account/settings/SecurityAndBackupScreen';
 import SettingsScreen from '@/screens/account/settings/SettingsScreen';
 import ShowRecoveryPhraseScreen from '@/screens/account/settings/ShowRecoveryPhraseScreen';
-import SupportUuidScreen from '@/screens/account/settings/SupportUuidScreen';
+import SupportScreen from '@/screens/account/settings/SupportScreen';
 import { IS_EUCLID_ENABLED } from '@/utils/devUtils';
 
 const accountScreens = {
@@ -81,11 +82,23 @@ const accountScreens = {
       },
     } as NativeStackNavigationOptions,
   },
-
-  SupportUuid: {
-    screen: SupportUuidScreen,
+  Support: {
+    screen: SupportScreen,
     options: {
-      title: 'Diagnostic ID',
+      title: 'Get support',
+      headerTintColor: black,
+      headerStyle: {
+        backgroundColor: white,
+      },
+      headerTitleStyle: {
+        color: black,
+      },
+    } as NativeStackNavigationOptions,
+  },
+  SecurityAndBackup: {
+    screen: SecurityAndBackupScreen,
+    options: {
+      title: 'Security & backup',
       headerTintColor: black,
       headerStyle: {
         backgroundColor: white,

@@ -65,10 +65,7 @@ const QRCodeTrouble: React.FC = () => {
       onDismiss={go}
       footer={
         <View gap={12}>
-          <SupportUuidRow
-            collapsedByDefault={false}
-            title="Support diagnostic ID"
-          />
+          <SupportUuidRow title="Support diagnostic ID" />
           <SecondaryButton onPress={openSupportForm}>
             {SUPPORT_FORM_BUTTON_TEXT}
           </SecondaryButton>
