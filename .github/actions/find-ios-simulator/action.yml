@@ -70,6 +70,7 @@ runs:
 
         exact = []
         partial = []
+        runtime_only = []
         fallback = []
         for candidate in candidates:
             version_ok = not preferred_runtime or candidate["runtime_version"] == preferred_runtime
@@ -79,19 +80,16 @@ runs:
                 exact.append(candidate)
             elif version_ok and partial_name:
                 partial.append(candidate)
+            elif version_ok:
+                runtime_only.append(candidate)
             else:
                 fallback.append(candidate)
 
-        for pool in (exact, partial):
+        for pool in (exact, partial, runtime_only, fallback):
             if pool:
                 best = sorted(pool, key=runtime_score, reverse=True)[0]
                 print(f'{best["id"]}\t{best["name"]}\t{best["runtime"]}')
                 sys.exit(0)
-
-        if candidates:
-            best = sorted(candidates, key=runtime_score, reverse=True)[0]
-            print(f'{best["id"]}\t{best["name"]}\t{best["runtime"]}')
-            sys.exit(0)
 
         sys.exit(1)
         PY
