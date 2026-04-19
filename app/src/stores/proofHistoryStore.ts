@@ -35,6 +35,19 @@ const SYNC_THROTTLE_MS = 30 * 1000; // 30 seconds throttle for sync calls
 export const useProofHistoryStore = create<ProofHistoryState>()((set, get) => {
   let lastSyncTime = 0; // Track last sync time for throttling
 
+  const parseStatusMessage = (message: unknown) => {
+    if (typeof message !== 'string') {
+      return message as Record<string, unknown>;
+    }
+
+    try {
+      return JSON.parse(message) as Record<string, unknown>;
+    } catch (error) {
+      console.error('Invalid websocket status payload', error);
+      return null;
+    }
+  };
+
   const syncProofHistoryStatus = async () => {
     try {
       // Throttling mechanism - prevent sync if called too frequently
@@ -54,16 +67,33 @@ export const useProofHistoryStore = create<ProofHistoryState>()((set, get) => {
         return;
       }
 
+      const pendingSessionIds = new Set(
+        pendingProofs.rows.map(proof => proof.sessionId),
+      );
+
       const websocket = io(WS_DB_RELAYER, {
         path: '/',
         transports: ['websocket'],
       });
-      setTimeout(() => {
-        if (websocket.connected) {
-          websocket.disconnect();
-        }
+
+      const disconnectTimer = setTimeout(() => {
+        websocket.disconnect();
         // disconnect after 2 minutes
       }, SYNC_THROTTLE_MS * 4);
+
+      websocket.on('disconnect', () => {
+        if (!websocket.active) {
+          clearTimeout(disconnectTimer);
+        }
+      });
+
+      websocket.on('connect_error', error => {
+        console.error('Proof history websocket connection error', error);
+      });
+
+      websocket.on('error', error => {
+        console.error('Proof history websocket error', error);
+      });
 
       for (let i = 0; i < pendingProofs.rows.length; i++) {
         const proof = pendingProofs.rows[i];
@@ -71,17 +101,39 @@ export const useProofHistoryStore = create<ProofHistoryState>()((set, get) => {
       }
 
       websocket.timeout(SYNC_THROTTLE_MS * 3).on('status', message => {
-        const data =
-          typeof message === 'string' ? JSON.parse(message) : message;
+        const data = parseStatusMessage(message);
 
-        if (data.status === 3) {
-          get().updateProofStatus(data.request_id, ProofStatus.FAILURE);
-        } else if (data.status === 4) {
-          get().updateProofStatus(data.request_id, ProofStatus.SUCCESS);
-        } else if (data.status === 5) {
-          get().updateProofStatus(data.request_id, ProofStatus.FAILURE);
+        if (!data) {
+          return;
         }
-        websocket.emit('unsubscribe', data.request_id);
+
+        const status = Number(data.status);
+        const requestId =
+          typeof data.request_id === 'string' ? data.request_id : undefined;
+
+        if (!requestId) {
+          console.error('Proof history status message missing request_id');
+          return;
+        }
+
+        if (!pendingSessionIds.has(requestId)) {
+          console.error('Proof history status message for unknown request_id');
+          return;
+        }
+
+        if (status !== 3 && status !== 4 && status !== 5) {
+          return;
+        }
+
+        pendingSessionIds.delete(requestId);
+
+        if (status === 4) {
+          get().updateProofStatus(requestId, ProofStatus.SUCCESS);
+        } else {
+          get().updateProofStatus(requestId, ProofStatus.FAILURE);
+        }
+
+        websocket.emit('unsubscribe', requestId);
       });
     } catch (error) {
       console.error('Error syncing proof status', error);

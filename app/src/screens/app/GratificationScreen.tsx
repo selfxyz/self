@@ -50,7 +50,7 @@ const GratificationScreen: React.FC = () => {
   };
 
   const handleBackPress = () => {
-    navigation.navigate('Points');
+    navigation.goBack();
   };
 
   const handleAnimationFinish = useCallback(() => {

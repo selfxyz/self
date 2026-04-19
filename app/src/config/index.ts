@@ -30,6 +30,7 @@ export {
   logEvent,
   logNFCEvent,
   logProofEvent,
+  setSupportUuidInSentry,
   wrapWithSentry,
 } from '@/config/sentry';
 
