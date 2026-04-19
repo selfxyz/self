@@ -9,13 +9,14 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { KycPendingScreen } from '@selfxyz/euclid';
 
 import { WEB_SAFE_AREA } from '../../utils/insets';
-import { createMockProviderResult } from '../../utils/mockOnboardingFlow';
+import { createMockProviderResult, isDemoMode } from '../../utils/mockOnboardingFlow';
 
 export const TunnelKycPendingScreen: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
   const handleTap = useCallback(() => {
+    if (!isDemoMode(location.search)) return;
     navigate(`/tunnel/kyc-success${location.search}`, {
       state: { providerResult: createMockProviderResult({ outcome: 'demo' }) },
     });
