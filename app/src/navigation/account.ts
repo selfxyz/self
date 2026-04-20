@@ -17,8 +17,10 @@ import DocumentDataNotFoundScreen from '@/screens/account/recovery/DocumentDataN
 import RecoverWithPhraseScreen from '@/screens/account/recovery/RecoverWithPhraseScreen';
 import CloudBackupScreen from '@/screens/account/settings/CloudBackupScreen';
 import { ProofSettingsScreen } from '@/screens/account/settings/ProofSettingsScreen';
+import SecurityAndBackupScreen from '@/screens/account/settings/SecurityAndBackupScreen';
 import SettingsScreen from '@/screens/account/settings/SettingsScreen';
 import ShowRecoveryPhraseScreen from '@/screens/account/settings/ShowRecoveryPhraseScreen';
+import SupportScreen from '@/screens/account/settings/SupportScreen';
 import { IS_EUCLID_ENABLED } from '@/utils/devUtils';
 
 const accountScreens = {
@@ -58,6 +60,7 @@ const accountScreens = {
     screen: CloudBackupScreen,
     options: {
       title: 'Account Backup',
+      headerTintColor: black,
       headerStyle: {
         backgroundColor: white,
       },
@@ -70,6 +73,33 @@ const accountScreens = {
     screen: ProofSettingsScreen,
     options: {
       title: 'Proof Settings',
+      headerTintColor: black,
+      headerStyle: {
+        backgroundColor: white,
+      },
+      headerTitleStyle: {
+        color: black,
+      },
+    } as NativeStackNavigationOptions,
+  },
+  Support: {
+    screen: SupportScreen,
+    options: {
+      title: 'Get support',
+      headerTintColor: black,
+      headerStyle: {
+        backgroundColor: white,
+      },
+      headerTitleStyle: {
+        color: black,
+      },
+    } as NativeStackNavigationOptions,
+  },
+  SecurityAndBackup: {
+    screen: SecurityAndBackupScreen,
+    options: {
+      title: 'Security & backup',
+      headerTintColor: black,
       headerStyle: {
         backgroundColor: white,
       },
@@ -83,6 +113,8 @@ const accountScreens = {
     options: {
       animation: 'slide_from_bottom',
       title: 'Settings',
+      headerBackTitle: 'close',
+      headerTintColor: black,
       headerStyle: {
         backgroundColor: white,
       },
@@ -106,6 +138,7 @@ const accountScreens = {
         } as NativeStackNavigationOptions)
       : ({
           title: 'Recovery Phrase',
+          headerTintColor: black,
           headerStyle: {
             backgroundColor: white,
           },

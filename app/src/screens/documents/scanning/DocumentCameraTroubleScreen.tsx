@@ -14,10 +14,11 @@ import PassportCameraBulb from '@/assets/icons/passport_camera_bulb.svg';
 import PassportCameraScan from '@/assets/icons/passport_camera_scan.svg';
 import QrScan from '@/assets/icons/qr_scan.svg';
 import Star from '@/assets/icons/star.svg';
+import SupportUuidRow from '@/components/support/SupportUuidRow';
 import type { TipProps } from '@/components/Tips';
 import Tips from '@/components/Tips';
-import { useDiditLauncher } from '@/hooks/useDiditLauncher';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
+import { useKycLauncher } from '@/hooks/useKycLauncher';
 import SimpleScrolledTitleLayout from '@/layouts/SimpleScrolledTitleLayout';
 import { flush as flushAnalytics } from '@/services/analytics';
 
@@ -54,7 +55,7 @@ const DocumentCameraTroubleScreen: React.FC = () => {
   const selfClient = useSelfClient();
   const { useMRZStore } = selfClient;
   const { countryCode } = useMRZStore();
-  const { launchDiditVerification, isLoading } = useDiditLauncher({
+  const { launchKycVerification, isLoading } = useKycLauncher({
     countryCode,
     errorSource: 'mrz_scan_failed',
   });
@@ -87,8 +88,10 @@ const DocumentCameraTroubleScreen: React.FC = () => {
             Or try an alternative verification method:
           </Caption>
 
+          <SupportUuidRow />
+
           <SecondaryButton
-            onPress={launchDiditVerification}
+            onPress={launchKycVerification}
             disabled={isLoading}
             textColor={slate700}
             style={{ marginBottom: 0 }}

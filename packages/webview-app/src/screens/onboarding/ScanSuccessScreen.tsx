@@ -32,7 +32,7 @@ export const ScanSuccessScreen: React.FC = () => {
   const advanceToBackupPrompt = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('registration_success_finished');
-    navigate(`/onboarding/backup${getPromptMockSearch()}`, {
+    navigate(`/onboarding/recovery-phrase${getPromptMockSearch()}`, {
       state: { skipOnboardingRedirect: true },
     });
   }, [analytics, haptic, navigate]);

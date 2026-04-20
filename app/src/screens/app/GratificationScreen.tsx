@@ -11,7 +11,8 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, View, YStack } from 'tamagui';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import type { StaticScreenProps } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { X } from '@tamagui/lucide-icons';
 
@@ -30,27 +31,29 @@ import SelfLogo from '@/assets/logos/self.svg';
 import { SystemBars } from '@/components/SystemBars';
 import type { RootStackParamList } from '@/navigation';
 
-const GratificationScreen: React.FC = () => {
+type GratificationScreenProps = StaticScreenProps<{
+  points?: number;
+}>;
+
+const GratificationScreen: React.FC<GratificationScreenProps> = ({ route }) => {
   const { top, bottom } = useSafeAreaInsets();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const route = useRoute();
-  const params = route.params as { points?: number } | undefined;
-  const pointsEarned = params?.points ?? 0;
+  const pointsEarned = route.params?.points ?? 0;
   const [isAnimationFinished, setIsAnimationFinished] = useState(false);
   const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
   const handleExploreRewards = () => {
     // Navigate to Points screen
-    navigation.navigate('Points' as never);
+    navigation.navigate('Points');
   };
 
   const handleInviteFriend = () => {
-    navigation.navigate('Referral' as never);
+    navigation.navigate('Referral');
   };
 
   const handleBackPress = () => {
-    navigation.navigate('Points' as never);
+    navigation.goBack();
   };
 
   const handleAnimationFinish = useCallback(() => {

@@ -11,6 +11,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import xyz.self.minipay.screens.HomeScreen
 import xyz.self.minipay.screens.ResultScreen
+import xyz.self.minipay.screens.WebViewBridgeScreen
 import xyz.self.minipay.theme.MiniPayTheme
 import xyz.self.sdk.api.SelfSdk
 
@@ -31,6 +32,7 @@ fun App(sdk: SelfSdk? = null, platformContext: Any? = null) {
                     viewModel = viewModel,
                     onVerify = { viewModel.launchVerification(platformContext) },
                     onNavigateToResult = { navController.navigate("result") },
+                    onOpenWebViewBridge = { navController.navigate("webview-bridge") },
                 )
             }
 
@@ -46,6 +48,10 @@ fun App(sdk: SelfSdk? = null, platformContext: Any? = null) {
                         viewModel.launchVerification(platformContext)
                     },
                 )
+            }
+
+            composable("webview-bridge") {
+                WebViewBridgeScreen()
             }
         }
     }

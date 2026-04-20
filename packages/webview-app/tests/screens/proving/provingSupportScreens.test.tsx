@@ -150,6 +150,7 @@ const renderWithRoutes = (
         <Route path="/coming-soon" element={<LocationDisplay />} />
         <Route path="/settings/notifications" element={<LocationDisplay />} />
         <Route path="/settings/security" element={<LocationDisplay />} />
+        <Route path="/settings/recovery-phrase" element={<LocationDisplay />} />
         <Route path="/proving" element={<LocationDisplay />} />
         <Route path="/proving/receipt" element={<LocationDisplay />} />
         <Route path="/proving/dialogue" element={<LocationDisplay />} />
@@ -180,12 +181,12 @@ describe('proving support screens', () => {
     expectLocation('/coming-soon');
   });
 
-  it('routes proof backup CTA into the security settings screen', () => {
+  it('routes proof backup CTA into the recovery phrase screen', () => {
     renderWithRoutes(['/proving/backup-prompt'], '/proving/backup-prompt', <ProofSuccessBackupScreen />);
 
     fireEvent.click(screen.getByRole('button', { name: /back up account/i }));
 
-    expectLocation('/settings/security');
+    expectLocation('/settings/recovery-phrase');
   });
 
   it('routes KYC pending live-updates CTA to notification settings', () => {

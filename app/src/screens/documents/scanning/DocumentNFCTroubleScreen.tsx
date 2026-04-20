@@ -12,15 +12,17 @@ import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { Caption, SecondaryButton } from '@selfxyz/mobile-sdk-alpha/components';
 import { slate500, slate700 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
+import SupportUuidRow from '@/components/support/SupportUuidRow';
 import type { TipProps } from '@/components/Tips';
 import Tips from '@/components/Tips';
-import { useDiditLauncher } from '@/hooks/useDiditLauncher';
 import { useFeedbackAutoHide } from '@/hooks/useFeedbackAutoHide';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
+import { useKycLauncher } from '@/hooks/useKycLauncher';
+import useOpenSupportForm from '@/hooks/useOpenSupportForm';
 import { selectionChange } from '@/integrations/haptics';
 import SimpleScrolledTitleLayout from '@/layouts/SimpleScrolledTitleLayout';
 import { flushAllAnalytics } from '@/services/analytics';
-import { openSupportForm, SUPPORT_FORM_BUTTON_TEXT } from '@/services/support';
+import { SUPPORT_FORM_BUTTON_TEXT } from '@/services/support';
 
 const tips: TipProps[] = [
   {
@@ -50,6 +52,7 @@ const tips: TipProps[] = [
 ];
 
 const DocumentNFCTroubleScreen: React.FC = () => {
+  const openSupportForm = useOpenSupportForm();
   const navigation = useNavigation();
   const handleDismiss = useCallback(() => {
     selectionChange();
@@ -61,7 +64,7 @@ const DocumentNFCTroubleScreen: React.FC = () => {
   const selfClient = useSelfClient();
   const { useMRZStore } = selfClient;
   const { countryCode } = useMRZStore();
-  const { launchDiditVerification, isLoading } = useDiditLauncher({
+  const { launchKycVerification, isLoading } = useKycLauncher({
     countryCode,
     errorSource: 'nfc_scan_failed',
   });
@@ -87,6 +90,8 @@ const DocumentNFCTroubleScreen: React.FC = () => {
       onSecondaryButtonPress={goToNFCMethodSelection}
       footer={
         <YStack gap="$3">
+          <SupportUuidRow title="Support diagnostic ID" />
+
           <SecondaryButton
             onPress={openSupportForm}
             textColor={slate700}
@@ -96,7 +101,7 @@ const DocumentNFCTroubleScreen: React.FC = () => {
           </SecondaryButton>
 
           <SecondaryButton
-            onPress={launchDiditVerification}
+            onPress={launchKycVerification}
             disabled={isLoading}
             textColor={slate700}
             style={{ marginBottom: 0 }}

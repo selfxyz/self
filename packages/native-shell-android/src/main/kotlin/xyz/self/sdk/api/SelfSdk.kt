@@ -35,6 +35,7 @@ object SelfSdk {
                 config.chainID?.let { putExtra(SelfVerificationActivity.EXTRA_CHAIN_ID, it) }
                 config.userDefinedData?.let { putExtra(SelfVerificationActivity.EXTRA_USER_DEFINED_DATA, it) }
                 config.selfDefinedData?.let { putExtra(SelfVerificationActivity.EXTRA_SELF_DEFINED_DATA, it) }
+                putExtra(SelfVerificationActivity.EXTRA_REMOTE_WEB_APP_BASE_URL, config.remoteWebAppBaseUrl)
             }
         activity.startActivityForResult(intent, requestCode)
     }

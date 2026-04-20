@@ -1,6 +1,6 @@
 ---
 name: pr-summary
-description: Generate a GitHub PR title and summary from all branch changes, including Linear issue and Figma links when available.
+description: Generate a GitHub PR title and summary from all branch changes, including Linear issue and Figma links when available. When targeting staging, generates a release changelog instead.
 disable-model-invocation: false
 user-invocable: true
 argument-hint: '[base-branch (default: dev)]'
@@ -9,6 +9,8 @@ argument-hint: '[base-branch (default: dev)]'
 # Generate PR Title and Summary
 
 You generate a concise GitHub PR title and a structured summary covering ALL changes on the current branch compared to the base branch.
+
+When the target branch is `staging`, you switch to **changelog mode** — generating release notes from merged PRs instead of a single PR summary.
 
 ## Input
 
@@ -27,6 +29,18 @@ git rev-parse --verify <base-branch>
 ```
 
 If it doesn't exist, ask the user which branch to diff against.
+
+### Step 1.5: Detect Changelog Mode
+
+Switch to **Changelog Mode** (skip to the Changelog Mode section below) if ANY of these are true:
+
+- The base branch argument is or contains `staging` (e.g., `staging`, `release/staging-2026-04-09`)
+- The **current branch** name contains `staging` or matches `release/staging-*`
+- The user explicitly asks for a changelog or release notes
+
+When changelog mode activates and no explicit base branch was provided, auto-detect the base by diffing against `dev`. If the current branch *is* `dev`, diff against `main`.
+
+Otherwise, continue with the normal PR summary workflow.
 
 ### Step 2: Gather All Branch Changes
 
@@ -222,3 +236,130 @@ In both cases, if there were uncommitted changes found in Step 2, warn the user 
 - Keep the summary concise. The diff is available in the PR; the summary should help reviewers understand intent and scope quickly.
 - Always ask before creating or updating a PR. Never run `gh pr create` or `gh pr edit` without user confirmation.
 - Never run `git push`. The user handles pushing themselves. If the branch is not pushed, remind them to push first.
+
+---
+
+## Changelog Mode
+
+This mode activates when the base branch is `staging`. It generates user-facing release notes from PRs merged into the current branch since it diverged from staging, focused on mobile app changes.
+
+### Changelog Step 1: Determine the Range
+
+Determine the comparison base. The goal is to find what's new on the staging/release branch:
+
+1. If a specific base branch was provided and exists, use it.
+2. If the current branch is a staging/release branch (e.g., `release/staging-*`), diff against `dev`.
+3. If the current branch is `dev`, diff against `main`.
+
+```bash
+git log <comparison-base>..HEAD --oneline --no-decorate
+```
+
+Next, find merged PRs that make up this release. Extract PR numbers from merge commits:
+
+```bash
+git log <comparison-base>..HEAD --merges --oneline
+```
+
+Parse PR numbers from merge commit messages (patterns like `(#1234)`) and fetch each PR's details:
+
+```bash
+gh pr view <number> --json number,title,body,labels,mergedAt
+```
+
+Also try listing PRs merged into the current branch directly:
+
+```bash
+gh pr list --base <current-branch> --state merged --json number,title,body,mergedAt,labels,headRefName --limit 100
+```
+
+### Changelog Step 2: Gather the Diff
+
+Get the full diff to understand what actually changed:
+
+```bash
+git diff <comparison-base>...HEAD --stat
+git diff <comparison-base>...HEAD
+```
+
+### Changelog Step 3: Identify Mobile App Impact
+
+For each PR or commit group, determine if it affects the mobile app user experience. Prioritize changes that touch:
+
+- **`app/`** — direct app changes (screens, navigation, components, assets)
+- **`packages/mobile-sdk-alpha/`** — SDK changes that affect app behavior
+- **`packages/webview-app/`** — WebView screens shown in the app
+- **`packages/webview-bridge/`** — bridge changes that affect app functionality
+- **`packages/rn-sdk/`** — React Native SDK changes
+
+Deprioritize (but don't ignore) changes that are purely:
+- CI/config/infra
+- Docs/specs only
+- Test-only changes
+- Internal refactors with no user-facing impact
+
+### Changelog Step 4: Scan for Linear Issues
+
+Search commit messages and PR titles/bodies for Linear issue references (`SELF-XXXX`). For each found, fetch details:
+
+- Call `mcp__linear-server__get_issue` with the issue ID
+- Use the issue title to improve changelog entry descriptions
+
+### Changelog Step 5: Categorize Changes
+
+Group changes into user-facing categories:
+
+- **New** — new features, screens, flows, or capabilities
+- **Improved** — enhancements to existing features, UX improvements, performance
+- **Fixed** — bug fixes, crash fixes, regression fixes
+- **Removed** — removed features or deprecated functionality
+- **Internal** — refactors, renames, dependency updates (collapse into a single bullet or omit if no user-facing impact)
+
+Use the PR titles, Linear issue titles, and the actual diff to write entries. Each entry should be:
+- Written for a non-technical audience (app users / stakeholders)
+- One line, focused on the user-visible outcome
+- Free of implementation details (no file paths, function names, or technical jargon)
+
+### Changelog Step 6: Generate the Changelog
+
+Output using this format:
+
+```markdown
+## What's New — [version or date range]
+
+### New
+- [feature description]
+
+### Improved
+- [improvement description]
+
+### Fixed
+- [fix description]
+
+### Removed
+- [removal description]
+
+---
+
+<details>
+<summary>Internal changes</summary>
+
+- [internal change]
+
+</details>
+
+### Linear Issues
+- [SELF-XXXX](url) — [title]
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+```
+
+Omit any category that has no entries. The "Internal changes" section is collapsed by default.
+
+If no version tag is available, use the date range of the merged PRs (e.g., "Mar 28 – Apr 9, 2026").
+
+### Changelog Step 7: Check for Existing PR
+
+Same as Step 8 in the normal flow — check for an existing PR, show the generated changelog, and ask the user before creating or updating. Use the changelog as the PR body instead of the normal summary format.
+
+For the PR title in changelog mode, use: `Release: [version or date range summary]` (e.g., `Release: account recovery, nav fixes, platform renaming`).

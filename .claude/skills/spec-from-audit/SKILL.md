@@ -101,7 +101,7 @@ Follow these strictly:
 
 1. **Decisions, not options** — "Use local wrappers" not "Consider adding to Euclid or using local wrappers." Every ambiguous implementation choice must be resolved in the spec. If you genuinely can't decide, flag it as a blocker and ask the user — don't embed it as an option.
 2. **Second person** — "You are fixing...", "You will modify..."
-3. **Exact file paths with line numbers** — `src/utils/sumsubProvider.ts:118`, not "the provider file"
+3. **Exact file paths with line numbers** — `src/utils/kycProvider.ts:118`, not "the provider file"
 4. **Current code, not stale references** — you read the files in Step 2, use what you actually saw
 5. **Explicit constraints** — "You will NOT modify..." sections prevent scope creep
 6. **Required vs optional** — mark every item. Don't let agents infer priority.

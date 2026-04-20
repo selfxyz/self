@@ -62,7 +62,11 @@ final class SelfSdkViewController: UIViewController {
         router.register(handler: CryptoHandler())
         router.register(handler: lifecycleHandler)
 
-        let host = SelfWebViewHost(router: router, isDebugMode: config.isDebugMode)
+        let host = SelfWebViewHost(
+            router: router,
+            isDebugMode: config.isDebugMode,
+            remoteWebAppBaseURL: config.remoteWebAppBaseURL
+        )
         self.webViewHost = host
 
         let webView = host.createWebView()

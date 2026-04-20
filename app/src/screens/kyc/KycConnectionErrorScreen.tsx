@@ -25,6 +25,7 @@ import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 
 import WarningIcon from '@/assets/images/warning.svg';
+import SupportUuidRow from '@/components/support/SupportUuidRow';
 import { buttonTap } from '@/integrations/haptics';
 import type { RootStackParamList } from '@/navigation';
 import { extraYPadding } from '@/utils/styleUtils';
@@ -167,6 +168,7 @@ const KycConnectionErrorScreen: React.FC = () => {
           Registering with alternative methods may take longer to verify your
           document.
         </BodyText>
+        <SupportUuidRow />
       </YStack>
     </YStack>
   );

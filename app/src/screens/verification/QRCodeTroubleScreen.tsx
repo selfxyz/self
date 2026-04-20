@@ -8,13 +8,14 @@ import { View } from 'tamagui';
 import { Caption, SecondaryButton } from '@selfxyz/mobile-sdk-alpha/components';
 import { slate500 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
+import SupportUuidRow from '@/components/support/SupportUuidRow';
 import type { TipProps } from '@/components/Tips';
 import Tips from '@/components/Tips';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
+import useOpenSupportForm from '@/hooks/useOpenSupportForm';
 import SimpleScrolledTitleLayout from '@/layouts/SimpleScrolledTitleLayout';
 import { flushAllAnalytics } from '@/services/analytics';
 import {
-  openSupportForm,
   SUPPORT_FORM_BUTTON_TEXT,
   SUPPORT_FORM_TIP_MESSAGE,
 } from '@/services/support';
@@ -50,6 +51,7 @@ const tipsDeeplink: TipProps[] = [
 ];
 
 const QRCodeTrouble: React.FC = () => {
+  const openSupportForm = useOpenSupportForm();
   const go = useHapticNavigation('Home', { action: 'cancel' });
 
   // error screen, flush analytics
@@ -62,9 +64,12 @@ const QRCodeTrouble: React.FC = () => {
       title="Having trouble scanning the QR code?"
       onDismiss={go}
       footer={
-        <SecondaryButton onPress={openSupportForm}>
-          {SUPPORT_FORM_BUTTON_TEXT}
-        </SecondaryButton>
+        <View gap={12}>
+          <SupportUuidRow title="Support diagnostic ID" />
+          <SecondaryButton onPress={openSupportForm}>
+            {SUPPORT_FORM_BUTTON_TEXT}
+          </SecondaryButton>
+        </View>
       }
     >
       <Caption size="large" style={{ color: slate500, marginBottom: 16 }}>

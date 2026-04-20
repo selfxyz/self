@@ -23,6 +23,7 @@ interface PersistedSettingsState {
   isDevMode: boolean;
   loggingSeverity: LoggingSeverity;
   pointsAddress: string | null;
+  supportUuid: string | null;
   removeSubscribedTopic: (topic: string) => void;
   resetBackupForPoints: () => void;
   setBackupForPointsCompleted: () => void;
@@ -34,6 +35,7 @@ interface PersistedSettingsState {
   setKeychainMigrationCompleted: () => void;
   setLoggingSeverity: (severity: LoggingSeverity) => void;
   setPointsAddress: (address: string | null) => void;
+  setSupportUuid: (supportUuid: string | null) => void;
   setSkipDocumentSelector: (value: boolean) => void;
   setSubscribedTopics: (topics: string[]) => void;
   setTurnkeyBackupEnabled: (turnkeyBackupEnabled: boolean) => void;
@@ -139,6 +141,9 @@ export const useSettingStore = create<SettingsState>()(
       setPointsAddress: (address: string | null) =>
         set({ pointsAddress: address }),
 
+      supportUuid: null,
+      setSupportUuid: (supportUuid: string | null) => set({ supportUuid }),
+
       // Document selector skip settings
       skipDocumentSelector: false,
       setSkipDocumentSelector: (value: boolean) =>
@@ -167,3 +172,23 @@ export const useSettingStore = create<SettingsState>()(
     },
   ),
 );
+
+export function waitForSettingStoreHydration(): Promise<void> {
+  if (useSettingStore.persist.hasHydrated()) {
+    return Promise.resolve();
+  }
+  return new Promise<void>(resolve => {
+    let resolved = false;
+    const unsubscribe = useSettingStore.persist.onFinishHydration(() => {
+      resolved = true;
+      unsubscribe();
+      resolve();
+    });
+
+    if (useSettingStore.persist.hasHydrated() && !resolved) {
+      resolved = true;
+      unsubscribe();
+      resolve();
+    }
+  });
+}

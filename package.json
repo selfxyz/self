@@ -27,7 +27,7 @@
     "docstrings": "yarn docstrings:app && yarn docstrings:sdk",
     "docstrings:app": "yarn tsx scripts/docstring-report.ts \"app/src/**/*.{ts,tsx}\" --label \"Mobile App\" --write-report docs/coverage/app.json",
     "docstrings:sdk": "yarn tsx scripts/docstring-report.ts \"packages/mobile-sdk-alpha/src/**/*.{ts,tsx}\" --label \"Mobile SDK Alpha\" --write-report docs/coverage/sdk.json",
-    "format": "SKIP_BUILD_DEPS=1 yarn format:root && yarn format:github && GRADLE_USER_HOME=/tmp/self-gradle-format yarn workspace @selfxyz/kmp-sdk format && GRADLE_USER_HOME=/tmp/self-gradle-format yarn workspace @selfxyz/kmp-sdk-test-app format && yarn native-shell:format && SKIP_BUILD_DEPS=1 yarn workspaces foreach --parallel -i --all --exclude self-workspace-root --exclude @selfxyz/kmp-sdk --exclude @selfxyz/kmp-sdk-test-app run format",
+    "format": "SKIP_BUILD_DEPS=1 yarn format:root && yarn format:github && GRADLE_USER_HOME=\"$PWD/.gradle-home\" yarn workspace @selfxyz/kmp-sdk format && GRADLE_USER_HOME=\"$PWD/.gradle-home\" yarn workspace @selfxyz/kmp-sdk-test-app format && yarn native-shell:format && SKIP_BUILD_DEPS=1 yarn workspaces foreach --parallel -i --all --exclude self-workspace-root --exclude @selfxyz/kmp-sdk --exclude @selfxyz/kmp-sdk-test-app run format",
     "format:github": "yarn prettier --parser yaml --write .github/**/*.yml --single-quote false",
     "format:root": "echo 'format markdown' && yarn prettier --parser markdown --write '*.md' 'docs/**/*.md' 'specs/**/*.md' && echo 'format yaml' && yarn prettier --parser yaml --write .*.{yml,yaml} --single-quote false && yarn prettier --write scripts/**/*.{js,mjs,ts} && yarn prettier --parser json --write scripts/**/*.json",
     "gitleaks": "gitleaks protect --staged --redact --config=gitleaks-override.toml",
@@ -46,7 +46,7 @@
     "lint:headers": "node scripts/check-duplicate-headers.cjs . && node scripts/check-license-headers.mjs . --check",
     "lint:headers:fix": "node scripts/check-duplicate-headers.cjs . && node scripts/check-license-headers.mjs . --fix",
     "prepare": "husky",
-    "reinstall-app": "yarn install && (cd app && yarn clean:watchman && yarn clean:build && yarn clean:ios && yarn clean:xcode && yarn clean:pod-cache && yarn clean:android-deps && rm -rf app/node_modules) && yarn install && yarn workspace @selfxyz/mobile-app run install-app",
+    "reinstall-app": "yarn install && (cd app && yarn clean:watchman && yarn clean:build && yarn clean:ios && yarn clean:xcode && yarn clean:pod-cache && yarn clean:android-deps && yarn clean:ruby && yarn clean:node) && yarn install && yarn workspace @selfxyz/mobile-app run install-app",
     "sort-package-jsons": "find . -name 'package.json' -not -path './node_modules/*' -not -path './*/node_modules/*' | xargs npx sort-package-json",
     "test": "yarn workspaces foreach --parallel -i --all run test",
     "test:license-headers": "cd scripts/tests && node check-license-headers.test.mjs",
@@ -58,8 +58,8 @@
     "@noble/curves": "1.9.7",
     "@noble/hashes": "1.8.0",
     "@swc/core": "1.7.36",
-    "@tamagui/animations-react-native": "1.126.14",
-    "@tamagui/toast": "1.126.14",
+    "@tamagui/animations-react-native": "1.144.4",
+    "@tamagui/toast": "1.144.4",
     "@types/node": "^22.18.3",
     "@types/react": "^18.3.4",
     "@types/react-dom": "^18.3.0",
@@ -67,7 +67,8 @@
     "punycode": "npm:punycode.js@^2.3.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-native-passkey": "3.3.2",
+    "react-native-passkey": "^3.3.3",
+    "react-native-blur-effect": "1.1.3",
     "react-native-webview": "13.16.0"
   },
   "dependencies": {
@@ -88,7 +89,7 @@
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   },
-  "packageManager": "yarn@4.12.0",
+  "packageManager": "yarn@4.13.0",
   "engines": {
     "node": ">=22 <23"
   }

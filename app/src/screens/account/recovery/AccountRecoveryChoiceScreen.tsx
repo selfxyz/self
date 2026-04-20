@@ -37,7 +37,8 @@ import {
   loadPassportData,
   reStorePassportDataWithRightCSCA,
 } from '@/providers/passportDataProvider';
-import { STORAGE_NAME, useBackupMnemonic } from '@/services/cloud-backup';
+import { recoveryCopy } from '@/screens/account/recovery/recoveryCopy';
+import { useBackupMnemonic } from '@/services/cloud-backup';
 import { useSettingStore } from '@/stores/settingStore';
 import type { Mnemonic } from '@/types/mnemonic';
 
@@ -82,25 +83,29 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
         if (!result) {
           console.warn('Failed to restore account');
           trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_UNKNOWN);
-          navigation.navigate({ name: 'Home', params: {} });
           setRestoring(false);
           return false;
         }
 
         const passportData = await loadPassportData();
-        const secret = getPrivateKeyFromMnemonic(mnemonic.phrase);
 
-        if (!passportData || !secret) {
-          console.warn('Failed to load passport data or secret');
-          trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_AUTH, {
-            reason: 'no_passport_data_or_secret',
+        if (!passportData) {
+          console.warn(
+            'Recovered secret but no local document data was found. Prompting the user to import their document again.',
+          );
+          if (isCloudRestore && !cloudBackupEnabled) {
+            toggleCloudBackupEnabled();
+          }
+          trackEvent(BackupEvents.CLOUD_RESTORE_SUCCESS, {
+            documentImportRequired: true,
           });
-          navigation.navigate({ name: 'Home', params: {} });
+          navigation.navigate('CountryPicker');
           setRestoring(false);
-          return false;
+          return true;
         }
 
         const passportDataParsed = JSON.parse(passportData);
+        const secret = getPrivateKeyFromMnemonic(mnemonic.phrase);
 
         const { isRegistered, csca } =
           await isUserRegisteredWithAlternativeCSCA(
@@ -140,7 +145,6 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
               hasCSCA: !!csca,
             },
           );
-          navigation.navigate({ name: 'Home', params: {} });
           setRestoring(false);
           return false;
         }
@@ -241,16 +245,10 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
       </ExpandableBottomLayout.TopSection>
       <ExpandableBottomLayout.BottomSection backgroundColor={white}>
         <YStack alignItems="center" gap="$2.5" paddingBottom="$2.5">
-          <Title>Restore your Self account</Title>
+          <Title>{recoveryCopy.choice.title}</Title>
           <Description>
-            By continuing, you certify that this passport belongs to you and is
-            not stolen or forged.{' '}
-            {!biometricsAvailable && (
-              <>
-                Your device doesn't support biometrics or is disabled for apps
-                and is required for cloud storage.
-              </>
-            )}
+            {recoveryCopy.choice.description}{' '}
+            {!biometricsAvailable && recoveryCopy.choice.noBiometrics}
           </Description>
 
           <YStack gap="$2.5" width="100%" paddingTop="$6">
@@ -275,12 +273,11 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
               testID="button-from-teststorage"
               disabled={restoringFromCloud || !biometricsAvailable}
             >
-              {restoringFromCloud ? 'Restoring' : 'Restore'} from {STORAGE_NAME}
-              {restoringFromCloud ? '…' : ''}
+              {recoveryCopy.choice.actions.cloud(restoringFromCloud)}
             </PrimaryButton>
             <XStack gap={64} alignItems="center" justifyContent="space-between">
               <Separator flexGrow={1} />
-              <Caption>OR</Caption>
+              <Caption>{recoveryCopy.choice.actions.or}</Caption>
               <Separator flexGrow={1} />
             </XStack>
             <SecondaryButton
@@ -290,7 +287,9 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
               <XStack alignItems="center" justifyContent="center">
                 <Keyboard height={25} width={40} color={slate500} />
                 <View paddingLeft={12}>
-                  <Description>Enter recovery phrase</Description>
+                  <Description>
+                    {recoveryCopy.choice.actions.phrase}
+                  </Description>
                 </View>
               </XStack>
             </SecondaryButton>

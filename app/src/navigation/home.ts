@@ -4,6 +4,8 @@
 
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
+import { black } from '@selfxyz/mobile-sdk-alpha/constants/colors';
+
 import { HomeNavBar } from '@/components/navbar';
 import PointsScreen from '@/components/navbar/Points';
 import { PointsNavBar } from '@/components/navbar/PointsNavBar';
@@ -41,13 +43,15 @@ const homeScreens = {
     options: {
       title: 'Approved Requests',
       headerBackTitle: 'close',
-    },
+      headerTintColor: black,
+    } as NativeStackNavigationOptions,
   },
   ProofHistoryDetail: {
     screen: ProofHistoryDetailScreen,
     options: {
       title: 'Approval',
-    },
+      headerTintColor: black,
+    } as NativeStackNavigationOptions,
   },
   PointsInfo: {
     screen: PointsInfoScreen,

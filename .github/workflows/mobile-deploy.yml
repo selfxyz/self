@@ -97,6 +97,11 @@ on:
         required: false
         type: boolean
         default: false
+      pr_number:
+        description: "PR number for per-PR preview build. When set (Android only), uploads to Play Store Internal App Sharing and posts a Slack message with the install URL. Skips the version-bump PR."
+        required: false
+        type: string
+        default: ""
 
   pull_request:
     types: [closed]
@@ -131,10 +136,11 @@ on:
         default: false
 
 concurrency:
-  # Group by deployment track or ref name to allow different tracks to run in parallel
-  # cancel-in-progress: false ensures we don't cancel ongoing deployments
-  # Branch-locking in create-version-bump-pr prevents duplicate PRs for same version
-  group: mobile-deploy-${{ inputs.deployment_track || github.ref_name }}
+  # Group by PR number (when set) so multiple PR preview builds run in parallel,
+  # otherwise by deployment track or ref name to allow different tracks to run in parallel.
+  # cancel-in-progress: false ensures we don't cancel ongoing deployments.
+  # Branch-locking in create-version-bump-pr prevents duplicate PRs for same version.
+  group: mobile-deploy-${{ inputs.pr_number != '' && format('pr-{0}', inputs.pr_number) || inputs.deployment_track || github.ref_name }}
   cancel-in-progress: false
 
 jobs:
@@ -263,7 +269,9 @@ jobs:
     permissions:
       contents: read
       actions: write
+    # PR preview builds are Android-only for now — always skip iOS when pr_number is set.
     if: |
+      inputs.pr_number == '' &&
       (github.event_name != 'pull_request' ||
         (github.event.action == 'closed' && github.event.pull_request.merged == true)) &&
       (
@@ -715,7 +723,7 @@ jobs:
           SEGMENT_KEY: ${{ secrets.SEGMENT_KEY }}
           SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-          DIDIT_TEE_URL: ${{ secrets.DIDIT_TEE_URL }}
+          KYC_TEE_URL: ${{ secrets.KYC_TEE_URL }}
           TURNKEY_AUTH_PROXY_CONFIG_ID: ${{ secrets.TURNKEY_AUTH_PROXY_CONFIG_ID }}
           TURNKEY_GOOGLE_CLIENT_ID: ${{ secrets.TURNKEY_GOOGLE_CLIENT_ID }}
           TURNKEY_ORGANIZATION_ID: ${{ secrets.TURNKEY_ORGANIZATION_ID }}
@@ -1176,7 +1184,7 @@ jobs:
           NODE_OPTIONS: "--max-old-space-size=6144"
           SEGMENT_KEY: ${{ secrets.SEGMENT_KEY }}
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-          DIDIT_TEE_URL: ${{ secrets.DIDIT_TEE_URL }}
+          KYC_TEE_URL: ${{ secrets.KYC_TEE_URL }}
           TURNKEY_AUTH_PROXY_CONFIG_ID: ${{ secrets.TURNKEY_AUTH_PROXY_CONFIG_ID }}
           TURNKEY_GOOGLE_CLIENT_ID: ${{ secrets.TURNKEY_GOOGLE_CLIENT_ID }}
           TURNKEY_ORGANIZATION_ID: ${{ secrets.TURNKEY_ORGANIZATION_ID }}
@@ -1236,8 +1244,20 @@ jobs:
         if: inputs.platform != 'ios'
         uses: ./.github/actions/cleanup-gradle-artifacts
 
-      - name: Upload to Google Play Store using WIF
-        if: inputs.platform != 'ios' && inputs.test_mode != true
+      - name: Upload to Play Store Internal App Sharing (PR preview)
+        id: ias-upload
+        if: inputs.platform != 'ios' && inputs.test_mode != true && inputs.pr_number != ''
+        timeout-minutes: 10
+        run: |
+          cd ${{ env.APP_PATH }}
+          echo "🧪 PR preview build for #${{ inputs.pr_number }} — uploading to Internal App Sharing..."
+          python scripts/upload_to_play_store.py \
+            --aab "android/app/build/outputs/bundle/release/app-release.aab" \
+            --package-name "${{ secrets.ANDROID_PACKAGE_NAME }}" \
+            --mode ias
+
+      - name: Upload to Google Play Store track using WIF
+        if: inputs.platform != 'ios' && inputs.test_mode != true && inputs.pr_number == ''
         timeout-minutes: 10
         run: |
           cd ${{ env.APP_PATH }}
@@ -1250,6 +1270,96 @@ jobs:
             --aab "android/app/build/outputs/bundle/release/app-release.aab" \
             --package-name "${{ secrets.ANDROID_PACKAGE_NAME }}" \
             --track "$DEPLOYMENT_TRACK"
+
+      - name: Post PR preview build link to Slack
+        if: inputs.platform != 'ios' && inputs.test_mode != true && inputs.pr_number != '' && steps.ias-upload.outputs.download_url != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_QA_BUILDS }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          DOWNLOAD_URL: ${{ steps.ias-upload.outputs.download_url }}
+          APP_VERSION: ${{ needs.bump-version.outputs.version }}
+          BUILD_NUMBER: ${{ needs.bump-version.outputs.android_build }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "⚠️  SLACK_WEBHOOK_QA_BUILDS not configured — skipping Slack notify"
+            echo "   (Install URL: $DOWNLOAD_URL)"
+            exit 0
+          fi
+
+          # Fetch PR metadata so the Slack card is informative
+          PR_JSON=$(gh api "repos/${{ github.repository }}/pulls/${PR_NUMBER}" --jq '{title,html_url,user:.user.login,body}')
+          export PR_TITLE=$(echo "$PR_JSON" | python3 -c 'import json,sys;print(json.load(sys.stdin)["title"])')
+          export PR_URL=$(echo "$PR_JSON" | python3 -c 'import json,sys;print(json.load(sys.stdin)["html_url"])')
+          export PR_USER=$(echo "$PR_JSON" | python3 -c 'import json,sys;print(json.load(sys.stdin)["user"])')
+
+          python3 <<'PY'
+          import json, os, urllib.request
+
+          payload = {
+              "text": f"Android preview build ready for PR #{os.environ['PR_NUMBER']}",
+              "blocks": [
+                  {
+                      "type": "header",
+                      "text": {"type": "plain_text", "text": f"🤖 Android preview — PR #{os.environ['PR_NUMBER']}"},
+                  },
+                  {
+                      "type": "section",
+                      "text": {
+                          "type": "mrkdwn",
+                          "text": f"*<{os.environ['PR_URL']}|{os.environ.get('PR_TITLE','(no title)')}>*\n_by {os.environ.get('PR_USER','?')}_",
+                      },
+                  },
+                  {
+                      "type": "section",
+                      "fields": [
+                          {"type": "mrkdwn", "text": f"*Version*\n`{os.environ.get('APP_VERSION','?')} ({os.environ.get('BUILD_NUMBER','?')})`"},
+                          {"type": "mrkdwn", "text": f"*Source*\n<{os.environ['RUN_URL']}|CI run>"},
+                      ],
+                  },
+                  {
+                      "type": "actions",
+                      "elements": [
+                          {
+                              "type": "button",
+                              "style": "primary",
+                              "text": {"type": "plain_text", "text": "📱 Install on Android"},
+                              "url": os.environ["DOWNLOAD_URL"],
+                          },
+                          {
+                              "type": "button",
+                              "text": {"type": "plain_text", "text": "View PR"},
+                              "url": os.environ["PR_URL"],
+                          },
+                      ],
+                  },
+                  {
+                      "type": "context",
+                      "elements": [
+                          {"type": "mrkdwn", "text": "Open the install link on your Android device (must be signed into a Play Store tester account)."},
+                      ],
+                  },
+              ],
+          }
+
+          req = urllib.request.Request(
+              os.environ["SLACK_WEBHOOK_URL"],
+              data=json.dumps(payload).encode(),
+              headers={"Content-Type": "application/json"},
+          )
+          with urllib.request.urlopen(req) as resp:
+              print(f"Slack webhook status: {resp.status}")
+          PY
+
+          # Also export to the run summary so the URL is visible in the GH Actions UI
+          {
+            echo "## 📱 Android preview build"
+            echo ""
+            echo "- PR: [#$PR_NUMBER]($PR_URL) — $PR_TITLE"
+            echo "- Version: \`$APP_VERSION ($BUILD_NUMBER)\`"
+            echo "- Install URL: $DOWNLOAD_URL"
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Monitor cache usage
         if: always()
@@ -1290,8 +1400,11 @@ jobs:
       contents: write
       pull-requests: write
     needs: [bump-version, build-ios, build-android]
+    # Skip when this is a per-PR preview build — preview builds must not mutate
+    # the repo's version lineage.
     if: |
       always() &&
+      inputs.pr_number == '' &&
       (github.event_name != 'pull_request' ||
         (github.event.action == 'closed' && github.event.pull_request.merged == true)) &&
       (needs.build-ios.result == 'success' || needs.build-android.result == 'success')

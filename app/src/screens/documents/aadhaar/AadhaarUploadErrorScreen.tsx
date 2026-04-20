@@ -27,7 +27,8 @@ import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 
 import WarningIcon from '@/assets/images/warning.svg';
 import { NavBar } from '@/components/navbar/BaseNavBar';
-import { useDiditLauncher } from '@/hooks/useDiditLauncher';
+import SupportUuidRow from '@/components/support/SupportUuidRow';
+import { useKycLauncher } from '@/hooks/useKycLauncher';
 import { buttonTap } from '@/integrations/haptics';
 import type { RootStackParamList } from '@/navigation';
 import { extraYPadding } from '@/utils/styleUtils';
@@ -70,7 +71,7 @@ const AadhaarUploadErrorScreen: React.FC = () => {
   const errorType = route.params?.errorType || 'general';
   const { title, description } = getErrorMessages(errorType);
 
-  const { launchDiditVerification, isLoading: isRetrying } = useDiditLauncher({
+  const { launchKycVerification, isLoading: isRetrying } = useKycLauncher({
     countryCode: 'IND',
     errorSource: 'mrz_scan_failed', // Use a compatible error source
     onCancel: () => {
@@ -93,8 +94,8 @@ const AadhaarUploadErrorScreen: React.FC = () => {
 
   const handleTryAlternative = useCallback(async () => {
     trackEvent(AadhaarEvents.HELP_BUTTON_PRESSED, { errorType });
-    await launchDiditVerification();
-  }, [errorType, launchDiditVerification, trackEvent]);
+    await launchKycVerification();
+  }, [errorType, launchKycVerification, trackEvent]);
 
   return (
     <YStack flex={1} backgroundColor={slate100}>
@@ -243,6 +244,7 @@ const AadhaarUploadErrorScreen: React.FC = () => {
           Registering with alternative methods may take longer to verify your
           document.
         </BodyText>
+        <SupportUuidRow />
       </YStack>
     </YStack>
   );

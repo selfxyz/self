@@ -4,7 +4,7 @@
 
 package xyz.self.sdk.providers
 
-interface CryptoProvider {
+internal interface CryptoProvider {
     fun generateKey(keyRef: String)
 
     fun getPublicKey(keyRef: String): String?

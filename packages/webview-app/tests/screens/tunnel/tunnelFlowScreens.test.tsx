@@ -8,7 +8,12 @@ import type React from 'react';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { LaunchRecoveryScreen } from '../../../src/screens/recovery/LaunchRecoveryScreen';
+import { TourScreen as TunnelTourScreen } from '../../../src/screens/tunnel/TourScreen';
 import { TunnelDiscloseScreen } from '../../../src/screens/tunnel/TunnelDiscloseScreen';
+import { TunnelKycFailureScreen } from '../../../src/screens/tunnel/TunnelKycFailureScreen';
+import { TunnelKycSuccessScreen } from '../../../src/screens/tunnel/TunnelKycSuccessScreen';
+import { TunnelProofReceiptScreen } from '../../../src/screens/tunnel/TunnelProofReceiptScreen';
 import { TunnelProvingScreen } from '../../../src/screens/tunnel/TunnelProvingScreen';
 import { TunnelRecoveryRequiredScreen } from '../../../src/screens/tunnel/TunnelRecoveryRequiredScreen';
 import { TunnelResultScreen } from '../../../src/screens/tunnel/TunnelResultScreen';
@@ -84,6 +89,18 @@ vi.mock('@selfxyz/euclid', () => ({
   SelfLogo: () => null,
   ProofGenerationScreen: ({ step }: { step: string }) => <div>{`proof-generation:${step}`}</div>,
   ProofProgressScreen: ({ step }: { step: string }) => <div>{`proof-progress:${step}`}</div>,
+  ProofRequestScreen: ({ onClose, onConfirm }: { onClose: () => void; onConfirm?: () => void }) => (
+    <div>
+      <button onClick={onClose} type="button">
+        Close receipt
+      </button>
+      {onConfirm && (
+        <button onClick={onConfirm} type="button">
+          Confirm receipt
+        </button>
+      )}
+    </div>
+  ),
   ProofSuccessScreen: ({ onContinue, onViewDetails }: { onContinue: () => void; onViewDetails: () => void }) => (
     <div>
       <button onClick={onContinue} type="button">
@@ -134,11 +151,61 @@ vi.mock('@selfxyz/euclid', () => ({
       </button>
     </div>
   ),
+  KycVerificationSuccessScreen: ({ onGenerateProof }: { onGenerateProof: () => void }) => (
+    <button onClick={onGenerateProof} type="button">
+      Generate proof
+    </button>
+  ),
+  KycFailureScreen: ({ onDismiss, onTryAgain }: { onDismiss: () => void; onTryAgain: () => void }) => (
+    <div>
+      <button onClick={onDismiss} type="button">
+        Dismiss KYC failure
+      </button>
+      <button onClick={onTryAgain} type="button">
+        Retry KYC
+      </button>
+    </div>
+  ),
+  LaunchTour1Screen: ({ onRestore }: { onRestore: () => void }) => (
+    <button onClick={onRestore} type="button">
+      Restore tour 1
+    </button>
+  ),
+  LaunchTour2Screen: () => <div>tour-2</div>,
+  LaunchTour3Screen: () => <div>tour-3</div>,
+  LaunchTour4Screen: () => <div>tour-4</div>,
+  LaunchRecoveryScreen: ({
+    onClose,
+    onEnterRecoveryPhrase,
+  }: {
+    onClose: () => void;
+    onEnterRecoveryPhrase: () => void;
+  }) => (
+    <div>
+      <button onClick={onClose} type="button">
+        Back from recovery
+      </button>
+      <button onClick={onEnterRecoveryPhrase} type="button">
+        Enter recovery phrase
+      </button>
+    </div>
+  ),
+  LeftArrowIcon: () => null,
 }));
 
 const LocationDisplay: React.FC = () => {
   const location = useLocation();
   return <div data-testid="location">{`${location.pathname}${location.search}`}</div>;
+};
+
+const StateDisplay: React.FC = () => {
+  const location = useLocation();
+  return (
+    <>
+      <div data-testid="location">{`${location.pathname}${location.search}`}</div>
+      <div data-testid="location-state">{JSON.stringify(location.state)}</div>
+    </>
+  );
 };
 
 const renderResultRoute = (
@@ -153,10 +220,31 @@ const renderResultRoute = (
     <MemoryRouter initialEntries={[initialEntry]}>
       <Routes>
         <Route path="/tunnel/proof/result" element={<TunnelResultScreen />} />
+        <Route path="/tunnel/tour/4" element={<LocationDisplay />} />
+        <Route path="/tunnel/kyc" element={<LocationDisplay />} />
         <Route path="/tunnel/proof/generating" element={<LocationDisplay />} />
         <Route path="/tunnel/proof/disclose" element={<LocationDisplay />} />
         <Route path="/tunnel/proof/receipt" element={<LocationDisplay />} />
         <Route path="/" element={<LocationDisplay />} />
+      </Routes>
+      <LocationDisplay />
+    </MemoryRouter>,
+  );
+
+const renderReceiptRoute = (
+  initialEntry:
+    | string
+    | {
+        pathname: string;
+        state?: unknown;
+      },
+) =>
+  render(
+    <MemoryRouter initialEntries={[initialEntry]}>
+      <Routes>
+        <Route path="/tunnel/proof/receipt" element={<TunnelProofReceiptScreen />} />
+        <Route path="/tunnel/kyc-success" element={<LocationDisplay />} />
+        <Route path="/tunnel/proof/result" element={<LocationDisplay />} />
       </Routes>
       <LocationDisplay />
     </MemoryRouter>,
@@ -186,13 +274,59 @@ const renderDiscloseRoute = () =>
     </MemoryRouter>,
   );
 
+const renderKycSuccessRoute = (
+  initialEntry:
+    | string
+    | {
+        pathname: string;
+        state?: unknown;
+      },
+) =>
+  render(
+    <MemoryRouter initialEntries={[initialEntry]}>
+      <Routes>
+        <Route path="/tunnel/kyc-success" element={<TunnelKycSuccessScreen />} />
+        <Route path="/tunnel/kyc" element={<LocationDisplay />} />
+        <Route path="/tunnel/kyc-failure" element={<LocationDisplay />} />
+        <Route path="/tunnel/tour/4" element={<LocationDisplay />} />
+        <Route path="/tunnel/proof/generating" element={<LocationDisplay />} />
+      </Routes>
+      <LocationDisplay />
+    </MemoryRouter>,
+  );
+
+const renderKycFailureRoute = () =>
+  render(
+    <MemoryRouter initialEntries={['/tunnel/kyc-failure']}>
+      <Routes>
+        <Route path="/tunnel/kyc-failure" element={<TunnelKycFailureScreen />} />
+        <Route path="/tunnel/kyc" element={<LocationDisplay />} />
+        <Route path="/tunnel/tour/4" element={<LocationDisplay />} />
+      </Routes>
+      <LocationDisplay />
+    </MemoryRouter>,
+  );
+
 const renderRecoveryRequiredRoute = () =>
   render(
     <MemoryRouter initialEntries={['/tunnel/recovery-required']}>
       <Routes>
         <Route path="/tunnel/recovery-required" element={<TunnelRecoveryRequiredScreen />} />
         <Route path="/recovery/phrase-input" element={<LocationDisplay />} />
-        <Route path="/" element={<LocationDisplay />} />
+        <Route path="/tunnel/tour/4" element={<LocationDisplay />} />
+      </Routes>
+      <LocationDisplay />
+    </MemoryRouter>,
+  );
+
+const renderTourRestoreRoute = () =>
+  render(
+    <MemoryRouter initialEntries={['/tunnel/tour/1']}>
+      <Routes>
+        <Route path="/tunnel/tour/:step" element={<TunnelTourScreen />} />
+        <Route path="/recovery" element={<LaunchRecoveryScreen />} />
+        <Route path="/recovery/phrase-input" element={<LocationDisplay />} />
+        <Route path="/settings/security" element={<LocationDisplay />} />
       </Routes>
       <LocationDisplay />
     </MemoryRouter>,
@@ -275,6 +409,66 @@ describe('tunnel flow screens', () => {
     expect(screen.getByText('Invalid Vc And Disclose Proof')).toBeTruthy();
   });
 
+  it('dismisses after sending failure result on proving-source close', async () => {
+    renderResultRoute({
+      pathname: '/tunnel/proof/result',
+      state: { success: false, error: 'TEE down', source: 'proving' },
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /close/i }));
+
+    await waitFor(() => {
+      expect(lifecycle.setResult).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          error: expect.objectContaining({ message: 'TEE down' }),
+        }),
+      );
+    });
+    expect(analytics.trackEvent).toHaveBeenCalledWith('tunnel_result_cancelled', { source: 'proving' });
+    expect(lifecycle.dismiss).toHaveBeenCalled();
+  });
+
+  it('dismisses after sending failure result on disclose-source close', async () => {
+    renderResultRoute({
+      pathname: '/tunnel/proof/result',
+      state: { success: false, error: 'TEE down', source: 'disclose' },
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /close/i }));
+
+    await waitFor(() => {
+      expect(lifecycle.setResult).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          error: expect.objectContaining({ message: 'TEE down' }),
+        }),
+      );
+    });
+    expect(analytics.trackEvent).toHaveBeenCalledWith('tunnel_result_cancelled', { source: 'disclose' });
+    expect(lifecycle.dismiss).toHaveBeenCalled();
+  });
+
+  it('dismisses after sending failure result on kyc-source close', async () => {
+    renderResultRoute({
+      pathname: '/tunnel/proof/result',
+      state: { success: false, error: 'Provider cancelled', source: 'kyc' },
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /close/i }));
+
+    await waitFor(() => {
+      expect(lifecycle.setResult).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          error: expect.objectContaining({ message: 'Provider cancelled' }),
+        }),
+      );
+    });
+    expect(analytics.trackEvent).toHaveBeenCalledWith('tunnel_result_cancelled', { source: 'kyc' });
+    expect(lifecycle.dismiss).toHaveBeenCalled();
+  });
+
   it('routes account recovery choice to the recovery-required screen', async () => {
     storeState.currentState = 'account_recovery_choice';
 
@@ -304,6 +498,65 @@ describe('tunnel flow screens', () => {
     expectLocation('/recovery/phrase-input?returnTo=%2Ftunnel%2Fproof%2Fgenerating');
   });
 
+  it('keeps recovery required cancel inside the tunnel flow', () => {
+    renderRecoveryRequiredRoute();
+
+    fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
+
+    expectLocation('/tunnel/tour/4');
+  });
+
+  it('keeps receipt close on the provided tunnel back path', () => {
+    renderReceiptRoute({
+      pathname: '/tunnel/proof/receipt',
+      state: { backPath: '/tunnel/proof/result' },
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /close receipt/i }));
+
+    expectLocation('/tunnel/proof/result');
+  });
+
+  it('restores result state when closing receipt', () => {
+    const resultState = { success: true };
+
+    render(
+      <MemoryRouter
+        initialEntries={[
+          {
+            pathname: '/tunnel/proof/receipt',
+            state: { backPath: '/tunnel/proof/result', backState: resultState },
+          },
+        ]}
+      >
+        <Routes>
+          <Route path="/tunnel/proof/receipt" element={<TunnelProofReceiptScreen />} />
+          <Route path="/tunnel/proof/result" element={<StateDisplay />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /close receipt/i }));
+
+    expect(screen.getByTestId('location-state').textContent).toBe(JSON.stringify(resultState));
+  });
+
+  it('keeps kyc cancel inside the tunnel flow', async () => {
+    renderKycSuccessRoute({
+      pathname: '/tunnel/kyc-success',
+      state: {
+        providerResult: {
+          provider: 'didit',
+          status: 'cancel',
+        },
+      },
+    });
+
+    await waitFor(() => {
+      expectLocation('/tunnel/tour/4');
+    });
+  });
+
   it('routes to error result when proving setup throws before init starts', async () => {
     const { initSelfAppFromRequest } = await import('../../../src/utils/selfAppContext');
     vi.mocked(initSelfAppFromRequest).mockImplementationOnce(() => {
@@ -317,6 +570,160 @@ describe('tunnel flow screens', () => {
     });
 
     expect(analytics.trackEvent).toHaveBeenCalledWith('tunnel_proving_init_failed', { error: 'bad request' });
+  });
+
+  it('routes retryable kyc error to the failure screen', async () => {
+    renderKycSuccessRoute({
+      pathname: '/tunnel/kyc-success',
+      state: {
+        providerResult: {
+          provider: 'didit',
+          status: 'error',
+          error: { code: 'provider_unknown_error', message: 'Something went wrong', retryable: true },
+        },
+      },
+    });
+
+    await waitFor(() => {
+      expectLocation('/tunnel/kyc-failure');
+    });
+  });
+
+  it('routes non-retryable kyc error back to the tour', async () => {
+    renderKycSuccessRoute({
+      pathname: '/tunnel/kyc-success',
+      state: {
+        providerResult: {
+          provider: 'didit',
+          status: 'error',
+          error: { code: 'provider_declined', message: 'Declined', retryable: false },
+        },
+      },
+    });
+
+    await waitFor(() => {
+      expectLocation('/tunnel/tour/4');
+    });
+  });
+
+  it('retries kyc failure back into the tunnel kyc step', () => {
+    renderKycFailureRoute();
+
+    fireEvent.click(screen.getByRole('button', { name: /retry kyc/i }));
+
+    expectLocation('/tunnel/kyc');
+  });
+
+  it('dismisses kyc failure back to the tunnel tour', () => {
+    renderKycFailureRoute();
+
+    fireEvent.click(screen.getByRole('button', { name: /dismiss kyc failure/i }));
+
+    expectLocation('/tunnel/tour/4');
+  });
+
+  it('falls back to result screen when receipt has no backPath', () => {
+    renderReceiptRoute({
+      pathname: '/tunnel/proof/receipt',
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /close receipt/i }));
+
+    expectLocation('/tunnel/proof/result');
+  });
+
+  it('defaults missing failure source to proving when cancelling', async () => {
+    renderResultRoute({
+      pathname: '/tunnel/proof/result',
+      state: { success: false, error: 'Unknown error' },
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /close/i }));
+
+    await waitFor(() => {
+      expect(analytics.trackEvent).toHaveBeenCalledWith('tunnel_result_cancelled', { source: 'proving' });
+    });
+    expect(lifecycle.dismiss).toHaveBeenCalled();
+  });
+
+  it('keeps tour restore back button inside the tunnel flow', () => {
+    renderTourRestoreRoute();
+
+    fireEvent.click(screen.getByRole('button', { name: /restore tour 1/i }));
+    fireEvent.click(screen.getByRole('button', { name: /back from recovery/i }));
+
+    expectLocation('/tunnel/tour/1');
+  });
+
+  it('forwards returnTo when entering recovery phrase from tunnel tour', () => {
+    renderTourRestoreRoute();
+
+    fireEvent.click(screen.getByRole('button', { name: /restore tour 1/i }));
+    fireEvent.click(screen.getByRole('button', { name: /enter recovery phrase/i }));
+
+    expectLocation(`/recovery/phrase-input?returnTo=${encodeURIComponent('/tunnel/tour/1')}`);
+  });
+
+  it('hides confirm button on receipt when backState is missing', () => {
+    render(
+      <MemoryRouter
+        initialEntries={[
+          {
+            pathname: '/tunnel/proof/receipt',
+            state: { backPath: '/tunnel/proof/result' },
+          },
+        ]}
+      >
+        <Routes>
+          <Route path="/tunnel/proof/receipt" element={<TunnelProofReceiptScreen />} />
+          <Route path="/tunnel/proof/result" element={<LocationDisplay />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    expect(screen.queryByRole('button', { name: /confirm receipt/i })).toBeNull();
+  });
+
+  it('hides confirm button on receipt when opened from failure context', () => {
+    render(
+      <MemoryRouter
+        initialEntries={[
+          {
+            pathname: '/tunnel/proof/receipt',
+            state: { backPath: '/tunnel/proof/result', backState: { success: false, error: 'TEE down' } },
+          },
+        ]}
+      >
+        <Routes>
+          <Route path="/tunnel/proof/receipt" element={<TunnelProofReceiptScreen />} />
+          <Route path="/tunnel/proof/result" element={<LocationDisplay />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    expect(screen.queryByRole('button', { name: /confirm receipt/i })).toBeNull();
+    expect(screen.getByRole('button', { name: /close receipt/i })).toBeTruthy();
+  });
+
+  it('shows close-only controls on receipt when opened from success context', () => {
+    render(
+      <MemoryRouter
+        initialEntries={[
+          {
+            pathname: '/tunnel/proof/receipt',
+            state: { backPath: '/tunnel/proof/result', backState: { success: true } },
+          },
+        ]}
+      >
+        <Routes>
+          <Route path="/tunnel/proof/receipt" element={<TunnelProofReceiptScreen />} />
+          <Route path="/tunnel/proof/result" element={<LocationDisplay />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    expect(screen.queryByRole('button', { name: /confirm receipt/i })).toBeNull();
+    expect(screen.getByRole('button', { name: /close receipt/i })).toBeTruthy();
   });
 
   it('routes to error result when disclose setup throws before init starts', async () => {

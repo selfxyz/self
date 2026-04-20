@@ -9,7 +9,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import xyz.self.sdk.api.SelfSdk
-import xyz.self.sdk.providers.AndroidKeystoreCryptoProvider
 import xyz.self.sdk.providers.EncryptedSharedPreferencesProvider
 import xyz.self.sdk.providers.SdkProviderRegistry
 
@@ -21,10 +20,6 @@ class MainActivity : ComponentActivity() {
         if (SdkProviderRegistry.secureStorage == null) {
             SdkProviderRegistry.secureStorage = EncryptedSharedPreferencesProvider(this)
         }
-        if (SdkProviderRegistry.crypto == null) {
-            SdkProviderRegistry.crypto = AndroidKeystoreCryptoProvider()
-        }
-
         SelfSdk.bindActivity(this)
         enableEdgeToEdge()
         setContent {

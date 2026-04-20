@@ -17,6 +17,7 @@ import Keychain from 'react-native-keychain';
 
 import { AuthEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
+import { captureException } from '@/config/sentry';
 import type { GetSecureOptions } from '@/integrations/keychain';
 import {
   createKeychainOptions,
@@ -201,6 +202,14 @@ async function loadOrCreateMnemonic(
         code: err?.code,
         name: err?.name,
       });
+      if (error instanceof Error) {
+        captureException(error, {
+          module: 'auth-provider',
+          source: 'loadOrCreateMnemonic',
+          errorCode: err?.code,
+          errorName: err?.name,
+        });
+      }
       trackEvent(AuthEvents.MNEMONIC_RESTORE_FAILED, {
         reason: 'keychain_crypto_failed',
         errorCode: err?.code,
@@ -214,6 +223,12 @@ async function loadOrCreateMnemonic(
     }
 
     console.error('Error loading mnemonic:', error);
+    if (error instanceof Error) {
+      captureException(error, {
+        module: 'auth-provider',
+        source: 'loadOrCreateMnemonic',
+      });
+    }
     trackEvent(AuthEvents.MNEMONIC_RESTORE_FAILED, {
       reason: 'unknown_error',
       error: error instanceof Error ? error.message : String(error),
@@ -419,8 +434,13 @@ export function getPrivateKeyFromMnemonic(mnemonic: string) {
 }
 
 export async function hasSecretStored() {
-  const seed = await Keychain.getGenericPassword({ service: SERVICE_NAME });
-  return !!seed;
+  try {
+    const seed = await Keychain.getGenericPassword({ service: SERVICE_NAME });
+    return !!seed;
+  } catch (error) {
+    console.warn('Error checking for stored secret:', error);
+    return false;
+  }
 }
 
 // Migrates existing mnemonic to use new security settings with accessControl.
@@ -461,6 +481,12 @@ export async function migrateToSecureKeychain(): Promise<boolean> {
     return true;
   } catch (error: unknown) {
     console.error('Error during keychain migration:', error);
+    if (error instanceof Error) {
+      captureException(error, {
+        module: 'auth-provider',
+        source: 'keychain-migration',
+      });
+    }
     const message = error instanceof Error ? error.message : String(error);
     trackEvent(AuthEvents.MNEMONIC_RESTORE_FAILED, {
       reason: 'migration_failed',

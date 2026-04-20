@@ -3,6 +3,7 @@
 **/.yarn/**
 **/dist/**
 **/build/**
+.gradle-home/**
 **/coverage/**
 **/Pods/**
 app/vendor/**

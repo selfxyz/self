@@ -2,15 +2,37 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { trackEvent, trackScreenView } from '@/services/analytics';
+import * as segmentConfig from '@/config/segment';
+import {
+  resetAnalyticsIdentityForSupportUuid,
+  setAnalyticsSupportUuid,
+  trackEvent,
+  trackScreenView,
+} from '@/services/analytics';
 
-// Mock the Segment client
-jest.mock('@/config/segment', () => ({
-  createSegmentClient: jest.fn(() => ({
+jest.mock('@/config/segment', () => {
+  const client = {
     track: jest.fn().mockResolvedValue(undefined),
     flush: jest.fn().mockResolvedValue(undefined),
-  })),
-}));
+    identify: jest.fn().mockResolvedValue(undefined),
+    reset: jest.fn().mockResolvedValue(undefined),
+  };
+  return {
+    createSegmentClient: jest.fn(() => client),
+    __client: client,
+  };
+});
+
+const mockSegmentClient = (
+  segmentConfig as unknown as {
+    __client: {
+      track: jest.Mock;
+      flush: jest.Mock;
+      identify: jest.Mock;
+      reset: jest.Mock;
+    };
+  }
+).__client;
 
 describe('analytics', () => {
   beforeEach(() => {
@@ -335,6 +357,21 @@ describe('analytics', () => {
       };
 
       expect(() => trackEvent('test_event', properties)).not.toThrow();
+    });
+  });
+
+  describe('support UUID identity wiring', () => {
+    it('identifies the user in Segment on setAnalyticsSupportUuid', () => {
+      setAnalyticsSupportUuid('uuid-1');
+      expect(mockSegmentClient.identify).toHaveBeenCalledWith('uuid-1');
+    });
+
+    it('resets and re-identifies on resetAnalyticsIdentityForSupportUuid', async () => {
+      resetAnalyticsIdentityForSupportUuid('uuid-2');
+      expect(mockSegmentClient.reset).toHaveBeenCalled();
+      await Promise.resolve();
+      await Promise.resolve();
+      expect(mockSegmentClient.identify).toHaveBeenCalledWith('uuid-2');
     });
   });
 });

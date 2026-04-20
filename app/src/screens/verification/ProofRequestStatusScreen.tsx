@@ -32,9 +32,15 @@ import {
 } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
+import {
+  hasUserAnIdentityDocumentRegistered,
+  hasUserDoneThePointsDisclosure,
+} from '@/services/points';
 import { getWhiteListedDisclosureAddresses } from '@/services/points/utils';
 import { useProofHistoryStore } from '@/stores/proofHistoryStore';
 import { ProofStatus } from '@/stores/proofTypes';
+
+const PREREQ_CHECK_TIMEOUT_MS = 3000;
 
 const SuccessScreen: React.FC = () => {
   const selfClient = useSelfClient();
@@ -59,28 +65,55 @@ const SuccessScreen: React.FC = () => {
     useState<LottieViewProps['source']>(loadingAnimation);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [countdownStarted, setCountdownStarted] = useState(false);
-  const [whitelistedPoints, setWhitelistedPoints] = useState<number | null>(
-    null,
-  );
+  const [whitelistedPoints, setWhitelistedPoints] = useState<
+    number | null | undefined
+  >(undefined);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const onOkPress = useCallback(async () => {
+    if (whitelistedPoints === undefined) return;
     buttonTap();
+    const completedSessionId = sessionId;
+
+    const cleanupLater = () => {
+      setTimeout(() => {
+        if (useProvingStore.getState().uuid === completedSessionId) {
+          selfClient.getSelfAppState().cleanSelfApp();
+        }
+      }, 2000);
+    };
 
     if (whitelistedPoints !== null) {
-      navigation.navigate('Gratification', {
-        points: whitelistedPoints,
-      });
-      setTimeout(() => {
-        selfClient.getSelfAppState().cleanSelfApp();
-      }, 2000);
-    } else {
-      goHome();
-      setTimeout(() => {
-        selfClient.getSelfAppState().cleanSelfApp();
-      }, 2000);
+      // Bound the prereq checks so a stalled network call can't trap the user
+      // on this screen. On timeout we fall through to goHome() — the safe
+      // default, since Gratification would just bounce them via the guardrail.
+      const timeout = new Promise<false>(resolve =>
+        setTimeout(() => resolve(false), PREREQ_CHECK_TIMEOUT_MS),
+      );
+      const [hasDocument, hasDisclosed] = await Promise.all([
+        Promise.race([hasUserAnIdentityDocumentRegistered(), timeout]),
+        Promise.race([hasUserDoneThePointsDisclosure(), timeout]),
+      ]);
+
+      if (hasDocument && hasDisclosed) {
+        navigation.navigate('Gratification', {
+          points: whitelistedPoints,
+        });
+        cleanupLater();
+        return;
+      }
     }
-  }, [whitelistedPoints, navigation, goHome, selfClient]);
+
+    goHome();
+    cleanupLater();
+  }, [
+    whitelistedPoints,
+    navigation,
+    goHome,
+    selfClient,
+    sessionId,
+    useProvingStore,
+  ]);
 
   function cancelDeeplinkCallbackRedirect() {
     setCountdown(null);
@@ -95,8 +128,33 @@ const SuccessScreen: React.FC = () => {
   }
 
   useEffect(() => {
-    if (isFocused) {
+    if (currentState !== 'completed') return;
+
+    if (!selfApp?.endpoint) {
+      setWhitelistedPoints(null);
+      return;
     }
+
+    const checkWhitelist = async () => {
+      try {
+        const whitelistedContracts = await getWhiteListedDisclosureAddresses();
+        const endpoint = selfApp.endpoint.toLowerCase();
+        const whitelistedContract = whitelistedContracts.find(
+          c => c.contract_address.toLowerCase() === endpoint,
+        );
+        setWhitelistedPoints(
+          whitelistedContract?.points_per_disclosure ?? null,
+        );
+      } catch (error) {
+        console.error('Error checking whitelist:', error);
+        setWhitelistedPoints(null);
+      }
+    };
+
+    checkWhitelist();
+  }, [currentState, selfApp?.endpoint]);
+
+  useEffect(() => {
     if (currentState === 'completed') {
       notificationSuccess();
       setAnimationSource(succesAnimation);
@@ -106,40 +164,17 @@ const SuccessScreen: React.FC = () => {
         appName,
       });
 
-      if (selfApp?.endpoint && whitelistedPoints === null) {
-        const checkWhitelist = async () => {
-          try {
-            const whitelistedContracts =
-              await getWhiteListedDisclosureAddresses();
-            const endpoint = selfApp.endpoint.toLowerCase();
-            const whitelistedContract = whitelistedContracts.find(
-              c => c.contract_address.toLowerCase() === endpoint,
-            );
-
-            if (whitelistedContract) {
-              setWhitelistedPoints(whitelistedContract.points_per_disclosure);
-            }
-          } catch (error) {
-            console.error('Error checking whitelist:', error);
-          }
-        };
-
-        checkWhitelist();
-      }
-
       if (isFocused && !countdownStarted && selfApp?.deeplinkCallback) {
-        if (selfApp?.deeplinkCallback) {
-          try {
-            const url = new URL(selfApp.deeplinkCallback);
-            if (url) {
-              setCountdown(5);
-              setCountdownStarted(true);
-            }
-          } catch {
-            console.warn(
-              'Invalid deep link URL provided (URL sanitized for security)',
-            );
+        try {
+          const url = new URL(selfApp.deeplinkCallback);
+          if (url) {
+            setCountdown(5);
+            setCountdownStarted(true);
           }
+        } catch {
+          console.warn(
+            'Invalid deep link URL provided (URL sanitized for security)',
+          );
         }
       }
     } else if (currentState === 'failure' || currentState === 'error') {
@@ -171,9 +206,7 @@ const SuccessScreen: React.FC = () => {
     reason,
     updateProofStatus,
     selfApp?.deeplinkCallback,
-    selfApp?.endpoint,
     countdownStarted,
-    whitelistedPoints,
   ]);
 
   useEffect(() => {
@@ -245,9 +278,12 @@ const SuccessScreen: React.FC = () => {
         <PrimaryButton
           trackEvent={ProofEvents.PROOF_RESULT_ACKNOWLEDGED}
           disabled={
-            currentState !== 'completed' &&
-            currentState !== 'error' &&
-            currentState !== 'failure'
+            (currentState !== 'completed' &&
+              currentState !== 'error' &&
+              currentState !== 'failure') ||
+            (currentState === 'completed' &&
+              whitelistedPoints === undefined &&
+              !(countdown !== null && countdown > 0))
           }
           onPress={
             countdown !== null && countdown > 0
@@ -261,6 +297,8 @@ const SuccessScreen: React.FC = () => {
             <Spinner />
           ) : countdown !== null && countdown > 0 ? (
             'Cancel'
+          ) : whitelistedPoints === undefined ? (
+            <Spinner />
           ) : (
             'OK'
           )}

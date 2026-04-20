@@ -9,6 +9,7 @@ typechain-types
 #Hardhat files
 cache
 artifacts
+edr-cache
 ignition/deployed_addresses.json
 ignition/parameters.json
 

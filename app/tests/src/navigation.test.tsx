@@ -24,7 +24,7 @@ jest.mock('@/services/analytics', () => ({
   flush: jest.fn(),
 }));
 
-// Mock Didit SDK to prevent ES module parsing errors in isolateModules
+// Mock KYC SDK to prevent ES module parsing errors in isolateModules
 jest.mock('@didit-protocol/sdk-react-native', () => ({
   __esModule: true,
   startVerification: jest.fn().mockResolvedValue({
@@ -104,11 +104,13 @@ describe('navigation', () => {
         'RegistrationFallbackMRZ',
         'RegistrationFallbackNFC',
         'SaveRecoveryPhrase',
+        'SecurityAndBackup',
         'Settings',
         'ShowRecoveryPhrase',
         'SocialLoginDemo',
         'Splash',
         'StarfallPushCode',
+        'Support',
         'WebView',
       ]);
     });

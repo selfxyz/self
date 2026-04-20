@@ -22,9 +22,15 @@ export const ProviderResultScreen: React.FC = () => {
   const state =
     (location.state as ({ providerResult?: KycProviderResult } & MockOnboardingNavigationState) | null) ?? null;
 
-  const providerResult = state?.providerResult ?? createMockProviderResult({ outcome: mockOutcome });
+  const providerResult =
+    state?.providerResult ?? (import.meta.env.DEV ? createMockProviderResult({ outcome: mockOutcome }) : undefined);
 
   useEffect(() => {
+    if (!providerResult) {
+      navigate('/', { replace: true });
+      return;
+    }
+
     haptic.trigger('selection');
     analytics.trackEvent('provider_result_received', {
       status: providerResult.status,
@@ -79,8 +85,8 @@ export const ProviderResultScreen: React.FC = () => {
     lifecycle,
     mockOutcome,
     navigate,
-    providerResult.error?.retryable,
-    providerResult.status,
+    providerResult?.error?.retryable,
+    providerResult?.status,
     state?.countryCode,
     state?.documentType,
   ]);

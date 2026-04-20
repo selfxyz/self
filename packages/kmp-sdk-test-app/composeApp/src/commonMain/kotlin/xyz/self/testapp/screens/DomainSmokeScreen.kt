@@ -52,7 +52,6 @@ data class SmokeResult(
 @Composable
 fun DomainSmokeScreen(navController: NavController) {
     var storageResult by remember { mutableStateOf(SmokeResult()) }
-    var cryptoResult by remember { mutableStateOf(SmokeResult()) }
     var running by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
@@ -69,7 +68,7 @@ fun DomainSmokeScreen(navController: NavController) {
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Text(
-                text = "Tests secureStorage, crypto, and lifecycle providers directly.",
+                text = "Tests secureStorage and lifecycle providers directly.",
                 style = MaterialTheme.typography.bodyMedium,
             )
 
@@ -77,10 +76,8 @@ fun DomainSmokeScreen(navController: NavController) {
                 onClick = {
                     running = true
                     storageResult = SmokeResult()
-                    cryptoResult = SmokeResult()
                     scope.launch {
                         storageResult = runStorageSmoke()
-                        cryptoResult = runCryptoSmoke()
                         running = false
                     }
                 },
@@ -91,7 +88,6 @@ fun DomainSmokeScreen(navController: NavController) {
             }
 
             SmokeCard("secureStorage", storageResult)
-            SmokeCard("crypto", cryptoResult)
             SmokeCard("lifecycle", SmokeResult(CheckStatus.PASS, "ready/setResult validated via SDK launch flow"))
 
             Text(
@@ -182,37 +178,6 @@ private fun runStorageSmoke(): SmokeResult {
         }
 
         SmokeResult(CheckStatus.PASS, "set/get/remove round-trip OK")
-    } catch (e: Exception) {
-        SmokeResult(CheckStatus.FAIL, "Exception: ${e.message}")
-    }
-}
-
-private fun runCryptoSmoke(): SmokeResult {
-    val provider =
-        SdkProviderRegistry.crypto
-            ?: return SmokeResult(CheckStatus.FAIL, "Provider not configured")
-    return try {
-        val keyRef = "smoke_test_key_${kotlin.random.Random.nextInt(100000)}"
-
-        provider.generateKey(keyRef)
-
-        val publicKey = provider.getPublicKey(keyRef)
-        if (publicKey.isNullOrEmpty()) {
-            return SmokeResult(CheckStatus.FAIL, "getPublicKey returned null/empty")
-        }
-
-        val testData = "dGVzdA==" // base64("test")
-        val signature = provider.sign(keyRef, testData)
-        if (signature.isNullOrEmpty()) {
-            return SmokeResult(CheckStatus.FAIL, "sign returned null/empty")
-        }
-
-        provider.deleteKey(keyRef)
-
-        SmokeResult(
-            CheckStatus.PASS,
-            "generateKey/getPublicKey/sign/deleteKey OK\npubKey=${publicKey.take(20)}...\nsig=${signature.take(20)}...",
-        )
     } catch (e: Exception) {
         SmokeResult(CheckStatus.FAIL, "Exception: ${e.message}")
     }
