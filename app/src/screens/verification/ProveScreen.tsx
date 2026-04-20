@@ -366,31 +366,35 @@ const ProveScreen: React.FC = () => {
     }
 
     const trackAlreadyDisclosed = async () => {
-      const whitelistedAddresses = await getWhiteListedDisclosureAddresses();
-      const isPointsDisclosure = whitelistedAddresses.some(
-        contract =>
-          contract.contract_address.toLowerCase() ===
-          selectedApp?.endpoint?.toLowerCase(),
-      );
+      try {
+        const whitelistedAddresses = await getWhiteListedDisclosureAddresses();
+        const isPointsDisclosure = whitelistedAddresses.some(
+          contract =>
+            contract.contract_address.toLowerCase() ===
+            selectedApp?.endpoint?.toLowerCase(),
+        );
 
-      if (!isPointsDisclosure) {
-        return;
+        if (!isPointsDisclosure) {
+          return;
+        }
+
+        const pointsAddress =
+          selectedApp?.selfDefinedData || (await getPointsAddress());
+
+        trackEvent(ProofEvents.POINTS_NULLIFIER_ALREADY_USED, {
+          pointsAddress,
+          endpoint: selectedApp?.endpoint,
+          sessionId: provingStore.uuid,
+        });
+
+        captureMessage('Points disclosure already registered on-chain', {
+          pointsAddress,
+          endpoint: selectedApp?.endpoint,
+          sessionId: provingStore.uuid,
+        });
+      } catch (error) {
+        console.error('Failed tracking NullifierAlreadyUsed event:', error);
       }
-
-      const pointsAddress =
-        selectedApp?.selfDefinedData || (await getPointsAddress());
-
-      trackEvent(ProofEvents.POINTS_NULLIFIER_ALREADY_USED, {
-        pointsAddress,
-        endpoint: selectedApp?.endpoint,
-        sessionId: provingStore.uuid,
-      });
-
-      captureMessage('Points disclosure already registered on-chain', {
-        pointsAddress,
-        endpoint: selectedApp?.endpoint,
-        sessionId: provingStore.uuid,
-      });
     };
 
     trackAlreadyDisclosed();
