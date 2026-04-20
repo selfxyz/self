@@ -359,8 +359,7 @@ jobs:
             fi
             echo "⚠️ Gradle build failed on attempt ${attempt}."
             if [ "${attempt}" -lt 2 ]; then
-              echo "Cleaning Gradle daemons and retrying in 15s..."
-              (cd app/android && ./gradlew --stop) || true
+              echo "Sleeping 15s before retry (no Gradle daemon to stop since daemon=false)..."
               sleep 15
             fi
           done
