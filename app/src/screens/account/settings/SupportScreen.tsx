@@ -3,23 +3,26 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useCallback } from 'react';
-import { Alert } from 'react-native';
+import { Alert, StyleSheet, Switch, View } from 'react-native';
 import { Button, ScrollView, YStack } from 'tamagui';
 
 import { BodyText } from '@selfxyz/mobile-sdk-alpha/components';
 import {
   black,
+  blue600,
   slate100,
   slate200,
   slate500,
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import useOpenSupportForm from '@/hooks/useOpenSupportForm';
 import { useSupportUuid } from '@/hooks/useSupportUuid';
 
 const SupportScreen: React.FC = () => {
-  const { supportUuid, copy, regenerate } = useSupportUuid();
+  const { isEnabled, supportUuid, copy, regenerate, setEnabled } =
+    useSupportUuid();
   const openSupportForm = useOpenSupportForm();
   const diagnosticIdText = supportUuid ?? 'Loading diagnostic ID...';
 
@@ -46,6 +49,13 @@ const SupportScreen: React.FC = () => {
     );
   }, [regenerate]);
 
+  const handleSupportUuidToggle = useCallback(
+    (enabled: boolean) => {
+      setEnabled(enabled);
+    },
+    [setEnabled],
+  );
+
   return (
     <ScrollView flex={1} backgroundColor={slate100}>
       <YStack padding={20} gap={20}>
@@ -58,50 +68,98 @@ const SupportScreen: React.FC = () => {
         </Button>
 
         <YStack gap={8}>
+          <View style={styles.settingRow}>
+            <View style={styles.settingTextContainer}>
+              <BodyText style={styles.settingLabel}>
+                Share diagnostic ID
+              </BodyText>
+              <BodyText style={styles.settingDescription}>
+                Enabled by default. Turn this off to stop attaching a diagnostic
+                ID to support requests and troubleshooting screens.
+              </BodyText>
+            </View>
+            <Switch
+              value={isEnabled}
+              onValueChange={handleSupportUuidToggle}
+              trackColor={{ false: slate200, true: blue600 }}
+              thumbColor={white}
+              testID="support-uuid-toggle"
+            />
+          </View>
+
           <BodyText style={{ color: slate500, fontSize: 13 }}>
-            Share the diagnostic ID below when contacting support so we can
-            locate your logs.
+            {isEnabled
+              ? 'Share the diagnostic ID below when contacting support so we can locate your logs.'
+              : 'Diagnostic IDs are off. Enable this setting whenever you want support requests to include a diagnostic identifier.'}
           </BodyText>
 
-          <YStack
-            borderWidth={1}
-            borderColor={slate200}
-            borderRadius={12}
-            backgroundColor={white}
-            padding={16}
-            gap={8}
-          >
-            <BodyText style={{ color: black, fontSize: 16 }}>
-              Diagnostic ID
-            </BodyText>
-            <BodyText style={{ color: slate500, fontSize: 14 }}>
-              {diagnosticIdText}
-            </BodyText>
-          </YStack>
+          {isEnabled ? (
+            <>
+              <YStack
+                borderWidth={1}
+                borderColor={slate200}
+                borderRadius={12}
+                backgroundColor={white}
+                padding={16}
+                gap={8}
+              >
+                <BodyText style={{ color: black, fontSize: 16 }}>
+                  Diagnostic ID
+                </BodyText>
+                <BodyText style={{ color: slate500, fontSize: 14 }}>
+                  {diagnosticIdText}
+                </BodyText>
+              </YStack>
 
-          <Button
-            backgroundColor={white}
-            borderColor={slate200}
-            borderWidth={1}
-            borderRadius={12}
-            onPress={handleCopy}
-          >
-            <BodyText style={{ color: black }}>Copy diagnostic ID</BodyText>
-          </Button>
+              <Button
+                backgroundColor={white}
+                borderColor={slate200}
+                borderWidth={1}
+                borderRadius={12}
+                onPress={handleCopy}
+              >
+                <BodyText style={{ color: black }}>Copy diagnostic ID</BodyText>
+              </Button>
 
-          <Button
-            backgroundColor={white}
-            borderColor={slate200}
-            borderWidth={1}
-            borderRadius={12}
-            onPress={handleRegenerate}
-          >
-            <BodyText style={{ color: black }}>Regenerate</BodyText>
-          </Button>
+              <Button
+                backgroundColor={white}
+                borderColor={slate200}
+                borderWidth={1}
+                borderRadius={12}
+                onPress={handleRegenerate}
+              >
+                <BodyText style={{ color: black }}>Regenerate</BodyText>
+              </Button>
+            </>
+          ) : null}
         </YStack>
       </YStack>
     </ScrollView>
   );
 };
+
+const styles = StyleSheet.create({
+  settingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 16,
+  },
+  settingTextContainer: {
+    flex: 1,
+    gap: 4,
+  },
+  settingLabel: {
+    fontSize: 16,
+    fontFamily: dinot,
+    fontWeight: '500',
+    color: black,
+  },
+  settingDescription: {
+    fontSize: 14,
+    fontFamily: dinot,
+    color: slate500,
+  },
+});
 
 export default SupportScreen;

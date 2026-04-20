@@ -26,7 +26,7 @@ const SupportUuidRow: React.FC<SupportUuidRowProps> = ({
   title = 'Diagnostic ID',
 }) => {
   const [expanded, setExpanded] = useState(!collapsedByDefault);
-  const { supportUuid, copy } = useSupportUuid();
+  const { isEnabled, supportUuid, copy } = useSupportUuid();
   const diagnosticIdText = supportUuid ?? 'Loading diagnostic ID...';
 
   const handleCopy = useCallback(() => {
@@ -35,6 +35,10 @@ const SupportUuidRow: React.FC<SupportUuidRowProps> = ({
   }, [copy]);
 
   const toggle = useCallback(() => setExpanded(prev => !prev), []);
+
+  if (!isEnabled) {
+    return null;
+  }
 
   if (!expanded) {
     return (
@@ -47,7 +51,7 @@ const SupportUuidRow: React.FC<SupportUuidRowProps> = ({
         paddingVertical={10}
         paddingHorizontal={12}
       >
-        <BodyText style={{ color: slate500 }}>Show diagnostic info</BodyText>
+        <BodyText style={{ color: slate500 }}>Show diagnostic ID</BodyText>
       </Button>
     );
   }

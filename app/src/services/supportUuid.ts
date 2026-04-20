@@ -12,8 +12,12 @@ import {
 } from '@/services/analytics';
 import { useSettingStore } from '@/stores/settingStore';
 
-const ensureSupportUuid = (): string => {
+const ensureSupportUuid = (): string | null => {
   const state = useSettingStore.getState();
+  if (!state.supportUuidEnabled) {
+    return null;
+  }
+
   if (state.supportUuid) {
     return state.supportUuid;
   }
@@ -25,6 +29,9 @@ const ensureSupportUuid = (): string => {
 
 export const appendSupportUuidToUrl = (url: string): string => {
   const supportUuid = ensureSupportUuid();
+  if (!supportUuid) {
+    return url;
+  }
 
   try {
     const parsed = new URL(url);
@@ -41,30 +48,64 @@ export const appendSupportUuidToUrl = (url: string): string => {
   }
 };
 
-export const copySupportUuid = (): string => {
+export const copySupportUuid = (): string | null => {
   const supportUuid = ensureSupportUuid();
+  if (!supportUuid) {
+    return null;
+  }
+
   Clipboard.setString(supportUuid);
   return supportUuid;
 };
 
-export const getSupportUuid = (): string => {
+export const getSupportUuid = (): string | null => {
   return ensureSupportUuid();
 };
 
-export const initializeSupportUuidContext = (): string => {
+export const initializeSupportUuidContext = (): string | null => {
+  const { supportUuidEnabled } = useSettingStore.getState();
   const supportUuid = ensureSupportUuid();
-  setSupportUuidInSentry(supportUuid);
-  setAnalyticsSupportUuid(supportUuid);
+  setSupportUuidInSentry(supportUuid, supportUuidEnabled);
+  setAnalyticsSupportUuid(supportUuidEnabled ? supportUuid : null);
   return supportUuid;
 };
 
-export const regenerateSupportUuid = (): string => {
-  const nextUuid = uuidv4();
+export const regenerateSupportUuid = (): string | null => {
   const state = useSettingStore.getState();
+  if (!state.supportUuidEnabled) {
+    return null;
+  }
+
+  const nextUuid = uuidv4();
   state.setSupportUuid(nextUuid);
 
-  setSupportUuidInSentry(nextUuid);
+  setSupportUuidInSentry(nextUuid, true);
   resetAnalyticsIdentityForSupportUuid(nextUuid);
 
+  return nextUuid;
+};
+
+export const setSupportUuidCollectionEnabled = (
+  enabled: boolean,
+): string | null => {
+  const state = useSettingStore.getState();
+
+  if (enabled === state.supportUuidEnabled) {
+    return enabled ? ensureSupportUuid() : null;
+  }
+
+  state.setSupportUuidEnabled(enabled);
+
+  if (!enabled) {
+    state.setSupportUuid(null);
+    setSupportUuidInSentry(null, false);
+    setAnalyticsSupportUuid(null);
+    return null;
+  }
+
+  const nextUuid = uuidv4();
+  state.setSupportUuid(nextUuid);
+  setSupportUuidInSentry(nextUuid, true);
+  resetAnalyticsIdentityForSupportUuid(nextUuid);
   return nextUuid;
 };

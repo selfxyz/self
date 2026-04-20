@@ -231,22 +231,14 @@ const identifyInSegment = (nextSupportUuid: string) => {
   });
 };
 
-export const resetAnalyticsIdentityForSupportUuid = (
-  nextSupportUuid: string,
-) => {
-  supportUuid = nextSupportUuid;
+const resetSegmentIdentity = () => {
+  if (!segmentClient) return Promise.resolve();
+  return segmentClient.reset().catch(err => {
+    if (__DEV__) console.warn('Failed to reset Segment identity:', err);
+  });
+};
 
-  if (segmentClient) {
-    segmentClient
-      .reset()
-      .catch(err => {
-        if (__DEV__) console.warn('Failed to reset Segment identity:', err);
-      })
-      .then(() => identifyInSegment(nextSupportUuid));
-  } else {
-    identifyInSegment(nextSupportUuid);
-  }
-
+const resetMixpanelIdentity = () => {
   if (PassportReader && typeof PassportReader.resetIdentity === 'function') {
     try {
       PassportReader.resetIdentity();
@@ -256,7 +248,9 @@ export const resetAnalyticsIdentityForSupportUuid = (
       }
     }
   }
+};
 
+const setMixpanelDistinctId = (nextSupportUuid: string) => {
   if (PassportReader && typeof PassportReader.setDistinctId === 'function') {
     try {
       PassportReader.setDistinctId(nextSupportUuid);
@@ -268,20 +262,32 @@ export const resetAnalyticsIdentityForSupportUuid = (
   }
 };
 
-export const setAnalyticsSupportUuid = (nextSupportUuid: string) => {
+export const resetAnalyticsIdentityForSupportUuid = (
+  nextSupportUuid: string,
+) => {
   supportUuid = nextSupportUuid;
 
-  identifyInSegment(nextSupportUuid);
-
-  if (PassportReader && typeof PassportReader.setDistinctId === 'function') {
-    try {
-      PassportReader.setDistinctId(nextSupportUuid);
-    } catch (error) {
-      if (__DEV__) {
-        console.warn('Failed to set Mixpanel distinct_id:', error);
-      }
-    }
+  if (segmentClient) {
+    resetSegmentIdentity().then(() => identifyInSegment(nextSupportUuid));
+  } else {
+    identifyInSegment(nextSupportUuid);
   }
+
+  resetMixpanelIdentity();
+  setMixpanelDistinctId(nextSupportUuid);
+};
+
+export const setAnalyticsSupportUuid = (nextSupportUuid: string | null) => {
+  supportUuid = nextSupportUuid;
+
+  if (!nextSupportUuid) {
+    resetSegmentIdentity();
+    resetMixpanelIdentity();
+    return;
+  }
+
+  identifyInSegment(nextSupportUuid);
+  setMixpanelDistinctId(nextSupportUuid);
 };
 
 /**
