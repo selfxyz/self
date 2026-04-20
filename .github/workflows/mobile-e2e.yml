@@ -11,7 +11,7 @@ env:
   GH_GEMS_CACHE_VERSION: v1 # Ruby gems cache version
   # Performance optimizations
   YARN_TASK_POOL_CONCURRENCY: 2 # Limit parallel native module builds to prevent OOM on self-hosted runners
-  GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2 -Dorg.gradle.parallel=true -Dorg.gradle.caching=true -Dorg.gradle.jvmargs='-Xmx6144m -XX:MaxMetaspaceSize=1024m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8'
+  GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.workers.max=1 -Dorg.gradle.parallel=true -Dorg.gradle.caching=true -Dorg.gradle.jvmargs='-Xmx4096m -XX:MaxMetaspaceSize=1024m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8'
   CI: true
   # Disable Maestro analytics in CI
   MAESTRO_CLI_NO_ANALYTICS: true
@@ -343,12 +343,33 @@ jobs:
           MONITOR_PID=$!
           trap 'kill "${MONITOR_PID}" 2>/dev/null || true' EXIT
 
-          (
-            cd app/android &&
-            E2E_BUILD=true ./gradlew assembleDebug -PbundleInDebug=true --quiet --build-cache --no-configuration-cache
-          ) || { echo "❌ Android build failed"; exit 1; }
+          build_attempt() {
+            (
+              cd app/android &&
+              E2E_BUILD=true ./gradlew assembleDebug -PbundleInDebug=true --quiet --build-cache --no-configuration-cache
+            )
+          }
+
+          BUILD_OK=false
+          for attempt in 1 2; do
+            echo "Gradle build attempt ${attempt}/2..."
+            if build_attempt; then
+              BUILD_OK=true
+              break
+            fi
+            echo "⚠️ Gradle build failed on attempt ${attempt}."
+            if [ "${attempt}" -lt 2 ]; then
+              echo "Cleaning Gradle daemons and retrying in 15s..."
+              (cd app/android && ./gradlew --stop) || true
+              sleep 15
+            fi
+          done
 
           kill "${MONITOR_PID}" 2>/dev/null || true
+          if [ "${BUILD_OK}" != "true" ]; then
+            echo "❌ Android build failed after retries"
+            exit 1
+          fi
           echo "✅ Android build succeeded"
 
       - name: Clean up Gradle build artifacts
