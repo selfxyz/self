@@ -9,7 +9,11 @@ import type { RouteProp } from '@react-navigation/native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import {
+  setOnboardingBranch,
+  trackOnboardingRetry,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
 import { BodyText } from '@selfxyz/mobile-sdk-alpha/components';
 import {
   black,
@@ -87,6 +91,7 @@ const RegistrationFallbackMRZScreen: React.FC = () => {
     trackEvent('REGISTRATION_FALLBACK_TRY_ALTERNATIVE', {
       errorSource: 'mrz_scan_failed',
     });
+    setOnboardingBranch('kyc');
     await launchKycVerification();
   }, [launchKycVerification, trackEvent]);
 
@@ -94,8 +99,9 @@ const RegistrationFallbackMRZScreen: React.FC = () => {
     trackEvent('REGISTRATION_FALLBACK_RETRY_ORIGINAL', {
       errorSource: 'mrz_scan_failed',
     });
+    trackOnboardingRetry(selfClient, 'scan_started', 'mrz_scan_failed');
     navigation.navigate('DocumentCamera');
-  }, [navigation, trackEvent]);
+  }, [navigation, selfClient, trackEvent]);
 
   return (
     <YStack flex={1} backgroundColor={slate100}>

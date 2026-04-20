@@ -11,6 +11,8 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import {
   DelayedLottieView,
   dinot,
+  resolveOnboardingBranch,
+  trackOnboardingStep,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
 import {
@@ -19,7 +21,10 @@ import {
   SecondaryButton,
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
-import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import {
+  OnboardingEvents,
+  PassportEvents,
+} from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import {
   black,
   slate400,
@@ -54,6 +59,14 @@ const DocumentCameraScreen: React.FC = () => {
   // Add a ref to track when the camera screen is mounted
   const scanStartTimeRef = useRef(Date.now());
   const { onPassportRead } = useReadMRZ(scanStartTimeRef);
+
+  useEffect(() => {
+    const branch = resolveOnboardingBranch(selectedDocumentType ?? 'p');
+    trackOnboardingStep(selfClient, OnboardingEvents.SCAN_STARTED, { branch });
+    // Fire once on mount for this attempt. `trackOnboardingStep` dedupes,
+    // so re-mounts from back-nav are no-ops.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Dev-only: Auto-trigger MRZ error after short delay if error injection is enabled
   useEffect(() => {

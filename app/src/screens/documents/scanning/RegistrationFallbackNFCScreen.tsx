@@ -9,7 +9,11 @@ import type { RouteProp } from '@react-navigation/native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import {
+  setOnboardingBranch,
+  trackOnboardingRetry,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
 import { BodyText } from '@selfxyz/mobile-sdk-alpha/components';
 import {
   black,
@@ -93,6 +97,9 @@ const RegistrationFallbackNFCScreen: React.FC = () => {
     trackEvent('REGISTRATION_FALLBACK_TRY_ALTERNATIVE', {
       errorSource: 'nfc_scan_failed',
     });
+    // User is switching from biometric to the KYC provider fallback —
+    // update the funnel's branch so subsequent canonical events reflect it.
+    setOnboardingBranch('kyc');
     await launchKycVerification();
   }, [launchKycVerification, trackEvent]);
 
@@ -100,8 +107,9 @@ const RegistrationFallbackNFCScreen: React.FC = () => {
     trackEvent('REGISTRATION_FALLBACK_RETRY_ORIGINAL', {
       errorSource: 'nfc_scan_failed',
     });
+    trackOnboardingRetry(selfClient, 'scan_started', 'nfc_scan_failed');
     navigation.navigate('DocumentNFCScan', {});
-  }, [navigation, trackEvent]);
+  }, [navigation, selfClient, trackEvent]);
 
   return (
     <YStack flex={1} backgroundColor={slate100}>

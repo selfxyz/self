@@ -15,7 +15,10 @@ import type {
   DocumentCatalog,
   DocumentMetadata,
 } from '@selfxyz/common/utils/types';
-import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import {
+  startOnboardingAttempt,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
 import {
   ButtonsContainer,
   PrimaryButton,
@@ -400,7 +403,8 @@ const ManageDocumentsScreen: React.FC = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { bottom } = useSafeAreaInsets();
-  const { trackEvent } = useSelfClient();
+  const selfClient = useSelfClient();
+  const { trackEvent } = selfClient;
   const { hasRealDocument } = useHasRealDocument();
 
   useEffect(() => {
@@ -410,6 +414,7 @@ const ManageDocumentsScreen: React.FC = () => {
   const handleAddDocument = () => {
     impactLight();
     trackEvent(DocumentEvents.ADD_NEW_SCAN_SELECTED);
+    startOnboardingAttempt(selfClient);
     navigation.navigate('CountryPicker');
   };
 

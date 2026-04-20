@@ -9,11 +9,17 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import {
+  setOnboardingBranch,
+  trackOnboardingStep,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
+import {
   BodyText,
   ButtonsContainer,
   PrimaryButton,
   SecondaryButton,
 } from '@selfxyz/mobile-sdk-alpha/components';
+import { OnboardingEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import {
   black,
   slate100,
@@ -43,14 +49,21 @@ const LogoConfirmationScreen: React.FC = () => {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { showModal } = useFeedback();
   const navigateToOnboarding = useHapticNavigation('DocumentOnboarding');
+  const selfClient = useSelfClient();
+  const { trackEvent } = selfClient;
 
   const handleConfirm = useCallback(() => {
     buttonTap();
+    trackEvent('App: Logo Confirmation Answered', { answer: 'yes' });
     navigateToOnboarding();
-  }, [navigateToOnboarding]);
+  }, [navigateToOnboarding, trackEvent]);
 
   const handleNotFound = useCallback(() => {
     buttonTap();
+    trackEvent('App: Logo Confirmation Answered', { answer: 'no' });
+    // "No" on the chip-symbol check routes through the KYC provider —
+    // update the canonical funnel branch accordingly.
+    setOnboardingBranch('kyc');
     showModal({
       titleText: 'Document Not Supported',
       bodyText:
@@ -59,6 +72,9 @@ const LogoConfirmationScreen: React.FC = () => {
       onButtonPress: async () => {
         try {
           const session = await createKycSession();
+          trackOnboardingStep(selfClient, OnboardingEvents.SCAN_STARTED, {
+            branch: 'kyc',
+          });
           const result = await launchKycVerification(session.sessionToken);
 
           // User cancelled/dismissed without completing verification
@@ -80,6 +96,9 @@ const LogoConfirmationScreen: React.FC = () => {
           }
 
           // Verification succeeded - navigate to KycSuccessScreen
+          trackOnboardingStep(selfClient, OnboardingEvents.SCAN_SUCCEEDED, {
+            branch: 'kyc',
+          });
           navigation.navigate('KycSuccess', { sessionId: session.sessionId });
         } catch {
           console.error('Error launching KYC verification');
@@ -92,7 +111,7 @@ const LogoConfirmationScreen: React.FC = () => {
         }
       },
     });
-  }, [countryCode, navigation, showModal]);
+  }, [countryCode, navigation, selfClient, showModal, trackEvent]);
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={slate100}>

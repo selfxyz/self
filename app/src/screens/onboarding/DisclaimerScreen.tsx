@@ -8,7 +8,11 @@ import { YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { DelayedLottieView } from '@selfxyz/mobile-sdk-alpha';
+import {
+  DelayedLottieView,
+  startOnboardingAttempt,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
 import {
   Caution,
   PrimaryButton,
@@ -27,6 +31,7 @@ const DisclaimerScreen: React.FC = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { dismissPrivacyNote } = useSettingStore();
+  const selfClient = useSelfClient();
 
   useEffect(() => {
     notificationWarning();
@@ -65,6 +70,7 @@ const DisclaimerScreen: React.FC = () => {
               onPress={() => {
                 confirmTap();
                 dismissPrivacyNote();
+                startOnboardingAttempt(selfClient);
                 navigation.navigate({ name: 'Home', params: {} });
               }}
             >

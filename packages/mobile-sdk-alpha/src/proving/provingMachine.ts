@@ -41,7 +41,8 @@ import {
 } from '@selfxyz/common/utils/proving';
 import type { IDDocument } from '@selfxyz/common/utils/types';
 
-import { PassportEvents, ProofEvents } from '../constants/analytics';
+import { completeOnboardingAttempt, failOnboardingAttempt, trackOnboardingStep } from '../analytics/onboardingFunnel';
+import { OnboardingEvents, PassportEvents, ProofEvents } from '../constants/analytics';
 import {
   clearPassportData,
   hasAnyValidRegisteredDocument,
@@ -230,6 +231,11 @@ export interface ProvingState {
   reason: string | null;
   endpointType: EndpointType | null;
   env: 'prod' | 'stg' | null;
+  // True once the machine has entered `post_proving` with circuitType
+  // 'register' in this session. Gates the canonical `onboarding_completed`
+  // event so it does not fire when `completed` is reached via the
+  // `ALREADY_REGISTERED` shortcut from `validating_document`.
+  didNewRegistrationProof: boolean;
   init: (
     selfClient: SelfClient,
     circuitType: 'dsc' | 'disclose' | 'register',
@@ -450,7 +456,17 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         get().startProving(selfClient);
       }
 
+      if (state.value === 'proving') {
+        // Canonical funnel: fire-once per attempt. `trackOnboardingStep`
+        // dedupes, so transient re-entry into `proving` (e.g. via reconnect)
+        // does not re-emit.
+        trackOnboardingStep(selfClient, OnboardingEvents.PROOF_STARTED);
+      }
+
       if (state.value === 'post_proving') {
+        if (get().circuitType === 'register') {
+          set({ didNewRegistrationProof: true });
+        }
         get().postProving(selfClient);
       }
 
@@ -483,6 +499,18 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           selfClient.getSelfAppState().handleProofResult(true);
         }
 
+        // Canonical funnel terminal events. Registration-completion fires
+        // only when we actually generated a new proof in this session
+        // (didNewRegistrationProof). The `ALREADY_REGISTERED` path reaches
+        // `completed` without going through `post_proving`, so the flag
+        // stays false and no canonical onboarding event fires.
+        if (get().circuitType === 'register' && get().didNewRegistrationProof) {
+          trackOnboardingStep(selfClient, OnboardingEvents.PROOF_SUCCEEDED);
+          completeOnboardingAttempt(selfClient);
+        } else if (get().circuitType === 'disclose') {
+          selfClient.trackEvent(OnboardingEvents.DISCLOSURE_COMPLETED);
+        }
+
         emitVerificationComplete(true);
 
         // Disable keychain error modal when proving flow ends
@@ -506,6 +534,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
         if (get().circuitType === 'disclose') {
           selfClient.getSelfAppState().handleProofResult(false, error_code ?? undefined, reason ?? undefined);
+        } else if (get().circuitType === 'register') {
+          failOnboardingAttempt(selfClient, 'proof_generation_started', reason ?? error_code ?? 'proof_failure', {
+            recoverable: false,
+          });
         }
 
         emitVerificationComplete(false, {
@@ -516,6 +548,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       if (state.value === 'error') {
         if (get().circuitType === 'disclose') {
           selfClient.getSelfAppState().handleProofResult(false, 'error', 'error');
+        } else if (get().circuitType === 'register') {
+          failOnboardingAttempt(selfClient, 'proof_generation_started', get().reason ?? get().error_code ?? 'error', {
+            recoverable: true,
+          });
         }
 
         emitVerificationComplete(false, {
@@ -543,6 +579,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     passportData: null,
     secret: null,
     circuitType: null,
+    didNewRegistrationProof: false,
     env: null,
     error_code: null,
     reason: null,
@@ -1023,6 +1060,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         passportData: null,
         secret: null,
         circuitType,
+        didNewRegistrationProof: false,
         endpointType: null,
         env: null,
         error_code: null,
