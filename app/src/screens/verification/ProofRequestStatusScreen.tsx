@@ -31,6 +31,10 @@ import {
 } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
+import {
+  hasUserAnIdentityDocumentRegistered,
+  hasUserDoneThePointsDisclosure,
+} from '@/services/points';
 import { getWhiteListedDisclosureAddresses } from '@/services/points/utils';
 import { useProofHistoryStore } from '@/stores/proofHistoryStore';
 import { ProofStatus } from '@/stores/proofTypes';
@@ -68,23 +72,31 @@ const SuccessScreen: React.FC = () => {
     buttonTap();
     const completedSessionId = sessionId;
 
+    const cleanupLater = () => {
+      setTimeout(() => {
+        if (useProvingStore.getState().uuid === completedSessionId) {
+          selfClient.getSelfAppState().cleanSelfApp();
+        }
+      }, 2000);
+    };
+
     if (whitelistedPoints !== null) {
-      navigation.navigate('Gratification', {
-        points: whitelistedPoints,
-      });
-      setTimeout(() => {
-        if (useProvingStore.getState().uuid === completedSessionId) {
-          selfClient.getSelfAppState().cleanSelfApp();
-        }
-      }, 2000);
-    } else {
-      goHome();
-      setTimeout(() => {
-        if (useProvingStore.getState().uuid === completedSessionId) {
-          selfClient.getSelfAppState().cleanSelfApp();
-        }
-      }, 2000);
+      const [hasDocument, hasDisclosed] = await Promise.all([
+        hasUserAnIdentityDocumentRegistered(),
+        hasUserDoneThePointsDisclosure(),
+      ]);
+
+      if (hasDocument && hasDisclosed) {
+        navigation.navigate('Gratification', {
+          points: whitelistedPoints,
+        });
+        cleanupLater();
+        return;
+      }
     }
+
+    goHome();
+    cleanupLater();
   }, [
     whitelistedPoints,
     navigation,

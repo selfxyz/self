@@ -5,6 +5,7 @@
 import type { AppStateStatus } from 'react-native';
 import { AppState } from 'react-native';
 import type { transportFunctionType } from 'react-native-logs';
+import { v4 as uuidv4 } from 'uuid';
 
 import { registerDocumentChangeCallback } from '@/providers/passportDataProvider';
 import { useSettingStore } from '@/stores/settingStore';
@@ -31,7 +32,7 @@ interface LokiPayload {
 }
 
 // Per-session ID for grouping logs in Grafana (not persistent, not user-identifiable)
-const sessionId = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+const sessionId = uuidv4();
 
 // Batch management state
 let batch: LokiLogEntry[] = [];
