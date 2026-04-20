@@ -123,12 +123,6 @@ android {
 
     namespace "com.proofofpassportapp"
 
-    // Build optimizations
-    dexOptions {
-        javaMaxHeapSize "4g"
-        preDexLibraries false
-    }
-
     buildFeatures {
         buildConfig = true
         viewBinding = true
@@ -138,8 +132,8 @@ android {
         applicationId "com.proofofpassportapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 142
-        versionName "2.9.17"
+        versionCode 149
+        versionName "2.9.18"
         manifestPlaceholders = [appAuthRedirectScheme: 'com.proofofpassportapp']
         externalNativeBuild {
             cmake {

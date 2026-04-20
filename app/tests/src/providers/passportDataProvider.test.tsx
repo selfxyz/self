@@ -8,10 +8,12 @@ import { render, waitFor } from '@testing-library/react-native';
 
 import { SelfClientProvider } from '@selfxyz/mobile-sdk-alpha';
 
+import { captureException } from '@/config/sentry';
 // Import after mocking
 import {
   __resetPassportProviderTestState,
   initializeNativeModules,
+  loadDocumentByIdDirectlyFromKeychain,
   loadDocumentCatalogDirectlyFromKeychain,
   migrateFromLegacyStorage,
   PassportProvider,
@@ -46,6 +48,14 @@ const mockAuthProvider = {
 jest.mock('@/providers/authProvider', () => ({
   useAuth: () => mockAuthProvider,
 }));
+
+jest.mock('@/config/sentry', () => ({
+  captureException: jest.fn(),
+}));
+
+const mockCaptureException = captureException as jest.MockedFunction<
+  typeof captureException
+>;
 
 const MockText = ({
   children,
@@ -149,6 +159,7 @@ describe('PassportDataProvider', () => {
     jest.clearAllMocks();
     console.log = jest.fn();
     console.warn = jest.fn();
+    console.error = jest.fn();
     __resetPassportProviderTestState();
   });
 
@@ -579,7 +590,7 @@ describe('PassportDataProvider', () => {
 
       expect(result).toEqual({ documents: [] });
       expect(consoleLogSpy).toHaveBeenCalledWith(
-        'Error loading document catalog:',
+        'Error loading document:',
         expect.any(SyntaxError),
       );
 
@@ -622,7 +633,7 @@ describe('PassportDataProvider', () => {
 
       expect(result).toEqual({ documents: [] });
       expect(consoleLogSpy).toHaveBeenCalledWith(
-        'Error loading document catalog:',
+        'Error loading document:',
         expect.any(SyntaxError),
       );
 
@@ -649,7 +660,7 @@ describe('PassportDataProvider', () => {
       // and the function returns empty catalog
       expect(result).toEqual({ documents: [] });
       expect(consoleLogSpy).toHaveBeenCalledWith(
-        'Error loading document catalog:',
+        'Error loading document:',
         expect.any(TypeError),
       );
 
@@ -674,11 +685,42 @@ describe('PassportDataProvider', () => {
 
       expect(result).toEqual({ documents: [] });
       expect(consoleLogSpy).toHaveBeenCalledWith(
-        'Error loading document catalog:',
+        'Error loading document:',
         expect.any(SyntaxError),
       );
 
       consoleLogSpy.mockRestore();
+    });
+  });
+
+  describe('loadDocumentByIdDirectlyFromKeychain', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+      __resetPassportProviderTestState();
+    });
+
+    it('sanitizes document ids before sending keychain failures to Sentry', async () => {
+      const cryptoError = Object.assign(new Error('Decryption failed'), {
+        code: 'E_CRYPTO_FAILED',
+        name: 'com.oblador.keychain.exceptions.CryptoFailedException',
+      });
+
+      mockKeychain.getGenericPassword = jest
+        .fn()
+        .mockResolvedValueOnce({ password: 'test' })
+        .mockRejectedValueOnce(cryptoError);
+
+      await initializeNativeModules();
+
+      const result = await loadDocumentByIdDirectlyFromKeychain('doc-123');
+
+      expect(result).toBeNull();
+      expect(mockCaptureException).toHaveBeenCalledWith(cryptoError, {
+        module: 'passport-data-provider',
+        contextLabel: 'document',
+        errorCode: 'E_CRYPTO_FAILED',
+        errorName: 'com.oblador.keychain.exceptions.CryptoFailedException',
+      });
     });
   });
 });

@@ -41,6 +41,8 @@ type AndroidPassportReaderModule = {
   trackEvent?: (name: string, properties?: Record<string, unknown>) => void;
   flush?: () => void | Promise<void>;
   reset?: () => void;
+  resetIdentity?: () => void;
+  setDistinctId?: (distinctId: string) => void;
   scan?: (options: ScanOptions) => Promise<AndroidScanResponse>;
 };
 
@@ -48,6 +50,8 @@ type IOSPassportReaderModule = {
   configure?: (token: string, enableDebug?: boolean) => void;
   trackEvent?: (name: string, properties?: Record<string, unknown>) => void;
   flush?: () => void | Promise<void>;
+  resetIdentity?: () => void;
+  setDistinctId?: (distinctId: string) => void;
   scanPassport?: (
     passportNumber: string,
     dateOfBirth: string,

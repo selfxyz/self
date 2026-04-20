@@ -1,6 +1,6 @@
 {
   "name": "@selfxyz/mobile-app",
-  "version": "2.9.17",
+  "version": "2.9.18",
   "private": true,
   "type": "module",
   "scripts": {
@@ -127,6 +127,7 @@
     "ethers": "^6.16.0",
     "expo": "~52.0.40",
     "expo-application": "~6.0.2",
+    "expo-camera": "~16.0.18",
     "hash.js": "^1.1.7",
     "js-sha1": "^0.7.0",
     "js-sha256": "^0.11.1",
