@@ -131,6 +131,11 @@ jest.mock('@/services/points/utils', () => ({
   getWhiteListedDisclosureAddresses: jest.fn(),
 }));
 
+jest.mock('@/services/points', () => ({
+  hasUserAnIdentityDocumentRegistered: jest.fn(),
+  hasUserDoneThePointsDisclosure: jest.fn(),
+}));
+
 jest.mock('@/stores/proofHistoryStore', () => ({
   useProofHistoryStore: jest.fn(),
 }));
@@ -157,6 +162,11 @@ const { getWhiteListedDisclosureAddresses } = jest.requireMock(
 ) as {
   getWhiteListedDisclosureAddresses: jest.Mock;
 };
+const { hasUserAnIdentityDocumentRegistered, hasUserDoneThePointsDisclosure } =
+  jest.requireMock('@/services/points') as {
+    hasUserAnIdentityDocumentRegistered: jest.Mock;
+    hasUserDoneThePointsDisclosure: jest.Mock;
+  };
 const { useProofHistoryStore } = jest.requireMock(
   '@/stores/proofHistoryStore',
 ) as {
@@ -211,6 +221,8 @@ describe('ProofRequestStatusScreen', () => {
       updateProofStatus: mockUpdateProofStatus,
     });
     getWhiteListedDisclosureAddresses.mockResolvedValue([]);
+    hasUserAnIdentityDocumentRegistered.mockResolvedValue(true);
+    hasUserDoneThePointsDisclosure.mockResolvedValue(true);
 
     const useProvingStore = Object.assign(
       (selector: (state: typeof provingState) => unknown) =>
@@ -282,10 +294,86 @@ describe('ProofRequestStatusScreen', () => {
 
     fireEvent.press(screen.getByTestId('primary-button'));
 
-    expect(mockNavigate).toHaveBeenCalledWith('Gratification', {
-      points: 25,
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('Gratification', {
+        points: 25,
+      });
     });
     expect(mockGoHome).not.toHaveBeenCalled();
+
+    act(() => {
+      jest.advanceTimersByTime(2000);
+    });
+
+    expect(mockCleanSelfApp).toHaveBeenCalledTimes(1);
+  });
+
+  it('falls back to Home when whitelisted but points prerequisites are not met', async () => {
+    selfAppState.selfApp.endpoint = '0xABC';
+    getWhiteListedDisclosureAddresses.mockResolvedValue([
+      {
+        contract_address: '0xabc',
+        points_per_disclosure: 25,
+      },
+    ]);
+    hasUserDoneThePointsDisclosure.mockResolvedValue(false);
+
+    render(<ProofRequestStatusScreen />);
+
+    await waitFor(() => {
+      expect(getWhiteListedDisclosureAddresses).toHaveBeenCalledTimes(1);
+    });
+
+    fireEvent.press(screen.getByTestId('primary-button'));
+
+    await waitFor(() => {
+      expect(mockGoHome).toHaveBeenCalledTimes(1);
+    });
+    expect(mockNavigate).not.toHaveBeenCalledWith(
+      'Gratification',
+      expect.anything(),
+    );
+
+    act(() => {
+      jest.advanceTimersByTime(2000);
+    });
+
+    expect(mockCleanSelfApp).toHaveBeenCalledTimes(1);
+  });
+
+  it('falls back to Home when a prerequisite check stalls past the timeout', async () => {
+    selfAppState.selfApp.endpoint = '0xABC';
+    getWhiteListedDisclosureAddresses.mockResolvedValue([
+      {
+        contract_address: '0xabc',
+        points_per_disclosure: 25,
+      },
+    ]);
+    // Simulate a hung network call — never resolves.
+    hasUserDoneThePointsDisclosure.mockImplementation(
+      () => new Promise(() => {}),
+    );
+
+    render(<ProofRequestStatusScreen />);
+
+    await waitFor(() => {
+      expect(getWhiteListedDisclosureAddresses).toHaveBeenCalledTimes(1);
+    });
+
+    fireEvent.press(screen.getByTestId('primary-button'));
+
+    // Advance past the 3s prereq timeout.
+    await act(async () => {
+      jest.advanceTimersByTime(3000);
+    });
+
+    await waitFor(() => {
+      expect(mockGoHome).toHaveBeenCalledTimes(1);
+    });
+    expect(mockNavigate).not.toHaveBeenCalledWith(
+      'Gratification',
+      expect.anything(),
+    );
 
     act(() => {
       jest.advanceTimersByTime(2000);

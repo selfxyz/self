@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { render, waitFor } from '@testing-library/react-native';
 
 import GratificationScreen from '@/screens/app/GratificationScreen';
@@ -48,7 +48,6 @@ jest.mock('react-native-safe-area-context', () => ({
 
 jest.mock('@react-navigation/native', () => ({
   useNavigation: jest.fn(),
-  useRoute: jest.fn(),
 }));
 
 // Mock Tamagui components to avoid theme provider requirement
@@ -103,7 +102,9 @@ jest.mock('@/assets/logos/self.svg', () => 'SelfLogo');
 const mockUseNavigation = useNavigation as jest.MockedFunction<
   typeof useNavigation
 >;
-const mockUseRoute = useRoute as jest.MockedFunction<typeof useRoute>;
+
+const renderScreen = (params: { points?: number } = {}) =>
+  render(<GratificationScreen route={{ params } as any} />);
 
 describe('GratificationScreen', () => {
   const mockNavigate = jest.fn();
@@ -116,18 +117,10 @@ describe('GratificationScreen', () => {
       navigate: mockNavigate,
       goBack: mockGoBack,
     } as any);
-
-    mockUseRoute.mockReturnValue({
-      params: {},
-    } as any);
   });
 
   it('should use default points value when not provided', async () => {
-    mockUseRoute.mockReturnValue({
-      params: {},
-    } as any);
-
-    const { getByText } = render(<GratificationScreen />);
+    const { getByText } = renderScreen();
 
     await waitFor(() => {
       expect(getByText('0')).toBeTruthy();
@@ -135,11 +128,7 @@ describe('GratificationScreen', () => {
   });
 
   it('should use custom points value when provided', async () => {
-    mockUseRoute.mockReturnValue({
-      params: { points: 50 },
-    } as any);
-
-    const { getByText } = render(<GratificationScreen />);
+    const { getByText } = renderScreen({ points: 50 });
 
     await waitFor(() => {
       expect(getByText('50')).toBeTruthy();
@@ -147,11 +136,7 @@ describe('GratificationScreen', () => {
   });
 
   it('should display referral points value (24) when passed', async () => {
-    mockUseRoute.mockReturnValue({
-      params: { points: 24 },
-    } as any);
-
-    const { getByText } = render(<GratificationScreen />);
+    const { getByText } = renderScreen({ points: 24 });
 
     await waitFor(() => {
       expect(getByText('24')).toBeTruthy();
