@@ -1,4 +1,4 @@
-export { DISCLOSURE_PRESETS, resolveDisclosures } from '@selfxyz/new-common/src/app/presets';
+export { DISCLOSURE_PRESETS, resolveDisclosures } from '@selfxyz/new-common/src/app/index';
 export type { DisclosurePresetName, SelfAppBuilderConfig } from '@selfxyz/new-common/src/foundation/types/app';
 
 export type EndpointType = 'https' | 'celo' | 'staging_celo' | 'staging_https';
