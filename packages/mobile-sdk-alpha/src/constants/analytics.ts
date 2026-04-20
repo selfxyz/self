@@ -185,6 +185,7 @@ export const ProofEvents = {
   PROOF_COMPLETED: 'Proof: Proof Completed',
   PROOF_DISCLOSURES_SCROLLED: 'Proof: Proof Disclosures Scrolled',
   PROOF_FAILED: 'Proof: Proof Failed',
+  POINTS_NULLIFIER_ALREADY_USED: 'Proof: Points Nullifier Already Used',
   PROOF_RESULT_ACKNOWLEDGED: 'Proof: Proof Result Acknowledged',
   PROOF_VERIFY_CONFIRMATION_ACCEPTED: 'Proof: Verify Confirmation Accepted',
   PROOF_VERIFY_LONG_PRESS: 'Proof: Verify Button Long Pressed',
