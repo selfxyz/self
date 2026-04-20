@@ -39,6 +39,7 @@ import {
   truncateAddress,
   WalletAddressModal,
 } from '@/components/proof-request';
+import { captureMessage } from '@/config/sentry';
 import { useSelfAppData } from '@/hooks/useSelfAppData';
 import { buttonTap } from '@/integrations/haptics';
 import type { RootStackParamList } from '@/navigation';
@@ -49,6 +50,7 @@ import {
 import {
   getPointsAddress,
   getWhiteListedDisclosureAddresses,
+  NULLIFIER_ALREADY_USED_ERROR_PREFIX,
 } from '@/services/points';
 import { useProofHistoryStore } from '@/stores/proofHistoryStore';
 import { ProofStatus } from '@/stores/proofTypes';
@@ -102,6 +104,7 @@ const ProveScreen: React.FC = () => {
   );
   const provingStore = useProvingStore();
   const currentState = useProvingStore(state => state.currentState);
+  const reason = useProvingStore(state => state.reason);
   const isReadyToProve = currentState === 'ready_to_prove';
 
   // Use window dimensions for dynamic scroll offset padding
@@ -299,6 +302,40 @@ const ProveScreen: React.FC = () => {
         !isExpired &&
         selectedAppRef.current?.sessionId !== selectedApp.sessionId
       ) {
+        // Set selfDefinedData before init so the proving machine has the address
+        if (
+          !selectedApp.selfDefinedData &&
+          !processedSessionsRef.current.has(selectedApp.sessionId)
+        ) {
+          try {
+            const [address, whitelistedAddresses] = await Promise.all([
+              getPointsAddress(),
+              getWhiteListedDisclosureAddresses(),
+            ]);
+
+            const isWhitelisted = whitelistedAddresses.some(
+              contract =>
+                contract.contract_address.toLowerCase() ===
+                selectedApp.endpoint?.toLowerCase(),
+            );
+
+            if (isWhitelisted) {
+              console.log(
+                'enhancing app with whitelisted points address',
+                address,
+              );
+              selfClient.getSelfAppState().setSelfApp({
+                ...selectedApp,
+                selfDefinedData: address.toLowerCase(),
+              });
+            }
+
+            processedSessionsRef.current.add(selectedApp.sessionId);
+          } catch (error) {
+            console.error('Failed enhancing app with points address:', error);
+          }
+        }
+
         provingStore.init(selfClient, 'disclose');
       }
       selectedAppRef.current = selectedApp;
@@ -315,57 +352,49 @@ const ProveScreen: React.FC = () => {
     hasCheckedForInactiveDocument,
   ]);
 
-  // Enhance selfApp with user's points address if not already set
+  // Track "already disclosed" failures for points disclosures so we can fix
+  // the backend state for affected users.
   useEffect(() => {
-    console.log('useEffect selectedApp', selectedApp);
     if (
-      !selectedApp ||
-      selectedApp.selfDefinedData ||
-      !hasCheckedForInactiveDocument
+      currentState !== 'failure' ||
+      !(
+        reason?.includes(NULLIFIER_ALREADY_USED_ERROR_PREFIX) ||
+        reason?.includes('NullifierAlreadyUsed')
+      )
     ) {
       return;
     }
 
-    const sessionId = selectedApp.sessionId;
+    const trackAlreadyDisclosed = async () => {
+      const whitelistedAddresses = await getWhiteListedDisclosureAddresses();
+      const isPointsDisclosure = whitelistedAddresses.some(
+        contract =>
+          contract.contract_address.toLowerCase() ===
+          selectedApp?.endpoint?.toLowerCase(),
+      );
 
-    if (processedSessionsRef.current.has(sessionId)) {
-      return;
-    }
-
-    const enhanceApp = async () => {
-      const currentSessionId = sessionId;
-
-      try {
-        const address = await getPointsAddress();
-        const whitelistedAddresses = await getWhiteListedDisclosureAddresses();
-
-        const isWhitelisted = whitelistedAddresses.some(
-          contract =>
-            contract.contract_address.toLowerCase() === address.toLowerCase(),
-        );
-
-        const currentApp = selfClient.getSelfAppState().selfApp;
-        if (currentApp?.sessionId === currentSessionId) {
-          if (isWhitelisted) {
-            console.log(
-              'enhancing app with whitelisted points address',
-              address,
-            );
-            selfClient.getSelfAppState().setSelfApp({
-              ...currentApp,
-              selfDefinedData: address.toLowerCase(),
-            });
-          }
-        }
-
-        processedSessionsRef.current.add(currentSessionId);
-      } catch (error) {
-        console.error('Failed enhancing app:', error);
+      if (!isPointsDisclosure) {
+        return;
       }
+
+      const pointsAddress =
+        selectedApp?.selfDefinedData || (await getPointsAddress());
+
+      trackEvent(ProofEvents.POINTS_NULLIFIER_ALREADY_USED, {
+        pointsAddress,
+        endpoint: selectedApp?.endpoint,
+        sessionId: provingStore.uuid,
+      });
+
+      captureMessage('Points disclosure already registered on-chain', {
+        pointsAddress,
+        endpoint: selectedApp?.endpoint,
+        sessionId: provingStore.uuid,
+      });
     };
 
-    enhanceApp();
-  }, [selectedApp, selfClient, hasCheckedForInactiveDocument]);
+    trackAlreadyDisclosed();
+  }, [currentState, reason, selectedApp, provingStore.uuid, trackEvent]);
 
   function onVerify() {
     buttonTap();

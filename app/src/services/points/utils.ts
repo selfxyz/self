@@ -17,6 +17,8 @@ export type WhitelistedContract = {
   num_disclosures: number;
 };
 
+export const NULLIFIER_ALREADY_USED_ERROR_PREFIX = '0xdc215c0a';
+
 export const formatTimeUntilDate = (targetDate: Date): string => {
   const now = new Date();
   const diffMs = targetDate.getTime() - now.getTime();
