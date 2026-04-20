@@ -1,5 +1,5 @@
 name: Cache SDK Build
-description: Cache SDK build artifacts (common, sdk-common, qrcode)
+description: Cache SDK build artifacts (common, new-common, sdk-common, qrcode)
 
 inputs:
   mode:
@@ -28,6 +28,7 @@ runs:
       with:
         path: |
           common/dist
+          new-common/dist
           sdk/sdk-common/dist
           sdk/qrcode/dist
         key: qrcode-sdk-build-${{ inputs.cache-version }}-${{ github.sha }}
@@ -38,6 +39,7 @@ runs:
       with:
         path: |
           common/dist
+          new-common/dist
           sdk/sdk-common/dist
           sdk/qrcode/dist
         key: qrcode-sdk-build-${{ inputs.cache-version }}-${{ github.sha }}
