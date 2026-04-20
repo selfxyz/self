@@ -31,9 +31,15 @@ import {
 } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
+import {
+  hasUserAnIdentityDocumentRegistered,
+  hasUserDoneThePointsDisclosure,
+} from '@/services/points';
 import { getWhiteListedDisclosureAddresses } from '@/services/points/utils';
 import { useProofHistoryStore } from '@/stores/proofHistoryStore';
 import { ProofStatus } from '@/stores/proofTypes';
+
+const PREREQ_CHECK_TIMEOUT_MS = 3000;
 
 const SuccessScreen: React.FC = () => {
   const selfClient = useSelfClient();
@@ -68,23 +74,37 @@ const SuccessScreen: React.FC = () => {
     buttonTap();
     const completedSessionId = sessionId;
 
+    const cleanupLater = () => {
+      setTimeout(() => {
+        if (useProvingStore.getState().uuid === completedSessionId) {
+          selfClient.getSelfAppState().cleanSelfApp();
+        }
+      }, 2000);
+    };
+
     if (whitelistedPoints !== null) {
-      navigation.navigate('Gratification', {
-        points: whitelistedPoints,
-      });
-      setTimeout(() => {
-        if (useProvingStore.getState().uuid === completedSessionId) {
-          selfClient.getSelfAppState().cleanSelfApp();
-        }
-      }, 2000);
-    } else {
-      goHome();
-      setTimeout(() => {
-        if (useProvingStore.getState().uuid === completedSessionId) {
-          selfClient.getSelfAppState().cleanSelfApp();
-        }
-      }, 2000);
+      // Bound the prereq checks so a stalled network call can't trap the user
+      // on this screen. On timeout we fall through to goHome() — the safe
+      // default, since Gratification would just bounce them via the guardrail.
+      const timeout = new Promise<false>(resolve =>
+        setTimeout(() => resolve(false), PREREQ_CHECK_TIMEOUT_MS),
+      );
+      const [hasDocument, hasDisclosed] = await Promise.all([
+        Promise.race([hasUserAnIdentityDocumentRegistered(), timeout]),
+        Promise.race([hasUserDoneThePointsDisclosure(), timeout]),
+      ]);
+
+      if (hasDocument && hasDisclosed) {
+        navigation.navigate('Gratification', {
+          points: whitelistedPoints,
+        });
+        cleanupLater();
+        return;
+      }
     }
+
+    goHome();
+    cleanupLater();
   }, [
     whitelistedPoints,
     navigation,
