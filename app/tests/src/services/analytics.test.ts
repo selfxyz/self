@@ -366,6 +366,11 @@ describe('analytics', () => {
       expect(mockSegmentClient.identify).toHaveBeenCalledWith('uuid-1');
     });
 
+    it('resets analytics identity when support UUID is cleared', () => {
+      setAnalyticsSupportUuid(null);
+      expect(mockSegmentClient.reset).toHaveBeenCalled();
+    });
+
     it('resets and re-identifies on resetAnalyticsIdentityForSupportUuid', async () => {
       resetAnalyticsIdentityForSupportUuid('uuid-2');
       expect(mockSegmentClient.reset).toHaveBeenCalled();

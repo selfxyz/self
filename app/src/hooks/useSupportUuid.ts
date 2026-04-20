@@ -8,27 +8,33 @@ import {
   copySupportUuid,
   getSupportUuid,
   regenerateSupportUuid,
+  setSupportUuidCollectionEnabled,
 } from '@/services/supportUuid';
 import { useSettingStore } from '@/stores/settingStore';
 
 export interface UseSupportUuidResult {
+  isEnabled: boolean;
   supportUuid: string | null;
   isReady: boolean;
-  copy: () => string;
-  regenerate: () => string;
+  copy: () => string | null;
+  regenerate: () => string | null;
+  setEnabled: (enabled: boolean) => string | null;
 }
 
 export function useSupportUuid(): UseSupportUuidResult {
+  const supportUuidEnabled = useSettingStore(state => state.supportUuidEnabled);
   const supportUuid = useSettingStore(state => state.supportUuid);
 
   useEffect(() => {
-    if (!supportUuid) getSupportUuid();
-  }, [supportUuid]);
+    if (supportUuidEnabled && !supportUuid) getSupportUuid();
+  }, [supportUuidEnabled, supportUuid]);
 
   return {
+    isEnabled: supportUuidEnabled,
     supportUuid,
-    isReady: supportUuid != null,
+    isReady: !supportUuidEnabled || supportUuid != null,
     copy: copySupportUuid,
     regenerate: regenerateSupportUuid,
+    setEnabled: setSupportUuidCollectionEnabled,
   };
 }
