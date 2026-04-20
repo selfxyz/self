@@ -39,6 +39,8 @@ import { getWhiteListedDisclosureAddresses } from '@/services/points/utils';
 import { useProofHistoryStore } from '@/stores/proofHistoryStore';
 import { ProofStatus } from '@/stores/proofTypes';
 
+const PREREQ_CHECK_TIMEOUT_MS = 3000;
+
 const SuccessScreen: React.FC = () => {
   const selfClient = useSelfClient();
   const { trackEvent } = selfClient;
@@ -81,9 +83,15 @@ const SuccessScreen: React.FC = () => {
     };
 
     if (whitelistedPoints !== null) {
+      // Bound the prereq checks so a stalled network call can't trap the user
+      // on this screen. On timeout we fall through to goHome() — the safe
+      // default, since Gratification would just bounce them via the guardrail.
+      const timeout = new Promise<false>(resolve =>
+        setTimeout(() => resolve(false), PREREQ_CHECK_TIMEOUT_MS),
+      );
       const [hasDocument, hasDisclosed] = await Promise.all([
-        hasUserAnIdentityDocumentRegistered(),
-        hasUserDoneThePointsDisclosure(),
+        Promise.race([hasUserAnIdentityDocumentRegistered(), timeout]),
+        Promise.race([hasUserDoneThePointsDisclosure(), timeout]),
       ]);
 
       if (hasDocument && hasDisclosed) {

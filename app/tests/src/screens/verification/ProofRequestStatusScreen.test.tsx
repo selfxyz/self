@@ -341,6 +341,47 @@ describe('ProofRequestStatusScreen', () => {
     expect(mockCleanSelfApp).toHaveBeenCalledTimes(1);
   });
 
+  it('falls back to Home when a prerequisite check stalls past the timeout', async () => {
+    selfAppState.selfApp.endpoint = '0xABC';
+    getWhiteListedDisclosureAddresses.mockResolvedValue([
+      {
+        contract_address: '0xabc',
+        points_per_disclosure: 25,
+      },
+    ]);
+    // Simulate a hung network call — never resolves.
+    hasUserDoneThePointsDisclosure.mockImplementation(
+      () => new Promise(() => {}),
+    );
+
+    render(<ProofRequestStatusScreen />);
+
+    await waitFor(() => {
+      expect(getWhiteListedDisclosureAddresses).toHaveBeenCalledTimes(1);
+    });
+
+    fireEvent.press(screen.getByTestId('primary-button'));
+
+    // Advance past the 3s prereq timeout.
+    await act(async () => {
+      jest.advanceTimersByTime(3000);
+    });
+
+    await waitFor(() => {
+      expect(mockGoHome).toHaveBeenCalledTimes(1);
+    });
+    expect(mockNavigate).not.toHaveBeenCalledWith(
+      'Gratification',
+      expect.anything(),
+    );
+
+    act(() => {
+      jest.advanceTimersByTime(2000);
+    });
+
+    expect(mockCleanSelfApp).toHaveBeenCalledTimes(1);
+  });
+
   it('does not clear self app state if a newer session replaces the completed one', async () => {
     render(<ProofRequestStatusScreen />);
 
