@@ -66,6 +66,11 @@ describe('notificationService', () => {
     mockPermissionsAndroid.request.mockClear();
   });
 
+  afterEach(() => {
+    jest.useRealTimers();
+    jest.restoreAllMocks();
+  });
+
   describe('requestNotificationPermission', () => {
     it('grants permission on Android', async () => {
       mockPlatform.OS = 'android';
@@ -127,6 +132,78 @@ describe('notificationService', () => {
         'https://notification.staging.self.xyz/register-token',
         expect.objectContaining({ method: 'POST' }),
       );
+    });
+
+    it('retries transport failures and eventually succeeds', async () => {
+      jest.useFakeTimers();
+      jest.spyOn(Math, 'random').mockReturnValue(0);
+
+      (fetch as jest.Mock)
+        .mockRejectedValueOnce(new TypeError('network down'))
+        .mockRejectedValueOnce(new TypeError('still down'))
+        .mockResolvedValueOnce({ ok: true, text: jest.fn() });
+
+      const promise = service.registerDeviceToken('123', 'tok', true);
+
+      await jest.runAllTimersAsync();
+      await promise;
+
+      expect(fetch).toHaveBeenCalledTimes(3);
+    });
+
+    it('does not retry abort errors', async () => {
+      const abortError = new Error('request aborted');
+      abortError.name = 'AbortError';
+      (fetch as jest.Mock).mockRejectedValue(abortError);
+
+      await service.registerDeviceToken('123', 'tok', true);
+
+      expect(fetch).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not retry server errors', async () => {
+      (fetch as jest.Mock).mockResolvedValue({
+        ok: false,
+        status: 500,
+        text: jest.fn().mockResolvedValue('server exploded'),
+      });
+
+      await service.registerDeviceToken('123', 'tok', true);
+
+      expect(fetch).toHaveBeenCalledTimes(1);
+    });
+
+    it('aborts a stalled request after the timeout window', async () => {
+      jest.useFakeTimers();
+
+      let capturedSignal: AbortSignal | undefined;
+      (fetch as jest.Mock).mockImplementation(
+        (_url: string, init?: RequestInit) => {
+          capturedSignal = init?.signal as AbortSignal | undefined;
+
+          return new Promise((_resolve, reject) => {
+            capturedSignal?.addEventListener(
+              'abort',
+              () => {
+                const abortError = new Error('request aborted');
+                abortError.name = 'AbortError';
+                reject(abortError);
+              },
+              { once: true },
+            );
+          });
+        },
+      );
+
+      const promise = service.registerDeviceToken('123', 'tok', true);
+
+      expect(capturedSignal?.aborted).toBe(false);
+
+      await jest.advanceTimersByTimeAsync(10000);
+      await promise;
+
+      expect(capturedSignal?.aborted).toBe(true);
+      expect(fetch).toHaveBeenCalledTimes(1);
     });
   });
 });

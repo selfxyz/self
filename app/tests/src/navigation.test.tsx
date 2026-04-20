@@ -104,11 +104,13 @@ describe('navigation', () => {
         'RegistrationFallbackMRZ',
         'RegistrationFallbackNFC',
         'SaveRecoveryPhrase',
+        'SecurityAndBackup',
         'Settings',
         'ShowRecoveryPhrase',
         'SocialLoginDemo',
         'Splash',
         'StarfallPushCode',
+        'Support',
         'WebView',
       ]);
     });

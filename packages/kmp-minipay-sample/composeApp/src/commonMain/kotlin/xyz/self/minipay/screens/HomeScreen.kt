@@ -31,6 +31,7 @@ fun HomeScreen(
     viewModel: MainViewModel,
     onVerify: () -> Unit,
     onNavigateToResult: () -> Unit,
+    onOpenWebViewBridge: () -> Unit,
 ) {
     // Navigate to result when screen changes
     LaunchedEffect(viewModel.currentScreen) {
@@ -121,6 +122,20 @@ fun HomeScreen(
             ) {
                 Text(
                     text = if (viewModel.isLaunching) "Launching..." else "Verify Identity",
+                    style = MaterialTheme.typography.titleMedium,
+                )
+            }
+
+            Button(
+                onClick = onOpenWebViewBridge,
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                shape = RoundedCornerShape(12.dp),
+            ) {
+                Text(
+                    text = "Open WebView Bridge PoC",
                     style = MaterialTheme.typography.titleMedium,
                 )
             }

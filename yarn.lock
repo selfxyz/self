@@ -11255,6 +11255,7 @@ __metadata:
     ethers: "npm:^6.16.0"
     expo: "npm:~52.0.40"
     expo-application: "npm:~6.0.2"
+    expo-camera: "npm:~16.0.18"
     hash.js: "npm:^1.1.7"
     hermes-eslint: "npm:^0.33.3"
     jest: "npm:^30.3.0"
@@ -24696,6 +24697,23 @@ __metadata:
     react: "*"
     react-native: "*"
   checksum: 10c0/e768aa5e3115e4604352b69e4d02e229ecf63f4162353f1505d76c52901810b7bafa378be9924f71b0a82d4ea75448e3b60b65aa528cca536b4781d227141421
+  languageName: node
+  linkType: hard
+
+"expo-camera@npm:~16.0.18":
+  version: 16.0.18
+  resolution: "expo-camera@npm:16.0.18"
+  dependencies:
+    invariant: "npm:^2.2.4"
+  peerDependencies:
+    expo: "*"
+    react: "*"
+    react-native: "*"
+    react-native-web: "*"
+  peerDependenciesMeta:
+    react-native-web:
+      optional: true
+  checksum: 10c0/19d6f27af22d6e148b0bd7dc1dc37778b155ce0454515045a07e7dcc2b0474aa3d0d0986684fcbfe16837cffa41b33128d23376454d975b09b592c3dd92fe803
   languageName: node
   linkType: hard
 
