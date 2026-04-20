@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@selfxyz/auth": "workspace:^",
+    "@selfxyz/core": "workspace:^",
     "@selfxyz/react": "workspace:^",
     "@selfxyz/widget": "workspace:^",
     "next": "^14.2.0",
