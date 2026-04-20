@@ -11,7 +11,7 @@ env:
   GH_GEMS_CACHE_VERSION: v1 # Ruby gems cache version
   # Performance optimizations
   YARN_TASK_POOL_CONCURRENCY: 2 # Limit parallel native module builds to prevent OOM on self-hosted runners
-  GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.workers.max=1 -Dorg.gradle.parallel=true -Dorg.gradle.caching=true -Dorg.gradle.jvmargs='-Xmx4096m -XX:MaxMetaspaceSize=1024m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8'
+  GRADLE_OPTS: -Dorg.gradle.workers.max=1 -Dorg.gradle.parallel=true -Dorg.gradle.caching=true -Dorg.gradle.jvmargs='-Xmx4096m -XX:MaxMetaspaceSize=1024m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8'
   CI: true
   # Disable Maestro analytics in CI
   MAESTRO_CLI_NO_ANALYTICS: true
@@ -324,7 +324,31 @@ jobs:
         env:
           SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
           CI: true
+
+      - name: Capture private module SHAs for APK cache key
+        run: |
+          set -euo pipefail
+          : > .apk-cache-inputs.txt
+          for dir in app/android/android-passport-nfc-reader app/android/react-native-passport-reader; do
+            if [ -d "$dir/.git" ]; then
+              sha=$(git -C "$dir" rev-parse HEAD)
+              echo "$(basename "$dir")=$sha" >> .apk-cache-inputs.txt
+            fi
+          done
+          cat .apk-cache-inputs.txt
+
+      - name: Stage APK path for cache restore
+        run: rm -f app/android/app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Restore Android APK cache
+        id: apk-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: app/android/app/build/outputs/apk/debug/app-debug.apk
+          key: ${{ runner.os }}-apk-v1-${{ hashFiles('app/android/app/src/**', 'app/android/app/build.gradle', 'app/android/app/proguard-rules.pro', 'app/android/build.gradle', 'app/android/settings.gradle', 'app/android/gradle.properties', 'app/android/gradle/wrapper/**', 'app/android/gradlew', 'app/src/**', 'app/App.tsx', 'app/index.js', 'app/app.json', 'app/package.json', 'app/babel.config.cjs', 'app/metro.config.cjs', 'app/react-native.config.cjs', 'app/patches/**', 'patches/**', 'packages/mobile-sdk-alpha/src/**', 'packages/mobile-sdk-alpha/package.json', 'yarn.lock', '.nvmrc', '.apk-cache-inputs.txt') }}
+
       - name: Build Android APK
+        if: steps.apk-cache.outputs.cache-hit != 'true'
         run: |
           echo "Building Android APK..."
           chmod +x app/android/gradlew
@@ -359,7 +383,8 @@ jobs:
             fi
             echo "⚠️ Gradle build failed on attempt ${attempt}."
             if [ "${attempt}" -lt 2 ]; then
-              echo "Sleeping 15s before retry (no Gradle daemon to stop since daemon=false)..."
+              echo "Stopping Gradle daemon and retrying in 15s..."
+              (cd app/android && ./gradlew --stop) || true
               sleep 15
             fi
           done
@@ -371,7 +396,15 @@ jobs:
           fi
           echo "✅ Android build succeeded"
 
+      - name: Save Android APK cache
+        if: steps.apk-cache.outputs.cache-hit != 'true' && success()
+        uses: actions/cache/save@v4
+        with:
+          path: app/android/app/build/outputs/apk/debug/app-debug.apk
+          key: ${{ steps.apk-cache.outputs.cache-primary-key }}
+
       - name: Clean up Gradle build artifacts
+        if: steps.apk-cache.outputs.cache-hit != 'true'
         uses: ./.github/actions/cleanup-gradle-artifacts
       - name: Verify APK and android-passport-nfc-reader integration
         env:
