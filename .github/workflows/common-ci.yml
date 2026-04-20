@@ -77,6 +77,8 @@ jobs:
       - name: Build @selfxyz/common (fallback on cache miss)
         if: steps.restore-build-deps.outputs.cache-hit != 'true'
         run: yarn workspace @selfxyz/common build
+      - name: Build @selfxyz/new-common
+        run: yarn workspace @selfxyz/new-common build
       - name: Build @selfxyz/mobile-sdk-alpha
         run: yarn workspace @selfxyz/mobile-sdk-alpha build
       - name: Build @selfxyz/qrcode
