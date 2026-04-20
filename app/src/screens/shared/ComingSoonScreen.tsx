@@ -21,6 +21,7 @@ import {
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
+import SupportUuidRow from '@/components/support/SupportUuidRow';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import useOpenSupportForm from '@/hooks/useOpenSupportForm';
 import { notificationError } from '@/integrations/haptics';
@@ -157,6 +158,7 @@ const ComingSoonScreen: React.FC<ComingSoonScreenProps> = ({ route }) => {
         paddingTop={20}
         paddingBottom={20}
       >
+        <SupportUuidRow title="Support diagnostic ID" />
         <PrimaryButton
           onPress={onNotifyMe}
           trackEvent={PassportEvents.NOTIFY_COMING_SOON}

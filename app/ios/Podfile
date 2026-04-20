@@ -83,6 +83,42 @@ def using_https_git_auth?
   end
 end
 
+# ── WalletConnect Pay / YttriumWrapper removal ──────────────────────────────
+# react-native-compat v2.23+ bundles WalletConnect Pay which depends on
+# YttriumWrapper (Yttrium UniFFI bindings). The Self app does not use
+# WalletConnect Pay and the binary pod fails to build. Patch the podspec
+# and remove the Pay bridge Swift file before CocoaPods resolves deps.
+wc_compat_dir = File.join(__dir__, "..", "node_modules", "@walletconnect", "react-native-compat")
+wc_podspec = File.join(wc_compat_dir, "react-native-compat.podspec")
+
+if File.exist?(wc_podspec)
+  podspec_text = File.read(wc_podspec)
+  if podspec_text.include?('YttriumWrapper')
+    podspec_text.gsub!(/^\s*s\.dependency\s+"YttriumWrapper".*$/, '  # s.dependency "YttriumWrapper" — removed (not used)')
+    File.write(wc_podspec, podspec_text)
+    Pod::UI.puts "Patched react-native-compat.podspec: removed YttriumWrapper dependency".yellow
+  end
+end
+
+files_removed = Dir.glob(File.join(wc_compat_dir, "ios", "RNWalletConnectPay*")).each do |f|
+  FileUtils.rm(f)
+end
+Pod::UI.puts "Removed WalletConnect Pay source files (not used)".yellow if files_removed.any?
+
+# ── Haptic feedback AudioToolbox fix ────────────────────────────────────────
+# react-native-haptic-feedback uses AudioServicesPlaySystemSound but its
+# podspec doesn't declare the AudioToolbox framework. Patch it.
+haptic_podspec = File.join(__dir__, "..", "node_modules", "react-native-haptic-feedback", "RNReactNativeHapticFeedback.podspec")
+if File.exist?(haptic_podspec)
+  haptic_text = File.read(haptic_podspec)
+  if !haptic_text.include?("AudioToolbox")
+    haptic_text.gsub!(/s\.requires_arc\s*=\s*true/, "s.requires_arc = true\n  s.frameworks = \"AudioToolbox\"")
+    File.write(haptic_podspec, haptic_text)
+    Pod::UI.puts "Patched RNReactNativeHapticFeedback.podspec: added AudioToolbox framework".yellow
+  end
+end
+# ─────────────────────────────────────────────────────────────────────────────
+
 target "Self" do
   use_expo_modules!
   # Native module exclusion for E2E testing is handled in react-native.config.cjs
@@ -108,7 +144,7 @@ target "Self" do
       nfc_repo_url = "git@github.com:selfxyz/NFCPassportReader.git"
     end
 
-    pod "SelfNFCPassportReader", git: nfc_repo_url, commit: "2cdc50a5c27b75594b94b27fdc4bb6172ada0f96"
+    pod "SelfNFCPassportReader", git: nfc_repo_url, commit: "b478e1f1320e86f72c5755bc5adf156fff950585"
   end
 
   # Explicitly declare Mixpanel to ensure it's available even in E2E builds

@@ -27,6 +27,7 @@ import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 
 import WarningIcon from '@/assets/images/warning.svg';
 import { NavBar } from '@/components/navbar/BaseNavBar';
+import SupportUuidRow from '@/components/support/SupportUuidRow';
 import { useKycLauncher } from '@/hooks/useKycLauncher';
 import { buttonTap } from '@/integrations/haptics';
 import type { RootStackParamList } from '@/navigation';
@@ -243,6 +244,7 @@ const AadhaarUploadErrorScreen: React.FC = () => {
           Registering with alternative methods may take longer to verify your
           document.
         </BodyText>
+        <SupportUuidRow />
       </YStack>
     </YStack>
   );

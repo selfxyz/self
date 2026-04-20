@@ -59,7 +59,7 @@ export function useReadMRZ(scanStartTimeRef: RefObject<number>) {
             duration_seconds: parseFloat(scanDurationSeconds),
           });
 
-          // TODO: Add error handling here
+          selfClient.emit(SdkEvents.DOCUMENT_MRZ_READ_FAILURE);
           return;
         }
 

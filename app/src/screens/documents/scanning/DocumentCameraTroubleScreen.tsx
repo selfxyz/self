@@ -14,6 +14,7 @@ import PassportCameraBulb from '@/assets/icons/passport_camera_bulb.svg';
 import PassportCameraScan from '@/assets/icons/passport_camera_scan.svg';
 import QrScan from '@/assets/icons/qr_scan.svg';
 import Star from '@/assets/icons/star.svg';
+import SupportUuidRow from '@/components/support/SupportUuidRow';
 import type { TipProps } from '@/components/Tips';
 import Tips from '@/components/Tips';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
@@ -86,6 +87,8 @@ const DocumentCameraTroubleScreen: React.FC = () => {
           >
             Or try an alternative verification method:
           </Caption>
+
+          <SupportUuidRow />
 
           <SecondaryButton
             onPress={launchKycVerification}

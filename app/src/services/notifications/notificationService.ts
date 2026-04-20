@@ -16,6 +16,64 @@ import { useSettingStore } from '@/stores/settingStore';
 
 export const SELF_UUID_NAMESPACE = '00000000-0000-8000-8000-531f00000000';
 
+const REGISTER_TOKEN_TIMEOUT_MS = 10000;
+const REGISTER_TOKEN_MAX_ATTEMPTS = 3;
+const REGISTER_TOKEN_BACKOFF_MS = 500;
+
+// Retry only on TypeError (pure transport failure before the request body
+// reached the server). 5xx and AbortError are not retried because the server
+// may already have processed the request, and /register-token is not known to
+// be idempotent — retrying could create duplicate registrations.
+async function fetchRegisterToken(
+  url: string,
+  body: string,
+): Promise<Response> {
+  let attempt = 0;
+  let lastError: unknown;
+
+  while (attempt < REGISTER_TOKEN_MAX_ATTEMPTS) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(
+      () => controller.abort(),
+      REGISTER_TOKEN_TIMEOUT_MS,
+    );
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body,
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+      return response;
+    } catch (err) {
+      clearTimeout(timeoutId);
+      lastError = err;
+
+      if (!(err instanceof TypeError)) {
+        break;
+      }
+    }
+
+    attempt += 1;
+    if (attempt >= REGISTER_TOKEN_MAX_ATTEMPTS) {
+      break;
+    }
+
+    const backoff =
+      REGISTER_TOKEN_BACKOFF_MS + Math.random() * REGISTER_TOKEN_BACKOFF_MS;
+    await new Promise(resolve => setTimeout(resolve, backoff));
+  }
+
+  throw lastError instanceof Error
+    ? lastError
+    : new Error(String(lastError ?? 'register-token request failed'));
+}
+
 export async function getFCMToken(): Promise<string | null> {
   try {
     const token = await messaging().getToken();
@@ -137,14 +195,10 @@ export async function registerDeviceToken(
       );
     }
 
-    const response = await fetch(`${baseUrl}/register-token`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
-      body: JSON.stringify(deviceTokenRegistration),
-    });
+    const response = await fetchRegisterToken(
+      `${baseUrl}/register-token`,
+      JSON.stringify(deviceTokenRegistration),
+    );
 
     if (!response.ok) {
       const errorText = await response.text();

@@ -79,6 +79,56 @@ def should_hold_for_manual_review(track):
     return track == 'production'
 
 
+def upload_to_internal_app_sharing(aab_path, package_name, credentials):
+    """Upload AAB to Google Play Internal App Sharing.
+
+    Returns a unique downloadUrl per upload. Designed for per-PR/per-build
+    preview distribution: does NOT advance any track, does NOT require a
+    unique versionCode, and does NOT go through review.
+    """
+    print(f"📤 Uploading {aab_path} to Internal App Sharing...")
+
+    try:
+        service = build('androidpublisher', 'v3', credentials=credentials)
+
+        media = MediaFileUpload(aab_path, mimetype='application/octet-stream')
+        request = service.internalappsharingartifacts().uploadbundle(
+            packageName=package_name,
+            media_body=media,
+        )
+        response = request.execute()
+
+        download_url = response.get('downloadUrl')
+        sha256 = response.get('sha256')
+        cert_fingerprint = response.get('certificateFingerprint')
+
+        if not download_url:
+            print("❌ IAS upload returned no downloadUrl")
+            print(f"Response: {response}")
+            return False
+
+        print(f"✅ Uploaded to Internal App Sharing")
+        print(f"🔗 downloadUrl: {download_url}")
+        if sha256:
+            print(f"🔐 sha256: {sha256}")
+        if cert_fingerprint:
+            print(f"📜 certificateFingerprint: {cert_fingerprint}")
+
+        # Expose the URL to GitHub Actions via $GITHUB_OUTPUT when available
+        github_output = os.environ.get('GITHUB_OUTPUT')
+        if github_output:
+            with open(github_output, 'a') as f:
+                f.write(f"download_url={download_url}\n")
+                if sha256:
+                    f.write(f"sha256={sha256}\n")
+
+        return True
+
+    except Exception as e:
+        print(f"❌ IAS upload failed: {e}")
+        return False
+
+
 def upload_to_play_store(aab_path, package_name, track, credentials):
     """Upload AAB to Google Play Store"""
     print(f"📤 Uploading {aab_path} to Play Store...")
@@ -160,7 +210,9 @@ def main():
     parser = argparse.ArgumentParser(description='Upload Android AAB to Google Play Store using WIF')
     parser.add_argument('--aab', required=True, help='Path to the AAB file')
     parser.add_argument('--package-name', required=True, help='Android package name')
-    parser.add_argument('--track', default='internal', help='Release track (internal, alpha, beta, production)')
+    parser.add_argument('--track', default='internal', help='Release track (internal, alpha, beta, production). Ignored when --mode=ias.')
+    parser.add_argument('--mode', default='track', choices=['track', 'ias'],
+                        help='Upload mode: "track" promotes to a Play Store track; "ias" uploads to Internal App Sharing and returns a unique downloadUrl.')
 
     args = parser.parse_args()
 
@@ -170,15 +222,20 @@ def main():
         print(f"❌ Error: AAB file not found: {aab_path}")
         sys.exit(1)
 
-    print("🚀 Starting Google Play Store upload with Workload Identity Federation")
+    print("🚀 Starting Google Play upload with Workload Identity Federation")
     print(f"📦 AAB: {aab_path}")
     print(f"📱 Package: {args.package_name}")
-    print(f"🎯 Track: {args.track}")
+    print(f"🧭 Mode: {args.mode}")
+    if args.mode == 'track':
+        print(f"🎯 Track: {args.track}")
     print()
 
     # Get credentials and upload
     credentials = get_credentials()
-    success = upload_to_play_store(str(aab_path), args.package_name, args.track, credentials)
+    if args.mode == 'ias':
+        success = upload_to_internal_app_sharing(str(aab_path), args.package_name, credentials)
+    else:
+        success = upload_to_play_store(str(aab_path), args.package_name, args.track, credentials)
 
     if success:
         print("\n🎉 Upload completed successfully!")
