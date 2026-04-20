@@ -29,22 +29,17 @@ const ensureSupportUuid = (): string | null => {
 
 export const appendSupportUuidToUrl = (url: string): string => {
   const supportUuid = ensureSupportUuid();
-  if (!supportUuid) {
-    return url;
-  }
 
   try {
     const parsed = new URL(url);
-    parsed.searchParams.set('support_uuid', supportUuid);
+    if (supportUuid) {
+      parsed.searchParams.set('support_uuid', supportUuid);
+    } else {
+      parsed.searchParams.delete('support_uuid');
+    }
     return parsed.toString();
   } catch {
-    // Fallback for malformed URLs / unsupported URL parsing edge-cases.
-    // Preserve any fragment by appending the query before `#`.
-    const hashIndex = url.indexOf('#');
-    const baseUrl = hashIndex === -1 ? url : url.slice(0, hashIndex);
-    const hash = hashIndex === -1 ? '' : url.slice(hashIndex);
-    const separator = baseUrl.includes('?') ? '&' : '?';
-    return `${baseUrl}${separator}support_uuid=${encodeURIComponent(supportUuid)}${hash}`;
+    return url;
   }
 };
 

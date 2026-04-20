@@ -128,21 +128,27 @@ describe('supportUuid service', () => {
       expect(result).not.toContain('support_uuid=stale');
     });
 
-    it('preserves fragments when falling back on malformed URLs', () => {
+    it('returns the URL unchanged when URL parsing fails', () => {
       const urlSpy = jest.spyOn(global, 'URL').mockImplementationOnce(() => {
         throw new TypeError('invalid');
       });
-      const result = appendSupportUuidToUrl('support?x=1#section');
-      expect(result).toBe(
-        `support?x=1&support_uuid=${storeState.supportUuid}#section`,
+      expect(appendSupportUuidToUrl('support?x=1#section')).toBe(
+        'support?x=1#section',
       );
       urlSpy.mockRestore();
     });
 
-    it('leaves the URL unchanged when diagnostic IDs are disabled', () => {
+    it('strips support_uuid from the URL when diagnostic IDs are disabled', () => {
       storeState.supportUuidEnabled = false;
-      const url = 'https://example.com/help?x=1';
-      expect(appendSupportUuidToUrl(url)).toBe(url);
+      expect(
+        appendSupportUuidToUrl('https://example.com/help?x=1&support_uuid=abc'),
+      ).toBe('https://example.com/help?x=1');
+      expect(
+        appendSupportUuidToUrl('https://example.com/help?support_uuid=abc'),
+      ).toBe('https://example.com/help');
+      expect(appendSupportUuidToUrl('https://example.com/help?x=1')).toBe(
+        'https://example.com/help?x=1',
+      );
     });
   });
 

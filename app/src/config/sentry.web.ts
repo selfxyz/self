@@ -272,6 +272,9 @@ export const setSupportUuidInSentry = (
   supportUuid: string | null,
   enabled = true,
 ) => {
+  if (isSentryDisabled) {
+    return;
+  }
   setTag('support_uuid_enabled', enabled ? 'true' : 'false');
   setTag('support_uuid', enabled ? (supportUuid ?? 'unset') : 'disabled');
 };

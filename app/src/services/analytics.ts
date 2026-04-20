@@ -281,6 +281,11 @@ export const setAnalyticsSupportUuid = (nextSupportUuid: string | null) => {
   supportUuid = nextSupportUuid;
 
   if (!nextSupportUuid) {
+    for (const evt of eventQueue) {
+      if (evt.properties) {
+        delete (evt.properties as Record<string, unknown>).support_uuid;
+      }
+    }
     resetSegmentIdentity();
     resetMixpanelIdentity();
     return;
