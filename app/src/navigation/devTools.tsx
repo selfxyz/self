@@ -12,6 +12,7 @@ import DevFeatureFlagsScreen from '@/screens/dev/DevFeatureFlagsScreen';
 import DevHapticFeedbackScreen from '@/screens/dev/DevHapticFeedbackScreen';
 import DevLoadingScreen from '@/screens/dev/DevLoadingScreen';
 import DevPrivateKeyScreen from '@/screens/dev/DevPrivateKeyScreen';
+import TroubleshootingScreen from '@/screens/dev/TroubleshootingScreen';
 import DevSettingsScreen from '@/screens/dev/DevSettingsScreen';
 import SocialLoginDemoScreen from '@/screens/dev/SocialLoginDemoScreen';
 
@@ -87,6 +88,13 @@ const devScreens = {
     options: {
       ...devHeaderOptions,
       title: 'Social Login Demo',
+    } as NativeStackNavigationOptions,
+  },
+  Troubleshooting: {
+    screen: TroubleshootingScreen,
+    options: {
+      ...devHeaderOptions,
+      title: 'Troubleshooting',
     } as NativeStackNavigationOptions,
   },
 };

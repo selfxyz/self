@@ -70,7 +70,7 @@ const SuccessScreen: React.FC = () => {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const onOkPress = useCallback(async () => {
-    if (whitelistedPoints === undefined) return;
+    if (currentState === 'completed' && whitelistedPoints === undefined) return;
     buttonTap();
     const completedSessionId = sessionId;
 
@@ -106,6 +106,7 @@ const SuccessScreen: React.FC = () => {
     goHome();
     cleanupLater();
   }, [
+    currentState,
     whitelistedPoints,
     navigation,
     goHome,
@@ -296,7 +297,8 @@ const SuccessScreen: React.FC = () => {
             <Spinner />
           ) : countdown !== null && countdown > 0 ? (
             'Cancel'
-          ) : whitelistedPoints === undefined ? (
+          ) : currentState === 'completed' &&
+            whitelistedPoints === undefined ? (
             <Spinner />
           ) : (
             'OK'
