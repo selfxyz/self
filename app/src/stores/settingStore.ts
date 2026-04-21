@@ -23,6 +23,7 @@ interface PersistedSettingsState {
   isDevMode: boolean;
   loggingSeverity: LoggingSeverity;
   pointsAddress: string | null;
+  supportUuidEnabled: boolean;
   supportUuid: string | null;
   removeSubscribedTopic: (topic: string) => void;
   resetBackupForPoints: () => void;
@@ -35,6 +36,7 @@ interface PersistedSettingsState {
   setKeychainMigrationCompleted: () => void;
   setLoggingSeverity: (severity: LoggingSeverity) => void;
   setPointsAddress: (address: string | null) => void;
+  setSupportUuidEnabled: (enabled: boolean) => void;
   setSupportUuid: (supportUuid: string | null) => void;
   setSkipDocumentSelector: (value: boolean) => void;
   setSubscribedTopics: (topics: string[]) => void;
@@ -141,6 +143,9 @@ export const useSettingStore = create<SettingsState>()(
       setPointsAddress: (address: string | null) =>
         set({ pointsAddress: address }),
 
+      supportUuidEnabled: true,
+      setSupportUuidEnabled: (supportUuidEnabled: boolean) =>
+        set({ supportUuidEnabled }),
       supportUuid: null,
       setSupportUuid: (supportUuid: string | null) => set({ supportUuid }),
 
