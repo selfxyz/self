@@ -4,12 +4,14 @@
 
 import { poseidon2 } from 'poseidon-lite';
 import React, { useState } from 'react';
-import { Button, Spinner, Text, YStack } from 'tamagui';
+import { Button, H4, Paragraph, Spinner, Text, YStack } from 'tamagui';
 
 import { hashEndpointWithScope } from '@selfxyz/common/utils/scope';
 import {
   black,
+  red500,
   slate200,
+  slate500,
   teal500,
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
@@ -81,6 +83,15 @@ const TroubleshootingScreen: React.FC = () => {
 
   return (
     <YStack padding="$4" gap="$4">
+      <YStack gap="$2">
+        <H4>Fix points disclosure</H4>
+        <Paragraph color={slate500}>
+          If your points haven't updated after a successful verification, tap
+          below to repair your disclosure state. This is safe to run more than
+          once.
+        </Paragraph>
+      </YStack>
+
       <Button
         backgroundColor={status === 'success' ? teal500 : black}
         color={white}
@@ -100,7 +111,7 @@ const TroubleshootingScreen: React.FC = () => {
       </Button>
 
       {message !== '' && (
-        <Text fontSize="$3" color={status === 'error' ? '#ef4444' : teal500}>
+        <Text fontSize="$3" color={status === 'error' ? red500 : teal500}>
           {message}
         </Text>
       )}
