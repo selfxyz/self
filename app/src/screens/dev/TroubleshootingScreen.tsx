@@ -10,7 +10,6 @@ import { hashEndpointWithScope } from '@selfxyz/common/utils/scope';
 import {
   black,
   slate200,
-  slate500,
   teal500,
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
@@ -22,7 +21,7 @@ import { getPointsAddress } from '@/services/points/utils';
 const POINTS_ENDPOINT = '0x829d183faaa675f8f80e8bb25fb1476cd4f7c1f0';
 const POINTS_SCOPE = 'minimal-disclosure-quest';
 
-const FixDisclosureScreen: React.FC = () => {
+const TroubleshootingScreen: React.FC = () => {
   const [status, setStatus] = useState<
     'idle' | 'loading' | 'success' | 'error'
   >('idle');
@@ -48,8 +47,6 @@ const FixDisclosureScreen: React.FC = () => {
         BigInt(scopeHash),
       ]).toString();
       const userAddress = await getPointsAddress();
-
-      console.log(userAddress);
 
       const response = await fetch(
         `${POINTS_API_BASE_URL}/points-disclose-fix`,
@@ -111,4 +108,4 @@ const FixDisclosureScreen: React.FC = () => {
   );
 };
 
-export default FixDisclosureScreen;
+export default TroubleshootingScreen;

@@ -30,11 +30,6 @@ export const DEBUG_SETTINGS_ENTRY: SettingsEntry = {
   route: 'DevSettings',
 };
 
-export const TROUBLESHOOTING_ENTRY: SettingsEntry = {
-  label: 'Troubleshooting',
-  route: 'Troubleshooting',
-};
-
 export const SETTINGS_ENTRIES_NATIVE: readonly SettingsEntry[] = [
   { label: 'Manage ID documents', route: 'ManageDocuments' },
   { label: 'Security & backup', route: 'SecurityAndBackup' },
@@ -48,6 +43,11 @@ export const SETTINGS_ENTRIES_WEB: readonly SettingsEntry[] = [
   { label: 'Proof settings', route: 'ProofSettings' },
   { label: 'Get support', route: 'Support' },
 ];
+
+export const TROUBLESHOOTING_ENTRY: SettingsEntry = {
+  label: 'Troubleshooting',
+  route: 'Troubleshooting',
+};
 
 export const baseEntriesForPlatform = (
   platform: SettingsPlatform,

@@ -12,9 +12,9 @@ import DevFeatureFlagsScreen from '@/screens/dev/DevFeatureFlagsScreen';
 import DevHapticFeedbackScreen from '@/screens/dev/DevHapticFeedbackScreen';
 import DevLoadingScreen from '@/screens/dev/DevLoadingScreen';
 import DevPrivateKeyScreen from '@/screens/dev/DevPrivateKeyScreen';
-import TroubleshootingScreen from '@/screens/dev/TroubleshootingScreen';
 import DevSettingsScreen from '@/screens/dev/DevSettingsScreen';
 import SocialLoginDemoScreen from '@/screens/dev/SocialLoginDemoScreen';
+import TroubleshootingScreen from '@/screens/dev/TroubleshootingScreen';
 
 const devHeaderOptions: NativeStackNavigationOptions = {
   headerStyle: {
