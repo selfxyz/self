@@ -4,7 +4,7 @@
 
 import type { LottieViewProps } from 'lottie-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Linking, StyleSheet, Text, View } from 'react-native';
+import { Linking, Platform, StyleSheet, Text, View } from 'react-native';
 import { ScrollView, Spinner } from 'tamagui';
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -60,7 +60,6 @@ const STALL_TIMEOUT_STATES = new Set([
   'ready_to_prove',
   'listening_for_status',
   'proving',
-  'post_proving',
 ]);
 
 const SuccessScreen: React.FC = () => {
@@ -199,6 +198,13 @@ const SuccessScreen: React.FC = () => {
   }
 
   useEffect(() => {
+    setHasTimedOut(false);
+    timedOutAnalyticsTrackedRef.current = false;
+    setCountdownStarted(false);
+    setCountdown(null);
+  }, [sessionId]);
+
+  useEffect(() => {
     if (currentState !== 'completed') return;
 
     if (!selfApp?.endpoint) {
@@ -232,12 +238,17 @@ const SuccessScreen: React.FC = () => {
       if (!timedOutAnalyticsTrackedRef.current) {
         timedOutAnalyticsTrackedRef.current = true;
         notificationError();
-        updateProofStatus(
-          sessionId!,
-          ProofStatus.FAILURE,
-          PROOF_TIMEOUT_ERROR_CODE,
-          PROOF_TIMEOUT_REASON,
-        );
+        // sessionId (uuid) is only assigned once TEE negotiation starts, so
+        // pre-TEE stall states (parsing_id_document, fetching_data, etc.)
+        // have no uuid to attach to proof history.
+        if (sessionId) {
+          updateProofStatus(
+            sessionId,
+            ProofStatus.FAILURE,
+            PROOF_TIMEOUT_ERROR_CODE,
+            PROOF_TIMEOUT_REASON,
+          );
+        }
         trackEvent(ProofEvents.PROOF_FAILED, {
           sessionId,
           appName,
@@ -250,7 +261,9 @@ const SuccessScreen: React.FC = () => {
       timedOutAnalyticsTrackedRef.current = false;
       notificationSuccess();
       setAnimationSource(succesAnimation);
-      updateProofStatus(sessionId!, ProofStatus.SUCCESS);
+      if (sessionId) {
+        updateProofStatus(sessionId, ProofStatus.SUCCESS);
+      }
       trackEvent(ProofEvents.PROOF_COMPLETED, {
         sessionId,
         appName,
@@ -273,12 +286,14 @@ const SuccessScreen: React.FC = () => {
       timedOutAnalyticsTrackedRef.current = false;
       notificationError();
       setAnimationSource(failAnimation);
-      updateProofStatus(
-        sessionId!,
-        ProofStatus.FAILURE,
-        errorCode ?? undefined,
-        reason ?? undefined,
-      );
+      if (sessionId) {
+        updateProofStatus(
+          sessionId,
+          ProofStatus.FAILURE,
+          errorCode ?? undefined,
+          reason ?? undefined,
+        );
+      }
       trackEvent(ProofEvents.PROOF_FAILED, {
         sessionId,
         appName,
@@ -386,6 +401,9 @@ const SuccessScreen: React.FC = () => {
             currentState={displayState}
             appName={appName ?? 'The app'}
             reason={displayReason}
+            errorCode={
+              hasTimedOut ? PROOF_TIMEOUT_ERROR_CODE : (errorCode ?? undefined)
+            }
             countdown={countdown}
             deeplinkCallback={selfApp?.deeplinkCallback?.replace(
               /^https?:\/\//,
@@ -408,8 +426,8 @@ const SuccessScreen: React.FC = () => {
             hasTimedOut
               ? onTimedOutDismiss
               : countdown !== null && countdown > 0
-              ? cancelDeeplinkCallbackRedirect
-              : onOkPress
+                ? cancelDeeplinkCallbackRedirect
+                : onOkPress
           }
         >
           {isDismissingTimedOutProof ? (
@@ -448,15 +466,23 @@ function getTitle(currentState: string) {
 function getUserFacingErrorMessage(
   currentState: string,
   reason: string | undefined,
+  errorCode: string | undefined,
   appName: string,
 ): string {
-  if (reason === PROOF_TIMEOUT_REASON) {
+  if (
+    reason === PROOF_TIMEOUT_REASON ||
+    errorCode === PROOF_TIMEOUT_ERROR_CODE
+  ) {
     return `The proof request from ${appName} took too long to finish. Please try again, or refresh the QR code in ${appName} and scan again.`;
   }
   if (currentState === 'error') {
     return `Unable to prove your identity to ${appName} due to a technical issue. Please try again.`;
   }
-  if (reason && /InvalidRoot/i.test(reason)) {
+  const invalidRootPattern = /InvalidRoot/i;
+  if (
+    (reason && invalidRootPattern.test(reason)) ||
+    (errorCode && invalidRootPattern.test(errorCode))
+  ) {
     return `The QR code from ${appName} is out of date. Please refresh it in ${appName} and scan again.`;
   }
   return `Unable to prove your identity to ${appName}. Please try again, or contact support if the issue persists.`;
@@ -466,12 +492,14 @@ function Info({
   currentState,
   appName,
   reason,
+  errorCode,
   countdown,
   deeplinkCallback,
 }: {
   currentState: string;
   appName: string;
   reason?: string;
+  errorCode?: string;
   countdown?: number | null;
   deeplinkCallback?: string;
 }) {
@@ -506,6 +534,7 @@ function Info({
     const userMessage = getUserFacingErrorMessage(
       currentState,
       reason,
+      errorCode,
       appName,
     );
     return (
@@ -576,6 +605,6 @@ export const styles = StyleSheet.create({
   reasonText: {
     color: slate500,
     fontSize: 12,
-    fontFamily: 'Courier',
+    fontFamily: Platform.select({ ios: 'Courier', android: 'monospace' }),
   },
 });

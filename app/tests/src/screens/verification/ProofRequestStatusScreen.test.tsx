@@ -37,6 +37,11 @@ jest.mock('react-native', () => ({
   Linking: {
     openURL: jest.fn(),
   },
+  Platform: {
+    OS: 'ios',
+    select: (spec: { ios?: unknown; android?: unknown; default?: unknown }) =>
+      spec.ios ?? spec.default,
+  },
   StyleSheet: {
     create: (styles: unknown) => styles,
     flatten: (style: unknown) => style,
@@ -541,7 +546,7 @@ describe('ProofRequestStatusScreen', () => {
   it('times out stalled proving on mount and lets the user dismiss safely', async () => {
     provingState.currentState = 'proving';
 
-    render(<ProofRequestStatusScreen />);
+    const { toJSON } = render(<ProofRequestStatusScreen />);
 
     act(() => {
       jest.advanceTimersByTime(90_000);
@@ -553,10 +558,9 @@ describe('ProofRequestStatusScreen', () => {
       );
     });
 
-    expect(
-      screen.getByText(/took too long to finish/),
-    ).toBeTruthy();
-    expect(screen.getByText('timed_out_after_90s')).toBeTruthy();
+    const tree = JSON.stringify(toJSON());
+    expect(tree).toMatch(/took too long to finish/i);
+    expect(tree).toContain('timed_out_after_90s');
     expect(mockUpdateProofStatus).toHaveBeenCalledWith(
       'session-1',
       ProofStatus.FAILURE,
@@ -573,6 +577,69 @@ describe('ProofRequestStatusScreen', () => {
     });
     expect(mockCleanSelfApp).toHaveBeenCalledTimes(1);
     expect(mockGoHome).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not write proof history when timeout fires before a session id exists', async () => {
+    provingState.currentState = 'fetching_data';
+    provingState.uuid = null as any;
+
+    render(<ProofRequestStatusScreen />);
+
+    act(() => {
+      jest.advanceTimersByTime(90_000);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('primary-button').props.children).toBe(
+        'Dismiss',
+      );
+    });
+
+    expect(mockUpdateProofStatus).not.toHaveBeenCalled();
+    expect(mockTrackEvent).toHaveBeenCalledWith('PROOF_FAILED', {
+      sessionId: null,
+      appName: 'Verifier',
+      errorCode: 'proof_timeout',
+      reason: 'timed_out_after_90s',
+      state: 'timeout',
+    });
+  });
+
+  it('does not write proof history for early completion without a session id', async () => {
+    provingState.currentState = 'completed';
+    provingState.uuid = null as any;
+
+    render(<ProofRequestStatusScreen />);
+
+    await waitFor(() => {
+      expect(mockTrackEvent).toHaveBeenCalledWith('PROOF_COMPLETED', {
+        sessionId: null,
+        appName: 'Verifier',
+      });
+    });
+
+    expect(mockUpdateProofStatus).not.toHaveBeenCalled();
+  });
+
+  it('does not write proof history for early failure without a session id', async () => {
+    provingState.currentState = 'error';
+    provingState.uuid = null as any;
+    provingState.error_code = 'early_error';
+    provingState.reason = 'failed before tee';
+
+    render(<ProofRequestStatusScreen />);
+
+    await waitFor(() => {
+      expect(mockTrackEvent).toHaveBeenCalledWith('PROOF_FAILED', {
+        sessionId: null,
+        appName: 'Verifier',
+        errorCode: 'early_error',
+        reason: 'failed before tee',
+        state: 'error',
+      });
+    });
+
+    expect(mockUpdateProofStatus).not.toHaveBeenCalled();
   });
 
   it('resets the stall timer when the proving state changes', async () => {
@@ -603,6 +670,31 @@ describe('ProofRequestStatusScreen', () => {
         'Dismiss',
       );
     });
+  });
+
+  it('resets timeout state when a new session id arrives', async () => {
+    provingState.currentState = 'proving';
+    const { rerender } = render(<ProofRequestStatusScreen />);
+
+    act(() => {
+      jest.advanceTimersByTime(90_000);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('primary-button').props.children).toBe(
+        'Dismiss',
+      );
+    });
+
+    provingState.uuid = 'session-2';
+    rerender(<ProofRequestStatusScreen />);
+
+    await waitFor(() => {
+      expect(screen.queryByText('timed_out_after_90s')).toBeNull();
+    });
+    expect(screen.getByTestId('primary-button').props.children).not.toBe(
+      'Dismiss',
+    );
   });
 
   it('clears the stall timer when the screen loses focus', () => {
@@ -674,6 +766,7 @@ describe('ProofRequestStatusScreen', () => {
     await act(async () => {
       fireEvent.press(screen.getByTestId('primary-button'));
       fireEvent.press(screen.getByTestId('primary-button'));
+      jest.advanceTimersByTime(10);
     });
 
     expect(mockCancelProof).toHaveBeenCalledTimes(1);

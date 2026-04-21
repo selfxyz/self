@@ -572,25 +572,30 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     reason: null,
     endpointType: null,
     cancel: async (selfClient: SelfClient) => {
-      selfClient.logProofEvent?.('warn', 'Proving flow cancelled by UI');
+      const context = createProofContext(selfClient, 'cancel');
+      selfClient.logProofEvent('warn', 'Proving flow cancelled by UI', context);
       let cancellationError: Error | null = null;
 
-      try {
-        get()._closeConnections(selfClient);
-      } catch (error) {
-        cancellationError =
-          error instanceof Error ? error : new Error(String(error));
-      }
-
+      // Stop and null the actor BEFORE closing the socket. _closeConnections
+      // triggers the socket 'disconnect' handler, which reads module-scope
+      // `actor` and would otherwise fire a spurious PROVE_ERROR on the
+      // about-to-be-stopped actor.
       if (actor) {
         try {
           actor.stop();
         } catch (error) {
-          cancellationError ??=
+          cancellationError =
             error instanceof Error ? error : new Error(String(error));
         } finally {
           actor = null;
         }
+      }
+
+      try {
+        get()._closeConnections(selfClient);
+      } catch (error) {
+        cancellationError ??=
+          error instanceof Error ? error : new Error(String(error));
       }
 
       selfClient.navigation?.disableKeychainErrorModal?.();
