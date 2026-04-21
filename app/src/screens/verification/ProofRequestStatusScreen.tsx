@@ -4,7 +4,7 @@
 
 import type { LottieViewProps } from 'lottie-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Linking, StyleSheet, View } from 'react-native';
+import { Linking, StyleSheet, Text, View } from 'react-native';
 import { ScrollView, Spinner } from 'tamagui';
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -19,7 +19,12 @@ import {
   typography,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
-import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import {
+  black,
+  slate200,
+  slate500,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import failAnimation from '@/assets/animations/proof_failed.json';
 import succesAnimation from '@/assets/animations/proof_success.json';
@@ -70,7 +75,9 @@ const SuccessScreen: React.FC = () => {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const onOkPress = useCallback(async () => {
-    if (whitelistedPoints === undefined) return;
+    // The whitelistedPoints guard only applies to the success path — on
+    // failure/error it is never populated, and blocking would trap the user.
+    if (currentState === 'completed' && whitelistedPoints === undefined) return;
     buttonTap();
     const completedSessionId = sessionId;
 
@@ -82,7 +89,7 @@ const SuccessScreen: React.FC = () => {
       }, 2000);
     };
 
-    if (whitelistedPoints !== null) {
+    if (currentState === 'completed' && whitelistedPoints !== null) {
       // Bound the prereq checks so a stalled network call can't trap the user
       // on this screen. On timeout we fall through to goHome() — the safe
       // default, since Gratification would just bounce them via the guardrail.
@@ -106,6 +113,7 @@ const SuccessScreen: React.FC = () => {
     goHome();
     cleanupLater();
   }, [
+    currentState,
     whitelistedPoints,
     navigation,
     goHome,
@@ -290,9 +298,9 @@ const SuccessScreen: React.FC = () => {
               : onOkPress
           }
         >
-          {currentState !== 'completed' &&
-          currentState !== 'error' &&
-          currentState !== 'failure' ? (
+          {currentState === 'failure' || currentState === 'error' ? (
+            'Dismiss'
+          ) : currentState !== 'completed' ? (
             <Spinner />
           ) : countdown !== null && countdown > 0 ? (
             'Cancel'
@@ -317,6 +325,22 @@ function getTitle(currentState: string) {
     default:
       return 'Proving';
   }
+}
+
+// Maps low-level proving errors to actionable, user-facing guidance.
+// Raw `reason` is still shown below in a scrollable details box for support.
+function getUserFacingErrorMessage(
+  currentState: string,
+  reason: string | undefined,
+  appName: string,
+): string {
+  if (currentState === 'error') {
+    return `Unable to prove your identity to ${appName} due to a technical issue. Please try again.`;
+  }
+  if (reason && /InvalidRoot/i.test(reason)) {
+    return `The QR code from ${appName} is out of date. Please refresh it in ${appName} and scan again.`;
+  }
+  return `Unable to prove your identity to ${appName}. Please try again, or contact support if the issue persists.`;
 }
 
 function Info({
@@ -360,30 +384,29 @@ function Info({
       </Description>
     );
   } else if (currentState === 'error' || currentState === 'failure') {
+    const userMessage = getUserFacingErrorMessage(
+      currentState,
+      reason,
+      appName,
+    );
     return (
-      <View style={{ gap: 8 }}>
-        <Description>
-          Unable to prove your identity to{' '}
-          <BodyText style={typography.strong}>{appName}</BodyText>
-          {currentState === 'error' && '. Due to technical issues.'}
-        </Description>
+      <View style={{ gap: 12 }}>
+        <Description>{userMessage}</Description>
         {currentState === 'failure' && reason && (
-          <>
-            <Description>
-              <BodyText style={[typography.strong, { fontSize: 14 }]}>
-                Reason:
-              </BodyText>
-            </Description>
-            <View style={{ maxHeight: 60 }}>
-              <ScrollView showsVerticalScrollIndicator={true}>
-                <Description>
-                  <BodyText style={[typography.strong, { fontSize: 14 }]}>
-                    {reason}
-                  </BodyText>
-                </Description>
-              </ScrollView>
-            </View>
-          </>
+          <View style={styles.reasonBox}>
+            <BodyText style={[typography.strong, styles.reasonLabel]}>
+              Details
+            </BodyText>
+            <ScrollView
+              style={styles.reasonScroll}
+              showsVerticalScrollIndicator={true}
+              nestedScrollEnabled
+            >
+              <Text selectable style={styles.reasonText}>
+                {reason}
+              </Text>
+            </ScrollView>
+          </View>
         )}
       </View>
     );
@@ -414,5 +437,26 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20,
     gap: 10,
+  },
+  reasonBox: {
+    alignSelf: 'stretch',
+    borderWidth: 1,
+    borderColor: slate200,
+    borderRadius: 8,
+    padding: 12,
+    gap: 6,
+  },
+  reasonLabel: {
+    fontSize: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  reasonScroll: {
+    maxHeight: 120,
+  },
+  reasonText: {
+    color: slate500,
+    fontSize: 12,
+    fontFamily: 'Courier',
   },
 });

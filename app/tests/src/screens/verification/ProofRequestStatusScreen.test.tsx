@@ -27,6 +27,7 @@ declare global {
       'mock-top': any;
       'mock-bottom': any;
       'mock-scroll': any;
+      'mock-rn-text': any;
     }
   }
 }
@@ -42,6 +43,9 @@ jest.mock('react-native', () => ({
   },
   View: ({ children, ...props }: any) => (
     <mock-view {...props}>{children}</mock-view>
+  ),
+  Text: ({ children, ...props }: any) => (
+    <mock-rn-text {...props}>{children}</mock-rn-text>
   ),
 }));
 
@@ -61,6 +65,8 @@ jest.mock('tamagui', () => ({
 jest.mock('@selfxyz/mobile-sdk-alpha/constants/colors', () => ({
   black: '#000000',
   white: '#ffffff',
+  slate200: '#E2E8F0',
+  slate500: '#64748B',
 }));
 
 jest.mock('@selfxyz/mobile-sdk-alpha/constants/analytics', () => ({
@@ -277,6 +283,30 @@ describe('ProofRequestStatusScreen', () => {
     });
   });
 
+  it('keeps the button disabled on completed while whitelist fetch is pending', async () => {
+    selfAppState.selfApp.endpoint = '0xABC';
+    // Simulate a never-resolving whitelist lookup to hold whitelistedPoints === undefined.
+    getWhiteListedDisclosureAddresses.mockImplementation(
+      () => new Promise(() => {}),
+    );
+
+    render(<ProofRequestStatusScreen />);
+
+    await waitFor(() => {
+      expect(getWhiteListedDisclosureAddresses).toHaveBeenCalledTimes(1);
+    });
+
+    const button = screen.getByTestId('primary-button');
+    expect(button.props.disabled).toBe(true);
+
+    fireEvent.press(button);
+
+    expect(buttonTap).not.toHaveBeenCalled();
+    expect(mockGoHome).not.toHaveBeenCalled();
+    expect(mockNavigate).not.toHaveBeenCalled();
+    expect(mockCleanSelfApp).not.toHaveBeenCalled();
+  });
+
   it('navigates to Gratification when the endpoint is whitelisted for points', async () => {
     selfAppState.selfApp.endpoint = '0xABC';
     getWhiteListedDisclosureAddresses.mockResolvedValue([
@@ -397,6 +427,82 @@ describe('ProofRequestStatusScreen', () => {
     });
 
     expect(mockCleanSelfApp).not.toHaveBeenCalled();
+  });
+
+  describe('failure / error', () => {
+    it('shows Dismiss on failure and routing Home clears session on press', async () => {
+      provingState.currentState = 'failure';
+      provingState.reason = '[InvalidRoot]: Onchain root does not exist';
+
+      render(<ProofRequestStatusScreen />);
+
+      const button = screen.getByTestId('primary-button');
+      expect(button.props.children).toBe('Dismiss');
+      expect(button.props.disabled).toBe(false);
+
+      fireEvent.press(button);
+
+      expect(buttonTap).toHaveBeenCalledTimes(1);
+      expect(mockGoHome).toHaveBeenCalledTimes(1);
+
+      act(() => {
+        jest.advanceTimersByTime(2000);
+      });
+
+      expect(mockCleanSelfApp).toHaveBeenCalledTimes(1);
+    });
+
+    it('shows Dismiss on error and still exits even without a reason', async () => {
+      provingState.currentState = 'error';
+      provingState.reason = null;
+
+      render(<ProofRequestStatusScreen />);
+
+      const button = screen.getByTestId('primary-button');
+      expect(button.props.children).toBe('Dismiss');
+
+      fireEvent.press(button);
+
+      expect(mockGoHome).toHaveBeenCalledTimes(1);
+    });
+
+    it('renders the QR-refresh copy for InvalidRoot failures', async () => {
+      provingState.currentState = 'failure';
+      provingState.reason =
+        '[InvalidRoot]: Onchain root does not exist, received: 4589...';
+
+      const { toJSON } = render(<ProofRequestStatusScreen />);
+
+      const tree = JSON.stringify(toJSON());
+      expect(tree).toMatch(/QR code from Verifier is out of date/i);
+    });
+
+    it('renders a fallback copy for unknown failure reasons', async () => {
+      provingState.currentState = 'failure';
+      provingState.reason = 'Something else went wrong';
+
+      const { toJSON } = render(<ProofRequestStatusScreen />);
+
+      const tree = JSON.stringify(toJSON());
+      expect(tree).toMatch(
+        /Unable to prove your identity to Verifier\. Please try again/i,
+      );
+    });
+
+    it('renders the raw reason in the selectable details box for support', async () => {
+      const reason =
+        '[InvalidRoot]: Onchain root does not exist, received: 4589506917688709078187632663628833702807225';
+      provingState.currentState = 'failure';
+      provingState.reason = reason;
+
+      const { toJSON } = render(<ProofRequestStatusScreen />);
+
+      const tree = JSON.stringify(toJSON());
+      expect(tree).toContain(reason);
+      expect(tree).toContain('Details');
+      // The raw reason must be selectable so users/support can copy it.
+      expect(tree).toMatch(/"selectable":true/);
+    });
   });
 
   it('cancels deeplink redirect before it opens the external URL', async () => {
