@@ -105,6 +105,7 @@
     "@selfxyz/common": "workspace:^",
     "@selfxyz/euclid": "^0.6.1",
     "@selfxyz/mobile-sdk-alpha": "workspace:^",
+    "@selfxyz/new-common": "workspace:^",
     "@sentry/react": "^9.32.0",
     "@sentry/react-native": "7.0.0",
     "@stablelib/cbor": "^2.0.4",

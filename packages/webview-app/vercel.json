@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "ignoreCommand": "git diff HEAD^ HEAD --quiet -- . ../../common ../../packages/mobile-sdk-alpha ../../packages/webview-bridge",
-  "buildCommand": "yarn workspace @selfxyz/common build && yarn workspace @selfxyz/mobile-sdk-alpha build:ts-only && yarn workspace @selfxyz/webview-bridge build && yarn workspace @selfxyz/webview-app run build",
+  "ignoreCommand": "git diff HEAD^ HEAD --quiet -- . ../../common ../../new-common ../../packages/mobile-sdk-alpha ../../packages/webview-bridge",
+  "buildCommand": "yarn workspace @selfxyz/new-common build && yarn workspace @selfxyz/common build && yarn workspace @selfxyz/mobile-sdk-alpha build:ts-only && yarn workspace @selfxyz/webview-bridge build && yarn workspace @selfxyz/webview-app run build",
   "rewrites": [
     {
       "source": "/(.*)",

@@ -20,6 +20,7 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import { humanizeContractError } from '@selfxyz/new-common/src/blockchain';
 
 import failAnimation from '@/assets/animations/proof_failed.json';
 import succesAnimation from '@/assets/animations/proof_success.json';
@@ -378,7 +379,7 @@ function Info({
               <ScrollView showsVerticalScrollIndicator={true}>
                 <Description>
                   <BodyText style={[typography.strong, { fontSize: 14 }]}>
-                    {reason}
+                    {humanizeContractError(reason)}
                   </BodyText>
                 </Description>
               </ScrollView>

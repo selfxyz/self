@@ -9,3 +9,4 @@ export {
 } from './formatCallData.js';
 export { fetchOfacTrees } from './ofac.js';
 export type { OfacVariant } from './ofac.js';
+export { humanizeContractError } from './contractErrors.js';
