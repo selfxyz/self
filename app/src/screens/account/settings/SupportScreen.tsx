@@ -34,7 +34,7 @@ const SupportScreen: React.FC = () => {
   const handleRegenerate = useCallback(() => {
     Alert.alert(
       'Regenerate diagnostic ID?',
-      'This will immediately replace the current ID for future support diagnostics.',
+      "Use this if you've shared your ID publicly or want a fresh one for a new issue. Future support requests will use the new ID.",
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -42,7 +42,7 @@ const SupportScreen: React.FC = () => {
           style: 'destructive',
           onPress: () => {
             regenerate();
-            Alert.alert('Updated', 'Diagnostic ID regenerated successfully.');
+            Alert.alert('Updated', 'Your diagnostic ID has been replaced.');
           },
         },
       ],
@@ -68,14 +68,20 @@ const SupportScreen: React.FC = () => {
         </Button>
 
         <YStack gap={8}>
+          <BodyText style={{ color: slate500, fontSize: 13 }}>
+            A diagnostic ID helps our team find the activity related to your
+            report. It's not tied to your identity.
+          </BodyText>
+
           <View style={styles.settingRow}>
             <View style={styles.settingTextContainer}>
               <BodyText style={styles.settingLabel}>
                 Share diagnostic ID
               </BodyText>
               <BodyText style={styles.settingDescription}>
-                Enabled by default. Turn this off to stop attaching a diagnostic
-                ID to support requests and troubleshooting screens.
+                {isEnabled
+                  ? 'Share the diagnostic ID below with support so we can find the activity related to your report. Turn this off to keep it out of support requests and error screens.'
+                  : 'Diagnostic ID is off. Turn it on to include it in future support requests.'}
               </BodyText>
             </View>
             <Switch
@@ -86,12 +92,6 @@ const SupportScreen: React.FC = () => {
               testID="support-uuid-toggle"
             />
           </View>
-
-          <BodyText style={{ color: slate500, fontSize: 13 }}>
-            {isEnabled
-              ? 'Share the diagnostic ID below when contacting support so we can locate your logs.'
-              : 'Diagnostic IDs are off. Enable this setting whenever you want support requests to include a diagnostic identifier.'}
-          </BodyText>
 
           {isEnabled ? (
             <>

@@ -14,6 +14,7 @@ import DevLoadingScreen from '@/screens/dev/DevLoadingScreen';
 import DevPrivateKeyScreen from '@/screens/dev/DevPrivateKeyScreen';
 import DevSettingsScreen from '@/screens/dev/DevSettingsScreen';
 import SocialLoginDemoScreen from '@/screens/dev/SocialLoginDemoScreen';
+import TroubleshootingScreen from '@/screens/dev/TroubleshootingScreen';
 
 const devHeaderOptions: NativeStackNavigationOptions = {
   headerStyle: {
@@ -87,6 +88,13 @@ const devScreens = {
     options: {
       ...devHeaderOptions,
       title: 'Social Login Demo',
+    } as NativeStackNavigationOptions,
+  },
+  Troubleshooting: {
+    screen: TroubleshootingScreen,
+    options: {
+      ...devHeaderOptions,
+      title: 'Troubleshooting',
     } as NativeStackNavigationOptions,
   },
 };
