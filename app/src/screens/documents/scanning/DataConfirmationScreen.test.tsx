@@ -81,7 +81,6 @@ jest.mock('@selfxyz/mobile-sdk-alpha/constants/analytics', () => ({
     DATA_CONFIRMATION_CONTINUE: 'Passport: Data Confirmation Continue',
     DATA_CONFIRMATION_CANCEL: 'Passport: Data Confirmation Cancel',
     DATA_CONFIRMATION_COMPLETED: 'Passport: Data Confirmation Completed',
-    MRZ_DATA_MODIFIED: 'Passport: MRZ Data Modified',
   },
 }));
 
@@ -159,17 +158,6 @@ describe('DataConfirmationScreen', () => {
         { had_changes: false },
       );
     });
-
-    it('does not track MRZ_DATA_MODIFIED event', () => {
-      render(<DataConfirmationScreen />);
-
-      fireEvent.press(screen.getByText('Continue'));
-
-      expect(analytics.trackEvent).not.toHaveBeenCalledWith(
-        'Passport: MRZ Data Modified',
-        expect.any(Object),
-      );
-    });
   });
 
   describe('MRZ data on confirm with document number change', () => {
@@ -206,24 +194,6 @@ describe('DataConfirmationScreen', () => {
       expect(analytics.trackEvent).toHaveBeenCalledWith(
         'Passport: Data Confirmation Completed',
         { had_changes: true },
-      );
-    });
-
-    it('tracks MRZ_DATA_MODIFIED with document number diff', () => {
-      render(<DataConfirmationScreen />);
-
-      changeDocumentNumber('XY987654Z');
-      fireEvent.press(screen.getByText('Continue'));
-
-      expect(analytics.trackEvent).toHaveBeenCalledWith(
-        'Passport: MRZ Data Modified',
-        expect.objectContaining({
-          fields_changed: ['document_number'],
-          total_changes: 1,
-          diffs: {
-            document_number: { original: 'A', changed: 'X' },
-          },
-        }),
       );
     });
   });

@@ -21,10 +21,6 @@ import { InputField } from '@/components/InputField';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import type { RootStackParamList } from '@/navigation';
 import { trackEvent } from '@/services/analytics';
-import {
-  calculateFirstDifference,
-  type FirstDifference,
-} from '@/utils/diffCalculator';
 
 const EscapeIcon = ({ size, color }: { size: number; color: string }) => (
   <View testID="escape-button">
@@ -87,39 +83,6 @@ const DataConfirmationScreen: React.FC & {
       documentExpiryDate !== originalDocumentExpiryDate;
 
     if (hasChanges) {
-      const diffs: Record<string, FirstDifference | null> = {};
-
-      if (documentNumber !== originalDocumentNumber) {
-        diffs.document_number = calculateFirstDifference(
-          originalDocumentNumber,
-          documentNumber,
-        );
-      }
-
-      if (dateOfBirth !== originalDateOfBirth) {
-        diffs.date_of_birth = calculateFirstDifference(
-          originalDateOfBirth,
-          dateOfBirth,
-        );
-      }
-
-      if (documentExpiryDate !== originalDocumentExpiryDate) {
-        diffs.document_expiry_date = calculateFirstDifference(
-          originalDocumentExpiryDate,
-          documentExpiryDate,
-        );
-      }
-
-      const filteredDiffs = Object.fromEntries(
-        Object.entries(diffs).filter(([, diff]) => diff !== null),
-      );
-
-      trackEvent(PassportEvents.MRZ_DATA_MODIFIED, {
-        diffs: filteredDiffs,
-        fields_changed: Object.keys(filteredDiffs),
-        total_changes: Object.keys(filteredDiffs).length,
-      });
-
       mrzData.setMRZForNFC({
         ...mrzData,
         passportNumber: documentNumber,
