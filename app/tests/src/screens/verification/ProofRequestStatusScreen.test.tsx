@@ -119,6 +119,10 @@ jest.mock('@/integrations/haptics', () => ({
   notificationSuccess: jest.fn(),
 }));
 
+jest.mock('@/config/sentry', () => ({
+  captureException: jest.fn(),
+}));
+
 jest.mock('@/layouts/ExpandableBottomLayout', () => ({
   ExpandableBottomLayout: {
     Layout: ({ children, ...props }: any) => (
@@ -163,6 +167,9 @@ const { buttonTap, notificationSuccess } = jest.requireMock(
   buttonTap: jest.Mock;
   notificationSuccess: jest.Mock;
 };
+const { captureException } = jest.requireMock('@/config/sentry') as {
+  captureException: jest.Mock;
+};
 const { getWhiteListedDisclosureAddresses } = jest.requireMock(
   '@/services/points/utils',
 ) as {
@@ -185,12 +192,14 @@ describe('ProofRequestStatusScreen', () => {
   const mockTrackEvent = jest.fn();
   const mockCleanSelfApp = jest.fn();
   const mockUpdateProofStatus = jest.fn();
+  const mockCancelProof = jest.fn();
 
   let provingState: {
     currentState: string;
     reason: string | null;
     uuid: string;
     error_code: string | null;
+    cancel: jest.Mock;
   };
   let selfAppState: {
     selfApp: {
@@ -203,12 +212,15 @@ describe('ProofRequestStatusScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.useFakeTimers();
+    mockCancelProof.mockReset();
+    mockCancelProof.mockResolvedValue(undefined);
 
     provingState = {
       currentState: 'completed',
       reason: null,
       uuid: 'session-1',
       error_code: null,
+      cancel: mockCancelProof,
     };
     selfAppState = {
       selfApp: {
@@ -524,5 +536,146 @@ describe('ProofRequestStatusScreen', () => {
 
     expect(Linking.openURL).not.toHaveBeenCalled();
     expect(mockGoHome).not.toHaveBeenCalled();
+  });
+
+  it('times out stalled proving on mount and lets the user dismiss safely', async () => {
+    provingState.currentState = 'proving';
+
+    render(<ProofRequestStatusScreen />);
+
+    act(() => {
+      jest.advanceTimersByTime(90_000);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('primary-button').props.children).toBe(
+        'Dismiss',
+      );
+    });
+
+    expect(
+      screen.getByText(/took too long to finish/),
+    ).toBeTruthy();
+    expect(screen.getByText('timed_out_after_90s')).toBeTruthy();
+    expect(mockUpdateProofStatus).toHaveBeenCalledWith(
+      'session-1',
+      ProofStatus.FAILURE,
+      'proof_timeout',
+      'timed_out_after_90s',
+    );
+
+    await act(async () => {
+      fireEvent.press(screen.getByTestId('primary-button'));
+    });
+
+    await waitFor(() => {
+      expect(mockCancelProof).toHaveBeenCalledTimes(1);
+    });
+    expect(mockCleanSelfApp).toHaveBeenCalledTimes(1);
+    expect(mockGoHome).toHaveBeenCalledTimes(1);
+  });
+
+  it('resets the stall timer when the proving state changes', async () => {
+    provingState.currentState = 'fetching_data';
+    const { rerender } = render(<ProofRequestStatusScreen />);
+
+    act(() => {
+      jest.advanceTimersByTime(89_000);
+    });
+
+    expect(screen.queryByText('Proof Failed')).toBeNull();
+
+    provingState.currentState = 'proving';
+    rerender(<ProofRequestStatusScreen />);
+
+    act(() => {
+      jest.advanceTimersByTime(2_000);
+    });
+
+    expect(screen.queryByText('Proof Failed')).toBeNull();
+
+    act(() => {
+      jest.advanceTimersByTime(88_000);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('primary-button').props.children).toBe(
+        'Dismiss',
+      );
+    });
+  });
+
+  it('clears the stall timer when the screen loses focus', () => {
+    let focused = true;
+    (useIsFocused as jest.Mock).mockImplementation(() => focused);
+    provingState.currentState = 'proving';
+
+    const { rerender } = render(<ProofRequestStatusScreen />);
+
+    act(() => {
+      jest.advanceTimersByTime(45_000);
+    });
+
+    focused = false;
+    rerender(<ProofRequestStatusScreen />);
+
+    act(() => {
+      jest.advanceTimersByTime(90_000);
+    });
+
+    expect(screen.queryByText('Proof Failed')).toBeNull();
+  });
+
+  it('still exits home if cancelling a timed-out proof throws', async () => {
+    provingState.currentState = 'proving';
+    mockCancelProof.mockRejectedValueOnce(new Error('close failed'));
+
+    render(<ProofRequestStatusScreen />);
+
+    act(() => {
+      jest.advanceTimersByTime(90_000);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('primary-button').props.children).toBe(
+        'Dismiss',
+      );
+    });
+
+    await act(async () => {
+      fireEvent.press(screen.getByTestId('primary-button'));
+    });
+
+    await waitFor(() => {
+      expect(mockGoHome).toHaveBeenCalledTimes(1);
+    });
+    expect(mockCleanSelfApp).toHaveBeenCalledTimes(1);
+    expect(captureException).toHaveBeenCalledTimes(1);
+  });
+
+  it('ignores repeated dismiss taps while timed-out cancellation is in flight', async () => {
+    provingState.currentState = 'proving';
+    mockCancelProof.mockImplementation(
+      () => new Promise(resolve => setTimeout(resolve, 10)),
+    );
+
+    render(<ProofRequestStatusScreen />);
+
+    act(() => {
+      jest.advanceTimersByTime(90_000);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('primary-button').props.children).toBe(
+        'Dismiss',
+      );
+    });
+
+    await act(async () => {
+      fireEvent.press(screen.getByTestId('primary-button'));
+      fireEvent.press(screen.getByTestId('primary-button'));
+    });
+
+    expect(mockCancelProof).toHaveBeenCalledTimes(1);
   });
 });

@@ -28,6 +28,7 @@ import {
 
 import failAnimation from '@/assets/animations/proof_failed.json';
 import succesAnimation from '@/assets/animations/proof_success.json';
+import { captureException } from '@/config/sentry';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import {
   buttonTap,
@@ -45,6 +46,22 @@ import { useProofHistoryStore } from '@/stores/proofHistoryStore';
 import { ProofStatus } from '@/stores/proofTypes';
 
 const PREREQ_CHECK_TIMEOUT_MS = 3000;
+// Give each active proving state a generous 90s window before exposing an
+// escape hatch. This avoids trapping users on silent stalls without cutting off
+// normal slow-device proving too aggressively.
+const PROVING_STALL_TIMEOUT_MS = 90_000;
+const PROOF_TIMEOUT_ERROR_CODE = 'proof_timeout';
+const PROOF_TIMEOUT_REASON = 'timed_out_after_90s';
+const STALL_TIMEOUT_STATES = new Set([
+  'parsing_id_document',
+  'fetching_data',
+  'validating_document',
+  'init_tee_connexion',
+  'ready_to_prove',
+  'listening_for_status',
+  'proving',
+  'post_proving',
+]);
 
 const SuccessScreen: React.FC = () => {
   const selfClient = useSelfClient();
@@ -69,10 +86,22 @@ const SuccessScreen: React.FC = () => {
     useState<LottieViewProps['source']>(loadingAnimation);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [countdownStarted, setCountdownStarted] = useState(false);
+  const [hasTimedOut, setHasTimedOut] = useState(false);
+  const [isDismissingTimedOutProof, setIsDismissingTimedOutProof] =
+    useState(false);
   const [whitelistedPoints, setWhitelistedPoints] = useState<
     number | null | undefined
   >(undefined);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const provingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timedOutSessionIdRef = useRef<string | null>(null);
+  const dismissingTimedOutProofRef = useRef(false);
+  const timedOutAnalyticsTrackedRef = useRef(false);
+
+  const displayState = hasTimedOut ? 'failure' : currentState;
+  const displayReason = hasTimedOut
+    ? PROOF_TIMEOUT_REASON
+    : (reason ?? undefined);
 
   const onOkPress = useCallback(async () => {
     // The whitelistedPoints guard only applies to the success path — on
@@ -122,6 +151,41 @@ const SuccessScreen: React.FC = () => {
     useProvingStore,
   ]);
 
+  const clearProvingTimeout = useCallback(() => {
+    if (provingTimeoutRef.current) {
+      clearTimeout(provingTimeoutRef.current);
+      provingTimeoutRef.current = null;
+    }
+  }, []);
+
+  const onTimedOutDismiss = useCallback(async () => {
+    if (dismissingTimedOutProofRef.current) {
+      return;
+    }
+
+    dismissingTimedOutProofRef.current = true;
+    setIsDismissingTimedOutProof(true);
+    buttonTap();
+
+    try {
+      await useProvingStore.getState().cancel(selfClient);
+    } catch (error) {
+      captureException(
+        error instanceof Error ? error : new Error(String(error)),
+        {
+          module: 'proof-request-status-screen',
+          action: 'dismiss_timed_out_proof',
+          sessionId: timedOutSessionIdRef.current,
+        },
+      );
+    } finally {
+      selfClient.getSelfAppState().cleanSelfApp();
+      goHome();
+      dismissingTimedOutProofRef.current = false;
+      setIsDismissingTimedOutProof(false);
+    }
+  }, [goHome, selfClient, useProvingStore]);
+
   function cancelDeeplinkCallbackRedirect() {
     setCountdown(null);
   }
@@ -162,7 +226,28 @@ const SuccessScreen: React.FC = () => {
   }, [currentState, selfApp?.endpoint]);
 
   useEffect(() => {
-    if (currentState === 'completed') {
+    if (hasTimedOut) {
+      setAnimationSource(failAnimation);
+
+      if (!timedOutAnalyticsTrackedRef.current) {
+        timedOutAnalyticsTrackedRef.current = true;
+        notificationError();
+        updateProofStatus(
+          sessionId!,
+          ProofStatus.FAILURE,
+          PROOF_TIMEOUT_ERROR_CODE,
+          PROOF_TIMEOUT_REASON,
+        );
+        trackEvent(ProofEvents.PROOF_FAILED, {
+          sessionId,
+          appName,
+          errorCode: PROOF_TIMEOUT_ERROR_CODE,
+          reason: PROOF_TIMEOUT_REASON,
+          state: 'timeout',
+        });
+      }
+    } else if (currentState === 'completed') {
+      timedOutAnalyticsTrackedRef.current = false;
       notificationSuccess();
       setAnimationSource(succesAnimation);
       updateProofStatus(sessionId!, ProofStatus.SUCCESS);
@@ -185,6 +270,7 @@ const SuccessScreen: React.FC = () => {
         }
       }
     } else if (currentState === 'failure' || currentState === 'error') {
+      timedOutAnalyticsTrackedRef.current = false;
       notificationError();
       setAnimationSource(failAnimation);
       updateProofStatus(
@@ -201,9 +287,11 @@ const SuccessScreen: React.FC = () => {
         state: currentState,
       });
     } else {
+      timedOutAnalyticsTrackedRef.current = false;
       setAnimationSource(loadingAnimation);
     }
   }, [
+    hasTimedOut,
     trackEvent,
     currentState,
     isFocused,
@@ -215,6 +303,28 @@ const SuccessScreen: React.FC = () => {
     selfApp?.deeplinkCallback,
     countdownStarted,
   ]);
+
+  useEffect(() => {
+    if (hasTimedOut) {
+      clearProvingTimeout();
+      return;
+    }
+
+    if (!isFocused || !STALL_TIMEOUT_STATES.has(currentState)) {
+      clearProvingTimeout();
+      return;
+    }
+
+    clearProvingTimeout();
+    provingTimeoutRef.current = setTimeout(() => {
+      timedOutSessionIdRef.current = sessionId;
+      setHasTimedOut(true);
+    }, PROVING_STALL_TIMEOUT_MS);
+
+    return () => {
+      clearProvingTimeout();
+    };
+  }, [clearProvingTimeout, currentState, hasTimedOut, isFocused, sessionId]);
 
   useEffect(() => {
     if (countdown === null) return;
@@ -244,8 +354,9 @@ const SuccessScreen: React.FC = () => {
     }
     return () => {
       cancelCountdown();
+      clearProvingTimeout();
     };
-  }, [isFocused]);
+  }, [clearProvingTimeout, isFocused]);
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={white}>
@@ -270,11 +381,11 @@ const SuccessScreen: React.FC = () => {
         backgroundColor={white}
       >
         <View style={styles.content}>
-          <Title size="large">{getTitle(currentState)}</Title>
+          <Title size="large">{getTitle(displayState)}</Title>
           <Info
-            currentState={currentState}
+            currentState={displayState}
             appName={appName ?? 'The app'}
-            reason={reason ?? undefined}
+            reason={displayReason}
             countdown={countdown}
             deeplinkCallback={selfApp?.deeplinkCallback?.replace(
               /^https?:\/\//,
@@ -285,22 +396,27 @@ const SuccessScreen: React.FC = () => {
         <PrimaryButton
           trackEvent={ProofEvents.PROOF_RESULT_ACKNOWLEDGED}
           disabled={
-            (currentState !== 'completed' &&
-              currentState !== 'error' &&
-              currentState !== 'failure') ||
-            (currentState === 'completed' &&
+            isDismissingTimedOutProof ||
+            (displayState !== 'completed' &&
+              displayState !== 'error' &&
+              displayState !== 'failure') ||
+            (displayState === 'completed' &&
               whitelistedPoints === undefined &&
               !(countdown !== null && countdown > 0))
           }
           onPress={
-            countdown !== null && countdown > 0
+            hasTimedOut
+              ? onTimedOutDismiss
+              : countdown !== null && countdown > 0
               ? cancelDeeplinkCallbackRedirect
               : onOkPress
           }
         >
-          {currentState === 'failure' || currentState === 'error' ? (
+          {isDismissingTimedOutProof ? (
+            <Spinner />
+          ) : displayState === 'failure' || displayState === 'error' ? (
             'Dismiss'
-          ) : currentState !== 'completed' ? (
+          ) : displayState !== 'completed' ? (
             <Spinner />
           ) : countdown !== null && countdown > 0 ? (
             'Cancel'
@@ -334,6 +450,9 @@ function getUserFacingErrorMessage(
   reason: string | undefined,
   appName: string,
 ): string {
+  if (reason === PROOF_TIMEOUT_REASON) {
+    return `The proof request from ${appName} took too long to finish. Please try again, or refresh the QR code in ${appName} and scan again.`;
+  }
   if (currentState === 'error') {
     return `Unable to prove your identity to ${appName} due to a technical issue. Please try again.`;
   }
