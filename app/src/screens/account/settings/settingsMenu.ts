@@ -11,6 +11,7 @@ export type SettingsGatingContext = {
   platform: SettingsPlatform;
   hasRealDocument: boolean;
   isDevMode: boolean;
+  isTroubleshootingMode: boolean;
 };
 
 export type SettingsPlatform = 'ios' | 'android' | 'web';
@@ -21,7 +22,8 @@ export type SettingsRouteKey =
   | 'ProofSettings'
   | 'Support'
   | 'share'
-  | 'DevSettings';
+  | 'DevSettings'
+  | 'Troubleshooting';
 
 export const DEBUG_SETTINGS_ENTRY: SettingsEntry = {
   label: 'Debug menu',
@@ -42,6 +44,11 @@ export const SETTINGS_ENTRIES_WEB: readonly SettingsEntry[] = [
   { label: 'Get support', route: 'Support' },
 ];
 
+export const TROUBLESHOOTING_ENTRY: SettingsEntry = {
+  label: 'Troubleshooting',
+  route: 'Troubleshooting',
+};
+
 export const baseEntriesForPlatform = (
   platform: SettingsPlatform,
 ): readonly SettingsEntry[] =>
@@ -55,10 +62,14 @@ export const baseEntriesForPlatform = (
 export const buildSettingsMenu = (
   context: SettingsGatingContext,
 ): SettingsEntry[] => {
-  const { platform, isDevMode } = context;
+  const { platform, isDevMode, isTroubleshootingMode } = context;
   const base = baseEntriesForPlatform(platform);
-  const withDebug = isDevMode ? [...base, DEBUG_SETTINGS_ENTRY] : base;
-  return withDebug.filter(entry => shouldShowSettingsEntry(entry, context));
+  const entries = [
+    ...base,
+    ...(isTroubleshootingMode || isDevMode ? [TROUBLESHOOTING_ENTRY] : []),
+    ...(isDevMode ? [DEBUG_SETTINGS_ENTRY] : []),
+  ];
+  return entries.filter(entry => shouldShowSettingsEntry(entry, context));
 };
 
 export const shouldShowSettingsEntry = (

@@ -443,7 +443,8 @@ const SuccessScreen: React.FC = () => {
             <Spinner />
           ) : countdown !== null && countdown > 0 ? (
             'Cancel'
-          ) : whitelistedPoints === undefined ? (
+          ) : currentState === 'completed' &&
+            whitelistedPoints === undefined ? (
             <Spinner />
           ) : (
             'OK'
