@@ -19,6 +19,7 @@ import {
 import { unsafe_getPrivateKey } from '@/providers/authProvider';
 import {
   POINTS_API_BASE_URL,
+  POINTS_API_ROUTES,
   POINTS_SELF_APP_ENDPOINT,
   POINTS_SELF_APP_SCOPE,
 } from '@/services/points/constants';
@@ -55,7 +56,7 @@ const TroubleshootingScreen: React.FC = () => {
       const userAddress = await getPointsAddress();
 
       const response = await fetch(
-        `${POINTS_API_BASE_URL}/points-disclose-fix`,
+        `${POINTS_API_BASE_URL}${POINTS_API_ROUTES.discloseFix}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
