@@ -20,17 +20,13 @@ jest.mock('react-native-date-picker', () => {
 
 describe('InputField yymmdd type', () => {
   it('displays formatted date from YYMMDD string', () => {
-    render(
-      <InputField type="yymmdd" label="Date of birth" value="900117" />,
-    );
+    render(<InputField type="yymmdd" label="Date of birth" value="900117" />);
 
     expect(screen.getByText('Jan 17 1990')).toBeTruthy();
   });
 
   it('displays correct date for year <= 30 (2000s)', () => {
-    render(
-      <InputField type="yymmdd" label="Expiry" value="301231" />,
-    );
+    render(<InputField type="yymmdd" label="Expiry" value="301231" />);
 
     expect(screen.getByText('Dec 31 2030')).toBeTruthy();
   });
@@ -42,9 +38,7 @@ describe('InputField yymmdd type', () => {
 
     expect(screen.getByText('Jan 17 1990')).toBeTruthy();
 
-    rerender(
-      <InputField type="yymmdd" label="Date of birth" value="950625" />,
-    );
+    rerender(<InputField type="yymmdd" label="Date of birth" value="950625" />);
 
     expect(screen.getByText('Jun 25 1995')).toBeTruthy();
   });

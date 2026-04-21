@@ -71,10 +71,11 @@ const DataConfirmationScreen: React.FC & {
 
     if (hasChanges) {
       mrzData.setMRZForNFC({
-        ...mrzData,
         passportNumber: documentNumber,
         dateOfBirth,
         dateOfExpiry: documentExpiryDate,
+        countryCode: mrzData.countryCode,
+        documentType: mrzData.documentType,
       });
     }
 

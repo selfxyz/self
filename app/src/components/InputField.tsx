@@ -28,8 +28,18 @@ export interface InputFieldProps {
 export type InputFieldType = 'alphanumeric' | 'yymmdd';
 
 const MONTHS = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
 ];
 
 const yymmddToDisplay = (yymmdd: string): string => {
@@ -122,7 +132,7 @@ export const InputField: React.FC<InputFieldProps> = ({
         placeholderTextColor={colors.slate500}
         onChangeText={handleChangeText}
         editable={editable}
-        keyboardType={type === 'alphanumeric' ? 'default' : 'default'}
+        keyboardType="default"
         autoCapitalize={type === 'alphanumeric' ? 'characters' : 'none'}
       />
     </View>
