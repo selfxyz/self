@@ -25,26 +25,6 @@ jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
       setMRZForNFC: mockSetMRZForNFC,
     }),
   }),
-  formatDateToYYMMDD: (isoString: string) => {
-    const date = new Date(isoString);
-    const yy = String(date.getUTCFullYear()).slice(-2);
-    const mm = String(date.getUTCMonth() + 1).padStart(2, '0');
-    const dd = String(date.getUTCDate()).padStart(2, '0');
-    return `${yy}${mm}${dd}`;
-  },
-  parseMRZBirthDate: (yymmdd: string) => {
-    const yy = parseInt(yymmdd.substring(0, 2));
-    const mm = parseInt(yymmdd.substring(2, 4)) - 1;
-    const dd = parseInt(yymmdd.substring(4, 6));
-    const year = yy <= 30 ? 2000 + yy : 1900 + yy;
-    return new Date(Date.UTC(year, mm, dd));
-  },
-  parseMRZExpiryDate: (yymmdd: string) => {
-    const yy = parseInt(yymmdd.substring(0, 2));
-    const mm = parseInt(yymmdd.substring(2, 4)) - 1;
-    const dd = parseInt(yymmdd.substring(4, 6));
-    return new Date(Date.UTC(2000 + yy, mm, dd));
-  },
 }));
 
 const inputFieldCallbacks: Record<

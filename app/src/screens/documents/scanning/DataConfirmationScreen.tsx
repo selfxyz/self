@@ -9,12 +9,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { Button, colors, TopNavigationDialogue, XIcon } from '@selfxyz/euclid';
-import {
-  formatDateToYYMMDD,
-  parseMRZBirthDate,
-  parseMRZExpiryDate,
-  useSelfClient,
-} from '@selfxyz/mobile-sdk-alpha';
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import { InputField } from '@/components/InputField';
@@ -63,14 +58,6 @@ const DataConfirmationScreen: React.FC & {
     setFields(prev => ({
       ...prev,
       [field]: value,
-    }));
-  };
-
-  const handleDateChange = (field: keyof DocumentData, date: Date) => {
-    const mrzFormattedDate = formatDateToYYMMDD(date.toISOString());
-    setFields(prev => ({
-      ...prev,
-      [field]: mrzFormattedDate,
     }));
   };
 
@@ -127,18 +114,18 @@ const DataConfirmationScreen: React.FC & {
         />
 
         <InputField
-          type="date"
+          type="yymmdd"
           label="Date of birth"
-          value={parseMRZBirthDate(fields.dateOfBirth).toISOString()}
-          onDateChange={date => handleDateChange('dateOfBirth', date)}
+          value={fields.dateOfBirth}
+          onChangeText={text => handleFieldChange('dateOfBirth', text)}
           style={styles.field}
         />
 
         <InputField
-          type="date"
+          type="yymmdd"
           label="Document expiration date"
-          value={parseMRZExpiryDate(fields.documentExpiryDate).toISOString()}
-          onDateChange={date => handleDateChange('documentExpiryDate', date)}
+          value={fields.documentExpiryDate}
+          onChangeText={text => handleFieldChange('documentExpiryDate', text)}
           style={styles.field}
         />
       </View>
