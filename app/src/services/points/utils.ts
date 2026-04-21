@@ -8,7 +8,11 @@ import { SelfAppBuilder } from '@selfxyz/common/utils/appType';
 
 import { selfLogoReverseUrl } from '@/consts/links';
 import { getOrGeneratePointsAddress } from '@/providers/authProvider';
-import { POINTS_API_BASE_URL } from '@/services/points/constants';
+import {
+  POINTS_API_BASE_URL,
+  POINTS_SELF_APP_ENDPOINT,
+  POINTS_SELF_APP_SCOPE,
+} from '@/services/points/constants';
 import type { IncomingPoints } from '@/services/points/types';
 
 export type WhitelistedContract = {
@@ -168,12 +172,11 @@ export const hasUserDoneThePointsDisclosure = async (): Promise<boolean> => {
 };
 
 export const pointsSelfApp = async () => {
-  const endpoint = '0x829d183faaa675f8f80e8bb25fb1476cd4f7c1f0';
   const builder = new SelfAppBuilder({
     appName: '✨ Self Points',
-    endpoint: endpoint.toLowerCase(),
+    endpoint: POINTS_SELF_APP_ENDPOINT.toLowerCase(),
     endpointType: 'celo',
-    scope: 'minimal-disclosure-quest',
+    scope: POINTS_SELF_APP_SCOPE,
     userId: v4(),
     userIdType: 'uuid',
     disclosures: {},

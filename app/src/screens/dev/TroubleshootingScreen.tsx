@@ -17,11 +17,12 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import { unsafe_getPrivateKey } from '@/providers/authProvider';
-import { POINTS_API_BASE_URL } from '@/services/points/constants';
+import {
+  POINTS_API_BASE_URL,
+  POINTS_SELF_APP_ENDPOINT,
+  POINTS_SELF_APP_SCOPE,
+} from '@/services/points/constants';
 import { getPointsAddress } from '@/services/points/utils';
-
-const POINTS_ENDPOINT = '0x829d183faaa675f8f80e8bb25fb1476cd4f7c1f0';
-const POINTS_SCOPE = 'minimal-disclosure-quest';
 
 const TroubleshootingScreen: React.FC = () => {
   const [status, setStatus] = useState<
@@ -43,7 +44,10 @@ const TroubleshootingScreen: React.FC = () => {
         return;
       }
 
-      const scopeHash = hashEndpointWithScope(POINTS_ENDPOINT, POINTS_SCOPE);
+      const scopeHash = hashEndpointWithScope(
+        POINTS_SELF_APP_ENDPOINT,
+        POINTS_SELF_APP_SCOPE,
+      );
       const nullifier = poseidon2([
         BigInt(secret),
         BigInt(scopeHash),

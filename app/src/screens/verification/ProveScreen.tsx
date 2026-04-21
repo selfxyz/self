@@ -366,6 +366,8 @@ const ProveScreen: React.FC = () => {
     }
 
     const trackAlreadyDisclosed = async () => {
+      const sessionId = provingStore.uuid;
+
       try {
         const whitelistedAddresses = await getWhiteListedDisclosureAddresses();
         const isPointsDisclosure = whitelistedAddresses.some(
@@ -384,13 +386,13 @@ const ProveScreen: React.FC = () => {
         trackEvent(ProofEvents.POINTS_NULLIFIER_ALREADY_USED, {
           pointsAddress,
           endpoint: selectedApp?.endpoint,
-          sessionId: provingStore.uuid,
+          sessionId,
         });
 
         captureMessage('Points disclosure already registered on-chain', {
           pointsAddress,
           endpoint: selectedApp?.endpoint,
-          sessionId: provingStore.uuid,
+          sessionId,
         });
       } catch (error) {
         console.error('Failed tracking NullifierAlreadyUsed event:', error);
