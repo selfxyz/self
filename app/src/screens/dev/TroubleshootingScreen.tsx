@@ -49,7 +49,7 @@ const FixDisclosureScreen: React.FC = () => {
       ]).toString();
       const userAddress = await getPointsAddress();
 
-      console.log(userAddress, nullifier);
+      console.log(userAddress);
 
       const response = await fetch(
         `${POINTS_API_BASE_URL}/points-disclose-fix`,
