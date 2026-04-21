@@ -7,6 +7,11 @@ import { render, screen } from '@testing-library/react-native';
 
 import { InputField } from './InputField';
 
+jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
+  parseMRZBirthDate: () => new Date(1990, 0, 17),
+  parseMRZExpiryDate: () => new Date(2034, 11, 19),
+}));
+
 jest.mock('react-native-date-picker', () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { View } = require('react-native');
@@ -18,28 +23,30 @@ jest.mock('react-native-date-picker', () => {
   };
 });
 
-describe('InputField yymmdd type', () => {
-  it('displays formatted date from YYMMDD string', () => {
-    render(<InputField type="yymmdd" label="Date of birth" value="900117" />);
+describe('InputField date-of-birth type', () => {
+  it('renders formatted birth date from YYMMDD value', () => {
+    render(<InputField type="date-of-birth" label="DOB" value="900117" />);
 
     expect(screen.getByText('Jan 17 1990')).toBeTruthy();
-  });
-
-  it('displays correct date for year <= 30 (2000s)', () => {
-    render(<InputField type="yymmdd" label="Expiry" value="301231" />);
-
-    expect(screen.getByText('Dec 31 2030')).toBeTruthy();
   });
 
   it('updates display when value prop changes', () => {
     const { rerender } = render(
-      <InputField type="yymmdd" label="Date of birth" value="900117" />,
+      <InputField type="date-of-birth" label="DOB" value="900117" />,
     );
 
     expect(screen.getByText('Jan 17 1990')).toBeTruthy();
 
-    rerender(<InputField type="yymmdd" label="Date of birth" value="950625" />);
+    rerender(<InputField type="date-of-birth" label="DOB" value="950625" />);
 
     expect(screen.getByText('Jun 25 1995')).toBeTruthy();
+  });
+});
+
+describe('InputField expiry-date type', () => {
+  it('renders year > 30 as 2000s', () => {
+    render(<InputField type="expiry-date" label="Expiry" value="341219" />);
+
+    expect(screen.getByText('Dec 19 2034')).toBeTruthy();
   });
 });

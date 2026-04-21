@@ -115,7 +115,7 @@ const DataConfirmationScreen: React.FC & {
         />
 
         <InputField
-          type="yymmdd"
+          type="date-of-birth"
           label="Date of birth"
           value={fields.dateOfBirth}
           onChangeText={text => handleFieldChange('dateOfBirth', text)}
@@ -123,7 +123,7 @@ const DataConfirmationScreen: React.FC & {
         />
 
         <InputField
-          type="yymmdd"
+          type="expiry-date"
           label="Document expiration date"
           value={fields.documentExpiryDate}
           onChangeText={text => handleFieldChange('documentExpiryDate', text)}

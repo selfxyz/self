@@ -14,6 +14,16 @@ import {
 import DatePicker from 'react-native-date-picker';
 
 import { colors } from '@selfxyz/euclid';
+import {
+  parseMRZBirthDate,
+  parseMRZExpiryDate,
+} from '@selfxyz/mobile-sdk-alpha';
+
+import {
+  birthDateToDisplay,
+  expiryDateToDisplay,
+  pickerDateToYYMMDD,
+} from '@/utils/yymmdd';
 
 export interface InputFieldProps {
   type: InputFieldType;
@@ -25,47 +35,7 @@ export interface InputFieldProps {
   style?: ViewStyle;
 }
 
-export type InputFieldType = 'alphanumeric' | 'yymmdd';
-
-const MONTHS = [
-  'Jan',
-  'Feb',
-  'Mar',
-  'Apr',
-  'May',
-  'Jun',
-  'Jul',
-  'Aug',
-  'Sep',
-  'Oct',
-  'Nov',
-  'Dec',
-];
-
-const yymmddToDisplay = (yymmdd: string): string => {
-  if (!yymmdd || yymmdd.length !== 6) return '';
-  const yy = parseInt(yymmdd.substring(0, 2), 10);
-  const mm = parseInt(yymmdd.substring(2, 4), 10);
-  const dd = yymmdd.substring(4, 6);
-  const year = yy <= 30 ? 2000 + yy : 1900 + yy;
-  return `${MONTHS[mm - 1]} ${dd} ${year}`;
-};
-
-const yymmddToPickerDate = (yymmdd: string): Date => {
-  if (!yymmdd || yymmdd.length !== 6) return new Date();
-  const yy = parseInt(yymmdd.substring(0, 2), 10);
-  const mm = parseInt(yymmdd.substring(2, 4), 10) - 1;
-  const dd = parseInt(yymmdd.substring(4, 6), 10);
-  const year = yy <= 30 ? 2000 + yy : 1900 + yy;
-  return new Date(year, mm, dd);
-};
-
-const pickerDateToYYMMDD = (date: Date): string => {
-  const yy = String(date.getFullYear()).slice(-2);
-  const mm = String(date.getMonth() + 1).padStart(2, '0');
-  const dd = String(date.getDate()).padStart(2, '0');
-  return `${yy}${mm}${dd}`;
-};
+export type InputFieldType = 'alphanumeric' | 'date-of-birth' | 'expiry-date';
 
 export const InputField: React.FC<InputFieldProps> = ({
   type,
@@ -78,21 +48,6 @@ export const InputField: React.FC<InputFieldProps> = ({
 }) => {
   const [showDatePicker, setShowDatePicker] = useState(false);
 
-  const handleDatePress = () => {
-    if (editable && type === 'yymmdd') {
-      setShowDatePicker(true);
-    }
-  };
-
-  const handleConfirm = (date: Date) => {
-    onChangeText?.(pickerDateToYYMMDD(date));
-    setShowDatePicker(false);
-  };
-
-  const handleCancel = () => {
-    setShowDatePicker(false);
-  };
-
   const handleChangeText = (text: string) => {
     let processedText = text;
     if (type === 'alphanumeric') {
@@ -101,21 +56,37 @@ export const InputField: React.FC<InputFieldProps> = ({
     onChangeText?.(processedText);
   };
 
-  if (type === 'yymmdd') {
+  if (type === 'date-of-birth' || type === 'expiry-date') {
+    const displayValue =
+      type === 'date-of-birth'
+        ? birthDateToDisplay(value ?? '')
+        : expiryDateToDisplay(value ?? '');
+
+    const pickerDate =
+      type === 'date-of-birth'
+        ? parseMRZBirthDate(value ?? '')
+        : parseMRZExpiryDate(value ?? '');
+
     return (
-      <Pressable style={[styles.container, style]} onPress={handleDatePress}>
+      <Pressable
+        style={[styles.container, style]}
+        onPress={() => editable && setShowDatePicker(true)}
+      >
         <Text style={styles.label}>{label}</Text>
-        <Text style={styles.value}>{yymmddToDisplay(value ?? '')}</Text>
+        <Text style={styles.value}>{displayValue}</Text>
         <DatePicker
           modal
           open={showDatePicker}
-          date={yymmddToPickerDate(value ?? '')}
+          date={pickerDate}
           mode="date"
           title={label}
           confirmText="Confirm"
           cancelText="Cancel"
-          onConfirm={handleConfirm}
-          onCancel={handleCancel}
+          onConfirm={date => {
+            onChangeText?.(pickerDateToYYMMDD(date));
+            setShowDatePicker(false);
+          }}
+          onCancel={() => setShowDatePicker(false)}
           theme="light"
         />
       </Pressable>
