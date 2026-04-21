@@ -584,8 +584,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         try {
           actor.stop();
         } catch (error) {
-          cancellationError =
-            error instanceof Error ? error : new Error(String(error));
+          cancellationError = error instanceof Error ? error : new Error(String(error));
         } finally {
           actor = null;
         }
@@ -594,8 +593,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       try {
         get()._closeConnections(selfClient);
       } catch (error) {
-        cancellationError ??=
-          error instanceof Error ? error : new Error(String(error));
+        cancellationError ??= error instanceof Error ? error : new Error(String(error));
       }
 
       selfClient.navigation?.disableKeychainErrorModal?.();

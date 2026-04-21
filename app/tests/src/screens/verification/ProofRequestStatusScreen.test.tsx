@@ -642,6 +642,40 @@ describe('ProofRequestStatusScreen', () => {
     expect(mockUpdateProofStatus).not.toHaveBeenCalled();
   });
 
+  it('times out when stuck in post_proving', async () => {
+    provingState.currentState = 'post_proving';
+
+    render(<ProofRequestStatusScreen />);
+
+    act(() => {
+      jest.advanceTimersByTime(90_000);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('primary-button').props.children).toBe(
+        'Dismiss',
+      );
+    });
+  });
+
+  it('does not schedule delayed cleanup when acknowledging a failure with no session id', async () => {
+    provingState.currentState = 'failure';
+    provingState.uuid = null as any;
+    provingState.reason = 'early failure';
+
+    render(<ProofRequestStatusScreen />);
+
+    fireEvent.press(screen.getByTestId('primary-button'));
+
+    expect(mockGoHome).toHaveBeenCalledTimes(1);
+
+    act(() => {
+      jest.advanceTimersByTime(2000);
+    });
+
+    expect(mockCleanSelfApp).not.toHaveBeenCalled();
+  });
+
   it('resets the stall timer when the proving state changes', async () => {
     provingState.currentState = 'fetching_data';
     const { rerender } = render(<ProofRequestStatusScreen />);

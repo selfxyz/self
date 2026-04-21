@@ -60,6 +60,7 @@ const STALL_TIMEOUT_STATES = new Set([
   'ready_to_prove',
   'listening_for_status',
   'proving',
+  'post_proving',
 ]);
 
 const SuccessScreen: React.FC = () => {
@@ -110,6 +111,10 @@ const SuccessScreen: React.FC = () => {
     const completedSessionId = sessionId;
 
     const cleanupLater = () => {
+      // If completedSessionId is null (early failure before TEE negotiation),
+      // skip the delayed cleanup: a retry started in the next 2s would also
+      // have a null uuid and get wiped by cleanSelfApp.
+      if (completedSessionId === null) return;
       setTimeout(() => {
         if (useProvingStore.getState().uuid === completedSessionId) {
           selfClient.getSelfAppState().cleanSelfApp();
@@ -178,10 +183,10 @@ const SuccessScreen: React.FC = () => {
         },
       );
     } finally {
-      selfClient.getSelfAppState().cleanSelfApp();
-      goHome();
       dismissingTimedOutProofRef.current = false;
       setIsDismissingTimedOutProof(false);
+      selfClient.getSelfAppState().cleanSelfApp();
+      goHome();
     }
   }, [goHome, selfClient, useProvingStore]);
 
