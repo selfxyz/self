@@ -66,7 +66,7 @@ export const buildSettingsMenu = (
   const base = baseEntriesForPlatform(platform);
   const entries = [
     ...base,
-    ...(isTroubleshootingMode ? [TROUBLESHOOTING_ENTRY] : []),
+    ...(isTroubleshootingMode || isDevMode ? [TROUBLESHOOTING_ENTRY] : []),
     ...(isDevMode ? [DEBUG_SETTINGS_ENTRY] : []),
   ];
   return entries.filter(entry => shouldShowSettingsEntry(entry, context));
