@@ -5,23 +5,17 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react-native';
 
-import { InputField } from './InputField';
+import { InputField } from '@/components/InputField';
 
 jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
   parseMRZBirthDate: () => new Date(1990, 0, 17),
   parseMRZExpiryDate: () => new Date(2034, 11, 19),
 }));
 
-jest.mock('react-native-date-picker', () => {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { View } = require('react-native');
-  return {
-    __esModule: true,
-    default: (props: Record<string, unknown>) => (
-      <View testID="date-picker" {...props} />
-    ),
-  };
-});
+jest.mock('react-native-date-picker', () => ({
+  __esModule: true,
+  default: jest.fn(() => null),
+}));
 
 describe('InputField date-of-birth type', () => {
   it('renders formatted birth date from YYMMDD value', () => {

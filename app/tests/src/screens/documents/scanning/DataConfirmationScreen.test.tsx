@@ -2,11 +2,15 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React from 'react';
+import * as mockReact from 'react';
+import { Text, View } from 'react-native';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 
 import DataConfirmationScreen from '@/screens/documents/scanning/DataConfirmationScreen';
 import * as analytics from '@/services/analytics';
+
+const mockView = View;
+const mockText = Text;
 
 jest.mock('@/services/analytics', () => ({
   trackEvent: jest.fn(),
@@ -27,34 +31,34 @@ jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
   }),
 }));
 
-const inputFieldCallbacks: Record<
+const mockInputFieldCallbacks: Record<
   string,
   { onChangeText?: (text: string) => void }
 > = {};
 
-jest.mock('@/components/InputField', () => {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { View, Text } = require('react-native');
-  return {
-    InputField: ({
-      label,
-      value,
-      onChangeText,
-    }: {
-      label: string;
-      value?: string;
-      onChangeText?: (text: string) => void;
-    }) => {
-      const testId = `input-${label.toLowerCase().replace(/\s+/g, '-')}`;
-      inputFieldCallbacks[testId] = { onChangeText };
-      return (
-        <View testID={testId}>
-          <Text testID={`input-value-${testId}`}>{value}</Text>
-        </View>
-      );
-    },
-  };
-});
+jest.mock('@/components/InputField', () => ({
+  InputField: ({
+    label,
+    value,
+    onChangeText,
+  }: {
+    label: string;
+    value?: string;
+    onChangeText?: (text: string) => void;
+  }) => {
+    const testId = `input-${label.toLowerCase().replace(/\s+/g, '-')}`;
+    mockInputFieldCallbacks[testId] = { onChangeText };
+    return mockReact.createElement(
+      mockView,
+      { testID: testId },
+      mockReact.createElement(
+        mockText,
+        { testID: `input-value-${testId}` },
+        value,
+      ),
+    );
+  },
+}));
 
 jest.mock('@selfxyz/mobile-sdk-alpha/constants/analytics', () => ({
   PassportEvents: {
@@ -82,7 +86,7 @@ jest.mock('react-native-safe-area-context', () => ({
 }));
 
 function changeDocumentNumber(value: string) {
-  const cb = inputFieldCallbacks['input-document-number']?.onChangeText;
+  const cb = mockInputFieldCallbacks['input-document-number']?.onChangeText;
   if (!cb) throw new Error('Document number onChangeText not found');
   act(() => cb(value));
 }
