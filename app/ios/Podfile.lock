@@ -1499,6 +1499,27 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - react-native-date-picker (5.0.13):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.11.18.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - react-native-get-random-values (1.11.0):
     - React-Core
   - react-native-netinfo (11.4.1):
@@ -2308,6 +2329,7 @@ DEPENDENCIES:
   - "react-native-blur (from `../node_modules/@react-native-community/blur`)"
   - react-native-cloud-storage (from `../node_modules/react-native-cloud-storage`)
   - "react-native-compat (from `../node_modules/@walletconnect/react-native-compat`)"
+  - react-native-date-picker (from `../node_modules/react-native-date-picker`)
   - react-native-get-random-values (from `../node_modules/react-native-get-random-values`)
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
   - react-native-nfc-manager (from `../node_modules/react-native-nfc-manager`)
@@ -2512,6 +2534,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-cloud-storage"
   react-native-compat:
     :path: "../node_modules/@walletconnect/react-native-compat"
+  react-native-date-picker:
+    :path: "../node_modules/react-native-date-picker"
   react-native-get-random-values:
     :path: "../node_modules/react-native-get-random-values"
   react-native-netinfo:
@@ -2723,6 +2747,7 @@ SPEC CHECKSUMS:
   react-native-blur: 745703f35133ed6a1210d4bbff358a631911f002
   react-native-cloud-storage: 796c793dc354bb49f9df27ca25eed0f79a15549e
   react-native-compat: 26ce01df42ebea95466ff40e597390a14e8ac04b
+  react-native-date-picker: 3b048da884ad001f1a328208478d0771f27edfc7
   react-native-get-random-values: d16467cf726c618e9c7a8c3c39c31faa2244bbba
   react-native-netinfo: cec9c4e86083cb5b6aba0e0711f563e2fbbff187
   react-native-nfc-manager: c8891e460b4943b695d63f7f4effc6345bbefc83

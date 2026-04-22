@@ -9,4 +9,10 @@
 export type MRZScanOptions = Record<string, never>;
 
 // Re-export processing functions
-export { extractMRZInfo, extractNameFromMRZ, formatDateToYYMMDD } from '../processing/mrz';
+export {
+  extractMRZInfo,
+  extractNameFromMRZ,
+  formatDateToYYMMDD,
+  parseMRZBirthDate,
+  parseMRZExpiryDate,
+} from '../processing/mrz';

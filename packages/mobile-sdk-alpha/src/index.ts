@@ -143,7 +143,7 @@ export { defaultOptions } from './haptic/shared';
 /** @deprecated Use createSelfClient().extractMRZInfo or import from './mrz' */
 export { extractMRZInfo } from './mrz';
 export { extractNameFromDocument } from './documents/utils';
-export { extractNameFromMRZ, formatDateToYYMMDD } from './mrz';
+export { extractNameFromMRZ, formatDateToYYMMDD, parseMRZBirthDate, parseMRZExpiryDate } from './mrz';
 
 export { finalizeRecoveredDocumentRegistration, validateRecoverySecretForDocument } from './proving/recoveryValidation';
 

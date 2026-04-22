@@ -3,6 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useCallback } from 'react';
+import { StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, XStack, YStack } from 'tamagui';
 import type { RouteProp } from '@react-navigation/native';
@@ -121,9 +122,7 @@ const RegistrationFallbackNFCScreen: React.FC = () => {
             color={black}
             onPress={handleClose}
           />
-          <NavBar.Title style={{ fontFamily: dinot, fontSize: 17 }}>
-            {headerTitle}
-          </NavBar.Title>
+          <NavBar.Title style={styles.navTitle}>{headerTitle}</NavBar.Title>
           <Button unstyled onPress={handleHelp} aria-label="Help" hitSlop={8}>
             <YStack
               width={26}
@@ -133,18 +132,7 @@ const RegistrationFallbackNFCScreen: React.FC = () => {
               alignItems="center"
               justifyContent="center"
             >
-              <BodyText
-                style={{
-                  color: white,
-                  fontSize: 16,
-                  fontWeight: '900',
-                  lineHeight: 18,
-                  textAlign: 'center',
-                  includeFontPadding: false,
-                }}
-              >
-                ?
-              </BodyText>
+              <BodyText style={styles.helpButtonText}>?</BodyText>
             </YStack>
           </Button>
         </NavBar.Container>
@@ -188,23 +176,14 @@ const RegistrationFallbackNFCScreen: React.FC = () => {
           borderTopColor={slate200}
         >
           <YStack alignItems="center" gap={4}>
-            <BodyText
-              style={{ fontSize: 18, textAlign: 'center', color: black }}
-            >
+            <BodyText style={styles.errorTitle}>
               There was a problem reading the chip
             </BodyText>
-            <BodyText
-              style={{
-                fontSize: 16,
-                textAlign: 'center',
-                color: slate500,
-              }}
-            >
+            <BodyText style={styles.errorSubtitle}>
               Make sure NFC is enabled and try again
             </BodyText>
           </YStack>
 
-          {/* Retry Button - Primary style with very rounded corners */}
           <Button
             backgroundColor={black}
             borderRadius={100}
@@ -213,14 +192,7 @@ const RegistrationFallbackNFCScreen: React.FC = () => {
             onPress={handleRetryOriginal}
             disabled={isRetrying}
           >
-            <BodyText
-              style={{
-                fontSize: 17,
-                fontWeight: '500',
-                fontFamily: dinot,
-                color: white,
-              }}
-            >
+            <BodyText style={styles.primaryButtonText}>
               Try reading again
             </BodyText>
           </Button>
@@ -234,7 +206,18 @@ const RegistrationFallbackNFCScreen: React.FC = () => {
         paddingBottom={paddingBottom}
         gap={10}
       >
-        {/* Secondary Button - White fill, black text, rounded */}
+        <Button
+          backgroundColor={white}
+          borderWidth={1}
+          borderColor={slate200}
+          borderRadius={100}
+          height={52}
+          pressStyle={{ opacity: 0.8 }}
+          onPress={() => navigation.navigate('DataConfirmation')}
+        >
+          <BodyText style={styles.buttonText}>Check scanned data</BodyText>
+        </Button>
+
         <Button
           backgroundColor={white}
           borderWidth={1}
@@ -245,26 +228,13 @@ const RegistrationFallbackNFCScreen: React.FC = () => {
           onPress={handleTryAlternative}
           disabled={isRetrying}
         >
-          <BodyText
-            style={{
-              fontSize: 17,
-              fontWeight: '500',
-              fontFamily: dinot,
-              color: black,
-            }}
-          >
+          <BodyText style={styles.buttonText}>
             {isRetrying ? 'Loading...' : 'Try a different method'}
           </BodyText>
         </Button>
 
         {/* Footer Text - Not italic */}
-        <BodyText
-          style={{
-            fontSize: 16,
-            textAlign: 'center',
-            color: slate500,
-          }}
-        >
+        <BodyText style={styles.footerText}>
           Registering with alternative methods may take longer to verify your
           document.
         </BodyText>
@@ -272,5 +242,47 @@ const RegistrationFallbackNFCScreen: React.FC = () => {
     </YStack>
   );
 };
+
+const styles = StyleSheet.create({
+  navTitle: {
+    fontFamily: dinot,
+    fontSize: 17,
+  },
+  helpButtonText: {
+    color: white,
+    fontSize: 16,
+    fontWeight: '900',
+    lineHeight: 18,
+    textAlign: 'center',
+    includeFontPadding: false,
+  },
+  errorTitle: {
+    fontSize: 18,
+    textAlign: 'center',
+    color: black,
+  },
+  errorSubtitle: {
+    fontSize: 16,
+    textAlign: 'center',
+    color: slate500,
+  },
+  buttonText: {
+    fontSize: 17,
+    fontWeight: '500',
+    fontFamily: dinot,
+    color: black,
+  },
+  primaryButtonText: {
+    fontSize: 17,
+    fontWeight: '500',
+    fontFamily: dinot,
+    color: white,
+  },
+  footerText: {
+    fontSize: 16,
+    textAlign: 'center',
+    color: slate500,
+  },
+});
 
 export default RegistrationFallbackNFCScreen;
