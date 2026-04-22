@@ -3,26 +3,19 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
-import { View } from 'react-native';
 import { render, screen } from '@testing-library/react-native';
 
 import { InputField } from '@/components/InputField';
-
-const MockView = View;
 
 jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
   parseMRZBirthDate: () => new Date(1990, 0, 17),
   parseMRZExpiryDate: () => new Date(2034, 11, 19),
 }));
 
-jest.mock('react-native-date-picker', () => {
-  return {
-    __esModule: true,
-    default: (props: Record<string, unknown>) => (
-      <MockView testID="date-picker" {...props} />
-    ),
-  };
-});
+jest.mock('react-native-date-picker', () => ({
+  __esModule: true,
+  default: jest.fn(() => null),
+}));
 
 describe('InputField date-of-birth type', () => {
   it('renders formatted birth date from YYMMDD value', () => {

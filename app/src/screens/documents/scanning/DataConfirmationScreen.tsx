@@ -57,7 +57,6 @@ const DataConfirmationScreen: React.FC & {
     countryCode: mrzData.countryCode,
     errorSource: 'nfc_scan_failed',
   });
-
   const {
     passportNumber: originalDocumentNumber,
     dateOfBirth: originalDateOfBirth,
