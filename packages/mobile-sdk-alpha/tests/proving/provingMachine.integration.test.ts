@@ -105,6 +105,10 @@ describe('provingMachine Socket.IO Integration', () => {
     emit: vi.fn(),
     getPrivateKey: vi.fn(() => Promise.resolve('mock-private-key')),
     logProofEvent: vi.fn(),
+    navigation: {
+      disableKeychainErrorModal: vi.fn(),
+      enableKeychainErrorModal: vi.fn(),
+    },
     getSelfAppState: () => ({
       selfApp: {},
     }),
@@ -279,6 +283,65 @@ describe('provingMachine Socket.IO Integration', () => {
       expect(mockSocket.disconnect).not.toHaveBeenCalled();
 
       // Should still track the status received event (covered elsewhere)
+    });
+  });
+
+  describe('cancel', () => {
+    it('closes active connections and resets proving state to idle', async () => {
+      mockActor.stop.mockClear();
+      const removeEventListener = vi.fn();
+      const closeWs = vi.fn();
+      const closeSocket = vi.fn();
+
+      useProvingStore.setState({
+        currentState: 'proving',
+        uuid: 'session-1',
+        userConfirmed: true,
+        circuitType: 'register',
+        error_code: 'E001',
+        reason: 'stalled',
+        wsConnection: {
+          removeEventListener,
+          close: closeWs,
+        } as any,
+        wsHandlers: {
+          message: vi.fn(),
+          open: vi.fn(),
+          error: vi.fn(),
+          close: vi.fn(),
+        },
+        socketConnection: {
+          close: closeSocket,
+        } as any,
+      } as any);
+
+      await useProvingStore.getState().cancel(mockSelfClient);
+
+      const finalState = useProvingStore.getState();
+      expect(removeEventListener).toHaveBeenCalledTimes(4);
+      expect(closeWs).toHaveBeenCalledTimes(1);
+      expect(closeSocket).toHaveBeenCalledTimes(1);
+      expect(mockActor.stop).toHaveBeenCalledTimes(1);
+      expect(mockSelfClient.navigation.disableKeychainErrorModal).toHaveBeenCalledTimes(1);
+      expect(finalState.currentState).toBe('idle');
+      expect(finalState.uuid).toBe(null);
+      expect(finalState.reason).toBe(null);
+      expect(finalState.error_code).toBe(null);
+      expect(finalState.socketConnection).toBe(null);
+      expect(finalState.wsConnection).toBe(null);
+    });
+
+    it('allows init to run again after cancel', async () => {
+      const store = useProvingStore.getState();
+
+      await store.cancel(mockSelfClient);
+      await store.init(mockSelfClient, 'register', true);
+
+      expect(mockActor.stop).toHaveBeenCalled();
+      expect(mockActor.start).toHaveBeenCalledTimes(2);
+      expect(useProvingStore.getState().currentState).toBe('idle');
+      expect(useProvingStore.getState().circuitType).toBe('register');
+      expect(useProvingStore.getState().userConfirmed).toBe(true);
     });
   });
 });

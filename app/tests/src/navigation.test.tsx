@@ -112,6 +112,7 @@ describe('navigation', () => {
         'Splash',
         'StarfallPushCode',
         'Support',
+        'Troubleshooting',
         'WebView',
       ]);
     });
