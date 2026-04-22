@@ -15,6 +15,10 @@ import {
   POINT_VALUES,
   pointsSelfApp,
 } from '@/services/points';
+import {
+  POINTS_SELF_APP_ENDPOINT,
+  POINTS_SELF_APP_NAME,
+} from '@/services/points/constants';
 import useUserStore from '@/stores/userStore';
 import { getModalCallbacks } from '@/utils/modalCallbackRegistry';
 
@@ -72,8 +76,8 @@ describe('useEarnPointsFlow', () => {
   };
   const mockRegisterReferral = jest.fn();
   const mockSelfApp = {
-    appName: '✨ Self Points',
-    endpoint: '0x829d183faaa675f8f80e8bb25fb1476cd4f7c1f0',
+    appName: POINTS_SELF_APP_NAME,
+    endpoint: POINTS_SELF_APP_ENDPOINT,
     sessionId: 'test-session-id',
   };
 
