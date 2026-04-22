@@ -5,6 +5,20 @@
 import { pointsApiBaseUrl } from '@/consts/links';
 
 export const POINTS_API_BASE_URL = pointsApiBaseUrl;
-
+export const POINTS_API_ROUTES = {
+  pointsByAddress: (address: string) => `/points/${address.toLowerCase()}`,
+  hasDisclosedByAddress: (address: string) =>
+    `/has-disclosed/${address.toLowerCase()}`,
+  whitelistedAddresses: '/whitelisted-addresses',
+  discloseFix: '/points-disclose-fix',
+  verifyAction: '/verify-action',
+  referralsRefer: '/referrals/refer',
+  jobStatus: (jobId: string) => `/job/${jobId}/status`,
+  pushCodeByWallet: (walletAddress: string) => `/push/wallet/${walletAddress}`,
+} as const;
+export const POINTS_SELF_APP_ENDPOINT =
+  '0x829d183faaa675f8f80e8bb25fb1476cd4f7c1f0';
+export const POINTS_SELF_APP_NAME = '✨ Self Points';
+export const POINTS_SELF_APP_SCOPE = 'minimal-disclosure-quest';
 export const POINTS_TOKEN_CONTRACT_ADDRESS =
   '0xfa6279293dfa5b38486ee179e4ddf6806c517a49'; // gitleaks:allow

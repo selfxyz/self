@@ -1,6 +1,6 @@
 {
   "name": "@selfxyz/mobile-app",
-  "version": "2.9.19",
+  "version": "2.9.20",
   "private": true,
   "type": "module",
   "scripts": {
@@ -160,6 +160,7 @@
     "react-native-nfc-manager": "3.17.2",
     "react-native-passkey": "^3.3.3",
     "react-native-passport-reader": "1.0.3",
+    "react-native-permissions": "^4.1.5",
     "react-native-safe-area-context": "^5.7.0",
     "react-native-screens": "4.15.3",
     "react-native-sqlite-storage": "^6.0.1",
