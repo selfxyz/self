@@ -3,9 +3,10 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import LottieView from 'lottie-react-native';
-import React, { useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
@@ -25,24 +26,34 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import passportOnboardingAnimation from '@/assets/animations/passport_onboarding.json';
-import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { useKycLauncher } from '@/hooks/useKycLauncher';
 import { impactLight } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
+import type { RootStackParamList } from '@/navigation';
+import { ensureCameraForPassportScan } from '@/utils/cameraPermission';
 import { getDocumentScanPrompt } from '@/utils/documentAttributes';
 
 const DocumentOnboardingScreen: React.FC = () => {
-  const navigation = useNavigation();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const selfClient = useSelfClient();
   const selectedDocumentType = selfClient.useMRZStore(
     state => state.documentType,
   );
   const countryCode = selfClient.useMRZStore(state => state.countryCode);
-  const { showKycFallbackModal } = useKycLauncher({
-    countryCode: countryCode || '',
+  const { launchKycVerification, showKycFallbackModal } = useKycLauncher({
+    countryCode: countryCode ?? '',
     errorSource: 'mrz_scan_failed',
   });
-  const handleCameraPress = useHapticNavigation('DocumentCamera');
+  const handleCameraPress = useCallback(async () => {
+    impactLight();
+    const ok = await ensureCameraForPassportScan({
+      onFallback: launchKycVerification,
+    });
+    if (ok) {
+      navigation.navigate('DocumentCamera');
+    }
+  }, [launchKycVerification, navigation]);
   const animationRef = useRef<LottieView>(null);
 
   const scanPrompt = getDocumentScanPrompt(selectedDocumentType);

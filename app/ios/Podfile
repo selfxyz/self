@@ -12,6 +12,13 @@ require Pod::Executable.execute_command("node", ["-p",
 
 require File.join(File.dirname(`node --print "require.resolve('expo/package.json', {paths: ['#{__dir__}/..']})"`.strip), "scripts/autolinking")
 
+# react-native-permissions: only the Camera handler is used (passport OCR gate).
+permissions_pkg = Pod::Executable.execute_command("node", ["-p",
+  'require.resolve("react-native-permissions/package.json", {paths: [process.argv[1]]})',
+  __dir__]).strip
+require File.join(File.dirname(permissions_pkg), "scripts/setup")
+setup_permissions(["Camera"])
+
 project "Self.xcodeproj"
 
 # Define consistent iOS deployment target

@@ -12,7 +12,10 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { colors, TopNavigationDialogue, XIcon } from '@selfxyz/euclid';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
-import { PrimaryButton, SecondaryButton } from '@selfxyz/mobile-sdk-alpha/components';
+import {
+  PrimaryButton,
+  SecondaryButton,
+} from '@selfxyz/mobile-sdk-alpha/components';
 import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import { InputField } from '@/components/InputField';
@@ -39,9 +42,8 @@ const DataConfirmationScreen: React.FC & {
 } = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const route = useRoute<
-    RouteProp<DocumentRoutesParamList, 'DataConfirmation'>
-  >();
+  const route =
+    useRoute<RouteProp<DocumentRoutesParamList, 'DataConfirmation'>>();
   const fromNfcFailure = route.params?.fromNfcFailure ?? false;
   const selfClient = useSelfClient();
   const { useMRZStore } = selfClient;
