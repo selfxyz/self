@@ -6,7 +6,7 @@ import React from 'react';
 import { View } from 'react-native';
 import { render, screen } from '@testing-library/react-native';
 
-import { InputField } from './InputField';
+import { InputField } from '@/components/InputField';
 
 const MockView = View;
 
