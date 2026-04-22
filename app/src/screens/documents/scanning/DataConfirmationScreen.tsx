@@ -5,15 +5,21 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { YStack } from 'tamagui';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { Button, colors, TopNavigationDialogue, XIcon } from '@selfxyz/euclid';
+import { colors, TopNavigationDialogue, XIcon } from '@selfxyz/euclid';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import {
+  PrimaryButton,
+  SecondaryButton,
+} from '@selfxyz/mobile-sdk-alpha/components';
 import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import { InputField } from '@/components/InputField';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
+import { useKycLauncher } from '@/hooks/useKycLauncher';
 import type { RootStackParamList } from '@/navigation';
 import { trackEvent } from '@/services/analytics';
 
@@ -34,12 +40,21 @@ const DataConfirmationScreen: React.FC & {
 } = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const route = useRoute();
+  const fromNfcFailure =
+    (route.params as { fromNfcFailure?: boolean } | undefined)
+      ?.fromNfcFailure ?? false;
   const selfClient = useSelfClient();
   const { useMRZStore } = selfClient;
   const insets = useSafeAreaInsets();
   const mrzData = useMRZStore();
   const navigateToHome = useHapticNavigation('Home', {
     action: 'cancel',
+  });
+
+  const { launchKycVerification, isLoading: isKycLoading } = useKycLauncher({
+    countryCode: mrzData.countryCode,
+    errorSource: 'nfc_scan_failed',
   });
 
   const {
@@ -131,14 +146,17 @@ const DataConfirmationScreen: React.FC & {
         />
       </View>
 
-      <View style={styles.buttonContainer}>
-        <Button
-          variant="primary-no-icon"
-          text="Continue"
-          onPress={handleConfirmPress}
-          fullWidth
-        />
-      </View>
+      <YStack gap={12} style={styles.buttonContainer}>
+        <PrimaryButton onPress={handleConfirmPress}>Continue</PrimaryButton>
+        {fromNfcFailure && (
+          <SecondaryButton
+            onPress={launchKycVerification}
+            disabled={isKycLoading}
+          >
+            {isKycLoading ? 'Loading...' : 'Try Alternative Verification'}
+          </SecondaryButton>
+        )}
+      </YStack>
     </View>
   );
 };

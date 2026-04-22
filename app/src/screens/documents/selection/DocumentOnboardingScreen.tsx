@@ -26,6 +26,7 @@ import {
 
 import passportOnboardingAnimation from '@/assets/animations/passport_onboarding.json';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
+import { useKycLauncher } from '@/hooks/useKycLauncher';
 import { impactLight } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import { getDocumentScanPrompt } from '@/utils/documentAttributes';
@@ -36,6 +37,11 @@ const DocumentOnboardingScreen: React.FC = () => {
   const selectedDocumentType = selfClient.useMRZStore(
     state => state.documentType,
   );
+  const countryCode = selfClient.useMRZStore(state => state.countryCode);
+  const { showKycFallbackModal } = useKycLauncher({
+    countryCode: countryCode || '',
+    errorSource: 'mrz_scan_failed',
+  });
   const handleCameraPress = useHapticNavigation('DocumentCamera');
   const animationRef = useRef<LottieView>(null);
 
@@ -43,7 +49,7 @@ const DocumentOnboardingScreen: React.FC = () => {
 
   const onCancelPress = () => {
     impactLight();
-    navigation.goBack();
+    showKycFallbackModal(() => navigation.goBack());
   };
 
   // iOS: Delay initial animation start to ensure native Lottie module is initialized

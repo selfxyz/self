@@ -14,6 +14,7 @@ import {
 } from '@/integrations/kyc';
 import type { KycVerificationResult } from '@/integrations/kyc/types';
 import type { RootStackParamList } from '@/navigation';
+import { useFeedback } from '@/providers/feedbackProvider';
 
 export type FallbackErrorSource = 'mrz_scan_failed' | 'nfc_scan_failed';
 
@@ -73,6 +74,7 @@ export const useKycLauncher = (options: UseKycLauncherOptions) => {
   const { countryCode, errorSource, onSuccess, onCancel, onError } = options;
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { showModal } = useFeedback();
   const [isLoading, setIsLoading] = useState(false);
 
   const launchKycVerification = useCallback(async () => {
@@ -136,8 +138,36 @@ export const useKycLauncher = (options: UseKycLauncherOptions) => {
     }
   }, [navigation, countryCode, errorSource, onSuccess, onCancel, onError]);
 
+  const showKycFallbackModal = useCallback(
+    (onDismiss: () => void) => {
+      const titleText = 'Having trouble scanning your document?';
+      const bodyText =
+        "You'll be redirected to our third party verification partner.";
+      showModal({
+        titleText,
+        bodyText,
+        buttonText: 'Try Alternative Verification',
+        secondaryButtonText: 'Cancel Registration',
+        onButtonPress: () => {
+          showModal({
+            titleText,
+            bodyText,
+            buttonText: 'Loading...',
+            disablePrimaryButton: true,
+            preventDismiss: true,
+            onButtonPress: () => {},
+          });
+          return launchKycVerification();
+        },
+        onSecondaryButtonPress: onDismiss,
+      });
+    },
+    [showModal, launchKycVerification],
+  );
+
   return {
     launchKycVerification,
+    showKycFallbackModal,
     isLoading,
   };
 };

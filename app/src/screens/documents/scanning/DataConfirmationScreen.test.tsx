@@ -56,6 +56,37 @@ jest.mock('@/components/InputField', () => {
   };
 });
 
+jest.mock('@selfxyz/mobile-sdk-alpha/components', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { TouchableOpacity, Text } = require('react-native');
+  return {
+    PrimaryButton: ({
+      children,
+      onPress,
+    }: {
+      children: React.ReactNode;
+      onPress?: () => void;
+    }) => (
+      <TouchableOpacity onPress={onPress}>
+        <Text>{children}</Text>
+      </TouchableOpacity>
+    ),
+    SecondaryButton: ({
+      children,
+      onPress,
+      disabled,
+    }: {
+      children: React.ReactNode;
+      onPress?: () => void;
+      disabled?: boolean;
+    }) => (
+      <TouchableOpacity onPress={onPress} disabled={disabled}>
+        <Text>{children}</Text>
+      </TouchableOpacity>
+    ),
+  };
+});
+
 jest.mock('@selfxyz/mobile-sdk-alpha/constants/analytics', () => ({
   PassportEvents: {
     DATA_CONFIRMATION_CONTINUE: 'Passport: Data Confirmation Continue',
@@ -71,11 +102,22 @@ jest.mock('@react-navigation/native', () => ({
   useNavigation: () => ({
     navigate: mockNavigate,
   }),
+  useRoute: () => ({
+    params: undefined,
+  }),
 }));
 
 jest.mock('@/hooks/useHapticNavigation', () =>
   jest.fn(() => mockNavigateToHome),
 );
+
+jest.mock('@/hooks/useKycLauncher', () => ({
+  useKycLauncher: () => ({
+    launchKycVerification: jest.fn(),
+    showKycFallbackModal: jest.fn(),
+    isLoading: false,
+  }),
+}));
 
 jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 44, bottom: 34, left: 0, right: 0 }),
