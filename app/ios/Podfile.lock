@@ -2053,6 +2053,27 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - RNPermissions (4.1.5):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.11.18.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - RNReactNativeHapticFeedback (2.3.3):
     - DoubleConversion
     - glog
@@ -2336,13 +2357,14 @@ DEPENDENCIES:
   - RNInAppBrowser (from `../node_modules/react-native-inappbrowser-reborn`)
   - RNKeychain (from `../node_modules/react-native-keychain`)
   - RNLocalize (from `../node_modules/react-native-localize`)
+  - RNPermissions (from `../node_modules/react-native-permissions`)
   - RNReactNativeHapticFeedback (from `../node_modules/react-native-haptic-feedback`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - "RNSentry (from `../node_modules/@sentry/react-native`)"
   - RNSVG (from `../node_modules/react-native-svg`)
   - "SdkReactNative (from `../node_modules/@didit-protocol/sdk-react-native`)"
   - "segment-analytics-react-native (from `../node_modules/@segment/analytics-react-native`)"
-  - SelfNFCPassportReader (from `https://github.com/selfxyz/NFCPassportReader.git`, commit `b478e1f1320e86f72c5755bc5adf156fff950585`)
+  - "SelfNFCPassportReader (from `git@github.com:selfxyz/NFCPassportReader.git`, commit `b478e1f1320e86f72c5755bc5adf156fff950585`)"
   - "sovran-react-native (from `../node_modules/@segment/sovran-react-native`)"
   - SwiftQRScanner (from `https://github.com/vinodiOS/SwiftQRScanner`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
@@ -2588,6 +2610,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-keychain"
   RNLocalize:
     :path: "../node_modules/react-native-localize"
+  RNPermissions:
+    :path: "../node_modules/react-native-permissions"
   RNReactNativeHapticFeedback:
     :path: "../node_modules/react-native-haptic-feedback"
   RNScreens:
@@ -2602,7 +2626,7 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@segment/analytics-react-native"
   SelfNFCPassportReader:
     :commit: b478e1f1320e86f72c5755bc5adf156fff950585
-    :git: https://github.com/selfxyz/NFCPassportReader.git
+    :git: "git@github.com:selfxyz/NFCPassportReader.git"
   sovran-react-native:
     :path: "../node_modules/@segment/sovran-react-native"
   SwiftQRScanner:
@@ -2613,7 +2637,7 @@ EXTERNAL SOURCES:
 CHECKOUT OPTIONS:
   SelfNFCPassportReader:
     :commit: b478e1f1320e86f72c5755bc5adf156fff950585
-    :git: https://github.com/selfxyz/NFCPassportReader.git
+    :git: "git@github.com:selfxyz/NFCPassportReader.git"
   SwiftQRScanner:
     :commit: c71ff91297640a944de4bca61434155c3f9b0979
     :git: https://github.com/vinodiOS/SwiftQRScanner
@@ -2748,6 +2772,7 @@ SPEC CHECKSUMS:
   RNInAppBrowser: 904d24dc75e8e6c6c98a3160329192608946f9df
   RNKeychain: 35beaa17938f7d8e4990d8a38fad5f8a748fc47c
   RNLocalize: aa57bee9fcd545b98ce773a8e2404f9a36115b4a
+  RNPermissions: c32bbfa8a665692acb9681c47abca019b97c9f1e
   RNReactNativeHapticFeedback: 7c895b81434f045ddc330972816f844e3c0c2f35
   RNScreens: b0811b109e1a0b8b579f3348018e177bee374840
   RNSentry: 98ab9f6a16c9596e36565ccf1a5871323f334766
@@ -2763,6 +2788,6 @@ SPEC CHECKSUMS:
   Yoga: c34725819ab0a5962e85455b9e56679b306910ee
   ZXingObjC: 8898711ab495761b2dbbdec76d90164a6d7e14c5
 
-PODFILE CHECKSUM: 747d8e64a0829e1e63e259a223e02b99ef7bcb53
+PODFILE CHECKSUM: ded06f411c13516d51a97838c92095beafb1fc25
 
 COCOAPODS: 1.16.2
