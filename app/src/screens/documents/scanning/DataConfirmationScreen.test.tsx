@@ -3,10 +3,15 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
+import { Text, TouchableOpacity, View } from 'react-native';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 
 import DataConfirmationScreen from '@/screens/documents/scanning/DataConfirmationScreen';
 import * as analytics from '@/services/analytics';
+
+const MockText = Text;
+const MockTouchableOpacity = TouchableOpacity;
+const MockView = View;
 
 jest.mock('@/services/analytics', () => ({
   trackEvent: jest.fn(),
@@ -33,8 +38,6 @@ const inputFieldCallbacks: Record<
 > = {};
 
 jest.mock('@/components/InputField', () => {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { View, Text } = require('react-native');
   return {
     InputField: ({
       label,
@@ -48,17 +51,15 @@ jest.mock('@/components/InputField', () => {
       const testId = `input-${label.toLowerCase().replace(/\s+/g, '-')}`;
       inputFieldCallbacks[testId] = { onChangeText };
       return (
-        <View testID={testId}>
-          <Text testID={`input-value-${testId}`}>{value}</Text>
-        </View>
+        <MockView testID={testId}>
+          <MockText testID={`input-value-${testId}`}>{value}</MockText>
+        </MockView>
       );
     },
   };
 });
 
 jest.mock('@selfxyz/mobile-sdk-alpha/components', () => {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { TouchableOpacity, Text } = require('react-native');
   return {
     PrimaryButton: ({
       children,
@@ -67,9 +68,9 @@ jest.mock('@selfxyz/mobile-sdk-alpha/components', () => {
       children: React.ReactNode;
       onPress?: () => void;
     }) => (
-      <TouchableOpacity onPress={onPress}>
-        <Text>{children}</Text>
-      </TouchableOpacity>
+      <MockTouchableOpacity onPress={onPress}>
+        <MockText>{children}</MockText>
+      </MockTouchableOpacity>
     ),
     SecondaryButton: ({
       children,
@@ -80,9 +81,9 @@ jest.mock('@selfxyz/mobile-sdk-alpha/components', () => {
       onPress?: () => void;
       disabled?: boolean;
     }) => (
-      <TouchableOpacity onPress={onPress} disabled={disabled}>
-        <Text>{children}</Text>
-      </TouchableOpacity>
+      <MockTouchableOpacity onPress={onPress} disabled={disabled}>
+        <MockText>{children}</MockText>
+      </MockTouchableOpacity>
     ),
   };
 });

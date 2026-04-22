@@ -3,9 +3,14 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
+import { Text, TouchableOpacity, View } from 'react-native';
 import { fireEvent, render, screen } from '@testing-library/react-native';
 
 import DataConfirmationScreen from '@/screens/documents/scanning/DataConfirmationScreen';
+
+const MockText = Text;
+const MockTouchableOpacity = TouchableOpacity;
+const MockView = View;
 
 jest.mock('@/services/analytics', () => ({
   trackEvent: jest.fn(),
@@ -25,8 +30,6 @@ jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
 }));
 
 jest.mock('@selfxyz/mobile-sdk-alpha/components', () => {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { TouchableOpacity, Text } = require('react-native');
   return {
     PrimaryButton: ({
       children,
@@ -35,9 +38,9 @@ jest.mock('@selfxyz/mobile-sdk-alpha/components', () => {
       children: React.ReactNode;
       onPress?: () => void;
     }) => (
-      <TouchableOpacity onPress={onPress}>
-        <Text>{children}</Text>
-      </TouchableOpacity>
+      <MockTouchableOpacity onPress={onPress}>
+        <MockText>{children}</MockText>
+      </MockTouchableOpacity>
     ),
     SecondaryButton: ({
       children,
@@ -48,23 +51,21 @@ jest.mock('@selfxyz/mobile-sdk-alpha/components', () => {
       onPress?: () => void;
       disabled?: boolean;
     }) => (
-      <TouchableOpacity onPress={onPress} disabled={disabled}>
-        <Text>{children}</Text>
-      </TouchableOpacity>
+      <MockTouchableOpacity onPress={onPress} disabled={disabled}>
+        <MockText>{children}</MockText>
+      </MockTouchableOpacity>
     ),
   };
 });
 
 jest.mock('@/components/InputField', () => {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { View, Text } = require('react-native');
   return {
     InputField: ({ label, value }: { label: string; value?: string }) => {
       const testId = `input-${label.toLowerCase().replace(/\s+/g, '-')}`;
       return (
-        <View testID={testId}>
-          <Text>{value}</Text>
-        </View>
+        <MockView testID={testId}>
+          <MockText>{value}</MockText>
+        </MockView>
       );
     },
   };

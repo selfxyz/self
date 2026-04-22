@@ -6,21 +6,20 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { YStack } from 'tamagui';
+import type { RouteProp } from '@react-navigation/native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { colors, TopNavigationDialogue, XIcon } from '@selfxyz/euclid';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
-import {
-  PrimaryButton,
-  SecondaryButton,
-} from '@selfxyz/mobile-sdk-alpha/components';
+import { PrimaryButton, SecondaryButton } from '@selfxyz/mobile-sdk-alpha/components';
 import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import { InputField } from '@/components/InputField';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { useKycLauncher } from '@/hooks/useKycLauncher';
 import type { RootStackParamList } from '@/navigation';
+import type { DocumentRoutesParamList } from '@/navigation/types';
 import { trackEvent } from '@/services/analytics';
 
 const EscapeIcon = ({ size, color }: { size: number; color: string }) => (
@@ -40,10 +39,10 @@ const DataConfirmationScreen: React.FC & {
 } = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const route = useRoute();
-  const fromNfcFailure =
-    (route.params as { fromNfcFailure?: boolean } | undefined)
-      ?.fromNfcFailure ?? false;
+  const route = useRoute<
+    RouteProp<DocumentRoutesParamList, 'DataConfirmation'>
+  >();
+  const fromNfcFailure = route.params?.fromNfcFailure ?? false;
   const selfClient = useSelfClient();
   const { useMRZStore } = selfClient;
   const insets = useSafeAreaInsets();
