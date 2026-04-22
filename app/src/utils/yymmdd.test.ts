@@ -6,7 +6,7 @@ import {
   birthDateToDisplay,
   expiryDateToDisplay,
   pickerDateToYYMMDD,
-} from './yymmdd';
+} from '@/utils/yymmdd';
 
 describe('birthDateToDisplay', () => {
   it('formats year > 30 as 1900s', () => {

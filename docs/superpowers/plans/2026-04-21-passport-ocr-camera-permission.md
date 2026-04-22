@@ -48,10 +48,18 @@ const CAMERA =
   Platform.OS === 'ios' ? PERMISSIONS.IOS.CAMERA : PERMISSIONS.ANDROID.CAMERA;
 
 async function safeCheck(): Promise<string> {
-  try { return await check(CAMERA); } catch { return RESULTS.UNAVAILABLE; }
+  try {
+    return await check(CAMERA);
+  } catch {
+    return RESULTS.UNAVAILABLE;
+  }
 }
 async function safeRequest(): Promise<string> {
-  try { return await request(CAMERA); } catch { return RESULTS.UNAVAILABLE; }
+  try {
+    return await request(CAMERA);
+  } catch {
+    return RESULTS.UNAVAILABLE;
+  }
 }
 
 function openAppSettings(): void {
@@ -59,11 +67,19 @@ function openAppSettings(): void {
 }
 
 function showBlockedAlert(onFallback?: () => void): void {
-  const buttons: Array<{ text: string; style?: 'cancel'; onPress?: () => void }> = [
+  const buttons: Array<{
+    text: string;
+    style?: 'cancel';
+    onPress?: () => void;
+  }> = [
     { text: 'Cancel', style: 'cancel' },
     { text: 'Open Settings', onPress: openAppSettings },
   ];
-  if (onFallback) buttons.splice(1, 0, { text: 'Try Alternative Verification', onPress: onFallback });
+  if (onFallback)
+    buttons.splice(1, 0, {
+      text: 'Try Alternative Verification',
+      onPress: onFallback,
+    });
   Alert.alert(
     'Camera access needed',
     'Self needs camera access to scan your passport. Enable it in Settings to continue.',
@@ -76,7 +92,10 @@ function showUnavailableAlert(onFallback?: () => void): void {
     'Camera not available',
     "This device doesn't have a camera available. You can still verify your ID with an alternative method.",
     onFallback
-      ? [{ text: 'Cancel', style: 'cancel' }, { text: 'Try Alternative Verification', onPress: onFallback }]
+      ? [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Try Alternative Verification', onPress: onFallback },
+        ]
       : [{ text: 'OK' }],
   );
 }
@@ -103,11 +122,13 @@ Tests in `app/tests/src/utils/cameraPermission.test.ts` — same 7 cases as befo
 `app/src/screens/documents/selection/DocumentOnboardingScreen.tsx:39`
 
 Current:
+
 ```tsx
 const handleCameraPress = useHapticNavigation('DocumentCamera');
 ```
 
 Replace with:
+
 ```tsx
 const navigateToCamera = useHapticNavigation('DocumentCamera');
 const { launchKycVerification } = useKycLauncher({
@@ -115,7 +136,9 @@ const { launchKycVerification } = useKycLauncher({
   errorSource: 'mrz_scan_failed',
 });
 const handleCameraPress = useCallback(async () => {
-  const ok = await ensureCameraForPassportScan({ onFallback: launchKycVerification });
+  const ok = await ensureCameraForPassportScan({
+    onFallback: launchKycVerification,
+  });
   if (ok) navigateToCamera();
 }, [launchKycVerification, navigateToCamera]);
 ```
@@ -140,7 +163,8 @@ import { check, PERMISSIONS, RESULTS } from 'react-native-permissions';
 const [cameraReady, setCameraReady] = useState<boolean | null>(null);
 
 useEffect(() => {
-  const cameraPerm = Platform.OS === 'ios' ? PERMISSIONS.IOS.CAMERA : PERMISSIONS.ANDROID.CAMERA;
+  const cameraPerm =
+    Platform.OS === 'ios' ? PERMISSIONS.IOS.CAMERA : PERMISSIONS.ANDROID.CAMERA;
   let active = true;
   const verify = async () => {
     try {
@@ -154,10 +178,13 @@ useEffect(() => {
     }
   };
   verify();
-  const sub = AppState.addEventListener('change', (s) => {
+  const sub = AppState.addEventListener('change', s => {
     if (s === 'active') verify();
   });
-  return () => { active = false; sub.remove(); };
+  return () => {
+    active = false;
+    sub.remove();
+  };
 }, [navigation]);
 ```
 
@@ -165,12 +192,14 @@ Replace the camera render line:
 
 ```tsx
 // before:
-<PassportCamera onPassportRead={onPassportRead} isMounted={isFocused} />
+<PassportCamera onPassportRead={onPassportRead} isMounted={isFocused} />;
 
 // after:
-{cameraReady === true && (
-  <PassportCamera onPassportRead={onPassportRead} isMounted={isFocused} />
-)}
+{
+  cameraReady === true && (
+    <PassportCamera onPassportRead={onPassportRead} isMounted={isFocused} />
+  );
+}
 ```
 
 When `cameraReady` is `null` (initial check in flight) or `false` (denied), the Lottie scanning animation still plays over a plain `black` background via the existing `<ExpandableBottomLayout.TopSection backgroundColor={black}>` — visually identical to the existing scan screen chrome, just without a live camera behind it. The effect's `navigation.goBack()` runs on denial so the user doesn't linger here.
