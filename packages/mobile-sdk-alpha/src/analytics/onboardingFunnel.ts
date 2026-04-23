@@ -27,9 +27,20 @@ export type OnboardingStage =
 // Internal state and helpers
 // ---------------------------------------------------------------------------
 
+/**
+ * Per-onboarding-attempt state held in memory. The funnel distinguishes
+ * `initialBranch` (the user's original intent, set once and immutable) from
+ * `currentBranch` (the currently active branch, which `setOnboardingBranch`
+ * can change when a user falls back from biometric to KYC mid-flow).
+ *
+ * Every canonical event is stamped with both so dashboards can answer
+ * "who STARTED as biometric" and "who COMPLETED as biometric" separately —
+ * see `SPEC.md` § Cross-branch flows.
+ */
 interface OnboardingAttempt {
   id: string;
-  branch: OnboardingBranch;
+  initialBranch: OnboardingBranch;
+  currentBranch: OnboardingBranch;
   startedAt: number;
   firedSteps: Set<string>;
   retryCounts: Record<string, number>;
@@ -47,7 +58,8 @@ function ensureAttempt(): OnboardingAttempt {
   if (!currentAttempt) {
     currentAttempt = {
       id: uuid(),
-      branch: 'pending',
+      initialBranch: 'pending',
+      currentBranch: 'pending',
       startedAt: Date.now(),
       firedSteps: new Set(),
       retryCounts: {},
@@ -63,8 +75,22 @@ function durationSeconds(from: number): number {
 function baseProperties(attempt: OnboardingAttempt): Record<string, unknown> {
   return {
     attempt_id: attempt.id,
-    branch: attempt.branch,
+    initial_branch: attempt.initialBranch,
+    current_branch: attempt.currentBranch,
   };
+}
+
+/**
+ * Capture a newly-supplied branch value from a step event. The first
+ * non-'pending' value "locks in" `initialBranch` for the attempt; every
+ * subsequent branch value updates `currentBranch` only. This preserves the
+ * user's original intent even after a fallback.
+ */
+function captureBranch(attempt: OnboardingAttempt, branch: OnboardingBranch): void {
+  if (attempt.initialBranch === 'pending' && branch !== 'pending') {
+    attempt.initialBranch = branch;
+  }
+  attempt.currentBranch = branch;
 }
 
 // ---------------------------------------------------------------------------
@@ -89,9 +115,11 @@ export function _resetOnboardingFunnelForTests(): void {
 
 /**
  * Fire the canonical completion event. Includes total onboarding duration
- * measured from `startOnboardingAttempt`. Clears the attempt after firing so
- * a subsequent registration starts a fresh attempt. No-op if no attempt is
- * active or `COMPLETED` was already fired.
+ * measured from `startOnboardingAttempt`, plus `used_fallback` so dashboards
+ * can cohort by "did the user change branches during this attempt."
+ * Clears the attempt after firing so a subsequent registration starts a
+ * fresh attempt. No-op if no attempt is active or `COMPLETED` was already
+ * fired.
  */
 export function completeOnboardingAttempt(
   selfClient: Pick<SelfClient, 'trackEvent'>,
@@ -106,6 +134,7 @@ export function completeOnboardingAttempt(
     duration_seconds: durationSeconds(currentAttempt.startedAt),
     country_code: currentAttempt.countryCode,
     document_type: currentAttempt.documentType,
+    used_fallback: currentAttempt.initialBranch !== currentAttempt.currentBranch,
     ...properties,
   });
 
@@ -113,8 +142,9 @@ export function completeOnboardingAttempt(
 }
 
 /**
- * Fire the canonical failure event. Includes `stage` and `reason` for
- * dashboard grouping. Clears the attempt. No-op if no attempt is active.
+ * Fire the canonical failure event. Includes `stage`, `reason`, and
+ * `used_fallback` for dashboard grouping. Clears the attempt. No-op if no
+ * attempt is active.
  */
 export function failOnboardingAttempt(
   selfClient: Pick<SelfClient, 'trackEvent'>,
@@ -131,6 +161,7 @@ export function failOnboardingAttempt(
     stage,
     reason,
     duration_seconds: durationSeconds(attempt.startedAt),
+    used_fallback: attempt.initialBranch !== attempt.currentBranch,
     ...properties,
   });
 }
@@ -163,13 +194,14 @@ export function resolveOnboardingBranch(documentType: string): OnboardingBranch 
 }
 
 /**
- * Update the branch on the current attempt (e.g. when LogoConfirmation "No"
- * flips the flow from `biometric_passport` to `kyc`). No-op if no attempt is
- * active.
+ * Update `currentBranch` for the active attempt (e.g. LogoConfirmation "No"
+ * or RegistrationFallback "try different method" flips the flow to KYC).
+ * Does NOT change `initialBranch` — the user's original intent is preserved.
+ * No-op if no attempt is active.
  */
 export function setOnboardingBranch(branch: OnboardingBranch): void {
   if (!currentAttempt) return;
-  currentAttempt.branch = branch;
+  currentAttempt.currentBranch = branch;
 }
 
 /**
@@ -184,7 +216,8 @@ export function startOnboardingAttempt(
 ): string {
   currentAttempt = {
     id: uuid(),
-    branch: 'pending',
+    initialBranch: 'pending',
+    currentBranch: 'pending',
     startedAt: Date.now(),
     firedSteps: new Set([OnboardingEvents.STARTED]),
     retryCounts: {},
@@ -222,10 +255,12 @@ export function trackOnboardingRetry(
 /**
  * Fire a canonical onboarding step event. Fires at most once per attempt per
  * event name; subsequent calls with the same event are no-ops. Pass a
- * `branch` in properties to update the attempt's branch as a side effect.
+ * `branch` in properties to update the attempt's current branch (and lock
+ * in `initialBranch` on first non-'pending' value).
  *
- * If no attempt is active, this will bootstrap one — this handles cases where
- * a user enters the flow from a deep link and we never see the Disclaimer.
+ * If no attempt is active, this will bootstrap one — this handles cases
+ * where a user enters the flow from a deep link and we never see the
+ * Disclaimer.
  */
 export function trackOnboardingStep(
   selfClient: Pick<SelfClient, 'trackEvent'>,
@@ -235,7 +270,7 @@ export function trackOnboardingStep(
   const attempt = ensureAttempt();
 
   if (properties && typeof properties.branch === 'string') {
-    attempt.branch = properties.branch as OnboardingBranch;
+    captureBranch(attempt, properties.branch as OnboardingBranch);
   }
   if (properties && typeof properties.country_code === 'string') {
     attempt.countryCode = properties.country_code;
@@ -247,8 +282,12 @@ export function trackOnboardingStep(
   if (attempt.firedSteps.has(event)) return;
   attempt.firedSteps.add(event);
 
+  // Strip the caller-supplied `branch` — emitted event uses the richer
+  // `initial_branch` / `current_branch` pair from `baseProperties`.
+  const { branch: _discardedBranch, ...stampableProperties } = properties ?? {};
+
   selfClient.trackEvent(event, {
     ...baseProperties(attempt),
-    ...properties,
+    ...stampableProperties,
   });
 }

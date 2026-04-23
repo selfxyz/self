@@ -44,13 +44,14 @@ describe('resolveOnboardingBranch', () => {
 });
 
 describe('startOnboardingAttempt', () => {
-  it('emits the STARTED event with branch=pending and a new attempt_id', () => {
+  it('emits STARTED with pending branches and a new attempt_id', () => {
     const client = makeClient();
     startOnboardingAttempt(client);
     expect(client.trackEvent).toHaveBeenCalledTimes(1);
     const [name, props] = client.trackEvent.mock.calls[0];
     expect(name).toBe(OnboardingEvents.STARTED);
-    expect(props.branch).toBe('pending');
+    expect(props.initial_branch).toBe('pending');
+    expect(props.current_branch).toBe('pending');
     expect(props.attempt_id).toBeTruthy();
   });
 
@@ -95,7 +96,7 @@ describe('trackOnboardingStep', () => {
     ]);
   });
 
-  it('stamps the attempt_id on every step event', () => {
+  it('stamps attempt_id, initial_branch, current_branch on every step event', () => {
     const client = makeClient();
     startOnboardingAttempt(client);
     const attemptId = _getCurrentOnboardingAttempt()?.id;
@@ -103,16 +104,33 @@ describe('trackOnboardingStep', () => {
 
     for (const call of client.trackEvent.mock.calls) {
       expect(call[1].attempt_id).toBe(attemptId);
+      expect(call[1]).toHaveProperty('initial_branch');
+      expect(call[1]).toHaveProperty('current_branch');
     }
   });
 
-  it('updates the attempt branch when a step event supplies branch', () => {
+  it('locks initial_branch on first non-pending branch and mirrors current_branch', () => {
     const client = makeClient();
     startOnboardingAttempt(client);
     trackOnboardingStep(client, OnboardingEvents.DOCUMENT_TYPE_SELECTED, {
       branch: 'biometric_passport',
     });
-    expect(_getCurrentOnboardingAttempt()?.branch).toBe('biometric_passport');
+    expect(_getCurrentOnboardingAttempt()?.initialBranch).toBe('biometric_passport');
+    expect(_getCurrentOnboardingAttempt()?.currentBranch).toBe('biometric_passport');
+  });
+
+  it('strips the caller-supplied `branch` sugar from emitted properties', () => {
+    const client = makeClient();
+    startOnboardingAttempt(client);
+    trackOnboardingStep(client, OnboardingEvents.DOCUMENT_TYPE_SELECTED, {
+      branch: 'biometric_passport',
+    });
+    const docTypeCall = client.trackEvent.mock.calls.find(
+      ([name]: string[]) => name === OnboardingEvents.DOCUMENT_TYPE_SELECTED,
+    );
+    expect(docTypeCall?.[1]).not.toHaveProperty('branch');
+    expect(docTypeCall?.[1].initial_branch).toBe('biometric_passport');
+    expect(docTypeCall?.[1].current_branch).toBe('biometric_passport');
   });
 
   it('bootstraps an attempt if none is active (deep-link entry)', () => {
@@ -122,19 +140,31 @@ describe('trackOnboardingStep', () => {
   });
 });
 
-describe('setOnboardingBranch', () => {
-  it('flips the branch on the current attempt (LogoConfirmation "No" → KYC)', () => {
+describe('setOnboardingBranch (fallback flow)', () => {
+  it('changes current_branch but preserves initial_branch', () => {
     const client = makeClient();
     startOnboardingAttempt(client);
     trackOnboardingStep(client, OnboardingEvents.DOCUMENT_TYPE_SELECTED, {
       branch: 'biometric_passport',
     });
     setOnboardingBranch('kyc');
-    trackOnboardingStep(client, OnboardingEvents.SCAN_STARTED, { branch: 'kyc' });
 
-    const scanCall = client.trackEvent.mock.calls.find(([name]: string[]) => name === OnboardingEvents.SCAN_STARTED);
-    expect(scanCall?.[1].branch).toBe('kyc');
-    expect(_getCurrentOnboardingAttempt()?.branch).toBe('kyc');
+    expect(_getCurrentOnboardingAttempt()?.initialBranch).toBe('biometric_passport');
+    expect(_getCurrentOnboardingAttempt()?.currentBranch).toBe('kyc');
+  });
+
+  it('post-fallback step events carry initial=biometric, current=kyc', () => {
+    const client = makeClient();
+    startOnboardingAttempt(client);
+    trackOnboardingStep(client, OnboardingEvents.DOCUMENT_TYPE_SELECTED, {
+      branch: 'biometric_passport',
+    });
+    setOnboardingBranch('kyc');
+    trackOnboardingStep(client, OnboardingEvents.SCAN_SUCCEEDED, { branch: 'kyc' });
+
+    const scanCall = client.trackEvent.mock.calls.find(([name]: string[]) => name === OnboardingEvents.SCAN_SUCCEEDED);
+    expect(scanCall?.[1].initial_branch).toBe('biometric_passport');
+    expect(scanCall?.[1].current_branch).toBe('kyc');
   });
 
   it('is a no-op when no attempt is active', () => {
@@ -160,15 +190,36 @@ describe('trackOnboardingRetry', () => {
 });
 
 describe('completeOnboardingAttempt', () => {
-  it('fires COMPLETED with duration_seconds and clears the attempt', () => {
+  it('fires COMPLETED with duration_seconds, used_fallback=false, and clears the attempt', () => {
     const client = makeClient();
     startOnboardingAttempt(client);
+    trackOnboardingStep(client, OnboardingEvents.DOCUMENT_TYPE_SELECTED, {
+      branch: 'biometric_passport',
+    });
     completeOnboardingAttempt(client);
 
     const completedCall = client.trackEvent.mock.calls.find(([name]: string[]) => name === OnboardingEvents.COMPLETED);
     expect(completedCall).toBeTruthy();
     expect(typeof completedCall![1].duration_seconds).toBe('number');
+    expect(completedCall![1].used_fallback).toBe(false);
+    expect(completedCall![1].initial_branch).toBe('biometric_passport');
+    expect(completedCall![1].current_branch).toBe('biometric_passport');
     expect(_getCurrentOnboardingAttempt()).toBeNull();
+  });
+
+  it('fires COMPLETED with used_fallback=true when branches diverge', () => {
+    const client = makeClient();
+    startOnboardingAttempt(client);
+    trackOnboardingStep(client, OnboardingEvents.DOCUMENT_TYPE_SELECTED, {
+      branch: 'biometric_passport',
+    });
+    setOnboardingBranch('kyc');
+    completeOnboardingAttempt(client);
+
+    const completedCall = client.trackEvent.mock.calls.find(([name]: string[]) => name === OnboardingEvents.COMPLETED);
+    expect(completedCall![1].used_fallback).toBe(true);
+    expect(completedCall![1].initial_branch).toBe('biometric_passport');
+    expect(completedCall![1].current_branch).toBe('kyc');
   });
 
   it('is a no-op when no attempt is active (prevents disclosure-later pollution)', () => {
@@ -191,16 +242,23 @@ describe('completeOnboardingAttempt', () => {
 });
 
 describe('failOnboardingAttempt', () => {
-  it('fires FAILED with stage/reason and clears the attempt', () => {
+  it('fires FAILED with stage/reason/used_fallback and clears the attempt', () => {
     const client = makeClient();
     startOnboardingAttempt(client);
-    failOnboardingAttempt(client, 'scan_started', 'nfc_timeout', { recoverable: true });
+    trackOnboardingStep(client, OnboardingEvents.DOCUMENT_TYPE_SELECTED, {
+      branch: 'biometric_passport',
+    });
+    setOnboardingBranch('kyc');
+    failOnboardingAttempt(client, 'scan_started', 'kyc_provider_error', { recoverable: true });
 
     const failedCall = client.trackEvent.mock.calls.find(([name]: string[]) => name === OnboardingEvents.FAILED);
     expect(failedCall?.[1]).toMatchObject({
       stage: 'scan_started',
-      reason: 'nfc_timeout',
+      reason: 'kyc_provider_error',
       recoverable: true,
+      initial_branch: 'biometric_passport',
+      current_branch: 'kyc',
+      used_fallback: true,
     });
     expect(_getCurrentOnboardingAttempt()).toBeNull();
   });
