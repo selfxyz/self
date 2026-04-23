@@ -12,9 +12,11 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import {
   setOnboardingBranch,
   trackOnboardingRetry,
+  trackOnboardingStep,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
 import { BodyText } from '@selfxyz/mobile-sdk-alpha/components';
+import { OnboardingEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import {
   black,
   cyan300,
@@ -79,6 +81,15 @@ const RegistrationFallbackMRZScreen: React.FC = () => {
     onError: (_error, _result) => {
       // Stay on this screen - user can try again
       // Error is already logged in the hook
+    },
+    onSuccess: (_result, sessionId) => {
+      // Fire the canonical scan_succeeded for the KYC branch so users who
+      // recover via KYC don't appear as dropped off at scan_started in the
+      // funnel. Mirrors the LogoConfirmationScreen pattern.
+      trackOnboardingStep(selfClient, OnboardingEvents.SCAN_SUCCEEDED, {
+        branch: 'kyc',
+      });
+      navigation.navigate('KycSuccess', { sessionId });
     },
   });
 
