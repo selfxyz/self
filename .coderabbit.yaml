@@ -16,7 +16,7 @@ reviews:
   enable_prompt_for_ai_agents: false
   review_status: true
   auto_review:
-    enabled: true
+    enabled: false
     drafts: false
     base_branches: ["main", "dev", "staging"]
   tools:

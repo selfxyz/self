@@ -241,6 +241,7 @@ export interface ProvingState {
     circuitType: 'dsc' | 'disclose' | 'register',
     userConfirmed?: boolean,
   ) => Promise<void>;
+  cancel: (selfClient: SelfClient) => Promise<void>;
   parseIDDocument: (selfClient: SelfClient) => Promise<void>;
   startFetchingData: (selfClient: SelfClient) => Promise<void>;
   validatingDocument: (selfClient: SelfClient) => Promise<void>;
@@ -398,6 +399,30 @@ export const getPostVerificationRoute = () => {
 
 export const useProvingStore = create<ProvingState>((set, get) => {
   let actor: AnyActorRef | null = null;
+
+  function resetProvingState(partial?: Partial<ProvingState>) {
+    set({
+      currentState: 'idle',
+      attestation: null,
+      serverPublicKey: null,
+      sharedKey: null,
+      wsConnection: null,
+      wsHandlers: null,
+      wsReconnectAttempts: 0,
+      socketConnection: null,
+      uuid: null,
+      userConfirmed: false,
+      passportData: null,
+      secret: null,
+      circuitType: null,
+      didNewRegistrationProof: false,
+      endpointType: null,
+      env: null,
+      error_code: null,
+      reason: null,
+      ...partial,
+    });
+  }
 
   function setupActorSubscriptions(newActor: AnyActorRef, selfClient: SelfClient) {
     let lastTransition = Date.now();
@@ -584,6 +609,38 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     error_code: null,
     reason: null,
     endpointType: null,
+    cancel: async (selfClient: SelfClient) => {
+      const context = createProofContext(selfClient, 'cancel');
+      selfClient.logProofEvent('warn', 'Proving flow cancelled by UI', context);
+      let cancellationError: Error | null = null;
+
+      // Stop and null the actor BEFORE closing the socket. _closeConnections
+      // triggers the socket 'disconnect' handler, which reads module-scope
+      // `actor` and would otherwise fire a spurious PROVE_ERROR on the
+      // about-to-be-stopped actor.
+      if (actor) {
+        try {
+          actor.stop();
+        } catch (error) {
+          cancellationError = error instanceof Error ? error : new Error(String(error));
+        } finally {
+          actor = null;
+        }
+      }
+
+      try {
+        get()._closeConnections(selfClient);
+      } catch (error) {
+        cancellationError ??= error instanceof Error ? error : new Error(String(error));
+      }
+
+      selfClient.navigation?.disableKeychainErrorModal?.();
+      resetProvingState();
+
+      if (cancellationError) {
+        throw cancellationError;
+      }
+    },
     _handleWebSocketMessage: async (event: MessageEvent, selfClient: SelfClient) => {
       if (!actor) {
         console.error('Cannot process message: State machine not initialized.');
@@ -1047,24 +1104,11 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         } catch (error) {
           console.error('Error stopping actor:', error);
         }
+        actor = null;
       }
-      set({
-        currentState: 'idle',
-        attestation: null,
-        serverPublicKey: null,
-        sharedKey: null,
-        wsConnection: null,
-        socketConnection: null,
-        uuid: null,
-        userConfirmed: userConfirmed,
-        passportData: null,
-        secret: null,
+      resetProvingState({
+        userConfirmed,
         circuitType,
-        didNewRegistrationProof: false,
-        endpointType: null,
-        env: null,
-        error_code: null,
-        reason: null,
       });
 
       actor = createActor(provingMachine);

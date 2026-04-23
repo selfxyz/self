@@ -98,6 +98,32 @@ export function formatDateFromYYMMDD(
   return `${dd}/${mm}/${year}`;
 }
 
+// Helper functions to safely extract document data
+export function getDocumentAttributes(
+  document: PassportData | AadhaarData | KycData,
+): DocumentAttributes {
+  if (isAadhaarDocument(document)) {
+    return getAadhaarAttributes(document);
+  } else if (isKycDocument(document)) {
+    return getKycAttributes(document);
+  } else if (isMRZDocument(document)) {
+    return getPassportAttributes(document.mrz, document.documentCategory);
+  } else {
+    // Fallback for unknown document types
+    return {
+      nameSlice: '',
+      dobSlice: '',
+      yobSlice: '',
+      issuingStateSlice: '',
+      nationalitySlice: '',
+      passNoSlice: '',
+      sexSlice: '',
+      expiryDateSlice: '',
+      isPassportType: false,
+    };
+  }
+}
+
 /**
  * Extracts attributes from KYC document data
  */
@@ -288,32 +314,6 @@ function getPassportAttributes(
     expiryDateSlice,
     isPassportType,
   };
-}
-
-// Helper functions to safely extract document data
-export function getDocumentAttributes(
-  document: PassportData | AadhaarData | KycData,
-): DocumentAttributes {
-  if (isAadhaarDocument(document)) {
-    return getAadhaarAttributes(document);
-  } else if (isKycDocument(document)) {
-    return getKycAttributes(document);
-  } else if (isMRZDocument(document)) {
-    return getPassportAttributes(document.mrz, document.documentCategory);
-  } else {
-    // Fallback for unknown document types
-    return {
-      nameSlice: '',
-      dobSlice: '',
-      yobSlice: '',
-      issuingStateSlice: '',
-      nationalitySlice: '',
-      passNoSlice: '',
-      sexSlice: '',
-      expiryDateSlice: '',
-      isPassportType: false,
-    };
-  }
 }
 
 /**

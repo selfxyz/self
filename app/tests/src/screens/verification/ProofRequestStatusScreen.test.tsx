@@ -27,6 +27,7 @@ declare global {
       'mock-top': any;
       'mock-bottom': any;
       'mock-scroll': any;
+      'mock-rn-text': any;
     }
   }
 }
@@ -36,12 +37,20 @@ jest.mock('react-native', () => ({
   Linking: {
     openURL: jest.fn(),
   },
+  Platform: {
+    OS: 'ios',
+    select: (spec: { ios?: unknown; android?: unknown; default?: unknown }) =>
+      spec.ios ?? spec.default,
+  },
   StyleSheet: {
     create: (styles: unknown) => styles,
     flatten: (style: unknown) => style,
   },
   View: ({ children, ...props }: any) => (
     <mock-view {...props}>{children}</mock-view>
+  ),
+  Text: ({ children, ...props }: any) => (
+    <mock-rn-text {...props}>{children}</mock-rn-text>
   ),
 }));
 
@@ -61,6 +70,8 @@ jest.mock('tamagui', () => ({
 jest.mock('@selfxyz/mobile-sdk-alpha/constants/colors', () => ({
   black: '#000000',
   white: '#ffffff',
+  slate200: '#E2E8F0',
+  slate500: '#64748B',
 }));
 
 jest.mock('@selfxyz/mobile-sdk-alpha/constants/analytics', () => ({
@@ -113,6 +124,10 @@ jest.mock('@/integrations/haptics', () => ({
   notificationSuccess: jest.fn(),
 }));
 
+jest.mock('@/config/sentry', () => ({
+  captureException: jest.fn(),
+}));
+
 jest.mock('@/layouts/ExpandableBottomLayout', () => ({
   ExpandableBottomLayout: {
     Layout: ({ children, ...props }: any) => (
@@ -157,6 +172,9 @@ const { buttonTap, notificationSuccess } = jest.requireMock(
   buttonTap: jest.Mock;
   notificationSuccess: jest.Mock;
 };
+const { captureException } = jest.requireMock('@/config/sentry') as {
+  captureException: jest.Mock;
+};
 const { getWhiteListedDisclosureAddresses } = jest.requireMock(
   '@/services/points/utils',
 ) as {
@@ -179,12 +197,14 @@ describe('ProofRequestStatusScreen', () => {
   const mockTrackEvent = jest.fn();
   const mockCleanSelfApp = jest.fn();
   const mockUpdateProofStatus = jest.fn();
+  const mockCancelProof = jest.fn();
 
   let provingState: {
     currentState: string;
     reason: string | null;
     uuid: string;
     error_code: string | null;
+    cancel: jest.Mock;
   };
   let selfAppState: {
     selfApp: {
@@ -197,12 +217,15 @@ describe('ProofRequestStatusScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     jest.useFakeTimers();
+    mockCancelProof.mockReset();
+    mockCancelProof.mockResolvedValue(undefined);
 
     provingState = {
       currentState: 'completed',
       reason: null,
       uuid: 'session-1',
       error_code: null,
+      cancel: mockCancelProof,
     };
     selfAppState = {
       selfApp: {
@@ -275,6 +298,30 @@ describe('ProofRequestStatusScreen', () => {
       sessionId: 'session-1',
       appName: 'Verifier',
     });
+  });
+
+  it('keeps the button disabled on completed while whitelist fetch is pending', async () => {
+    selfAppState.selfApp.endpoint = '0xABC';
+    // Simulate a never-resolving whitelist lookup to hold whitelistedPoints === undefined.
+    getWhiteListedDisclosureAddresses.mockImplementation(
+      () => new Promise(() => {}),
+    );
+
+    render(<ProofRequestStatusScreen />);
+
+    await waitFor(() => {
+      expect(getWhiteListedDisclosureAddresses).toHaveBeenCalledTimes(1);
+    });
+
+    const button = screen.getByTestId('primary-button');
+    expect(button.props.disabled).toBe(true);
+
+    fireEvent.press(button);
+
+    expect(buttonTap).not.toHaveBeenCalled();
+    expect(mockGoHome).not.toHaveBeenCalled();
+    expect(mockNavigate).not.toHaveBeenCalled();
+    expect(mockCleanSelfApp).not.toHaveBeenCalled();
   });
 
   it('navigates to Gratification when the endpoint is whitelisted for points', async () => {
@@ -399,6 +446,82 @@ describe('ProofRequestStatusScreen', () => {
     expect(mockCleanSelfApp).not.toHaveBeenCalled();
   });
 
+  describe('failure / error', () => {
+    it('shows Dismiss on failure and routing Home clears session on press', async () => {
+      provingState.currentState = 'failure';
+      provingState.reason = '[InvalidRoot]: Onchain root does not exist';
+
+      render(<ProofRequestStatusScreen />);
+
+      const button = screen.getByTestId('primary-button');
+      expect(button.props.children).toBe('Dismiss');
+      expect(button.props.disabled).toBe(false);
+
+      fireEvent.press(button);
+
+      expect(buttonTap).toHaveBeenCalledTimes(1);
+      expect(mockGoHome).toHaveBeenCalledTimes(1);
+
+      act(() => {
+        jest.advanceTimersByTime(2000);
+      });
+
+      expect(mockCleanSelfApp).toHaveBeenCalledTimes(1);
+    });
+
+    it('shows Dismiss on error and still exits even without a reason', async () => {
+      provingState.currentState = 'error';
+      provingState.reason = null;
+
+      render(<ProofRequestStatusScreen />);
+
+      const button = screen.getByTestId('primary-button');
+      expect(button.props.children).toBe('Dismiss');
+
+      fireEvent.press(button);
+
+      expect(mockGoHome).toHaveBeenCalledTimes(1);
+    });
+
+    it('renders the QR-refresh copy for InvalidRoot failures', async () => {
+      provingState.currentState = 'failure';
+      provingState.reason =
+        '[InvalidRoot]: Onchain root does not exist, received: 4589...';
+
+      const { toJSON } = render(<ProofRequestStatusScreen />);
+
+      const tree = JSON.stringify(toJSON());
+      expect(tree).toMatch(/QR code from Verifier is out of date/i);
+    });
+
+    it('renders a fallback copy for unknown failure reasons', async () => {
+      provingState.currentState = 'failure';
+      provingState.reason = 'Something else went wrong';
+
+      const { toJSON } = render(<ProofRequestStatusScreen />);
+
+      const tree = JSON.stringify(toJSON());
+      expect(tree).toMatch(
+        /Unable to prove your identity to Verifier\. Please try again/i,
+      );
+    });
+
+    it('renders the raw reason in the selectable details box for support', async () => {
+      const reason =
+        '[InvalidRoot]: Onchain root does not exist, received: 4589506917688709078187632663628833702807225';
+      provingState.currentState = 'failure';
+      provingState.reason = reason;
+
+      const { toJSON } = render(<ProofRequestStatusScreen />);
+
+      const tree = JSON.stringify(toJSON());
+      expect(tree).toContain(reason);
+      expect(tree).toContain('Details');
+      // The raw reason must be selectable so users/support can copy it.
+      expect(tree).toMatch(/"selectable":true/);
+    });
+  });
+
   it('cancels deeplink redirect before it opens the external URL', async () => {
     selfAppState.selfApp.deeplinkCallback =
       'https://callback.self.xyz/complete';
@@ -418,5 +541,268 @@ describe('ProofRequestStatusScreen', () => {
 
     expect(Linking.openURL).not.toHaveBeenCalled();
     expect(mockGoHome).not.toHaveBeenCalled();
+  });
+
+  it('times out stalled proving on mount and lets the user dismiss safely', async () => {
+    provingState.currentState = 'proving';
+
+    const { toJSON } = render(<ProofRequestStatusScreen />);
+
+    act(() => {
+      jest.advanceTimersByTime(90_000);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('primary-button').props.children).toBe(
+        'Dismiss',
+      );
+    });
+
+    const tree = JSON.stringify(toJSON());
+    expect(tree).toMatch(/took too long to finish/i);
+    expect(tree).toContain('timed_out_after_90s');
+    expect(mockUpdateProofStatus).toHaveBeenCalledWith(
+      'session-1',
+      ProofStatus.FAILURE,
+      'proof_timeout',
+      'timed_out_after_90s',
+    );
+
+    await act(async () => {
+      fireEvent.press(screen.getByTestId('primary-button'));
+    });
+
+    await waitFor(() => {
+      expect(mockCancelProof).toHaveBeenCalledTimes(1);
+    });
+    expect(mockCleanSelfApp).toHaveBeenCalledTimes(1);
+    expect(mockGoHome).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not write proof history when timeout fires before a session id exists', async () => {
+    provingState.currentState = 'fetching_data';
+    provingState.uuid = null as any;
+
+    render(<ProofRequestStatusScreen />);
+
+    act(() => {
+      jest.advanceTimersByTime(90_000);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('primary-button').props.children).toBe(
+        'Dismiss',
+      );
+    });
+
+    expect(mockUpdateProofStatus).not.toHaveBeenCalled();
+    expect(mockTrackEvent).toHaveBeenCalledWith('PROOF_FAILED', {
+      sessionId: null,
+      appName: 'Verifier',
+      errorCode: 'proof_timeout',
+      reason: 'timed_out_after_90s',
+      state: 'timeout',
+    });
+  });
+
+  it('does not write proof history for early completion without a session id', async () => {
+    provingState.currentState = 'completed';
+    provingState.uuid = null as any;
+
+    render(<ProofRequestStatusScreen />);
+
+    await waitFor(() => {
+      expect(mockTrackEvent).toHaveBeenCalledWith('PROOF_COMPLETED', {
+        sessionId: null,
+        appName: 'Verifier',
+      });
+    });
+
+    expect(mockUpdateProofStatus).not.toHaveBeenCalled();
+  });
+
+  it('does not write proof history for early failure without a session id', async () => {
+    provingState.currentState = 'error';
+    provingState.uuid = null as any;
+    provingState.error_code = 'early_error';
+    provingState.reason = 'failed before tee';
+
+    render(<ProofRequestStatusScreen />);
+
+    await waitFor(() => {
+      expect(mockTrackEvent).toHaveBeenCalledWith('PROOF_FAILED', {
+        sessionId: null,
+        appName: 'Verifier',
+        errorCode: 'early_error',
+        reason: 'failed before tee',
+        state: 'error',
+      });
+    });
+
+    expect(mockUpdateProofStatus).not.toHaveBeenCalled();
+  });
+
+  it('times out when stuck in post_proving', async () => {
+    provingState.currentState = 'post_proving';
+
+    render(<ProofRequestStatusScreen />);
+
+    act(() => {
+      jest.advanceTimersByTime(90_000);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('primary-button').props.children).toBe(
+        'Dismiss',
+      );
+    });
+  });
+
+  it('does not schedule delayed cleanup when acknowledging a failure with no session id', async () => {
+    provingState.currentState = 'failure';
+    provingState.uuid = null as any;
+    provingState.reason = 'early failure';
+
+    render(<ProofRequestStatusScreen />);
+
+    fireEvent.press(screen.getByTestId('primary-button'));
+
+    expect(mockGoHome).toHaveBeenCalledTimes(1);
+
+    act(() => {
+      jest.advanceTimersByTime(2000);
+    });
+
+    expect(mockCleanSelfApp).not.toHaveBeenCalled();
+  });
+
+  it('resets the stall timer when the proving state changes', async () => {
+    provingState.currentState = 'fetching_data';
+    const { rerender } = render(<ProofRequestStatusScreen />);
+
+    act(() => {
+      jest.advanceTimersByTime(89_000);
+    });
+
+    expect(screen.queryByText('Proof Failed')).toBeNull();
+
+    provingState.currentState = 'proving';
+    rerender(<ProofRequestStatusScreen />);
+
+    act(() => {
+      jest.advanceTimersByTime(2_000);
+    });
+
+    expect(screen.queryByText('Proof Failed')).toBeNull();
+
+    act(() => {
+      jest.advanceTimersByTime(88_000);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('primary-button').props.children).toBe(
+        'Dismiss',
+      );
+    });
+  });
+
+  it('resets timeout state when a new session id arrives', async () => {
+    provingState.currentState = 'proving';
+    const { rerender } = render(<ProofRequestStatusScreen />);
+
+    act(() => {
+      jest.advanceTimersByTime(90_000);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('primary-button').props.children).toBe(
+        'Dismiss',
+      );
+    });
+
+    provingState.uuid = 'session-2';
+    rerender(<ProofRequestStatusScreen />);
+
+    await waitFor(() => {
+      expect(screen.queryByText('timed_out_after_90s')).toBeNull();
+    });
+    expect(screen.getByTestId('primary-button').props.children).not.toBe(
+      'Dismiss',
+    );
+  });
+
+  it('clears the stall timer when the screen loses focus', () => {
+    let focused = true;
+    (useIsFocused as jest.Mock).mockImplementation(() => focused);
+    provingState.currentState = 'proving';
+
+    const { rerender } = render(<ProofRequestStatusScreen />);
+
+    act(() => {
+      jest.advanceTimersByTime(45_000);
+    });
+
+    focused = false;
+    rerender(<ProofRequestStatusScreen />);
+
+    act(() => {
+      jest.advanceTimersByTime(90_000);
+    });
+
+    expect(screen.queryByText('Proof Failed')).toBeNull();
+  });
+
+  it('still exits home if cancelling a timed-out proof throws', async () => {
+    provingState.currentState = 'proving';
+    mockCancelProof.mockRejectedValueOnce(new Error('close failed'));
+
+    render(<ProofRequestStatusScreen />);
+
+    act(() => {
+      jest.advanceTimersByTime(90_000);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('primary-button').props.children).toBe(
+        'Dismiss',
+      );
+    });
+
+    await act(async () => {
+      fireEvent.press(screen.getByTestId('primary-button'));
+    });
+
+    await waitFor(() => {
+      expect(mockGoHome).toHaveBeenCalledTimes(1);
+    });
+    expect(mockCleanSelfApp).toHaveBeenCalledTimes(1);
+    expect(captureException).toHaveBeenCalledTimes(1);
+  });
+
+  it('ignores repeated dismiss taps while timed-out cancellation is in flight', async () => {
+    provingState.currentState = 'proving';
+    mockCancelProof.mockImplementation(
+      () => new Promise(resolve => setTimeout(resolve, 10)),
+    );
+
+    render(<ProofRequestStatusScreen />);
+
+    act(() => {
+      jest.advanceTimersByTime(90_000);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('primary-button').props.children).toBe(
+        'Dismiss',
+      );
+    });
+
+    await act(async () => {
+      fireEvent.press(screen.getByTestId('primary-button'));
+      fireEvent.press(screen.getByTestId('primary-button'));
+      jest.advanceTimersByTime(10);
+    });
+
+    expect(mockCancelProof).toHaveBeenCalledTimes(1);
   });
 });
