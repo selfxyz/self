@@ -70,7 +70,6 @@ const RegistrationFallbackNFCScreen: React.FC = () => {
 
   const { launchKycVerification, isLoading: isRetrying } = useKycLauncher({
     countryCode,
-    errorSource: 'nfc_scan_failed',
     onCancel: () => {
       navigation.goBack();
     },

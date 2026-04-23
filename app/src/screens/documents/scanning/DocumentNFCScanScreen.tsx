@@ -124,7 +124,6 @@ const DocumentNFCScanScreen: React.FC = () => {
     isLoading: isKycLoading,
   } = useKycLauncher({
     countryCode,
-    errorSource: 'nfc_scan_failed',
   });
 
   const [isNfcSupported, setIsNfcSupported] = useState(true);

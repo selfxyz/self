@@ -16,17 +16,11 @@ import type { KycVerificationResult } from '@/integrations/kyc/types';
 import type { RootStackParamList } from '@/navigation';
 import { useFeedback } from '@/providers/feedbackProvider';
 
-export type FallbackErrorSource = 'mrz_scan_failed' | 'nfc_scan_failed';
-
 export interface UseKycLauncherOptions {
   /**
    * Country code for the user's document
    */
   countryCode: string;
-  /**
-   * Error source to track where the KYC launch was initiated from
-   */
-  errorSource: FallbackErrorSource;
   /**
    * Optional callback to handle successful verification.
    * Receives the KYC result and the sessionId from the session.
@@ -47,6 +41,10 @@ export interface UseKycLauncherOptions {
     error: unknown,
     result?: KycVerificationResult,
   ) => void | Promise<void>;
+  /**
+   * Optional label for the secondary button in the fallback modal.
+   */
+  cancelLabel?: string;
 }
 
 /**
@@ -62,7 +60,6 @@ export interface UseKycLauncherOptions {
  * ```tsx
  * const { launchKycVerification, isLoading } = useKycLauncher({
  *   countryCode: 'US',
- *   errorSource: 'nfc_scan_failed',
  * });
  *
  * <Button onPress={launchKycVerification} disabled={isLoading}>
@@ -71,7 +68,13 @@ export interface UseKycLauncherOptions {
  * ```
  */
 export const useKycLauncher = (options: UseKycLauncherOptions) => {
-  const { countryCode, errorSource, onSuccess, onCancel, onError } = options;
+  const {
+    countryCode,
+    onSuccess,
+    onCancel,
+    onError,
+    cancelLabel = 'Cancel Registration',
+  } = options;
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { showModal } = useFeedback();
@@ -100,12 +103,10 @@ export const useKycLauncher = (options: UseKycLauncherOptions) => {
         if (onError) {
           await onError(safeError, result);
         } else {
-          // Navigate to the appropriate fallback screen based on error source
-          if (errorSource === 'mrz_scan_failed') {
-            navigation.navigate('RegistrationFallbackMRZ', { countryCode });
-          } else {
-            navigation.navigate('RegistrationFallbackNFC', { countryCode });
-          }
+          navigation.navigate('KycFailure', {
+            countryCode,
+            canRetry: true,
+          });
         }
         return;
       }
@@ -126,17 +127,12 @@ export const useKycLauncher = (options: UseKycLauncherOptions) => {
       if (onError) {
         await onError(safeError);
       } else {
-        // Navigate to the appropriate fallback screen based on error source
-        if (errorSource === 'mrz_scan_failed') {
-          navigation.navigate('RegistrationFallbackMRZ', { countryCode });
-        } else {
-          navigation.navigate('RegistrationFallbackNFC', { countryCode });
-        }
+        navigation.navigate('KycConnectionError', { countryCode });
       }
     } finally {
       setIsLoading(false);
     }
-  }, [navigation, countryCode, errorSource, onSuccess, onCancel, onError]);
+  }, [navigation, countryCode, onSuccess, onCancel, onError]);
 
   const showKycFallbackModal = useCallback(
     (onDismiss: () => void) => {
@@ -147,7 +143,7 @@ export const useKycLauncher = (options: UseKycLauncherOptions) => {
         titleText,
         bodyText,
         buttonText: 'Try Alternative Verification',
-        secondaryButtonText: 'Cancel Registration',
+        secondaryButtonText: cancelLabel,
         onButtonPress: () => {
           showModal({
             titleText,
@@ -162,7 +158,7 @@ export const useKycLauncher = (options: UseKycLauncherOptions) => {
         onSecondaryButtonPress: onDismiss,
       });
     },
-    [showModal, launchKycVerification],
+    [cancelLabel, showModal, launchKycVerification],
   );
 
   return {

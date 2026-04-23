@@ -55,7 +55,6 @@ const DataConfirmationScreen: React.FC & {
 
   const { launchKycVerification, isLoading: isKycLoading } = useKycLauncher({
     countryCode: mrzData.countryCode,
-    errorSource: 'nfc_scan_failed',
   });
   const {
     passportNumber: originalDocumentNumber,

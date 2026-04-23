@@ -54,7 +54,6 @@ const DocumentCameraScreen: React.FC = () => {
   const { shouldInjectError } = useErrorInjection();
   const { showKycFallbackModal } = useKycLauncher({
     countryCode: countryCode || '',
-    errorSource: 'mrz_scan_failed',
   });
 
   // Add a ref to track when the camera screen is mounted

@@ -57,7 +57,6 @@ const DocumentCameraTroubleScreen: React.FC = () => {
   const { countryCode } = useMRZStore();
   const { launchKycVerification, isLoading } = useKycLauncher({
     countryCode,
-    errorSource: 'mrz_scan_failed',
   });
 
   // error screen, flush analytics

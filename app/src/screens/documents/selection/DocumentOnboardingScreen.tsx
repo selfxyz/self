@@ -43,7 +43,7 @@ const DocumentOnboardingScreen: React.FC = () => {
   const countryCode = selfClient.useMRZStore(state => state.countryCode);
   const { launchKycVerification, showKycFallbackModal } = useKycLauncher({
     countryCode: countryCode ?? '',
-    errorSource: 'mrz_scan_failed',
+    cancelLabel: 'Go Back',
   });
   const handleCameraPress = useCallback(async () => {
     impactLight();
