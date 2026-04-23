@@ -54,16 +54,25 @@ function uuid(): string {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
-function ensureAttempt(): OnboardingAttempt {
+/**
+ * Get-or-create the current attempt. When bootstrapping a fresh attempt (no
+ * attempt was active), also emits `Onboarding: Started` as that attempt's
+ * first event. This is the single source of truth for how STARTED fires —
+ * every entry path into the onboarding flow converges on the first
+ * canonical step event, which triggers this bootstrap exactly once per
+ * attempt.
+ */
+function ensureAttempt(selfClient: Pick<SelfClient, 'trackEvent'>): OnboardingAttempt {
   if (!currentAttempt) {
     currentAttempt = {
       id: uuid(),
       initialBranch: 'pending',
       currentBranch: 'pending',
       startedAt: Date.now(),
-      firedSteps: new Set(),
+      firedSteps: new Set([OnboardingEvents.STARTED]),
       retryCounts: {},
     };
+    selfClient.trackEvent(OnboardingEvents.STARTED, baseProperties(currentAttempt));
   }
   return currentAttempt;
 }
@@ -205,31 +214,6 @@ export function setOnboardingBranch(branch: OnboardingBranch): void {
 }
 
 /**
- * Reset the onboarding attempt. Fires `onboarding_started` and begins a new
- * attempt window. Subsequent `trackOnboardingStep` calls are deduped against
- * this attempt. Calling this while an attempt is already in progress
- * abandons the prior attempt silently.
- */
-export function startOnboardingAttempt(
-  selfClient: Pick<SelfClient, 'trackEvent'>,
-  properties?: Record<string, unknown>,
-): string {
-  currentAttempt = {
-    id: uuid(),
-    initialBranch: 'pending',
-    currentBranch: 'pending',
-    startedAt: Date.now(),
-    firedSteps: new Set([OnboardingEvents.STARTED]),
-    retryCounts: {},
-  };
-  selfClient.trackEvent(OnboardingEvents.STARTED, {
-    ...baseProperties(currentAttempt),
-    ...properties,
-  });
-  return currentAttempt.id;
-}
-
-/**
  * Fire a retry event for a given stage. Unlike step events, this is NOT
  * deduped — every retry produces an event. Increments the attempt's
  * per-stage retry counter so later `trackOnboardingStep` calls on the
@@ -241,7 +225,7 @@ export function trackOnboardingRetry(
   reason: string,
   properties?: Record<string, unknown>,
 ): void {
-  const attempt = ensureAttempt();
+  const attempt = ensureAttempt(selfClient);
   attempt.retryCounts[stage] = (attempt.retryCounts[stage] ?? 0) + 1;
   selfClient.trackEvent(OnboardingEvents.STEP_RETRIED, {
     ...baseProperties(attempt),
@@ -258,16 +242,16 @@ export function trackOnboardingRetry(
  * `branch` in properties to update the attempt's current branch (and lock
  * in `initialBranch` on first non-'pending' value).
  *
- * If no attempt is active, this will bootstrap one — this handles cases
- * where a user enters the flow from a deep link and we never see the
- * Disclaimer.
+ * If no attempt is active, this bootstraps one via `ensureAttempt`, which
+ * also emits `Onboarding: Started` as the attempt's first event. This is
+ * how STARTED fires across all entry paths — there are no other callers.
  */
 export function trackOnboardingStep(
   selfClient: Pick<SelfClient, 'trackEvent'>,
   event: string,
   properties?: Record<string, unknown>,
 ): void {
-  const attempt = ensureAttempt();
+  const attempt = ensureAttempt(selfClient);
 
   if (properties && typeof properties.branch === 'string') {
     captureBranch(attempt, properties.branch as OnboardingBranch);

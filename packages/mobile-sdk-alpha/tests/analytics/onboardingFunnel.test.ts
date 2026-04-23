@@ -11,7 +11,6 @@ import {
   failOnboardingAttempt,
   resolveOnboardingBranch,
   setOnboardingBranch,
-  startOnboardingAttempt,
   trackOnboardingRetry,
   trackOnboardingStep,
 } from '../../src/analytics/onboardingFunnel';
@@ -43,35 +42,53 @@ describe('resolveOnboardingBranch', () => {
   });
 });
 
-describe('startOnboardingAttempt', () => {
-  it('emits STARTED with pending branches and a new attempt_id', () => {
+describe('bootstrap on first canonical step (STARTED emission)', () => {
+  it('fires Onboarding: Started as the first event when bootstrapping from trackOnboardingStep', () => {
     const client = makeClient();
-    startOnboardingAttempt(client);
-    expect(client.trackEvent).toHaveBeenCalledTimes(1);
-    const [name, props] = client.trackEvent.mock.calls[0];
-    expect(name).toBe(OnboardingEvents.STARTED);
-    expect(props.initial_branch).toBe('pending');
-    expect(props.current_branch).toBe('pending');
-    expect(props.attempt_id).toBeTruthy();
+    trackOnboardingStep(client, OnboardingEvents.COUNTRY_SELECTED, { country_code: 'FR' });
+
+    expect(client.trackEvent.mock.calls[0][0]).toBe(OnboardingEvents.STARTED);
+    expect(client.trackEvent.mock.calls[0][1].initial_branch).toBe('pending');
+    expect(client.trackEvent.mock.calls[0][1].current_branch).toBe('pending');
+    expect(client.trackEvent.mock.calls[0][1].attempt_id).toBeTruthy();
+    expect(client.trackEvent.mock.calls[1][0]).toBe(OnboardingEvents.COUNTRY_SELECTED);
   });
 
-  it('creates a fresh attempt on re-entry (abandons the prior one)', () => {
+  it('fires Onboarding: Started when bootstrapping from trackOnboardingRetry (e.g. deep-link into a retry screen)', () => {
     const client = makeClient();
-    startOnboardingAttempt(client);
-    const firstId = _getCurrentOnboardingAttempt()?.id;
+    trackOnboardingRetry(client, 'scan_started', 'nfc_scan_failed');
 
-    startOnboardingAttempt(client);
-    const secondId = _getCurrentOnboardingAttempt()?.id;
+    expect(client.trackEvent.mock.calls[0][0]).toBe(OnboardingEvents.STARTED);
+    expect(client.trackEvent.mock.calls[1][0]).toBe(OnboardingEvents.STEP_RETRIED);
+  });
 
-    expect(secondId).toBeTruthy();
-    expect(secondId).not.toBe(firstId);
+  it('does NOT re-fire STARTED on subsequent step events within the same attempt', () => {
+    const client = makeClient();
+    trackOnboardingStep(client, OnboardingEvents.COUNTRY_SELECTED, { country_code: 'FR' });
+    trackOnboardingStep(client, OnboardingEvents.DOCUMENT_TYPE_SELECTED, {
+      branch: 'biometric_passport',
+    });
+    trackOnboardingStep(client, OnboardingEvents.SCAN_STARTED, { branch: 'biometric_passport' });
+
+    const startedCalls = client.trackEvent.mock.calls.filter(([name]: string[]) => name === OnboardingEvents.STARTED);
+    expect(startedCalls).toHaveLength(1);
+  });
+
+  it('fires STARTED again for a new attempt after the previous one completed', () => {
+    const client = makeClient();
+    trackOnboardingStep(client, OnboardingEvents.COUNTRY_SELECTED, { country_code: 'FR' });
+    completeOnboardingAttempt(client);
+    trackOnboardingStep(client, OnboardingEvents.COUNTRY_SELECTED, { country_code: 'DE' });
+
+    const startedCalls = client.trackEvent.mock.calls.filter(([name]: string[]) => name === OnboardingEvents.STARTED);
+    expect(startedCalls).toHaveLength(2);
+    expect(startedCalls[0][1].attempt_id).not.toBe(startedCalls[1][1].attempt_id);
   });
 });
 
 describe('trackOnboardingStep', () => {
   it('dedupes repeated calls for the same event (handles back-nav)', () => {
     const client = makeClient();
-    startOnboardingAttempt(client);
     trackOnboardingStep(client, OnboardingEvents.COUNTRY_SELECTED, { country_code: 'FR' });
     trackOnboardingStep(client, OnboardingEvents.COUNTRY_SELECTED, { country_code: 'FR' });
 
@@ -81,9 +98,8 @@ describe('trackOnboardingStep', () => {
     expect(countryCalls).toHaveLength(1);
   });
 
-  it('allows multiple distinct step events per attempt', () => {
+  it('fires distinct step events in order (STARTED bootstraps first)', () => {
     const client = makeClient();
-    startOnboardingAttempt(client);
     trackOnboardingStep(client, OnboardingEvents.COUNTRY_SELECTED, { country_code: 'FR' });
     trackOnboardingStep(client, OnboardingEvents.DOCUMENT_TYPE_SELECTED, {
       branch: 'biometric_passport',
@@ -98,9 +114,8 @@ describe('trackOnboardingStep', () => {
 
   it('stamps attempt_id, initial_branch, current_branch on every step event', () => {
     const client = makeClient();
-    startOnboardingAttempt(client);
-    const attemptId = _getCurrentOnboardingAttempt()?.id;
     trackOnboardingStep(client, OnboardingEvents.COUNTRY_SELECTED, { country_code: 'FR' });
+    const attemptId = _getCurrentOnboardingAttempt()?.id;
 
     for (const call of client.trackEvent.mock.calls) {
       expect(call[1].attempt_id).toBe(attemptId);
@@ -111,7 +126,6 @@ describe('trackOnboardingStep', () => {
 
   it('locks initial_branch on first non-pending branch and mirrors current_branch', () => {
     const client = makeClient();
-    startOnboardingAttempt(client);
     trackOnboardingStep(client, OnboardingEvents.DOCUMENT_TYPE_SELECTED, {
       branch: 'biometric_passport',
     });
@@ -121,7 +135,6 @@ describe('trackOnboardingStep', () => {
 
   it('strips the caller-supplied `branch` sugar from emitted properties', () => {
     const client = makeClient();
-    startOnboardingAttempt(client);
     trackOnboardingStep(client, OnboardingEvents.DOCUMENT_TYPE_SELECTED, {
       branch: 'biometric_passport',
     });
@@ -132,18 +145,11 @@ describe('trackOnboardingStep', () => {
     expect(docTypeCall?.[1].initial_branch).toBe('biometric_passport');
     expect(docTypeCall?.[1].current_branch).toBe('biometric_passport');
   });
-
-  it('bootstraps an attempt if none is active (deep-link entry)', () => {
-    const client = makeClient();
-    trackOnboardingStep(client, OnboardingEvents.COUNTRY_SELECTED, { country_code: 'FR' });
-    expect(_getCurrentOnboardingAttempt()).not.toBeNull();
-  });
 });
 
 describe('setOnboardingBranch (fallback flow)', () => {
   it('changes current_branch but preserves initial_branch', () => {
     const client = makeClient();
-    startOnboardingAttempt(client);
     trackOnboardingStep(client, OnboardingEvents.DOCUMENT_TYPE_SELECTED, {
       branch: 'biometric_passport',
     });
@@ -155,7 +161,6 @@ describe('setOnboardingBranch (fallback flow)', () => {
 
   it('post-fallback step events carry initial=biometric, current=kyc', () => {
     const client = makeClient();
-    startOnboardingAttempt(client);
     trackOnboardingStep(client, OnboardingEvents.DOCUMENT_TYPE_SELECTED, {
       branch: 'biometric_passport',
     });
@@ -176,7 +181,7 @@ describe('setOnboardingBranch (fallback flow)', () => {
 describe('trackOnboardingRetry', () => {
   it('increments the retry count and fires an event each time', () => {
     const client = makeClient();
-    startOnboardingAttempt(client);
+    trackOnboardingStep(client, OnboardingEvents.COUNTRY_SELECTED, { country_code: 'FR' });
     trackOnboardingRetry(client, 'scan_started', 'nfc_scan_failed');
     trackOnboardingRetry(client, 'scan_started', 'nfc_scan_failed');
 
@@ -192,7 +197,6 @@ describe('trackOnboardingRetry', () => {
 describe('completeOnboardingAttempt', () => {
   it('fires COMPLETED with duration_seconds, used_fallback=false, and clears the attempt', () => {
     const client = makeClient();
-    startOnboardingAttempt(client);
     trackOnboardingStep(client, OnboardingEvents.DOCUMENT_TYPE_SELECTED, {
       branch: 'biometric_passport',
     });
@@ -209,7 +213,6 @@ describe('completeOnboardingAttempt', () => {
 
   it('fires COMPLETED with used_fallback=true when branches diverge', () => {
     const client = makeClient();
-    startOnboardingAttempt(client);
     trackOnboardingStep(client, OnboardingEvents.DOCUMENT_TYPE_SELECTED, {
       branch: 'biometric_passport',
     });
@@ -230,7 +233,7 @@ describe('completeOnboardingAttempt', () => {
 
   it('is a no-op if COMPLETED was already fired (idempotent)', () => {
     const client = makeClient();
-    startOnboardingAttempt(client);
+    trackOnboardingStep(client, OnboardingEvents.COUNTRY_SELECTED, { country_code: 'FR' });
     completeOnboardingAttempt(client);
     completeOnboardingAttempt(client);
 
@@ -244,7 +247,6 @@ describe('completeOnboardingAttempt', () => {
 describe('failOnboardingAttempt', () => {
   it('fires FAILED with stage/reason/used_fallback and clears the attempt', () => {
     const client = makeClient();
-    startOnboardingAttempt(client);
     trackOnboardingStep(client, OnboardingEvents.DOCUMENT_TYPE_SELECTED, {
       branch: 'biometric_passport',
     });

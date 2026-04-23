@@ -97,7 +97,6 @@ export {
   failOnboardingAttempt,
   resolveOnboardingBranch,
   setOnboardingBranch,
-  startOnboardingAttempt,
   trackOnboardingRetry,
   trackOnboardingStep,
 } from './analytics/onboardingFunnel';

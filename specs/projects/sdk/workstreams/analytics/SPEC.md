@@ -39,8 +39,10 @@ This workstream adopts a **three-layer event model**:
 
 - A canonical step event fires at most once per onboarding attempt, on a committed state transition — never on component mount, never on back-nav, never per-click.
 - Every canonical event carries `attempt_id`, `initial_branch`, and `current_branch` (see Cross-branch flows below).
+- **`Onboarding: Started` fires exactly once per attempt, emitted by the funnel helper's `ensureAttempt` bootstrap** when the first canonical step event arrives with no active attempt. Screens never call `startOnboardingAttempt` explicitly — the helper owns attempt lifecycle so entry-path proliferation (HomeNavBar "+", EmptyIdCard, ManageDocuments "Add new", KYC retry, recovery re-entry, etc.) can never cause zero or double STARTED events.
 - The terminal `onboarding_completed` event fires iff the proving machine reaches `completed` state **via a true new-registration proof** (not the `ALREADY_REGISTERED` shortcut, not a `disclose` proof). Disclosure proofs get their own `disclosure_completed` event that is outside this funnel entirely.
 - Screen-view (`Viewed X`) events are preserved as-is for Flows/Paths reports. They are not funnel steps.
+- `duration_seconds` on `onboarding_completed` measures time from the first canonical step (typically `country_selected`) to completion, not from privacy-disclaimer dismiss. The disclaimer is a one-time legal gate, not part of registration effort.
 
 ## Cross-branch Flows
 
