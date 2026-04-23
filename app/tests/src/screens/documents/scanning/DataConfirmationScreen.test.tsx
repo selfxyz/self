@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import * as mockReact from 'react';
-import { Text, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 
 import DataConfirmationScreen from '@/screens/documents/scanning/DataConfirmationScreen';
@@ -11,6 +11,7 @@ import * as analytics from '@/services/analytics';
 
 const mockView = View;
 const mockText = Text;
+const mockTouchableOpacity = TouchableOpacity;
 
 jest.mock('@/services/analytics', () => ({
   trackEvent: jest.fn(),
@@ -60,6 +61,35 @@ jest.mock('@/components/InputField', () => ({
   },
 }));
 
+jest.mock('@selfxyz/mobile-sdk-alpha/components', () => ({
+  PrimaryButton: ({
+    children,
+    onPress,
+  }: {
+    children: React.ReactNode;
+    onPress?: () => void;
+  }) =>
+    mockReact.createElement(
+      mockTouchableOpacity,
+      { onPress },
+      mockReact.createElement(mockText, null, children),
+    ),
+  SecondaryButton: ({
+    children,
+    onPress,
+    disabled,
+  }: {
+    children: React.ReactNode;
+    onPress?: () => void;
+    disabled?: boolean;
+  }) =>
+    mockReact.createElement(
+      mockTouchableOpacity,
+      { onPress, disabled },
+      mockReact.createElement(mockText, null, children),
+    ),
+}));
+
 jest.mock('@selfxyz/mobile-sdk-alpha/constants/analytics', () => ({
   PassportEvents: {
     DATA_CONFIRMATION_CONTINUE: 'Passport: Data Confirmation Continue',
@@ -75,12 +105,22 @@ jest.mock('@react-navigation/native', () => ({
   useNavigation: () => ({
     navigate: mockNavigate,
   }),
+  useRoute: () => ({
+    params: undefined,
+  }),
 }));
 
 jest.mock('@/hooks/useHapticNavigation', () =>
   jest.fn(() => mockNavigateToHome),
 );
 
+jest.mock('@/hooks/useKycLauncher', () => ({
+  useKycLauncher: () => ({
+    launchKycVerification: jest.fn(),
+    showKycFallbackModal: jest.fn(),
+    isLoading: false,
+  }),
+}));
 jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 44, bottom: 34, left: 0, right: 0 }),
 }));

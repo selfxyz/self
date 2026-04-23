@@ -73,7 +73,6 @@ const AadhaarUploadErrorScreen: React.FC = () => {
 
   const { launchKycVerification, isLoading: isRetrying } = useKycLauncher({
     countryCode: 'IND',
-    errorSource: 'mrz_scan_failed', // Use a compatible error source
     onCancel: () => {
       navigation.goBack();
     },

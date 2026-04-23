@@ -37,6 +37,7 @@ import Scan from '@/assets/icons/passport_camera_scan.svg';
 import { PassportCamera } from '@/components/native/PassportCamera';
 import { useErrorInjection } from '@/hooks/useErrorInjection';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
+import { useKycLauncher } from '@/hooks/useKycLauncher';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
 import { getDocumentScanPrompt } from '@/utils/documentAttributes';
@@ -51,6 +52,9 @@ const DocumentCameraScreen: React.FC = () => {
   );
   const countryCode = selfClient.useMRZStore(state => state.countryCode);
   const { shouldInjectError } = useErrorInjection();
+  const { showKycFallbackModal } = useKycLauncher({
+    countryCode: countryCode || '',
+  });
 
   // Add a ref to track when the camera screen is mounted
   const scanStartTimeRef = useRef(Date.now());
@@ -117,8 +121,8 @@ const DocumentCameraScreen: React.FC = () => {
     action: 'cancel',
   });
 
-  const onCancelPress = async () => {
-    navigateToHome();
+  const onCancelPress = () => {
+    showKycFallbackModal(() => navigateToHome());
   };
 
   return (

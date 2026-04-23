@@ -41,9 +41,9 @@ const DocumentOnboardingScreen: React.FC = () => {
     state => state.documentType,
   );
   const countryCode = selfClient.useMRZStore(state => state.countryCode);
-  const { launchKycVerification } = useKycLauncher({
+  const { launchKycVerification, showKycFallbackModal } = useKycLauncher({
     countryCode: countryCode ?? '',
-    errorSource: 'mrz_scan_failed',
+    cancelLabel: 'Go Back',
   });
   const handleCameraPress = useCallback(async () => {
     impactLight();
@@ -60,7 +60,7 @@ const DocumentOnboardingScreen: React.FC = () => {
 
   const onCancelPress = () => {
     impactLight();
-    navigation.goBack();
+    showKycFallbackModal(() => navigation.goBack());
   };
 
   // iOS: Delay initial animation start to ensure native Lottie module is initialized

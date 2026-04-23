@@ -96,7 +96,11 @@ export type DocumentRoutesParamList = {
         curveOrExponent?: string;
       }
     | undefined;
-  DataConfirmation: undefined;
+  DataConfirmation:
+    | {
+        fromNfcFailure?: boolean;
+      }
+    | undefined;
   DocumentNFCScan:
     | {
         passportNumber?: string;

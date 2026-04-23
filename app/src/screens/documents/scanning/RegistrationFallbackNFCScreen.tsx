@@ -70,7 +70,6 @@ const RegistrationFallbackNFCScreen: React.FC = () => {
 
   const { launchKycVerification, isLoading: isRetrying } = useKycLauncher({
     countryCode,
-    errorSource: 'nfc_scan_failed',
     onCancel: () => {
       navigation.goBack();
     },
@@ -213,7 +212,9 @@ const RegistrationFallbackNFCScreen: React.FC = () => {
           borderRadius={100}
           height={52}
           pressStyle={{ opacity: 0.8 }}
-          onPress={() => navigation.navigate('DataConfirmation')}
+          onPress={() =>
+            navigation.navigate('DataConfirmation', { fromNfcFailure: true })
+          }
         >
           <BodyText style={styles.buttonText}>Check scanned data</BodyText>
         </Button>
