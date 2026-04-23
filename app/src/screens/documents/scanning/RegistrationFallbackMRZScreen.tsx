@@ -68,7 +68,6 @@ const RegistrationFallbackMRZScreen: React.FC = () => {
 
   const { launchKycVerification, isLoading: isRetrying } = useKycLauncher({
     countryCode,
-    errorSource: 'mrz_scan_failed',
     onCancel: () => {
       navigation.goBack();
     },

@@ -3,6 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { makeApiRequest } from '@/services/points/api';
+import { POINTS_API_ROUTES } from '@/services/points/constants';
 
 type VerifyActionResponse = {
   job_id: string;
@@ -31,7 +32,7 @@ export const registerBackupPoints = async (
   };
 
   const response = await makeApiRequest<VerifyActionResponse>(
-    '/verify-action',
+    POINTS_API_ROUTES.verifyAction,
     {
       action: 'secret_backup',
       address: userAddress,
@@ -78,7 +79,7 @@ export const registerNotificationPoints = async (
   };
 
   const response = await makeApiRequest<VerifyActionResponse>(
-    '/verify-action',
+    POINTS_API_ROUTES.verifyAction,
     {
       action: 'push_notification',
       address: userAddress,
@@ -133,7 +134,7 @@ export const registerReferralPoints = async ({
 
   try {
     const response = await makeApiRequest<VerifyActionResponse>(
-      '/referrals/refer',
+      POINTS_API_ROUTES.referralsRefer,
       {
         referee: referee.toLowerCase(),
         referrer: referrer.toLowerCase(),

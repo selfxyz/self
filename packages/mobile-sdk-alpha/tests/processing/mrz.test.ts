@@ -5,7 +5,13 @@
 import { describe, expect, it } from 'vitest';
 
 import { MrzParseError } from '../../src/errors';
-import { extractMRZInfo, extractNameFromMRZ, formatDateToYYMMDD } from '../../src/processing/mrz';
+import {
+  extractMRZInfo,
+  extractNameFromMRZ,
+  formatDateToYYMMDD,
+  parseMRZBirthDate,
+  parseMRZExpiryDate,
+} from '../../src/processing/mrz';
 
 const sample = `P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<
 L898902C36UTO7408122F1204159ZE184226B<<<<<10`;
@@ -109,6 +115,85 @@ describe('formatDateToYYMMDD', () => {
 
   it('throws on invalid input', () => {
     expect(() => formatDateToYYMMDD('invalid')).toThrowError(MrzParseError);
+  });
+});
+
+describe('parseMRZBirthDate', () => {
+  it('parses a date in the 2000s (year <= 30)', () => {
+    const date = parseMRZBirthDate('260115');
+    expect(date.getFullYear()).toBe(2026);
+    expect(date.getMonth()).toBe(0);
+    expect(date.getDate()).toBe(15);
+  });
+
+  it('parses a date in the 1900s (year > 30)', () => {
+    const date = parseMRZBirthDate('880101');
+    expect(date.getFullYear()).toBe(1988);
+    expect(date.getMonth()).toBe(0);
+    expect(date.getDate()).toBe(1);
+  });
+
+  it('treats year 30 as boundary (2030)', () => {
+    const date = parseMRZBirthDate('300601');
+    expect(date.getFullYear()).toBe(2030);
+  });
+
+  it('treats year 31 as 1931', () => {
+    const date = parseMRZBirthDate('310601');
+    expect(date.getFullYear()).toBe(1931);
+  });
+
+  it('returns current date for invalid input (wrong length)', () => {
+    const before = new Date();
+    const result = parseMRZBirthDate('12345');
+    const after = new Date();
+    expect(result.getTime()).toBeGreaterThanOrEqual(before.getTime());
+    expect(result.getTime()).toBeLessThanOrEqual(after.getTime());
+  });
+
+  it('returns current date for empty string', () => {
+    const before = new Date();
+    const result = parseMRZBirthDate('');
+    const after = new Date();
+    expect(result.getTime()).toBeGreaterThanOrEqual(before.getTime());
+    expect(result.getTime()).toBeLessThanOrEqual(after.getTime());
+  });
+});
+
+describe('parseMRZExpiryDate', () => {
+  it('always interprets year as 2000s', () => {
+    const date = parseMRZExpiryDate('300601');
+    expect(date.getFullYear()).toBe(2030);
+    expect(date.getMonth()).toBe(5);
+    expect(date.getDate()).toBe(1);
+  });
+
+  it('interprets high year values as 2000s (not 1900s)', () => {
+    const date = parseMRZExpiryDate('990101');
+    expect(date.getFullYear()).toBe(2099);
+  });
+
+  it('parses December 31st correctly', () => {
+    const date = parseMRZExpiryDate('301231');
+    expect(date.getFullYear()).toBe(2030);
+    expect(date.getMonth()).toBe(11);
+    expect(date.getDate()).toBe(31);
+  });
+
+  it('returns current date for invalid input (wrong length)', () => {
+    const before = new Date();
+    const result = parseMRZExpiryDate('12345');
+    const after = new Date();
+    expect(result.getTime()).toBeGreaterThanOrEqual(before.getTime());
+    expect(result.getTime()).toBeLessThanOrEqual(after.getTime());
+  });
+
+  it('returns current date for empty string', () => {
+    const before = new Date();
+    const result = parseMRZExpiryDate('');
+    const after = new Date();
+    expect(result.getTime()).toBeGreaterThanOrEqual(before.getTime());
+    expect(result.getTime()).toBeLessThanOrEqual(after.getTime());
   });
 });
 
