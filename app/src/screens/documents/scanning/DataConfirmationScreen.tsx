@@ -17,6 +17,7 @@ import {
   SecondaryButton,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { advercase } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import { InputField } from '@/components/InputField';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
@@ -180,7 +181,7 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   instructionText: {
-    fontFamily: 'Advercase',
+    fontFamily: advercase,
     fontSize: 28,
     fontWeight: '400',
     color: colors.black,
