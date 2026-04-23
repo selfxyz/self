@@ -52,9 +52,11 @@ export type { HapticOptions, HapticType } from './haptic/shared';
 
 export type { MRZScanOptions } from './mrz';
 
-export type { PassportValidationCallbacks } from './validation/document';
+export type { OnboardingBranch, OnboardingFailureStage, OnboardingStage } from './analytics/onboardingFunnel';
 
+export type { PassportValidationCallbacks } from './validation/document';
 export type { ProvingStateType } from './proving/provingMachine';
+
 export type { RecoveryValidationResult } from './proving/recoveryValidation';
 
 export type { SDKEvent, SDKEventMap } from './types/events';
@@ -87,6 +89,17 @@ export { QRCodeScreen } from './components/screens/QRCodeScreen';
 export { SdkEvents } from './types/events';
 
 export { SelfClientContext, SelfClientProvider, useSelfClient } from './context';
+
+export {
+  _getCurrentOnboardingAttempt,
+  _resetOnboardingFunnelForTests,
+  completeOnboardingAttempt,
+  failOnboardingAttempt,
+  resolveOnboardingBranch,
+  setOnboardingBranch,
+  trackOnboardingRetry,
+  trackOnboardingStep,
+} from './analytics/onboardingFunnel';
 
 export { advercase, dinot, dinotBold, plexMono } from './constants/fonts';
 
@@ -148,16 +161,17 @@ export { extractNameFromMRZ, formatDateToYYMMDD, parseMRZBirthDate, parseMRZExpi
 export { finalizeRecoveredDocumentRegistration, validateRecoverySecretForDocument } from './proving/recoveryValidation';
 
 export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
+
 export { isPassportDataValid } from './validation/document';
 
 export { mergeConfig } from './config/merge';
 
 export { parseNFCResponse, scanNFC } from './nfc';
-
 export { reactNativeScannerAdapter } from './adapters/react-native/nfc-scanner';
-
 export { sanitizeErrorMessage } from './utils/utils';
+
 export { useCountries } from './documents/useCountries';
+
 export { useMRZStore } from './stores/mrzStore';
 
 export { webNFCScannerShim } from './adapters/web/shims';

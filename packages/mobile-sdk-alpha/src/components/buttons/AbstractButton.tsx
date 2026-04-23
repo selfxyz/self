@@ -14,6 +14,11 @@ export interface ButtonProps extends PressableProps {
   children: React.ReactNode;
   animatedComponent?: React.ReactNode;
   trackEvent?: string;
+  // Emit the event name verbatim (no "Click: " prefix, no category stripping).
+  // Used by canonical funnel events; `trackEvent` remains for the diagnostic
+  // layer so existing dashboards keep working.
+  trackEventRaw?: string;
+  trackEventProperties?: Record<string, unknown>;
   borderWidth?: number;
   borderColor?: string;
   fontSize?: number;
@@ -65,6 +70,8 @@ export default function AbstractButton({
   style,
   animatedComponent,
   trackEvent,
+  trackEventRaw,
+  trackEventProperties,
   onPress,
   ...props
 }: AbstractButtonProps) {
@@ -80,7 +87,9 @@ export default function AbstractButton({
   const hasBorder = borderColor != null;
 
   const handlePress = (e: GestureResponderEvent) => {
-    if (trackEvent) {
+    if (trackEventRaw) {
+      selfClient.trackEvent(trackEventRaw, trackEventProperties);
+    } else if (trackEvent) {
       // attempt to remove event category from click event
       const parsedEvent = trackEvent?.split(':')?.[1]?.trim();
       if (parsedEvent) {

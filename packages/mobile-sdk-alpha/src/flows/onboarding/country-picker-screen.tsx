@@ -7,8 +7,9 @@ import { useCallback, useState } from 'react';
 import { commonNames } from '@selfxyz/common/constants/countries';
 import { CountryPickerScreen as CountryPickerUI, type SafeArea } from '@selfxyz/euclid';
 
+import { trackOnboardingStep } from '../../analytics/onboardingFunnel';
 import { RoundFlag } from '../../components';
-import { DocumentEvents } from '../../constants/analytics';
+import { DocumentEvents, OnboardingEvents } from '../../constants/analytics';
 import { useSelfClient } from '../../context';
 import { useCountries } from '../../documents/useCountries';
 import { buttonTap } from '../../haptic';
@@ -32,6 +33,10 @@ const CountryPickerScreen: React.FC<SafeArea> & { statusBar: typeof CountryPicke
 
       if (documentTypes && documentTypes.length > 0) {
         const countryName = commonNames[countryCode as keyof typeof commonNames] || countryCode;
+
+        trackOnboardingStep(selfClient, OnboardingEvents.COUNTRY_SELECTED, {
+          country_code: countryCode,
+        });
 
         // Emit the country selection event
         selfClient.emit(SdkEvents.DOCUMENT_COUNTRY_SELECTED, {
