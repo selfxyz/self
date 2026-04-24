@@ -24,16 +24,16 @@ const SupportScreen: React.FC = () => {
   const { isEnabled, supportUuid, copy, regenerate, setEnabled } =
     useSupportUuid();
   const openSupportForm = useOpenSupportForm();
-  const diagnosticIdText = supportUuid ?? 'Loading diagnostic ID...';
+  const supportIdText = supportUuid ?? 'Loading support ID...';
 
   const handleCopy = useCallback(() => {
     copy();
-    Alert.alert('Copied', 'Diagnostic ID copied to clipboard.');
+    Alert.alert('Copied', 'Support ID copied to clipboard.');
   }, [copy]);
 
   const handleRegenerate = useCallback(() => {
     Alert.alert(
-      'Regenerate diagnostic ID?',
+      'Regenerate support ID?',
       "Use this if you've shared your ID publicly or want a fresh one for a new issue. Future support requests will use the new ID.",
       [
         { text: 'Cancel', style: 'cancel' },
@@ -42,7 +42,7 @@ const SupportScreen: React.FC = () => {
           style: 'destructive',
           onPress: () => {
             regenerate();
-            Alert.alert('Updated', 'Your diagnostic ID has been replaced.');
+            Alert.alert('Updated', 'Your support ID has been replaced.');
           },
         },
       ],
@@ -69,19 +69,18 @@ const SupportScreen: React.FC = () => {
 
         <YStack gap={8}>
           <BodyText style={{ color: slate500, fontSize: 13 }}>
-            A diagnostic ID helps our team find the activity related to your
-            report. It's not tied to your identity.
+            Only turn this on if a Self support agent asks for it. A support ID
+            helps our team find the activity related to your report. It's not
+            tied to your identity.
           </BodyText>
 
           <View style={styles.settingRow}>
             <View style={styles.settingTextContainer}>
-              <BodyText style={styles.settingLabel}>
-                Share diagnostic ID
-              </BodyText>
+              <BodyText style={styles.settingLabel}>Share support ID</BodyText>
               <BodyText style={styles.settingDescription}>
                 {isEnabled
-                  ? 'Share the diagnostic ID below with support so we can find the activity related to your report. Turn this off to keep it out of support requests and error screens.'
-                  : 'Diagnostic ID is off. Turn it on to include it in future support requests.'}
+                  ? 'Share the support ID below with support so we can find the activity related to your report. Turn this off to keep it out of support requests and error screens.'
+                  : 'Support ID is off. Only turn it on if a Self support agent asks for it.'}
               </BodyText>
             </View>
             <Switch
@@ -104,10 +103,10 @@ const SupportScreen: React.FC = () => {
                 gap={8}
               >
                 <BodyText style={{ color: black, fontSize: 16 }}>
-                  Diagnostic ID
+                  Support ID
                 </BodyText>
                 <BodyText style={{ color: slate500, fontSize: 14 }}>
-                  {diagnosticIdText}
+                  {supportIdText}
                 </BodyText>
               </YStack>
 
@@ -118,7 +117,7 @@ const SupportScreen: React.FC = () => {
                 borderRadius={12}
                 onPress={handleCopy}
               >
-                <BodyText style={{ color: black }}>Copy diagnostic ID</BodyText>
+                <BodyText style={{ color: black }}>Copy support ID</BodyText>
               </Button>
 
               <Button

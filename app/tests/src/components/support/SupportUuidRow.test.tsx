@@ -50,6 +50,6 @@ describe('SupportUuidRow', () => {
 
     const { toJSON } = render(<SupportUuidRow />);
 
-    expect(JSON.stringify(toJSON())).toContain('Show diagnostic ID');
+    expect(JSON.stringify(toJSON())).toContain('Show support ID');
   });
 });
