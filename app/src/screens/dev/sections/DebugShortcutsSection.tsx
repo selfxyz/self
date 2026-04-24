@@ -22,6 +22,35 @@ interface DebugShortcutsSectionProps {
   navigation: NativeStackNavigationProp<RootStackParamList>;
 }
 
+interface ShortcutRowProps {
+  label: string;
+  onPress: () => void;
+}
+
+const ShortcutRow: React.FC<ShortcutRowProps> = ({ label, onPress }) => (
+  <Button
+    style={{ backgroundColor: 'white' }}
+    borderColor={slate200}
+    borderRadius="$2"
+    height="$5"
+    padding={0}
+    onPress={onPress}
+  >
+    <XStack
+      width="100%"
+      justifyContent="space-between"
+      paddingVertical="$3"
+      paddingLeft="$4"
+      paddingRight="$1.5"
+    >
+      <Text fontSize="$5" color={slate500} fontFamily={dinot}>
+        {label}
+      </Text>
+      <ChevronRight color={slate500} strokeWidth={2.5} />
+    </XStack>
+  </Button>
+);
+
 export const DebugShortcutsSection: React.FC<DebugShortcutsSectionProps> = ({
   navigation,
 }) => {
@@ -53,101 +82,21 @@ export const DebugShortcutsSection: React.FC<DebugShortcutsSectionProps> = ({
       description="Jump directly to any screen for testing"
     >
       <YStack gap="$2">
-        <Button
-          style={{ backgroundColor: 'white' }}
-          borderColor={slate200}
-          borderRadius="$2"
-          height="$5"
-          padding={0}
-          onPress={() => {
-            navigation.navigate('DevPrivateKey');
-          }}
-        >
-          <XStack
-            width="100%"
-            justifyContent="space-between"
-            paddingVertical="$3"
-            paddingLeft="$4"
-            paddingRight="$1.5"
-          >
-            <Text fontSize="$5" color={slate500} fontFamily={dinot}>
-              View Private Key
-            </Text>
-            <ChevronRight color={slate500} strokeWidth={2.5} />
-          </XStack>
-        </Button>
-        <Button
-          style={{ backgroundColor: 'white' }}
-          borderColor={slate200}
-          borderRadius="$2"
-          height="$5"
-          padding={0}
-          onPress={() => {
-            navigation.navigate('SocialLoginDemo');
-          }}
-        >
-          <XStack
-            width="100%"
-            justifyContent="space-between"
-            paddingVertical="$3"
-            paddingLeft="$4"
-            paddingRight="$1.5"
-          >
-            <Text fontSize="$5" color={slate500} fontFamily={dinot}>
-              Social Login Demo
-            </Text>
-            <ChevronRight color={slate500} strokeWidth={2.5} />
-          </XStack>
-        </Button>
-        {IS_DEV_MODE && (
-          <Button
-            style={{ backgroundColor: 'white' }}
-            borderColor={slate200}
-            borderRadius="$2"
-            height="$5"
-            padding={0}
-            onPress={() => {
-              navigation.navigate('Home', { testReferralFlow: true });
-            }}
-          >
-            <XStack
-              width="100%"
-              justifyContent="space-between"
-              paddingVertical="$3"
-              paddingLeft="$4"
-              paddingRight="$1.5"
-            >
-              <Text fontSize="$5" color={slate500} fontFamily={dinot}>
-                Test Referral Flow
-              </Text>
-              <ChevronRight color={slate500} strokeWidth={2.5} />
-            </XStack>
-          </Button>
-        )}
-        {IS_DEV_MODE && (
-          <Button
-            style={{ backgroundColor: 'white' }}
-            borderColor={slate200}
-            borderRadius="$2"
-            height="$5"
-            padding={0}
-            onPress={handleStartTestRegistrationCircuit}
-          >
-            <XStack
-              width="100%"
-              justifyContent="space-between"
-              paddingVertical="$3"
-              paddingLeft="$4"
-              paddingRight="$1.5"
-            >
-              <Text fontSize="$5" color={slate500} fontFamily={dinot}>
-                Test Registration Circuit
-              </Text>
-              <ChevronRight color={slate500} strokeWidth={2.5} />
-            </XStack>
-          </Button>
-        )}
         <ScreenSelector />
+        {IS_DEV_MODE && (
+          <ShortcutRow
+            label="Test Referral Flow"
+            onPress={() =>
+              navigation.navigate('Home', { testReferralFlow: true })
+            }
+          />
+        )}
+        {IS_DEV_MODE && (
+          <ShortcutRow
+            label="Test Registration Circuit"
+            onPress={handleStartTestRegistrationCircuit}
+          />
+        )}
       </YStack>
     </ParameterSection>
   );
