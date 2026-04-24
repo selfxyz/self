@@ -5,7 +5,11 @@
 import { Alert } from 'react-native';
 
 import { unsafe_clearSecrets } from '@/providers/authProvider';
-import { usePassport } from '@/providers/passportDataProvider';
+import {
+  loadDocumentCatalogDirectlyFromKeychain,
+  saveDocumentCatalogDirectlyToKeychain,
+  usePassport,
+} from '@/providers/passportDataProvider';
 import { usePendingKycStore } from '@/stores/pendingKycStore';
 import { usePointEventStore } from '@/stores/pointEventStore';
 import { useSettingStore } from '@/stores/settingStore';
@@ -217,6 +221,58 @@ export const useDangerZoneActions = () => {
     );
   };
 
+  const handleRemoveExpirationDateFlagPress = () => {
+    Alert.alert(
+      'Remove Expiration Date Flag',
+      'Are you sure you want to remove the expiration date flag for the current (selected) document?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Remove',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const catalog = await loadDocumentCatalogDirectlyFromKeychain();
+              const selectedDocumentId = catalog.selectedDocumentId;
+              const selectedDocument = catalog.documents.find(
+                document => document.id === selectedDocumentId,
+              );
+
+              if (!selectedDocument) {
+                Alert.alert(
+                  'No Document Selected',
+                  'Please select a document before removing the expiration date flag.',
+                  [{ text: 'OK' }],
+                );
+                return;
+              }
+
+              delete selectedDocument.hasExpirationDate;
+
+              await saveDocumentCatalogDirectlyToKeychain(catalog);
+
+              Alert.alert(
+                'Success',
+                'Expiration date flag removed successfully.',
+                [{ text: 'OK' }],
+              );
+            } catch (error) {
+              console.error(
+                'Failed to remove expiration date flag:',
+                error instanceof Error ? error.message : String(error),
+              );
+              Alert.alert(
+                'Error',
+                'Failed to remove expiration date flag. Please try again.',
+                [{ text: 'OK' }],
+              );
+            }
+          },
+        },
+      ],
+    );
+  };
+
   return {
     handleClearSecretsPress,
     handleClearDocumentCatalogPress,
@@ -224,5 +280,6 @@ export const useDangerZoneActions = () => {
     handleResetBackupStatePress,
     handleClearBackupEventsPress,
     handleClearPendingVerificationsPress,
+    handleRemoveExpirationDateFlagPress,
   };
 };

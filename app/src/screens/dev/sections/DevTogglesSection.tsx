@@ -43,6 +43,8 @@ export const DevTogglesSection: React.FC<DevTogglesSectionProps> = ({
       icon={<BugIcon />}
       title="Options"
       description="Development and security options"
+      collapsible
+      defaultCollapsed
     >
       <TopicToggleButton
         label="Use StrongBox"

@@ -5,6 +5,7 @@
 import LottieView from 'lottie-react-native';
 import React, { useCallback, useEffect, useRef } from 'react';
 import { StyleSheet } from 'react-native';
+import { Text, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
@@ -20,15 +21,14 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import {
-  black,
   amber50,
   amber200,
   amber700,
+  black,
   slate100,
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
-import { Text, YStack } from 'tamagui';
 
 import passportOnboardingAnimation from '@/assets/animations/passport_onboarding.json';
 import { useKycLauncher } from '@/hooks/useKycLauncher';

@@ -23,6 +23,8 @@ export const PushNotificationsSection: React.FC<
       icon={<BugIcon />}
       title="Push Notifications"
       description="Manage topic subscriptions"
+      collapsible
+      defaultCollapsed
     >
       <YStack gap="$2">
         <TopicToggleButton
