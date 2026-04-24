@@ -5,6 +5,7 @@
 import {
   migrateSettingStore,
   SETTING_STORE_VERSION,
+  useSettingStore,
 } from '@/stores/settingStore';
 
 describe('migrateSettingStore', () => {
@@ -52,5 +53,38 @@ describe('migrateSettingStore', () => {
 
     expect(migrated.supportUuidEnabled).toBe(false);
     expect(migrated.supportUuid).toBeNull();
+  });
+});
+
+describe('useSettingStore test registration circuit flag', () => {
+  afterEach(() => {
+    useSettingStore.setState(useSettingStore.getInitialState(), true);
+  });
+
+  it('arms once and clears on first consume', () => {
+    expect(useSettingStore.getState().testRegistrationCircuitArmed).toBe(false);
+
+    useSettingStore.getState().armTestRegistrationCircuit();
+
+    expect(useSettingStore.getState().testRegistrationCircuitArmed).toBe(true);
+    expect(useSettingStore.getState().consumeTestRegistrationCircuit()).toBe(
+      true,
+    );
+    expect(useSettingStore.getState().testRegistrationCircuitArmed).toBe(false);
+    expect(useSettingStore.getState().consumeTestRegistrationCircuit()).toBe(
+      false,
+    );
+  });
+
+  it('excludes the test registration circuit flag from persisted state', () => {
+    useSettingStore.getState().armTestRegistrationCircuit();
+
+    const partialize = useSettingStore.persist.getOptions().partialize;
+    const persistedState = partialize?.(useSettingStore.getState());
+
+    expect(persistedState).toBeDefined();
+    expect(persistedState).not.toHaveProperty('testRegistrationCircuitArmed');
+    expect(persistedState).not.toHaveProperty('armTestRegistrationCircuit');
+    expect(persistedState).not.toHaveProperty('consumeTestRegistrationCircuit');
   });
 });

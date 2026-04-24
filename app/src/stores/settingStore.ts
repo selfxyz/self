@@ -52,6 +52,12 @@ interface PersistedSettingsState {
 interface NonPersistedSettingsState {
   hideNetworkModal: boolean;
   setHideNetworkModal: (hideNetworkModal: boolean) => void;
+  // Dev-only one-shot flag, armed by the "Test registration circuit" debug
+  // shortcut and consumed (cleared) by the proving machine on the next
+  // registration attempt. Not persisted so it never survives an app launch.
+  testRegistrationCircuitArmed: boolean;
+  armTestRegistrationCircuit: () => void;
+  consumeTestRegistrationCircuit: () => boolean;
 }
 
 type SettingsState = PersistedSettingsState & NonPersistedSettingsState;
@@ -78,7 +84,7 @@ export const migrateSettingStore = (
  */
 export const useSettingStore = create<SettingsState>()(
   persist(
-    (set, _get) => ({
+    (set, get) => ({
       // Persisted state
       hasPrivacyNoteBeenDismissed: false,
       dismissPrivacyNote: () => set({ hasPrivacyNoteBeenDismissed: true }),
@@ -180,6 +186,17 @@ export const useSettingStore = create<SettingsState>()(
       setHideNetworkModal: (hideNetworkModal: boolean) => {
         set({ hideNetworkModal });
       },
+
+      testRegistrationCircuitArmed: false,
+      armTestRegistrationCircuit: () =>
+        set({ testRegistrationCircuitArmed: true }),
+      consumeTestRegistrationCircuit: () => {
+        const armed = get().testRegistrationCircuitArmed;
+        if (armed) {
+          set({ testRegistrationCircuitArmed: false });
+        }
+        return armed;
+      },
     }),
     {
       name: 'setting-storage',
@@ -189,6 +206,12 @@ export const useSettingStore = create<SettingsState>()(
         const persistedState = { ...state };
         delete (persistedState as Partial<SettingsState>).hideNetworkModal;
         delete (persistedState as Partial<SettingsState>).setHideNetworkModal;
+        delete (persistedState as Partial<SettingsState>)
+          .testRegistrationCircuitArmed;
+        delete (persistedState as Partial<SettingsState>)
+          .armTestRegistrationCircuit;
+        delete (persistedState as Partial<SettingsState>)
+          .consumeTestRegistrationCircuit;
         return persistedState;
       },
       version: SETTING_STORE_VERSION,

@@ -3,6 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
+import { Alert } from 'react-native';
 import { Button, Text, XStack, YStack } from 'tamagui';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ChevronRight } from '@tamagui/lucide-icons';
@@ -14,6 +15,7 @@ import BugIcon from '@/assets/icons/bug_icon.svg';
 import type { RootStackParamList } from '@/navigation';
 import { ParameterSection } from '@/screens/dev/components/ParameterSection';
 import { ScreenSelector } from '@/screens/dev/components/ScreenSelector';
+import { useSettingStore } from '@/stores/settingStore';
 import { IS_DEV_MODE } from '@/utils/devUtils';
 
 interface DebugShortcutsSectionProps {
@@ -23,6 +25,27 @@ interface DebugShortcutsSectionProps {
 export const DebugShortcutsSection: React.FC<DebugShortcutsSectionProps> = ({
   navigation,
 }) => {
+  const armTestRegistrationCircuit = useSettingStore(
+    state => state.armTestRegistrationCircuit,
+  );
+
+  const handleStartTestRegistrationCircuit = () => {
+    Alert.alert(
+      'Test Registration Circuit',
+      'The next document scan will skip the on-chain "already registered / nullified" checks and force the register circuit to run. The relayer will still reject duplicate registrations. Dev only.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Start',
+          onPress: () => {
+            armTestRegistrationCircuit();
+            navigation.navigate('DocumentOnboarding');
+          },
+        },
+      ],
+    );
+  };
+
   return (
     <ParameterSection
       icon={<BugIcon />}
@@ -96,6 +119,29 @@ export const DebugShortcutsSection: React.FC<DebugShortcutsSectionProps> = ({
             >
               <Text fontSize="$5" color={slate500} fontFamily={dinot}>
                 Test Referral Flow
+              </Text>
+              <ChevronRight color={slate500} strokeWidth={2.5} />
+            </XStack>
+          </Button>
+        )}
+        {IS_DEV_MODE && (
+          <Button
+            style={{ backgroundColor: 'white' }}
+            borderColor={slate200}
+            borderRadius="$2"
+            height="$5"
+            padding={0}
+            onPress={handleStartTestRegistrationCircuit}
+          >
+            <XStack
+              width="100%"
+              justifyContent="space-between"
+              paddingVertical="$3"
+              paddingLeft="$4"
+              paddingRight="$1.5"
+            >
+              <Text fontSize="$5" color={slate500} fontFamily={dinot}>
+                Test Registration Circuit
               </Text>
               <ChevronRight color={slate500} strokeWidth={2.5} />
             </XStack>
