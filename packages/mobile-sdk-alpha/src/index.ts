@@ -90,17 +90,6 @@ export { SdkEvents } from './types/events';
 
 export { SelfClientContext, SelfClientProvider, useSelfClient } from './context';
 
-export {
-  _getCurrentOnboardingAttempt,
-  _resetOnboardingFunnelForTests,
-  completeOnboardingAttempt,
-  failOnboardingAttempt,
-  resolveOnboardingBranch,
-  setOnboardingBranch,
-  trackOnboardingRetry,
-  trackOnboardingStep,
-} from './analytics/onboardingFunnel';
-
 export { advercase, dinot, dinotBold, plexMono } from './constants/fonts';
 
 export {
@@ -136,6 +125,15 @@ export {
   reStorePassportDataWithRightCSCA,
   storePassportData,
 } from './documents/utils';
+
+export {
+  completeOnboardingAttempt,
+  failOnboardingAttempt,
+  resolveOnboardingBranch,
+  setOnboardingBranch,
+  trackOnboardingRetry,
+  trackOnboardingStep,
+} from './analytics/onboardingFunnel';
 
 export { createAuthAdapter } from './adapters/react-native/auth';
 
