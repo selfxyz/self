@@ -60,6 +60,23 @@ interface NonPersistedSettingsState {
 
 type SettingsState = PersistedSettingsState & NonPersistedSettingsState;
 
+export const SETTING_STORE_VERSION = 1;
+
+// v1: force support ID sharing off for all existing users. It is opt-in
+// from here on — users can re-enable it in settings when a support agent
+// asks for it.
+export const migrateSettingStore = (
+  persistedState: unknown,
+  version: number,
+): SettingsState => {
+  const state = (persistedState ?? {}) as Partial<SettingsState>;
+  if (version < 1) {
+    state.supportUuidEnabled = false;
+    state.supportUuid = null;
+  }
+  return state as SettingsState;
+};
+
 /*
  * This store is used to store the settings of the app. Dont store anything sensative here
  */
@@ -151,7 +168,7 @@ export const useSettingStore = create<SettingsState>()(
       setPointsAddress: (address: string | null) =>
         set({ pointsAddress: address }),
 
-      supportUuidEnabled: true,
+      supportUuidEnabled: false,
       setSupportUuidEnabled: (supportUuidEnabled: boolean) =>
         set({ supportUuidEnabled }),
       supportUuid: null,
@@ -182,6 +199,8 @@ export const useSettingStore = create<SettingsState>()(
         delete (persistedState as Partial<SettingsState>).setHideNetworkModal;
         return persistedState;
       },
+      version: SETTING_STORE_VERSION,
+      migrate: migrateSettingStore,
     },
   ),
 );
