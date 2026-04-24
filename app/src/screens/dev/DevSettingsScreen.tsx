@@ -41,6 +41,12 @@ const DevSettingsScreen: React.FC = () => {
   const setLoggingSeverity = useSettingStore(state => state.setLoggingSeverity);
   const useStrongBox = useSettingStore(state => state.useStrongBox);
   const setUseStrongBox = useSettingStore(state => state.setUseStrongBox);
+  const enableRecoveryCircuitTestFlow = useSettingStore(
+    state => state.enableRecoveryCircuitTestFlow,
+  );
+  const setEnableRecoveryCircuitTestFlow = useSettingStore(
+    state => state.setEnableRecoveryCircuitTestFlow,
+  );
 
   // Custom hooks
   const { hasNotificationPermission, subscribedTopics, handleTopicToggle } =
@@ -121,6 +127,10 @@ const DevSettingsScreen: React.FC = () => {
 
           {IS_DEV_MODE && (
             <DevTogglesSection
+              enableRecoveryCircuitTestFlow={enableRecoveryCircuitTestFlow}
+              setEnableRecoveryCircuitTestFlow={
+                setEnableRecoveryCircuitTestFlow
+              }
               useStrongBox={useStrongBox}
               setUseStrongBox={setUseStrongBox}
             />

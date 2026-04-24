@@ -5,44 +5,23 @@
 import React from 'react';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
-import RecoverWithPhraseScreen from '@/screens/account/recovery/RecoverWithPhraseScreen';
+import AccountRecoveryChoiceScreen from '@/screens/account/recovery/AccountRecoveryChoiceScreen';
 
 declare global {
   namespace JSX {
     interface IntrinsicElements {
       'mock-view': any;
       'mock-text': any;
-      'mock-textarea': any;
       'mock-stack': any;
-      'mock-pressable': any;
-      'mock-paste-icon': any;
       'mock-button': any;
+      'mock-icon': any;
     }
   }
 }
 
-jest.mock('react-native', () => ({
-  __esModule: true,
-  Keyboard: {
-    dismiss: jest.fn(),
-  },
-  Pressable: ({ children, ...props }: any) => (
-    <mock-pressable {...props}>{children}</mock-pressable>
-  ),
-  StyleSheet: {
-    create: (styles: unknown) => styles,
-    flatten: (style: unknown) => style,
-  },
-}));
-
 jest.mock('tamagui', () => ({
   __esModule: true,
-  Text: ({ children, ...props }: any) => (
-    <mock-text {...props}>{children}</mock-text>
-  ),
-  TextArea: ({ children, ...props }: any) => (
-    <mock-textarea {...props}>{children}</mock-textarea>
-  ),
+  Separator: (props: any) => <mock-view {...props} />,
   View: ({ children, ...props }: any) => (
     <mock-view {...props}>{children}</mock-view>
   ),
@@ -58,21 +37,6 @@ jest.mock('@react-navigation/native', () => ({
   useNavigation: jest.fn(),
 }));
 
-jest.mock('@react-native-clipboard/clipboard', () => ({
-  __esModule: true,
-  default: {
-    getString: jest.fn(),
-  },
-}));
-
-jest.mock('ethers', () => ({
-  ethers: {
-    Mnemonic: {
-      isValidMnemonic: jest.fn(() => true),
-    },
-  },
-}));
-
 jest.mock('@selfxyz/common/utils/passports/validate', () => ({
   isUserRegisteredWithAlternativeCSCA: jest.fn(),
 }));
@@ -83,39 +47,79 @@ jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
 }));
 
 jest.mock('@selfxyz/mobile-sdk-alpha/components', () => ({
+  Caption: ({ children, ...props }: any) => (
+    <mock-text {...props}>{children}</mock-text>
+  ),
   Description: ({ children, ...props }: any) => (
     <mock-text {...props}>{children}</mock-text>
+  ),
+  PrimaryButton: ({ children, onPress, disabled, testID, ...props }: any) => (
+    <mock-button
+      onPress={onPress}
+      disabled={disabled}
+      testID={testID}
+      {...props}
+    >
+      {children}
+    </mock-button>
   ),
   SecondaryButton: ({ children, onPress, disabled, ...props }: any) => (
     <mock-button onPress={onPress} disabled={disabled} {...props}>
       {children}
     </mock-button>
   ),
+  Title: ({ children, ...props }: any) => (
+    <mock-text {...props}>{children}</mock-text>
+  ),
 }));
 
 jest.mock('@selfxyz/mobile-sdk-alpha/constants/analytics', () => ({
   BackupEvents: {
+    CLOUD_BACKUP_STARTED: 'CLOUD_BACKUP_STARTED',
     CLOUD_RESTORE_FAILED_UNKNOWN: 'CLOUD_RESTORE_FAILED_UNKNOWN',
-    CLOUD_RESTORE_FAILED_AUTH: 'CLOUD_RESTORE_FAILED_AUTH',
     CLOUD_RESTORE_FAILED_PASSPORT_NOT_REGISTERED:
       'CLOUD_RESTORE_FAILED_PASSPORT_NOT_REGISTERED',
+    CLOUD_RESTORE_SUCCESS: 'CLOUD_RESTORE_SUCCESS',
     ACCOUNT_RECOVERY_COMPLETED: 'ACCOUNT_RECOVERY_COMPLETED',
+    MANUAL_RECOVERY_SELECTED: 'MANUAL_RECOVERY_SELECTED',
   },
 }));
 
 jest.mock('@selfxyz/mobile-sdk-alpha/constants/colors', () => ({
   black: '#000',
-  red500: '#f00',
-  slate300: '#333',
-  slate400: '#444',
+  slate500: '#555',
   slate600: '#666',
-  slate700: '#777',
   white: '#fff',
 }));
 
-jest.mock('@/assets/icons/paste.svg', () => ({
+jest.mock('@/assets/icons/keyboard.svg', () => ({
   __esModule: true,
-  default: (props: any) => <mock-paste-icon {...props} />,
+  default: (props: any) => <mock-icon {...props} />,
+}));
+
+jest.mock('@/assets/icons/restore_account.svg', () => ({
+  __esModule: true,
+  default: (props: any) => <mock-icon {...props} />,
+}));
+
+jest.mock('@/hooks/useHapticNavigation', () => jest.fn(() => jest.fn()));
+
+jest.mock('@/integrations/haptics', () => ({
+  impactLight: jest.fn(),
+}));
+
+jest.mock('@/layouts/ExpandableBottomLayout', () => ({
+  ExpandableBottomLayout: {
+    Layout: ({ children, ...props }: any) => (
+      <mock-view {...props}>{children}</mock-view>
+    ),
+    TopSection: ({ children, ...props }: any) => (
+      <mock-view {...props}>{children}</mock-view>
+    ),
+    BottomSection: ({ children, ...props }: any) => (
+      <mock-view {...props}>{children}</mock-view>
+    ),
+  },
 }));
 
 jest.mock('@/providers/authProvider', () => ({
@@ -128,39 +132,49 @@ jest.mock('@/providers/passportDataProvider', () => ({
   reStorePassportDataWithRightCSCA: jest.fn(),
 }));
 
-jest.mock('@/stores/settingStore', () => ({
-  useSettingStore: jest.fn(),
-}));
-
 jest.mock('@/screens/account/recovery/recoveryCopy', () => ({
   recoveryCopy: {
-    phrase: {
-      instructions: 'Recovery instructions',
-      placeholder: 'Enter or paste your recovery phrase',
-      paste: 'PASTE',
-      submit: 'Continue',
+    choice: {
+      title: 'Recover account',
+      description: 'Choose a recovery method',
+      noBiometrics: 'Biometrics unavailable',
+      actions: {
+        cloud: (restoring: boolean) =>
+          restoring ? 'Restoring from cloud' : 'Restore from cloud',
+        or: 'or',
+        phrase: 'Enter recovery phrase',
+      },
     },
   },
 }));
 
+jest.mock('@/services/cloud-backup', () => ({
+  useBackupMnemonic: jest.fn(),
+}));
+
+jest.mock('@/stores/settingStore', () => ({
+  useSettingStore: jest.fn(),
+}));
+
 const { useNavigation } = jest.requireMock('@react-navigation/native') as {
   useNavigation: jest.Mock;
-};
-const { useSelfClient } = jest.requireMock('@selfxyz/mobile-sdk-alpha') as {
-  useSelfClient: jest.Mock;
-};
-const { useAuth } = jest.requireMock('@/providers/authProvider') as {
-  useAuth: jest.Mock;
 };
 const { isUserRegisteredWithAlternativeCSCA } = jest.requireMock(
   '@selfxyz/common/utils/passports/validate',
 ) as {
   isUserRegisteredWithAlternativeCSCA: jest.Mock;
 };
-const { markCurrentDocumentAsRegistered } = jest.requireMock(
+const { markCurrentDocumentAsRegistered, useSelfClient } = jest.requireMock(
   '@selfxyz/mobile-sdk-alpha',
 ) as {
   markCurrentDocumentAsRegistered: jest.Mock;
+  useSelfClient: jest.Mock;
+};
+const { useAuth, getPrivateKeyFromMnemonic } = jest.requireMock(
+  '@/providers/authProvider',
+) as {
+  useAuth: jest.Mock;
+  getPrivateKeyFromMnemonic: jest.Mock;
 };
 const { loadPassportData, reStorePassportDataWithRightCSCA } = jest.requireMock(
   '@/providers/passportDataProvider',
@@ -168,19 +182,19 @@ const { loadPassportData, reStorePassportDataWithRightCSCA } = jest.requireMock(
   loadPassportData: jest.Mock;
   reStorePassportDataWithRightCSCA: jest.Mock;
 };
-const { getPrivateKeyFromMnemonic } = jest.requireMock(
-  '@/providers/authProvider',
-) as {
-  getPrivateKeyFromMnemonic: jest.Mock;
+const { useBackupMnemonic } = jest.requireMock('@/services/cloud-backup') as {
+  useBackupMnemonic: jest.Mock;
 };
 const { useSettingStore } = jest.requireMock('@/stores/settingStore') as {
   useSettingStore: jest.Mock;
 };
 
-describe('RecoverWithPhraseScreen', () => {
+describe('AccountRecoveryChoiceScreen', () => {
   const mockNavigate = jest.fn();
   const mockTrackEvent = jest.fn();
   const mockRestoreAccountFromMnemonic = jest.fn();
+  const mockDownload = jest.fn();
+  const mockToggleCloudBackupEnabled = jest.fn();
   let enableRecoveryCircuitTestFlow = false;
 
   beforeEach(() => {
@@ -210,15 +224,23 @@ describe('RecoverWithPhraseScreen', () => {
       restoreAccountFromMnemonic: mockRestoreAccountFromMnemonic,
     });
 
+    useBackupMnemonic.mockReturnValue({
+      download: mockDownload,
+    });
+
     useSettingStore.mockImplementation((selector: any) => {
       const state = {
+        biometricsAvailable: true,
+        cloudBackupEnabled: false,
         enableRecoveryCircuitTestFlow,
+        toggleCloudBackupEnabled: mockToggleCloudBackupEnabled,
       };
       return selector ? selector(state) : state;
     });
   });
 
-  async function completeSuccessfulRecovery() {
+  async function completeSuccessfulCloudRecovery() {
+    mockDownload.mockResolvedValue({ phrase: 'seed phrase' });
     mockRestoreAccountFromMnemonic.mockResolvedValue(true);
     loadPassportData.mockResolvedValue(JSON.stringify({ document: 'data' }));
     getPrivateKeyFromMnemonic.mockReturnValue('private-key');
@@ -227,13 +249,9 @@ describe('RecoverWithPhraseScreen', () => {
       csca: 'csca-cert',
     });
 
-    const { UNSAFE_getByType } = render(<RecoverWithPhraseScreen />);
+    const { getByTestId } = render(<AccountRecoveryChoiceScreen />);
 
-    fireEvent.changeText(
-      UNSAFE_getByType('mock-textarea'),
-      'valid seed phrase',
-    );
-    fireEvent.press(UNSAFE_getByType('mock-button'));
+    fireEvent.press(getByTestId('button-from-teststorage'));
 
     await waitFor(() => {
       expect(markCurrentDocumentAsRegistered).toHaveBeenCalled();
@@ -243,7 +261,7 @@ describe('RecoverWithPhraseScreen', () => {
   it('navigates to Loading when the recovery circuit test flow is enabled', async () => {
     enableRecoveryCircuitTestFlow = true;
 
-    await completeSuccessfulRecovery();
+    await completeSuccessfulCloudRecovery();
 
     expect(reStorePassportDataWithRightCSCA).toHaveBeenCalledWith(
       { document: 'data' },
@@ -256,41 +274,8 @@ describe('RecoverWithPhraseScreen', () => {
   });
 
   it('navigates to AccountVerifiedSuccess when the recovery circuit test flow is disabled', async () => {
-    await completeSuccessfulRecovery();
+    await completeSuccessfulCloudRecovery();
 
     expect(mockNavigate).toHaveBeenCalledWith('AccountVerifiedSuccess');
-  });
-
-  it('tracks only the error name for unexpected recovery failures', async () => {
-    const restoreError = new Error(
-      'mnemonic payload leaked into raw error message',
-    );
-    restoreError.name = 'SecureRestoreError';
-    mockRestoreAccountFromMnemonic.mockRejectedValue(restoreError);
-
-    const { UNSAFE_getByType } = render(<RecoverWithPhraseScreen />);
-
-    fireEvent.changeText(
-      UNSAFE_getByType('mock-textarea'),
-      'valid seed phrase',
-    );
-    fireEvent.press(UNSAFE_getByType('mock-button'));
-
-    await waitFor(() => {
-      expect(mockTrackEvent).toHaveBeenCalledWith(
-        'CLOUD_RESTORE_FAILED_UNKNOWN',
-        {
-          reason: 'unexpected_error',
-          error: 'SecureRestoreError',
-        },
-      );
-    });
-
-    expect(mockTrackEvent).not.toHaveBeenCalledWith(
-      'CLOUD_RESTORE_FAILED_UNKNOWN',
-      expect.objectContaining({
-        error: 'mnemonic payload leaked into raw error message',
-      }),
-    );
   });
 });

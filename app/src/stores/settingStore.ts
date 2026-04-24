@@ -6,13 +6,14 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-type LoggingSeverity = 'debug' | 'info' | 'warn' | 'error';
+export type LoggingSeverity = 'debug' | 'info' | 'warn' | 'error';
 
 interface PersistedSettingsState {
   addSubscribedTopic: (topic: string) => void;
   biometricsAvailable: boolean;
   cloudBackupEnabled: boolean;
   dismissPrivacyNote: () => void;
+  enableRecoveryCircuitTestFlow: boolean;
   fcmToken: string | null;
   hasCompletedBackupForPoints: boolean;
   hasCompletedKeychainMigration: boolean;
@@ -31,6 +32,9 @@ interface PersistedSettingsState {
   setBiometricsAvailable: (biometricsAvailable: boolean) => void;
   setDevModeOff: () => void;
   setDevModeOn: () => void;
+  setEnableRecoveryCircuitTestFlow: (
+    enableRecoveryCircuitTestFlow: boolean,
+  ) => void;
   setFcmToken: (token: string | null) => void;
   setHasViewedRecoveryPhrase: (viewed: boolean) => void;
   setKeychainMigrationCompleted: () => void;
@@ -108,6 +112,10 @@ export const useSettingStore = create<SettingsState>()(
       isDevMode: false,
       setDevModeOn: () => set({ isDevMode: true }),
       setDevModeOff: () => set({ isDevMode: false }),
+
+      enableRecoveryCircuitTestFlow: false,
+      setEnableRecoveryCircuitTestFlow: enableRecoveryCircuitTestFlow =>
+        set({ enableRecoveryCircuitTestFlow }),
 
       loggingSeverity: __DEV__ ? 'debug' : 'warn',
       setLoggingSeverity: (severity: LoggingSeverity) =>

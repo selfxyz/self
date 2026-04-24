@@ -8,6 +8,8 @@ import { render, waitFor } from '@testing-library/react-native';
 
 import DevSettingsScreen from '@/screens/dev/DevSettingsScreen';
 
+const mockDevTogglesSection = jest.fn(() => <div>DevToggles</div>);
+
 // Mock Alert
 jest.spyOn(Alert, 'alert');
 
@@ -42,6 +44,8 @@ jest.mock('tamagui', () => ({
 jest.mock('@/stores/settingStore', () => ({
   useSettingStore: jest.fn(selector => {
     const state = {
+      enableRecoveryCircuitTestFlow: false,
+      setEnableRecoveryCircuitTestFlow: jest.fn(),
       loggingSeverity: 'info',
       setLoggingSeverity: jest.fn(),
       useStrongBox: false,
@@ -85,7 +89,7 @@ jest.mock('@/screens/dev/sections', () => ({
     </div>
   ),
   DebugShortcutsSection: () => <div>DebugShortcuts</div>,
-  DevTogglesSection: () => <div>DevToggles</div>,
+  DevTogglesSection: (props: any) => mockDevTogglesSection(props),
   PushNotificationsSection: () => <div>PushNotifications</div>,
 }));
 
@@ -123,6 +127,19 @@ describe('DevSettingsScreen - handleRemoveExpirationDateFlagPress', () => {
       passportProvider.loadDocumentCatalogDirectlyFromKeychain;
     mockSaveDocumentCatalog =
       passportProvider.saveDocumentCatalogDirectlyToKeychain;
+  });
+
+  it('wires the recovery circuit test flow props into DevTogglesSection', () => {
+    render(<DevSettingsScreen />);
+
+    expect(mockDevTogglesSection).toHaveBeenCalledWith(
+      expect.objectContaining({
+        enableRecoveryCircuitTestFlow: false,
+        setEnableRecoveryCircuitTestFlow: expect.any(Function),
+        useStrongBox: false,
+        setUseStrongBox: expect.any(Function),
+      }),
+    );
   });
 
   it('should show confirmation alert when Remove Expiration Date Flag is pressed', () => {

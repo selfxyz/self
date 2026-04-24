@@ -30,6 +30,8 @@ import {
 import Keyboard from '@/assets/icons/keyboard.svg';
 import RestoreAccountSvg from '@/assets/icons/restore_account.svg';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
+import { useRecoveryCircuitTestFlowEnabled } from '@/hooks/useRecoveryCircuitTestFlowEnabled';
+import { impactLight } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
 import { getPrivateKeyFromMnemonic, useAuth } from '@/providers/authProvider';
@@ -53,6 +55,8 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
   // const { authState } = useTurnkey();
   const [_restoringFromTurnkey, _setRestoringFromTurnkey] = useState(false);
   const [restoringFromCloud, setRestoringFromCloud] = useState(false);
+  const isRecoveryCircuitTestFlowEnabled =
+    useRecoveryCircuitTestFlowEnabled();
   const { cloudBackupEnabled, toggleCloudBackupEnabled, biometricsAvailable } =
     useSettingStore();
   const { download } = useBackupMnemonic();
@@ -63,13 +67,25 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
   //   state => state.setTurnkeyBackupEnabled,
   // );
 
-  const onRestoreFromCloudNext = useHapticNavigation('AccountVerifiedSuccess');
   const onEnterRecoveryPress = useHapticNavigation('RecoverWithPhrase');
 
   // DISABLED FOR NOW: Turnkey functionality
   // useEffect(() => {
   //   refreshWallets();
   // }, [refreshWallets]);
+
+  const navigateAfterRecovery = useCallback(() => {
+    if (isRecoveryCircuitTestFlowEnabled) {
+      navigation.navigate({
+        name: 'Loading',
+        params: {},
+      });
+      return;
+    }
+
+    impactLight();
+    navigation.navigate('AccountVerifiedSuccess');
+  }, [isRecoveryCircuitTestFlowEnabled, navigation]);
 
   const restoreAccountFlow = useCallback(
     async (
@@ -158,7 +174,7 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
         await markCurrentDocumentAsRegistered(selfClient);
         trackEvent(BackupEvents.CLOUD_RESTORE_SUCCESS);
         trackEvent(BackupEvents.ACCOUNT_RECOVERY_COMPLETED);
-        onRestoreFromCloudNext();
+        navigateAfterRecovery();
         setRestoring(false);
         return true;
       } catch (e: unknown) {
@@ -175,7 +191,7 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
       trackEvent,
       restoreAccountFromMnemonic,
       cloudBackupEnabled,
-      onRestoreFromCloudNext,
+      navigateAfterRecovery,
       navigation,
       toggleCloudBackupEnabled,
       useProtocolStore,
