@@ -902,6 +902,62 @@ describe('validatingDocument', () => {
     }
   });
 
+  it('still switches to register circuit from DSC-in-tree when registration checks are bypassed', async () => {
+    const passportData = buildPassportFixture();
+    const secret = '123456789';
+    const commitment = generateCommitment(secret, AttestationIdHex.passport, passportData);
+    const commitmentTree = createCommitmentTree([commitment]);
+    const registerCircuit = getCircuitNameFromPassportData(passportData, 'register');
+    const dscCircuit = getCircuitNameFromPassportData(passportData, 'dsc');
+    const deployedCircuits = {
+      REGISTER: [registerCircuit],
+      REGISTER_ID: [],
+      REGISTER_AADHAAR: ['register_aadhaar'],
+      DSC: [dscCircuit],
+      DSC_ID: [],
+    };
+    const dscLeaf = getLeafDscTree(passportData.dsc_parsed!, passportData.csca_parsed!);
+    const dscTree = createDscTree([dscLeaf]);
+
+    const protocolState = buildProtocolState({
+      commitmentTree,
+      dscTree,
+      deployedCircuits,
+      alternativeCsca: {},
+    });
+    const selfClient = createSelfClient(protocolState);
+    (selfClient as unknown as { config: unknown }).config = {
+      devConfig: {
+        shouldBypassRegistrationCheck: () => true,
+      },
+    };
+
+    loadSelectedDocumentMock.mockResolvedValue({ data: passportData } as any);
+
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ data: true }),
+      } as Response),
+    );
+
+    try {
+      await useProvingStore.getState().init(selfClient, 'register');
+      actorMock.send.mockClear();
+      vi.mocked(selfClient.trackEvent).mockClear();
+
+      useProvingStore.setState({ passportData, secret, circuitType: 'register' });
+
+      await useProvingStore.getState().validatingDocument(selfClient);
+
+      expect(useProvingStore.getState().circuitType).toBe('register');
+      expect(actorMock.send).toHaveBeenCalledWith({ type: 'VALIDATION_SUCCESS' });
+      expect(fetchSpy).not.toHaveBeenCalled();
+    } finally {
+      fetchSpy.mockRestore();
+    }
+  });
+
   it('switches to register circuit when DSC is already in the tree', async () => {
     const passportData = buildPassportFixture();
     const secret = '123456789';

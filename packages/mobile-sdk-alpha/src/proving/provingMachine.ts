@@ -1387,14 +1387,9 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
         /// registration
         else {
-          const bypassRegistrationCheck =
-            selfClient.config?.devConfig?.shouldBypassRegistrationCheck?.() ?? false;
+          const bypassRegistrationCheck = selfClient.config?.devConfig?.shouldBypassRegistrationCheck?.() ?? false;
           if (bypassRegistrationCheck) {
-            selfClient.logProofEvent(
-              'warn',
-              'Dev bypass active: skipping on-chain registration checks',
-              context,
-            );
+            selfClient.logProofEvent('warn', 'Dev bypass active: skipping on-chain registration checks', context);
           }
           const { isRegistered, csca } = bypassRegistrationCheck
             ? { isRegistered: false, csca: undefined }
@@ -1431,9 +1426,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             actor!.send({ type: 'ALREADY_REGISTERED' });
             return;
           }
-          const isNullifierOnchain = bypassRegistrationCheck
-            ? false
-            : await isDocumentNullified(passportData);
+          const isNullifierOnchain = bypassRegistrationCheck ? false : await isDocumentNullified(passportData);
           selfClient.logProofEvent('info', 'Nullifier check', context, {
             nullified: isNullifierOnchain,
           });
