@@ -8,6 +8,7 @@ import { supportFormUrl } from '@/consts/links';
 import useOpenSupportForm from '@/hooks/useOpenSupportForm';
 import { impactLight } from '@/integrations/haptics';
 import { navigationRef } from '@/navigation';
+import { useSettingStore } from '@/stores/settingStore';
 
 jest.mock('@/integrations/haptics', () => ({
   impactLight: jest.fn(),
@@ -24,9 +25,13 @@ describe('useOpenSupportForm', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (navigationRef.isReady as jest.Mock).mockReturnValue(true);
+    useSettingStore.setState({
+      supportUuidEnabled: false,
+      supportUuid: null,
+    });
   });
 
-  it('triggers haptic feedback and navigates to the support form WebView', () => {
+  it('navigates to the support form WebView with haptic feedback', () => {
     const { result } = renderHook(() => useOpenSupportForm());
 
     act(() => {
@@ -43,6 +48,34 @@ describe('useOpenSupportForm', () => {
 
     const [, params] = (navigationRef.navigate as jest.Mock).mock.calls[0];
     expect(params.url).toContain(supportFormUrl);
-    expect(params.url).toContain('support_uuid=');
+  });
+
+  it('omits support_uuid when support ID sharing is disabled (default)', () => {
+    const { result } = renderHook(() => useOpenSupportForm());
+
+    act(() => {
+      result.current();
+    });
+
+    const [, params] = (navigationRef.navigate as jest.Mock).mock.calls[0];
+    expect(params.url).not.toContain('support_uuid=');
+  });
+
+  it('appends support_uuid when the user has enabled sharing', () => {
+    useSettingStore.setState({
+      supportUuidEnabled: true,
+      supportUuid: '11111111-1111-1111-1111-111111111111',
+    });
+
+    const { result } = renderHook(() => useOpenSupportForm());
+
+    act(() => {
+      result.current();
+    });
+
+    const [, params] = (navigationRef.navigate as jest.Mock).mock.calls[0];
+    expect(params.url).toContain(
+      'support_uuid=11111111-1111-1111-1111-111111111111',
+    );
   });
 });
