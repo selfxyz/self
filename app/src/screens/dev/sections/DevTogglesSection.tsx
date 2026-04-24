@@ -12,11 +12,15 @@ import { TopicToggleButton } from '@/screens/dev/components/TopicToggleButton';
 interface DevTogglesSectionProps {
   useStrongBox: boolean;
   setUseStrongBox: (useStrongBox: boolean) => void;
+  bypassRegistrationCheck: boolean;
+  setBypassRegistrationCheck: (value: boolean) => void;
 }
 
 export const DevTogglesSection: React.FC<DevTogglesSectionProps> = ({
   useStrongBox,
   setUseStrongBox,
+  bypassRegistrationCheck,
+  setBypassRegistrationCheck,
 }) => {
   const handleToggleStrongBox = () => {
     Alert.alert(
@@ -29,6 +33,24 @@ export const DevTogglesSection: React.FC<DevTogglesSectionProps> = ({
         {
           text: useStrongBox ? 'Disable' : 'Enable',
           onPress: () => setUseStrongBox(!useStrongBox),
+        },
+      ],
+    );
+  };
+
+  const handleToggleBypassRegistrationCheck = () => {
+    Alert.alert(
+      bypassRegistrationCheck
+        ? 'Disable Registration Check Bypass'
+        : 'Enable Registration Check Bypass',
+      bypassRegistrationCheck
+        ? 'The app will resume checking whether documents are already registered before proving.'
+        : 'The app will skip the on-chain "already registered / nullified" checks and attempt a register proof regardless. The relayer will still reject duplicate registrations. Dev only.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: bypassRegistrationCheck ? 'Disable' : 'Enable',
+          onPress: () => setBypassRegistrationCheck(!bypassRegistrationCheck),
         },
       ],
     );
@@ -47,6 +69,11 @@ export const DevTogglesSection: React.FC<DevTogglesSectionProps> = ({
           onToggle={handleToggleStrongBox}
         />
       )}
+      <TopicToggleButton
+        label="Bypass registration check"
+        isSubscribed={bypassRegistrationCheck}
+        onToggle={handleToggleBypassRegistrationCheck}
+      />
     </ParameterSection>
   );
 };

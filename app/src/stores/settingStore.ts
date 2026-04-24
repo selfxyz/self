@@ -42,7 +42,9 @@ interface PersistedSettingsState {
   setSubscribedTopics: (topics: string[]) => void;
   setTurnkeyBackupEnabled: (turnkeyBackupEnabled: boolean) => void;
   setUseStrongBox: (useStrongBox: boolean) => void;
+  setBypassRegistrationCheck: (value: boolean) => void;
   skipDocumentSelector: boolean;
+  bypassRegistrationCheck: boolean;
   subscribedTopics: string[];
   toggleCloudBackupEnabled: () => void;
   turnkeyBackupEnabled: boolean;
@@ -174,6 +176,13 @@ export const useSettingStore = create<SettingsState>()(
       // StrongBox setting for Android keystore (default: false)
       useStrongBox: false,
       setUseStrongBox: (useStrongBox: boolean) => set({ useStrongBox }),
+
+      // Dev-only: bypass on-chain registration check so the proving machine
+      // attempts a register proof even when the passport is already registered
+      // or has a nullifier on-chain. Guarded by IS_DEV_MODE in the provider.
+      bypassRegistrationCheck: false,
+      setBypassRegistrationCheck: (value: boolean) =>
+        set({ bypassRegistrationCheck: value }),
 
       // Non-persisted state (will not be saved to storage)
       hideNetworkModal: false,

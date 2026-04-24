@@ -1387,17 +1387,28 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
         /// registration
         else {
-          const { isRegistered, csca } = await isUserRegisteredWithAlternativeCSCA(passportData, secret as string, {
-            getCommitmentTree: (docCategory: DocumentCategory) => getCommitmentTree(selfClient, docCategory),
-            getAltCSCA: (docType: DocumentCategory) => {
-              if (docType === 'aadhaar' || docType === 'kyc') {
-                const publicKeys = selfClient.getProtocolState()[docType].public_keys;
-                // Convert string[] to Record<string, string> format expected by AlternativeCSCA
-                return publicKeys ? Object.fromEntries(publicKeys.map(key => [key, key])) : {};
-              }
-              return selfClient.getProtocolState()[docType].alternative_csca;
-            },
-          });
+          const bypassRegistrationCheck =
+            selfClient.config?.devConfig?.shouldBypassRegistrationCheck?.() ?? false;
+          if (bypassRegistrationCheck) {
+            selfClient.logProofEvent(
+              'warn',
+              'Dev bypass active: skipping on-chain registration checks',
+              context,
+            );
+          }
+          const { isRegistered, csca } = bypassRegistrationCheck
+            ? { isRegistered: false, csca: undefined }
+            : await isUserRegisteredWithAlternativeCSCA(passportData, secret as string, {
+                getCommitmentTree: (docCategory: DocumentCategory) => getCommitmentTree(selfClient, docCategory),
+                getAltCSCA: (docType: DocumentCategory) => {
+                  if (docType === 'aadhaar' || docType === 'kyc') {
+                    const publicKeys = selfClient.getProtocolState()[docType].public_keys;
+                    // Convert string[] to Record<string, string> format expected by AlternativeCSCA
+                    return publicKeys ? Object.fromEntries(publicKeys.map(key => [key, key])) : {};
+                  }
+                  return selfClient.getProtocolState()[docType].alternative_csca;
+                },
+              });
           selfClient.logProofEvent('info', 'Alternative CSCA registration check', context, {
             registered: isRegistered,
           });
@@ -1420,7 +1431,9 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             actor!.send({ type: 'ALREADY_REGISTERED' });
             return;
           }
-          const isNullifierOnchain = await isDocumentNullified(passportData);
+          const isNullifierOnchain = bypassRegistrationCheck
+            ? false
+            : await isDocumentNullified(passportData);
           selfClient.logProofEvent('info', 'Nullifier check', context, {
             nullified: isNullifierOnchain,
           });

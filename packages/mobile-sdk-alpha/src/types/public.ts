@@ -64,6 +64,15 @@ export interface Config {
      * @returns true if the error should be injected, false otherwise
      */
     shouldTrigger?: (errorType: string) => boolean;
+    /**
+     * Dev-only bypass for the on-chain "already registered / nullifier on-chain"
+     * checks that run before registration proving. When this returns true, the
+     * proving machine treats the document as unregistered and proceeds to
+     * generate a register proof regardless of chain state. Intended for QA of
+     * the register circuit path; the relayer/contract will still reject a
+     * duplicate registration at submission time.
+     */
+    shouldBypassRegistrationCheck?: () => boolean;
   };
   /**
    * Platform identifier used for structured logging and observability.

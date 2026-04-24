@@ -843,6 +843,65 @@ describe('validatingDocument', () => {
     }
   });
 
+  it('skips on-chain registration checks when devConfig.shouldBypassRegistrationCheck returns true', async () => {
+    const passportData = buildPassportFixture();
+    const secret = '123456789';
+    const commitment = generateCommitment(secret, AttestationIdHex.passport, passportData);
+    // Pre-populate commitment tree so isUserRegisteredWithAlternativeCSCA would normally return true
+    const commitmentTree = createCommitmentTree([commitment]);
+    const registerCircuit = getCircuitNameFromPassportData(passportData, 'register');
+    const dscCircuit = getCircuitNameFromPassportData(passportData, 'dsc');
+    const deployedCircuits = {
+      REGISTER: [registerCircuit],
+      REGISTER_ID: [],
+      REGISTER_AADHAAR: ['register_aadhaar'],
+      DSC: [dscCircuit],
+      DSC_ID: [],
+    };
+
+    const protocolState = buildProtocolState({
+      commitmentTree,
+      dscTree: createDscTree([]),
+      deployedCircuits,
+      alternativeCsca: {},
+    });
+    const selfClient = createSelfClient(protocolState);
+    (selfClient as unknown as { config: unknown }).config = {
+      devConfig: {
+        shouldBypassRegistrationCheck: () => true,
+      },
+    };
+
+    loadSelectedDocumentMock.mockResolvedValue({ data: passportData } as any);
+
+    // Nullifier endpoint would say "nullified" if called — bypass must skip it.
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ data: true }),
+      } as Response),
+    );
+
+    try {
+      await useProvingStore.getState().init(selfClient, 'register');
+      actorMock.send.mockClear();
+      vi.mocked(selfClient.trackEvent).mockClear();
+
+      useProvingStore.setState({ passportData, secret, circuitType: 'register' });
+
+      await useProvingStore.getState().validatingDocument(selfClient);
+
+      expect(actorMock.send).toHaveBeenCalledWith({ type: 'VALIDATION_SUCCESS' });
+      expect(actorMock.send).not.toHaveBeenCalledWith({ type: 'ALREADY_REGISTERED' });
+      expect(actorMock.send).not.toHaveBeenCalledWith({ type: 'ACCOUNT_RECOVERY_CHOICE' });
+      expect(reStorePassportDataWithRightCSCMock).not.toHaveBeenCalled();
+      expect(markCurrentDocumentAsRegisteredMock).not.toHaveBeenCalled();
+      expect(fetchSpy).not.toHaveBeenCalled();
+    } finally {
+      fetchSpy.mockRestore();
+    }
+  });
+
   it('switches to register circuit when DSC is already in the tree', async () => {
     const passportData = buildPassportFixture();
     const secret = '123456789';
