@@ -55,8 +55,7 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
   // const { authState } = useTurnkey();
   const [_restoringFromTurnkey, _setRestoringFromTurnkey] = useState(false);
   const [restoringFromCloud, setRestoringFromCloud] = useState(false);
-  const isRecoveryCircuitTestFlowEnabled =
-    useRecoveryCircuitTestFlowEnabled();
+  const isRecoveryCircuitTestFlowEnabled = useRecoveryCircuitTestFlowEnabled();
   const { cloudBackupEnabled, toggleCloudBackupEnabled, biometricsAvailable } =
     useSettingStore();
   const { download } = useBackupMnemonic();

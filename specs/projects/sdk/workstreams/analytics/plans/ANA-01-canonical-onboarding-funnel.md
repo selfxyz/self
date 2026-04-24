@@ -53,23 +53,23 @@ Implemented as typed constants in `packages/mobile-sdk-alpha/src/constants/analy
 
 Every event below is stamped by the helper with `attempt_id`, `initial_branch`, `current_branch` in addition to the listed per-event properties. See SPEC.md § Cross-branch flows for semantics.
 
-| Constant                             | Event name                     | Fire location                                                                                                                                                  | Additional properties                                                                          |
-| ------------------------------------ | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `OnboardingEvents.STARTED`           | `Onboarding: Started`          | `app/src/screens/onboarding/DisclaimerScreen.tsx` — on `DISMISS_PRIVACY_DISCLAIMER` button press, before navigation                                            | — (both branches `pending`)                                                                    |
-| `OnboardingEvents.COUNTRY_SELECTED`  | `Onboarding: Country Selected` | `packages/mobile-sdk-alpha/src/flows/onboarding/country-picker-screen.tsx` — inside `onCountrySelect`, after country is committed to the store                  | `country_code`                                                                                 |
-| `OnboardingEvents.DOCUMENT_TYPE_SELECTED` | `Onboarding: Document Type Selected` | `packages/mobile-sdk-alpha/src/flows/onboarding/id-selection-screen.tsx` — inside `onSelectDocumentType`, after doc type committed. **Locks `initial_branch`.** | `document_type`, `country_code`                                                                |
-| `OnboardingEvents.SCAN_STARTED`      | `Onboarding: Document Scan Started` | Biometric: `app/src/screens/documents/scanning/DocumentCameraScreen.tsx` on camera open. KYC: `LogoConfirmationScreen` "No" fallback path. Aadhaar: `AadhaarUploadScreen.tsx` on mount.  | —                                                                                              |
-| `OnboardingEvents.SCAN_SUCCEEDED`    | `Onboarding: Document Scan Succeeded` | Biometric: `DocumentNFCScanScreen.tsx` on NFC success. KYC: on provider result `success`. Aadhaar: after `processAadhaarQRCode` succeeds.                         | `duration_seconds`                                                                             |
-| `OnboardingEvents.PROOF_STARTED`     | `Onboarding: Proof Generation Started` | `packages/mobile-sdk-alpha/src/proving/provingMachine.ts` — when state enters `proving`                                                                        | —                                                                                              |
-| `OnboardingEvents.PROOF_SUCCEEDED`   | `Onboarding: Proof Generation Succeeded` | `provingMachine.ts` — inside `completed` state, gated on terminal invariant (below)                                                                             | —                                                                                              |
-| `OnboardingEvents.COMPLETED`         | `Onboarding: Completed`        | Helper-driven from `provingMachine.ts` `completed` state on the register path                                                                                  | `duration_seconds` (total onboarding), `country_code`, `document_type`, `used_fallback`        |
-| `OnboardingEvents.FAILED`            | `Onboarding: Failed`           | `provingMachine.ts` `failure` and `error` terminal states on the register path; plus KYC / Aadhaar failure paths (future)                                      | `stage`, `reason`, `recoverable`, `duration_seconds`, `used_fallback`                          |
-| `OnboardingEvents.STEP_RETRIED`      | `Onboarding: Step Retried`     | `RegistrationFallbackMRZScreen.tsx` and `RegistrationFallbackNFCScreen.tsx` "Retry" buttons                                                                    | `stage`, `reason`, `attempt_count`                                                             |
-| `OnboardingEvents.DISCLOSURE_COMPLETED` | `Onboarding: Disclosure Completed` | `provingMachine.ts` — inside `completed` state, when `circuitType === 'disclose'`                                                                             | —                                                                                              |
+| Constant                                  | Event name                               | Fire location                                                                                                                                                                           | Additional properties                                                                   |
+| ----------------------------------------- | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `OnboardingEvents.STARTED`                | `Onboarding: Started`                    | `app/src/screens/onboarding/DisclaimerScreen.tsx` — on `DISMISS_PRIVACY_DISCLAIMER` button press, before navigation                                                                     | — (both branches `pending`)                                                             |
+| `OnboardingEvents.COUNTRY_SELECTED`       | `Onboarding: Country Selected`           | `packages/mobile-sdk-alpha/src/flows/onboarding/country-picker-screen.tsx` — inside `onCountrySelect`, after country is committed to the store                                          | `country_code`                                                                          |
+| `OnboardingEvents.DOCUMENT_TYPE_SELECTED` | `Onboarding: Document Type Selected`     | `packages/mobile-sdk-alpha/src/flows/onboarding/id-selection-screen.tsx` — inside `onSelectDocumentType`, after doc type committed. **Locks `initial_branch`.**                         | `document_type`, `country_code`                                                         |
+| `OnboardingEvents.SCAN_STARTED`           | `Onboarding: Document Scan Started`      | Biometric: `app/src/screens/documents/scanning/DocumentCameraScreen.tsx` on camera open. KYC: `LogoConfirmationScreen` "No" fallback path. Aadhaar: `AadhaarUploadScreen.tsx` on mount. | —                                                                                       |
+| `OnboardingEvents.SCAN_SUCCEEDED`         | `Onboarding: Document Scan Succeeded`    | Biometric: `DocumentNFCScanScreen.tsx` on NFC success. KYC: on provider result `success`. Aadhaar: after `processAadhaarQRCode` succeeds.                                               | `duration_seconds`                                                                      |
+| `OnboardingEvents.PROOF_STARTED`          | `Onboarding: Proof Generation Started`   | `packages/mobile-sdk-alpha/src/proving/provingMachine.ts` — when state enters `proving`                                                                                                 | —                                                                                       |
+| `OnboardingEvents.PROOF_SUCCEEDED`        | `Onboarding: Proof Generation Succeeded` | `provingMachine.ts` — inside `completed` state, gated on terminal invariant (below)                                                                                                     | —                                                                                       |
+| `OnboardingEvents.COMPLETED`              | `Onboarding: Completed`                  | Helper-driven from `provingMachine.ts` `completed` state on the register path                                                                                                           | `duration_seconds` (total onboarding), `country_code`, `document_type`, `used_fallback` |
+| `OnboardingEvents.FAILED`                 | `Onboarding: Failed`                     | `provingMachine.ts` `failure` and `error` terminal states on the register path; plus KYC / Aadhaar failure paths (future)                                                               | `stage`, `reason`, `recoverable`, `duration_seconds`, `used_fallback`                   |
+| `OnboardingEvents.STEP_RETRIED`           | `Onboarding: Step Retried`               | `RegistrationFallbackMRZScreen.tsx` and `RegistrationFallbackNFCScreen.tsx` "Retry" buttons                                                                                             | `stage`, `reason`, `attempt_count`                                                      |
+| `OnboardingEvents.DISCLOSURE_COMPLETED`   | `Onboarding: Disclosure Completed`       | `provingMachine.ts` — inside `completed` state, when `circuitType === 'disclose'`                                                                                                       | —                                                                                       |
 
 ### Branch property contract (cross-branch flows)
 
-Callers pass `{ branch: 'biometric_passport' | 'biometric_id' | 'kyc' | 'aadhaar' }` as *input sugar* to `trackOnboardingStep`. The helper translates this into:
+Callers pass `{ branch: 'biometric_passport' | 'biometric_id' | 'kyc' | 'aadhaar' }` as _input sugar_ to `trackOnboardingStep`. The helper translates this into:
 
 - First non-`pending` value → locks `initial_branch` (immutable for the attempt)
 - Every call → updates `current_branch`
@@ -87,12 +87,20 @@ Currently, `provingMachine.ts:1332` sets `circuitType = 'register'` as a side-ef
 You will add a boolean in the proving store: `enteredAsRegistration`, set at `init()` to `circuitType === 'register'` (the type the session was started with, captured before any mid-flow flipping). The terminal gate is:
 
 ```ts
-if (state.value === 'completed'
-    && get().circuitType === 'register'
-    && get().enteredAsRegistration === true) {
-  selfClient.trackEvent(OnboardingEvents.PROOF_SUCCEEDED, { branch, duration_seconds });
+if (
+  state.value === 'completed' &&
+  get().circuitType === 'register' &&
+  get().enteredAsRegistration === true
+) {
+  selfClient.trackEvent(OnboardingEvents.PROOF_SUCCEEDED, {
+    branch,
+    duration_seconds,
+  });
   // later, after _handleAccountVerifiedSuccess:
-  selfClient.trackEvent(OnboardingEvents.COMPLETED, { branch, duration_seconds });
+  selfClient.trackEvent(OnboardingEvents.COMPLETED, {
+    branch,
+    duration_seconds,
+  });
 }
 ```
 
@@ -121,7 +129,10 @@ interface OnboardingAnalyticsState {
 Helper:
 
 ```ts
-function trackStepOnce(step: OnboardingStepName, properties: Record<string, unknown>) {
+function trackStepOnce(
+  step: OnboardingStepName,
+  properties: Record<string, unknown>,
+) {
   if (state.firedSteps.has(step)) return;
   state.firedSteps.add(step);
   selfClient.trackEvent(step, { ...properties, attempt_id: state.attemptId });
@@ -137,18 +148,19 @@ Back-navigation must not re-fire: a user going from doc-type-selected back to co
 
 ## Dead-Zone Fixes
 
-| Screen                                                                                            | Current behavior                                          | Change                                                                                                           |
-| ------------------------------------------------------------------------------------------------- | --------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `app/src/screens/documents/selection/LogoConfirmationScreen.tsx`                                  | No button tracking                                        | Fire a diagnostic `logo_confirmation_answered` event with `{answer: 'yes' | 'no'}` on each button. This is not a canonical step — it's diagnostic context.  |
-| `packages/mobile-sdk-alpha/src/flows/onboarding/country-picker-screen.tsx` (line ~37)             | Emits SDK internal event only                             | Also call `trackStepOnce(OnboardingEvents.COUNTRY_SELECTED, { country_code })`                                    |
-| `packages/mobile-sdk-alpha/src/flows/onboarding/id-selection-screen.tsx` (line ~142)              | Emits SDK internal event only                             | Also call `trackStepOnce(OnboardingEvents.DOCUMENT_TYPE_SELECTED, { document_type, country_code, branch })` — `branch` is resolved here for the first time |
-| `app/src/screens/documents/selection/ConfirmBelongingScreen.tsx` (wraps `ConfirmIdentificationScreen`) | Fires errors only                                        | Add a diagnostic `confirm_belonging_confirmed` event on success path                                             |
+| Screen                                                                                                 | Current behavior              | Change                                                                                                                                                     |
+| ------------------------------------------------------------------------------------------------------ | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `app/src/screens/documents/selection/LogoConfirmationScreen.tsx`                                       | No button tracking            | Fire a diagnostic `logo_confirmation_answered` event with `{answer: 'yes'                                                                                  | 'no'}` on each button. This is not a canonical step — it's diagnostic context. |
+| `packages/mobile-sdk-alpha/src/flows/onboarding/country-picker-screen.tsx` (line ~37)                  | Emits SDK internal event only | Also call `trackStepOnce(OnboardingEvents.COUNTRY_SELECTED, { country_code })`                                                                             |
+| `packages/mobile-sdk-alpha/src/flows/onboarding/id-selection-screen.tsx` (line ~142)                   | Emits SDK internal event only | Also call `trackStepOnce(OnboardingEvents.DOCUMENT_TYPE_SELECTED, { document_type, country_code, branch })` — `branch` is resolved here for the first time |
+| `app/src/screens/documents/selection/ConfirmBelongingScreen.tsx` (wraps `ConfirmIdentificationScreen`) | Fires errors only             | Add a diagnostic `confirm_belonging_confirmed` event on success path                                                                                       |
 
 ## AbstractButton Fix
 
 File: `packages/mobile-sdk-alpha/src/components/buttons/AbstractButton.tsx` (line 82-94).
 
 Current behavior:
+
 ```ts
 if (trackEvent) {
   const parsedEvent = trackEvent?.split(':')?.[1]?.trim();

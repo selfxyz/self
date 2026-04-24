@@ -63,8 +63,7 @@ const RecoverWithPhraseScreen: React.FC = () => {
   const { useProtocolStore } = selfClient;
   const { restoreAccountFromMnemonic } = useAuth();
   const { trackEvent } = useSelfClient();
-  const isRecoveryCircuitTestFlowEnabled =
-    useRecoveryCircuitTestFlowEnabled();
+  const isRecoveryCircuitTestFlowEnabled = useRecoveryCircuitTestFlowEnabled();
   const [mnemonic, setMnemonic] = useState<string>();
   const [restoring, setRestoring] = useState(false);
   const [error, setError] = useState<RecoveryError | null>(null);

@@ -199,24 +199,24 @@ Suggested label:
 
 ## Files You May Modify
 
-| File | Role |
-| ---- | ---- |
-| `app/src/stores/settingStore.ts` | persist `enableRecoveryCircuitTestFlow` and setter |
-| `app/src/screens/dev/DevSettingsScreen.tsx` | wire persisted toggle into dev settings |
-| `app/src/screens/dev/sections/DevTogglesSection.tsx` | render the new toggle |
-| `app/src/screens/dev/sections/DebugShortcutsSection.tsx` | add debug shortcut |
-| `app/src/screens/account/recovery/AccountRecoveryChoiceScreen.tsx` | app-only harness routing after recovery |
-| `app/src/screens/account/recovery/RecoverWithPhraseScreen.tsx` | app-only harness routing after recovery |
-| `app/src/screens/app/LoadingScreen.tsx` | unchanged proving destination surface; modify only if route params are truly required |
+| File                                                               | Role                                                                                  |
+| ------------------------------------------------------------------ | ------------------------------------------------------------------------------------- |
+| `app/src/stores/settingStore.ts`                                   | persist `enableRecoveryCircuitTestFlow` and setter                                    |
+| `app/src/screens/dev/DevSettingsScreen.tsx`                        | wire persisted toggle into dev settings                                               |
+| `app/src/screens/dev/sections/DevTogglesSection.tsx`               | render the new toggle                                                                 |
+| `app/src/screens/dev/sections/DebugShortcutsSection.tsx`           | add debug shortcut                                                                    |
+| `app/src/screens/account/recovery/AccountRecoveryChoiceScreen.tsx` | app-only harness routing after recovery                                               |
+| `app/src/screens/account/recovery/RecoverWithPhraseScreen.tsx`     | app-only harness routing after recovery                                               |
+| `app/src/screens/app/LoadingScreen.tsx`                            | unchanged proving destination surface; modify only if route params are truly required |
 
 ## Files You Will NOT Modify
 
-| File | Why |
-| ---- | --- |
-| `packages/mobile-sdk-alpha/**` | feature is app-only |
-| `packages/webview-app/**` | out of scope |
+| File                                       | Why                                              |
+| ------------------------------------------ | ------------------------------------------------ |
+| `packages/mobile-sdk-alpha/**`             | feature is app-only                              |
+| `packages/webview-app/**`                  | out of scope                                     |
 | `app/src/providers/selfClientProvider.tsx` | existing recovery trigger wiring stays unchanged |
-| backend / relayer code | out of scope |
+| backend / relayer code                     | out of scope                                     |
 
 ## Exact App Behavior
 

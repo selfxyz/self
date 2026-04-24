@@ -185,6 +185,9 @@ const { loadPassportData, reStorePassportDataWithRightCSCA } = jest.requireMock(
 const { useBackupMnemonic } = jest.requireMock('@/services/cloud-backup') as {
   useBackupMnemonic: jest.Mock;
 };
+const { impactLight } = jest.requireMock('@/integrations/haptics') as {
+  impactLight: jest.Mock;
+};
 const { useSettingStore } = jest.requireMock('@/stores/settingStore') as {
   useSettingStore: jest.Mock;
 };
@@ -271,11 +274,13 @@ describe('AccountRecoveryChoiceScreen', () => {
       name: 'Loading',
       params: {},
     });
+    expect(impactLight).not.toHaveBeenCalled();
   });
 
   it('navigates to AccountVerifiedSuccess when the recovery circuit test flow is disabled', async () => {
     await completeSuccessfulCloudRecovery();
 
     expect(mockNavigate).toHaveBeenCalledWith('AccountVerifiedSuccess');
+    expect(impactLight).toHaveBeenCalledTimes(1);
   });
 });
