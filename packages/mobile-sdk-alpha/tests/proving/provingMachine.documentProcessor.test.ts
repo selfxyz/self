@@ -900,6 +900,75 @@ describe('validatingDocument', () => {
     }
   });
 
+  it('preserves forceRegisterOnAlreadyRegistered across internal init chains (dsc→register)', async () => {
+    const passportData = buildPassportFixture();
+    const registerCircuit = getCircuitNameFromPassportData(passportData, 'register');
+    const dscCircuit = getCircuitNameFromPassportData(passportData, 'dsc');
+    const deployedCircuits = {
+      REGISTER: [registerCircuit],
+      REGISTER_ID: [],
+      REGISTER_AADHAAR: ['register_aadhaar'],
+      DSC: [dscCircuit],
+      DSC_ID: [],
+    };
+
+    const protocolState = buildProtocolState({
+      commitmentTree: createCommitmentTree([]),
+      dscTree: null,
+      deployedCircuits,
+      alternativeCsca: {},
+    });
+    const selfClient = createSelfClient(protocolState);
+
+    loadSelectedDocumentMock.mockResolvedValue({ data: passportData } as any);
+
+    // Initial external init with the harness flag (as LoadingScreen does).
+    await useProvingStore
+      .getState()
+      .init(selfClient, 'dsc', true, { forceRegisterOnAlreadyRegistered: true });
+    expect(useProvingStore.getState().forceRegisterOnAlreadyRegistered).toBe(true);
+
+    // Internal chain init (as postProving does after dsc completes) must
+    // keep the flag — otherwise the register phase lands on recovery.
+    await useProvingStore.getState().init(selfClient, 'register', true);
+    expect(useProvingStore.getState().forceRegisterOnAlreadyRegistered).toBe(true);
+  });
+
+  it('does not carry the harness flag into a fresh external init', async () => {
+    const passportData = buildPassportFixture();
+    const registerCircuit = getCircuitNameFromPassportData(passportData, 'register');
+    const dscCircuit = getCircuitNameFromPassportData(passportData, 'dsc');
+    const deployedCircuits = {
+      REGISTER: [registerCircuit],
+      REGISTER_ID: [],
+      REGISTER_AADHAAR: ['register_aadhaar'],
+      DSC: [dscCircuit],
+      DSC_ID: [],
+    };
+
+    const protocolState = buildProtocolState({
+      commitmentTree: createCommitmentTree([]),
+      dscTree: null,
+      deployedCircuits,
+      alternativeCsca: {},
+    });
+    const selfClient = createSelfClient(protocolState);
+
+    loadSelectedDocumentMock.mockResolvedValue({ data: passportData } as any);
+
+    await useProvingStore
+      .getState()
+      .init(selfClient, 'dsc', true, { forceRegisterOnAlreadyRegistered: true });
+    expect(useProvingStore.getState().forceRegisterOnAlreadyRegistered).toBe(true);
+
+    // A new session that explicitly passes options with the flag off
+    // must clear it — options present and explicit, flag must honor.
+    await useProvingStore
+      .getState()
+      .init(selfClient, 'dsc', true, { forceRegisterOnAlreadyRegistered: false });
+    expect(useProvingStore.getState().forceRegisterOnAlreadyRegistered).toBe(false);
+  });
+
   it('switches to register circuit when DSC is already in the tree', async () => {
     const passportData = buildPassportFixture();
     const secret = '123456789';

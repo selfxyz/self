@@ -457,7 +457,7 @@ When the Phase 2 harness is enabled:
 | `packages/mobile-sdk-alpha/src/proving/provingMachine.ts`    | add `ProvingInitOptions`, 4th param to `init`, persist flag, gate `validatingDocument` emitter |
 | `packages/mobile-sdk-alpha/src/proving/internal/statusHandlers.ts` | accept `StatusHandlerOptions`, downgrade `REGISTERED_COMMITMENT` to `PROVE_FAILURE` when flag on |
 | `packages/mobile-sdk-alpha/src/index.ts`                     | export `ProvingInitOptions`                                                         |
-| associated tests under `app/tests/` and `packages/mobile-sdk-alpha/tests/` | propagation helper test, statusHandlers downgrade test, recovery-screen regression tests |
+| associated tests under `app/tests/` and `packages/mobile-sdk-alpha/tests/` | statusHandlers downgrade, `validatingDocument` mirror test, propagation helper, selfClientProvider listener, DebugShortcutsSection, recovery-screen regression |
 | `app/src/hooks/useRecoveryCircuitTestFlowEnabled.ts` + its test | **deleted** — replaced by `getState()` reads at the two call sites              |
 
 ### Files You Will NOT Modify
@@ -497,7 +497,16 @@ When the Phase 2 harness is enabled:
    - flag off (default): returns `PROVE_ALREADY_REGISTERED`
    - flag on: returns `PROVE_FAILURE` with error_code and reason
      populated; machine terminates in `failure`
-2. App-to-SDK propagation glue
+2. SDK `validatingDocument` emitter invariant
+   (`packages/mobile-sdk-alpha/tests/proving/provingMachine.documentProcessor.test.ts`)
+   - Mirrors the existing `routes to account recovery when nullifier
+     is on chain` test with `forceRegisterOnAlreadyRegistered: true`
+     passed to `init(...)` and set in state. Asserts the actor is
+     **not** sent `ACCOUNT_RECOVERY_CHOICE` and is instead sent
+     `VALIDATION_SUCCESS` (register path continues). A real
+     `dscTree` is required so the fall-through DSC check does not
+     throw.
+3. App-to-SDK propagation glue
    (`app/tests/src/proving/buildProvingInitOptions.test.ts`, 4 cases)
    - dev + toggle on → `forceRegisterOnAlreadyRegistered: true`
    - dev + toggle off → `false`
@@ -505,19 +514,23 @@ When the Phase 2 harness is enabled:
    - dev + toggle undefined → `false`
    This test exists specifically to prevent SDK-side tests passing
    while the feature is never actually turned on from the app.
-3. Phase 1 regression
+4. App `selfClientProvider` recovery listener
+   (`app/tests/src/providers/selfClientProvider.test.tsx`)
+   - Captures the listener map via a `__getLatestListenerMap` hook
+     on the SDK mock, fires `PROVING_ACCOUNT_RECOVERY_REQUIRED`, and
+     asserts:
+     - toggle off → navigates to `AccountRecoveryChoice`
+     - toggle on (in `IS_DEV_MODE`) → does not navigate
+5. Debug shortcut
+   (`app/tests/src/screens/dev/sections/DebugShortcutsSection.test.tsx`)
+   - Renders the section with `IS_DEV_MODE=true`, presses the
+     button by its `Register Circuit Test (scan)` label, asserts
+     `navigate('CountryPicker')` was called and
+     `'AccountRecoveryChoice'` was not.
+6. Phase 1 regression
    (`app/tests/src/screens/account/recovery/*.test.tsx`)
    - recovery screens navigate to `AccountVerifiedSuccess`
      regardless of the harness toggle
-4. Debug shortcut
-   - button navigates to `CountryPicker`, not `AccountRecoveryChoice`
-5. `validatingDocument` emitter invariant
-   - Covered by code inspection (the `isNullifierOnchain` branch
-     is the only emitter of `ACCOUNT_RECOVERY_CHOICE` from
-     `validatingDocument`). Not covered by a dedicated unit test
-     because the surrounding validatingDocument flow requires
-     extensive mocking; if a regression occurs here it will surface
-     in manual validation.
 
 ### Validation
 

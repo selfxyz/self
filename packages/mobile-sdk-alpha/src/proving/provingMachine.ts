@@ -1123,10 +1123,19 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         }
         actor = null;
       }
+      // Preserve the harness flag across internal init chains (e.g. the
+      // dsc→register chain in `postProving`) where the caller does not
+      // pass options. Without this, the register phase — which is the
+      // only phase that hits the recovery branch — would run with the
+      // flag cleared and land on `account_recovery_choice`.
+      const previousForceRegister = get().forceRegisterOnAlreadyRegistered === true;
+      const forceRegisterOnAlreadyRegistered =
+        options?.forceRegisterOnAlreadyRegistered === true ||
+        (options === undefined && previousForceRegister);
       resetProvingState({
         userConfirmed,
         circuitType,
-        forceRegisterOnAlreadyRegistered: options?.forceRegisterOnAlreadyRegistered === true,
+        forceRegisterOnAlreadyRegistered,
       });
 
       actor = createActor(provingMachine);
