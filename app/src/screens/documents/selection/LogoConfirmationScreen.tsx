@@ -71,11 +71,13 @@ const LogoConfirmationScreen: React.FC = () => {
         "To complete registration of a document without a biometric chip, you'll be redirected to our third party verification partner.",
       buttonText: 'Proceed with an external verifier',
       onButtonPress: async () => {
+        let scanStarted = false;
         try {
           const session = await createKycSession();
           trackOnboardingStep(selfClient, OnboardingEvents.SCAN_STARTED, {
             branch: 'kyc',
           });
+          scanStarted = true;
           const result = await launchKycVerification(session.sessionToken);
 
           // User cancelled/dismissed without completing verification
@@ -109,7 +111,11 @@ const LogoConfirmationScreen: React.FC = () => {
           navigation.navigate('KycSuccess', { sessionId: session.sessionId });
         } catch {
           console.error('Error launching KYC verification');
-          failOnboardingAttempt(selfClient, 'scan_started', 'kyc_launch_error');
+          failOnboardingAttempt(
+            selfClient,
+            scanStarted ? 'scan_started' : 'pre_start',
+            scanStarted ? 'kyc_launch_error' : 'kyc_session_error',
+          );
           showModal({
             titleText: 'Error',
             bodyText: 'Unable to start verification. Please try again.',
