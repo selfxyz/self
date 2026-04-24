@@ -21,15 +21,21 @@ import {
 import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import {
   black,
+  amber50,
+  amber200,
+  amber700,
   slate100,
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
+import { Text, YStack } from 'tamagui';
 
 import passportOnboardingAnimation from '@/assets/animations/passport_onboarding.json';
 import { useKycLauncher } from '@/hooks/useKycLauncher';
 import { impactLight } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
+import { useSettingStore } from '@/stores/settingStore';
 import { ensureCameraForPassportScan } from '@/utils/cameraPermission';
 import { getDocumentScanPrompt } from '@/utils/documentAttributes';
 
@@ -45,6 +51,9 @@ const DocumentOnboardingScreen: React.FC = () => {
     countryCode: countryCode ?? '',
     cancelLabel: 'Go Back',
   });
+  const testRegistrationCircuitArmed = useSettingStore(
+    state => state.testRegistrationCircuitArmed,
+  );
   const handleCameraPress = useCallback(async () => {
     impactLight();
     const ok = await ensureCameraForPassportScan({
@@ -92,6 +101,26 @@ const DocumentOnboardingScreen: React.FC = () => {
       </ExpandableBottomLayout.TopSection>
       <ExpandableBottomLayout.BottomSection backgroundColor={white}>
         <TextsContainer>
+          {testRegistrationCircuitArmed && (
+            <YStack
+              backgroundColor={amber50}
+              borderColor={amber200}
+              borderRadius="$4"
+              borderWidth={1}
+              gap="$1"
+              marginBottom="$4"
+              padding="$4"
+              testID="test-registration-circuit-banner"
+            >
+              <Text color={amber700} fontFamily={dinot} fontSize="$5">
+                Test registration circuit armed
+              </Text>
+              <Text color={amber700} fontFamily={dinot} fontSize="$3">
+                This scan will bypass the on-chain pre-checks and force the
+                register circuit path.
+              </Text>
+            </YStack>
+          )}
           <Title>{scanPrompt}</Title>
           <Description textBreakStrategy="balanced">
             Open to the photo page
