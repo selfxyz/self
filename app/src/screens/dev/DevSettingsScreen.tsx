@@ -41,12 +41,6 @@ const DevSettingsScreen: React.FC = () => {
   const setLoggingSeverity = useSettingStore(state => state.setLoggingSeverity);
   const useStrongBox = useSettingStore(state => state.useStrongBox);
   const setUseStrongBox = useSettingStore(state => state.setUseStrongBox);
-  const bypassRegistrationCheck = useSettingStore(
-    state => state.bypassRegistrationCheck,
-  );
-  const setBypassRegistrationCheck = useSettingStore(
-    state => state.setBypassRegistrationCheck,
-  );
 
   // Custom hooks
   const { hasNotificationPermission, subscribedTopics, handleTopicToggle } =
@@ -129,8 +123,6 @@ const DevSettingsScreen: React.FC = () => {
             <DevTogglesSection
               useStrongBox={useStrongBox}
               setUseStrongBox={setUseStrongBox}
-              bypassRegistrationCheck={bypassRegistrationCheck}
-              setBypassRegistrationCheck={setBypassRegistrationCheck}
             />
           )}
 

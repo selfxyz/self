@@ -85,7 +85,7 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
                 .shouldTrigger(errorType as InjectedErrorType);
             },
             shouldBypassRegistrationCheck: () =>
-              useSettingStore.getState().bypassRegistrationCheck,
+              useSettingStore.getState().consumeTestRegistrationCircuit(),
           }
         : undefined,
     }),
