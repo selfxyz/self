@@ -103,6 +103,23 @@ describe('handleStatusCode', () => {
       expect(result.stateUpdate).toBeUndefined();
     });
 
+    it('downgrades REGISTERED_COMMITMENT to PROVE_FAILURE when forceRegisterOnAlreadyRegistered is on', () => {
+      const data: StatusMessage = {
+        status: 5,
+        error_code: 'REGISTERED_COMMITMENT',
+        reason: 'already registered',
+      };
+
+      const result = handleStatusCode(data, 'register', {
+        forceRegisterOnAlreadyRegistered: true,
+      });
+
+      expect(result.shouldDisconnect).toBe(true);
+      expect(result.actorEvent).toEqual({ type: 'PROVE_FAILURE' });
+      expect(result.stateUpdate?.error_code).toBe('REGISTERED_COMMITMENT');
+      expect(result.stateUpdate?.reason).toBe('already registered');
+    });
+
     it('still returns PROVE_FAILURE for status 5 with other error_code', () => {
       const data: StatusMessage = {
         status: 5,

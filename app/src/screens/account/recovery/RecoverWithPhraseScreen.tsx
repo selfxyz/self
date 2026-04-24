@@ -31,7 +31,6 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import Paste from '@/assets/icons/paste.svg';
-import { useRecoveryCircuitTestFlowEnabled } from '@/hooks/useRecoveryCircuitTestFlowEnabled';
 import type { RootStackParamList } from '@/navigation';
 import { getPrivateKeyFromMnemonic, useAuth } from '@/providers/authProvider';
 import {
@@ -63,7 +62,6 @@ const RecoverWithPhraseScreen: React.FC = () => {
   const { useProtocolStore } = selfClient;
   const { restoreAccountFromMnemonic } = useAuth();
   const { trackEvent } = useSelfClient();
-  const isRecoveryCircuitTestFlowEnabled = useRecoveryCircuitTestFlowEnabled();
   const [mnemonic, setMnemonic] = useState<string>();
   const [restoring, setRestoring] = useState(false);
   const [error, setError] = useState<RecoveryError | null>(null);
@@ -164,14 +162,6 @@ const RecoverWithPhraseScreen: React.FC = () => {
       await markCurrentDocumentAsRegistered(selfClient);
       setRestoring(false);
       trackEvent(BackupEvents.ACCOUNT_RECOVERY_COMPLETED);
-      if (isRecoveryCircuitTestFlowEnabled) {
-        navigation.navigate({
-          name: 'Loading',
-          params: {},
-        });
-        return;
-      }
-
       navigation.navigate('AccountVerifiedSuccess');
     } catch (restoreError) {
       trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_UNKNOWN, {
@@ -184,7 +174,6 @@ const RecoverWithPhraseScreen: React.FC = () => {
   }, [
     mnemonic,
     navigation,
-    isRecoveryCircuitTestFlowEnabled,
     restoreAccountFromMnemonic,
     selfClient,
     trackEvent,

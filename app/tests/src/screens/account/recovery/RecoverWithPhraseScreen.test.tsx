@@ -240,7 +240,7 @@ describe('RecoverWithPhraseScreen', () => {
     });
   }
 
-  it('navigates to Loading when the recovery circuit test flow is enabled', async () => {
+  it('navigates to AccountVerifiedSuccess after a successful recovery regardless of the harness toggle', async () => {
     enableRecoveryCircuitTestFlow = true;
 
     await completeSuccessfulRecovery();
@@ -249,13 +249,10 @@ describe('RecoverWithPhraseScreen', () => {
       { document: 'data' },
       'csca-cert',
     );
-    expect(mockNavigate).toHaveBeenCalledWith({
-      name: 'Loading',
-      params: {},
-    });
+    expect(mockNavigate).toHaveBeenCalledWith('AccountVerifiedSuccess');
   });
 
-  it('navigates to AccountVerifiedSuccess when the recovery circuit test flow is disabled', async () => {
+  it('navigates to AccountVerifiedSuccess when the harness is disabled', async () => {
     await completeSuccessfulRecovery();
 
     expect(mockNavigate).toHaveBeenCalledWith('AccountVerifiedSuccess');

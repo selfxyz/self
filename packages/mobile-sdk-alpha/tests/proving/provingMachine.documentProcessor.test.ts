@@ -843,6 +843,63 @@ describe('validatingDocument', () => {
     }
   });
 
+  it('bypasses account recovery and continues validation when forceRegisterOnAlreadyRegistered is on', async () => {
+    const passportData = buildPassportFixture();
+    const secret = '123456789';
+    const registerCircuit = getCircuitNameFromPassportData(passportData, 'register');
+    const dscCircuit = getCircuitNameFromPassportData(passportData, 'dsc');
+    const deployedCircuits = {
+      REGISTER: [registerCircuit],
+      REGISTER_ID: [],
+      REGISTER_AADHAAR: ['register_aadhaar'],
+      DSC: [dscCircuit],
+      DSC_ID: [],
+    };
+    const dscLeaf = getLeafDscTree(passportData.dsc_parsed!, passportData.csca_parsed!);
+    const dscTree = createDscTree([dscLeaf]);
+
+    const protocolState = buildProtocolState({
+      commitmentTree: createCommitmentTree([]),
+      dscTree,
+      deployedCircuits,
+      alternativeCsca: {},
+    });
+    const selfClient = createSelfClient(protocolState);
+
+    loadSelectedDocumentMock.mockResolvedValue({ data: passportData } as any);
+
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ data: true }),
+      } as Response),
+    );
+
+    try {
+      await useProvingStore
+        .getState()
+        .init(selfClient, 'register', false, { forceRegisterOnAlreadyRegistered: true });
+      actorMock.send.mockClear();
+      vi.mocked(selfClient.trackEvent).mockClear();
+
+      useProvingStore.setState({
+        passportData,
+        secret,
+        circuitType: 'register',
+        forceRegisterOnAlreadyRegistered: true,
+      });
+
+      await useProvingStore.getState().validatingDocument(selfClient);
+
+      expect(actorMock.send).not.toHaveBeenCalledWith({
+        type: 'ACCOUNT_RECOVERY_CHOICE',
+      });
+      expect(actorMock.send).toHaveBeenCalledWith({ type: 'VALIDATION_SUCCESS' });
+    } finally {
+      fetchSpy.mockRestore();
+    }
+  });
+
   it('switches to register circuit when DSC is already in the tree', async () => {
     const passportData = buildPassportFixture();
     const secret = '123456789';

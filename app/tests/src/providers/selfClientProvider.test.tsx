@@ -49,6 +49,24 @@ jest.mock(
   }),
 );
 
+jest.mock('@/stores/settingStore', () => {
+  const state: { enableRecoveryCircuitTestFlow: boolean } = {
+    enableRecoveryCircuitTestFlow: false,
+  };
+  return {
+    __esModule: true,
+    useSettingStore: {
+      getState: jest.fn(() => state),
+      setState: (patch: Partial<typeof state>) => Object.assign(state, patch),
+    },
+  };
+});
+
+jest.mock('@/utils/devUtils', () => ({
+  __esModule: true,
+  IS_DEV_MODE: true,
+}));
+
 jest.mock('@selfxyz/mobile-sdk-alpha', () => {
   const mockClient = {
     getSelfAppState: jest.fn(() => ({})),
@@ -59,8 +77,11 @@ jest.mock('@selfxyz/mobile-sdk-alpha', () => {
     <mock-sdk-provider>{children}</mock-sdk-provider>
   );
 
+  const capturedListenerMaps: Map<string, (...args: unknown[]) => void>[] = [];
+
   const createListenersMap = () => {
-    const map = new Map();
+    const map = new Map<string, (...args: unknown[]) => void>();
+    capturedListenerMaps.push(map);
     return {
       map,
       addListener: (event: string, callback: (...args: unknown[]) => void) => {
@@ -75,6 +96,7 @@ jest.mock('@selfxyz/mobile-sdk-alpha', () => {
     PROVING_REGISTER_ERROR_OR_FAILURE: 'PROVING_REGISTER_ERROR_OR_FAILURE',
     PROVING_ACCOUNT_VERIFIED_PENDING: 'PROVING_ACCOUNT_VERIFIED_PENDING',
     PROVING_ACCOUNT_VERIFIED_FAILURE: 'PROVING_ACCOUNT_VERIFIED_FAILURE',
+    PROVING_ACCOUNT_RECOVERY_REQUIRED: 'PROVING_ACCOUNT_RECOVERY_REQUIRED',
   };
 
   return {
@@ -82,6 +104,8 @@ jest.mock('@selfxyz/mobile-sdk-alpha', () => {
     useSelfClient: jest.fn(() => mockClient),
     SelfClientProvider: mockSdkProvider,
     createListenersMap,
+    __getLatestListenerMap: () =>
+      capturedListenerMaps[capturedListenerMaps.length - 1],
     impactLight: jest.fn(),
     reactNativeScannerAdapter: {},
     SdkEvents,
@@ -106,6 +130,59 @@ describe('SelfClientProvider', () => {
     const first = result.current;
     rerender();
     expect(result.current).toBe(first);
+  });
+
+  describe('PROVING_ACCOUNT_RECOVERY_REQUIRED listener', () => {
+    const sdkMock = jest.requireMock('@selfxyz/mobile-sdk-alpha') as {
+      __getLatestListenerMap: () => Map<string, () => void>;
+    };
+    const navigationMock = jest.requireMock('@/navigation') as {
+      navigationRef: { isReady: jest.Mock; navigate: jest.Mock };
+    };
+    const settingStoreMock = jest.requireMock('@/stores/settingStore') as {
+      useSettingStore: {
+        setState: (patch: { enableRecoveryCircuitTestFlow: boolean }) => void;
+      };
+    };
+
+    beforeEach(() => {
+      navigationMock.navigationRef.navigate.mockClear();
+      navigationMock.navigationRef.isReady.mockReturnValue(true);
+      settingStoreMock.useSettingStore.setState({
+        enableRecoveryCircuitTestFlow: false,
+      });
+    });
+
+    function triggerRecoveryRequired() {
+      const wrapper = ({ children }: { children: ReactNode }) => (
+        <SelfClientProvider>{children}</SelfClientProvider>
+      );
+      renderHook(() => useSelfClient(), { wrapper });
+      const map = sdkMock.__getLatestListenerMap();
+      const handler = map.get('PROVING_ACCOUNT_RECOVERY_REQUIRED');
+      if (!handler) {
+        throw new Error('recovery listener not registered');
+      }
+      handler();
+    }
+
+    it('navigates to AccountRecoveryChoice when the harness toggle is off', () => {
+      triggerRecoveryRequired();
+
+      expect(navigationMock.navigationRef.navigate).toHaveBeenCalledWith(
+        'AccountRecoveryChoice',
+      );
+    });
+
+    it('does not navigate when the harness toggle is on in dev mode', () => {
+      settingStoreMock.useSettingStore.setState({
+        enableRecoveryCircuitTestFlow: true,
+      });
+
+      triggerRecoveryRequired();
+
+      expect(navigationMock.navigationRef.navigate).not.toHaveBeenCalled();
+    });
   });
 
   it('wires Web Crypto hashing and network adapters', async () => {

@@ -245,6 +245,17 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
     );
 
     addListener(SdkEvents.PROVING_ACCOUNT_RECOVERY_REQUIRED, () => {
+      // Phase 2 dev harness: when the register-circuit test flow is on in a
+      // dev build, suppress the recovery navigation so the proving machine
+      // can continue down the register path. The SDK flag
+      // `forceRegisterOnAlreadyRegistered` is the primary mechanism — this
+      // guard is a belt-and-braces second line of defense.
+      if (
+        IS_DEV_MODE &&
+        useSettingStore.getState().enableRecoveryCircuitTestFlow === true
+      ) {
+        return;
+      }
       if (navigationRef.isReady()) {
         navigationRef.navigate('AccountRecoveryChoice');
       }

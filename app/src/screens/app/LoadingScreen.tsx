@@ -29,6 +29,7 @@ import LoadingUI from '@/components/LoadingUI';
 import { loadingScreenProgress } from '@/integrations/haptics';
 import { getLoadingScreenText } from '@/proving/loadingScreenStateText';
 import { setupNotifications } from '@/services/notifications/notificationService';
+import { buildProvingInitOptions } from '@/proving/buildProvingInitOptions';
 import { useSettingStore } from '@/stores/settingStore';
 
 type LoadingScreenParams = {
@@ -99,6 +100,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
 
     // Always initialize when screen becomes focused, regardless of current state
     // This ensures proper reset between proving sessions
+    const provingOptions = buildProvingInitOptions();
     const initializeProving = async () => {
       try {
         const selectedDocument = await loadSelectedDocument(selfClient);
@@ -106,13 +108,13 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
           selectedDocument?.data?.documentCategory === 'aadhaar' ||
           selectedDocument?.data?.documentCategory === 'kyc'
         ) {
-          await init(selfClient, 'register', true);
+          await init(selfClient, 'register', true, provingOptions);
         } else {
-          await init(selfClient, 'dsc', true);
+          await init(selfClient, 'dsc', true, provingOptions);
         }
       } catch (error) {
         console.error('Error loading selected document:', error);
-        await init(selfClient, 'dsc', true);
+        await init(selfClient, 'dsc', true, provingOptions);
       } finally {
         setIsInitializing(false);
       }

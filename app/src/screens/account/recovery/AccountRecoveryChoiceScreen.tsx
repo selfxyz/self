@@ -30,7 +30,6 @@ import {
 import Keyboard from '@/assets/icons/keyboard.svg';
 import RestoreAccountSvg from '@/assets/icons/restore_account.svg';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
-import { useRecoveryCircuitTestFlowEnabled } from '@/hooks/useRecoveryCircuitTestFlowEnabled';
 import { impactLight } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
@@ -55,7 +54,6 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
   // const { authState } = useTurnkey();
   const [_restoringFromTurnkey, _setRestoringFromTurnkey] = useState(false);
   const [restoringFromCloud, setRestoringFromCloud] = useState(false);
-  const isRecoveryCircuitTestFlowEnabled = useRecoveryCircuitTestFlowEnabled();
   const { cloudBackupEnabled, toggleCloudBackupEnabled, biometricsAvailable } =
     useSettingStore();
   const { download } = useBackupMnemonic();
@@ -74,17 +72,9 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
   // }, [refreshWallets]);
 
   const navigateAfterRecovery = useCallback(() => {
-    if (isRecoveryCircuitTestFlowEnabled) {
-      navigation.navigate({
-        name: 'Loading',
-        params: {},
-      });
-      return;
-    }
-
     impactLight();
     navigation.navigate('AccountVerifiedSuccess');
-  }, [isRecoveryCircuitTestFlowEnabled, navigation]);
+  }, [navigation]);
 
   const restoreAccountFlow = useCallback(
     async (

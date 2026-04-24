@@ -28,17 +28,49 @@ export interface StatusMessage {
   reason?: string;
 }
 
+export interface StatusHandlerOptions {
+  forceRegisterOnAlreadyRegistered?: boolean;
+}
+
 /**
  * Determine actions to take based on status code
  */
-export function handleStatusCode(data: StatusMessage, circuitType: string): StatusHandlerResult {
+export function handleStatusCode(
+  data: StatusMessage,
+  circuitType: string,
+  options?: StatusHandlerOptions,
+): StatusHandlerResult {
   const result: StatusHandlerResult = {
     shouldDisconnect: false,
     analytics: [],
   };
 
-  // Status 5 with REGISTERED_COMMITMENT → route to recovery flow
+  // Status 5 with REGISTERED_COMMITMENT → route to recovery flow. Under
+  // the dev harness flag we downgrade this to a plain PROVE_FAILURE so
+  // the machine terminates in `failure` instead of transitioning to
+  // `account_recovery_choice`. The local register circuit has already
+  // run by this point; the TEE rejection is the observable signal.
   if (data.status === 5 && data.error_code === 'REGISTERED_COMMITMENT') {
+    if (options?.forceRegisterOnAlreadyRegistered) {
+      return {
+        shouldDisconnect: true,
+        stateUpdate: {
+          error_code: data.error_code,
+          reason: data.reason,
+          socketConnection: null,
+        },
+        actorEvent: { type: 'PROVE_FAILURE' },
+        analytics: [
+          {
+            event: 'SOCKETIO_PROOF_FAILURE',
+            data: {
+              error_code: data.error_code,
+              reason: data.reason,
+            },
+          },
+        ],
+      };
+    }
     return {
       shouldDisconnect: true,
       actorEvent: { type: 'PROVE_ALREADY_REGISTERED' },

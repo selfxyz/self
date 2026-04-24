@@ -84,7 +84,7 @@ export const DebugShortcutsSection: React.FC<DebugShortcutsSectionProps> = ({
             height="$5"
             padding={0}
             onPress={() => {
-              navigation.navigate('AccountRecoveryChoice');
+              navigation.navigate('CountryPicker');
             }}
           >
             <XStack
@@ -95,7 +95,7 @@ export const DebugShortcutsSection: React.FC<DebugShortcutsSectionProps> = ({
               paddingRight="$1.5"
             >
               <Text fontSize="$5" color={slate500} fontFamily={dinot}>
-                Recovery Circuit Test Flow
+                Register Circuit Test (scan)
               </Text>
               <ChevronRight color={slate500} strokeWidth={2.5} />
             </XStack>

@@ -55,7 +55,7 @@ export type { MRZScanOptions } from './mrz';
 export type { OnboardingBranch, OnboardingFailureStage, OnboardingStage } from './analytics/onboardingFunnel';
 
 export type { PassportValidationCallbacks } from './validation/document';
-export type { ProvingStateType } from './proving/provingMachine';
+export type { ProvingInitOptions, ProvingStateType } from './proving/provingMachine';
 
 export type { RecoveryValidationResult } from './proving/recoveryValidation';
 

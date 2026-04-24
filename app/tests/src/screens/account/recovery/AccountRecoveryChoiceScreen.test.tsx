@@ -261,7 +261,7 @@ describe('AccountRecoveryChoiceScreen', () => {
     });
   }
 
-  it('navigates to Loading when the recovery circuit test flow is enabled', async () => {
+  it('navigates to AccountVerifiedSuccess after a successful recovery even when the harness toggle is on', async () => {
     enableRecoveryCircuitTestFlow = true;
 
     await completeSuccessfulCloudRecovery();
@@ -270,14 +270,11 @@ describe('AccountRecoveryChoiceScreen', () => {
       { document: 'data' },
       'csca-cert',
     );
-    expect(mockNavigate).toHaveBeenCalledWith({
-      name: 'Loading',
-      params: {},
-    });
-    expect(impactLight).not.toHaveBeenCalled();
+    expect(mockNavigate).toHaveBeenCalledWith('AccountVerifiedSuccess');
+    expect(impactLight).toHaveBeenCalledTimes(1);
   });
 
-  it('navigates to AccountVerifiedSuccess when the recovery circuit test flow is disabled', async () => {
+  it('navigates to AccountVerifiedSuccess when the harness is disabled', async () => {
     await completeSuccessfulCloudRecovery();
 
     expect(mockNavigate).toHaveBeenCalledWith('AccountVerifiedSuccess');

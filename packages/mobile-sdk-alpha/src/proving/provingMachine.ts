@@ -213,6 +213,10 @@ const _buildSubmitRequest = (uuid: string | null, encryptedPayload: EncryptedPay
 
 const getPlatform = (selfClient: SelfClient): string => selfClient?.config?.platform ?? 'unknown';
 
+export interface ProvingInitOptions {
+  forceRegisterOnAlreadyRegistered?: boolean;
+}
+
 export interface ProvingState {
   currentState: ProvingStateType;
   attestation: number[] | null;
@@ -236,10 +240,18 @@ export interface ProvingState {
   // event so it does not fire when `completed` is reached via the
   // `ALREADY_REGISTERED` shortcut from `validating_document`.
   didNewRegistrationProof: boolean;
+  // Dev-only harness flag. When true, the proving machine must not
+  // transition to `account_recovery_choice`. Instead, the already-
+  // registered branches in `validatingDocument` and the TEE
+  // REGISTERED_COMMITMENT status are rerouted so the register
+  // circuit runs locally and the on-chain register submission
+  // fails naturally. Default false. See specs/app-dev-recovery-circuit-test-flow.md (Phase 2).
+  forceRegisterOnAlreadyRegistered: boolean;
   init: (
     selfClient: SelfClient,
     circuitType: 'dsc' | 'disclose' | 'register',
     userConfirmed?: boolean,
+    options?: ProvingInitOptions,
   ) => Promise<void>;
   cancel: (selfClient: SelfClient) => Promise<void>;
   parseIDDocument: (selfClient: SelfClient) => Promise<void>;
@@ -420,6 +432,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       env: null,
       error_code: null,
       reason: null,
+      forceRegisterOnAlreadyRegistered: false,
       ...partial,
     });
   }
@@ -609,6 +622,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     error_code: null,
     reason: null,
     endpointType: null,
+    forceRegisterOnAlreadyRegistered: false,
     cancel: async (selfClient: SelfClient) => {
       const context = createProofContext(selfClient, 'cancel');
       selfClient.logProofEvent('warn', 'Proving flow cancelled by UI', context);
@@ -860,7 +874,9 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             status: data.status,
           });
 
-          const result = handleStatusCode(data, get().circuitType as string);
+          const result = handleStatusCode(data, get().circuitType as string, {
+            forceRegisterOnAlreadyRegistered: get().forceRegisterOnAlreadyRegistered,
+          });
 
           // Handle state updates
           if (result.stateUpdate) {
@@ -1090,6 +1106,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       selfClient: SelfClient,
       circuitType: 'dsc' | 'disclose' | 'register',
       userConfirmed: boolean = false,
+      options?: ProvingInitOptions,
     ) => {
       selfClient.trackEvent(ProofEvents.PROVING_INIT);
       get()._closeConnections(selfClient);
@@ -1109,6 +1126,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       resetProvingState({
         userConfirmed,
         circuitType,
+        forceRegisterOnAlreadyRegistered: options?.forceRegisterOnAlreadyRegistered === true,
       });
 
       actor = createActor(provingMachine);
@@ -1429,12 +1447,22 @@ export const useProvingStore = create<ProvingState>((set, get) => {
               failure: 'PROOF_FAILED_VALIDATION',
               duration_ms: Date.now() - startTime,
             });
-            console.warn(
-              'Passport is nullified, but not registered with this secret. Navigating to AccountRecoveryChoice',
-            );
             selfClient.trackEvent(ProofEvents.PASSPORT_NULLIFIER_ONCHAIN);
-            actor!.send({ type: 'ACCOUNT_RECOVERY_CHOICE' });
-            return;
+            if (get().forceRegisterOnAlreadyRegistered) {
+              // Dev harness: skip the recovery branch so the register
+              // circuit runs locally. The TEE will reject with
+              // REGISTERED_COMMITMENT and the machine will terminate
+              // in `failure` — that failure is the test signal.
+              console.warn(
+                'forceRegisterOnAlreadyRegistered active — continuing into register proving despite on-chain nullifier',
+              );
+            } else {
+              console.warn(
+                'Passport is nullified, but not registered with this secret. Navigating to AccountRecoveryChoice',
+              );
+              actor!.send({ type: 'ACCOUNT_RECOVERY_CHOICE' });
+              return;
+            }
           }
           const document: DocumentCategory = passportData.documentCategory;
           if (document === 'passport' || document === 'id_card') {
