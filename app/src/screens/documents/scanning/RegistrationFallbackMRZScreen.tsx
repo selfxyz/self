@@ -9,8 +9,14 @@ import type { RouteProp } from '@react-navigation/native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import {
+  setOnboardingBranch,
+  trackOnboardingRetry,
+  trackOnboardingStep,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
 import { BodyText } from '@selfxyz/mobile-sdk-alpha/components';
+import { OnboardingEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import {
   black,
   cyan300,
@@ -75,6 +81,15 @@ const RegistrationFallbackMRZScreen: React.FC = () => {
       // Stay on this screen - user can try again
       // Error is already logged in the hook
     },
+    onSuccess: (_result, sessionId) => {
+      // Fire the canonical scan_succeeded for the KYC branch so users who
+      // recover via KYC don't appear as dropped off at scan_started in the
+      // funnel. Mirrors the LogoConfirmationScreen pattern.
+      trackOnboardingStep(selfClient, OnboardingEvents.SCAN_SUCCEEDED, {
+        branch: 'kyc',
+      });
+      navigation.navigate('KycSuccess', { sessionId });
+    },
   });
 
   const handleClose = useCallback(() => {
@@ -86,6 +101,7 @@ const RegistrationFallbackMRZScreen: React.FC = () => {
     trackEvent('REGISTRATION_FALLBACK_TRY_ALTERNATIVE', {
       errorSource: 'mrz_scan_failed',
     });
+    setOnboardingBranch('kyc');
     await launchKycVerification();
   }, [launchKycVerification, trackEvent]);
 
@@ -93,8 +109,9 @@ const RegistrationFallbackMRZScreen: React.FC = () => {
     trackEvent('REGISTRATION_FALLBACK_RETRY_ORIGINAL', {
       errorSource: 'mrz_scan_failed',
     });
+    trackOnboardingRetry(selfClient, 'scan_started', 'mrz_scan_failed');
     navigation.navigate('DocumentCamera');
-  }, [navigation, trackEvent]);
+  }, [navigation, selfClient, trackEvent]);
 
   return (
     <YStack flex={1} backgroundColor={slate100}>

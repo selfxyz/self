@@ -62,6 +62,7 @@ describe('navigation', () => {
         'CreateMock',
         'DataConfirmation',
         'DeferredLinkingInfo',
+        'DevDangerZone',
         'DevFeatureFlags',
         'DevHapticFeedback',
         'DevLoadingScreen',

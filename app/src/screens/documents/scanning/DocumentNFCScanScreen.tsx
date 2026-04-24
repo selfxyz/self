@@ -32,7 +32,12 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { CircleHelp } from '@tamagui/lucide-icons';
 
 import type { PassportData } from '@selfxyz/common/types';
-import { sanitizeErrorMessage, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import {
+  resolveOnboardingBranch,
+  sanitizeErrorMessage,
+  trackOnboardingStep,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
 import {
   BodyText,
   ButtonsContainer,
@@ -41,7 +46,10 @@ import {
   TextsContainer,
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
-import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import {
+  OnboardingEvents,
+  PassportEvents,
+} from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import {
   black,
   slate100,
@@ -387,6 +395,10 @@ const DocumentNFCScanScreen: React.FC = () => {
         trackEvent(PassportEvents.NFC_SCAN_SUCCESS, {
           duration_seconds: parseFloat(scanDurationSeconds),
         });
+        trackOnboardingStep(selfClient, OnboardingEvents.SCAN_SUCCEEDED, {
+          branch: resolveOnboardingBranch(documentType ?? 'p'),
+          duration_seconds: parseFloat(scanDurationSeconds),
+        });
         logNFCEvent(
           'info',
           'scan_success',
@@ -470,6 +482,7 @@ const DocumentNFCScanScreen: React.FC = () => {
     }
   }, [
     baseContext,
+    documentType,
     isNfcEnabled,
     isNfcSupported,
     route.params,
@@ -479,6 +492,7 @@ const DocumentNFCScanScreen: React.FC = () => {
     isPacePolling,
     navigation,
     openErrorModal,
+    selfClient,
     trackEvent,
     shouldInjectError,
   ]);

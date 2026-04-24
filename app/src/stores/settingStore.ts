@@ -52,16 +52,39 @@ interface PersistedSettingsState {
 interface NonPersistedSettingsState {
   hideNetworkModal: boolean;
   setHideNetworkModal: (hideNetworkModal: boolean) => void;
+  // Dev-only one-shot flag, armed by the "Test registration circuit" debug
+  // shortcut and consumed (cleared) by the proving machine on the next
+  // registration attempt. Not persisted so it never survives an app launch.
+  testRegistrationCircuitArmed: boolean;
+  armTestRegistrationCircuit: () => void;
+  consumeTestRegistrationCircuit: () => boolean;
 }
 
 type SettingsState = PersistedSettingsState & NonPersistedSettingsState;
+
+export const SETTING_STORE_VERSION = 1;
+
+// v1: force support ID sharing off for all existing users. It is opt-in
+// from here on — users can re-enable it in settings when a support agent
+// asks for it.
+export const migrateSettingStore = (
+  persistedState: unknown,
+  version: number,
+): SettingsState => {
+  const state = (persistedState ?? {}) as Partial<SettingsState>;
+  if (version < 1) {
+    state.supportUuidEnabled = false;
+    state.supportUuid = null;
+  }
+  return state as SettingsState;
+};
 
 /*
  * This store is used to store the settings of the app. Dont store anything sensative here
  */
 export const useSettingStore = create<SettingsState>()(
   persist(
-    (set, _get) => ({
+    (set, get) => ({
       // Persisted state
       hasPrivacyNoteBeenDismissed: false,
       dismissPrivacyNote: () => set({ hasPrivacyNoteBeenDismissed: true }),
@@ -143,7 +166,7 @@ export const useSettingStore = create<SettingsState>()(
       setPointsAddress: (address: string | null) =>
         set({ pointsAddress: address }),
 
-      supportUuidEnabled: true,
+      supportUuidEnabled: false,
       setSupportUuidEnabled: (supportUuidEnabled: boolean) =>
         set({ supportUuidEnabled }),
       supportUuid: null,
@@ -163,6 +186,17 @@ export const useSettingStore = create<SettingsState>()(
       setHideNetworkModal: (hideNetworkModal: boolean) => {
         set({ hideNetworkModal });
       },
+
+      testRegistrationCircuitArmed: false,
+      armTestRegistrationCircuit: () =>
+        set({ testRegistrationCircuitArmed: true }),
+      consumeTestRegistrationCircuit: () => {
+        const armed = get().testRegistrationCircuitArmed;
+        if (armed) {
+          set({ testRegistrationCircuitArmed: false });
+        }
+        return armed;
+      },
     }),
     {
       name: 'setting-storage',
@@ -172,8 +206,16 @@ export const useSettingStore = create<SettingsState>()(
         const persistedState = { ...state };
         delete (persistedState as Partial<SettingsState>).hideNetworkModal;
         delete (persistedState as Partial<SettingsState>).setHideNetworkModal;
+        delete (persistedState as Partial<SettingsState>)
+          .testRegistrationCircuitArmed;
+        delete (persistedState as Partial<SettingsState>)
+          .armTestRegistrationCircuit;
+        delete (persistedState as Partial<SettingsState>)
+          .consumeTestRegistrationCircuit;
         return persistedState;
       },
+      version: SETTING_STORE_VERSION,
+      migrate: migrateSettingStore,
     },
   ),
 );

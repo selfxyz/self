@@ -1,10 +1,10 @@
 {
   "ios": {
-    "build": 220,
-    "lastDeployed": "2026-04-21T21:12:09.776Z"
+    "build": 221,
+    "lastDeployed": "2026-04-23T04:24:34.019Z"
   },
   "android": {
-    "build": 151,
-    "lastDeployed": "2026-04-21T21:12:09.776Z"
+    "build": 152,
+    "lastDeployed": "2026-04-23T04:24:34.019Z"
   }
 }

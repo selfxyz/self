@@ -18,6 +18,7 @@ import {
   parseMRZBirthDate,
   parseMRZExpiryDate,
 } from '@selfxyz/mobile-sdk-alpha';
+import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import {
   birthDateToDisplay,
@@ -135,14 +136,14 @@ const styles = StyleSheet.create({
     color: colors.slate500,
     fontSize: 16,
     fontWeight: '500',
-    fontFamily: 'DIN OT',
+    fontFamily: dinot,
     flexShrink: 0,
   },
   value: {
     color: colors.black,
     fontSize: 16,
     fontWeight: '500',
-    fontFamily: 'DIN OT',
+    fontFamily: dinot,
     textAlign: 'right',
     flex: 1,
   },
@@ -150,7 +151,7 @@ const styles = StyleSheet.create({
     color: colors.black,
     fontSize: 16,
     fontWeight: '500',
-    fontFamily: 'DIN OT',
+    fontFamily: dinot,
     textAlign: 'right',
     flex: 1,
     paddingVertical: 0,

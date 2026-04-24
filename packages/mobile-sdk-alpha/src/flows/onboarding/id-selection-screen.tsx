@@ -10,7 +10,9 @@ import EPassportLogoRounded from '../../../svgs/icons/epassport_rounded.svg';
 import PassportCameraScanIcon from '../../../svgs/icons/passport_camera_scan.svg';
 import PlusIcon from '../../../svgs/icons/plus.svg';
 import SelfLogo from '../../../svgs/logo.svg';
+import { resolveOnboardingBranch, trackOnboardingStep } from '../../analytics/onboardingFunnel';
 import { BodyText, RoundFlag, View, XStack, YStack } from '../../components';
+import { OnboardingEvents } from '../../constants/analytics';
 import { black, blue100, blue600, slate100, slate300, slate400, white } from '../../constants/colors';
 import { advercase, dinot } from '../../constants/fonts';
 import { useSelfClient } from '../../context';
@@ -138,6 +140,13 @@ const IDSelectionScreen: React.FC<IDSelectionScreenProps> = props => {
     buttonTap();
 
     selfClient.getMRZState().update({ documentType: docType });
+
+    const branch = resolveOnboardingBranch(docType);
+    trackOnboardingStep(selfClient, OnboardingEvents.DOCUMENT_TYPE_SELECTED, {
+      branch,
+      document_type: getDocumentNameForEvent(docType),
+      country_code: countryCode,
+    });
 
     selfClient.emit(SdkEvents.DOCUMENT_TYPE_SELECTED, {
       documentType: docType,
