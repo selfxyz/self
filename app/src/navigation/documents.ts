@@ -14,6 +14,7 @@ import AadhaarUploadScreen from '@/screens/documents/aadhaar/AadhaarUploadScreen
 import DocumentDataInfoScreen from '@/screens/documents/management/DocumentDataInfoScreen';
 import IdDetailsScreen from '@/screens/documents/management/IdDetailsScreen';
 import ManageDocumentsScreen from '@/screens/documents/management/ManageDocumentsScreen';
+import DataConfirmationScreen from '@/screens/documents/scanning/DataConfirmationScreen';
 import DocumentCameraScreen from '@/screens/documents/scanning/DocumentCameraScreen';
 import DocumentCameraTroubleScreen from '@/screens/documents/scanning/DocumentCameraTroubleScreen';
 import DocumentNFCMethodSelectionScreen from '@/screens/documents/scanning/DocumentNFCMethodSelectionScreen';
@@ -112,6 +113,15 @@ const documentsScreens = {
     screen: ConfirmBelongingScreen,
     options: {
       headerShown: false,
+    } as NativeStackNavigationOptions,
+  },
+  DataConfirmation: {
+    screen: DataConfirmationScreen,
+    options: {
+      header: HeadlessNavForEuclid,
+      statusBarHidden: DataConfirmationScreen.statusBar?.hidden,
+      statusBarStyle: DataConfirmationScreen.statusBar?.style,
+      headerShown: true,
     } as NativeStackNavigationOptions,
   },
   IdDetails: {

@@ -8,10 +8,9 @@ export type {
   PointEvent,
   PointEventType,
 } from '@/services/points/types';
-export { POINT_VALUES } from '@/services/points/types';
-
 // Re-export all utility functions
 export {
+  NULLIFIER_ALREADY_USED_ERROR_PREFIX,
   formatTimeUntilDate,
   getIncomingPoints,
   getNextSundayNoonUTC,
@@ -22,6 +21,8 @@ export {
   hasUserDoneThePointsDisclosure,
   pointsSelfApp,
 } from '@/services/points/utils';
+
+export { POINT_VALUES } from '@/services/points/types';
 
 // Re-export event getter functions
 export {

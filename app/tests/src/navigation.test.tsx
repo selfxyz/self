@@ -60,7 +60,9 @@ describe('navigation', () => {
         'ConfirmBelonging',
         'CountryPicker',
         'CreateMock',
+        'DataConfirmation',
         'DeferredLinkingInfo',
+        'DevDangerZone',
         'DevFeatureFlags',
         'DevHapticFeedback',
         'DevLoadingScreen',
@@ -111,6 +113,7 @@ describe('navigation', () => {
         'Splash',
         'StarfallPushCode',
         'Support',
+        'Troubleshooting',
         'WebView',
       ]);
     });

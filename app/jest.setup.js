@@ -1284,6 +1284,12 @@ jest.mock('react-native/Libraries/AppState/AppState', () => {
   };
 });
 
+// Mock react-native-permissions — use the library's bundled mock so every test
+// can import it transitively without hitting the native module.
+jest.mock('react-native-permissions', () =>
+  require('react-native-permissions/mock'),
+);
+
 // Mock @didit-protocol/sdk-react-native
 jest.mock('@didit-protocol/sdk-react-native', () => ({
   __esModule: true,

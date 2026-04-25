@@ -200,15 +200,23 @@ const lokiTransport: transportFunctionType<LokiTransportOptions> = props => {
     message: string;
     timestamp: string;
     session_id: string;
-    support_uuid: string;
+    support_uuid_enabled: boolean;
+    support_uuid?: string;
     data?: unknown;
-  } = {
-    level: level.text,
-    message: actualMessage,
-    timestamp,
-    session_id: sessionId,
-    support_uuid: useSettingStore.getState().supportUuid ?? 'unset',
-  };
+  } = (() => {
+    const { supportUuid, supportUuidEnabled } = useSettingStore.getState();
+
+    return {
+      level: level.text,
+      message: actualMessage,
+      timestamp,
+      session_id: sessionId,
+      support_uuid_enabled: supportUuidEnabled,
+      ...(supportUuidEnabled
+        ? { support_uuid: supportUuid ?? 'unset' }
+        : undefined),
+    };
+  })();
 
   if (actualData) {
     logObject.data = actualData;

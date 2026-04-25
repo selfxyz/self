@@ -39,6 +39,7 @@ export interface AlertModalParams {
   onSecondaryButtonPress?: (() => Promise<void>) | (() => void);
   onModalDismiss?: () => void;
   preventDismiss?: boolean;
+  disablePrimaryButton?: boolean;
 }
 
 interface AlertModalProps {
@@ -123,7 +124,10 @@ const AlertModal: React.FC<AlertModalProps> = ({
               </Description>
             </YStack>
             <YStack gap={12}>
-              <PrimaryButton onPress={onButtonPressed}>
+              <PrimaryButton
+                onPress={onButtonPressed}
+                disabled={modalParams.disablePrimaryButton}
+              >
                 {modalParams.buttonText}
               </PrimaryButton>
               {modalParams.secondaryButtonText && (

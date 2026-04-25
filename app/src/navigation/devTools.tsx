@@ -8,12 +8,14 @@ import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import CreateMockScreen from '@/screens/dev/CreateMockScreen';
 import CreateMockScreenDeepLink from '@/screens/dev/CreateMockScreenDeepLink';
+import DevDangerZoneScreen from '@/screens/dev/DevDangerZoneScreen';
 import DevFeatureFlagsScreen from '@/screens/dev/DevFeatureFlagsScreen';
 import DevHapticFeedbackScreen from '@/screens/dev/DevHapticFeedbackScreen';
 import DevLoadingScreen from '@/screens/dev/DevLoadingScreen';
 import DevPrivateKeyScreen from '@/screens/dev/DevPrivateKeyScreen';
 import DevSettingsScreen from '@/screens/dev/DevSettingsScreen';
 import SocialLoginDemoScreen from '@/screens/dev/SocialLoginDemoScreen';
+import TroubleshootingScreen from '@/screens/dev/TroubleshootingScreen';
 
 const devHeaderOptions: NativeStackNavigationOptions = {
   headerStyle: {
@@ -59,6 +61,13 @@ const devScreens = {
       title: 'Dev Mode',
     } as NativeStackNavigationOptions,
   },
+  DevDangerZone: {
+    screen: DevDangerZoneScreen,
+    options: {
+      ...devHeaderOptions,
+      title: 'Danger Zone',
+    } as NativeStackNavigationOptions,
+  },
   DevFeatureFlags: {
     screen: DevFeatureFlagsScreen,
     options: {
@@ -87,6 +96,13 @@ const devScreens = {
     options: {
       ...devHeaderOptions,
       title: 'Social Login Demo',
+    } as NativeStackNavigationOptions,
+  },
+  Troubleshooting: {
+    screen: TroubleshootingScreen,
+    options: {
+      ...devHeaderOptions,
+      title: 'Troubleshooting',
     } as NativeStackNavigationOptions,
   },
 };

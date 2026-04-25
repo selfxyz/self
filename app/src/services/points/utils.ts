@@ -8,7 +8,13 @@ import { SelfAppBuilder } from '@selfxyz/common/utils/appType';
 
 import { selfLogoReverseUrl } from '@/consts/links';
 import { getOrGeneratePointsAddress } from '@/providers/authProvider';
-import { POINTS_API_BASE_URL } from '@/services/points/constants';
+import {
+  POINTS_API_BASE_URL,
+  POINTS_API_ROUTES,
+  POINTS_SELF_APP_ENDPOINT,
+  POINTS_SELF_APP_NAME,
+  POINTS_SELF_APP_SCOPE,
+} from '@/services/points/constants';
 import type { IncomingPoints } from '@/services/points/types';
 
 export type WhitelistedContract = {
@@ -16,6 +22,8 @@ export type WhitelistedContract = {
   points_per_disclosure: number;
   num_disclosures: number;
 };
+
+export const NULLIFIER_ALREADY_USED_ERROR_PREFIX = '0xdc215c0a';
 
 export const formatTimeUntilDate = (targetDate: Date): string => {
   const now = new Date();
@@ -38,7 +46,7 @@ export const getIncomingPoints = async (): Promise<IncomingPoints | null> => {
     const nextSundayDate = getNextSundayNoonUTC();
 
     const response = await fetch(
-      `${POINTS_API_BASE_URL}/points/${userAddress.toLowerCase()}`,
+      `${POINTS_API_BASE_URL}${POINTS_API_ROUTES.pointsByAddress(userAddress)}`,
     );
 
     if (!response.ok) {
@@ -94,7 +102,7 @@ export const getPointsAddress = async (): Promise<string> => {
 
 export const getTotalPoints = async (address: string): Promise<number> => {
   try {
-    const url = `${POINTS_API_BASE_URL}/points/${address.toLowerCase()}`;
+    const url = `${POINTS_API_BASE_URL}${POINTS_API_ROUTES.pointsByAddress(address)}`;
     const response = await fetch(url);
 
     if (!response.ok) {
@@ -114,7 +122,7 @@ export const getWhiteListedDisclosureAddresses = async (): Promise<
 > => {
   try {
     const response = await fetch(
-      `${POINTS_API_BASE_URL}/whitelisted-addresses`,
+      `${POINTS_API_BASE_URL}${POINTS_API_ROUTES.whitelistedAddresses}`,
     );
 
     if (!response.ok) {
@@ -150,7 +158,9 @@ export const hasUserDoneThePointsDisclosure = async (): Promise<boolean> => {
   try {
     const userAddress = await getPointsAddress();
     const response = await fetch(
-      `${POINTS_API_BASE_URL}/has-disclosed/${userAddress.toLowerCase()}`,
+      `${POINTS_API_BASE_URL}${POINTS_API_ROUTES.hasDisclosedByAddress(
+        userAddress,
+      )}`,
     );
 
     if (!response.ok) {
@@ -166,12 +176,11 @@ export const hasUserDoneThePointsDisclosure = async (): Promise<boolean> => {
 };
 
 export const pointsSelfApp = async () => {
-  const endpoint = '0x829d183faaa675f8f80e8bb25fb1476cd4f7c1f0';
   const builder = new SelfAppBuilder({
-    appName: '✨ Self Points',
-    endpoint: endpoint.toLowerCase(),
+    appName: POINTS_SELF_APP_NAME,
+    endpoint: POINTS_SELF_APP_ENDPOINT.toLowerCase(),
     endpointType: 'celo',
-    scope: 'minimal-disclosure-quest',
+    scope: POINTS_SELF_APP_SCOPE,
     userId: v4(),
     userIdType: 'uuid',
     disclosures: {},

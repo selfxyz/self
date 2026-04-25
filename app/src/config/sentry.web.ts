@@ -10,6 +10,7 @@ import {
   captureMessage as sentryCaptureMessage,
   feedbackIntegration,
   init as sentryInit,
+  setTag,
   withProfiler,
   withScope,
 } from '@sentry/react';
@@ -267,7 +268,16 @@ export const logProofEvent = (
   extra?: Record<string, unknown>,
 ) => logEvent(level, 'proof', message, context, extra);
 
-export const setSupportUuidInSentry = (_supportUuid: string | null) => {};
+export const setSupportUuidInSentry = (
+  supportUuid: string | null,
+  enabled = true,
+) => {
+  if (isSentryDisabled) {
+    return;
+  }
+  setTag('support_uuid_enabled', enabled ? 'true' : 'false');
+  setTag('support_uuid', enabled ? (supportUuid ?? 'unset') : 'disabled');
+};
 
 export const wrapWithSentry = (App: React.ComponentType) => {
   return isSentryDisabled ? App : withProfiler(App);

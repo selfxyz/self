@@ -29,10 +29,16 @@ jest.mock('../../../../env', () => ({
 }));
 
 jest.mock('@/stores/settingStore', () => {
-  const state = { supportUuid: null as string | null };
+  const state = {
+    supportUuid: null as string | null,
+    supportUuidEnabled: true,
+  };
   return {
     useSettingStore: {
       getState: () => ({
+        get supportUuidEnabled() {
+          return state.supportUuidEnabled;
+        },
         get supportUuid() {
           return state.supportUuid;
         },
@@ -44,7 +50,7 @@ jest.mock('@/stores/settingStore', () => {
 
 const storeState = (
   useSettingStore as unknown as {
-    __state: { supportUuid: string | null };
+    __state: { supportUuid: string | null; supportUuidEnabled: boolean };
   }
 ).__state;
 
@@ -65,6 +71,7 @@ describe('lokiTransport', () => {
     fetchMock = jest.fn().mockResolvedValue({ ok: true });
     (global as unknown as { fetch: jest.Mock }).fetch = fetchMock;
     storeState.supportUuid = null;
+    storeState.supportUuidEnabled = true;
   });
 
   afterEach(() => {
@@ -84,6 +91,7 @@ describe('lokiTransport', () => {
     const payload = JSON.parse(init.body as string);
     const logLine = JSON.parse(payload.streams[0].values[0][1]);
     expect(logLine.support_uuid).toBe('abc-123');
+    expect(logLine.support_uuid_enabled).toBe(true);
   });
 
   it('falls back to "unset" when no support UUID is stored', async () => {
@@ -96,6 +104,21 @@ describe('lokiTransport', () => {
     const payload = JSON.parse(init.body as string);
     const logLine = JSON.parse(payload.streams[0].values[0][1]);
     expect(logLine.support_uuid).toBe('unset');
+    expect(logLine.support_uuid_enabled).toBe(true);
+  });
+
+  it('omits support_uuid when diagnostic IDs are disabled', async () => {
+    storeState.supportUuidEnabled = false;
+    callTransport();
+    flushLokiTransport();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    const [, init] = fetchMock.mock.calls[0];
+    const payload = JSON.parse(init.body as string);
+    const logLine = JSON.parse(payload.streams[0].values[0][1]);
+    expect(logLine).not.toHaveProperty('support_uuid');
+    expect(logLine.support_uuid_enabled).toBe(false);
   });
 
   it('does not put support_uuid or session_id in Loki stream labels', async () => {

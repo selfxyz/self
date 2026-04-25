@@ -338,6 +338,18 @@ export function extractNameFromMRZ(mrzString: string): { firstName: string; last
   return null;
 }
 
+const parseMRZDateComponents = (yymmdd: string): { year: number; month: number; day: number } | null => {
+  if (yymmdd.length !== 6) {
+    return null;
+  }
+
+  return {
+    year: parseInt(yymmdd.slice(0, 2)),
+    month: parseInt(yymmdd.slice(2, 4)) - 1,
+    day: parseInt(yymmdd.slice(4, 6)),
+  };
+};
+
 /**
  * Format ISO date string (YYYY-MM-DD) to YYMMDD format
  * Handles timezone variations and validates input
@@ -371,3 +383,26 @@ export function formatDateToYYMMDD(inputDate: string): string {
 
   throw new MrzParseError(`Invalid date format: ${inputDate}. Expected ISO format (YYYY-MM-DD) or similar.`);
 }
+
+// Uses a 30-year cutoff (same as formatDateToYYMMDD below):
+// years 00-30 → 2000-2030, years 31-99 → 1931-1999
+export const parseMRZBirthDate = (yymmdd: string): Date => {
+  const components = parseMRZDateComponents(yymmdd);
+  if (!components) return new Date();
+
+  const { year, month, day } = components;
+  const fullYear = year + (year > 30 ? 1900 : 2000);
+
+  return new Date(fullYear, month, day);
+};
+
+// No cutoff — expiry dates are always in the future, so always 2000+year
+export const parseMRZExpiryDate = (yymmdd: string): Date => {
+  const components = parseMRZDateComponents(yymmdd);
+  if (!components) return new Date();
+
+  const { year, month, day } = components;
+  const fullYear = 2000 + year;
+
+  return new Date(fullYear, month, day);
+};

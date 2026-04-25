@@ -2,7 +2,10 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { POINTS_API_BASE_URL } from '@/services/points/constants';
+import {
+  POINTS_API_BASE_URL,
+  POINTS_API_ROUTES,
+} from '@/services/points/constants';
 
 const REQUEST_TIMEOUT_MS = 30000; // 30 seconds
 
@@ -22,7 +25,7 @@ export async function fetchPushCode(walletAddress: string): Promise<string> {
 
   try {
     const response = await fetch(
-      `${POINTS_API_BASE_URL}/push/wallet/${walletAddress}`,
+      `${POINTS_API_BASE_URL}${POINTS_API_ROUTES.pushCodeByWallet(walletAddress)}`,
       {
         method: 'POST',
         headers: {

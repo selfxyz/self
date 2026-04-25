@@ -3,8 +3,10 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type { PropsWithChildren } from 'react';
-import React, { cloneElement, isValidElement } from 'react';
+import React, { cloneElement, isValidElement, useState } from 'react';
+import { Pressable } from 'react-native';
 import { Text, XStack, YStack } from 'tamagui';
+import { ChevronDown } from '@tamagui/lucide-icons';
 
 import {
   slate100,
@@ -22,6 +24,8 @@ interface ParameterSectionProps extends PropsWithChildren {
   title: string;
   description: string;
   darkMode?: boolean;
+  collapsible?: boolean;
+  defaultCollapsed?: boolean;
 }
 
 export function ParameterSection({
@@ -29,8 +33,14 @@ export function ParameterSection({
   title,
   description,
   darkMode,
+  collapsible = false,
+  defaultCollapsed = false,
   children,
 }: ParameterSectionProps) {
+  const [isExpanded, setIsExpanded] = useState(
+    collapsible ? !defaultCollapsed : true,
+  );
+
   const renderIcon = () => {
     const iconElement =
       typeof icon === 'function'
@@ -58,37 +68,61 @@ export function ParameterSection({
       flexDirection="column"
       gap="$3"
     >
-      <XStack
-        width="100%"
-        flexDirection="row"
-        justifyContent="flex-start"
-        gap="$4"
+      <Pressable
+        disabled={!collapsible}
+        onPress={() => setIsExpanded(current => !current)}
+        accessibilityRole={collapsible ? 'button' : undefined}
+        accessibilityState={collapsible ? { expanded: isExpanded } : undefined}
       >
-        <YStack
-          backgroundColor="gray"
-          borderRadius={5}
-          width={46}
-          height={46}
-          justifyContent="center"
+        <XStack
+          width="100%"
+          flexDirection="row"
+          justifyContent="space-between"
           alignItems="center"
-          padding="$2"
+          gap="$3"
         >
-          {renderIcon()}
-        </YStack>
-        <YStack flexDirection="column" gap="$1">
-          <Text
-            fontSize="$5"
-            color={darkMode ? white : slate600}
-            fontFamily={dinot}
+          <XStack
+            flex={1}
+            flexDirection="row"
+            justifyContent="flex-start"
+            gap="$4"
           >
-            {title}
-          </Text>
-          <Text fontSize="$3" color={slate400} fontFamily={dinot}>
-            {description}
-          </Text>
-        </YStack>
-      </XStack>
-      {children}
+            <YStack
+              backgroundColor="gray"
+              borderRadius={5}
+              width={46}
+              height={46}
+              justifyContent="center"
+              alignItems="center"
+              padding="$2"
+            >
+              {renderIcon()}
+            </YStack>
+            <YStack flex={1} flexDirection="column" gap="$1">
+              <Text
+                fontSize="$5"
+                color={darkMode ? white : slate600}
+                fontFamily={dinot}
+              >
+                {title}
+              </Text>
+              <Text fontSize="$3" color={slate400} fontFamily={dinot}>
+                {description}
+              </Text>
+            </YStack>
+          </XStack>
+          {collapsible && (
+            <ChevronDown
+              color={darkMode ? white : slate600}
+              strokeWidth={2.5}
+              style={{
+                transform: [{ rotate: isExpanded ? '180deg' : '0deg' }],
+              }}
+            />
+          )}
+        </XStack>
+      </Pressable>
+      {isExpanded ? children : null}
     </YStack>
   );
 }

@@ -18,6 +18,10 @@ export const DevTogglesSection: React.FC<DevTogglesSectionProps> = ({
   useStrongBox,
   setUseStrongBox,
 }) => {
+  if (Platform.OS !== 'android') {
+    return null;
+  }
+
   const handleToggleStrongBox = () => {
     Alert.alert(
       useStrongBox ? 'Disable StrongBox' : 'Enable StrongBox',
@@ -39,14 +43,14 @@ export const DevTogglesSection: React.FC<DevTogglesSectionProps> = ({
       icon={<BugIcon />}
       title="Options"
       description="Development and security options"
+      collapsible
+      defaultCollapsed
     >
-      {Platform.OS === 'android' && (
-        <TopicToggleButton
-          label="Use StrongBox"
-          isSubscribed={useStrongBox}
-          onToggle={handleToggleStrongBox}
-        />
-      )}
+      <TopicToggleButton
+        label="Use StrongBox"
+        isSubscribed={useStrongBox}
+        onToggle={handleToggleStrongBox}
+      />
     </ParameterSection>
   );
 };
