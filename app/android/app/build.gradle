@@ -198,6 +198,14 @@ android {
     }
 }
 
+configurations.all {
+    resolutionStrategy {
+        // expo-camera hardcodes mlkit barcode-scanning 17.2.0 which ships
+        // a non-16KB-page-aligned libbarhopper_v3.so — force 17.3.0
+        force 'com.google.mlkit:barcode-scanning:17.3.0'
+    }
+}
+
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
