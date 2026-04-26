@@ -1,0 +1,94 @@
+appId: com.proofofpassportapp
+---
+# 1. Reset app state so the disclaimer is shown fresh on launch.
+#    System UI ANR dismissal is handled by the harness (run-maestro.sh) before
+#    screenrecord starts, so it doesn't appear in the captured video.
+- clearState
+
+# 2. Launch the app from a clean state.
+- launchApp
+
+# 3. Disclaimer → Home (proven path; testIDs from the Self codebase).
+- extendedWaitUntil:
+    visible:
+      id: "disclaimer-screen-root"
+    timeout: 120000
+- tapOn:
+    id: "disclaimer-dismiss-button"
+- extendedWaitUntil:
+    visible:
+      id: "home-screen-root"
+    timeout: 30000
+
+# 5. Self's react-native-check-version fires async and renders a
+#    "New Version Available" modal. Wait for it to actually render before
+#    tapping the X close icon. Verified coords: (881,800) on 1080×2400.
+#    The X is a plain SVG with no testID and not exposed as a clickable in
+#    the accessibility tree, so the absolute pixel tap is the only path.
+#    Once dismissed, also assert it disappears so we don't race the next step.
+- extendedWaitUntil:
+    visible: "New Version Available"
+    timeout: 20000
+- tapOn:
+    point: "881,800"
+- extendedWaitUntil:
+    notVisible: "New Version Available"
+    timeout: 5000
+
+# 6. Open Settings (cog icon, top-right of HomeNavBar). No testID — verified
+#    coordinates (989,232) on 1080×2400.
+- tapOn:
+    point: "989,232"
+- extendedWaitUntil:
+    visible: "Manage ID documents"
+    timeout: 15000
+
+# 7. Settings → Manage Documents → CreateMock screen.
+#    Use anchored regex on the button label to avoid matching the on-screen
+#    description text "Generate mock document data" which is a substring match.
+- tapOn: "Manage ID documents"
+- extendedWaitUntil:
+    visible: "Available Documents"
+    timeout: 15000
+- tapOn: "^Generate Mock Document$"
+
+# 8. CreateMock screen. The Generate button is below the fold on a 1080×2400
+#    screen — scroll to it explicitly, then tap.
+- extendedWaitUntil:
+    visible: "Mock Document Parameters"
+    timeout: 15000
+- scrollUntilVisible:
+    element:
+      text: "^Generate Mock Document$"
+    direction: DOWN
+    timeout: 15000
+- tapOn: "^Generate Mock Document$"
+
+# 9. Generation takes ~20-30s on swiftshader, then routes to
+#    ConfirmBelonging which shows a "Confirm" primary button next to a
+#    "Confirm your identity" title. Wait for that to appear.
+- extendedWaitUntil:
+    visible: "Confirm your identity"
+    timeout: 90000
+
+# 10. Confirm ownership → emits DOCUMENT_OWNERSHIP_CONFIRMED → app navigates
+#     to Loading screen, which runs ZK proof generation. Tap Confirm.
+#     selfClientProvider listens for the event and routes to 'Loading'.
+- tapOn: "^Confirm$"
+
+# 11. Wait for the ZK proof to complete. On swiftshader_indirect this can take
+#     anywhere from 90s to 5+ min depending on circuit + passport algorithm.
+#     On success the app emits PROVING_ACCOUNT_VERIFIED_SUCCESS and routes to
+#     AccountVerifiedSuccessScreen which shows "ID Verified" + Continue button.
+- extendedWaitUntil:
+    visible: "ID Verified"
+    timeout: 600000
+
+# 12. Tap Continue to return to Home.
+- tapOn: "Continue"
+
+# 13. Final assertion: we're back on the home screen with a registered doc.
+- extendedWaitUntil:
+    visible:
+      id: "home-screen-root"
+    timeout: 30000
