@@ -57,17 +57,35 @@ export const DebugShortcutsSection: React.FC<DebugShortcutsSectionProps> = ({
   const armTestRegistrationCircuit = useSettingStore(
     state => state.armTestRegistrationCircuit,
   );
+  const armTestDscCircuit = useSettingStore(state => state.armTestDscCircuit);
 
   const handleStartTestRegistrationCircuit = () => {
     Alert.alert(
       'Test Registration Circuit',
-      'The next document scan will skip the on-chain "already registered / nullified" checks and force the register circuit to run. The relayer will still reject duplicate registrations. Dev only.',
+      'The next document scan will skip the on-chain "already registered / nullified" checks and force the register circuit to run. The DSC tree check still runs, so the test cert\'s DSC must already be on-chain. The relayer will still reject duplicate registrations. Dev only.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Start',
           onPress: () => {
             armTestRegistrationCircuit();
+            navigation.navigate('DocumentOnboarding');
+          },
+        },
+      ],
+    );
+  };
+
+  const handleStartTestDscCircuit = () => {
+    Alert.alert(
+      'Test DSC Circuit',
+      'The next document scan will skip the on-chain DSC tree check and force the DSC circuit to run, even if the DSC is already registered. Use this to QA the DSC proof path. Dev only.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Start',
+          onPress: () => {
+            armTestDscCircuit();
             navigation.navigate('DocumentOnboarding');
           },
         },
@@ -95,6 +113,12 @@ export const DebugShortcutsSection: React.FC<DebugShortcutsSectionProps> = ({
           <ShortcutRow
             label="Test Registration Circuit"
             onPress={handleStartTestRegistrationCircuit}
+          />
+        )}
+        {IS_DEV_MODE && (
+          <ShortcutRow
+            label="Test DSC Circuit"
+            onPress={handleStartTestDscCircuit}
           />
         )}
       </YStack>
