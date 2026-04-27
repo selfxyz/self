@@ -1389,17 +1389,12 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         else {
           const bypassDocumentRegistrationCheck =
             selfClient.config?.devConfig?.shouldBypassDocumentRegistrationCheck?.() ?? false;
-          const bypassDscRegistrationCheck =
-            selfClient.config?.devConfig?.shouldBypassDscRegistrationCheck?.() ?? false;
           if (bypassDocumentRegistrationCheck) {
             selfClient.logProofEvent(
               'warn',
               'Dev bypass active: skipping document registration / nullifier checks',
               context,
             );
-          }
-          if (bypassDscRegistrationCheck) {
-            selfClient.logProofEvent('warn', 'Dev bypass active: skipping DSC tree check', context);
           }
           const { isRegistered, csca } = bypassDocumentRegistrationCheck
             ? { isRegistered: false, csca: undefined }
@@ -1454,12 +1449,16 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           }
           const document: DocumentCategory = passportData.documentCategory;
           if (document === 'passport' || document === 'id_card') {
+            // Consume the DSC bypass only here so arming it on a session that
+            // ends up scanning aadhaar/kyc does not silently waste the one-shot.
+            const bypassDscRegistrationCheck =
+              selfClient.config?.devConfig?.shouldBypassDscRegistrationCheck?.() ?? false;
+            if (bypassDscRegistrationCheck) {
+              selfClient.logProofEvent('warn', 'Dev bypass active: skipping DSC tree check', context);
+            }
             const isDscRegistered = bypassDscRegistrationCheck
               ? false
-              : await checkIfPassportDscIsInTree(
-                  passportData,
-                  selfClient.getProtocolState()[document].dsc_tree,
-                );
+              : await checkIfPassportDscIsInTree(passportData, selfClient.getProtocolState()[document].dsc_tree);
             selfClient.logProofEvent('info', 'DSC tree check', context, {
               dsc_registered: isDscRegistered,
             });
