@@ -155,7 +155,7 @@ describe('SelfClientProvider', () => {
     }
   });
 
-  it('consumes shouldBypassRegistrationCheck as a one-shot flag', () => {
+  it('consumes shouldBypassDocumentRegistrationCheck as a one-shot flag', () => {
     act(() => {
       useSettingStore.getState().armTestRegistrationCircuit();
     });
@@ -168,13 +168,68 @@ describe('SelfClientProvider', () => {
     const config = mockSdkProviderProps?.config as
       | {
           devConfig?: {
-            shouldBypassRegistrationCheck?: () => boolean;
+            shouldBypassDocumentRegistrationCheck?: () => boolean;
+            shouldBypassDscRegistrationCheck?: () => boolean;
           };
         }
       | undefined;
 
-    expect(config?.devConfig?.shouldBypassRegistrationCheck?.()).toBe(true);
-    expect(config?.devConfig?.shouldBypassRegistrationCheck?.()).toBe(false);
+    expect(config?.devConfig?.shouldBypassDocumentRegistrationCheck?.()).toBe(
+      true,
+    );
+    expect(config?.devConfig?.shouldBypassDocumentRegistrationCheck?.()).toBe(
+      false,
+    );
     expect(useSettingStore.getState().testRegistrationCircuitArmed).toBe(false);
+  });
+
+  it('consumes shouldBypassDscRegistrationCheck as a one-shot flag', () => {
+    act(() => {
+      useSettingStore.getState().armTestDscCircuit();
+    });
+
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <SelfClientProvider>{children}</SelfClientProvider>
+    );
+    renderHook(() => useSelfClient(), { wrapper });
+
+    const config = mockSdkProviderProps?.config as
+      | {
+          devConfig?: {
+            shouldBypassDocumentRegistrationCheck?: () => boolean;
+            shouldBypassDscRegistrationCheck?: () => boolean;
+          };
+        }
+      | undefined;
+
+    expect(config?.devConfig?.shouldBypassDscRegistrationCheck?.()).toBe(true);
+    expect(config?.devConfig?.shouldBypassDscRegistrationCheck?.()).toBe(false);
+    expect(useSettingStore.getState().testDscCircuitArmed).toBe(false);
+  });
+
+  it('keeps document and DSC bypasses independent', () => {
+    act(() => {
+      useSettingStore.getState().armTestRegistrationCircuit();
+    });
+
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <SelfClientProvider>{children}</SelfClientProvider>
+    );
+    renderHook(() => useSelfClient(), { wrapper });
+
+    const config = mockSdkProviderProps?.config as
+      | {
+          devConfig?: {
+            shouldBypassDocumentRegistrationCheck?: () => boolean;
+            shouldBypassDscRegistrationCheck?: () => boolean;
+          };
+        }
+      | undefined;
+
+    // DSC bypass is not armed even though the document bypass is.
+    expect(config?.devConfig?.shouldBypassDscRegistrationCheck?.()).toBe(false);
+    expect(config?.devConfig?.shouldBypassDocumentRegistrationCheck?.()).toBe(
+      true,
+    );
   });
 });
