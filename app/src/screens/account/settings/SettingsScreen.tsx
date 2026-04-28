@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import { nativeApplicationVersion } from 'expo-application';
 import type { PropsWithChildren } from 'react';
 import React, { useCallback, useMemo, useState } from 'react';
 import { Linking, Platform, Share, View as RNView } from 'react-native';
@@ -257,7 +258,9 @@ const SettingsScreen: React.FC = () => {
                 ))}
               </XStack>
               <BodyText style={{ color: warmCream, fontSize: 15 }}>
-                SELF
+                {nativeApplicationVersion
+                  ? `SELF  ${nativeApplicationVersion}`
+                  : 'SELF'}
               </BodyText>
               {/* Dont remove if not viewing on ios */}
               <View marginBottom={bottom} />

@@ -257,11 +257,12 @@ export const validatingDocument = async (
 
     /// registration
     else {
-      const bypassRegistrationCheck = selfClient.config?.devConfig?.shouldBypassRegistrationCheck?.() ?? false;
-      if (bypassRegistrationCheck) {
-        selfClient.logProofEvent('warn', 'Dev bypass active: skipping on-chain registration checks', context);
+      const bypassDocumentRegistrationCheck =
+        selfClient.config?.devConfig?.shouldBypassDocumentRegistrationCheck?.() ?? false;
+      if (bypassDocumentRegistrationCheck) {
+        selfClient.logProofEvent('warn', 'Dev bypass active: skipping document registration / nullifier checks', context);
       }
-      const { isRegistered, csca } = bypassRegistrationCheck
+      const { isRegistered, csca } = bypassDocumentRegistrationCheck
         ? { isRegistered: false, csca: undefined }
         : await isUserRegisteredWithAlternativeCSCA(passportData, secret as string, {
             getCommitmentTree: (docCategory: DocumentCategory) => getCommitmentTree(selfClient, docCategory),
@@ -295,7 +296,7 @@ export const validatingDocument = async (
         actor.send({ type: 'ALREADY_REGISTERED' });
         return;
       }
-      const isNullifierOnchain = bypassRegistrationCheck ? false : await isDocumentNullified(passportData);
+      const isNullifierOnchain = bypassDocumentRegistrationCheck ? false : await isDocumentNullified(passportData);
       selfClient.logProofEvent('info', 'Nullifier check', context, {
         nullified: isNullifierOnchain,
       });
@@ -311,10 +312,16 @@ export const validatingDocument = async (
       }
       const document: DocumentCategory = passportData.documentCategory;
       if (document === 'passport' || document === 'id_card') {
-        const isDscRegistered = await checkIfPassportDscIsInTree(
-          passportData,
-          selfClient.getProtocolState()[document].dsc_tree,
-        );
+        // Consume the DSC bypass only here so arming it on a session that
+        // ends up scanning aadhaar/kyc does not silently waste the one-shot.
+        const bypassDscRegistrationCheck =
+          selfClient.config?.devConfig?.shouldBypassDscRegistrationCheck?.() ?? false;
+        if (bypassDscRegistrationCheck) {
+          selfClient.logProofEvent('warn', 'Dev bypass active: skipping DSC tree check', context);
+        }
+        const isDscRegistered = bypassDscRegistrationCheck
+          ? false
+          : await checkIfPassportDscIsInTree(passportData, selfClient.getProtocolState()[document].dsc_tree);
         selfClient.logProofEvent('info', 'DSC tree check', context, {
           dsc_registered: isDscRegistered,
         });

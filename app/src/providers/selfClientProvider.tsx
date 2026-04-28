@@ -84,8 +84,10 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
                 .getState()
                 .shouldTrigger(errorType as InjectedErrorType);
             },
-            shouldBypassRegistrationCheck: () =>
+            shouldBypassDocumentRegistrationCheck: () =>
               useSettingStore.getState().consumeTestRegistrationCircuit(),
+            shouldBypassDscRegistrationCheck: () =>
+              useSettingStore.getState().consumeTestDscCircuit(),
           }
         : undefined,
     }),

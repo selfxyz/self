@@ -88,3 +88,44 @@ describe('useSettingStore test registration circuit flag', () => {
     expect(persistedState).not.toHaveProperty('consumeTestRegistrationCircuit');
   });
 });
+
+describe('useSettingStore test DSC circuit flag', () => {
+  afterEach(() => {
+    useSettingStore.setState(useSettingStore.getInitialState(), true);
+  });
+
+  it('arms once and clears on first consume', () => {
+    expect(useSettingStore.getState().testDscCircuitArmed).toBe(false);
+
+    useSettingStore.getState().armTestDscCircuit();
+
+    expect(useSettingStore.getState().testDscCircuitArmed).toBe(true);
+    expect(useSettingStore.getState().consumeTestDscCircuit()).toBe(true);
+    expect(useSettingStore.getState().testDscCircuitArmed).toBe(false);
+    expect(useSettingStore.getState().consumeTestDscCircuit()).toBe(false);
+  });
+
+  it('is independent of the test registration circuit flag', () => {
+    useSettingStore.getState().armTestDscCircuit();
+
+    expect(useSettingStore.getState().testDscCircuitArmed).toBe(true);
+    expect(useSettingStore.getState().testRegistrationCircuitArmed).toBe(false);
+    expect(useSettingStore.getState().consumeTestRegistrationCircuit()).toBe(
+      false,
+    );
+    // Consuming the registration flag must not clear the DSC arm.
+    expect(useSettingStore.getState().testDscCircuitArmed).toBe(true);
+  });
+
+  it('excludes the test DSC circuit flag from persisted state', () => {
+    useSettingStore.getState().armTestDscCircuit();
+
+    const partialize = useSettingStore.persist.getOptions().partialize;
+    const persistedState = partialize?.(useSettingStore.getState());
+
+    expect(persistedState).toBeDefined();
+    expect(persistedState).not.toHaveProperty('testDscCircuitArmed');
+    expect(persistedState).not.toHaveProperty('armTestDscCircuit');
+    expect(persistedState).not.toHaveProperty('consumeTestDscCircuit');
+  });
+});
