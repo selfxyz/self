@@ -4,7 +4,11 @@
 
 // Mock ConfirmIdentificationScreen to avoid PixelRatio issues
 import type { ReactNode } from 'react';
-import { renderHook } from '@testing-library/react-native';
+import { act, renderHook } from '@testing-library/react-native';
+
+import { useSettingStore } from '@/stores/settingStore';
+
+let mockSdkProviderProps: Record<string, unknown> | undefined;
 
 jest.mock('@/assets/images/512w.png', () => 'mock-512w-image');
 jest.mock('@/assets/images/nfc.png', () => 'mock-nfc-image');
@@ -55,9 +59,10 @@ jest.mock('@selfxyz/mobile-sdk-alpha', () => {
     getProtocolState: jest.fn(() => ({})),
     getDeepLinksState: jest.fn(() => ({})),
   };
-  const mockSdkProvider = ({ children }: any) => (
-    <mock-sdk-provider>{children}</mock-sdk-provider>
-  );
+  const mockSdkProvider = ({ children, ...props }: any) => {
+    mockSdkProviderProps = props;
+    return <mock-sdk-provider>{children}</mock-sdk-provider>;
+  };
 
   const createListenersMap = () => {
     const map = new Map();
@@ -98,6 +103,11 @@ beforeAll(() => {
 });
 
 describe('SelfClientProvider', () => {
+  beforeEach(() => {
+    mockSdkProviderProps = undefined;
+    useSettingStore.setState(useSettingStore.getInitialState(), true);
+  });
+
   it('memoises the client instance', () => {
     const wrapper = ({ children }: { children: ReactNode }) => (
       <SelfClientProvider>{children}</SelfClientProvider>
@@ -143,5 +153,28 @@ describe('SelfClientProvider', () => {
       (global as any).fetch = originalFetch;
       (global as any).WebSocket = originalWebSocket;
     }
+  });
+
+  it('consumes shouldBypassRegistrationCheck as a one-shot flag', () => {
+    act(() => {
+      useSettingStore.getState().armTestRegistrationCircuit();
+    });
+
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <SelfClientProvider>{children}</SelfClientProvider>
+    );
+    renderHook(() => useSelfClient(), { wrapper });
+
+    const config = mockSdkProviderProps?.config as
+      | {
+          devConfig?: {
+            shouldBypassRegistrationCheck?: () => boolean;
+          };
+        }
+      | undefined;
+
+    expect(config?.devConfig?.shouldBypassRegistrationCheck?.()).toBe(true);
+    expect(config?.devConfig?.shouldBypassRegistrationCheck?.()).toBe(false);
+    expect(useSettingStore.getState().testRegistrationCircuitArmed).toBe(false);
   });
 });

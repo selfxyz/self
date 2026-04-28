@@ -116,6 +116,27 @@ export const NotificationEvents = {
   COLD_START_NOTIFICATION_OPENED: 'Notification: Cold Start Notification Opened',
 };
 
+/**
+ * Canonical onboarding funnel events. These are the ONLY events the Mixpanel
+ * onboarding funnel consumes. They fire at most once per onboarding attempt,
+ * guarded by the canonical funnel helper — never on component mount, never on
+ * back-navigation. Every other `*Events` group in this file is the diagnostic
+ * layer and is excluded from the funnel.
+ */
+export const OnboardingEvents = {
+  STARTED: 'Onboarding: Started',
+  COUNTRY_SELECTED: 'Onboarding: Country Selected',
+  DOCUMENT_TYPE_SELECTED: 'Onboarding: Document Type Selected',
+  SCAN_STARTED: 'Onboarding: Document Scan Started',
+  SCAN_SUCCEEDED: 'Onboarding: Document Scan Succeeded',
+  PROOF_STARTED: 'Onboarding: Proof Generation Started',
+  PROOF_SUCCEEDED: 'Onboarding: Proof Generation Succeeded',
+  COMPLETED: 'Onboarding: Completed',
+  FAILED: 'Onboarding: Failed',
+  STEP_RETRIED: 'Onboarding: Step Retried',
+  DISCLOSURE_COMPLETED: 'Onboarding: Disclosure Completed',
+};
+
 export const PassportEvents = {
   CAMERA_SCAN_CANCELLED: 'Passport: Camera Scan Cancelled',
   CAMERA_SCAN_FAILED: 'Passport: Camera Scan Failed',
@@ -124,8 +145,10 @@ export const PassportEvents = {
   CAMERA_SCREEN_CLOSED: 'Passport: Camera View Closed',
   CANCEL_PASSPORT_NFC: 'Passport: Cancel Passport NFC',
   COMING_SOON: 'Passport: Passport Not Supported',
+  DATA_CONFIRMATION_COMPLETED: 'Passport: Data Confirmation Completed',
   DATA_LOAD_ERROR: 'Passport: Passport Data Load Error',
   DISMISS_COMING_SOON: 'Passport: Dismiss Unsupported Passport',
+  MRZ_DATA_MODIFIED: 'Passport: MRZ Data Modified',
   NFC_RESPONSE_PARSE_FAILED: 'Passport: Parsing NFC Response Unsuccessful',
   NFC_SCAN_FAILED: 'Passport: NFC Scan Failed',
   NFC_SCAN_SUCCESS: 'Passport: NFC Scan Success',
@@ -185,6 +208,7 @@ export const ProofEvents = {
   PROOF_COMPLETED: 'Proof: Proof Completed',
   PROOF_DISCLOSURES_SCROLLED: 'Proof: Proof Disclosures Scrolled',
   PROOF_FAILED: 'Proof: Proof Failed',
+  POINTS_NULLIFIER_ALREADY_USED: 'Proof: Points Nullifier Already Used',
   PROOF_RESULT_ACKNOWLEDGED: 'Proof: Proof Result Acknowledged',
   PROOF_VERIFY_CONFIRMATION_ACCEPTED: 'Proof: Verify Confirmation Accepted',
   PROOF_VERIFY_LONG_PRESS: 'Proof: Verify Button Long Pressed',

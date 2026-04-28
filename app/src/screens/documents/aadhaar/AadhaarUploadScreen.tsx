@@ -9,9 +9,12 @@ import { Image, XStack, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { trackOnboardingStep, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { BodyText, PrimaryButton } from '@selfxyz/mobile-sdk-alpha/components';
-import { AadhaarEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import {
+  AadhaarEvents,
+  OnboardingEvents,
+} from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import {
   slate100,
   slate200,
@@ -36,7 +39,8 @@ const AadhaarUploadScreen: React.FC = () => {
 
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { trackEvent } = useSelfClient();
+  const selfClient = useSelfClient();
+  const { trackEvent } = selfClient;
   const [isProcessing, setIsProcessing] = useState(false);
   const aadhaarImageSource: ImageSourcePropType = AadhaarImage;
 
@@ -58,6 +62,9 @@ const AadhaarUploadScreen: React.FC = () => {
   // Track screen entry
   useEffect(() => {
     trackEvent(AadhaarEvents.UPLOAD_SCREEN_OPENED);
+    trackOnboardingStep(selfClient, OnboardingEvents.SCAN_STARTED, {
+      branch: 'aadhaar',
+    });
 
     // Track button state based on photo library availability
     if (isQRScannerPhotoLibraryAvailable()) {
@@ -66,7 +73,7 @@ const AadhaarUploadScreen: React.FC = () => {
       trackEvent(AadhaarEvents.UPLOAD_BUTTON_DISABLED);
       trackEvent(AadhaarEvents.PHOTO_LIBRARY_UNAVAILABLE);
     }
-  }, [trackEvent]);
+  }, [selfClient, trackEvent]);
 
   const { processAadhaarQRCode } = useAadhaar();
 
@@ -81,6 +88,9 @@ const AadhaarUploadScreen: React.FC = () => {
 
       const qrCodeData = await scanQRCodeFromPhotoLibrary();
       await processAadhaarQRCode(qrCodeData);
+      trackOnboardingStep(selfClient, OnboardingEvents.SCAN_SUCCEEDED, {
+        branch: 'aadhaar',
+      });
     } catch (error) {
       trackEvent(AadhaarEvents.QR_UPLOAD_FAILED, {
         error:
@@ -139,6 +149,7 @@ const AadhaarUploadScreen: React.FC = () => {
     }
   }, [
     isProcessing,
+    selfClient,
     trackEvent,
     processAadhaarQRCode,
     navigation,

@@ -28,6 +28,7 @@ export type ProvingSetState = (partial: Partial<ProvingStoreSnapshot>) => void;
  * Centralised here so each module imports one type instead of defining its own subset.
  */
 export type ProvingStateWithMethods = ProvingStoreSnapshot & {
+  cancel?: (selfClient: SelfClient) => Promise<void>;
   parseIDDocument: (selfClient: SelfClient) => Promise<void>;
   startFetchingData: (selfClient: SelfClient) => Promise<void>;
   validatingDocument: (selfClient: SelfClient) => Promise<void>;
@@ -65,4 +66,5 @@ export interface ProvingStoreSnapshot {
   reason: string | null;
   endpointType: EndpointType | null;
   env: 'prod' | 'stg' | null;
+  didNewRegistrationProof?: boolean;
 }

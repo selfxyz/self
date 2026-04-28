@@ -15,23 +15,35 @@ import {
   getSupportUuid,
   initializeSupportUuidContext,
   regenerateSupportUuid,
+  setSupportUuidCollectionEnabled,
 } from '@/services/supportUuid';
 import { useSettingStore } from '@/stores/settingStore';
 
 jest.mock('@/stores/settingStore', () => {
-  const state = { supportUuid: null as string | null };
+  const state = {
+    supportUuid: null as string | null,
+    supportUuidEnabled: true,
+  };
   const setSupportUuid = jest.fn((next: string | null) => {
     state.supportUuid = next;
+  });
+  const setSupportUuidEnabled = jest.fn((next: boolean) => {
+    state.supportUuidEnabled = next;
   });
   return {
     useSettingStore: {
       getState: () => ({
+        get supportUuidEnabled() {
+          return state.supportUuidEnabled;
+        },
         get supportUuid() {
           return state.supportUuid;
         },
+        setSupportUuidEnabled,
         setSupportUuid,
       }),
       __state: state,
+      __setSupportUuidEnabled: setSupportUuidEnabled,
       __setSupportUuid: setSupportUuid,
     },
   };
@@ -52,15 +64,21 @@ jest.mock('@react-native-clipboard/clipboard', () => ({
 }));
 
 const storeState = (
-  useSettingStore as unknown as { __state: { supportUuid: string | null } }
+  useSettingStore as unknown as {
+    __state: { supportUuid: string | null; supportUuidEnabled: boolean };
+  }
 ).__state;
 const mockSetSupportUuid = (
   useSettingStore as unknown as { __setSupportUuid: jest.Mock }
 ).__setSupportUuid;
+const mockSetSupportUuidEnabled = (
+  useSettingStore as unknown as { __setSupportUuidEnabled: jest.Mock }
+).__setSupportUuidEnabled;
 
 describe('supportUuid service', () => {
   beforeEach(() => {
     storeState.supportUuid = null;
+    storeState.supportUuidEnabled = true;
     jest.clearAllMocks();
   });
 
@@ -74,6 +92,12 @@ describe('supportUuid service', () => {
     it('returns the persisted UUID on subsequent calls', () => {
       storeState.supportUuid = '11111111-1111-1111-1111-111111111111';
       expect(getSupportUuid()).toBe(storeState.supportUuid);
+      expect(mockSetSupportUuid).not.toHaveBeenCalled();
+    });
+
+    it('returns null when diagnostic IDs are disabled', () => {
+      storeState.supportUuidEnabled = false;
+      expect(getSupportUuid()).toBeNull();
       expect(mockSetSupportUuid).not.toHaveBeenCalled();
     });
   });
@@ -104,23 +128,42 @@ describe('supportUuid service', () => {
       expect(result).not.toContain('support_uuid=stale');
     });
 
-    it('preserves fragments when falling back on malformed URLs', () => {
+    it('returns the URL unchanged when URL parsing fails', () => {
       const urlSpy = jest.spyOn(global, 'URL').mockImplementationOnce(() => {
         throw new TypeError('invalid');
       });
-      const result = appendSupportUuidToUrl('support?x=1#section');
-      expect(result).toBe(
-        `support?x=1&support_uuid=${storeState.supportUuid}#section`,
+      expect(appendSupportUuidToUrl('support?x=1#section')).toBe(
+        'support?x=1#section',
       );
       urlSpy.mockRestore();
+    });
+
+    it('strips support_uuid from the URL when diagnostic IDs are disabled', () => {
+      storeState.supportUuidEnabled = false;
+      expect(
+        appendSupportUuidToUrl('https://example.com/help?x=1&support_uuid=abc'),
+      ).toBe('https://example.com/help?x=1');
+      expect(
+        appendSupportUuidToUrl('https://example.com/help?support_uuid=abc'),
+      ).toBe('https://example.com/help');
+      expect(appendSupportUuidToUrl('https://example.com/help?x=1')).toBe(
+        'https://example.com/help?x=1',
+      );
     });
   });
 
   describe('initializeSupportUuidContext', () => {
     it('wires the UUID into Sentry and analytics', () => {
       const uuid = initializeSupportUuidContext();
-      expect(setSupportUuidInSentry).toHaveBeenCalledWith(uuid);
+      expect(setSupportUuidInSentry).toHaveBeenCalledWith(uuid, true);
       expect(setAnalyticsSupportUuid).toHaveBeenCalledWith(uuid);
+    });
+
+    it('clears support UUID context when diagnostic IDs are disabled', () => {
+      storeState.supportUuidEnabled = false;
+      expect(initializeSupportUuidContext()).toBeNull();
+      expect(setSupportUuidInSentry).toHaveBeenCalledWith(null, false);
+      expect(setAnalyticsSupportUuid).toHaveBeenCalledWith(null);
     });
   });
 
@@ -132,8 +175,15 @@ describe('supportUuid service', () => {
       expect(next).not.toBe('old-uuid');
       expect(mockSetSupportUuid).toHaveBeenCalledWith(next);
       expect(setSupportUuidInSentry).toHaveBeenCalledTimes(1);
-      expect(setSupportUuidInSentry).toHaveBeenCalledWith(next);
+      expect(setSupportUuidInSentry).toHaveBeenCalledWith(next, true);
       expect(resetAnalyticsIdentityForSupportUuid).toHaveBeenCalledWith(next);
+    });
+
+    it('returns null when regenerate is called while disabled', () => {
+      storeState.supportUuidEnabled = false;
+      expect(regenerateSupportUuid()).toBeNull();
+      expect(mockSetSupportUuid).not.toHaveBeenCalled();
+      expect(resetAnalyticsIdentityForSupportUuid).not.toHaveBeenCalled();
     });
   });
 
@@ -143,6 +193,38 @@ describe('supportUuid service', () => {
       const uuid = copySupportUuid();
       expect(uuid).toBe(storeState.supportUuid);
       expect(Clipboard.setString).toHaveBeenCalledWith(storeState.supportUuid);
+    });
+
+    it('returns null when copy is called while disabled', () => {
+      storeState.supportUuidEnabled = false;
+      expect(copySupportUuid()).toBeNull();
+      expect(Clipboard.setString).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('setSupportUuidCollectionEnabled', () => {
+    it('disables diagnostic IDs and clears the current UUID', () => {
+      storeState.supportUuid = 'existing-uuid';
+      expect(setSupportUuidCollectionEnabled(false)).toBeNull();
+
+      expect(mockSetSupportUuidEnabled).toHaveBeenCalledWith(false);
+      expect(mockSetSupportUuid).toHaveBeenCalledWith(null);
+      expect(setSupportUuidInSentry).toHaveBeenCalledWith(null, false);
+      expect(setAnalyticsSupportUuid).toHaveBeenCalledWith(null);
+    });
+
+    it('re-enables diagnostic IDs with a fresh UUID', () => {
+      storeState.supportUuidEnabled = false;
+
+      const nextUuid = setSupportUuidCollectionEnabled(true);
+
+      expect(nextUuid).toMatch(/^[0-9a-f-]{36}$/);
+      expect(mockSetSupportUuidEnabled).toHaveBeenCalledWith(true);
+      expect(mockSetSupportUuid).toHaveBeenCalledWith(nextUuid);
+      expect(setSupportUuidInSentry).toHaveBeenCalledWith(nextUuid, true);
+      expect(resetAnalyticsIdentityForSupportUuid).toHaveBeenCalledWith(
+        nextUuid,
+      );
     });
   });
 });

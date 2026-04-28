@@ -66,7 +66,6 @@ const DocumentNFCTroubleScreen: React.FC = () => {
   const { countryCode } = useMRZStore();
   const { launchKycVerification, isLoading } = useKycLauncher({
     countryCode,
-    errorSource: 'nfc_scan_failed',
   });
   useFeedbackAutoHide();
 
@@ -90,7 +89,7 @@ const DocumentNFCTroubleScreen: React.FC = () => {
       onSecondaryButtonPress={goToNFCMethodSelection}
       footer={
         <YStack gap="$3">
-          <SupportUuidRow title="Support diagnostic ID" />
+          <SupportUuidRow />
 
           <SecondaryButton
             onPress={openSupportForm}

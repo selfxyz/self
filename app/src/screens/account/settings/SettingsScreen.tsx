@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type { PropsWithChildren } from 'react';
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Linking, Platform, Share, View as RNView } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -11,7 +11,7 @@ import type { SvgProps } from 'react-native-svg';
 import { Button, ScrollView, View, XStack, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Bug, FileText, Settings2 } from '@tamagui/lucide-icons';
+import { Bug, FileText, Settings2, Wrench } from '@tamagui/lucide-icons';
 
 import { BodyText, pressedStyle } from '@selfxyz/mobile-sdk-alpha/components';
 import {
@@ -80,6 +80,7 @@ const ROUTE_ICONS: Record<SettingsRouteKey, React.FC<SvgProps>> = {
   Support: Feedback,
   share: ShareIcon,
   DevSettings: Bug as React.FC<SvgProps>,
+  Troubleshooting: Wrench as React.FC<SvgProps>,
 };
 
 const social = [
@@ -133,6 +134,7 @@ const SocialButton: React.FC<SocialButtonProps> = ({
 
 const SettingsScreen: React.FC = () => {
   const { isDevMode, setDevModeOn } = useSettingStore();
+  const [isTroubleshootingMode, setTroubleshootingMode] = useState(false);
   const navigation =
     useNavigation<NativeStackNavigationProp<MinimalRootStackParamList>>();
   const { hasRealDocument } = useHasRealDocument('SettingsScreen');
@@ -147,15 +149,24 @@ const SettingsScreen: React.FC = () => {
         platform: CURRENT_PLATFORM,
         hasRealDocument: hasRealDocument === true,
         isDevMode,
+        isTroubleshootingMode,
       }),
-    [hasRealDocument, isDevMode],
+    [hasRealDocument, isDevMode, isTroubleshootingMode],
   );
+
+  const troubleshootingTap = Gesture.Tap()
+    .numberOfTaps(3)
+    .onStart(() => {
+      setTroubleshootingMode(true);
+    });
 
   const devModeTap = Gesture.Tap()
     .numberOfTaps(5)
     .onStart(() => {
       setDevModeOn();
     });
+
+  const combinedTap = Gesture.Exclusive(devModeTap, troubleshootingTap);
 
   const onMenuPress = useCallback(
     (menuRoute: SettingsRouteKey) => {
@@ -180,7 +191,7 @@ const SettingsScreen: React.FC = () => {
   );
   const { bottom } = useSafeAreaInsets();
   return (
-    <GestureDetector gesture={devModeTap}>
+    <GestureDetector gesture={combinedTap}>
       <RNView collapsable={false}>
         <View backgroundColor={white}>
           <YStack

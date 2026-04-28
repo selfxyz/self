@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useEffect, useRef } from 'react';
-import { StyleSheet } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { AppState, Platform, StyleSheet } from 'react-native';
+import { check, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import { View, XStack, YStack } from 'tamagui';
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -11,6 +12,8 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import {
   DelayedLottieView,
   dinot,
+  resolveOnboardingBranch,
+  trackOnboardingStep,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
 import {
@@ -19,7 +22,10 @@ import {
   SecondaryButton,
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
-import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import {
+  OnboardingEvents,
+  PassportEvents,
+} from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import {
   black,
   slate400,
@@ -36,6 +42,7 @@ import Scan from '@/assets/icons/passport_camera_scan.svg';
 import { PassportCamera } from '@/components/native/PassportCamera';
 import { useErrorInjection } from '@/hooks/useErrorInjection';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
+import { useKycLauncher } from '@/hooks/useKycLauncher';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
 import { getDocumentScanPrompt } from '@/utils/documentAttributes';
@@ -50,10 +57,58 @@ const DocumentCameraScreen: React.FC = () => {
   );
   const countryCode = selfClient.useMRZStore(state => state.countryCode);
   const { shouldInjectError } = useErrorInjection();
+  const { showKycFallbackModal } = useKycLauncher({
+    countryCode: countryCode || '',
+  });
 
   // Add a ref to track when the camera screen is mounted
   const scanStartTimeRef = useRef(Date.now());
   const { onPassportRead } = useReadMRZ(scanStartTimeRef);
+
+  useEffect(() => {
+    const branch = resolveOnboardingBranch(selectedDocumentType ?? 'p');
+    trackOnboardingStep(selfClient, OnboardingEvents.SCAN_STARTED, { branch });
+    // Fire once on mount for this attempt. `trackOnboardingStep` dedupes,
+    // so re-mounts from back-nav are no-ops.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Gate `<PassportCamera>` on an explicit permission check so iOS never shows
+  // the black scanner view and Android never triggers its re-prompt loop.
+  // `null` while the initial check is in flight; `true`/`false` once resolved.
+  const [cameraReady, setCameraReady] = useState<boolean | null>(null);
+  useEffect(() => {
+    const cameraPerm =
+      Platform.OS === 'ios'
+        ? PERMISSIONS.IOS.CAMERA
+        : PERMISSIONS.ANDROID.CAMERA;
+    let active = true;
+    const verify = async () => {
+      try {
+        const status = await check(cameraPerm);
+        const ok = status === RESULTS.GRANTED || status === RESULTS.LIMITED;
+        if (!active) return;
+        setCameraReady(ok);
+        if (!ok) {
+          navigation.goBack();
+        }
+      } catch {
+        if (active) {
+          setCameraReady(false);
+        }
+      }
+    };
+    verify();
+    const sub = AppState.addEventListener('change', state => {
+      if (state === 'active') {
+        verify();
+      }
+    });
+    return () => {
+      active = false;
+      sub.remove();
+    };
+  }, [navigation]);
 
   // Dev-only: Auto-trigger MRZ error after short delay if error injection is enabled
   useEffect(() => {
@@ -79,14 +134,19 @@ const DocumentCameraScreen: React.FC = () => {
     action: 'cancel',
   });
 
-  const onCancelPress = async () => {
-    navigateToHome();
+  const onCancelPress = () => {
+    showKycFallbackModal(() => navigateToHome());
   };
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={white}>
       <ExpandableBottomLayout.TopSection roundTop backgroundColor={black}>
-        <PassportCamera onPassportRead={onPassportRead} isMounted={isFocused} />
+        {cameraReady === true && (
+          <PassportCamera
+            onPassportRead={onPassportRead}
+            isMounted={isFocused}
+          />
+        )}
         <DelayedLottieView
           autoPlay
           loop

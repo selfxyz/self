@@ -84,6 +84,8 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
                 .getState()
                 .shouldTrigger(errorType as InjectedErrorType);
             },
+            shouldBypassRegistrationCheck: () =>
+              useSettingStore.getState().consumeTestRegistrationCircuit(),
           }
         : undefined,
     }),
@@ -290,7 +292,7 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
     });
 
     addListener(SdkEvents.DOCUMENT_MRZ_READ_SUCCESS, () => {
-      navigateIfReady('DocumentNFCScan');
+      navigateIfReady('DataConfirmation');
     });
 
     addListener(SdkEvents.DOCUMENT_MRZ_READ_FAILURE, () => {

@@ -32,7 +32,12 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { CircleHelp } from '@tamagui/lucide-icons';
 
 import type { PassportData } from '@selfxyz/common/types';
-import { sanitizeErrorMessage, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import {
+  resolveOnboardingBranch,
+  sanitizeErrorMessage,
+  trackOnboardingStep,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
 import {
   BodyText,
   ButtonsContainer,
@@ -41,7 +46,10 @@ import {
   TextsContainer,
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
-import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import {
+  OnboardingEvents,
+  PassportEvents,
+} from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import {
   black,
   slate100,
@@ -57,6 +65,7 @@ import { logNFCEvent } from '@/config/sentry';
 import { useErrorInjection } from '@/hooks/useErrorInjection';
 import { useFeedbackAutoHide } from '@/hooks/useFeedbackAutoHide';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
+import { useKycLauncher } from '@/hooks/useKycLauncher';
 import useOpenSupportForm from '@/hooks/useOpenSupportForm';
 import {
   buttonTap,
@@ -67,7 +76,6 @@ import {
 import { parseScanResponse, scan } from '@/integrations/nfc/nfcScanner';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
-import { useFeedback } from '@/providers/feedbackProvider';
 import { storePassportData } from '@/providers/passportDataProvider';
 import {
   configureNfcAnalytics,
@@ -108,7 +116,6 @@ const DocumentNFCScanScreen: React.FC = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<DocumentNFCScanRoute>();
-  useFeedback();
   useFeedbackAutoHide();
   const { shouldInjectError } = useErrorInjection();
   const {
@@ -118,6 +125,14 @@ const DocumentNFCScanScreen: React.FC = () => {
     documentType,
     countryCode,
   } = useMRZStore();
+
+  const {
+    launchKycVerification,
+    showKycFallbackModal,
+    isLoading: isKycLoading,
+  } = useKycLauncher({
+    countryCode,
+  });
 
   const [isNfcSupported, setIsNfcSupported] = useState(true);
   const [isNfcEnabled, setIsNfcEnabled] = useState(true);
@@ -204,9 +219,12 @@ const DocumentNFCScanScreen: React.FC = () => {
   );
 
   const checkNfcSupport = useCallback(async () => {
-    const isSupported = await NfcManager.isSupported();
+    const isSupported =
+      (await NfcManager.isSupported()) &&
+      !shouldInjectError('nfc_not_supported');
     if (isSupported) {
-      const isEnabled = await NfcManager.isEnabled();
+      const isEnabled =
+        (await NfcManager.isEnabled()) && !shouldInjectError('nfc_disabled');
       if (!isEnabled) {
         setIsNfcEnabled(false);
         setDialogMessage('NFC is not enabled. Please enable it in settings.');
@@ -245,7 +263,7 @@ const DocumentNFCScanScreen: React.FC = () => {
         },
       );
     }
-  }, [baseContext]);
+  }, [baseContext, shouldInjectError]);
 
   const usePacePolling = (): boolean => {
     const { usePacePolling: usePacePollingParam } = route.params ?? {};
@@ -377,6 +395,10 @@ const DocumentNFCScanScreen: React.FC = () => {
         trackEvent(PassportEvents.NFC_SCAN_SUCCESS, {
           duration_seconds: parseFloat(scanDurationSeconds),
         });
+        trackOnboardingStep(selfClient, OnboardingEvents.SCAN_SUCCEEDED, {
+          branch: resolveOnboardingBranch(documentType ?? 'p'),
+          duration_seconds: parseFloat(scanDurationSeconds),
+        });
         logNFCEvent(
           'info',
           'scan_success',
@@ -460,6 +482,7 @@ const DocumentNFCScanScreen: React.FC = () => {
     }
   }, [
     baseContext,
+    documentType,
     isNfcEnabled,
     isNfcSupported,
     route.params,
@@ -469,6 +492,7 @@ const DocumentNFCScanScreen: React.FC = () => {
     isPacePolling,
     navigation,
     openErrorModal,
+    selfClient,
     trackEvent,
     shouldInjectError,
   ]);
@@ -477,10 +501,14 @@ const DocumentNFCScanScreen: React.FC = () => {
     action: 'cancel',
   });
 
-  const onCancelPress = async () => {
+  const onCancelPress = () => {
     flushAllAnalytics();
     logNFCEvent('info', 'scan_cancelled', { ...baseContext, stage: 'cancel' });
-    navigateToHome();
+    if (isNfcSupported && isNfcEnabled) {
+      showKycFallbackModal(() => navigateToHome());
+    } else {
+      navigateToHome();
+    }
   };
 
   useFocusEffect(
@@ -655,6 +683,14 @@ const DocumentNFCScanScreen: React.FC = () => {
               <SecondaryButton onPress={onReportIssue}>
                 {SUPPORT_FORM_BUTTON_TEXT}
               </SecondaryButton>
+              {(!isNfcSupported || !isNfcEnabled) && (
+                <SecondaryButton
+                  onPress={launchKycVerification}
+                  disabled={isKycLoading}
+                >
+                  {isKycLoading ? 'Loading...' : 'Try Alternative Verification'}
+                </SecondaryButton>
+              )}
             </ButtonsContainer>
           </>
         )}

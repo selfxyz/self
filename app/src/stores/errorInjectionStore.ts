@@ -14,6 +14,8 @@ export type InjectedErrorType =
   | 'nfc_timeout'
   | 'nfc_module_unavailable'
   | 'nfc_parse_failure'
+  | 'nfc_not_supported'
+  | 'nfc_disabled'
   | 'api_network_error'
   | 'api_timeout'
   | 'kyc_initialization'
@@ -25,6 +27,8 @@ export const ERROR_GROUPS = {
     'nfc_timeout',
     'nfc_module_unavailable',
     'nfc_parse_failure',
+    'nfc_not_supported',
+    'nfc_disabled',
   ] as InjectedErrorType[],
   API: ['api_network_error', 'api_timeout'] as InjectedErrorType[],
   KYC: ['kyc_initialization', 'kyc_verification'] as InjectedErrorType[],
@@ -36,6 +40,8 @@ export const ERROR_LABELS: Record<InjectedErrorType, string> = {
   nfc_timeout: 'NFC: Timeout',
   nfc_module_unavailable: 'NFC: Module unavailable',
   nfc_parse_failure: 'NFC: Parse failure',
+  nfc_not_supported: 'NFC: Not supported',
+  nfc_disabled: 'NFC: Disabled',
   api_network_error: 'API: Network error',
   api_timeout: 'API: Timeout',
   kyc_initialization: 'KYC: Initialization',

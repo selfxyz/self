@@ -52,11 +52,13 @@ export interface ProvingState {
   reason: string | null;
   endpointType: EndpointType | null;
   env: 'prod' | 'stg' | null;
+  didNewRegistrationProof: boolean;
   init: (
     selfClient: SelfClient,
     circuitType: 'dsc' | 'disclose' | 'register',
     userConfirmed?: boolean,
   ) => Promise<void>;
+  cancel: (selfClient: SelfClient) => Promise<void>;
   parseIDDocument: (selfClient: SelfClient) => Promise<void>;
   startFetchingData: (selfClient: SelfClient) => Promise<void>;
   validatingDocument: (selfClient: SelfClient) => Promise<void>;
@@ -109,6 +111,30 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     getActor,
   });
 
+  const resetProvingState = (partial?: Partial<ProvingState>) => {
+    set({
+      currentState: 'idle',
+      attestation: null,
+      serverPublicKey: null,
+      sharedKey: null,
+      wsConnection: null,
+      wsHandlers: null,
+      wsReconnectAttempts: 0,
+      socketConnection: null,
+      uuid: null,
+      userConfirmed: false,
+      passportData: null,
+      secret: null,
+      circuitType: null,
+      env: null,
+      error_code: null,
+      reason: null,
+      endpointType: null,
+      didNewRegistrationProof: false,
+      ...partial,
+    });
+  };
+
   return {
     currentState: 'idle',
     attestation: null,
@@ -127,6 +153,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     error_code: null,
     reason: null,
     endpointType: null,
+    didNewRegistrationProof: false,
     _handleWebSocketMessage: async (event: MessageEvent, selfClient: SelfClient) =>
       handleWebSocketMessage(event, selfClient, deps()),
     _handleRegisterErrorOrFailure: async (selfClient: SelfClient) => handleRegisterErrorOrFailure(selfClient),
@@ -155,24 +182,13 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           actor.stop();
         } catch (error) {
           console.error('Error stopping actor:', error);
+        } finally {
+          actor = null;
         }
       }
-      set({
-        currentState: 'idle',
-        attestation: null,
-        serverPublicKey: null,
-        sharedKey: null,
-        wsConnection: null,
-        socketConnection: null,
-        uuid: null,
-        userConfirmed: userConfirmed,
-        passportData: null,
-        secret: null,
+      resetProvingState({
+        userConfirmed,
         circuitType,
-        endpointType: null,
-        env: null,
-        error_code: null,
-        reason: null,
       });
 
       actor = createActor(provingMachine);
@@ -205,8 +221,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
       set({ passportData, secret, env });
       set({ circuitType });
-      // Only skip parsing when passport/id_card DSC data is already usable.
-      // Aadhaar and KYC do not require DSC parsing, while the DSC circuit always reparses.
+      // Only skip parsing when the document has already been parsed for non-DSC circuits.
+      // Re-parsing would overwrite the alternative CSCA used during registration and is unnecessary
+      // for already parsed passports or ID cards.
+      // Aadhaar and KYC documents do not require DSC parsing at all.
       const needsDscParsing =
         passportData.documentCategory === 'passport' || passportData.documentCategory === 'id_card';
       const hasParsedDsc = needsDscParsing && Boolean(passportData.dsc_parsed?.authorityKeyIdentifier);
@@ -227,6 +245,35 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         selfClient.trackEvent(ProofEvents.PARSE_ID_DOCUMENT_STARTED);
       } else {
         actor.send({ type: 'FETCH_DATA' });
+      }
+    },
+
+    cancel: async (selfClient: SelfClient) => {
+      const context = createProofContext(selfClient, 'cancel');
+      selfClient.logProofEvent('warn', 'Proving flow cancelled by UI', context);
+      let cancellationError: Error | null = null;
+
+      if (actor) {
+        try {
+          actor.stop();
+        } catch (error) {
+          cancellationError = error instanceof Error ? error : new Error(String(error));
+        } finally {
+          actor = null;
+        }
+      }
+
+      try {
+        get()._closeConnections(selfClient);
+      } catch (error) {
+        cancellationError ??= error instanceof Error ? error : new Error(String(error));
+      }
+
+      selfClient.navigation?.disableKeychainErrorModal?.();
+      resetProvingState();
+
+      if (cancellationError) {
+        throw cancellationError;
       }
     },
 
