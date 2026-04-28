@@ -260,7 +260,11 @@ export const validatingDocument = async (
       const bypassDocumentRegistrationCheck =
         selfClient.config?.devConfig?.shouldBypassDocumentRegistrationCheck?.() ?? false;
       if (bypassDocumentRegistrationCheck) {
-        selfClient.logProofEvent('warn', 'Dev bypass active: skipping document registration / nullifier checks', context);
+        selfClient.logProofEvent(
+          'warn',
+          'Dev bypass active: skipping document registration / nullifier checks',
+          context,
+        );
       }
       const { isRegistered, csca } = bypassDocumentRegistrationCheck
         ? { isRegistered: false, csca: undefined }
@@ -314,8 +318,7 @@ export const validatingDocument = async (
       if (document === 'passport' || document === 'id_card') {
         // Consume the DSC bypass only here so arming it on a session that
         // ends up scanning aadhaar/kyc does not silently waste the one-shot.
-        const bypassDscRegistrationCheck =
-          selfClient.config?.devConfig?.shouldBypassDscRegistrationCheck?.() ?? false;
+        const bypassDscRegistrationCheck = selfClient.config?.devConfig?.shouldBypassDscRegistrationCheck?.() ?? false;
         if (bypassDscRegistrationCheck) {
           selfClient.logProofEvent('warn', 'Dev bypass active: skipping DSC tree check', context);
         }
