@@ -4,7 +4,11 @@
 
 import type { AnyActorRef, AnyEventObject, StateFrom } from 'xstate';
 
-import { completeOnboardingAttempt, failOnboardingAttempt, trackOnboardingStep } from '../../analytics/onboardingFunnel';
+import {
+  completeOnboardingAttempt,
+  failOnboardingAttempt,
+  trackOnboardingStep,
+} from '../../analytics/onboardingFunnel';
 import { OnboardingEvents, ProofEvents } from '../../constants/analytics';
 import { markCurrentDocumentAsRegistered } from '../../documents/utils';
 import { SdkEvents } from '../../types/events';
