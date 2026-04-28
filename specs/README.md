@@ -15,7 +15,8 @@
 
 ## Topics
 
-No active topic docs. See [Spec Archive](./ARCHIVE.md) for retired topics.
+- **[React Native Upgrade Plan (Mobile App)](./topics/RN-UPGRADE-PLAN.md)** — staged migration plan from RN 0.77 to supported versions.
+
 
 ## Framework
 
