@@ -4,7 +4,7 @@ _Last updated: April 28, 2026_
 
 ## Purpose
 
-Define a low-risk, staged upgrade path for `app/` from React Native `0.77.0` to a supported version, with explicit risk controls for native modules, Expo modules usage, and CI stability.
+Define a low-risk, staged upgrade path for `app/` from React Native `0.77.0` to a supported version, with explicit risk controls for native modules, Expo modules usage, CI stability, and multi-developer coordination.
 
 ## Current State (Repo Evidence)
 
@@ -12,14 +12,21 @@ Define a low-risk, staged upgrade path for `app/` from React Native `0.77.0` to 
 - `app` uses Expo modules in a bare React Native app (`expo`, `expo-application`, `expo-camera`, `use_expo_modules!` in Podfile).
 - Hermes is enabled on both platforms.
 - The app has a high count of RN/Expo/native dependencies (42), increasing compatibility risk during major upgrades.
-- The monorepo contains mixed RN versions across workspaces (`0.77.0` in app and `0.76.9` in several other workspaces).
+- The monorepo contains mixed RN versions across workspaces (`0.77.0` in `app` and `0.76.9` in several other workspaces, including the workspace root dependency).
+- The app has platform-specific build and validation steps that must keep working during the upgrade:
+  - `yarn workspace @selfxyz/mobile-app lint`
+  - `yarn workspace @selfxyz/mobile-app types`
+  - `yarn workspace @selfxyz/mobile-app test`
+  - `yarn workspace @selfxyz/mobile-app ios`
+  - `yarn workspace @selfxyz/mobile-app android`
+  - `yarn workspace @selfxyz/mobile-app web:build`
 
 ## External Version Findings (as of April 28, 2026)
 
 - RN `0.85.x` is the latest active release line.
-- RN `0.84.x` is active and generally lower-risk than jumping straight to `0.85` from `0.77`.
+- RN `0.84.x` is active and is the safer intermediate landing zone from `0.77.0`.
 - RN `0.83` is end-of-cycle.
-- RN `0.82+` centers around the New Architecture transition.
+- RN `0.82+` centers around the New Architecture transition and related toolchain changes.
 - Expo SDK 52 was tied to RN 0.76 with opt-in support for RN 0.77; newer RN lines require corresponding Expo SDK progression.
 
 ## Decision
@@ -28,206 +35,237 @@ Define a low-risk, staged upgrade path for `app/` from React Native `0.77.0` to 
 
 Use a staged upgrade, not a one-shot leap:
 
-1. **Stage 1 target: RN `0.84.x`** (supported, avoids stacking all `0.85` changes immediately)
-2. **Stage 2 target: RN `0.85.x`** (after hardening and validation)
+1. **Stage 1 target: RN `0.84.x`**
+2. **Stage 2 target: RN `0.85.x`**
 
-### Why not jump directly from 0.77 to 0.85?
+### Why not jump directly from `0.77.0` to `0.85.x`?
 
 Direct upgrade risk is high due to:
 
-- Long version gap (multiple release lines)
-- 42 native/module dependencies
-- Expo modules dependency line needing coordinated upgrades
-- Mixed RN versions in sibling workspaces
+- Long version gap across multiple RN release lines
+- Large native dependency surface area
+- Expo package version coupling
+- Existing RN skew across workspaces in the monorepo
 
 ## Scope
 
 ### In Scope
 
-- `app/` React Native runtime + platform configs
+- `app/` React Native runtime and platform configs
 - Expo packages used by `app/`
-- RN build chain compatibility (Android/iOS/Metro/Jest)
-- CI quality gates for app build, types, lint, tests
+- RN build-chain compatibility for Android, iOS, Metro, Babel, Jest, and web build
+- App CI quality gates
+- Version alignment in sibling workspaces only where required for build or test integrity
 
 ### Out of Scope
 
-- Moving to Expo managed workflow / Expo Go (explicitly not planned)
-- Non-app workspaces unless version alignment is required for build/test integrity
+- Moving to Expo managed workflow or Expo Go
+- Broad package refreshes unrelated to RN compatibility
+- Non-app workspace upgrades unless they are proven blockers
+
+## Coordination Model
+
+This work needs two separate artifacts:
+
+1. **Narrative plan**: this file
+2. **State tracker**: [RN Upgrade Checklist](./RN-UPGRADE-CHECKLIST.md)
+
+Do not use this plan as a task board. Update the checklist as work progresses.
+
+### Ownership split
+
+Use explicit track ownership so two developers can work asynchronously without stepping on each other:
+
+- **Track 1: JS + package versions**
+  Covers `package.json`, Yarn resolutions/overrides, Metro/Babel/Jest config, and JS compile issues.
+- **Track 2: iOS native**
+  Covers `Podfile`, pods, Xcode settings, iOS build breaks, and iOS runtime smoke tests.
+- **Track 3: Android native**
+  Covers Gradle, Android config, Kotlin/AGP issues, and Android build/runtime smoke tests.
+- **Track 4: App runtime validation**
+  Covers critical flow validation, regression triage, and rollout decisions after builds are green.
+
+Each track needs:
+
+- one directly responsible owner
+- one backup owner for handoff across time zones
+- a clearly defined stop condition
+
+### Handoff rule
+
+Every task in the checklist should carry:
+
+- current owner
+- current state
+- latest blocking issue or next action
+- last validated command or smoke test
+
+If a developer ends their day with a track in progress, they should leave the checklist in a state where the other developer can continue without reopening the entire plan.
 
 ## Execution Plan
 
-## Phase 0 — Preparation (1–2 days)
+### Phase 0: Preparation
 
-- Freeze app feature merges during migration window.
-- Inventory and classify native deps:
-  - **Critical path**: auth, biometrics, keychain, permissions, camera, webview, firebase.
-  - **Lower risk**: UI-only libraries.
-- Confirm owning engineer per critical dependency.
-- Capture baseline:
+- Freeze non-upgrade app feature merges during the active migration window.
+- Create and maintain the shared state tracker in [RN Upgrade Checklist](./RN-UPGRADE-CHECKLIST.md).
+- Inventory and classify native dependencies:
+  - **Critical path**: auth, biometrics, keychain, permissions, camera, webview, firebase, navigation, NFC.
+  - **Lower risk**: UI-only libraries and purely JS helpers.
+- Confirm an owner and backup owner per critical dependency area.
+- Capture baseline evidence:
   - iOS build
   - Android build
   - unit tests
-  - startup crash-free smoke test
+  - web build
+  - startup smoke test on both platforms
+- Record current overrides and resolutions that may hide incompatibilities during the bump:
+  - root `resolutions`
+  - `app/overrides`
+  - root `react-native` dependency skew versus `app`
 
 ### Exit Criteria
 
-- Baseline passes in CI and locally for app
-- Compatibility tracker created for all native deps
+- Baseline passes in CI and locally for `app`
+- Compatibility tracker exists and has owners
+- Rollback checkpoints are documented
 
-## Phase 1 — Compatibility Lift to RN 0.84.x (3–6 days)
+### Phase 1: Compatibility Lift to RN `0.84.x`
 
 - Upgrade RN and aligned RN packages in `app/package.json`.
-- Upgrade Expo packages to a line compatible with chosen RN target.
-- Regenerate iOS pods and Android dependencies.
-- Apply Upgrade Helper diffs incrementally and preserve repo customizations.
-- Resolve breaking API/build config changes.
+- Upgrade Expo packages only to a line explicitly compatible with the chosen RN `0.84.x` target.
+- Upgrade companion RN packages in lockstep:
+  - `@react-native/babel-preset`
+  - `@react-native/eslint-config`
+  - `@react-native/gradle-plugin`
+  - `@react-native/metro-config`
+  - `@react-native/typescript-config`
+- Re-evaluate app overrides and root resolutions after each version bump.
+- Apply Upgrade Helper diffs incrementally while preserving repo-specific customizations.
+- Regenerate pods and Android dependencies.
+- Resolve breaking API or build config changes before moving to runtime validation.
 
 ### Validation Gates
 
 - `yarn workspace @selfxyz/mobile-app lint`
 - `yarn workspace @selfxyz/mobile-app types`
 - `yarn workspace @selfxyz/mobile-app test`
-- `yarn workspace @selfxyz/mobile-app ios` (or CI iOS build lane)
-- `yarn workspace @selfxyz/mobile-app android` (or CI Android build lane)
+- `yarn workspace @selfxyz/mobile-app web:build`
+- `yarn workspace @selfxyz/mobile-app ios`
+- `yarn workspace @selfxyz/mobile-app android`
 
 ### Exit Criteria
 
 - App boots on iOS and Android
+- No unresolved build blockers remain
 - Core flows validated manually:
   - login/auth
   - camera flow
   - permissions prompts
   - push notification initialization
   - webview-based flows
-- No Sev1/Sev2 regressions in crash logs during test window
+  - NFC/passport scan entry
+- Any required sibling-workspace version alignment is either complete or explicitly deferred with justification
 
-## Phase 2 — Hardening Window (2–4 days)
+### Phase 2: Stabilize on RN `0.84.x`
 
-- Keep on RN 0.84.x while collecting:
+- Hold on `0.84.x` until build stability and runtime regressions are understood.
+- Collect:
   - crash metrics
   - performance regressions
   - flaky test/build signals
-- Fix stability regressions before next bump.
+  - any platform-specific issues that only show up after multiple clean builds
+- Fix stability regressions before attempting `0.85.x`.
 
 ### Exit Criteria
 
-- 3 consecutive green CI runs on app pipeline
+- 3 consecutive green CI runs on the app pipeline
 - No unresolved high-priority regression issues
+- Rollout guardrails and stop conditions are agreed before the next bump
 
-## Phase 3 — Increment to RN 0.85.x (2–4 days)
+### Phase 3: Increment to RN `0.85.x`
 
-- Apply `0.84 -> 0.85` diff.
-- Address RN 0.85 breaking changes (notably Jest preset migration and any build-chain changes).
-- Re-run full app validation matrix.
+- Apply the `0.84.x -> 0.85.x` version diff.
+- Address `0.85.x` breaking changes, including Jest preset migration and any build-chain deltas.
+- Re-run the full validation matrix and update the checklist with each pass/fail result.
 
 ### Exit Criteria
 
 - Same validation and quality bars as Phase 1
-- No blocker regressions from 0.85-specific changes
+- No blocker regressions introduced by `0.85.x`
 
 ## Risks and Mitigations
 
 1. **Native module incompatibility**
-   - Mitigation: compatibility tracker, owner assignments, phased rollouts.
+   - Mitigation: per-package tracking, explicit owner assignment, and stop/go decisions recorded in the checklist.
 2. **Expo package mismatch with RN target**
-   - Mitigation: lock to supported Expo SDK/RN pair before code changes.
+   - Mitigation: choose an Expo/RN pair before code changes and do not mix speculative bumps into the same PR.
 3. **CI instability during toolchain changes**
-   - Mitigation: isolate infra/tooling commits from functional changes.
+   - Mitigation: keep tooling changes isolated from app behavior fixes where practical.
 4. **Monorepo RN skew causing hidden failures**
-   - Mitigation: evaluate whether sibling workspaces need coordinated version bumps.
+   - Mitigation: track root and sibling RN versions explicitly; resolve only the skew that blocks app build or test integrity.
+5. **Cross-time-zone handoff loss**
+   - Mitigation: require status, blocker, and last validation evidence in the checklist for every in-progress item.
 
 ## Review Checklist
 
-- [ ] Upgrade plan approves staged approach (`0.84` then `0.85`)
+- [ ] Staged approach approved (`0.84.x` then `0.85.x`)
+- [ ] Shared checklist created and linked in PR descriptions
 - [ ] Dependency compatibility tracker completed
+- [ ] Owners and backup owners assigned for each critical track
 - [ ] CI validation gates agreed
 - [ ] Rollback strategy documented per phase
-- [ ] Owners assigned for critical modules
+- [ ] Rollout and stop conditions documented before production rollout
 
 ## Rollback Strategy
 
 - Keep each phase in isolated PRs.
 - Tag a known-good commit before each phase.
-- If build/runtime blockers appear, revert the phase PR and continue investigation in follow-up branches.
+- Do not combine version bumps with unrelated refactors.
+- If build or runtime blockers appear, revert the phase PR and continue investigation in follow-up branches.
 
 ## Deliverables
 
-- Phase PR set (prep, 0.84, hardening fixes, 0.85)
-- Compatibility matrix artifact (linked from PR descriptions)
-- Final post-upgrade report with regressions and follow-up backlog
+- Preparation PR
+- RN `0.84.x` PR set
+- Stabilization fixes PR set
+- RN `0.85.x` PR set
+- Shared state tracker: [RN Upgrade Checklist](./RN-UPGRADE-CHECKLIST.md)
+- Final post-upgrade report with regressions, metrics, and follow-up backlog
 
-## Suggested First PR (Smallest Sensible Step)
+## Suggested PR Split
 
-Create a preparation PR that adds:
+Keep PRs aligned to ownership boundaries so two developers can parallelize safely:
 
-- dependency compatibility tracker markdown
-- CI validation checklist for app upgrade
-- explicit owner assignments for critical native modules
+- **PR A: prep only**
+  Adds checklist, compatibility tracker, ownership, metrics, rollback notes.
+- **PR B: JS/tooling**
+  RN core package bump, RN companion packages, Metro/Babel/Jest changes.
+- **PR C: iOS**
+  Pods, Podfile, Xcode, iOS-specific native fixes.
+- **PR D: Android**
+  Gradle, Kotlin/AGP, Android-specific native fixes.
+- **PR E: runtime regressions**
+  App behavior fixes and regression coverage for critical flows.
+- **PR F: `0.85.x` delta**
+  Final version increment and any `0.85.x`-specific cleanup.
 
-No runtime version bumps in the first PR.
+Do not merge a later PR if it depends on unmerged fixes from an earlier track unless the dependency is explicitly documented in the checklist.
 
+## Known Gaps This Plan Now Closes
 
-## Known Gaps in This Plan (to close before execution)
+1. **Task state was previously implicit**
+   - Fixed by adding a dedicated shared checklist with owner, status, blocker, and validation fields.
+2. **Version work was previously too coarse**
+   - Fixed by splitting version work into per-track checklist items and per-PR boundaries.
+3. **Time estimates were low-signal**
+   - Fixed by removing day and week estimates entirely and focusing on state transitions and exit criteria.
+4. **Cross-time-zone coordination was under-specified**
+   - Fixed by adding ownership, backup ownership, and handoff expectations.
 
-1. **No explicit package compatibility matrix yet**
-   - We need a table with one row per RN/Expo/native dependency and columns for: current version, target version, RN `0.84` support, RN `0.85` support, owner, and status.
-2. **No named owners or deadlines yet**
-   - Current plan says "assign owners" but does not record who owns auth/camera/firebase/webview tracks.
-3. **No release/canary rollout design yet**
-   - Add rollout steps (internal dogfood -> beta % -> full rollout) with stop conditions.
-4. **No explicit acceptance metrics yet**
-   - Define measurable thresholds (startup time delta, crash-free sessions, ANR rate, memory regression limits).
-5. **No explicit 0.85 PR split yet**
-   - We should pre-split 0.85 work into predictable PRs (tooling, iOS, Android, app-runtime, cleanup).
+## Definition of Done
 
-## Concrete Next Steps to Reach RN 0.85
-
-### Week 0: Planning + Tracker PR (no runtime bumps)
-
-- Add `specs/topics/RN-UPGRADE-COMPAT-MATRIX.md` with the dependency tracker table.
-- Add owner assignments for each critical dependency area.
-- Finalize go/no-go metrics and rollout policy.
-
-**Done when:** owners + matrix + metrics are approved in review.
-
-### Week 1: RN 0.84 upgrade PRs
-
-- PR A: JS/tooling alignment (`react-native`, RN companion packages, Jest/babel/metro updates required for 0.84).
-- PR B: iOS native fixes (pods, build flags, module breakages).
-- PR C: Android native fixes (Gradle/AGP/Kotlin changes if required, module breakages).
-- PR D: app behavior fixes + regression tests for critical flows.
-
-**Done when:** all validation gates pass + 3 green CI runs + no Sev1/Sev2 issues.
-
-### Week 2: Stabilization window on 0.84
-
-- Run dogfood builds and track crash/perf metrics daily.
-- Fix remaining high-priority issues.
-
-**Go/No-Go for 0.85:** proceed only if stability metrics meet agreed thresholds.
-
-### Week 3: RN 0.85 upgrade PRs
-
-- PR E: 0.85 core upgrade + known breaking changes (including Jest preset migration where applicable).
-- PR F: iOS/Android native delta fixes.
-- PR G: follow-up cleanup and dependency lockfile normalization.
-
-**Done when:** same quality gates as 0.84 + successful canary rollout.
-
-## Minimal Compatibility Matrix Template
-
-Use this table format in the first follow-up PR:
-
-| Package | Current | Target (0.84 path) | Target (0.85 path) | 0.84 Support | 0.85 Support | Owner | Status | Notes |
-|---|---|---|---|---|---|---|---|---|
-| react-native | 0.77.0 | 0.84.x | 0.85.x | TBD | TBD | @owner | Not Started | Core runtime |
-| expo | ~52.0.40 | TBD | TBD | TBD | TBD | @owner | Not Started | Must follow Expo/RN support matrix |
-| react-native-webview | 13.16.1 | TBD | TBD | TBD | TBD | @owner | Not Started | Critical flow dependency |
-
-## Definition of Done (Final)
-
-- RN `0.85.x` running in production channel.
-- Critical flows validated on both iOS and Android.
-- Crash/perf metrics within agreed guardrails for at least 7 consecutive days post-release.
-- Compatibility matrix fully resolved (no unknown statuses).
-- Follow-up backlog created for non-blocking cleanups.
+- RN `0.85.x` is running in the production release channel.
+- Critical flows are validated on both iOS and Android.
+- Crash and performance metrics remain within agreed guardrails for at least 7 consecutive days after rollout.
+- The checklist has no unresolved unknowns for upgrade-blocking packages.
+- Non-blocking follow-ups are captured separately and not left mixed into the upgrade state tracker.
