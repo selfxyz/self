@@ -1,7 +1,7 @@
 # ANA-01: Canonical Onboarding Funnel Events
 
-> Last updated: 2026-04-20
-> Status: Ready
+> Last updated: 2026-04-29
+> Status: Done
 > Priority: High
 > Depends on: -
 

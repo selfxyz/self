@@ -7,7 +7,7 @@ import type { StaticScreenProps } from '@react-navigation/native';
 import { usePreventRemove } from '@react-navigation/native';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
-import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { DiagnosticEvents, ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import { ConfirmIdentificationScreen } from '@selfxyz/mobile-sdk-alpha/onboarding/confirm-identification';
 
 import { flushAllAnalytics, trackNfcEvent } from '@/services/analytics';
@@ -45,6 +45,7 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
   const onOkPress = useCallback(async () => {
     try {
       await grantNotificationsPermission();
+      trackEvent(DiagnosticEvents.CONFIRM_BELONGING_CONFIRMED);
     } catch (error: unknown) {
       console.error('Error navigating:', error);
       const message = error instanceof Error ? error.message : 'Unknown error';
