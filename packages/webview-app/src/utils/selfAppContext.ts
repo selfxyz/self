@@ -27,13 +27,14 @@ function parseDisclosureConfig(disclosures?: string[], excludedCountries?: strin
       if (BOOLEAN_DISCLOSURE_KEYS.has(d)) {
         config[d] = true;
       } else if (d.startsWith('minimumAge:')) {
+        // 'minimumAge:' is the native shell's wire-format prefix — kept as-is since native shells are not updated in this rename
         const age = parseInt(d.split(':')[1], 10);
-        if (!isNaN(age)) config.minimumAge = age;
+        if (!isNaN(age)) config.minimum_age = age;
       }
     }
   }
   if (excludedCountries && excludedCountries.length > 0) {
-    config.excludedCountries = excludedCountries;
+    config.excluded_countries = excludedCountries;
   }
   return config as SelfAppDisclosureConfig;
 }

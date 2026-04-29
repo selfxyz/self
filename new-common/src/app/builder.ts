@@ -5,6 +5,19 @@ import type { SelfApp } from '../foundation/types/app.js';
 import { validateUserId } from '../circuits/userId.js';
 import { formatEndpoint } from '../crypto/scope.js';
 
+function normalizeDisclosures(raw: Record<string, unknown>): Record<string, unknown> {
+  const result = { ...raw };
+  if ('excludedCountries' in result && !('excluded_countries' in result)) {
+    result.excluded_countries = result.excludedCountries;
+  }
+  delete result.excludedCountries;
+  if ('minimumAge' in result && !('minimum_age' in result)) {
+    result.minimum_age = result.minimumAge;
+  }
+  delete result.minimumAge;
+  return result;
+}
+
 export class SelfAppBuilder {
   private config: SelfApp;
 
@@ -66,12 +79,12 @@ export class SelfAppBuilder {
       header: '',
       logoBase64: '',
       deeplinkCallback: '',
-      disclosures: {},
       chainID: config.endpointType === 'staging_celo' ? 11142220 : 42220,
       version: config.version ?? 2,
       userDefinedData: '',
       selfDefinedData: '',
       ...config,
+      disclosures: normalizeDisclosures((config.disclosures ?? {}) as Record<string, unknown>),
     } as SelfApp;
   }
 

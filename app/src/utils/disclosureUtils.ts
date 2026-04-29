@@ -28,8 +28,8 @@ export const ORDERED_DISCLOSURE_KEYS: Array<keyof SelfAppDisclosureConfig> = [
   'gender',
   'expiry_date',
   'ofac',
-  'excludedCountries',
-  'minimumAge',
+  'excluded_countries',
+  'minimum_age',
 ] as const;
 
 export function getDisclosureItems(
@@ -63,12 +63,12 @@ export function getDisclosureText(
   switch (key) {
     case 'ofac':
       return 'I am not on the OFAC sanction list';
-    case 'excludedCountries':
+    case 'excluded_countries':
       return `I am not a citizen of the following countries: ${countriesToSentence(
-        (disclosures.excludedCountries as Country3LetterCode[]) || [],
+        (disclosures.excluded_countries as Country3LetterCode[]) || [],
       )}`;
-    case 'minimumAge':
-      return `Age is over ${disclosures.minimumAge}`;
+    case 'minimum_age':
+      return `Age is over ${disclosures.minimum_age}`;
     case 'name':
       return 'Name';
     case 'passport_number':

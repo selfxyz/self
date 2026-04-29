@@ -81,8 +81,8 @@ export function generateTEEInputsAadhaarDisclose(
       gender: disclosures.gender,
       idNumber: disclosures.passport_number,
       issuingState: disclosures.issuing_state,
-      minimumAge: disclosures.minimumAge,
-      forbiddenCountriesListPacked: disclosures.excludedCountries,
+      minimumAge: disclosures.minimum_age,
+      forbiddenCountriesListPacked: disclosures.excluded_countries,
       ofac: disclosures.ofac,
     }
   );
@@ -163,8 +163,8 @@ export function generateTEEInputsDiscloseStateless(
 
   const selector_dg1 = getSelectorDg1(document, disclosures);
 
-  const majority = disclosures.minimumAge ? disclosures.minimumAge.toString() : DEFAULT_MAJORITY;
-  const selector_older_than = disclosures.minimumAge ? '1' : '0';
+  const majority = disclosures.minimum_age ? disclosures.minimum_age.toString() : DEFAULT_MAJORITY;
+  const selector_older_than = disclosures.minimum_age ? '1' : '0';
 
   const selector_ofac = disclosures.ofac ? 1 : 0;
 
@@ -206,7 +206,7 @@ export function generateTEEInputsDiscloseStateless(
     nameAndDobSMT,
     nameAndYobSMT,
     selector_ofac,
-    disclosures.excludedCountries ?? [],
+    disclosures.excluded_countries ?? [],
     userIdentifierHash.toString()
   );
   return {
@@ -232,7 +232,7 @@ function getSelectorDg1(document: DocumentCategory, disclosures: SelfAppDisclosu
 function getSelectorDg1Passport(disclosures: SelfAppDisclosureConfig) {
   const selector_dg1 = Array(88).fill('0');
   Object.entries(disclosures).forEach(([attribute, reveal]) => {
-    if (['ofac', 'excludedCountries', 'minimumAge'].includes(attribute)) {
+    if (['ofac', 'excluded_countries', 'minimum_age'].includes(attribute)) {
       return;
     }
     if (reveal) {
@@ -246,7 +246,7 @@ function getSelectorDg1Passport(disclosures: SelfAppDisclosureConfig) {
 function getSelectorDg1IdCard(disclosures: SelfAppDisclosureConfig) {
   const selector_dg1 = Array(90).fill('0');
   Object.entries(disclosures).forEach(([attribute, reveal]) => {
-    if (['ofac', 'excludedCountries', 'minimumAge'].includes(attribute)) {
+    if (['ofac', 'excluded_countries', 'minimum_age'].includes(attribute)) {
       return;
     }
     if (reveal) {
@@ -311,8 +311,8 @@ export function generateTEEInputsKycDisclose(
     scope_hash,
     userIdentifierHash.toString(),
     mapDisclosuresToKycFields(disclosures),
-    disclosures.excludedCountries,
-    disclosures.minimumAge
+    disclosures.excluded_countries,
+    disclosures.minimum_age
   );
 
   return {

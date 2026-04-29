@@ -45,8 +45,26 @@ export interface SelfAppDisclosureConfig {
   expiry_date?: boolean;
   // custom checks
   ofac?: boolean;
-  excludedCountries?: Country3LetterCode[];
-  minimumAge?: number;
+  excluded_countries?: Country3LetterCode[];
+  minimum_age?: number;
+}
+
+/**
+ * Normalizes camelCase disclosure keys (from the public SDK interface) to the
+ * internal snake_case representation. Accepts either format and always returns
+ * snake_case. Safe to call on already-normalized configs.
+ */
+export function normalizeDisclosureConfig(raw: Record<string, unknown>): SelfAppDisclosureConfig {
+  const result = { ...raw };
+  if ('excludedCountries' in result && !('excluded_countries' in result)) {
+    result.excluded_countries = result.excludedCountries;
+  }
+  delete result.excludedCountries;
+  if ('minimumAge' in result && !('minimum_age' in result)) {
+    result.minimum_age = result.minimumAge;
+  }
+  delete result.minimumAge;
+  return result as SelfAppDisclosureConfig;
 }
 
 export class SelfAppBuilder {
@@ -112,12 +130,12 @@ export class SelfAppBuilder {
       header: '',
       logoBase64: '',
       deeplinkCallback: '',
-      disclosures: {},
       chainID: config.endpointType === 'staging_celo' ? 11142220 : 42220,
       version: config.version ?? 2,
       userDefinedData: '',
       selfDefinedData: '',
       ...config,
+      disclosures: normalizeDisclosureConfig((config.disclosures ?? {}) as Record<string, unknown>),
     } as SelfApp;
   }
 
