@@ -120,6 +120,20 @@ export const NotificationEvents = {
   COLD_START_NOTIFICATION_OPENED: 'Notification: Cold Start Notification Opened',
 };
 
+export enum FallbackReason {
+  MRZ_SCAN_FAILED = 'mrz_scan_failed',
+  NFC_SCAN_FAILED = 'nfc_scan_failed',
+  NO_BIOMETRIC_CHIP = 'no_biometric_chip',
+  USER_CANCELLED = 'user_cancelled',
+}
+
+export enum FallbackStage {
+  MRZ_SCAN = 'mrz_scan',
+  NFC_SCAN = 'nfc_scan',
+  DOCUMENT_TYPE_SELECTED = 'document_type_selected',
+  DOCUMENT_SCAN = 'document_scan',
+}
+
 /**
  * Canonical onboarding funnel events. These are the ONLY events the Mixpanel
  * onboarding funnel consumes. They fire at most once per onboarding attempt,
@@ -139,6 +153,9 @@ export const OnboardingEvents = {
   FAILED: 'Onboarding: Failed',
   STEP_RETRIED: 'Onboarding: Step Retried',
   DISCLOSURE_COMPLETED: 'Onboarding: Disclosure Completed',
+  FALLBACK_OFFERED: 'Onboarding: Fallback Offered',
+  FALLBACK_ACCEPTED: 'Onboarding: Fallback Accepted',
+  FALLBACK_DECLINED: 'Onboarding: Fallback Declined',
 };
 
 export const PassportEvents = {

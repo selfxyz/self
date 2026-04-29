@@ -19,11 +19,14 @@ describe('OnboardingEvents canonical event names', () => {
     ['FAILED', 'Onboarding: Failed'],
     ['STEP_RETRIED', 'Onboarding: Step Retried'],
     ['DISCLOSURE_COMPLETED', 'Onboarding: Disclosure Completed'],
+    ['FALLBACK_OFFERED', 'Onboarding: Fallback Offered'],
+    ['FALLBACK_ACCEPTED', 'Onboarding: Fallback Accepted'],
+    ['FALLBACK_DECLINED', 'Onboarding: Fallback Declined'],
   ] as const)('%s = %s', (key, expected) => {
     expect(OnboardingEvents[key]).toBe(expected);
   });
 
-  it('contains exactly 11 events', () => {
-    expect(Object.keys(OnboardingEvents)).toHaveLength(11);
+  it('contains exactly 14 events', () => {
+    expect(Object.keys(OnboardingEvents)).toHaveLength(14);
   });
 });

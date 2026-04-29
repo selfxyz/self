@@ -54,6 +54,8 @@ export type { MRZScanOptions } from './mrz';
 
 export type { OnboardingBranch, OnboardingFailureStage, OnboardingStage } from './analytics/onboardingFunnel';
 
+export { FallbackReason, FallbackStage } from './constants/analytics';
+
 export type { PassportValidationCallbacks } from './validation/document';
 export type { ProvingStateType } from './proving/provingMachine';
 
@@ -131,6 +133,7 @@ export {
   failOnboardingAttempt,
   resolveOnboardingBranch,
   setOnboardingBranch,
+  trackFallbackDecision,
   trackOnboardingRetry,
   trackOnboardingStep,
 } from './analytics/onboardingFunnel';
