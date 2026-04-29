@@ -11391,7 +11391,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@selfxyz/new-common@workspace:^, @selfxyz/new-common@workspace:new-common":
+"@selfxyz/new-common@workspace:*, @selfxyz/new-common@workspace:^, @selfxyz/new-common@workspace:new-common":
   version: 0.0.0-use.local
   resolution: "@selfxyz/new-common@workspace:new-common"
   dependencies:
@@ -11580,6 +11580,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@selfxyz/sdk-common@workspace:sdk/sdk-common"
   dependencies:
+    "@selfxyz/new-common": "workspace:*"
     typescript: "npm:^5.9.3"
     uuid: "npm:^13.0.0"
   languageName: unknown

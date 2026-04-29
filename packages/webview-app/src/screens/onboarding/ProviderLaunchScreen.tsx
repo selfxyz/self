@@ -38,7 +38,8 @@ export const ProviderLaunchScreen: React.FC = () => {
 
   const defaultNextPath = nextPath ?? '/onboarding/provider-result';
   const isTunnelFlow = defaultNextPath.startsWith('/tunnel/') || backPath?.startsWith('/tunnel/') === true;
-  const verificationId = ctxVerificationId ?? `kyc-${Date.now()}`;
+  const fallbackVerificationIdRef = useRef(ctxVerificationId ?? `kyc-${Date.now()}`);
+  const verificationId = ctxVerificationId ?? fallbackVerificationIdRef.current;
 
   const [phase, setPhase] = useState<Phase>('loading');
   const [errorMessage, setErrorMessage] = useState('');

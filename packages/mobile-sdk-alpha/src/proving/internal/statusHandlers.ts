@@ -41,6 +41,11 @@ export function handleStatusCode(data: StatusMessage, circuitType: string): Stat
   if (data.status === 5 && data.error_code === 'REGISTERED_COMMITMENT') {
     return {
       shouldDisconnect: true,
+      stateUpdate: {
+        error_code: data.error_code,
+        reason: data.reason,
+        socketConnection: null,
+      },
       actorEvent: { type: 'PROVE_ALREADY_REGISTERED' },
       analytics: [
         {

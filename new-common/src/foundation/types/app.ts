@@ -42,3 +42,24 @@ export interface SelfAppDisclosureConfig {
   excludedCountries?: Country3LetterCode[];
   minimumAge?: number;
 }
+
+export type DisclosurePresetName = 'basic-kyc' | 'age-verification' | 'full-passport' | 'ofac-only';
+
+export interface SelfAppBuilderConfig {
+  appName: string;
+  scope: string;
+  endpoint: string;
+  userId?: string;
+  sessionId?: string;
+  userIdType?: UserIdType;
+  devMode?: boolean;
+  endpointType?: EndpointType;
+  logoBase64?: string;
+  header?: string;
+  deeplinkCallback?: string;
+  disclosures?: SelfAppDisclosureConfig | DisclosurePresetName;
+  version?: number;
+  chainID?: 42220 | 11142220;
+  userDefinedData?: string;
+  selfDefinedData?: string;
+}

@@ -29,6 +29,19 @@ const selfBackendVerifier = new SelfBackendVerifier(
 );
 ```
 
+### Generate Frontend Config
+
+After setting up your backend verifier, generate the matching frontend configuration:
+
+```typescript
+const config = selfBackendVerifier.frontendConfig();
+console.log(config);
+// { scope: 'my-scope', endpoint: 'https://my-api.com/api/verify', endpointType: 'https', userIdType: 'uuid' }
+
+// Use this in your frontend SelfAppBuilder:
+// SelfAppBuilder.forBackend({ appName: 'My App', ...config, disclosures: 'basic-kyc' })
+```
+
 ## Configuration Storage
 
 The SDK requires a configuration storage implementation. You can use the provided implementations:

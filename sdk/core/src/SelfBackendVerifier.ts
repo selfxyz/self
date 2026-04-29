@@ -35,6 +35,8 @@ const IDENTITY_VERIFICATION_HUB_ADDRESS_STAGING = '0x16ECBA51e18a4a7e61fdC417f0d
 
 export class SelfBackendVerifier {
   protected scope: string;
+  protected rawScope: string;
+  protected rawEndpoint: string;
   protected identityVerificationHubContract: IdentityVerificationHubImpl;
   protected configStorage: IConfigStorage;
   protected provider: ethers.JsonRpcProvider;
@@ -59,10 +61,26 @@ export class SelfBackendVerifier {
       provider
     );
     this.provider = provider;
+    this.rawScope = scope;
+    this.rawEndpoint = endpoint;
     this.scope = hashEndpointWithScope(endpoint, scope);
     this.allowedIds = allowedIds;
     this.configStorage = configStorage;
     this.userIdentifierType = userIdentifierType;
+  }
+
+  public frontendConfig(): {
+    scope: string;
+    endpoint: string;
+    endpointType: 'https';
+    userIdType: UserIdType;
+  } {
+    return {
+      scope: this.rawScope,
+      endpoint: this.rawEndpoint,
+      endpointType: 'https',
+      userIdType: this.userIdentifierType,
+    };
   }
 
   public async verify(

@@ -12,38 +12,50 @@ yarn add @selfxyz/qrcode
 
 ## Basic Usage
 
-### 1. Import the SelfQRcodeWrapper component
+### 1. Import the component
 
 ```tsx
 import SelfQRcodeWrapper, { SelfAppBuilder } from '@selfxyz/qrcode';
-import type { SelfApp } from '@selfxyz/qrcode';
-import { v4 as uuidv4 } from 'uuid';
 ```
 
-### 2. Create a SelfApp instance using SelfAppBuilder
+### 2. Create a SelfApp instance
+
+**For on-chain verification (Celo smart contract):**
 
 ```tsx
-// Generate a unique user ID
-const userId = uuidv4();
+const selfApp = SelfAppBuilder.forContract({
+  appName: 'My DApp',
+  contractAddress: '0x1234...abcd', // Your SelfVerificationRoot contract
+  scopeSeed: 'my-scope-seed', // Must match the scopeSeed used in contract deployment
+  disclosures: 'basic-kyc', // Preset: name, nationality, DOB, OFAC
+}).build();
+```
 
-// Create a SelfApp instance using the builder pattern
+**For HTTPS backend verification:**
+
+```tsx
+const selfApp = SelfAppBuilder.forBackend({
+  appName: 'My App',
+  endpoint: 'https://myapp.com/api/verify',
+  scope: 'my-scope',
+  disclosures: 'basic-kyc',
+}).build();
+```
+
+**Full customization (advanced):**
+
+```tsx
 const selfApp = new SelfAppBuilder({
   appName: 'My App',
   scope: 'my-app-scope',
   endpoint: 'https://myapp.com/api/verify',
-  logoBase64: 'base64EncodedLogo', // Optional
-  userId,
-  // Optional disclosure requirements
+  userId: uuidv4(), // Optional — auto-generated if omitted
+  logoBase64: 'base64Logo', // Optional
   disclosures: {
-    // DG1 disclosures
-    issuing_state: true,
+    // Or use a preset: 'basic-kyc', 'age-verification', 'full-passport', 'ofac-only'
     name: true,
     nationality: true,
     date_of_birth: true,
-    passport_number: true,
-    gender: true,
-    expiry_date: true,
-    // Custom verification rules
     minimumAge: 18,
     excludedCountries: ['IRN', 'PRK'],
     ofac: true,
@@ -75,14 +87,14 @@ function MyComponent() {
 
 The `SelfAppBuilder` allows you to configure your application's verification requirements:
 
-| Parameter     | Type   | Required | Description                                    |
-| ------------- | ------ | -------- | ---------------------------------------------- |
-| `appName`     | string | Yes      | The name of your application                   |
-| `scope`       | string | Yes      | A unique identifier for your application       |
-| `endpoint`    | string | Yes      | The endpoint that will verify the proof        |
-| `logoBase64`  | string | No       | Base64-encoded logo to display in the Self app |
-| `userId`      | string | Yes      | Unique identifier for the user                 |
-| `disclosures` | object | No       | Disclosure and verification requirements       |
+| Parameter     | Type   | Required | Description                                                                                                                                                            |
+| ------------- | ------ | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `appName`     | string | Yes      | The name of your application                                                                                                                                           |
+| `scope`       | string | Yes      | A unique identifier for your application                                                                                                                               |
+| `endpoint`    | string | Yes      | The endpoint that will verify the proof                                                                                                                                |
+| `logoBase64`  | string | No       | Base64-encoded logo to display in the Self app                                                                                                                         |
+| `userId`      | string | No       | Unique identifier for the user (auto-generated if omitted)                                                                                                             |
+| `disclosures` | object | No       | Disclosure and verification requirements. Accepts a preset string (`'basic-kyc'`, `'age-verification'`, `'full-passport'`, `'ofac-only'`) or a full disclosure object. |
 
 ### Disclosure Options
 
@@ -121,39 +133,21 @@ Here's a complete example of how to implement the Self QR code in a React applic
 ```tsx
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import SelfQRcodeWrapper, { SelfAppBuilder } from '@selfxyz/qrcode';
-import type { SelfApp } from '@selfxyz/qrcode';
-import { v4 as uuidv4 } from 'uuid';
 
 function VerificationPage() {
-  const [userId, setUserId] = useState<string | null>(null);
-
-  useEffect(() => {
-    // Generate a user ID when the component mounts
-    setUserId(uuidv4());
-  }, []);
-
-  if (!userId) return null;
-
-  // Create the SelfApp configuration
-  const selfApp = new SelfAppBuilder({
-    appName: 'My Application',
-    scope: 'my-application-scope',
-    endpoint: 'https://myapp.com/api/verify',
-    userId,
-    disclosures: {
-      // Request passport information
-      name: true,
-      nationality: true,
-      date_of_birth: true,
-
-      // Set verification rules
-      minimumAge: 18,
-      excludedCountries: ['IRN', 'PRK', 'RUS'],
-      ofac: true,
-    },
-  }).build();
+  // Build per-mount so each user gets a unique auto-generated userId
+  const selfApp = useMemo(
+    () =>
+      SelfAppBuilder.forBackend({
+        appName: 'My Application',
+        endpoint: 'https://myapp.com/api/verify',
+        scope: 'my-application-scope',
+        disclosures: 'basic-kyc',
+      }).build(),
+    []
+  );
 
   return (
     <div className="verification-container">
@@ -163,14 +157,10 @@ function VerificationPage() {
       <SelfQRcodeWrapper
         selfApp={selfApp}
         onSuccess={() => {
-          // Handle successful verification
           console.log('Verification successful!');
-          // Redirect or update UI
         }}
         size={350}
       />
-
-      <p className="text-sm text-gray-500">User ID: {userId.substring(0, 8)}...</p>
     </div>
   );
 }
