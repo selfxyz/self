@@ -128,7 +128,7 @@ const SelfQRcode = ({
 
   return (
     <div
-      style={qrWrapperStyle(proofStep, showBorder)}
+      style={qrWrapperStyle(proofStep, showBorder, darkMode)}
       role="img"
       aria-label="Self authentication QR code"
     >

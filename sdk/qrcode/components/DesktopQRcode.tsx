@@ -17,14 +17,14 @@ interface DesktopQRcodeProps {
 
 const DesktopQRcode = memo(
   ({ proofStep, qrValue, size, darkMode, selfApp }: DesktopQRcodeProps) => (
-    <div style={desktopCardStyle()} role="img" aria-label="Self authentication QR code">
-      <DesktopHeader appName={selfApp.appName} appLogo={selfApp.logoBase64} />
+    <div style={desktopCardStyle(darkMode)} role="img" aria-label="Self authentication QR code">
+      <DesktopHeader appName={selfApp.appName} appLogo={selfApp.logoBase64} darkMode={darkMode} />
       <div style={desktopQrSectionStyle()}>
-        <div style={desktopQrWrapperStyle(proofStep)}>
+        <div style={desktopQrWrapperStyle(proofStep, darkMode)}>
           <QRCode value={qrValue} size={size} darkMode={darkMode} proofStep={proofStep} />
         </div>
       </div>
-      <DesktopFooter proofStep={proofStep} />
+      <DesktopFooter proofStep={proofStep} darkMode={darkMode} />
     </div>
   )
 );
