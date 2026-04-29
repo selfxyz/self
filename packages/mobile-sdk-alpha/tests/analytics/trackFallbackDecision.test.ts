@@ -22,7 +22,12 @@ describe('trackFallbackDecision', () => {
 
   it('bootstraps an attempt and fires STARTED if none exists', () => {
     const client = mockClient();
-    trackFallbackDecision(client, OnboardingEvents.FALLBACK_OFFERED, FallbackStage.MRZ_SCAN, FallbackReason.MRZ_SCAN_FAILED);
+    trackFallbackDecision(
+      client,
+      OnboardingEvents.FALLBACK_OFFERED,
+      FallbackStage.MRZ_SCAN,
+      FallbackReason.MRZ_SCAN_FAILED,
+    );
 
     expect(client.trackEvent).toHaveBeenCalledTimes(2);
     expect(client.trackEvent.mock.calls[0][0]).toBe(OnboardingEvents.STARTED);
@@ -31,7 +36,12 @@ describe('trackFallbackDecision', () => {
 
   it('stamps events with attempt_id, initial_branch, current_branch, from_stage, reason', () => {
     const client = mockClient();
-    trackFallbackDecision(client, OnboardingEvents.FALLBACK_OFFERED, FallbackStage.NFC_SCAN, FallbackReason.NFC_SCAN_FAILED);
+    trackFallbackDecision(
+      client,
+      OnboardingEvents.FALLBACK_OFFERED,
+      FallbackStage.NFC_SCAN,
+      FallbackReason.NFC_SCAN_FAILED,
+    );
 
     const payload = client.trackEvent.mock.calls[1][1];
     expect(payload).toMatchObject({
@@ -45,9 +55,24 @@ describe('trackFallbackDecision', () => {
 
   it('is NOT deduped — repeated calls all fire', () => {
     const client = mockClient();
-    trackFallbackDecision(client, OnboardingEvents.FALLBACK_OFFERED, FallbackStage.MRZ_SCAN, FallbackReason.USER_CANCELLED);
-    trackFallbackDecision(client, OnboardingEvents.FALLBACK_OFFERED, FallbackStage.MRZ_SCAN, FallbackReason.USER_CANCELLED);
-    trackFallbackDecision(client, OnboardingEvents.FALLBACK_OFFERED, FallbackStage.MRZ_SCAN, FallbackReason.USER_CANCELLED);
+    trackFallbackDecision(
+      client,
+      OnboardingEvents.FALLBACK_OFFERED,
+      FallbackStage.MRZ_SCAN,
+      FallbackReason.USER_CANCELLED,
+    );
+    trackFallbackDecision(
+      client,
+      OnboardingEvents.FALLBACK_OFFERED,
+      FallbackStage.MRZ_SCAN,
+      FallbackReason.USER_CANCELLED,
+    );
+    trackFallbackDecision(
+      client,
+      OnboardingEvents.FALLBACK_OFFERED,
+      FallbackStage.MRZ_SCAN,
+      FallbackReason.USER_CANCELLED,
+    );
 
     // 1 STARTED + 3 FALLBACK_OFFERED
     expect(client.trackEvent).toHaveBeenCalledTimes(4);
@@ -75,7 +100,12 @@ describe('trackFallbackDecision', () => {
 
   it('shares the same attempt_id as canonical step events', () => {
     const client = mockClient();
-    trackFallbackDecision(client, OnboardingEvents.FALLBACK_OFFERED, FallbackStage.MRZ_SCAN, FallbackReason.MRZ_SCAN_FAILED);
+    trackFallbackDecision(
+      client,
+      OnboardingEvents.FALLBACK_OFFERED,
+      FallbackStage.MRZ_SCAN,
+      FallbackReason.MRZ_SCAN_FAILED,
+    );
 
     const attempt = _getCurrentOnboardingAttempt();
     const fallbackPayload = client.trackEvent.mock.calls[1][1];

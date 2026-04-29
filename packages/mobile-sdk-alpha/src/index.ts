@@ -54,11 +54,9 @@ export type { MRZScanOptions } from './mrz';
 
 export type { OnboardingBranch, OnboardingFailureStage, OnboardingStage } from './analytics/onboardingFunnel';
 
-export { FallbackReason, FallbackStage } from './constants/analytics';
-
 export type { PassportValidationCallbacks } from './validation/document';
-export type { ProvingStateType } from './proving/provingMachine';
 
+export type { ProvingStateType } from './proving/provingMachine';
 export type { RecoveryValidationResult } from './proving/recoveryValidation';
 
 export type { SDKEvent, SDKEventMap } from './types/events';
@@ -70,6 +68,8 @@ export type { provingMachineCircuitType } from './proving/provingMachine';
 export { DelayedLottieView } from './components/DelayedLottieView';
 
 export { ExpandableBottomLayout } from './layouts/ExpandableBottomLayout';
+
+export { FallbackReason, FallbackStage } from './constants/analytics';
 
 export {
   InitError,

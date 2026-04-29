@@ -9,7 +9,11 @@ import { Text, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { FallbackReason, FallbackStage, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import {
+  FallbackReason,
+  FallbackStage,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
 import {
   Additional,
   ButtonsContainer,
@@ -72,7 +76,11 @@ const DocumentOnboardingScreen: React.FC = () => {
 
   const onCancelPress = () => {
     impactLight();
-    showKycFallbackModal(() => navigation.goBack(), FallbackStage.DOCUMENT_SCAN, FallbackReason.USER_CANCELLED);
+    showKycFallbackModal(
+      () => navigation.goBack(),
+      FallbackStage.DOCUMENT_SCAN,
+      FallbackReason.USER_CANCELLED,
+    );
   };
 
   // iOS: Delay initial animation start to ensure native Lottie module is initialized

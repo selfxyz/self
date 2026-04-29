@@ -78,7 +78,12 @@ const RegistrationFallbackNFCScreen: React.FC = () => {
   const headerTitle = getHeaderTitle(documentType);
 
   useEffect(() => {
-    trackFallbackDecision(selfClient, OnboardingEvents.FALLBACK_OFFERED, FallbackStage.NFC_SCAN, FallbackReason.NFC_SCAN_FAILED);
+    trackFallbackDecision(
+      selfClient,
+      OnboardingEvents.FALLBACK_OFFERED,
+      FallbackStage.NFC_SCAN,
+      FallbackReason.NFC_SCAN_FAILED,
+    );
   }, [selfClient]);
 
   const { launchKycVerification, isLoading: isRetrying } = useKycLauncher({
@@ -115,7 +120,12 @@ const RegistrationFallbackNFCScreen: React.FC = () => {
     trackEvent('REGISTRATION_FALLBACK_TRY_ALTERNATIVE', {
       errorSource: 'nfc_scan_failed',
     });
-    trackFallbackDecision(selfClient, OnboardingEvents.FALLBACK_ACCEPTED, FallbackStage.NFC_SCAN, FallbackReason.NFC_SCAN_FAILED);
+    trackFallbackDecision(
+      selfClient,
+      OnboardingEvents.FALLBACK_ACCEPTED,
+      FallbackStage.NFC_SCAN,
+      FallbackReason.NFC_SCAN_FAILED,
+    );
     // User is switching from biometric to the KYC provider fallback —
     // update the funnel's branch so subsequent canonical events reflect it.
     setOnboardingBranch('kyc');
@@ -126,7 +136,12 @@ const RegistrationFallbackNFCScreen: React.FC = () => {
     trackEvent('REGISTRATION_FALLBACK_RETRY_ORIGINAL', {
       errorSource: 'nfc_scan_failed',
     });
-    trackFallbackDecision(selfClient, OnboardingEvents.FALLBACK_DECLINED, FallbackStage.NFC_SCAN, FallbackReason.NFC_SCAN_FAILED);
+    trackFallbackDecision(
+      selfClient,
+      OnboardingEvents.FALLBACK_DECLINED,
+      FallbackStage.NFC_SCAN,
+      FallbackReason.NFC_SCAN_FAILED,
+    );
     trackOnboardingRetry(selfClient, 'scan_started', 'nfc_scan_failed');
     navigation.navigate('DocumentNFCScan', {});
   }, [navigation, selfClient, trackEvent]);

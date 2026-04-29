@@ -137,7 +137,11 @@ const DocumentCameraScreen: React.FC = () => {
   });
 
   const onCancelPress = () => {
-    showKycFallbackModal(() => navigateToHome(), FallbackStage.MRZ_SCAN, FallbackReason.USER_CANCELLED);
+    showKycFallbackModal(
+      () => navigateToHome(),
+      FallbackStage.MRZ_SCAN,
+      FallbackReason.USER_CANCELLED,
+    );
   };
 
   return (

@@ -507,7 +507,11 @@ const DocumentNFCScanScreen: React.FC = () => {
     flushAllAnalytics();
     logNFCEvent('info', 'scan_cancelled', { ...baseContext, stage: 'cancel' });
     if (isNfcSupported && isNfcEnabled) {
-      showKycFallbackModal(() => navigateToHome(), FallbackStage.NFC_SCAN, FallbackReason.USER_CANCELLED);
+      showKycFallbackModal(
+        () => navigateToHome(),
+        FallbackStage.NFC_SCAN,
+        FallbackReason.USER_CANCELLED,
+      );
     } else {
       navigateToHome();
     }

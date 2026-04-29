@@ -76,7 +76,12 @@ const RegistrationFallbackMRZScreen: React.FC = () => {
   const headerTitle = getHeaderTitle(documentType);
 
   useEffect(() => {
-    trackFallbackDecision(selfClient, OnboardingEvents.FALLBACK_OFFERED, FallbackStage.MRZ_SCAN, FallbackReason.MRZ_SCAN_FAILED);
+    trackFallbackDecision(
+      selfClient,
+      OnboardingEvents.FALLBACK_OFFERED,
+      FallbackStage.MRZ_SCAN,
+      FallbackReason.MRZ_SCAN_FAILED,
+    );
   }, [selfClient]);
 
   const { launchKycVerification, isLoading: isRetrying } = useKycLauncher({
@@ -108,7 +113,12 @@ const RegistrationFallbackMRZScreen: React.FC = () => {
     trackEvent('REGISTRATION_FALLBACK_TRY_ALTERNATIVE', {
       errorSource: 'mrz_scan_failed',
     });
-    trackFallbackDecision(selfClient, OnboardingEvents.FALLBACK_ACCEPTED, FallbackStage.MRZ_SCAN, FallbackReason.MRZ_SCAN_FAILED);
+    trackFallbackDecision(
+      selfClient,
+      OnboardingEvents.FALLBACK_ACCEPTED,
+      FallbackStage.MRZ_SCAN,
+      FallbackReason.MRZ_SCAN_FAILED,
+    );
     setOnboardingBranch('kyc');
     await launchKycVerification();
   }, [launchKycVerification, selfClient, trackEvent]);
@@ -117,7 +127,12 @@ const RegistrationFallbackMRZScreen: React.FC = () => {
     trackEvent('REGISTRATION_FALLBACK_RETRY_ORIGINAL', {
       errorSource: 'mrz_scan_failed',
     });
-    trackFallbackDecision(selfClient, OnboardingEvents.FALLBACK_DECLINED, FallbackStage.MRZ_SCAN, FallbackReason.MRZ_SCAN_FAILED);
+    trackFallbackDecision(
+      selfClient,
+      OnboardingEvents.FALLBACK_DECLINED,
+      FallbackStage.MRZ_SCAN,
+      FallbackReason.MRZ_SCAN_FAILED,
+    );
     trackOnboardingRetry(selfClient, 'scan_started', 'mrz_scan_failed');
     navigation.navigate('DocumentCamera');
   }, [navigation, selfClient, trackEvent]);

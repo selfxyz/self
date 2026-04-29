@@ -6,9 +6,8 @@ import { useCallback, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
+import type { FallbackReason, FallbackStage } from '@selfxyz/mobile-sdk-alpha';
 import {
-  FallbackReason,
-  FallbackStage,
   sanitizeErrorMessage,
   trackFallbackDecision,
   useSelfClient,
@@ -143,8 +142,17 @@ export const useKycLauncher = (options: UseKycLauncherOptions) => {
   }, [navigation, countryCode, onSuccess, onCancel, onError]);
 
   const showKycFallbackModal = useCallback(
-    (onDismiss: () => void, fromStage: FallbackStage, reason: FallbackReason) => {
-      trackFallbackDecision(selfClient, OnboardingEvents.FALLBACK_OFFERED, fromStage, reason);
+    (
+      onDismiss: () => void,
+      fromStage: FallbackStage,
+      reason: FallbackReason,
+    ) => {
+      trackFallbackDecision(
+        selfClient,
+        OnboardingEvents.FALLBACK_OFFERED,
+        fromStage,
+        reason,
+      );
       const titleText = 'Having trouble scanning your document?';
       const bodyText =
         "You'll be redirected to our third party verification partner.";
@@ -154,7 +162,12 @@ export const useKycLauncher = (options: UseKycLauncherOptions) => {
         buttonText: 'Try Alternative Verification',
         secondaryButtonText: cancelLabel,
         onButtonPress: () => {
-          trackFallbackDecision(selfClient, OnboardingEvents.FALLBACK_ACCEPTED, fromStage, reason);
+          trackFallbackDecision(
+            selfClient,
+            OnboardingEvents.FALLBACK_ACCEPTED,
+            fromStage,
+            reason,
+          );
           showModal({
             titleText,
             bodyText,
@@ -166,7 +179,12 @@ export const useKycLauncher = (options: UseKycLauncherOptions) => {
           return launchKycVerification();
         },
         onSecondaryButtonPress: () => {
-          trackFallbackDecision(selfClient, OnboardingEvents.FALLBACK_DECLINED, fromStage, reason);
+          trackFallbackDecision(
+            selfClient,
+            OnboardingEvents.FALLBACK_DECLINED,
+            fromStage,
+            reason,
+          );
           onDismiss();
         },
       });

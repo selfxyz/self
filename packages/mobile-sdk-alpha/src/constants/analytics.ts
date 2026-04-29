@@ -98,6 +98,20 @@ export const DocumentEvents = {
   VALIDATE_DOCUMENT_FAILED: 'Document: Validate Document Failed',
 };
 
+export enum FallbackReason {
+  MRZ_SCAN_FAILED = 'mrz_scan_failed',
+  NFC_SCAN_FAILED = 'nfc_scan_failed',
+  NO_BIOMETRIC_CHIP = 'no_biometric_chip',
+  USER_CANCELLED = 'user_cancelled',
+}
+
+export enum FallbackStage {
+  MRZ_SCAN = 'mrz_scan',
+  NFC_SCAN = 'nfc_scan',
+  DOCUMENT_TYPE_SELECTED = 'document_type_selected',
+  DOCUMENT_SCAN = 'document_scan',
+}
+
 export const MockDataEvents = {
   CANCEL_GENERATION: 'Mock Data: Cancel Generation',
   CREATE_DEEP_LINK: 'Mock Data: Create Deep Link',
@@ -119,20 +133,6 @@ export const NotificationEvents = {
   BACKGROUND_NOTIFICATION_OPENED: 'Notification: Background Notification Opened',
   COLD_START_NOTIFICATION_OPENED: 'Notification: Cold Start Notification Opened',
 };
-
-export enum FallbackReason {
-  MRZ_SCAN_FAILED = 'mrz_scan_failed',
-  NFC_SCAN_FAILED = 'nfc_scan_failed',
-  NO_BIOMETRIC_CHIP = 'no_biometric_chip',
-  USER_CANCELLED = 'user_cancelled',
-}
-
-export enum FallbackStage {
-  MRZ_SCAN = 'mrz_scan',
-  NFC_SCAN = 'nfc_scan',
-  DOCUMENT_TYPE_SELECTED = 'document_type_selected',
-  DOCUMENT_SCAN = 'document_scan',
-}
 
 /**
  * Canonical onboarding funnel events. These are the ONLY events the Mixpanel

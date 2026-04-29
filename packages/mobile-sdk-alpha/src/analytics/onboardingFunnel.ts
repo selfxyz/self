@@ -214,6 +214,27 @@ export function setOnboardingBranch(branch: OnboardingBranch): void {
 }
 
 /**
+ * Fire a fallback-decision event (Layer 2). Unlike step events, this is NOT
+ * deduped — every offer/accept/decline produces an event. Stamps with the
+ * standard attempt properties so dashboard queries can join with Layer 1.
+ */
+export function trackFallbackDecision(
+  selfClient: Pick<SelfClient, 'trackEvent'>,
+  event: string,
+  fromStage: FallbackStage,
+  reason: FallbackReason,
+  properties?: Record<string, unknown>,
+): void {
+  const attempt = ensureAttempt(selfClient);
+  selfClient.trackEvent(event, {
+    ...baseProperties(attempt),
+    from_stage: fromStage,
+    reason,
+    ...properties,
+  });
+}
+
+/**
  * Fire a retry event for a given stage. Unlike step events, this is NOT
  * deduped — every retry produces an event. Increments the attempt's
  * per-stage retry counter so later `trackOnboardingStep` calls on the
@@ -232,27 +253,6 @@ export function trackOnboardingRetry(
     stage,
     reason,
     attempt_count: attempt.retryCounts[stage],
-    ...properties,
-  });
-}
-
-/**
- * Fire a fallback-decision event (Layer 2). Unlike step events, this is NOT
- * deduped — every offer/accept/decline produces an event. Stamps with the
- * standard attempt properties so dashboard queries can join with Layer 1.
- */
-export function trackFallbackDecision(
-  selfClient: Pick<SelfClient, 'trackEvent'>,
-  event: string,
-  fromStage: FallbackStage,
-  reason: FallbackReason,
-  properties?: Record<string, unknown>,
-): void {
-  const attempt = ensureAttempt(selfClient);
-  selfClient.trackEvent(event, {
-    ...baseProperties(attempt),
-    from_stage: fromStage,
-    reason,
     ...properties,
   });
 }
