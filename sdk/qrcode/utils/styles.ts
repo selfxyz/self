@@ -109,7 +109,10 @@ export const desktopQrSectionStyle = (): React.CSSProperties => ({
   boxSizing: 'border-box',
 });
 
-export const desktopQrWrapperStyle = (step: number, darkMode: boolean = false): React.CSSProperties => ({
+export const desktopQrWrapperStyle = (
+  step: number,
+  darkMode: boolean = false
+): React.CSSProperties => ({
   display: 'inline-flex',
   flexDirection: 'column',
   alignItems: 'center',
@@ -317,7 +320,11 @@ export const qrContainerStyle = (size: number): React.CSSProperties => ({
   height: size,
 });
 
-export const qrWrapperStyle = (step: number, showBorder: boolean = true, darkMode: boolean = false): React.CSSProperties => ({
+export const qrWrapperStyle = (
+  step: number,
+  showBorder: boolean = true,
+  darkMode: boolean = false
+): React.CSSProperties => ({
   display: 'inline-flex',
   flexDirection: 'column',
   alignItems: 'center',
