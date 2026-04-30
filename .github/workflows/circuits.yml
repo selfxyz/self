@@ -24,6 +24,8 @@ jobs:
             echo "Running for ${{ github.base_ref }} - no path filter"
           else
             # For dev branch, check if circuits files changed
+            # Fetch the base branch to ensure it's available for comparison
+            git fetch origin ${{ github.base_ref }} --depth=1
             CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD) || {
               echo "Error: Failed to diff against base branch"
               exit 1

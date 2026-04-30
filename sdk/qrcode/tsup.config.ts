@@ -29,6 +29,7 @@ export default defineConfig([
     platform: 'neutral',
     loader: {
       '.svg': 'dataurl',
+      '.png': 'dataurl',
     },
     publicDir: path.resolve(__dirname, 'assets'),
     external: [
@@ -55,6 +56,7 @@ export default defineConfig([
     platform: 'neutral',
     loader: {
       '.svg': 'dataurl',
+      '.png': 'dataurl',
     },
     publicDir: path.resolve(__dirname, 'assets'),
     external: [
