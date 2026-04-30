@@ -64,6 +64,26 @@ export interface Config {
      * @returns true if the error should be injected, false otherwise
      */
     shouldTrigger?: (errorType: string) => boolean;
+    /**
+     * Dev-only bypass for the on-chain "already registered / nullifier on-chain"
+     * checks that run before registration proving. When this returns true, the
+     * proving machine treats the document as unregistered and proceeds to
+     * generate a register proof regardless of chain state. Intended for QA of
+     * the register circuit path; the relayer/contract will still reject a
+     * duplicate registration at submission time.
+     *
+     * Independent of `shouldBypassDscRegistrationCheck`: the DSC tree check
+     * still runs and is honored, so a test cert whose DSC is already on-chain
+     * skips the DSC proof and reaches the register circuit directly.
+     */
+    shouldBypassDocumentRegistrationCheck?: () => boolean;
+    /**
+     * Dev-only bypass for the on-chain DSC tree membership check that runs
+     * before registration proving. When this returns true, the proving machine
+     * treats the DSC as not yet in the tree and forces the DSC circuit to run
+     * before the register circuit. Intended for QA of the DSC circuit path.
+     */
+    shouldBypassDscRegistrationCheck?: () => boolean;
   };
   /**
    * Platform identifier used for structured logging and observability.

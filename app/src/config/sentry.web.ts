@@ -10,6 +10,7 @@ import {
   captureMessage as sentryCaptureMessage,
   feedbackIntegration,
   init as sentryInit,
+  setTag,
   withProfiler,
   withScope,
 } from '@sentry/react';
@@ -195,9 +196,6 @@ export const initSentry = () => {
 
 export const isSentryDisabled = !SENTRY_DSN;
 
-type LogLevel = 'info' | 'warn' | 'error';
-type LogCategory = 'proof' | 'nfc';
-
 export const logEvent = (
   level: LogLevel,
   category: LogCategory,
@@ -253,6 +251,9 @@ export const logEvent = (
   }
 };
 
+type LogLevel = 'info' | 'warn' | 'error';
+type LogCategory = 'proof' | 'nfc';
+
 export const logNFCEvent = (
   level: LogLevel,
   message: string,
@@ -266,6 +267,17 @@ export const logProofEvent = (
   context: ProofContext,
   extra?: Record<string, unknown>,
 ) => logEvent(level, 'proof', message, context, extra);
+
+export const setSupportUuidInSentry = (
+  supportUuid: string | null,
+  enabled = true,
+) => {
+  if (isSentryDisabled) {
+    return;
+  }
+  setTag('support_uuid_enabled', enabled ? 'true' : 'false');
+  setTag('support_uuid', enabled ? (supportUuid ?? 'unset') : 'disabled');
+};
 
 export const wrapWithSentry = (App: React.ComponentType) => {
   return isSentryDisabled ? App : withProfiler(App);

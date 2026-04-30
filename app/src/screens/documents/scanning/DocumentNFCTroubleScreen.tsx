@@ -12,6 +12,7 @@ import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { Caption, SecondaryButton } from '@selfxyz/mobile-sdk-alpha/components';
 import { slate500, slate700 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
+import SupportUuidRow from '@/components/support/SupportUuidRow';
 import type { TipProps } from '@/components/Tips';
 import Tips from '@/components/Tips';
 import { useFeedbackAutoHide } from '@/hooks/useFeedbackAutoHide';
@@ -65,7 +66,6 @@ const DocumentNFCTroubleScreen: React.FC = () => {
   const { countryCode } = useMRZStore();
   const { launchKycVerification, isLoading } = useKycLauncher({
     countryCode,
-    errorSource: 'nfc_scan_failed',
   });
   useFeedbackAutoHide();
 
@@ -89,6 +89,8 @@ const DocumentNFCTroubleScreen: React.FC = () => {
       onSecondaryButtonPress={goToNFCMethodSelection}
       footer={
         <YStack gap="$3">
+          <SupportUuidRow />
+
           <SecondaryButton
             onPress={openSupportForm}
             textColor={slate700}

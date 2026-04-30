@@ -30,6 +30,9 @@ import {
   PointEvents,
 } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import {
+  amber50,
+  amber200,
+  amber700,
   black,
   blue600,
   slate50,
@@ -87,6 +90,12 @@ const HomeScreen: React.FC = () => {
 
   const { pendingVerifications, removeExpiredVerifications } =
     usePendingKycStore();
+  const testRegistrationCircuitArmed = useSettingStore(
+    state => state.testRegistrationCircuitArmed,
+  );
+  const testDscCircuitArmed = useSettingStore(
+    state => state.testDscCircuitArmed,
+  );
 
   useEffect(() => {
     removeExpiredVerifications();
@@ -257,6 +266,46 @@ const HomeScreen: React.FC = () => {
           paddingBottom: 35, // Add extra bottom padding for shadow
         }}
       >
+        {testRegistrationCircuitArmed && (
+          <YStack
+            backgroundColor={amber50}
+            borderColor={amber200}
+            borderRadius="$4"
+            borderWidth={1}
+            gap="$1"
+            padding="$4"
+            testID="test-registration-circuit-banner"
+          >
+            <Text color={amber700} fontFamily={dinot} fontSize="$5">
+              Test registration circuit armed
+            </Text>
+            <Text color={amber700} fontFamily={dinot} fontSize="$3">
+              The next document registration attempt in this app session will
+              skip the document already-registered / nullifier checks and force
+              the register circuit path. The DSC tree check still runs.
+            </Text>
+          </YStack>
+        )}
+        {testDscCircuitArmed && (
+          <YStack
+            backgroundColor={amber50}
+            borderColor={amber200}
+            borderRadius="$4"
+            borderWidth={1}
+            gap="$1"
+            padding="$4"
+            testID="test-dsc-circuit-banner"
+          >
+            <Text color={amber700} fontFamily={dinot} fontSize="$5">
+              Test DSC circuit armed
+            </Text>
+            <Text color={amber700} fontFamily={dinot} fontSize="$3">
+              The next document registration attempt in this app session will
+              bypass the on-chain DSC tree check and force the DSC circuit path.
+            </Text>
+          </YStack>
+        )}
+
         {/* Show pending KYC cards at the top */}
         {activePendingVerifications.map(verification => (
           <PendingIdCard

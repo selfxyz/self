@@ -113,8 +113,48 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+    buildFeatures {
+        buildConfig = true
+    }
+    buildTypes {
+        debug {
+            buildConfigField("Boolean", "DEMO_MODE", "false")
+        }
+        release {
+            isMinifyEnabled = false
+            buildConfigField("Boolean", "DEMO_MODE", "false")
+        }
+        create("demo") {
+            initWith(getByName("release"))
+            buildConfigField("Boolean", "DEMO_MODE", "true")
+            matchingFallbacks += listOf("release")
+        }
+    }
     // Configure assets directory
     sourceSets["main"].assets.srcDirs("src/main/assets")
+}
+
+// iOS demo flag generation
+val buildDemo = project.findProperty("self.sdk.demo")?.toString()?.toBoolean() ?: false
+
+val generateIosDemoFlag by tasks.registering {
+    val outputDir = layout.buildDirectory.dir("generated/demoFlag/iosMain/kotlin/xyz/self/sdk/api")
+    outputs.dir(outputDir)
+    inputs.property("demoMode", buildDemo)
+    doLast {
+        outputDir.get().asFile.mkdirs()
+        outputDir.get().file("IosDemoFlag.kt").asFile.writeText(
+            "package xyz.self.sdk.api\n\ninternal val iosDemoMode: Boolean = $buildDemo\n",
+        )
+    }
+}
+
+kotlin.sourceSets.matching { it.name == "iosMain" }.configureEach {
+    kotlin.srcDir(layout.buildDirectory.dir("generated/demoFlag/iosMain/kotlin"))
+}
+
+tasks.matching { it.name.startsWith("compileKotlinIos") }.configureEach {
+    dependsOn(generateIosDemoFlag)
 }
 
 // Task to copy WebView app bundle into SDK assets

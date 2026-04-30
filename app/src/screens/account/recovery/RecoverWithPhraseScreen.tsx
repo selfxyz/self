@@ -4,7 +4,7 @@
 
 import { ethers } from 'ethers';
 import React, { useCallback, useState } from 'react';
-import { Keyboard, StyleSheet } from 'react-native';
+import { Keyboard, Pressable, StyleSheet } from 'react-native';
 import { Text, TextArea, View, XStack, YStack } from 'tamagui';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { useNavigation } from '@react-navigation/native';
@@ -22,6 +22,7 @@ import {
 import { BackupEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import {
   black,
+  red500,
   slate300,
   slate400,
   slate600,
@@ -38,6 +39,22 @@ import {
 } from '@/providers/passportDataProvider';
 import { recoveryCopy } from '@/screens/account/recovery/recoveryCopy';
 
+type RecoveryError =
+  | 'invalid_mnemonic'
+  | 'restore_failed'
+  | 'not_registered'
+  | 'unexpected_error';
+
+const ERROR_MESSAGES: Record<RecoveryError, string> = {
+  invalid_mnemonic:
+    'That doesn’t look like a valid recovery phrase. Make sure all 24 words are correct and in the right order.',
+  restore_failed:
+    'We couldn’t restore your account with this phrase. Please double-check and try again.',
+  not_registered:
+    'This recovery phrase doesn’t match a registered ID. If you registered with a different phrase, try that one instead.',
+  unexpected_error: 'Something went wrong. Please try again.',
+};
+
 const RecoverWithPhraseScreen: React.FC = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -47,20 +64,31 @@ const RecoverWithPhraseScreen: React.FC = () => {
   const { trackEvent } = useSelfClient();
   const [mnemonic, setMnemonic] = useState<string>();
   const [restoring, setRestoring] = useState(false);
+  const [error, setError] = useState<RecoveryError | null>(null);
+
   const onPaste = useCallback(async () => {
     const clipboard = (await Clipboard.getString()).trim();
     // bugfix: perform a simple clipboard check; ethers.Mnemonic.isValidMnemonic doesn't work
     if (clipboard) {
       setMnemonic(clipboard);
+      setError(null);
       Keyboard.dismiss();
     }
   }, []);
 
+  const onChangeText = useCallback((text: string) => {
+    setMnemonic(text);
+    setError(null);
+  }, []);
+
   const restoreAccount = useCallback(async () => {
+    Keyboard.dismiss();
+    setError(null);
     try {
       setRestoring(true);
       const slimMnemonic = mnemonic?.trim();
       if (!slimMnemonic || !ethers.Mnemonic.isValidMnemonic(slimMnemonic)) {
+        setError('invalid_mnemonic');
         setRestoring(false);
         return;
       }
@@ -71,6 +99,7 @@ const RecoverWithPhraseScreen: React.FC = () => {
         trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_AUTH, {
           mnemonicLength: slimMnemonic.split(' ').length,
         });
+        setError('restore_failed');
         setRestoring(false);
         return;
       }
@@ -121,6 +150,7 @@ const RecoverWithPhraseScreen: React.FC = () => {
           reason: 'document_not_registered',
           hasCSCA: !!csca,
         });
+        setError('not_registered');
         setRestoring(false);
         return;
       }
@@ -133,11 +163,12 @@ const RecoverWithPhraseScreen: React.FC = () => {
       setRestoring(false);
       trackEvent(BackupEvents.ACCOUNT_RECOVERY_COMPLETED);
       navigation.navigate('AccountVerifiedSuccess');
-    } catch (error) {
+    } catch (restoreError) {
       trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_UNKNOWN, {
         reason: 'unexpected_error',
-        error: error instanceof Error ? error.message : 'unknown',
+        error: restoreError instanceof Error ? restoreError.name : 'unknown',
       });
+      setError('unexpected_error');
       setRestoring(false);
     }
   }, [
@@ -161,7 +192,7 @@ const RecoverWithPhraseScreen: React.FC = () => {
       </Description>
       <View width="100%" position="relative">
         <TextArea
-          borderColor={slate600}
+          borderColor={error ? red500 : slate600}
           backgroundColor={slate700}
           color={slate400}
           borderWidth="$1"
@@ -174,22 +205,21 @@ const RecoverWithPhraseScreen: React.FC = () => {
           onKeyPress={key =>
             key.nativeEvent.key === 'Enter' && mnemonic && Keyboard.dismiss()
           }
-          onChangeText={setMnemonic}
+          onChangeText={onChangeText}
         />
-        <XStack
-          gap="$2"
-          position="absolute"
-          bottom={0}
-          width="100%"
-          alignItems="flex-end"
-          justifyContent="center"
-          paddingBottom="$4"
+        <Pressable
           onPress={onPaste}
+          style={styles.pasteButton}
+          hitSlop={{ top: 10, bottom: 10, left: 20, right: 20 }}
         >
-          <Paste color={white} height={20} width={20} />
-          <Text style={styles.pasteText}>{recoveryCopy.phrase.paste}</Text>
-        </XStack>
+          <XStack gap="$2" alignItems="center" justifyContent="center">
+            <Paste color={white} height={20} width={20} />
+            <Text style={styles.pasteText}>{recoveryCopy.phrase.paste}</Text>
+          </XStack>
+        </Pressable>
       </View>
+
+      {error && <Text style={styles.errorText}>{ERROR_MESSAGES[error]}</Text>}
 
       <SecondaryButton
         disabled={!mnemonic || restoring}
@@ -211,9 +241,22 @@ const styles = StyleSheet.create({
     backgroundColor: black,
     height: '100%',
   },
+  pasteButton: {
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+    alignItems: 'center',
+    paddingBottom: 16,
+  },
   pasteText: {
     lineHeight: 20,
     fontSize: 15,
     color: white,
+  },
+  errorText: {
+    color: red500,
+    fontSize: 14,
+    textAlign: 'center',
+    paddingHorizontal: 20,
   },
 });

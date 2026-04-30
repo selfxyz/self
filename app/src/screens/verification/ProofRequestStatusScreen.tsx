@@ -4,7 +4,7 @@
 
 import type { LottieViewProps } from 'lottie-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Linking, StyleSheet, View } from 'react-native';
+import { Linking, Platform, StyleSheet, Text, View } from 'react-native';
 import { ScrollView, Spinner } from 'tamagui';
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -19,10 +19,16 @@ import {
   typography,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
-import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import {
+  black,
+  slate200,
+  slate500,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import failAnimation from '@/assets/animations/proof_failed.json';
 import succesAnimation from '@/assets/animations/proof_success.json';
+import { captureException } from '@/config/sentry';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import {
   buttonTap,
@@ -31,9 +37,31 @@ import {
 } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
+import {
+  hasUserAnIdentityDocumentRegistered,
+  hasUserDoneThePointsDisclosure,
+} from '@/services/points';
 import { getWhiteListedDisclosureAddresses } from '@/services/points/utils';
 import { useProofHistoryStore } from '@/stores/proofHistoryStore';
 import { ProofStatus } from '@/stores/proofTypes';
+
+const PREREQ_CHECK_TIMEOUT_MS = 3000;
+// Give each active proving state a generous 90s window before exposing an
+// escape hatch. This avoids trapping users on silent stalls without cutting off
+// normal slow-device proving too aggressively.
+const PROVING_STALL_TIMEOUT_MS = 90_000;
+const PROOF_TIMEOUT_ERROR_CODE = 'proof_timeout';
+const PROOF_TIMEOUT_REASON = 'timed_out_after_90s';
+const STALL_TIMEOUT_STATES = new Set([
+  'parsing_id_document',
+  'fetching_data',
+  'validating_document',
+  'init_tee_connexion',
+  'ready_to_prove',
+  'listening_for_status',
+  'proving',
+  'post_proving',
+]);
 
 const SuccessScreen: React.FC = () => {
   const selfClient = useSelfClient();
@@ -58,34 +86,67 @@ const SuccessScreen: React.FC = () => {
     useState<LottieViewProps['source']>(loadingAnimation);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [countdownStarted, setCountdownStarted] = useState(false);
+  const [hasTimedOut, setHasTimedOut] = useState(false);
+  const [isDismissingTimedOutProof, setIsDismissingTimedOutProof] =
+    useState(false);
   const [whitelistedPoints, setWhitelistedPoints] = useState<
     number | null | undefined
   >(undefined);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const provingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timedOutSessionIdRef = useRef<string | null>(null);
+  const dismissingTimedOutProofRef = useRef(false);
+  const timedOutAnalyticsTrackedRef = useRef(false);
+
+  const displayState = hasTimedOut ? 'failure' : currentState;
+  const displayReason = hasTimedOut
+    ? PROOF_TIMEOUT_REASON
+    : (reason ?? undefined);
 
   const onOkPress = useCallback(async () => {
-    if (whitelistedPoints === undefined) return;
+    // The whitelistedPoints guard only applies to the success path — on
+    // failure/error it is never populated, and blocking would trap the user.
+    if (currentState === 'completed' && whitelistedPoints === undefined) return;
     buttonTap();
     const completedSessionId = sessionId;
 
-    if (whitelistedPoints !== null) {
-      navigation.navigate('Gratification', {
-        points: whitelistedPoints,
-      });
+    const cleanupLater = () => {
+      // If completedSessionId is null (early failure before TEE negotiation),
+      // skip the delayed cleanup: a retry started in the next 2s would also
+      // have a null uuid and get wiped by cleanSelfApp.
+      if (completedSessionId === null) return;
       setTimeout(() => {
         if (useProvingStore.getState().uuid === completedSessionId) {
           selfClient.getSelfAppState().cleanSelfApp();
         }
       }, 2000);
-    } else {
-      goHome();
-      setTimeout(() => {
-        if (useProvingStore.getState().uuid === completedSessionId) {
-          selfClient.getSelfAppState().cleanSelfApp();
-        }
-      }, 2000);
+    };
+
+    if (currentState === 'completed' && whitelistedPoints !== null) {
+      // Bound the prereq checks so a stalled network call can't trap the user
+      // on this screen. On timeout we fall through to goHome() — the safe
+      // default, since Gratification would just bounce them via the guardrail.
+      const timeout = new Promise<false>(resolve =>
+        setTimeout(() => resolve(false), PREREQ_CHECK_TIMEOUT_MS),
+      );
+      const [hasDocument, hasDisclosed] = await Promise.all([
+        Promise.race([hasUserAnIdentityDocumentRegistered(), timeout]),
+        Promise.race([hasUserDoneThePointsDisclosure(), timeout]),
+      ]);
+
+      if (hasDocument && hasDisclosed) {
+        navigation.navigate('Gratification', {
+          points: whitelistedPoints,
+        });
+        cleanupLater();
+        return;
+      }
     }
+
+    goHome();
+    cleanupLater();
   }, [
+    currentState,
     whitelistedPoints,
     navigation,
     goHome,
@@ -93,6 +154,41 @@ const SuccessScreen: React.FC = () => {
     sessionId,
     useProvingStore,
   ]);
+
+  const clearProvingTimeout = useCallback(() => {
+    if (provingTimeoutRef.current) {
+      clearTimeout(provingTimeoutRef.current);
+      provingTimeoutRef.current = null;
+    }
+  }, []);
+
+  const onTimedOutDismiss = useCallback(async () => {
+    if (dismissingTimedOutProofRef.current) {
+      return;
+    }
+
+    dismissingTimedOutProofRef.current = true;
+    setIsDismissingTimedOutProof(true);
+    buttonTap();
+
+    try {
+      await useProvingStore.getState().cancel(selfClient);
+    } catch (error) {
+      captureException(
+        error instanceof Error ? error : new Error(String(error)),
+        {
+          module: 'proof-request-status-screen',
+          action: 'dismiss_timed_out_proof',
+          sessionId: timedOutSessionIdRef.current,
+        },
+      );
+    } finally {
+      dismissingTimedOutProofRef.current = false;
+      setIsDismissingTimedOutProof(false);
+      selfClient.getSelfAppState().cleanSelfApp();
+      goHome();
+    }
+  }, [goHome, selfClient, useProvingStore]);
 
   function cancelDeeplinkCallbackRedirect() {
     setCountdown(null);
@@ -105,6 +201,13 @@ const SuccessScreen: React.FC = () => {
     }
     setCountdown(null);
   }
+
+  useEffect(() => {
+    setHasTimedOut(false);
+    timedOutAnalyticsTrackedRef.current = false;
+    setCountdownStarted(false);
+    setCountdown(null);
+  }, [sessionId]);
 
   useEffect(() => {
     if (currentState !== 'completed') return;
@@ -134,10 +237,38 @@ const SuccessScreen: React.FC = () => {
   }, [currentState, selfApp?.endpoint]);
 
   useEffect(() => {
-    if (currentState === 'completed') {
+    if (hasTimedOut) {
+      setAnimationSource(failAnimation);
+
+      if (!timedOutAnalyticsTrackedRef.current) {
+        timedOutAnalyticsTrackedRef.current = true;
+        notificationError();
+        // sessionId (uuid) is only assigned once TEE negotiation starts, so
+        // pre-TEE stall states (parsing_id_document, fetching_data, etc.)
+        // have no uuid to attach to proof history.
+        if (sessionId) {
+          updateProofStatus(
+            sessionId,
+            ProofStatus.FAILURE,
+            PROOF_TIMEOUT_ERROR_CODE,
+            PROOF_TIMEOUT_REASON,
+          );
+        }
+        trackEvent(ProofEvents.PROOF_FAILED, {
+          sessionId,
+          appName,
+          errorCode: PROOF_TIMEOUT_ERROR_CODE,
+          reason: PROOF_TIMEOUT_REASON,
+          state: 'timeout',
+        });
+      }
+    } else if (currentState === 'completed') {
+      timedOutAnalyticsTrackedRef.current = false;
       notificationSuccess();
       setAnimationSource(succesAnimation);
-      updateProofStatus(sessionId!, ProofStatus.SUCCESS);
+      if (sessionId) {
+        updateProofStatus(sessionId, ProofStatus.SUCCESS);
+      }
       trackEvent(ProofEvents.PROOF_COMPLETED, {
         sessionId,
         appName,
@@ -157,14 +288,17 @@ const SuccessScreen: React.FC = () => {
         }
       }
     } else if (currentState === 'failure' || currentState === 'error') {
+      timedOutAnalyticsTrackedRef.current = false;
       notificationError();
       setAnimationSource(failAnimation);
-      updateProofStatus(
-        sessionId!,
-        ProofStatus.FAILURE,
-        errorCode ?? undefined,
-        reason ?? undefined,
-      );
+      if (sessionId) {
+        updateProofStatus(
+          sessionId,
+          ProofStatus.FAILURE,
+          errorCode ?? undefined,
+          reason ?? undefined,
+        );
+      }
       trackEvent(ProofEvents.PROOF_FAILED, {
         sessionId,
         appName,
@@ -173,9 +307,11 @@ const SuccessScreen: React.FC = () => {
         state: currentState,
       });
     } else {
+      timedOutAnalyticsTrackedRef.current = false;
       setAnimationSource(loadingAnimation);
     }
   }, [
+    hasTimedOut,
     trackEvent,
     currentState,
     isFocused,
@@ -187,6 +323,28 @@ const SuccessScreen: React.FC = () => {
     selfApp?.deeplinkCallback,
     countdownStarted,
   ]);
+
+  useEffect(() => {
+    if (hasTimedOut) {
+      clearProvingTimeout();
+      return;
+    }
+
+    if (!isFocused || !STALL_TIMEOUT_STATES.has(currentState)) {
+      clearProvingTimeout();
+      return;
+    }
+
+    clearProvingTimeout();
+    provingTimeoutRef.current = setTimeout(() => {
+      timedOutSessionIdRef.current = sessionId;
+      setHasTimedOut(true);
+    }, PROVING_STALL_TIMEOUT_MS);
+
+    return () => {
+      clearProvingTimeout();
+    };
+  }, [clearProvingTimeout, currentState, hasTimedOut, isFocused, sessionId]);
 
   useEffect(() => {
     if (countdown === null) return;
@@ -216,8 +374,9 @@ const SuccessScreen: React.FC = () => {
     }
     return () => {
       cancelCountdown();
+      clearProvingTimeout();
     };
-  }, [isFocused]);
+  }, [clearProvingTimeout, isFocused]);
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={white}>
@@ -242,11 +401,14 @@ const SuccessScreen: React.FC = () => {
         backgroundColor={white}
       >
         <View style={styles.content}>
-          <Title size="large">{getTitle(currentState)}</Title>
+          <Title size="large">{getTitle(displayState)}</Title>
           <Info
-            currentState={currentState}
+            currentState={displayState}
             appName={appName ?? 'The app'}
-            reason={reason ?? undefined}
+            reason={displayReason}
+            errorCode={
+              hasTimedOut ? PROOF_TIMEOUT_ERROR_CODE : (errorCode ?? undefined)
+            }
             countdown={countdown}
             deeplinkCallback={selfApp?.deeplinkCallback?.replace(
               /^https?:\/\//,
@@ -257,26 +419,32 @@ const SuccessScreen: React.FC = () => {
         <PrimaryButton
           trackEvent={ProofEvents.PROOF_RESULT_ACKNOWLEDGED}
           disabled={
-            (currentState !== 'completed' &&
-              currentState !== 'error' &&
-              currentState !== 'failure') ||
-            (currentState === 'completed' &&
+            isDismissingTimedOutProof ||
+            (displayState !== 'completed' &&
+              displayState !== 'error' &&
+              displayState !== 'failure') ||
+            (displayState === 'completed' &&
               whitelistedPoints === undefined &&
               !(countdown !== null && countdown > 0))
           }
           onPress={
-            countdown !== null && countdown > 0
-              ? cancelDeeplinkCallbackRedirect
-              : onOkPress
+            hasTimedOut
+              ? onTimedOutDismiss
+              : countdown !== null && countdown > 0
+                ? cancelDeeplinkCallbackRedirect
+                : onOkPress
           }
         >
-          {currentState !== 'completed' &&
-          currentState !== 'error' &&
-          currentState !== 'failure' ? (
+          {isDismissingTimedOutProof ? (
+            <Spinner />
+          ) : displayState === 'failure' || displayState === 'error' ? (
+            'Dismiss'
+          ) : displayState !== 'completed' ? (
             <Spinner />
           ) : countdown !== null && countdown > 0 ? (
             'Cancel'
-          ) : whitelistedPoints === undefined ? (
+          ) : currentState === 'completed' &&
+            whitelistedPoints === undefined ? (
             <Spinner />
           ) : (
             'OK'
@@ -299,16 +467,45 @@ function getTitle(currentState: string) {
   }
 }
 
+// Maps low-level proving errors to actionable, user-facing guidance.
+// Raw `reason` is still shown below in a scrollable details box for support.
+function getUserFacingErrorMessage(
+  currentState: string,
+  reason: string | undefined,
+  errorCode: string | undefined,
+  appName: string,
+): string {
+  if (
+    reason === PROOF_TIMEOUT_REASON ||
+    errorCode === PROOF_TIMEOUT_ERROR_CODE
+  ) {
+    return `The proof request from ${appName} took too long to finish. Please try again, or refresh the QR code in ${appName} and scan again.`;
+  }
+  if (currentState === 'error') {
+    return `Unable to prove your identity to ${appName} due to a technical issue. Please try again.`;
+  }
+  const invalidRootPattern = /InvalidRoot/i;
+  if (
+    (reason && invalidRootPattern.test(reason)) ||
+    (errorCode && invalidRootPattern.test(errorCode))
+  ) {
+    return `The QR code from ${appName} is out of date. Please refresh it in ${appName} and scan again.`;
+  }
+  return `Unable to prove your identity to ${appName}. Please try again, or contact support if the issue persists.`;
+}
+
 function Info({
   currentState,
   appName,
   reason,
+  errorCode,
   countdown,
   deeplinkCallback,
 }: {
   currentState: string;
   appName: string;
   reason?: string;
+  errorCode?: string;
   countdown?: number | null;
   deeplinkCallback?: string;
 }) {
@@ -340,30 +537,30 @@ function Info({
       </Description>
     );
   } else if (currentState === 'error' || currentState === 'failure') {
+    const userMessage = getUserFacingErrorMessage(
+      currentState,
+      reason,
+      errorCode,
+      appName,
+    );
     return (
-      <View style={{ gap: 8 }}>
-        <Description>
-          Unable to prove your identity to{' '}
-          <BodyText style={typography.strong}>{appName}</BodyText>
-          {currentState === 'error' && '. Due to technical issues.'}
-        </Description>
+      <View style={{ gap: 12 }}>
+        <Description>{userMessage}</Description>
         {currentState === 'failure' && reason && (
-          <>
-            <Description>
-              <BodyText style={[typography.strong, { fontSize: 14 }]}>
-                Reason:
-              </BodyText>
-            </Description>
-            <View style={{ maxHeight: 60 }}>
-              <ScrollView showsVerticalScrollIndicator={true}>
-                <Description>
-                  <BodyText style={[typography.strong, { fontSize: 14 }]}>
-                    {reason}
-                  </BodyText>
-                </Description>
-              </ScrollView>
-            </View>
-          </>
+          <View style={styles.reasonBox}>
+            <BodyText style={[typography.strong, styles.reasonLabel]}>
+              Details
+            </BodyText>
+            <ScrollView
+              style={styles.reasonScroll}
+              showsVerticalScrollIndicator={true}
+              nestedScrollEnabled
+            >
+              <Text selectable style={styles.reasonText}>
+                {reason}
+              </Text>
+            </ScrollView>
+          </View>
         )}
       </View>
     );
@@ -394,5 +591,26 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20,
     gap: 10,
+  },
+  reasonBox: {
+    alignSelf: 'stretch',
+    borderWidth: 1,
+    borderColor: slate200,
+    borderRadius: 8,
+    padding: 12,
+    gap: 6,
+  },
+  reasonLabel: {
+    fontSize: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  reasonScroll: {
+    maxHeight: 120,
+  },
+  reasonText: {
+    color: slate500,
+    fontSize: 12,
+    fontFamily: Platform.select({ ios: 'Courier', android: 'monospace' }),
   },
 });

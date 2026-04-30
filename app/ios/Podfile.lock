@@ -27,6 +27,10 @@ PODS:
     - React-Core
   - ExpoAsset (11.0.5):
     - ExpoModulesCore
+  - ExpoCamera (16.0.18):
+    - ExpoModulesCore
+    - ZXingObjC/OneD
+    - ZXingObjC/PDF417
   - ExpoFileSystem (18.0.12):
     - ExpoModulesCore
   - ExpoFont (13.0.4):
@@ -1495,7 +1499,27 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-    - YttriumWrapper (= 0.10.50)
+  - react-native-date-picker (5.0.13):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.11.18.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - react-native-get-random-values (1.11.0):
     - React-Core
   - react-native-netinfo (11.4.1):
@@ -2050,6 +2074,27 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - RNPermissions (4.1.5):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.11.18.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - RNReactNativeHapticFeedback (2.3.3):
     - DoubleConversion
     - glog
@@ -2217,7 +2262,11 @@ PODS:
   - SwiftQRScanner (1.1.6)
   - SwiftyTesseract (3.1.3)
   - Yoga (0.0.0)
-  - YttriumWrapper (0.10.50)
+  - ZXingObjC/Core (3.6.9)
+  - ZXingObjC/OneD (3.6.9):
+    - ZXingObjC/Core
+  - ZXingObjC/PDF417 (3.6.9):
+    - ZXingObjC/Core
 
 DEPENDENCIES:
   - boost (from `../node_modules/react-native/third-party-podspecs/boost.podspec`)
@@ -2229,6 +2278,7 @@ DEPENDENCIES:
   - Expo (from `../node_modules/expo`)
   - "ExpoAdapterGoogleSignIn (from `../node_modules/@react-native-google-signin/google-signin/expo/ios`)"
   - ExpoAsset (from `../node_modules/expo-asset/ios`)
+  - ExpoCamera (from `../node_modules/expo-camera/ios`)
   - ExpoFileSystem (from `../node_modules/expo-file-system/ios`)
   - ExpoFont (from `../node_modules/expo-font/ios`)
   - ExpoKeepAwake (from `../node_modules/expo-keep-awake/ios`)
@@ -2279,6 +2329,7 @@ DEPENDENCIES:
   - "react-native-blur (from `../node_modules/@react-native-community/blur`)"
   - react-native-cloud-storage (from `../node_modules/react-native-cloud-storage`)
   - "react-native-compat (from `../node_modules/@walletconnect/react-native-compat`)"
+  - react-native-date-picker (from `../node_modules/react-native-date-picker`)
   - react-native-get-random-values (from `../node_modules/react-native-get-random-values`)
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
   - react-native-nfc-manager (from `../node_modules/react-native-nfc-manager`)
@@ -2328,13 +2379,14 @@ DEPENDENCIES:
   - RNInAppBrowser (from `../node_modules/react-native-inappbrowser-reborn`)
   - RNKeychain (from `../node_modules/react-native-keychain`)
   - RNLocalize (from `../node_modules/react-native-localize`)
+  - RNPermissions (from `../node_modules/react-native-permissions`)
   - RNReactNativeHapticFeedback (from `../node_modules/react-native-haptic-feedback`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - "RNSentry (from `../node_modules/@sentry/react-native`)"
   - RNSVG (from `../node_modules/react-native-svg`)
   - "SdkReactNative (from `../node_modules/@didit-protocol/sdk-react-native`)"
   - "segment-analytics-react-native (from `../node_modules/@segment/analytics-react-native`)"
-  - "SelfNFCPassportReader (from `git@github.com:selfxyz/NFCPassportReader.git`, commit `2cdc50a5c27b75594b94b27fdc4bb6172ada0f96`)"
+  - "SelfNFCPassportReader (from `git@github.com:selfxyz/NFCPassportReader.git`, commit `b478e1f1320e86f72c5755bc5adf156fff950585`)"
   - "sovran-react-native (from `../node_modules/@segment/sovran-react-native`)"
   - SwiftQRScanner (from `https://github.com/vinodiOS/SwiftQRScanner`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
@@ -2370,7 +2422,7 @@ SPEC REPOS:
     - Sentry
     - SocketRocket
     - SwiftyTesseract
-    - YttriumWrapper
+    - ZXingObjC
 
 EXTERNAL SOURCES:
   boost:
@@ -2391,6 +2443,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-google-signin/google-signin/expo/ios"
   ExpoAsset:
     :path: "../node_modules/expo-asset/ios"
+  ExpoCamera:
+    :path: "../node_modules/expo-camera/ios"
   ExpoFileSystem:
     :path: "../node_modules/expo-file-system/ios"
   ExpoFont:
@@ -2480,6 +2534,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-cloud-storage"
   react-native-compat:
     :path: "../node_modules/@walletconnect/react-native-compat"
+  react-native-date-picker:
+    :path: "../node_modules/react-native-date-picker"
   react-native-get-random-values:
     :path: "../node_modules/react-native-get-random-values"
   react-native-netinfo:
@@ -2578,6 +2634,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-keychain"
   RNLocalize:
     :path: "../node_modules/react-native-localize"
+  RNPermissions:
+    :path: "../node_modules/react-native-permissions"
   RNReactNativeHapticFeedback:
     :path: "../node_modules/react-native-haptic-feedback"
   RNScreens:
@@ -2591,7 +2649,7 @@ EXTERNAL SOURCES:
   segment-analytics-react-native:
     :path: "../node_modules/@segment/analytics-react-native"
   SelfNFCPassportReader:
-    :commit: 2cdc50a5c27b75594b94b27fdc4bb6172ada0f96
+    :commit: b478e1f1320e86f72c5755bc5adf156fff950585
     :git: "git@github.com:selfxyz/NFCPassportReader.git"
   sovran-react-native:
     :path: "../node_modules/@segment/sovran-react-native"
@@ -2602,7 +2660,7 @@ EXTERNAL SOURCES:
 
 CHECKOUT OPTIONS:
   SelfNFCPassportReader:
-    :commit: 2cdc50a5c27b75594b94b27fdc4bb6172ada0f96
+    :commit: b478e1f1320e86f72c5755bc5adf156fff950585
     :git: "git@github.com:selfxyz/NFCPassportReader.git"
   SwiftQRScanner:
     :commit: c71ff91297640a944de4bca61434155c3f9b0979
@@ -2620,6 +2678,7 @@ SPEC CHECKSUMS:
   Expo: 4bb70893882e6382b41d1e910d7226c6a1b85f0a
   ExpoAdapterGoogleSignIn: ab4d9fc38cb91077a4138d178395525ec65d0c2e
   ExpoAsset: 48386d40d53a8c1738929b3ed509bcad595b5516
+  ExpoCamera: 0a3e78de7b1ca8c438ee6784fa6f22c5b1b36966
   ExpoFileSystem: 42d363d3b96f9afab980dcef60d5657a4443c655
   ExpoFont: f354e926f8feae5e831ec8087f36652b44a0b188
   ExpoKeepAwake: b0171a73665bfcefcfcc311742a72a956e6aa680
@@ -2687,7 +2746,8 @@ SPEC CHECKSUMS:
   react-native-biometrics: 43ed5b828646a7862dbc7945556446be00798e7d
   react-native-blur: 745703f35133ed6a1210d4bbff358a631911f002
   react-native-cloud-storage: 796c793dc354bb49f9df27ca25eed0f79a15549e
-  react-native-compat: ad6a412f03632d1c4d97d47e56b22d0597116085
+  react-native-compat: 26ce01df42ebea95466ff40e597390a14e8ac04b
+  react-native-date-picker: 3b048da884ad001f1a328208478d0771f27edfc7
   react-native-get-random-values: d16467cf726c618e9c7a8c3c39c31faa2244bbba
   react-native-netinfo: cec9c4e86083cb5b6aba0e0711f563e2fbbff187
   react-native-nfc-manager: c8891e460b4943b695d63f7f4effc6345bbefc83
@@ -2737,7 +2797,8 @@ SPEC CHECKSUMS:
   RNInAppBrowser: 904d24dc75e8e6c6c98a3160329192608946f9df
   RNKeychain: 35beaa17938f7d8e4990d8a38fad5f8a748fc47c
   RNLocalize: aa57bee9fcd545b98ce773a8e2404f9a36115b4a
-  RNReactNativeHapticFeedback: eb5395b503c7a8f10de5e6722ef8afd3c61bc4f5
+  RNPermissions: c32bbfa8a665692acb9681c47abca019b97c9f1e
+  RNReactNativeHapticFeedback: 7c895b81434f045ddc330972816f844e3c0c2f35
   RNScreens: b0811b109e1a0b8b579f3348018e177bee374840
   RNSentry: 98ab9f6a16c9596e36565ccf1a5871323f334766
   RNSVG: d926926b169d8b81eb06aeb69734076e1dd566a3
@@ -2750,8 +2811,8 @@ SPEC CHECKSUMS:
   SwiftQRScanner: e85a25f9b843e9231dab89a96e441472fe54a724
   SwiftyTesseract: 1f3d96668ae92dc2208d9842c8a59bea9fad2cbb
   Yoga: c34725819ab0a5962e85455b9e56679b306910ee
-  YttriumWrapper: d7f63336830536f1da41b745ed8bacedb04228c4
+  ZXingObjC: 8898711ab495761b2dbbdec76d90164a6d7e14c5
 
-PODFILE CHECKSUM: 83f631d1b6308502a035e656b2f9dfab30431ae3
+PODFILE CHECKSUM: ded06f411c13516d51a97838c92095beafb1fc25
 
 COCOAPODS: 1.16.2

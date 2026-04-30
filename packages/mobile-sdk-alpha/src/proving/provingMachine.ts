@@ -41,7 +41,8 @@ import {
 } from '@selfxyz/common/utils/proving';
 import type { IDDocument } from '@selfxyz/common/utils/types';
 
-import { PassportEvents, ProofEvents } from '../constants/analytics';
+import { completeOnboardingAttempt, failOnboardingAttempt, trackOnboardingStep } from '../analytics/onboardingFunnel';
+import { OnboardingEvents, PassportEvents, ProofEvents } from '../constants/analytics';
 import {
   clearPassportData,
   hasAnyValidRegisteredDocument,
@@ -230,11 +231,17 @@ export interface ProvingState {
   reason: string | null;
   endpointType: EndpointType | null;
   env: 'prod' | 'stg' | null;
+  // True once the machine has entered `post_proving` with circuitType
+  // 'register' in this session. Gates the canonical `onboarding_completed`
+  // event so it does not fire when `completed` is reached via the
+  // `ALREADY_REGISTERED` shortcut from `validating_document`.
+  didNewRegistrationProof: boolean;
   init: (
     selfClient: SelfClient,
     circuitType: 'dsc' | 'disclose' | 'register',
     userConfirmed?: boolean,
   ) => Promise<void>;
+  cancel: (selfClient: SelfClient) => Promise<void>;
   parseIDDocument: (selfClient: SelfClient) => Promise<void>;
   startFetchingData: (selfClient: SelfClient) => Promise<void>;
   validatingDocument: (selfClient: SelfClient) => Promise<void>;
@@ -393,6 +400,30 @@ export const getPostVerificationRoute = () => {
 export const useProvingStore = create<ProvingState>((set, get) => {
   let actor: AnyActorRef | null = null;
 
+  function resetProvingState(partial?: Partial<ProvingState>) {
+    set({
+      currentState: 'idle',
+      attestation: null,
+      serverPublicKey: null,
+      sharedKey: null,
+      wsConnection: null,
+      wsHandlers: null,
+      wsReconnectAttempts: 0,
+      socketConnection: null,
+      uuid: null,
+      userConfirmed: false,
+      passportData: null,
+      secret: null,
+      circuitType: null,
+      didNewRegistrationProof: false,
+      endpointType: null,
+      env: null,
+      error_code: null,
+      reason: null,
+      ...partial,
+    });
+  }
+
   function setupActorSubscriptions(newActor: AnyActorRef, selfClient: SelfClient) {
     let lastTransition = Date.now();
     let lastEvent: AnyEventObject = { type: 'init' };
@@ -450,7 +481,17 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         get().startProving(selfClient);
       }
 
+      if (state.value === 'proving') {
+        // Canonical funnel: fire-once per attempt. `trackOnboardingStep`
+        // dedupes, so transient re-entry into `proving` (e.g. via reconnect)
+        // does not re-emit.
+        trackOnboardingStep(selfClient, OnboardingEvents.PROOF_STARTED);
+      }
+
       if (state.value === 'post_proving') {
+        if (get().circuitType === 'register') {
+          set({ didNewRegistrationProof: true });
+        }
         get().postProving(selfClient);
       }
 
@@ -483,6 +524,18 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           selfClient.getSelfAppState().handleProofResult(true);
         }
 
+        // Canonical funnel terminal events. Registration-completion fires
+        // only when we actually generated a new proof in this session
+        // (didNewRegistrationProof). The `ALREADY_REGISTERED` path reaches
+        // `completed` without going through `post_proving`, so the flag
+        // stays false and no canonical onboarding event fires.
+        if (get().circuitType === 'register' && get().didNewRegistrationProof) {
+          trackOnboardingStep(selfClient, OnboardingEvents.PROOF_SUCCEEDED);
+          completeOnboardingAttempt(selfClient);
+        } else if (get().circuitType === 'disclose') {
+          selfClient.trackEvent(OnboardingEvents.DISCLOSURE_COMPLETED);
+        }
+
         emitVerificationComplete(true);
 
         // Disable keychain error modal when proving flow ends
@@ -506,6 +559,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
         if (get().circuitType === 'disclose') {
           selfClient.getSelfAppState().handleProofResult(false, error_code ?? undefined, reason ?? undefined);
+        } else if (get().circuitType === 'register') {
+          failOnboardingAttempt(selfClient, 'proof_generation_started', reason ?? error_code ?? 'proof_failure', {
+            recoverable: false,
+          });
         }
 
         emitVerificationComplete(false, {
@@ -516,6 +573,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       if (state.value === 'error') {
         if (get().circuitType === 'disclose') {
           selfClient.getSelfAppState().handleProofResult(false, 'error', 'error');
+        } else if (get().circuitType === 'register') {
+          failOnboardingAttempt(selfClient, 'proof_generation_started', get().reason ?? get().error_code ?? 'error', {
+            recoverable: true,
+          });
         }
 
         emitVerificationComplete(false, {
@@ -543,10 +604,43 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     passportData: null,
     secret: null,
     circuitType: null,
+    didNewRegistrationProof: false,
     env: null,
     error_code: null,
     reason: null,
     endpointType: null,
+    cancel: async (selfClient: SelfClient) => {
+      const context = createProofContext(selfClient, 'cancel');
+      selfClient.logProofEvent('warn', 'Proving flow cancelled by UI', context);
+      let cancellationError: Error | null = null;
+
+      // Stop and null the actor BEFORE closing the socket. _closeConnections
+      // triggers the socket 'disconnect' handler, which reads module-scope
+      // `actor` and would otherwise fire a spurious PROVE_ERROR on the
+      // about-to-be-stopped actor.
+      if (actor) {
+        try {
+          actor.stop();
+        } catch (error) {
+          cancellationError = error instanceof Error ? error : new Error(String(error));
+        } finally {
+          actor = null;
+        }
+      }
+
+      try {
+        get()._closeConnections(selfClient);
+      } catch (error) {
+        cancellationError ??= error instanceof Error ? error : new Error(String(error));
+      }
+
+      selfClient.navigation?.disableKeychainErrorModal?.();
+      resetProvingState();
+
+      if (cancellationError) {
+        throw cancellationError;
+      }
+    },
     _handleWebSocketMessage: async (event: MessageEvent, selfClient: SelfClient) => {
       if (!actor) {
         console.error('Cannot process message: State machine not initialized.');
@@ -712,6 +806,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       const context = createProofContext(selfClient, '_startSocketIOStatusListener');
       selfClient.logProofEvent('info', 'Socket.IO listener started', context, { url });
 
+      // Guards against racing the intentional post-terminal-status disconnect
+      // into a spurious PROVE_ERROR in the disconnect handler.
+      let terminalStatusHandled = false;
+
       socket.on('connect', () => {
         socket?.emit('subscribe', receivedUuid);
         selfClient.trackEvent(ProofEvents.SOCKETIO_SUBSCRIBED);
@@ -733,12 +831,18 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
       socket.on('disconnect', (_reason: string) => {
         const currentActor = actor;
+        const currentState = get().currentState;
         selfClient.logProofEvent('warn', 'Socket.IO disconnected', context);
-        if (get().currentState === 'ready_to_prove' && currentActor) {
-          console.error('SocketIO disconnected unexpectedly during proof listening.');
+        if (terminalStatusHandled) {
+          set({ socketConnection: null });
+          return;
+        }
+        if (currentActor && (currentState === 'ready_to_prove' || currentState === 'listening_for_status')) {
+          console.error(`SocketIO disconnected unexpectedly during ${currentState}.`);
           selfClient.trackEvent(ProofEvents.SOCKETIO_DISCONNECT_UNEXPECTED);
           selfClient.logProofEvent('error', 'Socket.IO disconnected unexpectedly', context, {
             failure: 'PROOF_FAILED_CONNECTION',
+            state: currentState,
           });
           currentActor.send({ type: 'PROVE_ERROR' });
         }
@@ -788,6 +892,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
           // Handle disconnection
           if (result.shouldDisconnect) {
+            terminalStatusHandled = true;
             socket?.disconnect();
           }
         } catch (error) {
@@ -999,23 +1104,11 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         } catch (error) {
           console.error('Error stopping actor:', error);
         }
+        actor = null;
       }
-      set({
-        currentState: 'idle',
-        attestation: null,
-        serverPublicKey: null,
-        sharedKey: null,
-        wsConnection: null,
-        socketConnection: null,
-        uuid: null,
-        userConfirmed: userConfirmed,
-        passportData: null,
-        secret: null,
+      resetProvingState({
+        userConfirmed,
         circuitType,
-        endpointType: null,
-        env: null,
-        error_code: null,
-        reason: null,
       });
 
       actor = createActor(provingMachine);
@@ -1294,17 +1387,28 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
         /// registration
         else {
-          const { isRegistered, csca } = await isUserRegisteredWithAlternativeCSCA(passportData, secret as string, {
-            getCommitmentTree: (docCategory: DocumentCategory) => getCommitmentTree(selfClient, docCategory),
-            getAltCSCA: (docType: DocumentCategory) => {
-              if (docType === 'aadhaar' || docType === 'kyc') {
-                const publicKeys = selfClient.getProtocolState()[docType].public_keys;
-                // Convert string[] to Record<string, string> format expected by AlternativeCSCA
-                return publicKeys ? Object.fromEntries(publicKeys.map(key => [key, key])) : {};
-              }
-              return selfClient.getProtocolState()[docType].alternative_csca;
-            },
-          });
+          const bypassDocumentRegistrationCheck =
+            selfClient.config?.devConfig?.shouldBypassDocumentRegistrationCheck?.() ?? false;
+          if (bypassDocumentRegistrationCheck) {
+            selfClient.logProofEvent(
+              'warn',
+              'Dev bypass active: skipping document registration / nullifier checks',
+              context,
+            );
+          }
+          const { isRegistered, csca } = bypassDocumentRegistrationCheck
+            ? { isRegistered: false, csca: undefined }
+            : await isUserRegisteredWithAlternativeCSCA(passportData, secret as string, {
+                getCommitmentTree: (docCategory: DocumentCategory) => getCommitmentTree(selfClient, docCategory),
+                getAltCSCA: (docType: DocumentCategory) => {
+                  if (docType === 'aadhaar' || docType === 'kyc') {
+                    const publicKeys = selfClient.getProtocolState()[docType].public_keys;
+                    // Convert string[] to Record<string, string> format expected by AlternativeCSCA
+                    return publicKeys ? Object.fromEntries(publicKeys.map(key => [key, key])) : {};
+                  }
+                  return selfClient.getProtocolState()[docType].alternative_csca;
+                },
+              });
           selfClient.logProofEvent('info', 'Alternative CSCA registration check', context, {
             registered: isRegistered,
           });
@@ -1327,7 +1431,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             actor!.send({ type: 'ALREADY_REGISTERED' });
             return;
           }
-          const isNullifierOnchain = await isDocumentNullified(passportData);
+          const isNullifierOnchain = bypassDocumentRegistrationCheck ? false : await isDocumentNullified(passportData);
           selfClient.logProofEvent('info', 'Nullifier check', context, {
             nullified: isNullifierOnchain,
           });
@@ -1345,10 +1449,16 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           }
           const document: DocumentCategory = passportData.documentCategory;
           if (document === 'passport' || document === 'id_card') {
-            const isDscRegistered = await checkIfPassportDscIsInTree(
-              passportData,
-              selfClient.getProtocolState()[document].dsc_tree,
-            );
+            // Consume the DSC bypass only here so arming it on a session that
+            // ends up scanning aadhaar/kyc does not silently waste the one-shot.
+            const bypassDscRegistrationCheck =
+              selfClient.config?.devConfig?.shouldBypassDscRegistrationCheck?.() ?? false;
+            if (bypassDscRegistrationCheck) {
+              selfClient.logProofEvent('warn', 'Dev bypass active: skipping DSC tree check', context);
+            }
+            const isDscRegistered = bypassDscRegistrationCheck
+              ? false
+              : await checkIfPassportDscIsInTree(passportData, selfClient.getProtocolState()[document].dsc_tree);
             selfClient.logProofEvent('info', 'DSC tree check', context, {
               dsc_registered: isDscRegistered,
             });

@@ -23,6 +23,8 @@ interface PersistedSettingsState {
   isDevMode: boolean;
   loggingSeverity: LoggingSeverity;
   pointsAddress: string | null;
+  supportUuidEnabled: boolean;
+  supportUuid: string | null;
   removeSubscribedTopic: (topic: string) => void;
   resetBackupForPoints: () => void;
   setBackupForPointsCompleted: () => void;
@@ -34,6 +36,8 @@ interface PersistedSettingsState {
   setKeychainMigrationCompleted: () => void;
   setLoggingSeverity: (severity: LoggingSeverity) => void;
   setPointsAddress: (address: string | null) => void;
+  setSupportUuidEnabled: (enabled: boolean) => void;
+  setSupportUuid: (supportUuid: string | null) => void;
   setSkipDocumentSelector: (value: boolean) => void;
   setSubscribedTopics: (topics: string[]) => void;
   setTurnkeyBackupEnabled: (turnkeyBackupEnabled: boolean) => void;
@@ -48,16 +52,46 @@ interface PersistedSettingsState {
 interface NonPersistedSettingsState {
   hideNetworkModal: boolean;
   setHideNetworkModal: (hideNetworkModal: boolean) => void;
+  // Dev-only one-shot flag armed by the "Test registration circuit" debug
+  // shortcut. Bypasses only the document "already registered / nullifier"
+  // checks so the register circuit runs even when the document is on-chain.
+  // The DSC tree check still runs (use testDscCircuitArmed to bypass that).
+  testRegistrationCircuitArmed: boolean;
+  armTestRegistrationCircuit: () => void;
+  consumeTestRegistrationCircuit: () => boolean;
+  // Dev-only one-shot flag armed by the "Test DSC circuit" debug shortcut.
+  // Bypasses only the DSC tree membership check so the DSC circuit runs even
+  // when the DSC is already on-chain.
+  testDscCircuitArmed: boolean;
+  armTestDscCircuit: () => void;
+  consumeTestDscCircuit: () => boolean;
 }
 
 type SettingsState = PersistedSettingsState & NonPersistedSettingsState;
+
+export const SETTING_STORE_VERSION = 1;
+
+// v1: force support ID sharing off for all existing users. It is opt-in
+// from here on — users can re-enable it in settings when a support agent
+// asks for it.
+export const migrateSettingStore = (
+  persistedState: unknown,
+  version: number,
+): SettingsState => {
+  const state = (persistedState ?? {}) as Partial<SettingsState>;
+  if (version < 1) {
+    state.supportUuidEnabled = false;
+    state.supportUuid = null;
+  }
+  return state as SettingsState;
+};
 
 /*
  * This store is used to store the settings of the app. Dont store anything sensative here
  */
 export const useSettingStore = create<SettingsState>()(
   persist(
-    (set, _get) => ({
+    (set, get) => ({
       // Persisted state
       hasPrivacyNoteBeenDismissed: false,
       dismissPrivacyNote: () => set({ hasPrivacyNoteBeenDismissed: true }),
@@ -139,6 +173,12 @@ export const useSettingStore = create<SettingsState>()(
       setPointsAddress: (address: string | null) =>
         set({ pointsAddress: address }),
 
+      supportUuidEnabled: false,
+      setSupportUuidEnabled: (supportUuidEnabled: boolean) =>
+        set({ supportUuidEnabled }),
+      supportUuid: null,
+      setSupportUuid: (supportUuid: string | null) => set({ supportUuid }),
+
       // Document selector skip settings
       skipDocumentSelector: false,
       setSkipDocumentSelector: (value: boolean) =>
@@ -153,6 +193,27 @@ export const useSettingStore = create<SettingsState>()(
       setHideNetworkModal: (hideNetworkModal: boolean) => {
         set({ hideNetworkModal });
       },
+
+      testRegistrationCircuitArmed: false,
+      armTestRegistrationCircuit: () =>
+        set({ testRegistrationCircuitArmed: true }),
+      consumeTestRegistrationCircuit: () => {
+        const armed = get().testRegistrationCircuitArmed;
+        if (armed) {
+          set({ testRegistrationCircuitArmed: false });
+        }
+        return armed;
+      },
+
+      testDscCircuitArmed: false,
+      armTestDscCircuit: () => set({ testDscCircuitArmed: true }),
+      consumeTestDscCircuit: () => {
+        const armed = get().testDscCircuitArmed;
+        if (armed) {
+          set({ testDscCircuitArmed: false });
+        }
+        return armed;
+      },
     }),
     {
       name: 'setting-storage',
@@ -162,8 +223,19 @@ export const useSettingStore = create<SettingsState>()(
         const persistedState = { ...state };
         delete (persistedState as Partial<SettingsState>).hideNetworkModal;
         delete (persistedState as Partial<SettingsState>).setHideNetworkModal;
+        delete (persistedState as Partial<SettingsState>)
+          .testRegistrationCircuitArmed;
+        delete (persistedState as Partial<SettingsState>)
+          .armTestRegistrationCircuit;
+        delete (persistedState as Partial<SettingsState>)
+          .consumeTestRegistrationCircuit;
+        delete (persistedState as Partial<SettingsState>).testDscCircuitArmed;
+        delete (persistedState as Partial<SettingsState>).armTestDscCircuit;
+        delete (persistedState as Partial<SettingsState>).consumeTestDscCircuit;
         return persistedState;
       },
+      version: SETTING_STORE_VERSION,
+      migrate: migrateSettingStore,
     },
   ),
 );

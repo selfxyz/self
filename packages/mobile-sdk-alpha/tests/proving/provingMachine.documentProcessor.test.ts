@@ -843,6 +843,241 @@ describe('validatingDocument', () => {
     }
   });
 
+  it('skips document registration checks when devConfig.shouldBypassDocumentRegistrationCheck returns true', async () => {
+    const passportData = buildPassportFixture();
+    const secret = '123456789';
+    const commitment = generateCommitment(secret, AttestationIdHex.passport, passportData);
+    // Pre-populate commitment tree so isUserRegisteredWithAlternativeCSCA would normally return true
+    const commitmentTree = createCommitmentTree([commitment]);
+    const registerCircuit = getCircuitNameFromPassportData(passportData, 'register');
+    const dscCircuit = getCircuitNameFromPassportData(passportData, 'dsc');
+    const deployedCircuits = {
+      REGISTER: [registerCircuit],
+      REGISTER_ID: [],
+      REGISTER_AADHAAR: ['register_aadhaar'],
+      DSC: [dscCircuit],
+      DSC_ID: [],
+    };
+
+    const protocolState = buildProtocolState({
+      commitmentTree,
+      dscTree: createDscTree([]),
+      deployedCircuits,
+      alternativeCsca: {},
+    });
+    const selfClient = createSelfClient(protocolState);
+    (selfClient as unknown as { config: unknown }).config = {
+      devConfig: {
+        shouldBypassDocumentRegistrationCheck: () => true,
+      },
+    };
+
+    loadSelectedDocumentMock.mockResolvedValue({ data: passportData } as any);
+
+    // Nullifier endpoint would say "nullified" if called — bypass must skip it.
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ data: true }),
+      } as Response),
+    );
+
+    try {
+      await useProvingStore.getState().init(selfClient, 'register');
+      actorMock.send.mockClear();
+      vi.mocked(selfClient.trackEvent).mockClear();
+
+      useProvingStore.setState({ passportData, secret, circuitType: 'register' });
+
+      await useProvingStore.getState().validatingDocument(selfClient);
+
+      expect(actorMock.send).toHaveBeenCalledWith({ type: 'VALIDATION_SUCCESS' });
+      expect(actorMock.send).not.toHaveBeenCalledWith({ type: 'ALREADY_REGISTERED' });
+      expect(actorMock.send).not.toHaveBeenCalledWith({ type: 'ACCOUNT_RECOVERY_CHOICE' });
+      expect(reStorePassportDataWithRightCSCMock).not.toHaveBeenCalled();
+      expect(markCurrentDocumentAsRegisteredMock).not.toHaveBeenCalled();
+      expect(fetchSpy).not.toHaveBeenCalled();
+    } finally {
+      fetchSpy.mockRestore();
+    }
+  });
+
+  it('still switches to register circuit from DSC-in-tree when document registration checks are bypassed', async () => {
+    const passportData = buildPassportFixture();
+    const secret = '123456789';
+    const commitment = generateCommitment(secret, AttestationIdHex.passport, passportData);
+    const commitmentTree = createCommitmentTree([commitment]);
+    const registerCircuit = getCircuitNameFromPassportData(passportData, 'register');
+    const dscCircuit = getCircuitNameFromPassportData(passportData, 'dsc');
+    const deployedCircuits = {
+      REGISTER: [registerCircuit],
+      REGISTER_ID: [],
+      REGISTER_AADHAAR: ['register_aadhaar'],
+      DSC: [dscCircuit],
+      DSC_ID: [],
+    };
+    const dscLeaf = getLeafDscTree(passportData.dsc_parsed!, passportData.csca_parsed!);
+    const dscTree = createDscTree([dscLeaf]);
+
+    const protocolState = buildProtocolState({
+      commitmentTree,
+      dscTree,
+      deployedCircuits,
+      alternativeCsca: {},
+    });
+    const selfClient = createSelfClient(protocolState);
+    (selfClient as unknown as { config: unknown }).config = {
+      devConfig: {
+        shouldBypassDocumentRegistrationCheck: () => true,
+      },
+    };
+
+    loadSelectedDocumentMock.mockResolvedValue({ data: passportData } as any);
+
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ data: true }),
+      } as Response),
+    );
+
+    try {
+      await useProvingStore.getState().init(selfClient, 'register');
+      actorMock.send.mockClear();
+      vi.mocked(selfClient.trackEvent).mockClear();
+
+      useProvingStore.setState({ passportData, secret, circuitType: 'register' });
+
+      await useProvingStore.getState().validatingDocument(selfClient);
+
+      expect(useProvingStore.getState().circuitType).toBe('register');
+      expect(actorMock.send).toHaveBeenCalledWith({ type: 'VALIDATION_SUCCESS' });
+      expect(fetchSpy).not.toHaveBeenCalled();
+    } finally {
+      fetchSpy.mockRestore();
+    }
+  });
+
+  it('forces DSC circuit path when devConfig.shouldBypassDscRegistrationCheck returns true', async () => {
+    const passportData = buildPassportFixture();
+    const secret = '123456789';
+    const registerCircuit = getCircuitNameFromPassportData(passportData, 'register');
+    const dscCircuit = getCircuitNameFromPassportData(passportData, 'dsc');
+    const deployedCircuits = {
+      REGISTER: [registerCircuit],
+      REGISTER_ID: [],
+      REGISTER_AADHAAR: ['register_aadhaar'],
+      DSC: [dscCircuit],
+      DSC_ID: [],
+    };
+    // DSC IS in the on-chain tree — without the bypass, the proving machine
+    // would skip the DSC circuit and go straight to the register circuit.
+    const dscLeaf = getLeafDscTree(passportData.dsc_parsed!, passportData.csca_parsed!);
+    const dscTree = createDscTree([dscLeaf]);
+
+    const protocolState = buildProtocolState({
+      commitmentTree: createCommitmentTree([]),
+      dscTree,
+      deployedCircuits,
+      alternativeCsca: {},
+    });
+    const selfClient = createSelfClient(protocolState);
+    (selfClient as unknown as { config: unknown }).config = {
+      devConfig: {
+        shouldBypassDscRegistrationCheck: () => true,
+      },
+    };
+
+    loadSelectedDocumentMock.mockResolvedValue({ data: passportData } as any);
+
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ data: false }),
+      } as Response),
+    );
+
+    try {
+      await useProvingStore.getState().init(selfClient, 'register');
+      actorMock.send.mockClear();
+      vi.mocked(selfClient.trackEvent).mockClear();
+
+      useProvingStore.setState({ passportData, secret, circuitType: 'dsc' });
+
+      await useProvingStore.getState().validatingDocument(selfClient);
+
+      // circuitType must remain 'dsc' — DSC tree check was bypassed so the
+      // DSC-in-tree shortcut to 'register' did NOT fire.
+      expect(useProvingStore.getState().circuitType).toBe('dsc');
+      expect(actorMock.send).toHaveBeenCalledWith({ type: 'VALIDATION_SUCCESS' });
+    } finally {
+      fetchSpy.mockRestore();
+    }
+  });
+
+  it('keeps document and DSC bypasses independent', async () => {
+    const passportData = buildPassportFixture();
+    const secret = '123456789';
+    const commitment = generateCommitment(secret, AttestationIdHex.passport, passportData);
+    // Document IS registered on-chain, but document bypass is ON.
+    const commitmentTree = createCommitmentTree([commitment]);
+    const registerCircuit = getCircuitNameFromPassportData(passportData, 'register');
+    const dscCircuit = getCircuitNameFromPassportData(passportData, 'dsc');
+    const deployedCircuits = {
+      REGISTER: [registerCircuit],
+      REGISTER_ID: [],
+      REGISTER_AADHAAR: ['register_aadhaar'],
+      DSC: [dscCircuit],
+      DSC_ID: [],
+    };
+    // DSC is also in the tree — DSC bypass is OFF, so the DSC-in-tree
+    // shortcut should fire and switch circuitType to 'register'.
+    const dscLeaf = getLeafDscTree(passportData.dsc_parsed!, passportData.csca_parsed!);
+    const dscTree = createDscTree([dscLeaf]);
+
+    const protocolState = buildProtocolState({
+      commitmentTree,
+      dscTree,
+      deployedCircuits,
+      alternativeCsca: {},
+    });
+    const selfClient = createSelfClient(protocolState);
+    (selfClient as unknown as { config: unknown }).config = {
+      devConfig: {
+        shouldBypassDocumentRegistrationCheck: () => true,
+        shouldBypassDscRegistrationCheck: () => false,
+      },
+    };
+
+    loadSelectedDocumentMock.mockResolvedValue({ data: passportData } as any);
+
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ data: true }),
+      } as Response),
+    );
+
+    try {
+      await useProvingStore.getState().init(selfClient, 'register');
+      actorMock.send.mockClear();
+      vi.mocked(selfClient.trackEvent).mockClear();
+
+      useProvingStore.setState({ passportData, secret, circuitType: 'dsc' });
+
+      await useProvingStore.getState().validatingDocument(selfClient);
+
+      // Document bypass skipped the "already registered" path, DSC tree
+      // check ran normally and switched to 'register'.
+      expect(useProvingStore.getState().circuitType).toBe('register');
+      expect(actorMock.send).toHaveBeenCalledWith({ type: 'VALIDATION_SUCCESS' });
+      expect(actorMock.send).not.toHaveBeenCalledWith({ type: 'ALREADY_REGISTERED' });
+      expect(fetchSpy).not.toHaveBeenCalled();
+    } finally {
+      fetchSpy.mockRestore();
+    }
+  });
+
   it('switches to register circuit when DSC is already in the tree', async () => {
     const passportData = buildPassportFixture();
     const secret = '123456789';

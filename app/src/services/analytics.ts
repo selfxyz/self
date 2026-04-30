@@ -34,6 +34,7 @@ const eventQueue: Array<{
   name: string;
   properties?: Record<string, unknown>;
 }> = [];
+let supportUuid: string | null = null;
 
 // ============================================================================
 // Internal Helpers - JSON Coercion
@@ -111,6 +112,19 @@ function validateParams(
 // Internal Helpers - Event Tracking
 // ============================================================================
 
+function withSupportUuid(
+  properties?: Record<string, unknown>,
+): Record<string, unknown> | undefined {
+  if (!supportUuid) {
+    return properties;
+  }
+
+  return {
+    ...properties,
+    support_uuid: supportUuid,
+  };
+}
+
 /**
  * Internal tracking function used by trackEvent and trackScreenView
  * Records analytics events and screen views
@@ -127,7 +141,7 @@ function _track(
   const finalEventName = type === 'screen' ? `Viewed ${eventName}` : eventName;
 
   // Validate and clean properties
-  const validatedProps = validateParams(properties);
+  const validatedProps = validateParams(withSupportUuid(properties));
 
   if (__DEV__) {
     console.log(`[DEV: Analytics ${type.toUpperCase()}]`, {
@@ -210,6 +224,77 @@ export const flushAllAnalytics = () => {
   }
 };
 
+const identifyInSegment = (nextSupportUuid: string) => {
+  if (!segmentClient) return Promise.resolve();
+  return segmentClient.identify(nextSupportUuid).catch(err => {
+    if (__DEV__) console.warn('Failed to identify Segment user:', err);
+  });
+};
+
+const resetSegmentIdentity = () => {
+  if (!segmentClient) return Promise.resolve();
+  return segmentClient.reset().catch(err => {
+    if (__DEV__) console.warn('Failed to reset Segment identity:', err);
+  });
+};
+
+const resetMixpanelIdentity = () => {
+  if (PassportReader && typeof PassportReader.resetIdentity === 'function') {
+    try {
+      PassportReader.resetIdentity();
+    } catch (error) {
+      if (__DEV__) {
+        console.warn('Failed to reset Mixpanel identity:', error);
+      }
+    }
+  }
+};
+
+const setMixpanelDistinctId = (nextSupportUuid: string) => {
+  if (PassportReader && typeof PassportReader.setDistinctId === 'function') {
+    try {
+      PassportReader.setDistinctId(nextSupportUuid);
+    } catch (error) {
+      if (__DEV__) {
+        console.warn('Failed to set Mixpanel distinct_id:', error);
+      }
+    }
+  }
+};
+
+export const resetAnalyticsIdentityForSupportUuid = (
+  nextSupportUuid: string,
+) => {
+  supportUuid = nextSupportUuid;
+
+  if (segmentClient) {
+    resetSegmentIdentity().then(() => identifyInSegment(nextSupportUuid));
+  } else {
+    identifyInSegment(nextSupportUuid);
+  }
+
+  resetMixpanelIdentity();
+  setMixpanelDistinctId(nextSupportUuid);
+};
+
+export const setAnalyticsSupportUuid = (nextSupportUuid: string | null) => {
+  supportUuid = nextSupportUuid;
+
+  if (!nextSupportUuid) {
+    for (const evt of eventQueue) {
+      if (evt.properties) {
+        delete (evt.properties as Record<string, unknown>).support_uuid;
+      }
+    }
+    resetSegmentIdentity();
+    resetMixpanelIdentity();
+    return;
+  }
+
+  identifyInSegment(nextSupportUuid);
+  setMixpanelDistinctId(nextSupportUuid);
+};
+
 /**
  * Set NFC scanning state to prevent analytics flush interference
  */
@@ -245,19 +330,23 @@ export const trackNfcEvent = async (
   if (!MIXPANEL_NFC_PROJECT_TOKEN) return;
   if (!mixpanelConfigured) await configureNfcAnalytics();
 
+  const propertiesWithSupportUuid = withSupportUuid(properties);
+
   if (!isConnected || isNfcScanningActive) {
     if (eventQueue.length >= MAX_EVENT_QUEUE_SIZE) {
       if (__DEV__)
         console.warn('[Mixpanel] Event queue full, dropping oldest event');
       eventQueue.shift();
     }
-    eventQueue.push({ name, properties });
+    eventQueue.push({ name, properties: propertiesWithSupportUuid });
     return;
   }
 
   try {
     if (PassportReader && PassportReader.trackEvent) {
-      await Promise.resolve(PassportReader.trackEvent(name, properties));
+      await Promise.resolve(
+        PassportReader.trackEvent(name, propertiesWithSupportUuid),
+      );
     }
     eventCount++;
     // Prevent automatic flush during NFC scanning
@@ -270,7 +359,7 @@ export const trackNfcEvent = async (
         console.warn('[Mixpanel] Event queue full, dropping oldest event');
       eventQueue.shift();
     }
-    eventQueue.push({ name, properties });
+    eventQueue.push({ name, properties: propertiesWithSupportUuid });
   }
 };
 

@@ -5,8 +5,10 @@
 import type { AppStateStatus } from 'react-native';
 import { AppState } from 'react-native';
 import type { transportFunctionType } from 'react-native-logs';
+import { v4 as uuidv4 } from 'uuid';
 
 import { registerDocumentChangeCallback } from '@/providers/passportDataProvider';
+import { useSettingStore } from '@/stores/settingStore';
 
 import {
   GRAFANA_LOKI_PASSWORD,
@@ -28,6 +30,9 @@ interface LokiStream {
 interface LokiPayload {
   streams: LokiStream[];
 }
+
+// Per-session ID for grouping logs in Grafana (not persistent, not user-identifiable)
+const sessionId = uuidv4();
 
 // Batch management state
 let batch: LokiLogEntry[] = [];
@@ -88,12 +93,11 @@ const sendBatch = async (
     });
 
     if (!response.ok) {
-      console.warn(
-        `Loki transport failed: ${response.status} ${response.statusText}`,
-      );
+      // Silently fail — console.warn here would trigger consoleInterceptor
+      // feedback loop when logger is enabled in dev
     }
-  } catch (error) {
-    console.warn('Loki transport error:', error);
+  } catch {
+    // Silently fail — same feedback loop risk
   }
 };
 
@@ -195,12 +199,24 @@ const lokiTransport: transportFunctionType<LokiTransportOptions> = props => {
     level: string;
     message: string;
     timestamp: string;
+    session_id: string;
+    support_uuid_enabled: boolean;
+    support_uuid?: string;
     data?: unknown;
-  } = {
-    level: level.text,
-    message: actualMessage,
-    timestamp,
-  };
+  } = (() => {
+    const { supportUuid, supportUuidEnabled } = useSettingStore.getState();
+
+    return {
+      level: level.text,
+      message: actualMessage,
+      timestamp,
+      session_id: sessionId,
+      support_uuid_enabled: supportUuidEnabled,
+      ...(supportUuidEnabled
+        ? { support_uuid: supportUuid ?? 'unset' }
+        : undefined),
+    };
+  })();
 
   if (actualData) {
     logObject.data = actualData;

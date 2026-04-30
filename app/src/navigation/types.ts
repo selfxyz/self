@@ -44,6 +44,8 @@ export type AccountRoutesParamList = {
       }
     | undefined;
   ProofSettings: undefined;
+  Support: undefined;
+  SecurityAndBackup: undefined;
   AccountVerifiedSuccess: undefined;
 };
 
@@ -92,6 +94,11 @@ export type DocumentRoutesParamList = {
         documentCategory?: DocumentCategory;
         signatureAlgorithm?: string;
         curveOrExponent?: string;
+      }
+    | undefined;
+  DataConfirmation:
+    | {
+        fromNfcFailure?: boolean;
       }
     | undefined;
   DocumentNFCScan:

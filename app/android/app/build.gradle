@@ -123,12 +123,6 @@ android {
 
     namespace "com.proofofpassportapp"
 
-    // Build optimizations
-    dexOptions {
-        javaMaxHeapSize "4g"
-        preDexLibraries false
-    }
-
     buildFeatures {
         buildConfig = true
         viewBinding = true
@@ -138,8 +132,8 @@ android {
         applicationId "com.proofofpassportapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 148
-        versionName "2.9.17"
+        versionCode 153
+        versionName "2.9.22"
         manifestPlaceholders = [appAuthRedirectScheme: 'com.proofofpassportapp']
         externalNativeBuild {
             cmake {
@@ -201,6 +195,14 @@ android {
         resources {
             excludes += ['META-INF/LICENSE', 'META-INF/NOTICE', 'META-INF/versions/9/OSGI-INF/MANIFEST.MF']
         }
+    }
+}
+
+configurations.all {
+    resolutionStrategy {
+        // expo-camera hardcodes mlkit barcode-scanning 17.2.0 which ships
+        // a non-16KB-page-aligned libbarhopper_v3.so — force 17.3.0
+        force 'com.google.mlkit:barcode-scanning:17.3.0'
     }
 }
 

@@ -1,11 +1,9 @@
 import type { SelfApp } from '@selfxyz/sdk-common';
-
 import React, { memo } from 'react';
 
 import phoneMockup from '../assets/phone-mockup.png';
 import selfLogo from '../assets/self-logo.svg';
 import {
-  desktopHeaderStyle,
   desktopStepIconStyle,
   desktopStepInnerStyle,
   desktopStepStyle,
@@ -20,7 +18,6 @@ import {
   mobilePhoneSectionStyle,
   mobilePhoneSectionWrapperStyle,
 } from '../utils/styles.js';
-import { getDesktopDescription } from '../utils/utils.js';
 import DesktopHeader from './DesktopHeader.js';
 import { ArrowReturnIcon, DownloadIcon, VerifyIcon } from './icons.js';
 
@@ -36,7 +33,7 @@ const MOBILE_STEPS = [
   { icon: ArrowReturnIcon, text: 'Return to this application and click on the button below' },
 ];
 
-const MobileQRcode = memo(({ proofStep, qrValue, selfApp }: MobileQRcodeProps) => (
+const MobileQRcode = memo(({ qrValue, selfApp }: MobileQRcodeProps) => (
   <div style={mobileCardStyle()} role="region" aria-label="Self authentication">
     <DesktopHeader appName={selfApp.appName} appLogo={selfApp.logoBase64} />
     <div style={mobilePhoneSectionWrapperStyle()}>
