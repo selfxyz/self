@@ -105,13 +105,7 @@ const SelfQRcode = ({
         });
 
   if (variant === 'mobile') {
-    return (
-      <MobileQRcode
-        proofStep={proofStep}
-        qrValue={qrValue}
-        selfApp={selfAppRef.current}
-      />
-    );
+    return <MobileQRcode proofStep={proofStep} qrValue={qrValue} selfApp={selfAppRef.current} />;
   }
 
   if (variant === 'desktop') {

@@ -221,7 +221,6 @@ export const desktopStepTextStyle = (): React.CSSProperties => ({
 // Mobile variant styles
 export const mobileCardStyle = (): React.CSSProperties => baseCardStyle();
 
-
 export const mobileCtaButtonStyle = (): React.CSSProperties => ({
   display: 'flex',
   alignItems: 'center',
@@ -236,13 +235,10 @@ export const mobileCtaButtonStyle = (): React.CSSProperties => ({
   textDecoration: 'none',
 });
 
-
 export const mobileCtaLogoStyle = (): React.CSSProperties => ({
   width: '26px',
   height: '26px',
 });
-
-
 
 export const mobileCtaSectionStyle = (): React.CSSProperties => ({
   display: 'flex',

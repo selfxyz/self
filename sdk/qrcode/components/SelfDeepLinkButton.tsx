@@ -1,11 +1,7 @@
 import React, { memo } from 'react';
 
 import selfLogo from '../assets/self-logo.svg';
-import {
-  mobileCtaButtonStyle,
-  mobileCtaLogoStyle,
-  mobileCtaTextStyle,
-} from '../utils/styles.js';
+import { mobileCtaButtonStyle, mobileCtaLogoStyle, mobileCtaTextStyle } from '../utils/styles.js';
 
 interface SelfDeepLinkButtonProps {
   href: string;
