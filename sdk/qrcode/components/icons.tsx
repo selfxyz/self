@@ -13,20 +13,16 @@ interface IconProps {
   size?: number;
 }
 
-export const DotsIcon = ({ size = 18 }: IconProps) => (
-  <img src={dotsIcon} alt="" width={size} height={size} style={{ display: 'block' }} />
-);
-
-export const ScanIcon = ({ size = 24 }: IconProps) => (
-  <img src={qrcodeIcon} alt="" width={size} height={size} style={{ display: 'block' }} />
-);
-
-export const SelfShieldIcon = ({ size = 24 }: IconProps) => (
-  <img src={shieldcheckIcon} alt="" width={size} height={size} style={{ display: 'block' }} />
-);
-
-export const ReturnIcon = ({ size = 24 }: IconProps) => (
-  <img src={squarecheckIcon} alt="" width={size} height={size} style={{ display: 'block' }} />
+export const ArrowReturnIcon = ({ size = 24 }: IconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={{ display: 'block' }}>
+    <path
+      d="M9 15l-5-5 5-5M4 10h11a5 5 0 010 10h-3"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
 );
 
 export const BoltIcon = ({ size = 24 }: IconProps) => (
@@ -37,12 +33,8 @@ export const CheckIcon = ({ size = 24 }: IconProps) => (
   <img src={shieldcheck2Icon} alt="" width={size} height={size} style={{ display: 'block' }} />
 );
 
-export const ExclamationIcon = ({ size = 24 }: IconProps) => (
-  <img src={errorIcon} alt="" width={size} height={size} style={{ display: 'block' }} />
-);
-
-export const WarningIcon = ({ size = 24 }: IconProps) => (
-  <img src={warningIcon} alt="" width={size} height={size} style={{ display: 'block' }} />
+export const DotsIcon = ({ size = 18 }: IconProps) => (
+  <img src={dotsIcon} alt="" width={size} height={size} style={{ display: 'block' }} />
 );
 
 export const DownloadIcon = ({ size = 24 }: IconProps) => (
@@ -57,6 +49,22 @@ export const DownloadIcon = ({ size = 24 }: IconProps) => (
   </svg>
 );
 
+export const ExclamationIcon = ({ size = 24 }: IconProps) => (
+  <img src={errorIcon} alt="" width={size} height={size} style={{ display: 'block' }} />
+);
+
+export const ReturnIcon = ({ size = 24 }: IconProps) => (
+  <img src={squarecheckIcon} alt="" width={size} height={size} style={{ display: 'block' }} />
+);
+
+export const ScanIcon = ({ size = 24 }: IconProps) => (
+  <img src={qrcodeIcon} alt="" width={size} height={size} style={{ display: 'block' }} />
+);
+
+export const SelfShieldIcon = ({ size = 24 }: IconProps) => (
+  <img src={shieldcheckIcon} alt="" width={size} height={size} style={{ display: 'block' }} />
+);
+
 export const VerifyIcon = ({ size = 24 }: IconProps) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={{ display: 'block' }}>
     <path
@@ -66,14 +74,6 @@ export const VerifyIcon = ({ size = 24 }: IconProps) => (
   </svg>
 );
 
-export const ArrowReturnIcon = ({ size = 24 }: IconProps) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={{ display: 'block' }}>
-    <path
-      d="M9 15l-5-5 5-5M4 10h11a5 5 0 010 10h-3"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
+export const WarningIcon = ({ size = 24 }: IconProps) => (
+  <img src={warningIcon} alt="" width={size} height={size} style={{ display: 'block' }} />
 );

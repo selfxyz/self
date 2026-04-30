@@ -1,5 +1,4 @@
 import type { SelfApp } from '@selfxyz/sdk-common';
-
 import React, { memo } from 'react';
 
 import { desktopCardStyle, desktopQrSectionStyle, desktopQrWrapperStyle } from '../utils/styles.js';

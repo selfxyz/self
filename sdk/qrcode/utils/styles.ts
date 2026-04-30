@@ -116,16 +116,6 @@ export const desktopQrWrapperStyle = (step: number): React.CSSProperties => ({
   transition: 'border-color 0.3s ease',
 });
 
-export const qrAnimationOverlayStyle = (imageSize: number): React.CSSProperties => ({
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: imageSize,
-  height: imageSize,
-  pointerEvents: 'none',
-});
-
 export const desktopSelfLogoContainerStyle = (): React.CSSProperties => ({
   width: '32px',
   height: '32px',
@@ -137,27 +127,9 @@ export const desktopSelfLogoContainerStyle = (): React.CSSProperties => ({
   overflow: 'hidden',
 });
 
-export const qrContainerStyle = (size: number): React.CSSProperties => ({
-  position: 'relative',
-  width: size,
-  height: size,
-});
-
 export const desktopSelfLogoImgStyle = (): React.CSSProperties => ({
   width: '20px',
   height: '20px',
-});
-
-export const qrWrapperStyle = (step: number, showBorder: boolean = true): React.CSSProperties => ({
-  display: 'inline-flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  gap: '6px',
-  padding: '3px',
-  borderRadius: '10px',
-  border: showBorder ? `6px solid ${getBorderColor(step)}` : 'none',
-  backgroundColor: '#FFF',
-  transition: 'border-color 0.3s ease',
 });
 
 export const desktopStatusCardStyle = (): React.CSSProperties => ({
@@ -208,6 +180,13 @@ export const desktopStatusTextStyle = (): React.CSSProperties => ({
   textAlign: 'center',
 });
 
+export const desktopStatusTitleStyle = (): React.CSSProperties => ({
+  fontSize: '18px',
+  fontWeight: 500,
+  color: '#000000',
+  margin: 0,
+});
+
 export const desktopStepIconStyle = (): React.CSSProperties => ({
   display: 'flex',
   alignItems: 'center',
@@ -215,13 +194,6 @@ export const desktopStepIconStyle = (): React.CSSProperties => ({
   width: '26px',
   height: '26px',
   flexShrink: 0,
-});
-
-export const desktopStatusTitleStyle = (): React.CSSProperties => ({
-  fontSize: '18px',
-  fontWeight: 500,
-  color: '#000000',
-  margin: 0,
 });
 
 export const desktopStepInnerStyle = (): React.CSSProperties => ({
@@ -247,8 +219,8 @@ export const desktopStepTextStyle = (): React.CSSProperties => ({
 });
 
 // Mobile variant styles
-
 export const mobileCardStyle = (): React.CSSProperties => baseCardStyle();
+
 
 export const mobileCtaButtonStyle = (): React.CSSProperties => ({
   display: 'flex',
@@ -264,10 +236,13 @@ export const mobileCtaButtonStyle = (): React.CSSProperties => ({
   textDecoration: 'none',
 });
 
+
 export const mobileCtaLogoStyle = (): React.CSSProperties => ({
   width: '26px',
   height: '26px',
 });
+
+
 
 export const mobileCtaSectionStyle = (): React.CSSProperties => ({
   display: 'flex',
@@ -323,6 +298,34 @@ export const mobilePhoneSectionWrapperStyle = (): React.CSSProperties => ({
   padding: '20px 20px 0',
   width: '100%',
   boxSizing: 'border-box',
+});
+
+export const qrAnimationOverlayStyle = (imageSize: number): React.CSSProperties => ({
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: imageSize,
+  height: imageSize,
+  pointerEvents: 'none',
+});
+
+export const qrContainerStyle = (size: number): React.CSSProperties => ({
+  position: 'relative',
+  width: size,
+  height: size,
+});
+
+export const qrWrapperStyle = (step: number, showBorder: boolean = true): React.CSSProperties => ({
+  display: 'inline-flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  gap: '6px',
+  padding: '3px',
+  borderRadius: '10px',
+  border: showBorder ? `6px solid ${getBorderColor(step)}` : 'none',
+  backgroundColor: '#FFF',
+  transition: 'border-color 0.3s ease',
 });
 
 // Hybrid variant styles
