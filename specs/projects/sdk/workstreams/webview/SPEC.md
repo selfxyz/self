@@ -86,6 +86,7 @@ webview backlog.
 | WV-15 | Recovery and backup surfaces                                                                    | In Progress | Low      | WV-14               | [plans/SELF-2504-onboarding-recovery-phrase.md](./plans/SELF-2504-onboarding-recovery-phrase.md) | Active slice: add onboarding recovery phrase route after registration success, before notifications. Remaining recovery/backup surfaces still need follow-up planning.                                                                                                                                            |
 | WV-16 | Settings follow-through and support routes                                                      | Done        | Low      | WV-14               | —                                                                                                | Delivered: haptic wiring on all menu items, dev-mode mock generation fixed, Manage Documents description fixed, DevRouteMenu Settings + Tunnel groups added, settings screen tests. Deferred: notification toggle and backup-enabled persistence (requires storage design decision, not blocking UI completeness) |
 | WV-17 | Recovery phrase restore flow for WebView and tunnel account recovery                            | In Progress | High     | WV-07, WV-08        | [plans/WV-17-recovery-phrase-restore-flow.md](./plans/WV-17-recovery-phrase-restore-flow.md)     | Existing recovery screens are UI-only in webview today. This spec wires phrase-based restore, selected-document validation, and tunnel resume without importing app-only providers.                                                                                                                               |
+| WV-18 | Enable Didit liveness for Self Wallet (iOS + Android)                                           | Ready       | High     | WV-02               | [plans/WV-18-didit-liveness.md](./plans/WV-18-didit-liveness.md)                                 | Server-side enforced liveness via 3D Flash workflow + TEE. Implementation files live in `app/` (KYC launcher status branching). Attested liveness in the KYC byte layout is a separate follow-up.                                                                                                                 |
 
 Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 
@@ -106,6 +107,7 @@ Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 | [plans/WV-11-disclose-core.md](./plans/WV-11-disclose-core.md)                                   | WV-11 | Ready                                     |
 | [plans/WV-12-registration-prompts.md](./plans/WV-12-registration-prompts.md)                     | WV-12 | Ready                                     |
 | [plans/WV-17-recovery-phrase-restore-flow.md](./plans/WV-17-recovery-phrase-restore-flow.md)     | WV-17 | In Progress                               |
+| [plans/WV-18-didit-liveness.md](./plans/WV-18-didit-liveness.md)                                 | WV-18 | Ready                                     |
 
 ## Completion Checklist
 

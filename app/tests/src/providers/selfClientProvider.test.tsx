@@ -6,6 +6,7 @@
 import type { ReactNode } from 'react';
 import { act, renderHook } from '@testing-library/react-native';
 
+import { createKycSession, launchKycVerification } from '@/integrations/kyc';
 import { useSettingStore } from '@/stores/settingStore';
 
 let mockSdkProviderProps: Record<string, unknown> | undefined;
@@ -46,6 +47,11 @@ jest.mock('@/navigation', () => {
   };
 });
 
+jest.mock('@/integrations/kyc', () => ({
+  createKycSession: jest.fn(),
+  launchKycVerification: jest.fn(),
+}));
+
 jest.mock(
   '@selfxyz/mobile-sdk-alpha/onboarding/confirm-identification',
   () => ({
@@ -80,6 +86,18 @@ jest.mock('@selfxyz/mobile-sdk-alpha', () => {
     PROVING_REGISTER_ERROR_OR_FAILURE: 'PROVING_REGISTER_ERROR_OR_FAILURE',
     PROVING_ACCOUNT_VERIFIED_PENDING: 'PROVING_ACCOUNT_VERIFIED_PENDING',
     PROVING_ACCOUNT_VERIFIED_FAILURE: 'PROVING_ACCOUNT_VERIFIED_FAILURE',
+    PROVING_PASSPORT_NOT_SUPPORTED: 'PROVING_PASSPORT_NOT_SUPPORTED',
+    PROVING_ACCOUNT_RECOVERY_REQUIRED: 'PROVING_ACCOUNT_RECOVERY_REQUIRED',
+    PROVING_BEGIN_GENERATION: 'PROVING_BEGIN_GENERATION',
+    PROOF_EVENT: 'PROOF_EVENT',
+    NFC_EVENT: 'NFC_EVENT',
+    DOCUMENT_MRZ_READ_SUCCESS: 'DOCUMENT_MRZ_READ_SUCCESS',
+    DOCUMENT_MRZ_READ_FAILURE: 'DOCUMENT_MRZ_READ_FAILURE',
+    PROVING_AADHAAR_UPLOAD_SUCCESS: 'PROVING_AADHAAR_UPLOAD_SUCCESS',
+    PROVING_AADHAAR_UPLOAD_FAILURE: 'PROVING_AADHAAR_UPLOAD_FAILURE',
+    DOCUMENT_COUNTRY_SELECTED: 'DOCUMENT_COUNTRY_SELECTED',
+    DOCUMENT_TYPE_SELECTED: 'DOCUMENT_TYPE_SELECTED',
+    DOCUMENT_OWNERSHIP_CONFIRMED: 'DOCUMENT_OWNERSHIP_CONFIRMED',
   };
 
   return {
@@ -96,15 +114,31 @@ jest.mock('@selfxyz/mobile-sdk-alpha', () => {
 
 let useSelfClient: () => unknown;
 let SelfClientProvider: ({ children }: { children: ReactNode }) => JSX.Element;
+let SdkEvents: Record<string, string>;
+let navigationRef: {
+  isReady: jest.Mock<boolean, []>;
+  navigate: jest.Mock;
+};
+
+const MockCreateKycSession = createKycSession as jest.MockedFunction<
+  typeof createKycSession
+>;
+const MockLaunchKycVerification = launchKycVerification as jest.MockedFunction<
+  typeof launchKycVerification
+>;
 
 beforeAll(() => {
   ({ useSelfClient } = require('@selfxyz/mobile-sdk-alpha'));
+  ({ SdkEvents } = require('@selfxyz/mobile-sdk-alpha'));
   ({ SelfClientProvider } = require('@/providers/selfClientProvider'));
+  ({ navigationRef } = require('@/navigation'));
 });
 
 describe('SelfClientProvider', () => {
   beforeEach(() => {
     mockSdkProviderProps = undefined;
+    jest.clearAllMocks();
+    navigationRef.isReady.mockReturnValue(false);
     useSettingStore.setState(useSettingStore.getInitialState(), true);
   });
 
@@ -231,5 +265,48 @@ describe('SelfClientProvider', () => {
     expect(config?.devConfig?.shouldBypassDocumentRegistrationCheck?.()).toBe(
       true,
     );
+  });
+
+  it('routes declined KYC provider results to KycFailure without advancing', async () => {
+    navigationRef.isReady.mockReturnValue(true);
+    MockCreateKycSession.mockResolvedValue({
+      sessionId: 'sess-1',
+      sessionToken: 'tok-1',
+    });
+    MockLaunchKycVerification.mockResolvedValue({
+      type: 'completed',
+      session: {
+        status: 'Declined',
+        sessionId: 'didit-session-1',
+      },
+    });
+
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <SelfClientProvider>{children}</SelfClientProvider>
+    );
+    renderHook(() => useSelfClient(), { wrapper });
+
+    const listeners = mockSdkProviderProps?.listeners as
+      | Map<string, (payload: unknown) => void>
+      | undefined;
+    const onDocumentTypeSelected = listeners?.get(
+      SdkEvents.DOCUMENT_TYPE_SELECTED,
+    );
+
+    expect(onDocumentTypeSelected).toBeDefined();
+
+    await act(async () => {
+      onDocumentTypeSelected?.({ documentType: 'kyc', countryCode: 'US' });
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(navigationRef.navigate).toHaveBeenCalledWith('KycFailure', {
+      countryCode: 'US',
+      canRetry: true,
+    });
+    expect(navigationRef.navigate).not.toHaveBeenCalledWith('KycSuccess', {
+      sessionId: 'sess-1',
+    });
   });
 });

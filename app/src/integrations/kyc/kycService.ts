@@ -66,6 +66,8 @@ export const launchKycVerification = async (
   sessionToken: string,
   config?: KycLaunchConfig,
 ): Promise<KycVerificationResult> => {
+  // Liveness and other verification steps are workflow-controlled on the Didit
+  // Console, not configurable here. Do not add SDK-level liveness flags.
   const result = await startVerification(sessionToken, {
     languageCode: config?.locale ?? 'en',
     loggingEnabled: config?.debug ?? __DEV__,

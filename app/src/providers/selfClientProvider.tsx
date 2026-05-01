@@ -403,12 +403,25 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
                     return;
                   }
 
-                  // User completed verification
-                  // Navigate to KYC success screen
+                  // Provider returned a completed session — only Approved
+                  // proceeds. Liveness Declined / In Review must not advance
+                  // the proving flow.
+                  const sessionStatus = result.session?.status;
                   console.log(
                     '[KYC] Verification submitted, status:',
-                    result.session?.status,
+                    sessionStatus,
                   );
+                  if (sessionStatus !== 'Approved') {
+                    if (navigationRef.isReady()) {
+                      navigationRef.navigate('KycFailure', {
+                        countryCode,
+                        canRetry: true,
+                      });
+                    }
+                    return;
+                  }
+
+                  // User completed verification with Approved status
                   if (navigationRef.isReady()) {
                     navigationRef.navigate('KycSuccess', {
                       sessionId: session.sessionId,

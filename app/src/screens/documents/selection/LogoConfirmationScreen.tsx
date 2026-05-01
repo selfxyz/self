@@ -104,6 +104,22 @@ const LogoConfirmationScreen: React.FC = () => {
             return;
           }
 
+          // Provider returned a completed session — only Approved counts as
+          // success. Liveness Declined / In Review must route to KycFailure.
+          const sessionStatus = result.session?.status;
+          if (sessionStatus !== 'Approved') {
+            failOnboardingAttempt(
+              selfClient,
+              'scan_started',
+              `kyc_declined:${sessionStatus ?? 'unknown'}`,
+            );
+            navigation.navigate('KycFailure', {
+              countryCode,
+              canRetry: true,
+            });
+            return;
+          }
+
           // Verification succeeded - navigate to KycSuccessScreen
           trackOnboardingStep(selfClient, OnboardingEvents.SCAN_SUCCEEDED, {
             branch: 'kyc',

@@ -111,6 +111,25 @@ export const useKycLauncher = (options: UseKycLauncherOptions) => {
         return;
       }
 
+      // Provider returned a completed session, but the decision is not Approved
+      // (e.g. liveness Declined, In Review). Treat as failure.
+      const sessionStatus = result.session?.status;
+      if (sessionStatus !== 'Approved') {
+        const safeError = sanitizeErrorMessage(
+          `kyc_status_not_approved:${sessionStatus ?? 'unknown'}`,
+        );
+        console.error('KYC verification not approved:', safeError);
+        if (onError) {
+          await onError(safeError, result);
+        } else {
+          navigation.navigate('KycFailure', {
+            countryCode,
+            canRetry: true,
+          });
+        }
+        return;
+      }
+
       // Handle success - navigate to KycSuccess by default
       if (onSuccess) {
         await onSuccess(result, session.sessionId);
