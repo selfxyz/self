@@ -41,11 +41,14 @@ export const createKycSession = async (): Promise<SessionResponse> => {
 
     const body = await response.json();
 
-    if (typeof body === 'string') {
-      return JSON.parse(body) as SessionResponse;
+    const parsedBody =
+      typeof body === 'string' ? (JSON.parse(body) as SessionResponse) : (body as SessionResponse);
+
+    if (!parsedBody?.sessionToken || typeof parsedBody.sessionToken !== 'string') {
+      throw new Error('Failed to create KYC session: Missing session token in response');
     }
 
-    return body as SessionResponse;
+    return parsedBody;
   } catch (err) {
     clearTimeout(timeoutId);
 
@@ -66,10 +69,18 @@ export const launchKycVerification = async (
   sessionToken: string,
   config?: KycLaunchConfig,
 ): Promise<KycVerificationResult> => {
+  if (!sessionToken?.trim()) {
+    throw new Error('Failed to launch KYC verification: Session token is required');
+  }
+
   const result = await startVerification(sessionToken, {
     languageCode: config?.locale ?? 'en',
     loggingEnabled: config?.debug ?? __DEV__,
   });
+
+  if (!result || typeof result !== 'object') {
+    throw new Error('Failed to launch KYC verification: Invalid provider response');
+  }
 
   return result as KycVerificationResult;
 };
