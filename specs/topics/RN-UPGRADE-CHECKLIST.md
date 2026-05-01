@@ -21,12 +21,12 @@ Use this file as the working state tracker for the React Native upgrade. The nar
 
 ## Track Owners
 
-| Track | Primary | Backup | Scope |
-|---|---|---|---|
+| Track                 | Primary       | Backup        | Scope                                                      |
+| --------------------- | ------------- | ------------- | ---------------------------------------------------------- |
 | JS + package versions | `@unassigned` | `@unassigned` | RN core versions, JS toolchain, Metro/Babel/Jest, lockfile |
-| iOS native | `@unassigned` | `@unassigned` | Pods, Podfile, Xcode settings, iOS build/runtime |
-| Android native | `@unassigned` | `@unassigned` | Gradle, Kotlin/AGP, Android build/runtime |
-| Runtime validation | `@unassigned` | `@unassigned` | Critical flows, smoke tests, rollout decisions |
+| iOS native            | `@unassigned` | `@unassigned` | Pods, Podfile, Xcode settings, iOS build/runtime           |
+| Android native        | `@unassigned` | `@unassigned` | Gradle, Kotlin/AGP, Android build/runtime                  |
+| Runtime validation    | `@unassigned` | `@unassigned` | Critical flows, smoke tests, rollout decisions             |
 
 ## Global Gates
 
@@ -43,53 +43,53 @@ Use this file as the working state tracker for the React Native upgrade. The nar
 
 ### Core RN and companion packages
 
-| Item | Current | Target `0.84.x` | Target `0.85.x` | Owner | Backup | Status | Last Validation | Last Note |
-|---|---|---|---|---|---|---|---|---|
-| `react-native` | `0.77.0` | `TBD` | `TBD` | `@unassigned` | `@unassigned` | `Not Started` | `None` | Core runtime |
-| `@react-native/babel-preset` | `0.77.0` | `TBD` | `TBD` | `@unassigned` | `@unassigned` | `Not Started` | `None` | Must stay aligned with RN |
-| `@react-native/eslint-config` | `0.77.0` | `TBD` | `TBD` | `@unassigned` | `@unassigned` | `Not Started` | `None` | Must stay aligned with RN |
-| `@react-native/gradle-plugin` | `0.77.0` | `TBD` | `TBD` | `@unassigned` | `@unassigned` | `Not Started` | `None` | Android track dependency |
-| `@react-native/metro-config` | `0.77.0` | `TBD` | `TBD` | `@unassigned` | `@unassigned` | `Not Started` | `None` | Metro config drift risk |
-| `@react-native/typescript-config` | `0.77.0` | `TBD` | `TBD` | `@unassigned` | `@unassigned` | `Not Started` | `None` | TS config alignment |
-| `@react-native-community/cli` | `^16.0.3` | `TBD` | `TBD` | `@unassigned` | `@unassigned` | `Not Started` | `None` | Verify version expectations per RN line |
+| Item                              | Current   | Target `0.84.x` | Target `0.85.x` | Owner         | Backup        | Status        | Last Validation | Last Note                               |
+| --------------------------------- | --------- | --------------- | --------------- | ------------- | ------------- | ------------- | --------------- | --------------------------------------- |
+| `react-native`                    | `0.77.0`  | `TBD`           | `TBD`           | `@unassigned` | `@unassigned` | `Not Started` | `None`          | Core runtime                            |
+| `@react-native/babel-preset`      | `0.77.0`  | `TBD`           | `TBD`           | `@unassigned` | `@unassigned` | `Not Started` | `None`          | Must stay aligned with RN               |
+| `@react-native/eslint-config`     | `0.77.0`  | `TBD`           | `TBD`           | `@unassigned` | `@unassigned` | `Not Started` | `None`          | Must stay aligned with RN               |
+| `@react-native/gradle-plugin`     | `0.77.0`  | `TBD`           | `TBD`           | `@unassigned` | `@unassigned` | `Not Started` | `None`          | Android track dependency                |
+| `@react-native/metro-config`      | `0.77.0`  | `TBD`           | `TBD`           | `@unassigned` | `@unassigned` | `Not Started` | `None`          | Metro config drift risk                 |
+| `@react-native/typescript-config` | `0.77.0`  | `TBD`           | `TBD`           | `@unassigned` | `@unassigned` | `Not Started` | `None`          | TS config alignment                     |
+| `@react-native-community/cli`     | `^16.0.3` | `TBD`           | `TBD`           | `@unassigned` | `@unassigned` | `Not Started` | `None`          | Verify version expectations per RN line |
 
 ### Expo alignment
 
-| Item | Current | Target `0.84.x` | Target `0.85.x` | Owner | Backup | Status | Last Validation | Last Note |
-|---|---|---|---|---|---|---|---|---|
-| `expo` | `~52.0.40` | `TBD` | `TBD` | `@unassigned` | `@unassigned` | `Not Started` | `None` | Must follow Expo/RN support matrix |
-| `expo-application` | `~6.0.2` | `TBD` | `TBD` | `@unassigned` | `@unassigned` | `Not Started` | `None` | Keep aligned with Expo SDK |
-| `expo-camera` | `~16.0.18` | `TBD` | `TBD` | `@unassigned` | `@unassigned` | `Not Started` | `None` | Camera is critical flow |
+| Item               | Current    | Target `0.84.x` | Target `0.85.x` | Owner         | Backup        | Status        | Last Validation | Last Note                          |
+| ------------------ | ---------- | --------------- | --------------- | ------------- | ------------- | ------------- | --------------- | ---------------------------------- |
+| `expo`             | `~52.0.40` | `TBD`           | `TBD`           | `@unassigned` | `@unassigned` | `Not Started` | `None`          | Must follow Expo/RN support matrix |
+| `expo-application` | `~6.0.2`   | `TBD`           | `TBD`           | `@unassigned` | `@unassigned` | `Not Started` | `None`          | Keep aligned with Expo SDK         |
+| `expo-camera`      | `~16.0.18` | `TBD`           | `TBD`           | `@unassigned` | `@unassigned` | `Not Started` | `None`          | Camera is critical flow            |
 
 ### Critical native dependencies
 
-| Item | Current | Target `0.84.x` | Target `0.85.x` | Owner | Backup | Status | Last Validation | Last Note |
-|---|---|---|---|---|---|---|---|---|
-| `react-native-webview` | `13.16.1` app / `13.16.0` override | `TBD` | `TBD` | `@unassigned` | `@unassigned` | `Not Started` | `None` | Resolve override mismatch explicitly |
-| `react-native-gesture-handler` | `~2.22.0` | `TBD` | `TBD` | `@unassigned` | `@unassigned` | `Not Started` | `None` | Navigation/input critical |
-| `react-native-screens` | `4.15.3` | `TBD` | `TBD` | `@unassigned` | `@unassigned` | `Not Started` | `None` | Navigation stack dependency |
-| `react-native-safe-area-context` | `^5.7.0` | `TBD` | `TBD` | `@unassigned` | `@unassigned` | `Not Started` | `None` | Common runtime dependency |
-| `react-native-svg` | `15.14.0` | `TBD` | `TBD` | `@unassigned` | `@unassigned` | `Not Started` | `None` | Rendering dependency |
-| `react-native-permissions` | `^4.1.5` | `TBD` | `TBD` | `@unassigned` | `@unassigned` | `Not Started` | `None` | Critical OS prompt flow |
-| `react-native-keychain` | `^10.0.0` | `TBD` | `TBD` | `@unassigned` | `@unassigned` | `Not Started` | `None` | Security boundary |
-| `react-native-biometrics` | `^3.0.1` | `TBD` | `TBD` | `@unassigned` | `@unassigned` | `Not Started` | `None` | Auth critical path |
-| `react-native-nfc-manager` | `3.17.2` | `TBD` | `TBD` | `@unassigned` | `@unassigned` | `Not Started` | `None` | Passport scan path |
-| `react-native-passport-reader` | `1.0.3` | `TBD` | `TBD` | `@unassigned` | `@unassigned` | `Not Started` | `None` | Passport scan path |
-| `@react-native-firebase/app` | `^21.14.0` | `TBD` | `TBD` | `@unassigned` | `@unassigned` | `Not Started` | `None` | Firebase base |
-| `@react-native-firebase/analytics` | `^21.14.0` | `TBD` | `TBD` | `@unassigned` | `@unassigned` | `Not Started` | `None` | Analytics boot path |
-| `@react-native-firebase/messaging` | `^21.14.0` | `TBD` | `TBD` | `@unassigned` | `@unassigned` | `Not Started` | `None` | Push init critical |
-| `@react-native-firebase/remote-config` | `^21.14.0` | `TBD` | `TBD` | `@unassigned` | `@unassigned` | `Not Started` | `None` | Startup/config critical |
-| `@invertase/react-native-apple-authentication` | `^2.5.1` | `TBD` | `TBD` | `@unassigned` | `@unassigned` | `Not Started` | `None` | iOS auth dependency |
-| `@react-native-google-signin/google-signin` | `^16.1.2` | `TBD` | `TBD` | `@unassigned` | `@unassigned` | `Not Started` | `None` | Auth dependency |
-| `react-native-app-auth` | `^8.1.0` | `TBD` | `TBD` | `@unassigned` | `@unassigned` | `Not Started` | `None` | Auth dependency |
+| Item                                           | Current                            | Target `0.84.x` | Target `0.85.x` | Owner         | Backup        | Status        | Last Validation | Last Note                            |
+| ---------------------------------------------- | ---------------------------------- | --------------- | --------------- | ------------- | ------------- | ------------- | --------------- | ------------------------------------ |
+| `react-native-webview`                         | `13.16.1` app / `13.16.0` override | `TBD`           | `TBD`           | `@unassigned` | `@unassigned` | `Not Started` | `None`          | Resolve override mismatch explicitly |
+| `react-native-gesture-handler`                 | `~2.22.0`                          | `TBD`           | `TBD`           | `@unassigned` | `@unassigned` | `Not Started` | `None`          | Navigation/input critical            |
+| `react-native-screens`                         | `4.15.3`                           | `TBD`           | `TBD`           | `@unassigned` | `@unassigned` | `Not Started` | `None`          | Navigation stack dependency          |
+| `react-native-safe-area-context`               | `^5.7.0`                           | `TBD`           | `TBD`           | `@unassigned` | `@unassigned` | `Not Started` | `None`          | Common runtime dependency            |
+| `react-native-svg`                             | `15.14.0`                          | `TBD`           | `TBD`           | `@unassigned` | `@unassigned` | `Not Started` | `None`          | Rendering dependency                 |
+| `react-native-permissions`                     | `^4.1.5`                           | `TBD`           | `TBD`           | `@unassigned` | `@unassigned` | `Not Started` | `None`          | Critical OS prompt flow              |
+| `react-native-keychain`                        | `^10.0.0`                          | `TBD`           | `TBD`           | `@unassigned` | `@unassigned` | `Not Started` | `None`          | Security boundary                    |
+| `react-native-biometrics`                      | `^3.0.1`                           | `TBD`           | `TBD`           | `@unassigned` | `@unassigned` | `Not Started` | `None`          | Auth critical path                   |
+| `react-native-nfc-manager`                     | `3.17.2`                           | `TBD`           | `TBD`           | `@unassigned` | `@unassigned` | `Not Started` | `None`          | Passport scan path                   |
+| `react-native-passport-reader`                 | `1.0.3`                            | `TBD`           | `TBD`           | `@unassigned` | `@unassigned` | `Not Started` | `None`          | Passport scan path                   |
+| `@react-native-firebase/app`                   | `^21.14.0`                         | `TBD`           | `TBD`           | `@unassigned` | `@unassigned` | `Not Started` | `None`          | Firebase base                        |
+| `@react-native-firebase/analytics`             | `^21.14.0`                         | `TBD`           | `TBD`           | `@unassigned` | `@unassigned` | `Not Started` | `None`          | Analytics boot path                  |
+| `@react-native-firebase/messaging`             | `^21.14.0`                         | `TBD`           | `TBD`           | `@unassigned` | `@unassigned` | `Not Started` | `None`          | Push init critical                   |
+| `@react-native-firebase/remote-config`         | `^21.14.0`                         | `TBD`           | `TBD`           | `@unassigned` | `@unassigned` | `Not Started` | `None`          | Startup/config critical              |
+| `@invertase/react-native-apple-authentication` | `^2.5.1`                           | `TBD`           | `TBD`           | `@unassigned` | `@unassigned` | `Not Started` | `None`          | iOS auth dependency                  |
+| `@react-native-google-signin/google-signin`    | `^16.1.2`                          | `TBD`           | `TBD`           | `@unassigned` | `@unassigned` | `Not Started` | `None`          | Auth dependency                      |
+| `react-native-app-auth`                        | `^8.1.0`                           | `TBD`           | `TBD`           | `@unassigned` | `@unassigned` | `Not Started` | `None`          | Auth dependency                      |
 
 ### Monorepo alignment checks
 
-| Item | Current | Target `0.84.x` | Target `0.85.x` | Owner | Backup | Status | Last Validation | Last Note |
-|---|---|---|---|---|---|---|---|---|
-| Root `react-native` dependency | `0.76.9` | `TBD / keep or align` | `TBD / keep or align` | `@unassigned` | `@unassigned` | `Not Started` | `None` | Only change if it blocks app build/test integrity |
-| Root `react` resolution | `^18.3.1` | `Verify` | `Verify` | `@unassigned` | `@unassigned` | `Not Started` | `None` | Confirm RN target compatibility |
-| Root `react-native-webview` resolution | `13.16.0` | `TBD` | `TBD` | `@unassigned` | `@unassigned` | `Not Started` | `None` | Must match app decision |
+| Item                                   | Current   | Target `0.84.x`       | Target `0.85.x`       | Owner         | Backup        | Status        | Last Validation | Last Note                                         |
+| -------------------------------------- | --------- | --------------------- | --------------------- | ------------- | ------------- | ------------- | --------------- | ------------------------------------------------- |
+| Root `react-native` dependency         | `0.76.9`  | `TBD / keep or align` | `TBD / keep or align` | `@unassigned` | `@unassigned` | `Not Started` | `None`          | Only change if it blocks app build/test integrity |
+| Root `react` resolution                | `^18.3.1` | `Verify`              | `Verify`              | `@unassigned` | `@unassigned` | `Not Started` | `None`          | Confirm RN target compatibility                   |
+| Root `react-native-webview` resolution | `13.16.0` | `TBD`                 | `TBD`                 | `@unassigned` | `@unassigned` | `Not Started` | `None`          | Must match app decision                           |
 
 ## Work Breakdown Checklist
 
@@ -133,8 +133,8 @@ Use this file as the working state tracker for the React Native upgrade. The nar
 
 ## Validation Log
 
-| Date | Owner | Command / Check | Result | Notes |
-|---|---|---|---|---|
+| Date         | Owner   | Command / Check                           | Result      | Notes        |
+| ------------ | ------- | ----------------------------------------- | ----------- | ------------ |
 | `YYYY-MM-DD` | `@name` | `yarn workspace @selfxyz/mobile-app test` | `Pass/Fail` | `Short note` |
 
 ## Open Questions

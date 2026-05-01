@@ -18,7 +18,6 @@
 - **[React Native Upgrade Plan (Mobile App)](./topics/RN-UPGRADE-PLAN.md)** — staged migration plan from RN 0.77 to supported versions.
 - **[RN Upgrade Checklist](./topics/RN-UPGRADE-CHECKLIST.md)** — shared owner/status tracker for coordinating the upgrade across developers.
 
-
 ## Framework
 
 - [Templates](./framework/TEMPLATES.md) — copy-paste templates for all three tiers
