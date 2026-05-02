@@ -31,7 +31,6 @@ import QRScan from '@/assets/icons/qr_code.svg';
 import type { QRCodeScannerViewProps } from '@/components/native/QRCodeScanner';
 import { QRCodeScannerView } from '@/components/native/QRCodeScanner';
 import { NavBar } from '@/components/navbar/BaseNavBar';
-import useConnectionModal from '@/hooks/useConnectionModal';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { buttonTap } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
@@ -41,7 +40,6 @@ import { parseAndValidateUrlParams } from '@/navigation/deeplinks';
 const QRCodeViewFinderScreen: React.FC = () => {
   const selfClient = useSelfClient();
   const { trackEvent } = selfClient;
-  const { visible: connectionModalVisible } = useConnectionModal();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const isFocused = useIsFocused();
@@ -137,7 +135,7 @@ const QRCodeViewFinderScreen: React.FC = () => {
     ],
   );
 
-  const shouldRenderCamera = !connectionModalVisible && !doneScanningQR;
+  const shouldRenderCamera = !doneScanningQR;
 
   return (
     <>
