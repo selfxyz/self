@@ -11,11 +11,10 @@ const QR_IMAGE_SIZE_RATIO = 0.32;
 interface QRCodeProps {
   value: string;
   size: number;
-  darkMode: boolean;
   proofStep: number;
 }
 
-const QRCode = memo(({ value, size, darkMode, proofStep }: QRCodeProps) => {
+const QRCode = memo(({ value, size, proofStep }: QRCodeProps) => {
   const isInitialState =
     proofStep === QRcodeSteps.DISCONNECTED || proofStep === QRcodeSteps.WAITING_FOR_MOBILE;
 
@@ -27,8 +26,11 @@ const QRCode = memo(({ value, size, darkMode, proofStep }: QRCodeProps) => {
   const showAnimation = !isInitialState;
 
   const statusIcon = getStatusIcon(proofStep);
-  const bgColor = darkMode ? '#000000' : '#ffffff';
-  const fgColor = darkMode ? '#ffffff' : '#000000';
+  // Keep the QR itself in the standard high-contrast black-on-white format.
+  // The surrounding wrapper handles dark mode styling, but the QR pattern
+  // stays scan-friendly across readers that struggle with inverted codes.
+  const bgColor = '#ffffff';
+  const fgColor = '#000000';
   const imageSize = size * QR_IMAGE_SIZE_RATIO;
 
   return (

@@ -312,7 +312,11 @@ export const qrContainerStyle = (size: number): React.CSSProperties => ({
   height: size,
 });
 
-export const qrWrapperStyle = (step: number, showBorder: boolean = true): React.CSSProperties => ({
+export const qrWrapperStyle = (
+  step: number,
+  showBorder: boolean = true,
+  darkMode: boolean = false
+): React.CSSProperties => ({
   display: 'inline-flex',
   flexDirection: 'column',
   alignItems: 'center',
@@ -320,7 +324,7 @@ export const qrWrapperStyle = (step: number, showBorder: boolean = true): React.
   padding: '3px',
   borderRadius: '10px',
   border: showBorder ? `6px solid ${getBorderColor(step)}` : 'none',
-  backgroundColor: '#FFF',
+  backgroundColor: darkMode ? '#0F172A' : '#FFF',
   transition: 'border-color 0.3s ease',
 });
 
