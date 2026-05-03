@@ -62,7 +62,7 @@ function MyComponent() {
         console.log('Verification successful');
         // Perform actions after successful verification
       }}
-      darkMode={false} // Optional: set to true for dark mode
+      darkMode={false} // Optional: set to true for dark-themed wrapper styling
       size={300} // Optional: customize QR code size (default: 300)
     />
   );
@@ -111,7 +111,7 @@ The `SelfQRcodeWrapper` component accepts the following props:
 | `onSuccess`    | () => void      | Yes      | -             | Callback function executed on successful verification |
 | `websocketUrl` | string          | No       | WS_DB_RELAYER | Custom WebSocket URL for verification                 |
 | `size`         | number          | No       | 300           | QR code size in pixels                                |
-| `darkMode`     | boolean         | No       | false         | Enable dark mode styling                              |
+| `darkMode`     | boolean         | No       | false         | Enable dark-themed wrapper styling                    |
 | `children`     | React.ReactNode | No       | -             | Custom children to render                             |
 
 ## Complete Example
