@@ -10,6 +10,7 @@ import { Text, View } from '@selfxyz/mobile-sdk-alpha/components';
 import {
   amber500,
   red600,
+  textBlack,
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
@@ -38,7 +39,7 @@ const BANNER_CONTENT: Record<
     backgroundColor: amber500,
     title: 'Connection is weak',
     body: 'Some actions may take longer than usual.',
-    textColor: white,
+    textColor: textBlack,
   },
 };
 
@@ -72,8 +73,8 @@ export function ConnectivityBanner() {
       <Text
         color={content.textColor}
         fontSize={12}
+        fontWeight="400"
         marginTop="$1"
-        style={{ opacity: 0.9 }}
       >
         {content.body}
       </Text>
