@@ -54,7 +54,7 @@ describe('AppLayout connectivity banner', () => {
 
     expect(JSON.stringify(toJSON())).toContain('Connection is weak');
     expect(JSON.stringify(toJSON())).toContain(
-      'This step may take longer than usual.',
+      'Some actions may take longer than usual.',
     );
   });
 

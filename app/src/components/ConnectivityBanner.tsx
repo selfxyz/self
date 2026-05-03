@@ -3,13 +3,14 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useMemo } from 'react';
+import { Platform, StatusBar } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Text, View } from '@selfxyz/mobile-sdk-alpha/components';
 import {
-  amber50,
-  amber700,
+  amber500,
   red600,
+  textBlack,
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
@@ -31,14 +32,14 @@ const BANNER_CONTENT: Record<
   offline: {
     backgroundColor: red600,
     title: 'No internet connection',
-    body: 'Some actions are unavailable until you reconnect.',
+    body: 'Some features are unavailable until you reconnect.',
     textColor: white,
   },
   weak: {
-    backgroundColor: amber50,
+    backgroundColor: amber500,
     title: 'Connection is weak',
-    body: 'This step may take longer than usual.',
-    textColor: amber700,
+    body: 'Some actions may take longer than usual.',
+    textColor: textBlack,
   },
 };
 
@@ -52,15 +53,19 @@ export function ConnectivityBanner() {
   }
 
   const content = BANNER_CONTENT[state];
+  const topInset = Math.max(
+    insets.top,
+    Platform.OS === 'android' ? (StatusBar.currentHeight ?? 0) : 0,
+  );
 
   return (
     <View
       accessibilityRole="alert"
       accessibilityLiveRegion="polite"
       backgroundColor={content.backgroundColor}
-      paddingTop={Math.max(insets.top, 10)}
+      paddingTop={topInset + 10}
       paddingHorizontal={20}
-      paddingVertical={10}
+      paddingBottom={10}
     >
       <Text color={content.textColor} fontSize={14} fontWeight="700">
         {content.title}
@@ -68,8 +73,8 @@ export function ConnectivityBanner() {
       <Text
         color={content.textColor}
         fontSize={12}
+        fontWeight="400"
         marginTop="$1"
-        style={{ opacity: 0.9 }}
       >
         {content.body}
       </Text>
