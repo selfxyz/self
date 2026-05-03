@@ -48,7 +48,6 @@ import IdCardLayout from '@/components/homescreen/IdCard';
 import PendingIdCard from '@/components/homescreen/PendingIdCard';
 import UnregisteredIdCard from '@/components/homescreen/UnregisteredIdCard';
 import { useAppUpdates } from '@/hooks/useAppUpdates';
-import useConnectionModal from '@/hooks/useConnectionModal';
 import { useEarnPointsFlow } from '@/hooks/useEarnPointsFlow';
 import { usePoints } from '@/hooks/usePoints';
 import { useReferralConfirmation } from '@/hooks/useReferralConfirmation';
@@ -68,7 +67,6 @@ const HomeScreen: React.FC = () => {
   const selfClient = useSelfClient();
   const referrer = useUserStore(state => state.deepLinkReferrer);
   const hasReferrer = referrer !== undefined;
-  useConnectionModal();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { setIdDetailsDocumentId } = useUserStore();
@@ -92,6 +90,9 @@ const HomeScreen: React.FC = () => {
     usePendingKycStore();
   const testRegistrationCircuitArmed = useSettingStore(
     state => state.testRegistrationCircuitArmed,
+  );
+  const testDscCircuitArmed = useSettingStore(
+    state => state.testDscCircuitArmed,
   );
 
   useEffect(() => {
@@ -278,7 +279,27 @@ const HomeScreen: React.FC = () => {
             </Text>
             <Text color={amber700} fontFamily={dinot} fontSize="$3">
               The next document registration attempt in this app session will
-              skip the on-chain pre-checks and force the register circuit path.
+              skip the document already-registered / nullifier checks and force
+              the register circuit path. The DSC tree check still runs.
+            </Text>
+          </YStack>
+        )}
+        {testDscCircuitArmed && (
+          <YStack
+            backgroundColor={amber50}
+            borderColor={amber200}
+            borderRadius="$4"
+            borderWidth={1}
+            gap="$1"
+            padding="$4"
+            testID="test-dsc-circuit-banner"
+          >
+            <Text color={amber700} fontFamily={dinot} fontSize="$5">
+              Test DSC circuit armed
+            </Text>
+            <Text color={amber700} fontFamily={dinot} fontSize="$3">
+              The next document registration attempt in this app session will
+              bypass the on-chain DSC tree check and force the DSC circuit path.
             </Text>
           </YStack>
         )}
