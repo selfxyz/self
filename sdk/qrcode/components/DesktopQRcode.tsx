@@ -10,22 +10,19 @@ interface DesktopQRcodeProps {
   proofStep: number;
   qrValue: string;
   size: number;
-  darkMode: boolean;
   selfApp: SelfApp;
 }
 
-const DesktopQRcode = memo(
-  ({ proofStep, qrValue, size, darkMode, selfApp }: DesktopQRcodeProps) => (
-    <div style={desktopCardStyle()} role="img" aria-label="Self authentication QR code">
-      <DesktopHeader appName={selfApp.appName} appLogo={selfApp.logoBase64} />
-      <div style={desktopQrSectionStyle()}>
-        <div style={desktopQrWrapperStyle(proofStep)}>
-          <QRCode value={qrValue} size={size} darkMode={darkMode} proofStep={proofStep} />
-        </div>
+const DesktopQRcode = memo(({ proofStep, qrValue, size, selfApp }: DesktopQRcodeProps) => (
+  <div style={desktopCardStyle()} role="img" aria-label="Self authentication QR code">
+    <DesktopHeader appName={selfApp.appName} appLogo={selfApp.logoBase64} />
+    <div style={desktopQrSectionStyle()}>
+      <div style={desktopQrWrapperStyle(proofStep)}>
+        <QRCode value={qrValue} size={size} proofStep={proofStep} />
       </div>
-      <DesktopFooter proofStep={proofStep} />
     </div>
-  )
-);
+    <DesktopFooter proofStep={proofStep} />
+  </div>
+));
 
 export default DesktopQRcode;

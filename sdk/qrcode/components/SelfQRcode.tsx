@@ -114,7 +114,6 @@ const SelfQRcode = ({
         proofStep={proofStep}
         qrValue={qrValue}
         size={size}
-        darkMode={darkMode}
         selfApp={selfAppRef.current}
       />
     );
