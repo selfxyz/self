@@ -10,6 +10,11 @@ import type {
   SessionResponse,
 } from '@/integrations/kyc/types';
 
+export interface KycExpectedDetails {
+  country: string;
+  nationality: string;
+}
+
 export interface KycLaunchConfig {
   locale?: string;
   debug?: boolean;
@@ -17,11 +22,17 @@ export interface KycLaunchConfig {
 
 const FETCH_TIMEOUT_MS = 30000;
 
-export const createKycSession = async (): Promise<SessionResponse> => {
+export const createKycSession = async (
+  expectedDetails?: KycExpectedDetails,
+): Promise<SessionResponse> => {
   const apiUrl = KYC_TEE_URL;
   console.log('[Didit] createSession URL:', apiUrl);
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+
+  const hasExpectedDetails =
+    !!expectedDetails?.country && !!expectedDetails?.nationality;
+  const payload = hasExpectedDetails ? { expectedDetails } : {};
 
   try {
     const response = await fetch(`${apiUrl}/session`, {
@@ -29,7 +40,7 @@ export const createKycSession = async (): Promise<SessionResponse> => {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({}),
+      body: JSON.stringify(payload),
       signal: controller.signal,
     });
 

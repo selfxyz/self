@@ -358,7 +358,10 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
                     );
                   }
 
-                  const session = await createKycSession();
+                  const session = await createKycSession({
+                    country: countryCode,
+                    nationality: countryCode,
+                  });
                   const result = await launchKycVerification(
                     session.sessionToken,
                   );
