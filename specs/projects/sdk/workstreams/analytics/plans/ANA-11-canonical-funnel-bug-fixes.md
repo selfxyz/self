@@ -152,6 +152,50 @@ flowchart TD
     classDef fixed fill:#dfd,stroke:#080,stroke-width:2px,color:#040
 ```
 
+## Proving machine — canonical event firing rules
+
+The proving machine is shared by all three `circuitType`s (`register`, `dsc`, `disclose`). The diagram below shows which canonical onboarding events fire where, and which transitions are no-ops at the funnel layer. The DSC → register loop is the key reason for gating `PROOF_STARTED` on `circuitType === 'register'`: a passport user whose DSC is not yet in the tree enters `proving` twice, and we want the canonical event to mark the second (register) entry, not the first (DSC).
+
+```mermaid
+flowchart TD
+    Init([init with circuitType:<br/>register / dsc / disclose]) --> Validating[validating_document]
+
+    Validating -->|ALREADY_REGISTERED| Completed[completed]
+    Validating -->|VALIDATION_SUCCESS| Proving[proving]
+
+    Proving -->|"emit Onboarding: Proof Generation Started<br/>only if circuitType === 'register'<br/>(skips DSC sub-step + disclose)"| Outcome{ }
+
+    Outcome -->|PROVE_SUCCESS| PostProving[post_proving]
+    Outcome -->|PROVE_FAILURE| Failure[failure]
+    Outcome -->|PROVE_ERROR| Error[error]
+
+    PostProving -->|"circuitType === 'dsc'"| Reinit[re-init with circuitType='register'<br/>didNewRegistrationProof stays false]
+    PostProving -->|"circuitType === 'register'"| MarkProof[set didNewRegistrationProof = true]
+    PostProving -->|"circuitType === 'disclose'"| Completed
+
+    Reinit -.->|loops| Init
+    MarkProof --> Completed
+
+    Completed -->|"register + didNewRegistrationProof"| Success[emit Onboarding: Proof Generation Succeeded<br/>emit Onboarding: Completed]
+    Completed -->|"register + ALREADY_REGISTERED shortcut<br/>(didNewRegistrationProof = false)"| Skipped[no canonical event]
+    Completed -->|disclose| Disclose[emit Onboarding: Disclosure Completed]
+
+    Failure -->|"circuitType in register / dsc"| Failed["emit Onboarding: Failed<br/>proof_type = circuitType"]
+    Failure -->|disclose| FailDisc[handleProofResult false<br/>non-funnel]
+    Error -->|"circuitType in register / dsc"| Failed
+    Error -->|disclose| FailDisc
+
+    classDef event fill:#dfd,stroke:#080,color:#040
+    class Success,Disclose,Failed event
+```
+
+What this enforces:
+
+- **One `PROOF_STARTED` per onboarding attempt**, always at the actual register proof entry — same milestone for users with a registered DSC and users whose DSC needs to be registered first.
+- **Disclosure flows never enter the canonical funnel**: no `STARTED` (because `ensureAttempt` is never called from a disclose-path emission), no `PROOF_STARTED`, no `FAILED`. Only `DISCLOSURE_COMPLETED` fires from the proving machine on the disclose path.
+- **DSC failures are visible** in the `FAILED` event with `proof_type: 'dsc'`. Without this, a user whose DSC step fails would silently disappear at the canonical layer.
+- **`ALREADY_REGISTERED` is a no-op** at the canonical layer: the user reached `completed` without proving anything new, so no success event fires. Their attempt simply ends.
+
 ## Scope
 
 ### In scope
