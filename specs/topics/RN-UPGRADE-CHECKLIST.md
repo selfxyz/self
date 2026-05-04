@@ -57,9 +57,9 @@ Use this file as the working state tracker for the React Native upgrade. The nar
 
 | Item               | Current    | Target SDK `55.0.0` / RN `0.83` | Target SDK `56` / RN `0.85.x`    | Owner         | Backup        | Status        | Last Validation | Last Note                          |
 | ------------------ | ---------- | ------------------------------- | -------------------------------- | ------------- | ------------- | ------------- | --------------- | ---------------------------------- |
-| `expo`             | `~52.0.40` | `55.0.0`                        | `Gate-dependent: pin at kickoff` | `@unassigned` | `@unassigned` | `Not Started` | `None`          | Must follow Expo/RN support matrix |
-| `expo-application` | `~6.0.2`   | `Pin SDK 55 compatible release` | `Gate-dependent: pin at kickoff` | `@unassigned` | `@unassigned` | `Not Started` | `None`          | Keep aligned with Expo SDK         |
-| `expo-camera`      | `~16.0.18` | `Pin SDK 55 compatible release` | `Gate-dependent: pin at kickoff` | `@unassigned` | `@unassigned` | `Not Started` | `None`          | Camera is critical flow            |
+| `expo`             | `~52.0.40` | `55.0.20`                       | `Gate-dependent: pin at kickoff` | `@unassigned` | `@unassigned` | `Not Started` | `None`          | Latest stable SDK 55 verified on npm 2026-05-04 |
+| `expo-application` | `~6.0.2`   | `55.0.14`                       | `Gate-dependent: pin at kickoff` | `@unassigned` | `@unassigned` | `Not Started` | `None`          | Latest stable on SDK 55 line; no SDK 55-prefixed release exists for older `6.x` line |
+| `expo-camera`      | `~16.0.18` | `55.0.17`                       | `Gate-dependent: pin at kickoff` | `@unassigned` | `@unassigned` | `Not Started` | `None`          | Latest stable on SDK 55 line; major version jump from `16.x` to `55.x` (Expo unified versioning) |
 
 ### Critical native dependencies
 
@@ -142,3 +142,31 @@ Use this file as the working state tracker for the React Native upgrade. The nar
 - [ ] Which exact SDK `56` package versions should be pinned if the gate passes?
 - [ ] Does the root `react-native` dependency need to move, or can it remain isolated from the app upgrade?
 - [ ] Which current overrides/resolutions can be removed after the upgrade instead of carried forward?
+
+## Phase 0 Findings (recorded 2026-05-04)
+
+### Gate pre-check
+
+- Expo SDK `56` is **not yet GA**. npm only publishes `56.0.0-canary-*` builds for `expo`, `expo-application`, and `expo-camera` (latest canary 2026-05-01). If the Phase 1 gate fired today it would fail; the live target is the SDK `55` fallback path. Re-check at Phase 1 kickoff before recording the gate result.
+
+### Overrides and resolutions inventory
+
+Source: `package.json:55-73` (root resolutions), `app/package.json:78-82` (app overrides).
+
+| Package | Root resolution | App override | App dependency | Notes |
+| --- | --- | --- | --- | --- |
+| `react-native-webview` | `13.16.0` | `13.16.0` | `13.16.1` | Three-way mismatch. Resolution wins; the `13.16.1` dep is effectively pinned down to `13.16.0`. Decide during upgrade whether to keep the resolution or align the dep. |
+| `react-native-blur-effect` | `1.1.3` | `1.1.3` | `^1.1.3` | Resolution and override are redundant; the dep already accepts `1.1.3`. Candidate for cleanup post-upgrade. |
+| `punycode` | `npm:punycode.js@^2.3.1` | `npm:punycode.js@2.3.1` | n/a | Override is redundant with the root resolution. Candidate for cleanup post-upgrade. |
+| `react-native-passkey` | `^3.3.3` | n/a | `^3.3.3` | Resolution mirrors the dep; harmless. |
+| `react` / `react-dom` | `^18.3.1` | n/a | `^18.3.1` | Aligned. Re-verify against RN target's required React version at Phase 1. |
+
+### Monorepo RN skew
+
+- Root `package.json:78` pins `react-native: 0.76.9`.
+- `app/package.json:142` pins `react-native: 0.77.0`.
+- The skew is real but isolated: the root `react-native` is consumed by non-app workspaces. Decide at Phase 1 whether the upgrade should also bump the root pin or leave it alone — recorded as an open question above.
+
+### Baseline validation
+
+Not yet captured. Owner runs the validation gate set on the `0.77.0` baseline before Phase 1 begins and records pass/fail in the Validation Log.

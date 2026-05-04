@@ -27,8 +27,11 @@ Define a low-risk, staged upgrade path for `app/` from React Native `0.77.0` to 
 - The RN `0.85` release notes state that Expo SDK `56` will include RN `0.85`.
 - Expo's published version matrix currently lists SDK `55 -> RN 0.83`, SDK `54 -> RN 0.81`, and SDK `53 -> RN 0.79`.
 - Expo's published version matrix does not yet list SDK `56`.
+- npm registry confirms SDK `56` is **not yet GA**: `expo`, `expo-application`, and `expo-camera` only publish `56.0.0-canary-*` prereleases (latest canary 2026-05-01). Latest stable on the SDK `55` line: `expo@55.0.20`, `expo-application@55.0.14`, `expo-camera@55.0.17`.
 - Expo SDK 52 was tied to RN 0.76 with opt-in support for RN 0.77; newer RN lines require corresponding Expo SDK progression.
 - RN `0.82+` centers around the New Architecture transition and related toolchain changes.
+
+**Implication for the Phase 1 gate:** firing the gate today fails because no stable SDK `56` release exists. The SDK `55` fallback path is the live target until SDK `56` is published as a non-canary release on npm.
 
 ## Decision
 
@@ -37,7 +40,7 @@ Define a low-risk, staged upgrade path for `app/` from React Native `0.77.0` to 
 Use a staged execution model with one decision gate:
 
 1. **Preferred target if gate passes at Phase 1 kickoff:** Expo SDK `56` + RN `0.85.x`
-2. **Pinned fallback if gate fails at Phase 1 kickoff:** Expo SDK `55.0.0` + RN `0.83`
+2. **Pinned fallback if gate fails at Phase 1 kickoff:** Expo SDK `55` (latest stable on the line at kickoff; verified May 4, 2026 as `expo@55.0.20`, `expo-application@55.0.14`, `expo-camera@55.0.17`) + RN `0.83`
 3. **After the fallback path stabilizes:** plan a separate follow-up spec for SDK `56` instead of stretching this spec into another live version bump
 
 ### Why this is not a two-hop version plan
