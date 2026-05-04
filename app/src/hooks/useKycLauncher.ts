@@ -83,7 +83,10 @@ export const useKycLauncher = (options: UseKycLauncherOptions) => {
   const launchKycVerification = useCallback(async () => {
     setIsLoading(true);
     try {
-      const session = await createKycSession();
+      const session = await createKycSession({
+        country: countryCode,
+        nationality: countryCode,
+      });
       const result = await startKycVerification(session.sessionToken);
 
       // Handle user cancellation
