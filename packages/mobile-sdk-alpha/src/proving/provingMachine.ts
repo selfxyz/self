@@ -481,10 +481,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         get().startProving(selfClient);
       }
 
-      if (state.value === 'proving') {
-        // Canonical funnel: fire-once per attempt. `trackOnboardingStep`
-        // dedupes, so transient re-entry into `proving` (e.g. via reconnect)
-        // does not re-emit.
+      if (state.value === 'proving' && get().circuitType !== 'disclose') {
         trackOnboardingStep(selfClient, OnboardingEvents.PROOF_STARTED);
       }
 

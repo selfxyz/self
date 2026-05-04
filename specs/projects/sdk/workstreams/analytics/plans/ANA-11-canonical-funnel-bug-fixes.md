@@ -1,0 +1,302 @@
+# ANA-11: Canonical Funnel Bug Fixes (Post-ANA-01 Production Findings)
+
+> Last updated: 2026-04-30
+> Status: Ready
+> Priority: High
+> Depends on: ANA-01
+
+- Workstream: analytics
+- Backlog ID: ANA-11
+- Linear: TBD
+- Owner: TBD
+- Branch: TBD
+- PR: TBD
+
+## Why
+
+After ANA-01 (PR #2000) shipped to production, the Mixpanel dashboard "Canonical Onboarding Funnel — PR #2000" appeared to show that **0% of pure-KYC users complete onboarding**. KYC is in fact converting in production — the data is wrong.
+
+A 7-day analysis of the canonical events identified **two real bugs in the implementation** (the third hypothesis turned out to be expected Mixpanel behavior, see §Non-bug clarification).
+
+### Bug A — Pure-KYC users never fire `Onboarding: Document Scan Started`
+
+ANA-01's Implementation Table specifies that for the KYC branch, `SCAN_STARTED` fires from `LogoConfirmationScreen.tsx:77`'s "No" button handler. That screen is shown only to users who selected a *biometric* document type (passport / id_card) and is the gate that diverts them into the KYC fallback.
+
+A user who selects a non-biometric document type at `IDSelectionScreen` (the "pure-KYC" path — driving licenses, residency cards, etc.) skips `LogoConfirmationScreen` entirely. Their flow goes straight from `DOCUMENT_TYPE_SELECTED` into `useKycLauncher` → Didit modal. There is no `SCAN_STARTED` emission anywhere on this path.
+
+Funnel evidence (7-day window, breakdown by `initial_branch`):
+
+| Step | kyc cohort count |
+| --- | --- |
+| 1. Started | 333 |
+| 2. Country Selected | 333 |
+| 3. Document Type Selected | 333 |
+| 4. Document Scan Started | **48** |
+| 5. Document Scan Succeeded | 3 |
+| 6. Proof Generation Started | 0 |
+
+The 333 → 48 step is implausible — the screen sequence for pure-KYC is doc-type → KYC-modal, with no real abandonment surface in between. The 48 are an artifact (probably users who took the biometric path, hit LogoConfirmation "No", and got reclassified into the kyc cohort by Mixpanel's funnel breakdown propagation). The vast majority of pure-KYC users drop out of the funnel at the missing event, not at a real abandonment point.
+
+### Bug B — Disclosure flows pollute the onboarding funnel
+
+ANA-01's terminal-event invariant correctly gates `PROOF_SUCCEEDED` and `COMPLETED` on `circuitType === 'register' && enteredAsRegistration`. **`PROOF_STARTED` has no such gate.** It is emitted unconditionally at `provingMachine.ts:488` whenever the proving machine state enters `proving`, including disclosure flows of already-registered users.
+
+The blast radius is larger than just `PROOF_STARTED`. The emission goes through `trackOnboardingStep`, which calls `ensureAttempt` at `onboardingFunnel.ts:254`. `ensureAttempt` sees no active attempt and **bootstraps a fake one — which itself emits `Onboarding: Started`** as the attempt's first event (`onboardingFunnel.ts:75`). So a single disclosure flow fires *both* `STARTED` and `PROOF_STARTED` against the canonical funnel, neither of which represents an onboarding attempt.
+
+`DISCLOSURE_COMPLETED` is emitted via raw `trackEvent` and does not clear `currentAttempt`. The fake attempt then lingers in module-level state until the next real onboarding either re-uses its `attempt_id` or gets silently no-op'd by the fire-once guard.
+
+Raw event evidence (7-day window):
+
+| Event | Total events | with `initial_branch=pending` |
+| --- | --- | --- |
+| `Onboarding: Started` | 1867 | **1867 (100%)** |
+| `Onboarding: Proof Generation Started` | 838 | 622 |
+
+Every `STARTED` event has `initial_branch=pending` — confirming the implementation correctly emits `'pending'` at attempt creation. But the volume (1867 in 7 days) is substantially higher than the 1577 unique-user starts the funnel reports. The excess and the 622 `pending` PROOF_STARTED events are dominated by disclosure-triggered fake attempts.
+
+## Non-bug clarification — Mixpanel funnel breakdown propagation
+
+A third hypothesis ("`initial_branch` leaks across onboarding attempts") was raised during investigation and turned out to be a misreading of Mixpanel's behavior, not a code bug.
+
+Mixpanel funnel breakdowns by `initial_branch` *propagate* the property value across all steps a user completed in the funnel. So a user whose `initial_branch` becomes `kyc` at step 3 (`DOCUMENT_TYPE_SELECTED`) is counted as "kyc cohort" at steps 1 and 2 retroactively, even though those events physically carry `initial_branch=pending`. This is by design — it lets the dashboard ask "of users who chose KYC, how many reached country selection" — and is not a defect of either the events or the dashboard.
+
+The 1867 / 1867 result above (every `STARTED` event has `initial_branch=pending`) confirms the implementation is correct on this axis. **Do not** add code to "fix" branch state across attempts — there is nothing to fix.
+
+## Current event flow (with bugs)
+
+```mermaid
+flowchart TD
+    A[App launch / dismiss disclaimer]
+    A --> B[CountryPickerScreen]
+    B -->|COUNTRY_SELECTED| C[IDSelectionScreen]
+    C -->|"DOCUMENT_TYPE_SELECTED<br/>locks initial_branch"| D{Document type}
+
+    D -->|passport / id_card| E[LogoConfirmationScreen]
+    D -->|"non-biometric<br/>(pure-KYC)"| K1["useKycLauncher<br/>→ Didit modal"]
+    D -->|aadhaar| AA[AadhaarUploadScreen]
+
+    E -->|"Yes"| F[DocumentCameraScreen]
+    E -->|"No, fires SCAN_STARTED branch=kyc"| K2["useKycLauncher<br/>→ Didit modal"]
+
+    F -->|"SCAN_STARTED branch=biometric_*"| G[NFC method + scan]
+    G -->|"SCAN_SUCCEEDED branch=biometric_*"| H[DataConfirmationScreen]
+
+    K1 -.->|"Bug A: NO SCAN_STARTED fires"| KR[KYC result handler]
+    K2 --> KR
+    KR -->|"SCAN_SUCCEEDED branch=kyc"| KV[KYCVerifiedScreen]
+
+    AA -->|"SCAN_STARTED branch=aadhaar"| AP[QR processing]
+    AP -->|"SCAN_SUCCEEDED branch=aadhaar"| AS[AadhaarUploadedSuccessScreen]
+
+    H --> P["provingMachine.ts:488<br/>state = 'proving'"]
+    KV --> P
+    AS --> P
+    DX([Existing user opens disclosure]) -.-> P
+
+    P -->|"Bug B: trackOnboardingStep(PROOF_STARTED)<br/>fires unconditionally for register AND disclose<br/>bootstraps fake attempt → emits STARTED too"| T{Terminal}
+    T -->|"register: PROOF_SUCCEEDED, COMPLETED<br/>(correctly gated by enteredAsRegistration)"| Z[Done]
+    T -->|"disclose: DISCLOSURE_COMPLETED<br/>(does not clear currentAttempt)"| Z
+    T -->|"failure: FAILED"| Z
+
+    A:::start
+    K1:::bug
+    P:::bug
+    DX:::bug
+    classDef bug fill:#fee,stroke:#c33,stroke-width:2px,color:#900
+    classDef start fill:#eef,stroke:#339,stroke-width:1px
+```
+
+## Expected event flow (after fixes)
+
+```mermaid
+flowchart TD
+    A[App launch / dismiss disclaimer]
+    A --> B[CountryPickerScreen]
+    B -->|COUNTRY_SELECTED| C[IDSelectionScreen]
+    C -->|"DOCUMENT_TYPE_SELECTED<br/>locks initial_branch"| D{Document type}
+
+    D -->|passport / id_card| E[LogoConfirmationScreen]
+    D -->|non-biometric| KH[useKycLauncher]
+    D -->|aadhaar| AA[AadhaarUploadScreen]
+
+    E -->|Yes| F[DocumentCameraScreen]
+    E -->|"No → setOnboardingBranch('kyc')"| KH
+
+    F -->|"SCAN_STARTED branch=biometric_*"| G[NFC method + scan]
+    G -->|"SCAN_SUCCEEDED branch=biometric_*"| H[DataConfirmationScreen]
+
+    KH -->|"Fix A: SCAN_STARTED branch=kyc<br/>(single firing point covers both pure-KYC<br/>and biometric→KYC fallback)"| KM[Didit modal]
+    KM --> KR[KYC result handler]
+    KR -->|"SCAN_SUCCEEDED branch=kyc"| KV[KYCVerifiedScreen]
+
+    AA -->|"SCAN_STARTED branch=aadhaar"| AP[QR processing]
+    AP -->|"SCAN_SUCCEEDED branch=aadhaar"| AS[AadhaarUploadedSuccessScreen]
+
+    H --> P["provingMachine.ts<br/>state = 'proving'"]
+    KV --> P
+    AS --> P
+    DX([Existing user opens disclosure]) -.-> P
+
+    P -->|"Fix B: only emit PROOF_STARTED if<br/>enteredAsRegistration && circuitType==='register'<br/>disclose path skips canonical funnel entirely"| T{Terminal}
+    T -->|"register: PROOF_STARTED, PROOF_SUCCEEDED, COMPLETED"| Z[Done]
+    T -.->|"disclose: DISCLOSURE_COMPLETED only"| Z
+    T -->|"failure: FAILED"| Z
+
+    KH:::fixed
+    P:::fixed
+    classDef fixed fill:#dfd,stroke:#080,stroke-width:2px,color:#040
+```
+
+## Scope
+
+### In scope
+
+1. **Fix A** — emit `OnboardingEvents.SCAN_STARTED` with `branch: 'kyc'` from `app/src/hooks/useKycLauncher.ts` at the moment the Didit modal is launched. Remove the existing `SCAN_STARTED` emission from `app/src/screens/documents/selection/LogoConfirmationScreen.tsx:77` so the launcher is the single source of truth. The fire-once guard already protects against double emission for biometric → KYC fallback users.
+
+2. **Fix B** — gate the `PROOF_STARTED` emission at `packages/mobile-sdk-alpha/src/proving/provingMachine.ts:488` on the same condition the spec uses for terminal events:
+
+   ```ts
+   if (
+     state.value === 'proving' &&
+     get().circuitType === 'register' &&
+     get().enteredAsRegistration === true
+   ) {
+     trackOnboardingStep(selfClient, OnboardingEvents.PROOF_STARTED);
+   }
+   ```
+
+   This prevents disclose flows from bootstrapping fake `Onboarding: Started` attempts via `ensureAttempt`.
+
+3. **Update ANA-01 spec** to:
+   - Change the `SCAN_STARTED` row's "Fire location" cell in §"Canonical Events — Implementation Table": for KYC, replace `LogoConfirmationScreen.tsx "No" fallback path` with `app/src/hooks/useKycLauncher.ts on Didit modal launch (covers pure-KYC entry and biometric→KYC fallback)`.
+   - Add a sentence to §"Terminal Event Invariant" stating that `PROOF_STARTED` is gated on the same `enteredAsRegistration && circuitType === 'register'` condition as the success terminals — the gate is not just for terminal events.
+   - Add a §"Known issues from v1 production" section pointing readers to ANA-11 with one-line summaries of Bugs A and B and the non-bug clarification about Mixpanel breakdown propagation.
+
+### Out of scope
+
+- You will NOT add new canonical events.
+- You will NOT change `DISCLOSURE_COMPLETED`, its emission point, or its (intentional) bypass of the onboarding-funnel helper.
+- You will NOT modify the dashboard. Once events are correct, the existing reports will read correctly. The follow-up dashboard re-validation is a manual step in §Validation, not a code deliverable.
+- You will NOT backfill historical events.
+- You will NOT clear `currentAttempt` after `DISCLOSURE_COMPLETED`. With Fix B, disclose flows never bootstrap an attempt to begin with.
+- You will NOT add an `is_disclosure_proof` property or any other new property to canonical events. The terminal gate plus Fix B handle the contamination without new properties.
+- You will NOT consolidate the four existing `SCAN_STARTED` emission sites (camera screen, KYC launcher, Aadhaar upload, and the now-deleted LogoConfirmation site). The three remaining sites are different code paths that fire the same event; consolidation is cosmetic.
+- You will NOT touch the `LogoConfirmationScreen` "No" handler beyond removing its `SCAN_STARTED` call. The diagnostic event `'App: Logo Confirmation Answered'` and the `setOnboardingBranch('kyc')` call stay as ANA-01 specified.
+
+## Implementation
+
+### Fix A — pure-KYC SCAN_STARTED emission
+
+File: `app/src/hooks/useKycLauncher.ts`
+
+Add an `OnboardingEvents.SCAN_STARTED` emission inside the launcher hook, before `startVerification()` is invoked, with `branch: 'kyc'`:
+
+```ts
+import { OnboardingEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { trackOnboardingStep } from '@selfxyz/mobile-sdk-alpha/analytics/onboardingFunnel';
+
+// Inside launchKycVerification, before startVerification(...):
+trackOnboardingStep(selfClient, OnboardingEvents.SCAN_STARTED, { branch: 'kyc' });
+```
+
+(Adjust import paths to whatever the file already uses for SDK imports.)
+
+File: `app/src/screens/documents/selection/LogoConfirmationScreen.tsx:77`
+
+Remove the existing `trackOnboardingStep(selfClient, OnboardingEvents.SCAN_STARTED, { branch: 'kyc' })` call from the "No" button handler. The `setOnboardingBranch('kyc')` call (immediately preceding or following it in the same handler) stays — `current_branch` still needs to flip to `kyc` before the launcher fires its event.
+
+### Fix B — gate PROOF_STARTED on enteredAsRegistration
+
+File: `packages/mobile-sdk-alpha/src/proving/provingMachine.ts:488`
+
+Current code:
+
+```ts
+if (state.value === 'proving') {
+  // dedupes, so transient re-entry into `proving` (e.g. via reconnect)
+  // does not re-fire the canonical event
+  trackOnboardingStep(selfClient, OnboardingEvents.PROOF_STARTED);
+}
+```
+
+New code:
+
+```ts
+if (
+  state.value === 'proving' &&
+  get().circuitType === 'register' &&
+  get().enteredAsRegistration === true
+) {
+  // dedupes, so transient re-entry into `proving` (e.g. via reconnect)
+  // does not re-fire the canonical event. Mirrors the gate ANA-01
+  // applies to the success terminals — see §Terminal Event Invariant.
+  trackOnboardingStep(selfClient, OnboardingEvents.PROOF_STARTED);
+}
+```
+
+### Spec update
+
+File: `specs/projects/sdk/workstreams/analytics/plans/ANA-01-canonical-onboarding-funnel.md`
+
+Apply the three changes listed in §Scope item 3.
+
+## Validation
+
+### Unit tests
+
+- `packages/mobile-sdk-alpha/src/proving/__tests__/provingMachine.analytics.test.ts` — add cases asserting `PROOF_STARTED` does NOT fire when `circuitType === 'disclose'`, AND does NOT fire when `enteredAsRegistration === false` (the `ALREADY_REGISTERED`-from-disclose path that flips `circuitType` to `'register'` mid-flow). Existing positive case (fires on a clean register attempt) stays.
+- `app/src/hooks/__tests__/useKycLauncher.test.ts` — add a case asserting `SCAN_STARTED` fires once with `branch: 'kyc'` when the launcher is invoked. If a test file does not already exist for this hook, create one.
+- Existing test in `app/src/screens/documents/selection/__tests__/LogoConfirmationScreen.test.tsx` (if present) — remove the assertion that `SCAN_STARTED` fires on the "No" button. Replace with an assertion that `setOnboardingBranch('kyc')` is called.
+
+### Commands
+
+```bash
+cd packages/mobile-sdk-alpha && yarn test && yarn types
+cd app && yarn test
+yarn lint && yarn types
+```
+
+### Manual verification
+
+Run the mobile app against the **dev Mixpanel project** (not prod). Run the following four flows in a single app session to validate both fixes interact correctly with the fire-once guard:
+
+1. **Fresh pure-KYC flow** — disclaimer dismiss → country pick → select a non-biometric doc type → KYC modal opens → KYC succeeds → proof generates. Expected events:
+   - One `Onboarding: Started` with `initial_branch=pending`.
+   - One `Onboarding: Document Scan Started` with `branch=kyc` (Fix A proof — this event is the one currently missing).
+   - `SCAN_SUCCEEDED`, `PROOF_STARTED`, `PROOF_SUCCEEDED`, `COMPLETED` all carrying `initial_branch=kyc`, `current_branch=kyc`.
+
+2. **Biometric → KYC fallback flow** — disclaimer dismiss → country pick → passport → LogoConfirmation "No" → KYC modal opens → KYC succeeds → proof generates. Expected events:
+   - Exactly one `SCAN_STARTED` total (the biometric one is suppressed because the user never reached `DocumentCameraScreen`; the KYC one fires from `useKycLauncher`). Both pure-KYC and fallback users now hit the launcher; the fire-once guard handles the rest.
+   - `initial_branch=biometric_passport`, `current_branch=kyc`, `used_fallback=true` on `COMPLETED`.
+
+3. **Disclosure flow on already-registered user** — open the app to a relying-party request → complete a disclosure proof. Expected:
+   - **No** `Onboarding: Started` fires (Fix B proof — this is currently leaking).
+   - **No** `Onboarding: Proof Generation Started` fires.
+   - One `Onboarding: Disclosure Completed` fires.
+
+4. **Already-registered detected mid-register** — start a fresh register attempt against a document that has already been registered (so `ALREADY_REGISTERED` triggers, which mid-flow flips `circuitType` to `'register'` per `provingMachine.ts:1332`). Expected:
+   - `enteredAsRegistration === true` so the gate is permissive on `circuitType` flips into `'register'`.
+   - But the proving machine does NOT enter `'proving'` state on this path (it short-circuits to `'completed'`), so no `PROOF_STARTED` fires regardless. This case is here to confirm Fix B does not break the existing already-registered handling.
+
+### Re-validation in Mixpanel (post-merge)
+
+Run the `Funnel by initial_branch` report (id 89777075) on the same 7-day window 7 days after merge. Acceptance:
+- KYC cohort step 4 (Document Scan Started) conversion is non-trivially > 14% (the buggy baseline). Realistic post-fix: 80–95% (single-button screen).
+- KYC cohort step 6 (Proof Generation Started) is non-zero.
+- Total `Onboarding: Started` event volume drops measurably (disclosure-triggered fake attempts no longer fire).
+
+If post-merge numbers do not move as expected, the fix is incomplete — re-open this plan rather than declaring done.
+
+## Done Criteria
+
+- Both bugs fixed in code; tests added per §Validation.
+- ANA-01 spec updated per §Scope item 3.
+- `yarn lint`, `yarn types`, all package test suites pass at repo root.
+- Manual verification flows 1–4 pass against the dev Mixpanel project; screenshots attached to PR.
+- Post-merge dashboard re-validation (above) shows expected directional movement; results posted as a comment on this plan's Linear issue.
+
+## Notes
+
+- Discovered during dashboard review of "Canonical Onboarding Funnel — PR #2000" on 2026-04-30 (Mixpanel project Self, dashboard id 11144432).
+- The same investigation surfaced naming and taxonomy issues with branch-specific events (current `PassportEvents.*` is used for both passport and biometric ID flows; no `KycEvents` group exists). Those are a larger redesign and belong in a separate workstream item (proposed: ANA-12 — branch-specific funnel events), not here.
+- Once this lands, ANA-05 (fallback decision events) becomes more valuable because the noise from disclosure pollution is gone; the fallback-offer mini-funnel will read cleanly.
