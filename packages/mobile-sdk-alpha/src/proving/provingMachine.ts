@@ -521,16 +521,9 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           selfClient.getSelfAppState().handleProofResult(true);
         }
 
-        // Canonical funnel terminal events. Registration-completion fires
-        // only when we actually generated a new proof in this session
-        // (didNewRegistrationProof). The `ALREADY_REGISTERED` path reaches
-        // `completed` without going through `post_proving`, so the flag
-        // stays false and no canonical onboarding event fires.
         if (get().circuitType === 'register' && get().didNewRegistrationProof) {
           trackOnboardingStep(selfClient, OnboardingEvents.PROOF_SUCCEEDED);
           completeOnboardingAttempt(selfClient);
-        } else if (get().circuitType === 'disclose') {
-          selfClient.trackEvent(OnboardingEvents.DISCLOSURE_COMPLETED);
         }
 
         emitVerificationComplete(true);

@@ -65,7 +65,6 @@ Every event below is stamped by the helper with `attempt_id`, `initial_branch`, 
 | `OnboardingEvents.COMPLETED`              | `Onboarding: Completed`                  | Helper-driven from `provingMachine.ts` `completed` state on the register path                                                                                                           | `duration_seconds` (total onboarding), `country_code`, `document_type`, `used_fallback` |
 | `OnboardingEvents.FAILED`                 | `Onboarding: Failed`                     | `provingMachine.ts` `failure` and `error` terminal states for any non-disclose `circuitType` (`register` and `dsc`); plus KYC / Aadhaar failure paths (future)                          | `stage`, `reason`, `recoverable`, `duration_seconds`, `used_fallback`, `proof_type` (`'register' \| 'dsc'`, present on proving-stage failures) |
 | `OnboardingEvents.STEP_RETRIED`           | `Onboarding: Step Retried`               | `RegistrationFallbackMRZScreen.tsx` and `RegistrationFallbackNFCScreen.tsx` "Retry" buttons                                                                                             | `stage`, `reason`, `attempt_count`                                                      |
-| `OnboardingEvents.DISCLOSURE_COMPLETED`   | `Onboarding: Disclosure Completed`       | `provingMachine.ts` — inside `completed` state, when `circuitType === 'disclose'`                                                                                                       | —                                                                                       |
 
 ### Branch property contract (cross-branch flows)
 
@@ -104,15 +103,7 @@ if (
 }
 ```
 
-Disclosure completion:
-
-```ts
-if (state.value === 'completed' && get().circuitType === 'disclose') {
-  selfClient.trackEvent(OnboardingEvents.DISCLOSURE_COMPLETED);
-}
-```
-
-The existing `PROOF_COMPLETED` event (line 462) stays as-is for diagnostic continuity.
+Disclosure flows fire **no canonical onboarding event**. The proving machine emits `ProofEvents.PROOF_COMPLETED` (with `circuitType: 'disclose'`) for diagnostic continuity, but nothing in the `OnboardingEvents.*` namespace is emitted on the disclose path. Disclosure analytics, when needed, should live in their own namespace (proposed: `DisclosureEvents.*`) — see ANA-12.
 
 ## Fire-Once Guard
 
@@ -215,7 +206,7 @@ Run the mobile app against a **dev Mixpanel project** (not prod). Complete one f
 - Every event carries `branch: 'biometric_passport'` (except the first two, which carry `branch: 'pending'` — acceptable).
 - Navigate back from `DocumentOnboardingScreen` to `CountryPickerScreen` and forward again. Verify `country_selected` is **not** re-emitted.
 - Trigger an NFC scan failure and retry. Verify `funnel_step_retried` fires once per retry, and no extra canonical step events fire.
-- Run a disclosure flow on the same device immediately after registration. Verify `onboarding_completed` does **not** fire for the disclosure; `disclosure_completed` does.
+- Run a disclosure flow on the same device immediately after registration. Verify that NO `Onboarding: *` events fire for the disclosure (no `Onboarding: Started`, no `Onboarding: Proof Generation Started`, no `Onboarding: Completed`). The diagnostic `Proof: Proof Completed` event with `circuitType: 'disclose'` should still fire.
 
 ## Done Criteria
 
@@ -232,7 +223,7 @@ Run the mobile app against a **dev Mixpanel project** (not prod). Complete one f
 After the initial rollout (PR #2000) two bugs surfaced from dashboard review on 2026-04-30. They are tracked and fixed in [ANA-11](./ANA-11-canonical-funnel-bug-fixes.md):
 
 - **Bug A** — Pure-KYC users (those who select a non-biometric document type at the picker) skipped `Onboarding: Document Scan Started` because the original spec only fired it from `LogoConfirmationScreen`'s "No" path, which pure-KYC users never reach. The fix moves the canonical emission into `useKycLauncher` so every KYC entry path fires it. The §"Canonical Events — Implementation Table" SCAN_STARTED row above reflects the post-fix behavior.
-- **Bug B** — `Onboarding: Proof Generation Started` was emitted unconditionally on `proving` state entry, including for disclosure flows. Because the emission goes through `trackOnboardingStep`, which calls `ensureAttempt`, every disclosure also bootstrapped a fake onboarding attempt (and a stray `Onboarding: Started`). The fix gates the emission on `circuitType !== 'disclose'`. The §"Canonical Events — Implementation Table" PROOF_STARTED row above reflects the post-fix behavior.
+- **Bug B** — `Onboarding: Proof Generation Started` was emitted unconditionally on `proving` state entry, including for disclosure flows and the DSC sub-step. Because the emission goes through `trackOnboardingStep`, which calls `ensureAttempt`, every disclosure also bootstrapped a fake onboarding attempt (and a stray `Onboarding: Started`). The fix gates the emission on `circuitType === 'register'` and removes the (also misnamed) `Onboarding: Disclosure Completed` event entirely — disclose flows no longer touch the `OnboardingEvents.*` namespace. The §"Canonical Events — Implementation Table" PROOF_STARTED row above reflects the post-fix behavior.
 
 A third hypothesis ("`initial_branch` leaks across attempts") was ruled out: every `Onboarding: Started` event in production carries `initial_branch=pending` as designed. Mixpanel funnel breakdowns *propagate* the property's later-step value backward to earlier-step counts, which initially looked like a state leak but is the platform's intended behavior — see ANA-11 §"Non-bug clarification".
 
