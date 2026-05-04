@@ -37,13 +37,18 @@ Funnel evidence (7-day window, breakdown by `initial_branch`):
 
 The 333 → 48 step is implausible — the screen sequence for pure-KYC is doc-type → KYC-modal, with no real abandonment surface in between. The 48 are an artifact (probably users who took the biometric path, hit LogoConfirmation "No", and got reclassified into the kyc cohort by Mixpanel's funnel breakdown propagation). The vast majority of pure-KYC users drop out of the funnel at the missing event, not at a real abandonment point.
 
-### Bug B — Disclosure flows pollute the onboarding funnel
+### Bug B — `PROOF_STARTED` fires too broadly: on disclosures and on the DSC sub-step
 
-ANA-01's terminal-event invariant correctly gates `PROOF_SUCCEEDED` and `COMPLETED` on `circuitType === 'register' && enteredAsRegistration`. **`PROOF_STARTED` has no such gate.** It is emitted unconditionally at `provingMachine.ts:488` whenever the proving machine state enters `proving`, including disclosure flows of already-registered users.
+ANA-01's terminal-event invariant correctly gates `PROOF_SUCCEEDED` and `COMPLETED` on `circuitType === 'register'`. **`PROOF_STARTED` has no such gate.** It is emitted unconditionally at `provingMachine.ts:488` whenever the proving machine state enters `proving`, including:
 
-The blast radius is larger than just `PROOF_STARTED`. The emission goes through `trackOnboardingStep`, which calls `ensureAttempt` at `onboardingFunnel.ts:254`. `ensureAttempt` sees no active attempt and **bootstraps a fake one — which itself emits `Onboarding: Started`** as the attempt's first event (`onboardingFunnel.ts:75`). So a single disclosure flow fires *both* `STARTED` and `PROOF_STARTED` against the canonical funnel, neither of which represents an onboarding attempt.
+1. **Disclosure flows** (`circuitType === 'disclose'`) of already-registered users, which reuse the same proving machine but are not part of the onboarding funnel.
+2. **DSC sub-step** (`circuitType === 'dsc'`) for users whose DSC is not yet in the tree. The proving machine enters `proving` first with `circuitType === 'dsc'`, runs the DSC proof, then `postProving` re-inits with `circuitType === 'register'` (provingMachine.ts:1695) and enters `proving` again — but the fire-once guard suppresses the second emission, so `PROOF_STARTED` ends up firing on the DSC step instead of the actual register proof.
+
+For the disclose case, the blast radius is larger than just `PROOF_STARTED`. The emission goes through `trackOnboardingStep`, which calls `ensureAttempt` at `onboardingFunnel.ts:254`. `ensureAttempt` sees no active attempt and **bootstraps a fake one — which itself emits `Onboarding: Started`** as the attempt's first event (`onboardingFunnel.ts:75`). So a single disclosure flow fires *both* `STARTED` and `PROOF_STARTED` against the canonical funnel, neither of which represents an onboarding attempt.
 
 `DISCLOSURE_COMPLETED` is emitted via raw `trackEvent` and does not clear `currentAttempt`. The fake attempt then lingers in module-level state until the next real onboarding either re-uses its `attempt_id` or gets silently no-op'd by the fire-once guard.
+
+For the DSC case, the issue is semantic: `PROOF_STARTED` is meant to mark "the user started their registration proof," not "the user reached the proving phase generically." The DSC sub-step is preparatory plumbing — most users with already-registered DSCs skip it entirely — so attributing the `PROOF_STARTED` milestone to the DSC entry produces inconsistent semantics across cohorts.
 
 Raw event evidence (7-day window):
 
@@ -94,7 +99,7 @@ flowchart TD
     DX([Existing user opens disclosure]) -.-> P
 
     P -->|"Bug B: trackOnboardingStep(PROOF_STARTED)<br/>fires unconditionally for register AND disclose<br/>bootstraps fake attempt → emits STARTED too"| T{Terminal}
-    T -->|"register: PROOF_SUCCEEDED, COMPLETED<br/>(correctly gated by enteredAsRegistration)"| Z[Done]
+    T -->|"register: PROOF_SUCCEEDED, COMPLETED<br/>(correctly gated by didNewRegistrationProof)"| Z[Done]
     T -->|"disclose: DISCLOSURE_COMPLETED<br/>(does not clear currentAttempt)"| Z
     T -->|"failure: FAILED"| Z
 
@@ -137,10 +142,10 @@ flowchart TD
     AS --> P
     DX([Existing user opens disclosure]) -.-> P
 
-    P -->|"Fix B: only emit PROOF_STARTED if<br/>enteredAsRegistration && circuitType==='register'<br/>disclose path skips canonical funnel entirely"| T{Terminal}
+    P -->|"Fix B: emit PROOF_STARTED only when<br/>circuitType === 'register'<br/>(skips DSC sub-step and disclose)"| T{Terminal}
     T -->|"register: PROOF_STARTED, PROOF_SUCCEEDED, COMPLETED"| Z[Done]
     T -.->|"disclose: DISCLOSURE_COMPLETED only"| Z
-    T -->|"failure: FAILED"| Z
+    T -->|"register/dsc fail: FAILED with proof_type"| Z
 
     KH:::fixed
     P:::fixed
@@ -153,23 +158,22 @@ flowchart TD
 
 1. **Fix A** — emit `OnboardingEvents.SCAN_STARTED` with `branch: 'kyc'` from `app/src/hooks/useKycLauncher.ts` at the moment the Didit modal is launched. Remove the existing `SCAN_STARTED` emission from `app/src/screens/documents/selection/LogoConfirmationScreen.tsx:77` so the launcher is the single source of truth. The fire-once guard already protects against double emission for biometric → KYC fallback users.
 
-2. **Fix B** — gate the `PROOF_STARTED` emission at `packages/mobile-sdk-alpha/src/proving/provingMachine.ts:488` on the same condition the spec uses for terminal events:
+2. **Fix B** — gate the `PROOF_STARTED` emission at `packages/mobile-sdk-alpha/src/proving/provingMachine.ts:488` on `circuitType === 'register'`:
 
    ```ts
-   if (
-     state.value === 'proving' &&
-     get().circuitType === 'register' &&
-     get().enteredAsRegistration === true
-   ) {
+   if (state.value === 'proving' && get().circuitType === 'register') {
      trackOnboardingStep(selfClient, OnboardingEvents.PROOF_STARTED);
    }
    ```
 
-   This prevents disclose flows from bootstrapping fake `Onboarding: Started` attempts via `ensureAttempt`.
+   This excludes both disclosure flows (no fake `Onboarding: Started` via `ensureAttempt`) and the DSC sub-step (so `PROOF_STARTED` always marks the actual register proof, regardless of whether the user's DSC was already in the tree).
+
+   Pair with: extend the existing `failOnboardingAttempt` calls in the `failure` and `error` state handlers (`provingMachine.ts:559` and `:573`) to fire for any non-disclose `circuitType` (i.e. both `register` and `dsc`), and add a `proof_type: get().circuitType` property so dashboards can split DSC vs register failures. Without this, DSC-step failures would be silent at the canonical layer.
 
 3. **Update ANA-01 spec** to:
    - Change the `SCAN_STARTED` row's "Fire location" cell in §"Canonical Events — Implementation Table": for KYC, replace `LogoConfirmationScreen.tsx "No" fallback path` with `app/src/hooks/useKycLauncher.ts on Didit modal launch (covers pure-KYC entry and biometric→KYC fallback)`.
-   - Add a sentence to §"Terminal Event Invariant" stating that `PROOF_STARTED` is gated on the same `enteredAsRegistration && circuitType === 'register'` condition as the success terminals — the gate is not just for terminal events.
+   - Update the `PROOF_STARTED` row's "Fire location" cell to note the gate is `circuitType === 'register'` (skips DSC sub-step and disclose).
+   - Update the `FAILED` row to add `proof_type` (`'register' | 'dsc'`) to its additional properties list, present on proving-stage failures.
    - Add a §"Known issues from v1 production" section pointing readers to ANA-11 with one-line summaries of Bugs A and B and the non-bug clarification about Mixpanel breakdown propagation.
 
 ### Out of scope
@@ -179,7 +183,6 @@ flowchart TD
 - You will NOT modify the dashboard. Once events are correct, the existing reports will read correctly. The follow-up dashboard re-validation is a manual step in §Validation, not a code deliverable.
 - You will NOT backfill historical events.
 - You will NOT clear `currentAttempt` after `DISCLOSURE_COMPLETED`. With Fix B, disclose flows never bootstrap an attempt to begin with.
-- You will NOT add an `is_disclosure_proof` property or any other new property to canonical events. The terminal gate plus Fix B handle the contamination without new properties.
 - You will NOT consolidate the four existing `SCAN_STARTED` emission sites (camera screen, KYC launcher, Aadhaar upload, and the now-deleted LogoConfirmation site). The three remaining sites are different code paths that fire the same event; consolidation is cosmetic.
 - You will NOT touch the `LogoConfirmationScreen` "No" handler beyond removing its `SCAN_STARTED` call. The diagnostic event `'App: Logo Confirmation Answered'` and the `setOnboardingBranch('kyc')` call stay as ANA-01 specified.
 
@@ -205,34 +208,30 @@ File: `app/src/screens/documents/selection/LogoConfirmationScreen.tsx:77`
 
 Remove the existing `trackOnboardingStep(selfClient, OnboardingEvents.SCAN_STARTED, { branch: 'kyc' })` call from the "No" button handler. The `setOnboardingBranch('kyc')` call (immediately preceding or following it in the same handler) stays — `current_branch` still needs to flip to `kyc` before the launcher fires its event.
 
-### Fix B — gate PROOF_STARTED on enteredAsRegistration
+### Fix B — gate PROOF_STARTED on `circuitType === 'register'` and extend FAILED to cover DSC
 
-File: `packages/mobile-sdk-alpha/src/proving/provingMachine.ts:488`
+File: `packages/mobile-sdk-alpha/src/proving/provingMachine.ts`
 
-Current code:
+Tighten the `PROOF_STARTED` emission so it fires only on the actual register proof entry — excluding both the DSC sub-step and disclose flows:
 
 ```ts
-if (state.value === 'proving') {
-  // dedupes, so transient re-entry into `proving` (e.g. via reconnect)
-  // does not re-fire the canonical event
+if (state.value === 'proving' && get().circuitType === 'register') {
   trackOnboardingStep(selfClient, OnboardingEvents.PROOF_STARTED);
 }
 ```
 
-New code:
+Extend the `failure` and `error` state handlers (current `provingMachine.ts:559` and `:573`) to fire `failOnboardingAttempt` for any non-disclose `circuitType` (i.e. both `'register'` and `'dsc'`), and stamp `proof_type` so DSC vs register failures are distinguishable on the wire:
 
 ```ts
-if (
-  state.value === 'proving' &&
-  get().circuitType === 'register' &&
-  get().enteredAsRegistration === true
-) {
-  // dedupes, so transient re-entry into `proving` (e.g. via reconnect)
-  // does not re-fire the canonical event. Mirrors the gate ANA-01
-  // applies to the success terminals — see §Terminal Event Invariant.
-  trackOnboardingStep(selfClient, OnboardingEvents.PROOF_STARTED);
+} else if (get().circuitType !== null) {
+  failOnboardingAttempt(selfClient, 'proof_generation_started', reason ?? error_code ?? 'proof_failure', {
+    recoverable: false,
+    proof_type: get().circuitType,
+  });
 }
 ```
+
+Apply the same change to the `state.value === 'error'` handler (with `recoverable: true`, matching the existing pattern).
 
 ### Spec update
 

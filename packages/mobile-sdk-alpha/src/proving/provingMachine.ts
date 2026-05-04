@@ -481,7 +481,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         get().startProving(selfClient);
       }
 
-      if (state.value === 'proving' && get().circuitType !== 'disclose') {
+      if (state.value === 'proving' && get().circuitType === 'register') {
         trackOnboardingStep(selfClient, OnboardingEvents.PROOF_STARTED);
       }
 
@@ -556,9 +556,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
         if (get().circuitType === 'disclose') {
           selfClient.getSelfAppState().handleProofResult(false, error_code ?? undefined, reason ?? undefined);
-        } else if (get().circuitType === 'register') {
+        } else if (get().circuitType !== null) {
           failOnboardingAttempt(selfClient, 'proof_generation_started', reason ?? error_code ?? 'proof_failure', {
             recoverable: false,
+            proof_type: get().circuitType,
           });
         }
 
@@ -570,9 +571,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       if (state.value === 'error') {
         if (get().circuitType === 'disclose') {
           selfClient.getSelfAppState().handleProofResult(false, 'error', 'error');
-        } else if (get().circuitType === 'register') {
+        } else if (get().circuitType !== null) {
           failOnboardingAttempt(selfClient, 'proof_generation_started', get().reason ?? get().error_code ?? 'error', {
             recoverable: true,
+            proof_type: get().circuitType,
           });
         }
 
