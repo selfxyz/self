@@ -41,7 +41,7 @@ describe('links', () => {
     });
 
     it('should have correct X (Twitter) URL', () => {
-      expect(links.xUrl).toBe('https://x.com/selfprotocol');
+      expect(links.xUrl).toBe('https://x.com/selfxyz');
     });
 
     it('should have correct Self main URL', () => {
