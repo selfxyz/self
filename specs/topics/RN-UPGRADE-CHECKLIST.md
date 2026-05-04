@@ -57,8 +57,8 @@ Use this file as the working state tracker for the React Native upgrade. The nar
 
 ### Critical native dependencies
 
-| Item                                           | Current                            | Target SDK `55.0.0` / RN `0.83` | Target SDK `56` / RN `0.85.x`    | Owner         | Backup        | Status        | Last Validation | Last Note                            |
-| ---------------------------------------------- | ---------------------------------- | ------------------------------- | -------------------------------- | ------------- | ------------- | ------------- | --------------- | ------------------------------------ |
+| Item                                           | Current                            | Target SDK `55.0.0` / RN `0.83`        | Target SDK `56` / RN `0.85.x`    | Owner         | Backup        | Status        | Last Validation | Last Note                                                   |
+| ---------------------------------------------- | ---------------------------------- | -------------------------------------- | -------------------------------- | ------------- | ------------- | ------------- | --------------- | ----------------------------------------------------------- |
 | `react-native-webview`                         | `13.16.1` app / `13.16.0` override | `13.16.0` (drop dep/override mismatch) | `Gate-dependent: pin at kickoff` | `@unassigned` | `@unassigned` | `Not Started` | `None`          | Align dep to match resolution; remove override post-upgrade |
 | `react-native-gesture-handler`                 | `~2.22.0`                          | `~2.22.0` (keep)                       | `Gate-dependent: pin at kickoff` | `@unassigned` | `@unassigned` | `Not Started` | `None`          | Navigation/input critical                                   |
 | `react-native-screens`                         | `4.15.3`                           | `4.15.3` (keep)                        | `Gate-dependent: pin at kickoff` | `@unassigned` | `@unassigned` | `Not Started` | `None`          | Navigation stack dependency                                 |

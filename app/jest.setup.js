@@ -1242,6 +1242,16 @@ jest.mock('react-native-svg', () => {
   };
 });
 
+jest.mock('lottie-react-native', () => {
+  const MockLottieView = jest.fn(() => null);
+  MockLottieView.displayName = 'MockLottieView';
+
+  return {
+    __esModule: true,
+    default: MockLottieView,
+  };
+});
+
 // Mock React Navigation
 
 // Mock react-native-biometrics to prevent NativeModules errors
