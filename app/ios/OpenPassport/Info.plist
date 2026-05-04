@@ -31,8 +31,6 @@
 			<array>
 				<string>proofofpassport</string>
 				<string>com.warroom.proofofpassport</string>
-				<!-- TODO: Uncomment when social logins ship — replace with reversed iOS client ID -->
-				<!-- <string>com.googleusercontent.apps.YOUR_CLIENT_ID</string> -->
 			</array>
 		</dict>
 	</array>
@@ -58,7 +56,6 @@
 	<true/>
 	<key>NFCReaderUsageDescription</key>
 	<string>Need NFC to read Passport</string>
-  <!-- Do not change NSAllowsArbitraryLoads to true, or you will risk app rejection! -->
 	<key>NSAllowsArbitraryLoads</key>
 	<false/>
 	<key>NSAllowsLocalNetworking</key>
@@ -75,6 +72,8 @@
 	<string>We use your location to improve document scanning reliability, as performance can vary by region and document type.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>We need access to your photo library to allow you to choose passport photos or save generated QR codes.</string>
+	<key>RCTNewArchEnabled</key>
+	<true/>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Advercase-Regular.otf</string>

@@ -435,18 +435,21 @@ jest.mock('react-native/Libraries/StyleSheet/StyleSheet', () => ({
 }));
 
 // Mock NativeDeviceInfo specs for both main app and mobile-sdk-alpha
-jest.mock('react-native/src/private/specs/modules/NativeDeviceInfo', () => ({
-  getConstants: jest.fn(() => ({
-    Dimensions: {
-      window: { width: 375, height: 667, scale: 2 },
-      screen: { width: 375, height: 667, scale: 2 },
-    },
-  })),
-}));
+jest.mock(
+  'react-native/src/private/specs_DEPRECATED/modules/NativeDeviceInfo',
+  () => ({
+    getConstants: jest.fn(() => ({
+      Dimensions: {
+        window: { width: 375, height: 667, scale: 2 },
+        screen: { width: 375, height: 667, scale: 2 },
+      },
+    })),
+  }),
+);
 
 // Mock NativeStatusBarManagerIOS for react-native-edge-to-edge SystemBars
 jest.mock(
-  'react-native/src/private/specs/modules/NativeStatusBarManagerIOS',
+  'react-native/src/private/specs_DEPRECATED/modules/NativeStatusBarManagerIOS',
   () => ({
     setStyle: jest.fn(),
     setHidden: jest.fn(),

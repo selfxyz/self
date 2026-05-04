@@ -50,10 +50,16 @@ export function ParameterSection({
           : null;
 
     return iconElement
-      ? cloneElement(iconElement as React.ReactElement, {
-          width: '100%',
-          height: '100%',
-        })
+      ? cloneElement(
+          iconElement as React.ReactElement<{
+            width?: string | number;
+            height?: string | number;
+          }>,
+          {
+            width: '100%',
+            height: '100%',
+          },
+        )
       : null;
   };
 
