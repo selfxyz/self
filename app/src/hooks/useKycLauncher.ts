@@ -92,7 +92,10 @@ export const useKycLauncher = (options: UseKycLauncherOptions) => {
       trackOnboardingStep(selfClient, OnboardingEvents.SCAN_STARTED, {
         branch: 'kyc',
       });
-      const session = await createKycSession();
+      const session = await createKycSession({
+        country: countryCode,
+        nationality: countryCode,
+      });
       const result = await startKycVerification(session.sessionToken);
 
       // Handle user cancellation
