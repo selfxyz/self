@@ -134,7 +134,6 @@ export const OnboardingEvents = {
   COMPLETED: 'Onboarding: Completed',
   FAILED: 'Onboarding: Failed',
   STEP_RETRIED: 'Onboarding: Step Retried',
-  DISCLOSURE_COMPLETED: 'Onboarding: Disclosure Completed',
 };
 
 export const PassportEvents = {

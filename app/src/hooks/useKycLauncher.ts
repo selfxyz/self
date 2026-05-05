@@ -6,7 +6,12 @@ import { useCallback, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { sanitizeErrorMessage } from '@selfxyz/mobile-sdk-alpha';
+import {
+  sanitizeErrorMessage,
+  trackOnboardingStep,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
+import { OnboardingEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import {
   createKycSession,
@@ -78,11 +83,15 @@ export const useKycLauncher = (options: UseKycLauncherOptions) => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { showModal } = useFeedback();
+  const selfClient = useSelfClient();
   const [isLoading, setIsLoading] = useState(false);
 
   const launchKycVerification = useCallback(async () => {
     setIsLoading(true);
     try {
+      trackOnboardingStep(selfClient, OnboardingEvents.SCAN_STARTED, {
+        branch: 'kyc',
+      });
       const session = await createKycSession({
         country: countryCode,
         nationality: countryCode,
@@ -135,7 +144,7 @@ export const useKycLauncher = (options: UseKycLauncherOptions) => {
     } finally {
       setIsLoading(false);
     }
-  }, [navigation, countryCode, onSuccess, onCancel, onError]);
+  }, [navigation, selfClient, countryCode, onSuccess, onCancel, onError]);
 
   const showKycFallbackModal = useCallback(
     (onDismiss: () => void) => {
