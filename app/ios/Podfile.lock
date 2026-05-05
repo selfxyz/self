@@ -12,7 +12,7 @@ PODS:
   - boost (1.84.0)
   - BVLinearGradient (2.8.3):
     - React-Core
-  - DiditSDK (3.2.6):
+  - DiditSDK (3.3.4):
     - OpenSSL-Universal (~> 1.1.1900)
   - DoubleConversion (1.1.6)
   - EXApplication (55.0.14):

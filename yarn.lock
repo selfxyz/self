@@ -3854,9 +3854,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@didit-protocol/sdk-react-native@npm:^3.2.8":
-  version: 3.2.8
-  resolution: "@didit-protocol/sdk-react-native@npm:3.2.8"
+"@didit-protocol/sdk-react-native@npm:^3.2.11":
+  version: 3.2.11
+  resolution: "@didit-protocol/sdk-react-native@npm:3.2.11"
   peerDependencies:
     "@expo/config-plugins": ">=7.0.0"
     react: "*"
@@ -3864,14 +3864,14 @@ __metadata:
   peerDependenciesMeta:
     "@expo/config-plugins":
       optional: true
-  checksum: 10c0/4130b963b61ccd1f633af5941dfde08ae28a4b514320760b81746b4f7cb9368fb8bcc9cd259f5751e579963164f09e271c003891a379bb89b566dac0322e0658
+  checksum: 10c0/b30443422254c7e0e06746050c3f165e9e4f522676cba02915f24bd7977d7d7c1781055d6356cf923a27ea49d7368ad22bdffff120a4999b7815089372ae29a9
   languageName: node
   linkType: hard
 
-"@didit-protocol/sdk-web@npm:^0.1.8":
-  version: 0.1.8
-  resolution: "@didit-protocol/sdk-web@npm:0.1.8"
-  checksum: 10c0/c8fc35b8a8f73e678f4d868676bf70fe3095c62725f9b6ebc242310f93db70e3b17d298fc5d7df844d1ec18c445aac5a4dde329dac2ecef3fff03973265fed17
+"@didit-protocol/sdk-web@npm:^0.2.0":
+  version: 0.2.0
+  resolution: "@didit-protocol/sdk-web@npm:0.2.0"
+  checksum: 10c0/797b8e8da753e0e77f6c2dc6655fbd03a4e3a903bdc1247c51fa186447e6643416037e1666a6600f06eaf156a08e48790932378676fd7bb7392a2b1ab0315e6e
   languageName: node
   linkType: hard
 
@@ -11517,7 +11517,7 @@ __metadata:
     "@babel/preset-env": "npm:^7.29.2"
     "@babel/preset-react": "npm:^7.28.5"
     "@babel/runtime": "npm:^7.29.2"
-    "@didit-protocol/sdk-react-native": "npm:^3.2.8"
+    "@didit-protocol/sdk-react-native": "npm:^3.2.11"
     "@ethersproject/shims": "npm:^5.8.0"
     "@invertase/react-native-apple-authentication": "npm:^2.5.1"
     "@noble/hashes": "npm:^1.5.0"
@@ -11939,7 +11939,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@selfxyz/webview-app@workspace:packages/webview-app"
   dependencies:
-    "@didit-protocol/sdk-web": "npm:^0.1.8"
+    "@didit-protocol/sdk-web": "npm:^0.2.0"
     "@scure/bip32": "npm:^2.0.1"
     "@scure/bip39": "npm:^1.6.0"
     "@selfxyz/euclid": "npm:1.4.2"
