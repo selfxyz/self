@@ -114,8 +114,11 @@ const config = {
       '@': path.join(__dirname, 'src'),
     },
 
-    // Support package exports with conditions
-    unstable_conditionNames: ['react-native', 'import', 'require'],
+    // Let Metro choose import vs require from the actual callsite.
+    // Forcing the global "import" condition makes @babel/runtime helpers
+    // resolve to ESM even when Babel emitted require(...), which crashes at
+    // runtime with "_interopRequireDefault is not a function".
+    unstable_conditionNames: ['react-native'],
 
     // SVG support
     assetExts: assetExts.filter(ext => ext !== 'svg'),
