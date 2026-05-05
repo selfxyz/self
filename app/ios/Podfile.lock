@@ -12,7 +12,7 @@ PODS:
   - boost (1.84.0)
   - BVLinearGradient (2.8.3):
     - React-Core
-  - DiditSDK (3.2.6):
+  - DiditSDK (3.3.4):
     - OpenSSL-Universal (~> 1.1.1900)
   - DoubleConversion (1.1.6)
   - EXApplication (6.0.2):
@@ -2227,8 +2227,8 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - SdkReactNative (3.2.8):
-    - DiditSDK (~> 3.2)
+  - SdkReactNative (3.2.11):
+    - DiditSDK (~> 3.3)
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2671,7 +2671,7 @@ SPEC CHECKSUMS:
   AppCheckCore: cc8fd0a3a230ddd401f326489c99990b013f0c4f
   boost: 7e761d76ca2ce687f7cc98e698152abd03a18f90
   BVLinearGradient: cb006ba232a1f3e4f341bb62c42d1098c284da70
-  DiditSDK: 3113b1aa1e5f67e84e84bd8449273257e5d9eff0
+  DiditSDK: 4c9a97ad313696d21b8acb7b86be90c9175cd6b3
   DoubleConversion: cb417026b2400c8f53ae97020b2be961b59470cb
   EXApplication: 4c72f6017a14a65e338c5e74fca418f35141e819
   EXConstants: fcfc75800824ac2d5c592b5bc74130bad17b146b
@@ -2802,7 +2802,7 @@ SPEC CHECKSUMS:
   RNScreens: b0811b109e1a0b8b579f3348018e177bee374840
   RNSentry: 98ab9f6a16c9596e36565ccf1a5871323f334766
   RNSVG: d926926b169d8b81eb06aeb69734076e1dd566a3
-  SdkReactNative: 34ba85b3f3060892c548b7415b06f0bd66fcba1c
+  SdkReactNative: 934d61cc86b2308f8e2a836bd91daaa6502c2520
   segment-analytics-react-native: 8ab9c49df1859bbd6be93cf90a91ade17f20a0aa
   SelfNFCPassportReader: 8b53f9d483e0dd1f1a275953e3dc6dfc733694c5
   Sentry: 59993bffde4a1ac297ba6d268dc4bbce068d7c1b

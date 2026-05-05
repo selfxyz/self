@@ -19,7 +19,7 @@
     "types": "tsc --noEmit"
   },
   "dependencies": {
-    "@didit-protocol/sdk-web": "^0.1.8",
+    "@didit-protocol/sdk-web": "^0.2.0",
     "@scure/bip32": "^2.0.1",
     "@scure/bip39": "^1.6.0",
     "@selfxyz/euclid": "1.4.2",
