@@ -2,7 +2,7 @@
 
 buildscript {
     ext {
-        buildToolsVersion = "35.0.0"
+        buildToolsVersion = "36.0.0"
         minSdkVersion = 24
         compileSdkVersion = 36
         targetSdkVersion = 36
@@ -35,12 +35,6 @@ allprojects {
         google()
         mavenCentral()
         jcenter()
-        maven {
-            url("$rootDir/../../node_modules/react-native/android")
-        }
-        maven {
-            url("$rootDir/../../node_modules/jsc-android/dist")
-        }
         maven { url 'https://jitpack.io' }
         maven { url "https://raw.githubusercontent.com/didit-protocol/sdk-android/main/repository" }
     }
