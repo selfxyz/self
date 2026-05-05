@@ -11635,7 +11635,7 @@ __metadata:
     react-native-logs: "npm:^5.6.0"
     react-native-nfc-manager: "npm:3.17.2"
     react-native-passkey: "npm:^3.3.3"
-    react-native-passport-reader: "npm:1.0.3"
+    react-native-passport-reader: "selfxyz/react-native-passport-reader#e4ec4900c95dcf1209cb72891120c37f0f93b13c"
     react-native-permissions: "npm:^4.1.5"
     react-native-safe-area-context: "npm:^5.7.0"
     react-native-screens: "npm:4.15.3"
@@ -35135,10 +35135,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-passport-reader@npm:1.0.3":
+"react-native-passport-reader@selfxyz/react-native-passport-reader#e4ec4900c95dcf1209cb72891120c37f0f93b13c":
   version: 1.0.3
-  resolution: "react-native-passport-reader@npm:1.0.3"
-  checksum: 10c0/bfb7454d4859d40c10a28faacb279e135faec215b29ee7965592651ed205dd298ae5282aba9c403c729d0c8a78cadab46b7d8825c6782e29248f1cadf0a1e794
+  resolution: "react-native-passport-reader@https://github.com/selfxyz/react-native-passport-reader.git#commit=e4ec4900c95dcf1209cb72891120c37f0f93b13c"
+  checksum: 10c0/39bbae9f1bbe8e3ef7f5b82e8d866d425d9b975ab3e40695b66c20c80902709a8f504d92cb2816f07ef14bc183d6977f103a8f4d65438a965f2cf46018a8b9f3
   languageName: node
   linkType: hard
 
