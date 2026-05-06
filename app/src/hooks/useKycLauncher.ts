@@ -6,7 +6,13 @@ import { useCallback, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { sanitizeErrorMessage } from '@selfxyz/mobile-sdk-alpha';
+import type { FallbackReason, FallbackStage } from '@selfxyz/mobile-sdk-alpha';
+import {
+  sanitizeErrorMessage,
+  trackFallbackDecision,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
+import { OnboardingEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import {
   createKycSession,
@@ -79,6 +85,7 @@ export const useKycLauncher = (options: UseKycLauncherOptions) => {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { showModal } = useFeedback();
   const [isLoading, setIsLoading] = useState(false);
+  const selfClient = useSelfClient();
 
   const launchKycVerification = useCallback(async () => {
     setIsLoading(true);
@@ -135,7 +142,17 @@ export const useKycLauncher = (options: UseKycLauncherOptions) => {
   }, [navigation, countryCode, onSuccess, onCancel, onError]);
 
   const showKycFallbackModal = useCallback(
-    (onDismiss: () => void) => {
+    (
+      onDismiss: () => void,
+      fromStage: FallbackStage,
+      reason: FallbackReason,
+    ) => {
+      trackFallbackDecision(
+        selfClient,
+        OnboardingEvents.FALLBACK_OFFERED,
+        fromStage,
+        reason,
+      );
       const titleText = 'Having trouble scanning your document?';
       const bodyText =
         "You'll be redirected to our third party verification partner.";
@@ -145,6 +162,12 @@ export const useKycLauncher = (options: UseKycLauncherOptions) => {
         buttonText: 'Try Alternative Verification',
         secondaryButtonText: cancelLabel,
         onButtonPress: () => {
+          trackFallbackDecision(
+            selfClient,
+            OnboardingEvents.FALLBACK_ACCEPTED,
+            fromStage,
+            reason,
+          );
           showModal({
             titleText,
             bodyText,
@@ -155,10 +178,18 @@ export const useKycLauncher = (options: UseKycLauncherOptions) => {
           });
           return launchKycVerification();
         },
-        onSecondaryButtonPress: onDismiss,
+        onSecondaryButtonPress: () => {
+          trackFallbackDecision(
+            selfClient,
+            OnboardingEvents.FALLBACK_DECLINED,
+            fromStage,
+            reason,
+          );
+          onDismiss();
+        },
       });
     },
-    [cancelLabel, showModal, launchKycVerification],
+    [cancelLabel, selfClient, showModal, launchKycVerification],
   );
 
   return {

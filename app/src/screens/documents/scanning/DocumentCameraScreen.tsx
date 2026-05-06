@@ -12,6 +12,8 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import {
   DelayedLottieView,
   dinot,
+  FallbackReason,
+  FallbackStage,
   resolveOnboardingBranch,
   trackOnboardingStep,
   useSelfClient,
@@ -135,7 +137,11 @@ const DocumentCameraScreen: React.FC = () => {
   });
 
   const onCancelPress = () => {
-    showKycFallbackModal(() => navigateToHome());
+    showKycFallbackModal(
+      () => navigateToHome(),
+      FallbackStage.MRZ_SCAN,
+      FallbackReason.USER_CANCELLED,
+    );
   };
 
   return (

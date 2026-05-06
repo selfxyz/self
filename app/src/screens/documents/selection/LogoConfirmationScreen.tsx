@@ -10,7 +10,10 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import {
   failOnboardingAttempt,
+  FallbackReason,
+  FallbackStage,
   setOnboardingBranch,
+  trackFallbackDecision,
   trackOnboardingStep,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
@@ -62,6 +65,12 @@ const LogoConfirmationScreen: React.FC = () => {
   const handleNotFound = useCallback(() => {
     buttonTap();
     trackEvent('App: Logo Confirmation Answered', { answer: 'no' });
+    trackFallbackDecision(
+      selfClient,
+      OnboardingEvents.FALLBACK_OFFERED,
+      FallbackStage.DOCUMENT_TYPE_SELECTED,
+      FallbackReason.NO_BIOMETRIC_CHIP,
+    );
     // "No" on the chip-symbol check routes through the KYC provider —
     // update the canonical funnel branch accordingly.
     setOnboardingBranch('kyc');
@@ -71,6 +80,12 @@ const LogoConfirmationScreen: React.FC = () => {
         "To complete registration of a document without a biometric chip, you'll be redirected to our third party verification partner.",
       buttonText: 'Proceed with an external verifier',
       onButtonPress: async () => {
+        trackFallbackDecision(
+          selfClient,
+          OnboardingEvents.FALLBACK_ACCEPTED,
+          FallbackStage.DOCUMENT_TYPE_SELECTED,
+          FallbackReason.NO_BIOMETRIC_CHIP,
+        );
         let scanStarted = false;
         try {
           const session = await createKycSession();

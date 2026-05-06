@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, XStack, YStack } from 'tamagui';
 import type { RouteProp } from '@react-navigation/native';
@@ -10,7 +10,10 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import {
+  FallbackReason,
+  FallbackStage,
   setOnboardingBranch,
+  trackFallbackDecision,
   trackOnboardingRetry,
   trackOnboardingStep,
   useSelfClient,
@@ -72,6 +75,15 @@ const RegistrationFallbackMRZScreen: React.FC = () => {
 
   const headerTitle = getHeaderTitle(documentType);
 
+  useEffect(() => {
+    trackFallbackDecision(
+      selfClient,
+      OnboardingEvents.FALLBACK_OFFERED,
+      FallbackStage.MRZ_SCAN,
+      FallbackReason.MRZ_SCAN_FAILED,
+    );
+  }, [selfClient]);
+
   const { launchKycVerification, isLoading: isRetrying } = useKycLauncher({
     countryCode,
     onCancel: () => {
@@ -101,14 +113,26 @@ const RegistrationFallbackMRZScreen: React.FC = () => {
     trackEvent('REGISTRATION_FALLBACK_TRY_ALTERNATIVE', {
       errorSource: 'mrz_scan_failed',
     });
+    trackFallbackDecision(
+      selfClient,
+      OnboardingEvents.FALLBACK_ACCEPTED,
+      FallbackStage.MRZ_SCAN,
+      FallbackReason.MRZ_SCAN_FAILED,
+    );
     setOnboardingBranch('kyc');
     await launchKycVerification();
-  }, [launchKycVerification, trackEvent]);
+  }, [launchKycVerification, selfClient, trackEvent]);
 
   const handleRetryOriginal = useCallback(() => {
     trackEvent('REGISTRATION_FALLBACK_RETRY_ORIGINAL', {
       errorSource: 'mrz_scan_failed',
     });
+    trackFallbackDecision(
+      selfClient,
+      OnboardingEvents.FALLBACK_DECLINED,
+      FallbackStage.MRZ_SCAN,
+      FallbackReason.MRZ_SCAN_FAILED,
+    );
     trackOnboardingRetry(selfClient, 'scan_started', 'mrz_scan_failed');
     navigation.navigate('DocumentCamera');
   }, [navigation, selfClient, trackEvent]);

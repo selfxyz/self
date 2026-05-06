@@ -33,6 +33,8 @@ import { CircleHelp } from '@tamagui/lucide-icons';
 
 import type { PassportData } from '@selfxyz/common/types';
 import {
+  FallbackReason,
+  FallbackStage,
   resolveOnboardingBranch,
   sanitizeErrorMessage,
   trackOnboardingStep,
@@ -505,7 +507,11 @@ const DocumentNFCScanScreen: React.FC = () => {
     flushAllAnalytics();
     logNFCEvent('info', 'scan_cancelled', { ...baseContext, stage: 'cancel' });
     if (isNfcSupported && isNfcEnabled) {
-      showKycFallbackModal(() => navigateToHome());
+      showKycFallbackModal(
+        () => navigateToHome(),
+        FallbackStage.NFC_SCAN,
+        FallbackReason.USER_CANCELLED,
+      );
     } else {
       navigateToHome();
     }

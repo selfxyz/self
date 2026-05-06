@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { OnboardingEvents } from '../constants/analytics';
+import { type FallbackReason, type FallbackStage, OnboardingEvents } from '../constants/analytics';
 import type { SelfClient } from '../types/public';
 
 // ---------------------------------------------------------------------------
@@ -211,6 +211,27 @@ export function resolveOnboardingBranch(documentType: string): OnboardingBranch 
 export function setOnboardingBranch(branch: OnboardingBranch): void {
   if (!currentAttempt) return;
   currentAttempt.currentBranch = branch;
+}
+
+/**
+ * Fire a fallback-decision event (Layer 2). Unlike step events, this is NOT
+ * deduped — every offer/accept/decline produces an event. Stamps with the
+ * standard attempt properties so dashboard queries can join with Layer 1.
+ */
+export function trackFallbackDecision(
+  selfClient: Pick<SelfClient, 'trackEvent'>,
+  event: string,
+  fromStage: FallbackStage,
+  reason: FallbackReason,
+  properties?: Record<string, unknown>,
+): void {
+  const attempt = ensureAttempt(selfClient);
+  selfClient.trackEvent(event, {
+    ...baseProperties(attempt),
+    from_stage: fromStage,
+    reason,
+    ...properties,
+  });
 }
 
 /**
