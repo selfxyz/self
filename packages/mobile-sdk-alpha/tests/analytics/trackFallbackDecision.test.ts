@@ -77,7 +77,7 @@ describe('trackFallbackDecision', () => {
     // 1 STARTED + 3 FALLBACK_OFFERED
     expect(client.trackEvent).toHaveBeenCalledTimes(4);
     const fallbackCalls = client.trackEvent.mock.calls.filter(
-      ([event]: [string]) => event === OnboardingEvents.FALLBACK_OFFERED,
+      (call) => call[0] === OnboardingEvents.FALLBACK_OFFERED,
     );
     expect(fallbackCalls).toHaveLength(3);
   });
