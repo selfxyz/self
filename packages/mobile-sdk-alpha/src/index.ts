@@ -65,10 +65,10 @@ export type { SdkErrorCategory } from './errors';
 
 export type { provingMachineCircuitType } from './proving/provingMachine';
 
-export { GOOGLE_USAT_FAUCET_VERIFIERS } from './constants/googleUsat';
 export { DelayedLottieView } from './components/DelayedLottieView';
 
 export { ExpandableBottomLayout } from './layouts/ExpandableBottomLayout';
+export { GOOGLE_USAT_FAUCET_VERIFIERS } from './constants/googleUsat';
 
 export {
   InitError,
