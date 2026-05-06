@@ -78,6 +78,10 @@ export const BackupEvents = {
   MANUAL_RECOVERY_SELECTED: 'Backup: Manual Recovery Selected',
 };
 
+export const DiagnosticEvents = {
+  CONFIRM_BELONGING_CONFIRMED: 'confirm_belonging_confirmed',
+};
+
 export const DocumentEvents = {
   COUNTRY_HELP_TAPPED: 'Document: Country Help Tapped',
   ADD_NEW_AADHAAR_SELECTED: 'Document: Add Aadhaar',
