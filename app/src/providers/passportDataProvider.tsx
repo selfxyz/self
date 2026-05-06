@@ -404,6 +404,11 @@ export async function getAvailableDocumentTypes(): Promise<string[]> {
   return [...new Set(catalog.documents.map(d => d.documentType))];
 }
 
+export async function getKycDocumentCount(): Promise<number> {
+  const catalog = await loadDocumentCatalogDirectlyFromKeychain();
+  return catalog.documents.filter(doc => doc.documentCategory === 'kyc').length;
+}
+
 // Helper function to get current document type from catalog
 export async function getCurrentDocumentType(): Promise<string | null> {
   const catalog = await loadDocumentCatalogDirectlyFromKeychain();

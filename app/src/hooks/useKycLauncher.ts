@@ -20,6 +20,8 @@ import {
 import type { KycVerificationResult } from '@/integrations/kyc/types';
 import type { RootStackParamList } from '@/navigation';
 import { useFeedback } from '@/providers/feedbackProvider';
+import { getKycDocumentCount } from '@/providers/passportDataProvider';
+import { usePendingKycStore } from '@/stores/pendingKycStore';
 
 export interface UseKycLauncherOptions {
   /**
@@ -87,8 +89,40 @@ export const useKycLauncher = (options: UseKycLauncherOptions) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const launchKycVerification = useCallback(async () => {
+    const hasPendingOrProcessingKyc = () =>
+      usePendingKycStore
+        .getState()
+        .pendingVerifications.some(
+          verification =>
+            verification.status === 'pending' ||
+            verification.status === 'processing',
+        );
+
     setIsLoading(true);
     try {
+      if (hasPendingOrProcessingKyc()) {
+        showModal({
+          titleText: 'Verification in progress',
+          bodyText:
+            "You already have a KYC verification being processed. We'll notify you when it's ready.",
+          buttonText: 'Dismiss',
+          onButtonPress: () => {},
+        });
+        return;
+      }
+
+      const kycDocumentCount = await getKycDocumentCount();
+      if (kycDocumentCount >= 3) {
+        showModal({
+          titleText: 'Maximum verifications reached',
+          bodyText:
+            'You can have up to 3 verified IDs. Remove one before starting a new verification.',
+          buttonText: 'Dismiss',
+          onButtonPress: () => {},
+        });
+        return;
+      }
+
       trackOnboardingStep(selfClient, OnboardingEvents.SCAN_STARTED, {
         branch: 'kyc',
       });
@@ -144,7 +178,15 @@ export const useKycLauncher = (options: UseKycLauncherOptions) => {
     } finally {
       setIsLoading(false);
     }
-  }, [navigation, selfClient, countryCode, onSuccess, onCancel, onError]);
+  }, [
+    navigation,
+    selfClient,
+    countryCode,
+    onSuccess,
+    onCancel,
+    onError,
+    showModal,
+  ]);
 
   const showKycFallbackModal = useCallback(
     (onDismiss: () => void) => {
