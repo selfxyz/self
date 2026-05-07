@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-export type PerkId = 'google_usdt_faucet' | 'aave_boosted_rewards' | 'ps_human';
+export type PerkId = 'google_cloud_faucet';
 
 export interface PerkRecord {
   id: PerkId;
@@ -18,16 +18,13 @@ export interface PerkRecord {
 }
 
 export const PERKS: Record<PerkId, PerkRecord> = {
-  // TODO(perks): set redeemUrl once the Google USDT faucet redemption page is public.
-  google_usdt_faucet: { id: 'google_usdt_faucet', label: 'Google USDT faucet' },
-  aave_boosted_rewards: { id: 'aave_boosted_rewards', label: 'Aave Boosted Rewards' },
-  ps_human: { id: 'ps_human', label: 'PS Human' },
+  google_cloud_faucet: { id: 'google_cloud_faucet', label: 'Google Cloud Faucet', isNew: true },
 };
 
 const ID_TYPE_TO_PERK_IDS: Record<string, PerkId[]> = {
-  p: ['google_usdt_faucet', 'aave_boosted_rewards', 'ps_human'],
-  i: ['google_usdt_faucet', 'aave_boosted_rewards', 'ps_human'],
-  a: ['google_usdt_faucet', 'aave_boosted_rewards', 'ps_human'],
+  p: ['google_cloud_faucet'],
+  i: ['google_cloud_faucet'],
+  a: ['google_cloud_faucet'],
 };
 
 export function getPerkRecordsForIdType(idType: string): PerkRecord[] {

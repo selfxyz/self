@@ -8,11 +8,7 @@ import { getPerkRecordsForIdType, PERKS } from '../../src/data/perks';
 
 describe('shared perks catalog', () => {
   it('returns expected perks for passport id type in order', () => {
-    expect(getPerkRecordsForIdType('p').map(perk => perk.id)).toEqual([
-      'google_usdt_faucet',
-      'aave_boosted_rewards',
-      'ps_human',
-    ]);
+    expect(getPerkRecordsForIdType('p').map(perk => perk.id)).toEqual(['google_cloud_faucet']);
   });
 
   it('returns empty array for unknown id type', () => {
@@ -20,6 +16,6 @@ describe('shared perks catalog', () => {
   });
 
   it('keeps canonical google label', () => {
-    expect(PERKS.google_usdt_faucet.label).toBe('Google USDT faucet');
+    expect(PERKS.google_cloud_faucet.label).toBe('Google Cloud Faucet');
   });
 });

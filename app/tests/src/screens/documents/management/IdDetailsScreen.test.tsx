@@ -53,6 +53,7 @@ jest.mock('tamagui', () => ({
 jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
   useSelfClient: jest.fn(),
   getPerkRecordsForIdType: jest.fn(),
+  getEligiblePerksForIdType: jest.fn(),
 }));
 
 jest.mock('@selfxyz/mobile-sdk-alpha/components', () => ({
@@ -82,11 +83,6 @@ jest.mock('@selfxyz/mobile-sdk-alpha/constants/colors', () => ({
   white: '#fff',
 }));
 
-jest.mock(
-  '@selfxyz/mobile-sdk-alpha/svgs/icons/google.svg',
-  () => 'GoogleLogo',
-);
-
 jest.mock('@/components/homescreen/IdCard', () => ({
   __esModule: true,
   default: () => <mock-stack testID="id-card" />,
@@ -105,20 +101,18 @@ jest.mock('@/stores/userStore');
 const { useNavigation } = jest.requireMock('@react-navigation/native') as {
   useNavigation: jest.Mock;
 };
-const { useSelfClient, getPerkRecordsForIdType } = jest.requireMock(
-  '@selfxyz/mobile-sdk-alpha',
-) as {
-  useSelfClient: jest.Mock;
-  getPerkRecordsForIdType: jest.Mock;
-};
+const { useSelfClient, getPerkRecordsForIdType, getEligiblePerksForIdType } =
+  jest.requireMock('@selfxyz/mobile-sdk-alpha') as {
+    useSelfClient: jest.Mock;
+    getPerkRecordsForIdType: jest.Mock;
+    getEligiblePerksForIdType: jest.Mock;
+  };
 
 const mockUsePassport = usePassport as jest.MockedFunction<typeof usePassport>;
 const mockUseUserStore = useUserStore as unknown as jest.Mock;
 
 const PASSPORT_PERKS = [
-  { id: 'google_usdt_faucet', label: 'Google USDT faucet' },
-  { id: 'aave_boosted_rewards', label: 'Aave Boosted Rewards' },
-  { id: 'ps_human', label: 'PS Human' },
+  { id: 'google_cloud_faucet', label: 'Google Cloud Faucet', isNew: true },
 ];
 
 const passportDoc = {
@@ -152,6 +146,7 @@ describe('IdDetailsScreen', () => {
       'doc-1': { data: passportDoc },
     });
     getPerkRecordsForIdType.mockReturnValue(PASSPORT_PERKS);
+    getEligiblePerksForIdType.mockReturnValue(PASSPORT_PERKS);
   });
 
   it('renders perks for an eligible document and fires the view analytics event', async () => {
@@ -162,20 +157,14 @@ describe('IdDetailsScreen', () => {
     );
 
     expect(getPerkRecordsForIdType).toHaveBeenCalledWith('p');
-    expect(card.props['data-perks']).toBe(
-      'google_usdt_faucet,aave_boosted_rewards,ps_human',
-    );
+    expect(card.props['data-perks']).toBe('google_cloud_faucet');
 
-    card.props.onView([
-      'google_usdt_faucet',
-      'aave_boosted_rewards',
-      'ps_human',
-    ]);
+    card.props.onView(['google_cloud_faucet']);
 
     expect(trackEvent).toHaveBeenCalledWith('IDDataEvents.PERKS_VIEWED', {
       id_type: 'p',
-      perk_count: 3,
-      perk_ids: ['google_usdt_faucet', 'aave_boosted_rewards', 'ps_human'],
+      perk_count: 1,
+      perk_ids: ['google_cloud_faucet'],
     });
   });
 
@@ -186,12 +175,31 @@ describe('IdDetailsScreen', () => {
       UNSAFE_root.findByType('mock-perks-card' as never),
     );
 
-    fireEvent(card, 'onPerkPress', 'aave_boosted_rewards');
+    fireEvent(card, 'onPerkPress', 'google_cloud_faucet');
 
     expect(trackEvent).toHaveBeenCalledWith('IDDataEvents.PERK_TAPPED', {
       id_type: 'p',
-      perk_id: 'aave_boosted_rewards',
+      perk_id: 'google_cloud_faucet',
       has_redemption: false,
+    });
+  });
+
+  it('hides the perks card while ID data is being viewed', async () => {
+    const { UNSAFE_root } = render(<IdDetailsScreen />);
+
+    await waitFor(() => UNSAFE_root.findByType('mock-perks-card' as never));
+
+    const viewIdButton = UNSAFE_root.findAllByType('mock-button' as never).find(
+      node => node.props.children === 'View ID Data',
+    );
+
+    expect(viewIdButton).toBeTruthy();
+    fireEvent(viewIdButton!, 'press');
+
+    await waitFor(() => {
+      expect(
+        UNSAFE_root.findAllByType('mock-perks-card' as never),
+      ).toHaveLength(0);
     });
   });
 
@@ -200,6 +208,7 @@ describe('IdDetailsScreen', () => {
       'doc-1': { data: { documentType: 'kyc', documentCategory: 'kyc' } },
     });
     getPerkRecordsForIdType.mockReturnValue([]);
+    getEligiblePerksForIdType.mockReturnValue([]);
 
     const { UNSAFE_root } = render(<IdDetailsScreen />);
 

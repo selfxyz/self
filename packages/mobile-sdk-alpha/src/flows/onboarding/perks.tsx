@@ -6,16 +6,13 @@ import type React from 'react';
 
 import GoogleLogo from '@selfxyz/mobile-sdk-alpha/svgs/icons/google.svg';
 
+import type { EligiblePerksItem } from '../../components/data-display/EligiblePerksCard';
 import { getPerkRecordsForIdType, type PerkId, PERKS as SHARED_PERKS } from '../../data/perks';
 
-export interface Perk {
-  id: string;
-  label: string;
-  renderLogo?: () => React.ReactNode;
-}
+export type Perk = EligiblePerksItem;
 
 const PERK_LOGOS: Partial<Record<PerkId, () => React.ReactNode>> = {
-  google_usdt_faucet: () => <GoogleLogo width={24} height={24} />,
+  google_cloud_faucet: () => <GoogleLogo width={32} height={32} />,
 };
 
 export const PERKS: Record<string, Perk> = Object.fromEntries(
@@ -24,10 +21,16 @@ export const PERKS: Record<string, Perk> = Object.fromEntries(
     {
       id: perk.id,
       label: perk.label,
+      ...(perk.isNew ? { isNew: true } : {}),
       ...(PERK_LOGOS[perk.id] ? { renderLogo: PERK_LOGOS[perk.id] } : {}),
     },
   ]),
 );
+
+/** Returns ready-to-render perks (label + logo + isNew) for a given ID type. */
+export function getEligiblePerksForIdType(idType: string): EligiblePerksItem[] {
+  return getPerksForIdType(idType);
+}
 
 export function getPerkRailLabel(perks: Perk[]): string {
   return perks.length === 1 ? 'Eligible for 1 perk' : `Eligible for ${perks.length} perks`;

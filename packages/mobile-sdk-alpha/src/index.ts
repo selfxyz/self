@@ -83,10 +83,9 @@ export { default as LogoConfirmationScreen } from './flows/onboarding/logo-confi
 export { NFCScannerScreen } from './components/screens/NFCScannerScreen';
 export { QRCodeScreen } from './components/screens/QRCodeScreen';
 export { PERKS as SHARED_PERKS, getPerkRecordsForIdType } from './data/perks';
-
 export { SdkEvents } from './types/events';
-export { SelfClientContext, SelfClientProvider, useSelfClient } from './context';
 
+export { SelfClientContext, SelfClientProvider, useSelfClient } from './context';
 export { advercase, dinot, dinotBold, plexMono } from './constants/fonts';
 
 export {
@@ -153,6 +152,8 @@ export { extractNameFromMRZ, formatDateToYYMMDD, parseMRZBirthDate, parseMRZExpi
 export { finalizeRecoveredDocumentRegistration, validateRecoverySecretForDocument } from './proving/recoveryValidation';
 
 export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
+
+export { getEligiblePerksForIdType } from './flows/onboarding/perks';
 
 export { isPassportDataValid } from './validation/document';
 export { mergeConfig } from './config/merge';

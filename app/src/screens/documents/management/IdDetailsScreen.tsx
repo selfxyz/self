@@ -9,12 +9,11 @@ import { Button, Text, XStack, YStack, ZStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 
 import type { DocumentCatalog, IDDocument } from '@selfxyz/common/utils/types';
-import type { PerkId } from '@selfxyz/mobile-sdk-alpha';
 import {
+  getEligiblePerksForIdType,
   getPerkRecordsForIdType,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
-import type { EligiblePerksItem } from '@selfxyz/mobile-sdk-alpha/components';
 import { EligiblePerksCard } from '@selfxyz/mobile-sdk-alpha/components';
 import { IDDataEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import {
@@ -25,7 +24,6 @@ import {
   slate500,
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
-import GoogleLogo from '@selfxyz/mobile-sdk-alpha/svgs/icons/google.svg';
 
 import IdCardLayout from '@/components/homescreen/IdCard';
 import { usePassport } from '@/providers/passportDataProvider';
@@ -72,13 +70,9 @@ const IdDetailsScreen: React.FC = () => {
     [idType],
   );
 
-  const perks = useMemo<EligiblePerksItem[]>(
-    () =>
-      perkRecords.map(perk => {
-        const renderLogo = PERK_LOGOS[perk.id];
-        return renderLogo ? { ...perk, renderLogo } : { ...perk };
-      }),
-    [perkRecords],
+  const perks = useMemo(
+    () => (idType ? getEligiblePerksForIdType(idType) : []),
+    [idType],
   );
 
   const handlePerksView = (perkIds: string[]) => {
@@ -170,7 +164,7 @@ const IdDetailsScreen: React.FC = () => {
           Manage ID
         </Button>
       </XStack>
-      {perks.length > 0 ? (
+      {perks.length > 0 && isHidden ? (
         <YStack marginTop={'$4'}>
           <EligiblePerksCard
             perks={perks}
@@ -223,10 +217,6 @@ const IdDetailsScreen: React.FC = () => {
       </ZStack>
     </YStack>
   );
-};
-
-const PERK_LOGOS: Partial<Record<PerkId, () => React.ReactNode>> = {
-  google_usdt_faucet: () => <GoogleLogo width={24} height={24} />,
 };
 
 function idTypeForDocumentCategory(
