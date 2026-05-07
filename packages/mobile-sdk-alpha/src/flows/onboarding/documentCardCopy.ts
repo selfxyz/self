@@ -72,21 +72,6 @@ function getCountryName(countryCode: string): string {
   return commonNames[normalized as keyof typeof commonNames] ?? normalized;
 }
 
-export function getDocumentDisplayTitle(docType: string, countryCode: string): string {
-  switch (docType) {
-    case 'p':
-      return `${getCountryAdjective(countryCode)} Passport`;
-    case 'i':
-      return `${getCountryAdjective(countryCode)} ID card`;
-    case 'a':
-      return `${getCountryAdjective(countryCode)} Aadhaar`;
-    case KYC_DOC_TYPE:
-      return 'Other IDs';
-    default:
-      return 'Unknown Document';
-  }
-}
-
 export function getDocumentDisplaySubtitle(docType: string, countryCode: string): string | null {
   switch (docType) {
     case 'p':
@@ -99,5 +84,20 @@ export function getDocumentDisplaySubtitle(docType: string, countryCode: string)
       return "National ID, Driver's License etc.";
     default:
       return null;
+  }
+}
+
+export function getDocumentDisplayTitle(docType: string, countryCode: string): string {
+  switch (docType) {
+    case 'p':
+      return `${getCountryAdjective(countryCode)} Passport`;
+    case 'i':
+      return `${getCountryAdjective(countryCode)} ID card`;
+    case 'a':
+      return `${getCountryAdjective(countryCode)} Aadhaar`;
+    case KYC_DOC_TYPE:
+      return 'Other IDs';
+    default:
+      return 'Unknown Document';
   }
 }

@@ -25,21 +25,6 @@ import { getPerksForIdType } from './perks';
 
 const KYC_DOC_TYPE = 'kyc';
 
-const getDocumentName = (docType: string): string => {
-  switch (docType) {
-    case 'p':
-      return 'Passport';
-    case 'i':
-      return 'ID card';
-    case 'a':
-      return 'Aadhaar';
-    case KYC_DOC_TYPE:
-      return 'Other IDs';
-    default:
-      return 'Unknown Document';
-  }
-};
-
 const getDocumentNameForEvent = (docType: string): string => {
   switch (docType) {
     case 'p':
