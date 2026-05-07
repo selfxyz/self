@@ -216,5 +216,4 @@ describe('useReadMRZ', () => {
 
     expect(mockSelfClient.emit).toHaveBeenCalledWith(SdkEvents.DOCUMENT_MRZ_READ_FAILURE);
   });
-
 });

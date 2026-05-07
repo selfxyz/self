@@ -439,9 +439,7 @@ export const DocumentNFCScreen: React.FC<DocumentNFCScreenProps> = (props: Docum
               <PrimaryButton onPress={onVerifyPress} disabled={!isNfcSupported}>
                 {isNfcEnabled || !isNfcSupported ? 'Start Scan' : 'Open settings'}
               </PrimaryButton>
-              <SecondaryButton onPress={onCancelPress}>
-                Cancel
-              </SecondaryButton>
+              <SecondaryButton onPress={onCancelPress}>Cancel</SecondaryButton>
             </ButtonsContainer>
           </>
         )}

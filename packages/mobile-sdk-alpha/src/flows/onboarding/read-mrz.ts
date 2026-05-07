@@ -49,7 +49,6 @@ export function useReadMRZ(scanStartTimeRef: RefObject<number>) {
         if (error) {
           console.error(error);
 
-
           selfClient.emit(SdkEvents.DOCUMENT_MRZ_READ_FAILURE);
           return;
         }

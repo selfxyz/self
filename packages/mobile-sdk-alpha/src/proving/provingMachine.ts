@@ -499,7 +499,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       }
 
       if (state.value === 'completed') {
-
         // Mark document as registered onChain
         if (get().circuitType === 'register') {
           (async () => {
@@ -1128,13 +1127,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         }
 
         const passportMetadata = parsedPassportData.passportMetadata!;
-        let dscObject;
-        try {
-          dscObject = { dsc: passportMetadata.dsc };
-        } catch (error) {
-          console.error('Failed to parse dsc:', error);
-          dscObject = {};
-        }
 
         trackBranchEvent(selfClient, BiometricEvents.DOCUMENT_PARSED, {
           document_type: passportData.documentCategory === 'id_card' ? 'id_card' : 'passport',
@@ -1158,7 +1150,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           duration_ms: Date.now() - startTime,
         });
         console.error('Error parsing ID document:', error);
-        const errMsg = error instanceof Error ? error.message : String(error);
         actor!.send({ type: 'PARSE_ERROR' });
       }
     },
@@ -1691,7 +1682,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         selfClient.logProofEvent('info', 'Payload encrypted', context, {
           payload_size: payloadSize,
         });
-
 
         set({ endpointType: endpointType as EndpointType });
 

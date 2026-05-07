@@ -17,7 +17,6 @@ import * as commonUtils from '@selfxyz/common/utils';
 import { generateCommitmentInAppAadhaar } from '@selfxyz/common/utils/passports/validate';
 import { AttestationIdHex } from '@selfxyz/common/utils/types';
 
-import { PassportEvents, ProofEvents } from '../../src/constants/analytics';
 import * as documentUtils from '../../src/documents/utils';
 import { useProvingStore } from '../../src/proving/provingMachine';
 import { fetchAllTreesAndCircuits } from '../../src/stores';
@@ -262,8 +261,6 @@ describe('parseIDDocument', () => {
       expect(state.passportData.passportMetadata).toBeDefined();
     }
     expect(actorMock.send).toHaveBeenCalledWith({ type: 'PARSE_SUCCESS' });
-    if (state.passportData && isMRZDocument(state.passportData)) {
-    }
   });
 
   it('handles missing passport data with PARSE_ERROR and analytics event', async () => {
