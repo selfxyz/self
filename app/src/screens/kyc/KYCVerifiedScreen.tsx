@@ -24,6 +24,7 @@ import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import { buttonTap } from '@/integrations/haptics';
 import type { RootStackParamList } from '@/navigation';
+import { PrivacyMask } from '@/observability/PrivacyMask';
 import { setSelectedDocument } from '@/providers/passportDataProvider';
 import { usePendingKycStore } from '@/stores/pendingKycStore';
 
@@ -96,32 +97,34 @@ const KYCVerifiedScreen: React.FC = () => {
   };
 
   return (
-    <View style={[styles.container, { paddingBottom: insets.bottom }]}>
-      <View style={styles.spacer} />
-      <YStack
-        paddingHorizontal={24}
-        justifyContent="center"
-        alignItems="center"
-        gap={12}
-        marginBottom={64}
-      >
-        <Title style={styles.title}>Your ID has been verified</Title>
-        <Description style={styles.description}>
-          Next Self will generate a zk proof specifically for this device that
-          you can use to proof your identity.
-        </Description>
-      </YStack>
-      <YStack gap={12} paddingHorizontal={20} paddingBottom={24}>
-        <AbstractButton
-          bgColor={white}
-          color={black}
-          onPress={handleGenerateProof}
-          disabled={isLoading}
+    <PrivacyMask>
+      <View style={[styles.container, { paddingBottom: insets.bottom }]}>
+        <View style={styles.spacer} />
+        <YStack
+          paddingHorizontal={24}
+          justifyContent="center"
+          alignItems="center"
+          gap={12}
+          marginBottom={64}
         >
-          {isLoading ? 'Generating...' : 'Generate proof'}
-        </AbstractButton>
-      </YStack>
-    </View>
+          <Title style={styles.title}>Your ID has been verified</Title>
+          <Description style={styles.description}>
+            Next Self will generate a zk proof specifically for this device that
+            you can use to proof your identity.
+          </Description>
+        </YStack>
+        <YStack gap={12} paddingHorizontal={20} paddingBottom={24}>
+          <AbstractButton
+            bgColor={white}
+            color={black}
+            onPress={handleGenerateProof}
+            disabled={isLoading}
+          >
+            {isLoading ? 'Generating...' : 'Generate proof'}
+          </AbstractButton>
+        </YStack>
+      </View>
+    </PrivacyMask>
   );
 };
 

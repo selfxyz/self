@@ -44,30 +44,20 @@ const _getSecurely = async function <T>(
   formatter: (dataString: string) => T,
   options: GetSecureOptions,
 ): Promise<SignedPayload<T> | null> {
-  try {
-    const capabilities = await detectSecurityCapabilities();
-    const { getOptions, setOptions } = await createKeychainOptions(
-      options,
-      capabilities,
-    );
-    const dataString = await fn({ getOptions, setOptions });
-    if (dataString === false) {
-      return null;
-    }
-
-    trackEvent(AuthEvents.BIOMETRIC_AUTH_SUCCESS);
-    return {
-      signature: 'authenticated',
-      data: formatter(dataString),
-    };
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
-    trackEvent(AuthEvents.BIOMETRIC_AUTH_FAILED, {
-      reason: 'unknown_error',
-      error: message,
-    });
-    throw error;
+  const capabilities = await detectSecurityCapabilities();
+  const { getOptions, setOptions } = await createKeychainOptions(
+    options,
+    capabilities,
+  );
+  const dataString = await fn({ getOptions, setOptions });
+  if (dataString === false) {
+    return null;
   }
+
+  return {
+    signature: 'authenticated',
+    data: formatter(dataString),
+  };
 };
 
 const _getWithBiometrics = async function <T>(
@@ -75,50 +65,31 @@ const _getWithBiometrics = async function <T>(
   formatter: (dataString: string) => T,
   _options: GetSecureOptions,
 ): Promise<SignedPayload<T> | null> {
-  try {
-    const simpleCheck = await biometrics.simplePrompt({
-      promptMessage: 'Allow access to identity',
-    });
+  const simpleCheck = await biometrics.simplePrompt({
+    promptMessage: 'Allow access to identity',
+  });
 
-    if (!simpleCheck.success) {
-      trackEvent(AuthEvents.BIOMETRIC_AUTH_FAILED, {
-        reason: 'unknown_error',
-        error: 'Authentication failed',
-      });
-      throw new Error('Authentication failed');
-    }
-
-    const dataString = await fn();
-    if (dataString === false) {
-      return null;
-    }
-
-    return {
-      signature: 'authenticated',
-      data: formatter(dataString),
-    };
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
-    trackEvent(AuthEvents.BIOMETRIC_AUTH_FAILED, {
-      reason: 'unknown_error',
-      error: message,
-    });
-    throw error;
+  if (!simpleCheck.success) {
+    throw new Error('Authentication failed');
   }
+
+  const dataString = await fn();
+  if (dataString === false) {
+    return null;
+  }
+
+  return {
+    signature: 'authenticated',
+    data: formatter(dataString),
+  };
 };
 
 async function checkBiometricsAvailable(): Promise<boolean> {
   try {
     const { available } = await biometrics.isSensorAvailable();
-    trackEvent(AuthEvents.BIOMETRIC_CHECK, { available });
     return available;
   } catch (error: unknown) {
     console.error('Error checking biometric availability:', error);
-    const message = error instanceof Error ? error.message : String(error);
-    trackEvent(AuthEvents.BIOMETRIC_CHECK, {
-      reason: 'unknown_error',
-      error: message,
-    });
     return false;
   }
 }
@@ -128,9 +99,6 @@ async function restoreFromMnemonic(
   options: KeychainOptions,
 ): Promise<string | false> {
   if (!mnemonic || !ethers.Mnemonic.isValidMnemonic(mnemonic)) {
-    trackEvent(AuthEvents.MNEMONIC_RESTORE_FAILED, {
-      reason: 'invalid_mnemonic',
-    });
     return false;
   }
 
@@ -142,13 +110,8 @@ async function restoreFromMnemonic(
       service: SERVICE_NAME,
     });
     generateAndStorePointsAddress(mnemonic);
-    trackEvent(AuthEvents.MNEMONIC_RESTORE_SUCCESS);
     return data;
-  } catch (error: unknown) {
-    trackEvent(AuthEvents.MNEMONIC_RESTORE_FAILED, {
-      reason: 'unknown_error',
-      error: error instanceof Error ? error.message : String(error),
-    });
+  } catch {
     return false;
   }
 }
@@ -171,17 +134,12 @@ async function loadOrCreateMnemonic(
     if (storedMnemonic) {
       try {
         JSON.parse(storedMnemonic.password);
-        trackEvent(AuthEvents.MNEMONIC_LOADED);
         return storedMnemonic.password;
       } catch (e: unknown) {
         console.error(
           'Error parsing stored mnemonic, old secret format was used',
           e,
         );
-        trackEvent(AuthEvents.MNEMONIC_RESTORE_FAILED, {
-          reason: 'unknown_error',
-          error: e instanceof Error ? e.message : String(e),
-        });
       }
     }
   } catch (error: unknown) {
@@ -210,10 +168,6 @@ async function loadOrCreateMnemonic(
           errorName: err?.name,
         });
       }
-      trackEvent(AuthEvents.MNEMONIC_RESTORE_FAILED, {
-        reason: 'keychain_crypto_failed',
-        errorCode: err?.code,
-      });
 
       if (keychainCryptoFailureCallback) {
         keychainCryptoFailureCallback('crypto_failed');
@@ -229,10 +183,6 @@ async function loadOrCreateMnemonic(
         source: 'loadOrCreateMnemonic',
       });
     }
-    trackEvent(AuthEvents.MNEMONIC_RESTORE_FAILED, {
-      reason: 'unknown_error',
-      error: error instanceof Error ? error.message : String(error),
-    });
     throw error;
   }
   try {
@@ -245,13 +195,8 @@ async function loadOrCreateMnemonic(
       ...setOptions,
       service: SERVICE_NAME,
     });
-    trackEvent(AuthEvents.MNEMONIC_CREATED);
     return data;
-  } catch (error: unknown) {
-    trackEvent(AuthEvents.MNEMONIC_RESTORE_FAILED, {
-      reason: 'unknown_error',
-      error: error instanceof Error ? error.message : String(error),
-    });
+  } catch {
     return false;
   }
 }
@@ -301,7 +246,6 @@ export const AuthProvider = ({
       return;
     }
 
-    trackEvent(AuthEvents.BIOMETRIC_LOGIN_ATTEMPT);
     const promise = biometrics.simplePrompt({
       promptMessage: 'Confirm your identity to access the stored secret',
     });
@@ -327,7 +271,6 @@ export const AuthProvider = ({
       }
       return setTimeout(() => {
         setIsAuthenticated(false);
-        trackEvent(AuthEvents.AUTHENTICATION_TIMEOUT);
       }, authenticationTimeoutinMs);
     });
   }, [authenticationTimeoutinMs, isAuthenticatingPromise]);
@@ -474,8 +417,6 @@ export async function migrateToSecureKeychain(): Promise<boolean> {
       service: SERVICE_NAME,
     });
 
-    trackEvent(AuthEvents.MNEMONIC_CREATED, { migrated: true });
-
     setKeychainMigrationCompleted();
 
     return true;
@@ -487,11 +428,6 @@ export async function migrateToSecureKeychain(): Promise<boolean> {
         source: 'keychain-migration',
       });
     }
-    const message = error instanceof Error ? error.message : String(error);
-    trackEvent(AuthEvents.MNEMONIC_RESTORE_FAILED, {
-      reason: 'migration_failed',
-      error: message,
-    });
 
     return false;
   }

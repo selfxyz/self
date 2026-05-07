@@ -10,7 +10,6 @@ export {
   BiometricEvents,
   DocumentEvents,
   KycEvents,
-  MockDataEvents,
   NotificationEvents,
   PassportEvents,
   PointEvents,

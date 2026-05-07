@@ -42,11 +42,6 @@ export function useReadMRZ(scanStartTimeRef: RefObject<number>) {
         // Dev-only: Check for injected unknown error
         if (shouldTrigger?.('mrz_unknown_error')) {
           console.log('[DEV] Injecting MRZ unknown error');
-          selfClient.trackEvent(BiometricEvents.CAMERA_SCAN_FAILED, {
-            reason: 'unknown_error',
-            error: 'Injected error for testing',
-            duration_seconds: parseFloat(scanDurationSeconds),
-          });
           selfClient.emit(SdkEvents.DOCUMENT_MRZ_READ_FAILURE);
           return;
         }
@@ -54,11 +49,6 @@ export function useReadMRZ(scanStartTimeRef: RefObject<number>) {
         if (error) {
           console.error(error);
 
-          selfClient.trackEvent(BiometricEvents.CAMERA_SCAN_FAILED, {
-            reason: 'unknown_error',
-            error: error.message || 'Unknown error',
-            duration_seconds: parseFloat(scanDurationSeconds),
-          });
 
           selfClient.emit(SdkEvents.DOCUMENT_MRZ_READ_FAILURE);
           return;
@@ -66,11 +56,6 @@ export function useReadMRZ(scanStartTimeRef: RefObject<number>) {
 
         if (!result) {
           console.error('No result from passport scan');
-          selfClient.trackEvent(BiometricEvents.CAMERA_SCAN_FAILED, {
-            reason: 'invalid_input',
-            error: 'No result from scan',
-            duration_seconds: parseFloat(scanDurationSeconds),
-          });
 
           return;
         }
@@ -90,13 +75,6 @@ export function useReadMRZ(scanStartTimeRef: RefObject<number>) {
           if (shouldInjectInvalidFormat) {
             console.log('[DEV] Injecting MRZ invalid format error');
           }
-          selfClient.trackEvent(BiometricEvents.CAMERA_SCAN_FAILED, {
-            reason: 'invalid_format',
-            passportNumberLength: documentNumber.length,
-            dateOfBirthLength: formattedDateOfBirth.length,
-            dateOfExpiryLength: formattedDateOfExpiry.length,
-            duration_seconds: parseFloat(scanDurationSeconds),
-          });
 
           selfClient.emit(SdkEvents.DOCUMENT_MRZ_READ_FAILURE);
           return;
@@ -113,9 +91,6 @@ export function useReadMRZ(scanStartTimeRef: RefObject<number>) {
         const trimmedDocType = documentType?.trim().toLowerCase() ?? '';
         const branchDocumentType = trimmedDocType === 'i' || trimmedDocType.startsWith('id') ? 'id_card' : 'passport';
 
-        selfClient.trackEvent(BiometricEvents.CAMERA_SCAN_SUCCESS, {
-          duration_seconds: parseFloat(scanDurationSeconds),
-        });
         trackBranchEvent(selfClient, BiometricEvents.MRZ_CAPTURED, {
           document_type: branchDocumentType,
           duration_seconds: parseFloat(scanDurationSeconds),

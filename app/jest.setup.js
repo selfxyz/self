@@ -691,29 +691,42 @@ jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
 }));
 
 // Mock Sentry to prevent NativeModule.getConstants errors
-jest.mock('@sentry/react-native', () => ({
-  addBreadcrumb: jest.fn(),
-  captureException: jest.fn(),
-  captureFeedback: jest.fn(),
-  captureMessage: jest.fn(),
-  setContext: jest.fn(),
-  setExtra: jest.fn(),
-  setTag: jest.fn(),
-  setUser: jest.fn(),
-  init: jest.fn(),
-  wrap: jest.fn(component => component),
-  withScope: jest.fn(callback => {
-    // Mock scope object
-    const scope = {
-      setLevel: jest.fn(),
-      setTag: jest.fn(),
-      setExtra: jest.fn(),
-      setContext: jest.fn(),
-      setUser: jest.fn(),
-    };
-    callback(scope);
-  }),
-}));
+jest.mock('@sentry/react-native', () => {
+  const React = jest.requireActual('react');
+  // Render children inside a Fragment — we don't need a host view, the screen
+  // tests just want PrivacyMask/Mask/Unmask to be valid components.
+  const passThrough = ({ children }) =>
+    React.createElement(React.Fragment, null, children);
+  return {
+    addBreadcrumb: jest.fn(),
+    captureException: jest.fn(),
+    captureFeedback: jest.fn(),
+    captureMessage: jest.fn(),
+    consoleLoggingIntegration: jest.fn(),
+    feedbackIntegration: jest.fn(),
+    Mask: passThrough,
+    Unmask: passThrough,
+    MaskFallback: passThrough,
+    UnmaskFallback: passThrough,
+    mobileReplayIntegration: jest.fn(),
+    setContext: jest.fn(),
+    setExtra: jest.fn(),
+    setTag: jest.fn(),
+    setUser: jest.fn(),
+    init: jest.fn(),
+    wrap: jest.fn(component => component),
+    withScope: jest.fn(callback => {
+      const scope = {
+        setLevel: jest.fn(),
+        setTag: jest.fn(),
+        setExtra: jest.fn(),
+        setContext: jest.fn(),
+        setUser: jest.fn(),
+      };
+      callback(scope);
+    }),
+  };
+});
 
 jest.mock('@react-native-google-signin/google-signin', () => ({
   GoogleSignin: {
@@ -766,6 +779,7 @@ jest.mock('@env', () => ({
   GOOGLE_SIGNIN_IOS_CLIENT_ID: 'mock-google-ios-client-id',
   GOOGLE_SIGNIN_WEB_CLIENT_ID: 'mock-google-web-client-id',
   MIXPANEL_NFC_PROJECT_TOKEN: 'test-token',
+  SENTRY_DSN: 'https://example@sentry.example/1',
 }));
 
 global.FileReader = class {

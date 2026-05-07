@@ -70,7 +70,6 @@ describe('init parsing decision', () => {
 
       expect(actorMock.send).toHaveBeenCalledWith({ type: 'FETCH_DATA' });
       expect(actorMock.send).not.toHaveBeenCalledWith({ type: 'PARSE_ID_DOCUMENT' });
-      expect(client.trackEvent).not.toHaveBeenCalledWith(ProofEvents.PARSE_ID_DOCUMENT_STARTED);
     });
 
     it('parses for disclose when dsc_parsed is missing', async () => {
@@ -81,7 +80,6 @@ describe('init parsing decision', () => {
 
       expect(actorMock.send).toHaveBeenCalledWith({ type: 'PARSE_ID_DOCUMENT' });
       expect(actorMock.send).not.toHaveBeenCalledWith({ type: 'FETCH_DATA' });
-      expect(client.trackEvent).toHaveBeenCalledWith(ProofEvents.PARSE_ID_DOCUMENT_STARTED);
     });
 
     it('parses when dsc_parsed exists but authorityKeyIdentifier is missing', async () => {
@@ -176,7 +174,6 @@ describe('init parsing decision', () => {
 
       expect(actorMock.send).toHaveBeenCalledWith({ type: 'PARSE_ID_DOCUMENT' });
       expect(actorMock.send).not.toHaveBeenCalledWith({ type: 'FETCH_DATA' });
-      expect(client.trackEvent).toHaveBeenCalledWith(ProofEvents.PARSE_ID_DOCUMENT_STARTED);
     });
 
     it('parses when dsc_parsed is missing', async () => {
@@ -198,9 +195,6 @@ describe('init parsing decision', () => {
       expect(actorMock.send).toHaveBeenCalledWith({ type: 'ERROR' });
       expect(actorMock.send).not.toHaveBeenCalledWith({ type: 'PARSE_ID_DOCUMENT' });
       expect(actorMock.send).not.toHaveBeenCalledWith({ type: 'FETCH_DATA' });
-      expect(client.trackEvent).toHaveBeenCalledWith(ProofEvents.PROOF_FAILED, {
-        message: 'DSC circuit not supported for aadhaar',
-      });
     });
 
     it('rejects dsc circuit for kyc documents', async () => {
@@ -211,9 +205,6 @@ describe('init parsing decision', () => {
 
       expect(actorMock.send).toHaveBeenCalledWith({ type: 'ERROR' });
       expect(actorMock.send).not.toHaveBeenCalledWith({ type: 'PARSE_ID_DOCUMENT' });
-      expect(client.trackEvent).toHaveBeenCalledWith(ProofEvents.PROOF_FAILED, {
-        message: 'DSC circuit not supported for kyc',
-      });
     });
   });
 
@@ -226,7 +217,6 @@ describe('init parsing decision', () => {
 
       expect(actorMock.send).toHaveBeenCalledWith({ type: 'FETCH_DATA' });
       expect(actorMock.send).not.toHaveBeenCalledWith({ type: 'PARSE_ID_DOCUMENT' });
-      expect(client.trackEvent).not.toHaveBeenCalledWith(ProofEvents.PARSE_ID_DOCUMENT_STARTED);
     });
 
     it('skips parsing for register (does not require DSC)', async () => {
@@ -249,7 +239,6 @@ describe('init parsing decision', () => {
 
       expect(actorMock.send).toHaveBeenCalledWith({ type: 'FETCH_DATA' });
       expect(actorMock.send).not.toHaveBeenCalledWith({ type: 'PARSE_ID_DOCUMENT' });
-      expect(client.trackEvent).not.toHaveBeenCalledWith(ProofEvents.PARSE_ID_DOCUMENT_STARTED);
     });
   });
 });
@@ -279,11 +268,7 @@ describe('startFetchingData', () => {
 
     await useProvingStore.getState().startFetchingData(mockSelfClient);
 
-    expect(mockSelfClient.trackEvent).toHaveBeenCalledWith(ProofEvents.FETCH_DATA_STARTED);
     expect(actorMock.send).toHaveBeenCalledWith({ type: 'FETCH_ERROR' });
-    expect(mockSelfClient.trackEvent).toHaveBeenCalledWith(ProofEvents.FETCH_DATA_FAILED, {
-      message: 'Missing parsed DSC in passport data',
-    });
     expect(actorMock.send).not.toHaveBeenCalledWith({ type: 'FETCH_SUCCESS' });
   });
 
@@ -297,9 +282,6 @@ describe('startFetchingData', () => {
     await useProvingStore.getState().startFetchingData(mockSelfClient);
 
     expect(actorMock.send).toHaveBeenCalledWith({ type: 'FETCH_ERROR' });
-    expect(mockSelfClient.trackEvent).toHaveBeenCalledWith(ProofEvents.FETCH_DATA_FAILED, {
-      message: 'Missing parsed DSC in passport data',
-    });
   });
 
   it('emits FETCH_ERROR when dsc_parsed is missing for id_card', async () => {
@@ -308,9 +290,6 @@ describe('startFetchingData', () => {
     await useProvingStore.getState().startFetchingData(mockSelfClient);
 
     expect(actorMock.send).toHaveBeenCalledWith({ type: 'FETCH_ERROR' });
-    expect(mockSelfClient.trackEvent).toHaveBeenCalledWith(ProofEvents.FETCH_DATA_FAILED, {
-      message: 'Missing parsed DSC in id_card data',
-    });
   });
 
   it('calls fetchAllTreesAndCircuits for passport with valid dsc_parsed', async () => {
@@ -324,7 +303,6 @@ describe('startFetchingData', () => {
 
     expect(fetchAllTreesAndCircuits).toHaveBeenCalledWith(mockSelfClient, 'passport', 'prod', 'test-aki-123');
     expect(actorMock.send).toHaveBeenCalledWith({ type: 'FETCH_SUCCESS' });
-    expect(mockSelfClient.trackEvent).toHaveBeenCalledWith(ProofEvents.FETCH_DATA_SUCCESS);
   });
 
   it('calls fetchAllTreesAndCircuits for id_card with valid dsc_parsed', async () => {

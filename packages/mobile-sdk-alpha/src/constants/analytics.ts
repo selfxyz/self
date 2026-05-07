@@ -3,9 +3,9 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 /**
- * Aadhaar branch milestone events. Curated from 25 → 7 in ANA-12. The deleted
- * events (UPLOAD_SCREEN_OPENED, PROCESSING_STARTED, QR_DATA_EXTRACTION_*, etc.)
- * become Sentry breadcrumbs in ANA-13. Emit via `trackBranchEvent`.
+ * Aadhaar branch milestone events. Curated from 25 → 7 in ANA-12. Diagnostic
+ * events from the legacy set were either deleted (ANA-12) or migrated to
+ * Sentry breadcrumbs (ANA-13). Emit via `trackBranchEvent`.
  */
 export const AadhaarEvents = {
   CONTINUE_PRESSED: 'Aadhaar: Continue Pressed',
@@ -28,19 +28,17 @@ export const AppEvents = {
   UPDATE_STARTED: 'App: Update Started',
 };
 
+/**
+ * Login funnel events. Curated from 12 → 3 in ANA-13. The deleted keys
+ * (BIOMETRIC_AUTH_*, BIOMETRIC_CHECK, BIOMETRIC_LOGIN_ATTEMPT, MNEMONIC_*,
+ * AUTHENTICATION_TIMEOUT) were diagnostic and now flow through Sentry
+ * breadcrumbs / captured exceptions. The three remaining keys are the
+ * mutually-exclusive terminal states of a biometric login attempt.
+ */
 export const AuthEvents = {
-  AUTHENTICATION_TIMEOUT: 'Auth: Authentication Timeout',
-  BIOMETRIC_AUTH_FAILED: 'Auth: Biometric Auth Failed',
-  BIOMETRIC_AUTH_SUCCESS: 'Auth: Biometric Auth Success',
-  BIOMETRIC_CHECK: 'Auth: Biometrics Check',
-  BIOMETRIC_LOGIN_ATTEMPT: 'Auth: Biometric Login Attempt',
   BIOMETRIC_LOGIN_CANCELLED: 'Auth: Biometric Login Cancelled',
   BIOMETRIC_LOGIN_FAILED: 'Auth: Biometric Login Failed',
   BIOMETRIC_LOGIN_SUCCESS: 'Auth: Biometric Login Success',
-  MNEMONIC_CREATED: 'Auth: Mnemonic Created',
-  MNEMONIC_LOADED: 'Auth: Mnemonic Loaded',
-  MNEMONIC_RESTORE_FAILED: 'Auth: Mnemonic Restore Failed',
-  MNEMONIC_RESTORE_SUCCESS: 'Auth: Mnemonic Restore Success',
 };
 
 export const BackupEvents = {
@@ -64,19 +62,19 @@ export const BackupEvents = {
 };
 
 /**
- * Biometric branch events. Covers passport AND biometric ID — the same code
- * path serves both, distinguished by a `document_type` property on each event.
+ * Biometric branch events. Covers passport AND biometric ID — same code
+ * path, distinguished by a `document_type` property. Curated to 6 milestone
+ * keys in ANA-12; the legacy `Passport:`-prefixed diagnostic keys were
+ * migrated to Sentry breadcrumbs in ANA-13.
  *
- * The MRZ_*, NFC_*, DOCUMENT_* keys at the top are the canonical milestone
- * events introduced in ANA-12; emit them via `trackBranchEvent`.
+ * NFC_SCAN_FAILED / NFC_RESPONSE_PARSE_FAILED stay as constants because the
+ * native NFC channel (`trackNfcEvent`) still emits them via the
+ * `PassportReader` Mixpanel pipe — that pipe is out of scope for ANA-13.
  *
- * The remaining keys are diagnostic events retained from the legacy
- * `PassportEvents` group. Their string values keep the `Passport:` prefix
- * deliberately, to preserve Mixpanel data continuity until ANA-13 migrates
- * them off Mixpanel and onto Sentry breadcrumbs.
+ * Emit milestone keys via `trackBranchEvent`; native NFC pipe uses
+ * `trackNfcEvent`.
  */
 export const BiometricEvents = {
-  // ANA-12 milestone events (emit via trackBranchEvent)
   DOCUMENT_PARSED: 'Biometric: Document Parsed',
   DOCUMENT_UNSUPPORTED: 'Biometric: Document Unsupported',
   MRZ_CAPTURED: 'Biometric: MRZ Captured',
@@ -84,28 +82,11 @@ export const BiometricEvents = {
   NFC_STARTED: 'Biometric: NFC Started',
   NFC_SUCCEEDED: 'Biometric: NFC Succeeded',
 
-  // Diagnostic events — slated for Sentry migration in ANA-13.
-  CAMERA_SCAN_CANCELLED: 'Passport: Camera Scan Cancelled',
-  CAMERA_SCAN_FAILED: 'Passport: Camera Scan Failed',
-  CAMERA_SCAN_STARTED: 'Passport: Camera Scan Started',
-  CAMERA_SCAN_SUCCESS: 'Passport: Camera Scan Success',
-  CAMERA_SCREEN_CLOSED: 'Passport: Camera View Closed',
-  CANCEL_PASSPORT_NFC: 'Passport: Cancel Passport NFC',
-  COMING_SOON: 'Passport: Passport Not Supported',
-  DATA_CONFIRMATION_COMPLETED: 'Passport: Data Confirmation Completed',
-  DATA_LOAD_ERROR: 'Passport: Passport Data Load Error',
-  DISMISS_COMING_SOON: 'Passport: Dismiss Unsupported Passport',
-  MRZ_DATA_MODIFIED: 'Passport: MRZ Data Modified',
+  // Native NFC pipe constants — emitted only via `trackNfcEvent`, not
+  // `trackEvent`. Names retain the legacy `Passport:` prefix to preserve
+  // Mixpanel data continuity in the native NFC project.
   NFC_RESPONSE_PARSE_FAILED: 'Passport: Parsing NFC Response Unsuccessful',
   NFC_SCAN_FAILED: 'Passport: NFC Scan Failed',
-  NFC_SCAN_SUCCESS: 'Passport: NFC Scan Success',
-  NOTIFY_COMING_SOON: 'Passport: Notify Unsupported Passport',
-  OPEN_NFC_SETTINGS: 'Passport: Open NFC Settings',
-  OWNERSHIP_CONFIRMED: 'Passport: Passport Ownership Confirmed',
-  PASSPORT_DATA_NOT_FOUND: 'Passport: Passport Data Not Found',
-  PASSPORT_PARSE_FAILED: 'Passport: Passport Parse Failed',
-  PASSPORT_PARSED: 'Passport: Passport Parsed',
-  START_PASSPORT_NFC: 'Passport: Start Passport NFC',
 };
 
 export const DocumentEvents = {
@@ -137,23 +118,6 @@ export const KycEvents = {
   SESSION_REQUESTED: 'Kyc: Session Requested',
 };
 
-export const MockDataEvents = {
-  CANCEL_GENERATION: 'Mock Data: Cancel Generation',
-  CREATE_DEEP_LINK: 'Mock Data: Create Deep Link',
-  DECREASE_AGE: 'Mock Data: Decrease Age',
-  DECREASE_EXPIRY_YEARS: 'Mock Data: Decrease Expiry Years',
-  ENABLE_ADVANCED_MODE: 'Mock Data: Enable Advanced Mode',
-  GENERATE_DATA: 'Mock Data: Generate Data',
-  INCREASE_AGE: 'Mock Data: Increase Age',
-  INCREASE_EXPIRY_YEARS: 'Mock Data: Increase Expiry Years',
-  OPEN_ALGORITHM_SELECTION: 'Mock Data: Open Algorithm Selection',
-  OPEN_COUNTRY_SELECTION: 'Mock Data: Open Country Selection',
-  SELECT_ALGORITHM: 'Mock Data: Select Algorithm',
-  SELECT_COUNTRY: 'Mock Data: Select Country',
-  SELECT_DOCUMENT_TYPE: 'Mock Data: Select Document Type',
-  TOGGLE_OFAC_LIST: 'Mock Data: Toggle OFAC List',
-};
-
 export const NotificationEvents = {
   BACKGROUND_NOTIFICATION_OPENED: 'Notification: Background Notification Opened',
   COLD_START_NOTIFICATION_OPENED: 'Notification: Cold Start Notification Opened',
@@ -163,8 +127,8 @@ export const NotificationEvents = {
  * Canonical onboarding funnel events. These are the ONLY events the Mixpanel
  * onboarding funnel consumes. They fire at most once per onboarding attempt,
  * guarded by the canonical funnel helper — never on component mount, never on
- * back-navigation. Every other `*Events` group in this file is the diagnostic
- * layer and is excluded from the funnel.
+ * back-navigation. Every other `*Events` group in this file is a sibling
+ * surface (branch, login, app lifecycle), excluded from the funnel.
  */
 export const OnboardingEvents = {
   STARTED: 'Onboarding: Started',
@@ -180,10 +144,8 @@ export const OnboardingEvents = {
 };
 
 /**
- * @deprecated Renamed to `BiometricEvents` in ANA-12 — the same code path
- * covers passports and biometric IDs, distinguished by a `document_type`
- * property. This alias keeps existing call sites compiling for one release
- * and is removed in the next minor.
+ * @deprecated Use `BiometricEvents` directly. Kept as an alias for the
+ * native-NFC-channel call sites that still reference the historic name.
  */
 export const PassportEvents = BiometricEvents;
 
@@ -204,72 +166,13 @@ export const PointEvents = {
   REFRESH_HISTORY: 'Points: Refresh History',
 };
 
+/**
+ * Native-NFC-channel constants only. The Mixpanel `trackEvent` pipe no longer
+ * emits any `Proof:`-prefixed events as of ANA-13 — those are now Sentry
+ * breadcrumbs. `PROVING_PROCESS_ERROR` survives because it is emitted via
+ * `trackNfcEvent`, which still ships to the native NFC Mixpanel project
+ * (out of scope for ANA-13; see ANA-04).
+ */
 export const ProofEvents = {
-  ALREADY_REGISTERED: 'Proof: Already Registered',
-  ATTESTATION_RECEIVED: 'Proof: Attestation Received',
-  ATTESTATION_VERIFIED: 'Proof: Attestation Verified',
-  CLEANUP_COMPLETED: 'Proof: Connections Cleanup Completed',
-  CLEANUP_STARTED: 'Proof: Connections Cleanup Started',
-  CONNECTION_UUID_GENERATED: 'Proof: Connection UUID Generated',
-  DEVICE_TOKEN_REG_FAILED: 'Proof: Device Token Registration Failed',
-  DEVICE_TOKEN_REG_STARTED: 'Proof: Device Token Registration Started',
-  DEVICE_TOKEN_REG_SUCCESS: 'Proof: Device Token Registration Succeeded',
-  DOCUMENT_LOAD_STARTED: 'Proof: Load Selected Document Started',
-  DSC_IN_TREE: 'Proof: DSC Already In Tree',
-  FCM_TOKEN_STORED: 'Proof: FCM Token Stored Successfully',
-  FETCH_DATA_FAILED: 'Proof: Fetch Data Failed',
-  FETCH_DATA_STARTED: 'Proof: Fetch Data Started',
-  FETCH_DATA_SUCCESS: 'Proof: Fetch Data Succeeded',
-  LOAD_SECRET_FAILED: 'Proof: Load Secret Failed',
-  PARSE_ID_DOCUMENT_STARTED: 'Proof: Parse ID Document Started',
-  NOTIFICATION_PERMISSION_REQUESTED: 'Proof: Notification Permission Requested',
-  PASSPORT_NULLIFIER_ONCHAIN: 'Proof: Passport Nullifier Onchain',
-  PAYLOAD_ENCRYPTED: 'Proof: Payload Encrypted',
-  PAYLOAD_GEN_COMPLETED: 'Proof: Payload Generation Completed',
-  PAYLOAD_GEN_STARTED: 'Proof: Payload Generation Started',
-  PAYLOAD_SENT: 'Proof: Payload Sent',
-  POST_PROVING_CHAIN_STEP: 'Proof: Post Proving Chain Step',
-  POST_PROVING_COMPLETED: 'Proof: Post Proving Completed',
-  POST_PROVING_STARTED: 'Proof: Post Proving Started',
-  PROOF_COMPLETED: 'Proof: Proof Completed',
-  PROOF_DISCLOSURES_SCROLLED: 'Proof: Proof Disclosures Scrolled',
-  PROOF_FAILED: 'Proof: Proof Failed',
-  POINTS_NULLIFIER_ALREADY_USED: 'Proof: Points Nullifier Already Used',
-  PROOF_RESULT_ACKNOWLEDGED: 'Proof: Proof Result Acknowledged',
-  PROOF_VERIFY_CONFIRMATION_ACCEPTED: 'Proof: Verify Confirmation Accepted',
-  PROOF_VERIFY_LONG_PRESS: 'Proof: Verify Button Long Pressed',
-  PROVING_INIT: 'Proof: Proving Machine Init',
   PROVING_PROCESS_ERROR: 'Proof: Proving Process Error',
-  PROVING_PROCESS_STARTED: 'Proof: Proving Process Started',
-  PROVING_STATE_CHANGE: 'Proof: Proving State Change',
-  QR_SCAN_CANCELLED: 'Proof: QR Scan Cancelled',
-  QR_SCAN_FAILED: 'Proof: QR Scan Failed',
-  QR_SCAN_REQUESTED: 'Proof: QR Scan Requested',
-  QR_SCAN_SUCCESS: 'Proof: QR Scan Success',
-  REGISTER_COMPLETED: 'Proof: Register Completed',
-  SHARED_KEY_DERIVED: 'Proof: Shared Key Derived',
-  SOCKETIO_CONNECT_ERROR: 'Proof: Socket.IO Connect Error',
-  SOCKETIO_CONN_STARTED: 'Proof: Socket.IO Connection Started',
-  SOCKETIO_DISCONNECT_UNEXPECTED: 'Proof: Socket.IO Disconnected Unexpectedly',
-  SOCKETIO_PROOF_FAILURE: 'Proof: Socket.IO Proof Failure',
-  SOCKETIO_PROOF_SUCCESS: 'Proof: Socket.IO Proof Success',
-  SOCKETIO_STATUS_RECEIVED: 'Proof: Socket.IO Status Received',
-  SOCKETIO_SUBSCRIBED: 'Proof: Socket.IO Subscribed',
-  TEE_CONN_FAILED: 'Proof: TEE Connection Failed',
-  TEE_CONN_STARTED: 'Proof: TEE Connection Started',
-  TEE_CONN_SUCCESS: 'Proof: TEE Connection Succeeded',
-  TEE_WS_CLOSED: 'Proof: TEE WS Closed',
-  TEE_WS_ERROR: 'Proof: TEE WS Error',
-  USER_CONFIRMED: 'Proof: User Confirmed',
-  VALIDATION_FAILED: 'Proof: Validation Failed',
-  VALIDATION_STARTED: 'Proof: Validation Started',
-  VALIDATION_SUCCESS: 'Proof: Validation Succeeded',
-  WS_HELLO_ACK: 'Proof: WS Hello Acknowledged',
-  WS_HELLO_SENT: 'Proof: WS Hello Sent',
-};
-
-export const SettingsEvents = {
-  CONNECTION_MODAL_CLOSED: 'Settings: Connection Modal Closed',
-  CONNECTION_MODAL_OPENED: 'Settings: Connection Modal Opened',
-  CONNECTION_SETTINGS_OPENED: 'Settings: Connection Settings Opened',
 };

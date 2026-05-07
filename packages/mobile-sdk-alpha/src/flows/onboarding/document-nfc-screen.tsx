@@ -43,7 +43,7 @@ type DocumentNFCScreenProps = {
 
 export const DocumentNFCScreen: React.FC<DocumentNFCScreenProps> = (props: DocumentNFCScreenProps) => {
   const selfClient = useSelfClient();
-  const { trackEvent, logNFCEvent, trackNfcEvent, useMRZStore } = selfClient;
+  const { logNFCEvent, trackNfcEvent, useMRZStore } = selfClient;
 
   const { passportNumber, dateOfBirth, dateOfExpiry, documentType, countryCode } = useMRZStore();
 
@@ -190,9 +190,6 @@ export const DocumentNFCScreen: React.FC<DocumentNFCScreenProps> = (props: Docum
       }
       scanTimeoutRef.current = setTimeout(() => {
         scanCancelledRef.current = true;
-        trackEvent(PassportEvents.NFC_SCAN_FAILED, {
-          error: 'timeout',
-        });
         logNFCEvent('warn', 'scan_timeout', {
           ...baseContext,
           stage: 'timeout',
@@ -231,9 +228,6 @@ export const DocumentNFCScreen: React.FC<DocumentNFCScreenProps> = (props: Docum
 
         const scanDurationSeconds = ((Date.now() - scanStartTime) / 1000).toFixed(2);
         console.log('NFC Scan Successful - Duration:', scanDurationSeconds, 'seconds');
-        trackEvent(PassportEvents.NFC_SCAN_SUCCESS, {
-          duration_seconds: parseFloat(scanDurationSeconds),
-        });
         logNFCEvent(
           'info',
           'scan_success',
@@ -249,9 +243,6 @@ export const DocumentNFCScreen: React.FC<DocumentNFCScreenProps> = (props: Docum
         } catch (e: unknown) {
           console.error('Parsing NFC Response Unsuccessful');
           const errMsg = sanitizeErrorMessage(e instanceof Error ? e.message : String(e));
-          trackEvent(PassportEvents.NFC_RESPONSE_PARSE_FAILED, {
-            error: errMsg,
-          });
           trackNfcEvent(PassportEvents.NFC_RESPONSE_PARSE_FAILED, {
             error: errMsg,
           });
@@ -279,10 +270,6 @@ export const DocumentNFCScreen: React.FC<DocumentNFCScreenProps> = (props: Docum
         console.error('NFC Scan Unsuccessful:', e);
         const message = e instanceof Error ? e.message : String(e);
         const sanitized = sanitizeErrorMessage(message);
-        trackEvent(PassportEvents.NFC_SCAN_FAILED, {
-          error: sanitized,
-          duration_seconds: parseFloat(scanDurationSeconds),
-        });
         trackNfcEvent(PassportEvents.NFC_SCAN_FAILED, {
           error: sanitized,
           duration_seconds: parseFloat(scanDurationSeconds),
@@ -318,7 +305,6 @@ export const DocumentNFCScreen: React.FC<DocumentNFCScreenProps> = (props: Docum
     dateOfBirth,
     dateOfExpiry,
     isPacePolling,
-    trackEvent,
   ]);
 
   const onCancelPress = useCallback(() => {
@@ -450,16 +436,10 @@ export const DocumentNFCScreen: React.FC<DocumentNFCScreenProps> = (props: Docum
               )}
             </TextsContainer>
             <ButtonsContainer>
-              <PrimaryButton
-                trackEvent={
-                  isNfcEnabled || !isNfcSupported ? PassportEvents.START_PASSPORT_NFC : PassportEvents.OPEN_NFC_SETTINGS
-                }
-                onPress={onVerifyPress}
-                disabled={!isNfcSupported}
-              >
+              <PrimaryButton onPress={onVerifyPress} disabled={!isNfcSupported}>
                 {isNfcEnabled || !isNfcSupported ? 'Start Scan' : 'Open settings'}
               </PrimaryButton>
-              <SecondaryButton trackEvent={PassportEvents.CANCEL_PASSPORT_NFC} onPress={onCancelPress}>
+              <SecondaryButton onPress={onCancelPress}>
                 Cancel
               </SecondaryButton>
             </ButtonsContainer>

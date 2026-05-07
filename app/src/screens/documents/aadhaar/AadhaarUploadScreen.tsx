@@ -36,6 +36,7 @@ import {
   scanQRCodeFromPhotoLibrary,
 } from '@/integrations/qrScanner';
 import type { RootStackParamList } from '@/navigation';
+import { PrivacyMask } from '@/observability/PrivacyMask';
 import { extraYPadding } from '@/utils/styleUtils';
 
 const AadhaarUploadScreen: React.FC = () => {
@@ -141,65 +142,66 @@ const AadhaarUploadScreen: React.FC = () => {
   ]);
 
   return (
-    <YStack flex={1} backgroundColor={slate100} paddingBottom={paddingBottom}>
-      <YStack flex={1} paddingHorizontal={20} paddingTop={20}>
-        <YStack
-          flex={1}
-          justifyContent="center"
-          alignItems="center"
-          paddingVertical={20}
-        >
-          <Image
-            source={aadhaarImageSource}
-            width="100%"
-            height="100%"
-            objectFit="contain"
-          />
-        </YStack>
-      </YStack>
-
-      <YStack
-        paddingHorizontal={20}
-        paddingTop={20}
-        alignItems="center"
-        paddingVertical={25}
-        borderBlockWidth={1}
-        borderBlockColor={slate200}
-      >
-        <BodyText
-          style={{ fontWeight: 'bold', fontSize: 18, textAlign: 'center' }}
-        >
-          Generate a QR code from the Aadhaar app
-        </BodyText>
-        <BodyText
-          style={{ fontSize: 16, textAlign: 'center', color: slate500 }}
-        >
-          Save the QR code to your photo library and upload it here.
-        </BodyText>
-        <BodyText
-          style={{
-            fontSize: 12,
-            textAlign: 'center',
-            color: slate400,
-            marginTop: 20,
-          }}
-        >
-          SELF DOES NOT STORE THIS INFORMATION.
-        </BodyText>
-      </YStack>
-
-      <YStack paddingHorizontal={25} backgroundColor={white} paddingTop={25}>
-        <XStack gap="$3" alignItems="stretch">
-          <YStack flex={1}>
-            <PrimaryButton
-              disabled={!isQRScannerPhotoLibraryAvailable() || isProcessing}
-              onPress={onPhotoLibraryPress}
-            >
-              {isProcessing ? 'Processing...' : 'Upload QR code'}
-            </PrimaryButton>
+    <PrivacyMask>
+      <YStack flex={1} backgroundColor={slate100} paddingBottom={paddingBottom}>
+        <YStack flex={1} paddingHorizontal={20} paddingTop={20}>
+          <YStack
+            flex={1}
+            justifyContent="center"
+            alignItems="center"
+            paddingVertical={20}
+          >
+            <Image
+              source={aadhaarImageSource}
+              width="100%"
+              height="100%"
+              objectFit="contain"
+            />
           </YStack>
-          {/* TODO: Implement camera-based QR scanning for Aadhaar */}
-          {/* <Button
+        </YStack>
+
+        <YStack
+          paddingHorizontal={20}
+          paddingTop={20}
+          alignItems="center"
+          paddingVertical={25}
+          borderBlockWidth={1}
+          borderBlockColor={slate200}
+        >
+          <BodyText
+            style={{ fontWeight: 'bold', fontSize: 18, textAlign: 'center' }}
+          >
+            Generate a QR code from the Aadhaar app
+          </BodyText>
+          <BodyText
+            style={{ fontSize: 16, textAlign: 'center', color: slate500 }}
+          >
+            Save the QR code to your photo library and upload it here.
+          </BodyText>
+          <BodyText
+            style={{
+              fontSize: 12,
+              textAlign: 'center',
+              color: slate400,
+              marginTop: 20,
+            }}
+          >
+            SELF DOES NOT STORE THIS INFORMATION.
+          </BodyText>
+        </YStack>
+
+        <YStack paddingHorizontal={25} backgroundColor={white} paddingTop={25}>
+          <XStack gap="$3" alignItems="stretch">
+            <YStack flex={1}>
+              <PrimaryButton
+                disabled={!isQRScannerPhotoLibraryAvailable() || isProcessing}
+                onPress={onPhotoLibraryPress}
+              >
+                {isProcessing ? 'Processing...' : 'Upload QR code'}
+              </PrimaryButton>
+            </YStack>
+            {/* TODO: Implement camera-based QR scanning for Aadhaar */}
+            {/* <Button
             aspectRatio={1}
             backgroundColor={slate200}
             borderRadius="$2"
@@ -217,9 +219,10 @@ const AadhaarUploadScreen: React.FC = () => {
           >
             <ScanIcon width={28} height={28} color={black} />
           </Button> */}
-        </XStack>
+          </XStack>
+        </YStack>
       </YStack>
-    </YStack>
+    </PrivacyMask>
   );
 };
 

@@ -12,7 +12,6 @@ import { PrimaryButton } from '../../components';
 import { DelayedLottieView } from '../../components/DelayedLottieView';
 import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
-import { PassportEvents, ProofEvents } from '../../constants/analytics';
 import { black, white } from '../../constants/colors';
 import { useSelfClient } from '../../context';
 import { loadSelectedDocument } from '../../documents/utils';
@@ -58,9 +57,7 @@ export const ConfirmIdentificationScreen = ({ onBeforeConfirm }: { onBeforeConfi
       <ExpandableBottomLayout.BottomSection gap={20} paddingBottom={paddingBottom} backgroundColor={white}>
         <Title style={{ textAlign: 'center' }}>Confirm your identity</Title>
         <Description style={{ textAlign: 'center', paddingBottom: 20 }}>{getPreRegistrationDescription()}</Description>
-        <PrimaryButton trackEvent={PassportEvents.OWNERSHIP_CONFIRMED} onPress={onPress}>
-          Confirm
-        </PrimaryButton>
+        <PrimaryButton onPress={onPress}>Confirm</PrimaryButton>
       </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>
   );
@@ -113,10 +110,7 @@ async function onConfirm(selfClient: SelfClient) {
       curveOrExponent: documentMetadata.curveOrExponent,
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
-    selfClient.trackEvent(ProofEvents.PROVING_PROCESS_ERROR, {
-      error: message,
-    });
+    console.error('Error confirming identification:', error);
   }
 }
 

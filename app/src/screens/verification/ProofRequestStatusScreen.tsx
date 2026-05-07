@@ -18,7 +18,6 @@ import {
   Title,
   typography,
 } from '@selfxyz/mobile-sdk-alpha/components';
-import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import {
   black,
   slate200,
@@ -65,7 +64,6 @@ const STALL_TIMEOUT_STATES = new Set([
 
 const SuccessScreen: React.FC = () => {
   const selfClient = useSelfClient();
-  const { trackEvent } = selfClient;
   const { useProvingStore, useSelfAppStore } = selfClient;
   const selfApp = useSelfAppStore(state => state.selfApp);
   const appName = selfApp?.appName;
@@ -254,13 +252,6 @@ const SuccessScreen: React.FC = () => {
             PROOF_TIMEOUT_REASON,
           );
         }
-        trackEvent(ProofEvents.PROOF_FAILED, {
-          sessionId,
-          appName,
-          errorCode: PROOF_TIMEOUT_ERROR_CODE,
-          reason: PROOF_TIMEOUT_REASON,
-          state: 'timeout',
-        });
       }
     } else if (currentState === 'completed') {
       timedOutAnalyticsTrackedRef.current = false;
@@ -269,10 +260,6 @@ const SuccessScreen: React.FC = () => {
       if (sessionId) {
         updateProofStatus(sessionId, ProofStatus.SUCCESS);
       }
-      trackEvent(ProofEvents.PROOF_COMPLETED, {
-        sessionId,
-        appName,
-      });
 
       if (isFocused && !countdownStarted && selfApp?.deeplinkCallback) {
         try {
@@ -299,20 +286,12 @@ const SuccessScreen: React.FC = () => {
           reason ?? undefined,
         );
       }
-      trackEvent(ProofEvents.PROOF_FAILED, {
-        sessionId,
-        appName,
-        errorCode,
-        reason,
-        state: currentState,
-      });
     } else {
       timedOutAnalyticsTrackedRef.current = false;
       setAnimationSource(loadingAnimation);
     }
   }, [
     hasTimedOut,
-    trackEvent,
     currentState,
     isFocused,
     appName,
@@ -417,7 +396,6 @@ const SuccessScreen: React.FC = () => {
           />
         </View>
         <PrimaryButton
-          trackEvent={ProofEvents.PROOF_RESULT_ACKNOWLEDGED}
           disabled={
             isDismissingTimedOutProof ||
             (displayState !== 'completed' &&

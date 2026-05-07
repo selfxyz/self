@@ -19,7 +19,6 @@ import {
   Description,
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
-import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import {
   black,
   slate800,
@@ -39,7 +38,6 @@ import { parseAndValidateUrlParams } from '@/navigation/deeplinks';
 
 const QRCodeViewFinderScreen: React.FC = () => {
   const selfClient = useSelfClient();
-  const { trackEvent } = selfClient;
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const isFocused = useIsFocused();
@@ -65,10 +63,6 @@ const QRCodeViewFinderScreen: React.FC = () => {
         return;
       }
       if (error) {
-        trackEvent(ProofEvents.QR_SCAN_FAILED, {
-          reason: 'scan_error',
-          error: error.message || error.toString(),
-        });
         console.error(error);
         navigation.navigate('QRCodeTrouble');
       } else {
@@ -77,9 +71,6 @@ const QRCodeViewFinderScreen: React.FC = () => {
         const { sessionId, selfApp } = validatedParams;
         if (selfApp) {
           try {
-            trackEvent(ProofEvents.QR_SCAN_SUCCESS, {
-              scan_type: 'selfApp',
-            });
             const selfAppJson = JSON.parse(selfApp);
 
             selfClient.getSelfAppState().setSelfApp(selfAppJson);
@@ -91,23 +82,12 @@ const QRCodeViewFinderScreen: React.FC = () => {
               navigateToDocumentSelector();
             }, 100);
           } catch (parseError) {
-            trackEvent(ProofEvents.QR_SCAN_FAILED, {
-              reason: 'invalid_selfApp_json',
-              error:
-                parseError instanceof Error
-                  ? parseError.message
-                  : 'JSON parse error',
-            });
             console.error('Error parsing selfApp JSON:', parseError);
             setDoneScanningQR(false); // Reset to allow another scan attempt
             navigation.navigate('QRCodeTrouble');
             return;
           }
         } else if (sessionId) {
-          trackEvent(ProofEvents.QR_SCAN_SUCCESS, {
-            scan_type: 'sessionId',
-          });
-
           selfClient.getSelfAppState().cleanSelfApp();
           selfClient.getSelfAppState().startAppListener(sessionId);
 
@@ -115,10 +95,6 @@ const QRCodeViewFinderScreen: React.FC = () => {
             navigateToDocumentSelector();
           }, 100);
         } else {
-          trackEvent(ProofEvents.QR_SCAN_FAILED, {
-            reason: 'missing_fields',
-            details: 'No sessionId or selfApp',
-          });
           console.error('No sessionId or selfApp found in QR code');
           setDoneScanningQR(false); // Reset to allow another scan attempt
           navigation.navigate('QRCodeTrouble');
@@ -126,13 +102,7 @@ const QRCodeViewFinderScreen: React.FC = () => {
         }
       }
     },
-    [
-      doneScanningQR,
-      navigation,
-      navigateToDocumentSelector,
-      trackEvent,
-      selfClient,
-    ],
+    [doneScanningQR, navigation, navigateToDocumentSelector, selfClient],
   );
 
   const shouldRenderCamera = !doneScanningQR;
