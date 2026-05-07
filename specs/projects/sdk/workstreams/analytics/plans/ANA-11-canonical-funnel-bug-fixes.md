@@ -22,7 +22,7 @@ A 7-day analysis of the canonical events identified **two real bugs in the imple
 
 ANA-01's Implementation Table specifies that for the KYC branch, `SCAN_STARTED` fires from `LogoConfirmationScreen.tsx:77`'s "No" button handler. That screen is shown only to users who selected a _biometric_ document type (passport / id_card) and is the gate that diverts them into the KYC fallback.
 
-A user who selects a non-biometric document type at `IDSelectionScreen` (the "pure-KYC" path — driving licenses, residency cards, etc.) skips `LogoConfirmationScreen` entirely. Their flow goes straight from `DOCUMENT_TYPE_SELECTED` into `useKycLauncher` → Didit modal. There is no `SCAN_STARTED` emission anywhere on this path.
+A user who selects a non-biometric document type at `IDSelectionScreen` (the "pure-KYC" path — driving licenses, residency cards, etc.) skips `LogoConfirmationScreen` entirely. Their flow goes straight from `DOCUMENT_TYPE_SELECTED` into `useKycLauncher` → KYC provider modal. There is no `SCAN_STARTED` emission anywhere on this path.
 
 Funnel evidence (7-day window, breakdown by `initial_branch`):
 
@@ -77,11 +77,11 @@ flowchart TD
     C -->|"DOCUMENT_TYPE_SELECTED<br/>locks initial_branch"| D{Document type}
 
     D -->|passport / id_card| E[LogoConfirmationScreen]
-    D -->|"non-biometric<br/>(pure-KYC)"| K1["useKycLauncher<br/>→ Didit modal"]
+    D -->|"non-biometric<br/>(pure-KYC)"| K1["useKycLauncher<br/>→ KYC provider modal"]
     D -->|aadhaar| AA[AadhaarUploadScreen]
 
     E -->|"Yes"| F[DocumentCameraScreen]
-    E -->|"No, fires SCAN_STARTED branch=kyc"| K2["useKycLauncher<br/>→ Didit modal"]
+    E -->|"No, fires SCAN_STARTED branch=kyc"| K2["useKycLauncher<br/>→ KYC provider modal"]
 
     F -->|"SCAN_STARTED branch=biometric_*"| G[NFC method + scan]
     G -->|"SCAN_SUCCEEDED branch=biometric_*"| H[DataConfirmationScreen]
@@ -130,7 +130,7 @@ flowchart TD
     F -->|"SCAN_STARTED branch=biometric_*"| G[NFC method + scan]
     G -->|"SCAN_SUCCEEDED branch=biometric_*"| H[DataConfirmationScreen]
 
-    KH -->|"Fix A: SCAN_STARTED branch=kyc<br/>(single firing point covers both pure-KYC<br/>and biometric→KYC fallback)"| KM[Didit modal]
+    KH -->|"Fix A: SCAN_STARTED branch=kyc<br/>(single firing point covers both pure-KYC<br/>and biometric→KYC fallback)"| KM[KYC provider modal]
     KM --> KR[KYC result handler]
     KR -->|"SCAN_SUCCEEDED branch=kyc"| KV[KYCVerifiedScreen]
 
@@ -200,7 +200,7 @@ What this enforces:
 
 ### In scope
 
-1. **Fix A** — emit `OnboardingEvents.SCAN_STARTED` with `branch: 'kyc'` from `app/src/hooks/useKycLauncher.ts` at the moment the Didit modal is launched. Remove the existing `SCAN_STARTED` emission from `app/src/screens/documents/selection/LogoConfirmationScreen.tsx:77` so the launcher is the single source of truth. The fire-once guard already protects against double emission for biometric → KYC fallback users.
+1. **Fix A** — emit `OnboardingEvents.SCAN_STARTED` with `branch: 'kyc'` from `app/src/hooks/useKycLauncher.ts` at the moment the KYC provider modal is launched. Remove the existing `SCAN_STARTED` emission from `app/src/screens/documents/selection/LogoConfirmationScreen.tsx:77` so the launcher is the single source of truth. The fire-once guard already protects against double emission for biometric → KYC fallback users.
 
 2. **Fix B** — gate the `PROOF_STARTED` emission at `packages/mobile-sdk-alpha/src/proving/provingMachine.ts:488` on `circuitType === 'register'`. This excludes both disclosure flows (no fake `Onboarding: Started` via `ensureAttempt`) and the DSC sub-step (so `PROOF_STARTED` always marks the actual register proof, regardless of whether the user's DSC was already in the tree).
 
@@ -209,7 +209,7 @@ What this enforces:
    Also remove `OnboardingEvents.DISCLOSURE_COMPLETED` entirely: delete the constant from `packages/mobile-sdk-alpha/src/constants/analytics.ts` and the emission site in `provingMachine.ts`'s `completed` state handler. Disclosure is not part of onboarding and should not occupy the `Onboarding: *` namespace. Diagnostic completion is already covered by `ProofEvents.PROOF_COMPLETED` (which carries `circuitType` and fires for all three circuit types).
 
 3. **Update ANA-01 spec** to:
-   - Change the `SCAN_STARTED` row's "Fire location" cell in §"Canonical Events — Implementation Table": for KYC, replace `LogoConfirmationScreen.tsx "No" fallback path` with `app/src/hooks/useKycLauncher.ts on Didit modal launch (covers pure-KYC entry and biometric→KYC fallback)`.
+   - Change the `SCAN_STARTED` row's "Fire location" cell in §"Canonical Events — Implementation Table": for KYC, replace `LogoConfirmationScreen.tsx "No" fallback path` with `app/src/hooks/useKycLauncher.ts on KYC provider modal launch (covers pure-KYC entry and biometric→KYC fallback)`.
    - Update the `PROOF_STARTED` row's "Fire location" cell to note the gate is `circuitType === 'register'` (skips DSC sub-step and disclose).
    - Update the `FAILED` row to add `proof_type` (`'register' | 'dsc'`) to its additional properties list, present on proving-stage failures.
    - Remove the `DISCLOSURE_COMPLETED` row from the table; replace the disclosure-completion code snippet with a note that disclose flows fire no canonical event.

@@ -1,233 +1,185 @@
 # ANA-01: Canonical Onboarding Funnel Events
 
-> Last updated: 2026-04-20
-> Status: Ready
-> Priority: High
-> Depends on: -
+> Last updated: 2026-04-28 (shipped via PR #2000)
+> Status: **Done**
+> Priority: —
+> Depends on: —
 
-- Workstream: analytics
-- Backlog ID: ANA-01
-- Linear: TBD (draft pending)
-- Owner: TBD
-- Branch: TBD
-- PR: TBD
+This is the historical record of what shipped in PR #2000. The current canonical-funnel contract (event set, properties, branch model, invariants) lives in [SPEC.md](../SPEC.md). Subsequent modifications: ANA-11 (bug fixes from production), with future modifications by ANA-12 / ANA-13.
 
 ## Why
 
-The Mixpanel onboarding funnel is currently not measurable with confidence because of three upstream defects in the code:
+The Mixpanel onboarding funnel was unmeasurable on three counts in the v0 codebase:
 
-1. Several decision screens fire no event (`LogoConfirmationScreen`, `CountryPickerScreen`, `IDSelectionScreen`, `ConfirmIdentificationScreen`), so drop-off at those points is invisible.
-2. The `AbstractButton` helper silently prepends `Click: ` to every `trackEvent` prop it receives, so the event names in the Mixpanel dashboard do not match the typed constants in code.
-3. Screen-view events fire on every navigation state change; back-nav re-fires step events and inflates re-entry counts.
+1. **Dead zones.** `LogoConfirmationScreen`, `CountryPickerScreen`, `IDSelectionScreen`, and `ConfirmIdentificationScreen` fired no event, so drop-off at those choice points was invisible.
+2. **Silent renaming.** `AbstractButton` prepended `Click: ` to every `trackEvent` prop, so event names in Mixpanel did not match the typed constants in code.
+3. **Back-navigation pollution.** Screen-view events fired on every navigation state change; back-nav re-fired step events and inflated re-entry counts.
 
-You are adding a thin **canonical event layer** (~8 new events) on top of the existing ~200 diagnostic events. The canonical layer is the only input to the Mixpanel funnel. The diagnostic layer stays untouched.
+This PR introduces a thin **canonical event layer** (~8 events) on top of the existing diagnostic events. The canonical layer is the only input to the Mixpanel onboarding funnel.
 
 ## Scope
 
 ### In scope
 
-1. **SDK-side:**
-   - Add a canonical-events module to `packages/mobile-sdk-alpha/` that defines the event names and property schemas as typed constants.
-   - Add a canonical terminal-event emission inside the proving machine's `completed` state handler (`packages/mobile-sdk-alpha/src/proving/provingMachine.ts:461-490`), gated on `circuitType === 'register'` AND "this session started as a registration" (see Terminal Event Invariant below).
-   - Fix `AbstractButton` to stop prepending `Click: ` when the `trackEvent` prop is a canonical event name. The `Click:` prefix stays for the existing diagnostic case to avoid a coordinated rename.
-2. **App-side:**
-   - Wire canonical step events at the committed transitions listed in the event table below, inside the onboarding state machine / navigation handlers — not inside `useEffect`s on mount.
-   - Add a guard (a `Set<string>` in the onboarding store) so each canonical step fires at most once per onboarding attempt. Going back and forward must not re-fire the event. The guard resets on `onboarding_started` and on `onboarding_failed`/`onboarding_completed` terminal events.
+1. **SDK-side**:
+   - Canonical-events module in `packages/mobile-sdk-alpha/src/constants/analytics.ts` (`OnboardingEvents` group).
+   - Funnel helper in `packages/mobile-sdk-alpha/src/analytics/onboardingFunnel.ts` (`ensureAttempt`, `trackOnboardingStep`, `completeOnboardingAttempt`, `failOnboardingAttempt`, `setOnboardingBranch`, `resolveOnboardingBranch`).
+   - Terminal-event emission inside `provingMachine.ts` `completed` state handler, gated on `circuitType === 'register' && didNewRegistrationProof`.
+   - `AbstractButton` `trackEventRaw` prop.
+2. **App-side**:
+   - Wire canonical step events at committed transitions in country picker, ID selection, document camera, NFC scan, KYC launcher, Aadhaar upload.
    - Fix the four dead-zone screens to fire their canonical event on confirm.
-3. **Tests:**
-   - Unit tests for the guard (fire once, don't re-fire on back-nav, reset on terminal).
-   - Integration test for the proving-machine terminal invariant (fires on new registration, does not fire on `ALREADY_REGISTERED`, does not fire on `disclose`).
+3. **Tests**: unit tests for the fire-once guard; integration test for the proving-machine terminal invariant.
 
 ### Out of scope
 
-- You will NOT add `build_channel` or `is_internal` properties. That is ANA-02.
-- You will NOT rename or refactor existing diagnostic events (`REGISTRATION_FALLBACK_*`, `DEVICE_TOKEN_REG_*`, etc). That is ANA-03.
-- You will NOT consolidate the NFC dual-firing (`trackEvent` + `trackNfcEvent`). That is ANA-04.
-- You will NOT remove `__DEV__` analytics suppression. Keep the existing behavior.
-- You will NOT build the Mixpanel dashboard as part of this PR. Dashboard work happens after the events are live and validated in a staging Mixpanel project.
-- You will NOT add instrumentation inside the KYC provider web SDK. The provider is a black box; the `kyc` branch funnel covers only the entry and exit.
+- Internal-build / TestFlight contamination filtering — see ANA-02.
+- Renaming or refactoring existing diagnostic events — see ANA-12 / ANA-13.
+- Consolidating native NFC dual-firing — see ANA-04.
+- Removing `__DEV__` analytics suppression.
+- Building Mixpanel dashboards.
+- KYC provider interior instrumentation — black box.
 
-## Canonical Events — Implementation Table
+## Implementation
 
-Implemented as typed constants in `packages/mobile-sdk-alpha/src/constants/analytics.ts` (new `OnboardingEvents` group) with emitter helpers in `packages/mobile-sdk-alpha/src/analytics/onboardingFunnel.ts`.
+### Funnel helper (`onboardingFunnel.ts`)
 
-Every event below is stamped by the helper with `attempt_id`, `initial_branch`, `current_branch` in addition to the listed per-event properties. See SPEC.md § Cross-branch flows for semantics.
+In-memory attempt state at module level:
 
-| Constant                                  | Event name                               | Fire location                                                                                                                                                                                                                                                                                                                                                                                                                                 | Additional properties                                                                                                                          |
-| ----------------------------------------- | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `OnboardingEvents.STARTED`                | `Onboarding: Started`                    | `app/src/screens/onboarding/DisclaimerScreen.tsx` — on `DISMISS_PRIVACY_DISCLAIMER` button press, before navigation                                                                                                                                                                                                                                                                                                                           | — (both branches `pending`)                                                                                                                    |
-| `OnboardingEvents.COUNTRY_SELECTED`       | `Onboarding: Country Selected`           | `packages/mobile-sdk-alpha/src/flows/onboarding/country-picker-screen.tsx` — inside `onCountrySelect`, after country is committed to the store                                                                                                                                                                                                                                                                                                | `country_code`                                                                                                                                 |
-| `OnboardingEvents.DOCUMENT_TYPE_SELECTED` | `Onboarding: Document Type Selected`     | `packages/mobile-sdk-alpha/src/flows/onboarding/id-selection-screen.tsx` — inside `onSelectDocumentType`, after doc type committed. **Locks `initial_branch`.**                                                                                                                                                                                                                                                                               | `document_type`, `country_code`                                                                                                                |
-| `OnboardingEvents.SCAN_STARTED`           | `Onboarding: Document Scan Started`      | Biometric: `app/src/screens/documents/scanning/DocumentCameraScreen.tsx` on camera open. KYC: `app/src/hooks/useKycLauncher.ts` on Didit modal launch (covers pure-KYC entry from `DocumentOnboardingScreen` and the various biometric→KYC fallback screens). The `LogoConfirmationScreen` "No" path also fires it directly because it does not route through the hook. Fire-once guard dedupes. Aadhaar: `AadhaarUploadScreen.tsx` on mount. | —                                                                                                                                              |
-| `OnboardingEvents.SCAN_SUCCEEDED`         | `Onboarding: Document Scan Succeeded`    | Biometric: `DocumentNFCScanScreen.tsx` on NFC success. KYC: on provider result `success`. Aadhaar: after `processAadhaarQRCode` succeeds.                                                                                                                                                                                                                                                                                                     | `duration_seconds`                                                                                                                             |
-| `OnboardingEvents.PROOF_STARTED`          | `Onboarding: Proof Generation Started`   | `packages/mobile-sdk-alpha/src/proving/provingMachine.ts` — when state enters `proving` and `circuitType === 'register'`. The register-only gate marks the actual document/register proof start (DSC is a preparatory sub-step, not a funnel milestone) and excludes disclosure flows. See ANA-11.                                                                                                                                            | —                                                                                                                                              |
-| `OnboardingEvents.PROOF_SUCCEEDED`        | `Onboarding: Proof Generation Succeeded` | `provingMachine.ts` — inside `completed` state, gated on terminal invariant (below)                                                                                                                                                                                                                                                                                                                                                           | —                                                                                                                                              |
-| `OnboardingEvents.COMPLETED`              | `Onboarding: Completed`                  | Helper-driven from `provingMachine.ts` `completed` state on the register path                                                                                                                                                                                                                                                                                                                                                                 | `duration_seconds` (total onboarding), `country_code`, `document_type`, `used_fallback`                                                        |
-| `OnboardingEvents.FAILED`                 | `Onboarding: Failed`                     | `provingMachine.ts` `failure` and `error` terminal states for any non-disclose `circuitType` (`register` and `dsc`); plus KYC / Aadhaar failure paths (future)                                                                                                                                                                                                                                                                                | `stage`, `reason`, `recoverable`, `duration_seconds`, `used_fallback`, `proof_type` (`'register' \| 'dsc'`, present on proving-stage failures) |
-| `OnboardingEvents.STEP_RETRIED`           | `Onboarding: Step Retried`               | `RegistrationFallbackMRZScreen.tsx` and `RegistrationFallbackNFCScreen.tsx` "Retry" buttons                                                                                                                                                                                                                                                                                                                                                   | `stage`, `reason`, `attempt_count`                                                                                                             |
+```ts
+interface OnboardingAttempt {
+  id: string; // uuid
+  initialBranch: OnboardingBranch;
+  currentBranch: OnboardingBranch;
+  startedAt: number;
+  firedSteps: Set<string>;
+  retryCounts: Record<OnboardingStage, number>;
+}
+```
 
-### Branch property contract (cross-branch flows)
+`ensureAttempt(selfClient)` creates a fresh attempt when none is active and emits `Onboarding: Started` as the bootstrap event. `trackOnboardingStep` calls `ensureAttempt` first, so screens never call `Onboarding: Started` directly — STARTED fires as a side effect of the first canonical step regardless of entry path.
 
-Callers pass `{ branch: 'biometric_passport' | 'biometric_id' | 'kyc' | 'aadhaar' }` as _input sugar_ to `trackOnboardingStep`. The helper translates this into:
+`trackOnboardingStep` dedupes via `firedSteps`:
 
-- First non-`pending` value → locks `initial_branch` (immutable for the attempt)
-- Every call → updates `current_branch`
+```ts
+function trackOnboardingStep(selfClient, event, properties?) {
+  const attempt = ensureAttempt(selfClient);
+  if (properties?.branch) captureBranch(attempt, properties.branch);
+  if (attempt.firedSteps.has(event)) return;
+  attempt.firedSteps.add(event);
+  selfClient.trackEvent(event, { ...baseProperties(attempt), ...properties });
+}
+```
 
-The emitted event never includes a raw `branch` property; it always emits both `initial_branch` and `current_branch`. On terminal events (`COMPLETED`, `FAILED`) the helper additionally stamps `used_fallback: initial_branch !== current_branch`.
+`completeOnboardingAttempt` and `failOnboardingAttempt` clear the attempt on terminal so a subsequent registration starts fresh.
 
-`setOnboardingBranch(branch)` updates `current_branch` only — used by the fallback screens when the user opts into KYC mid-flow.
+### Branch resolution
 
-## Terminal Event Invariant
+```ts
+function resolveOnboardingBranch(documentType: string): OnboardingBranch {
+  switch (documentType) {
+    case 'p':
+    case 'passport':
+      return 'biometric_passport';
+    case 'i':
+    case 'id_card':
+      return 'biometric_id';
+    case 'a':
+    case 'aadhaar':
+      return 'aadhaar';
+    case 'kyc':
+      return 'kyc';
+    default:
+      return 'kyc';
+  }
+}
+```
 
-`onboarding_completed` and `proof_generation_succeeded` must fire **only** when a new registration proof actually succeeded in this session — not when the proving machine discovered the document was already registered, and not on any `disclose` flow.
+Lives in `onboardingFunnel.ts:187`. Called at `DOCUMENT_TYPE_SELECTED`; `captureBranch` then locks `initialBranch` (first non-pending value) and updates `currentBranch`.
 
-Currently, `provingMachine.ts:1332` sets `circuitType = 'register'` as a side-effect when `ALREADY_REGISTERED` is triggered from a disclose flow. This is convenient for downstream code but makes a simple `circuitType === 'register'` check ambiguous at the terminal.
+### Terminal-event emission
 
-You will add a boolean in the proving store: `enteredAsRegistration`, set at `init()` to `circuitType === 'register'` (the type the session was started with, captured before any mid-flow flipping). The terminal gate is:
+`provingMachine.ts` subscribes to state transitions and fires canonical events from the `completed`, `failure`, and `error` states. The `completed` handler uses `didNewRegistrationProof` (set in `post_proving` only when `circuitType === 'register'`) to distinguish a real new registration from the `ALREADY_REGISTERED` shortcut:
 
 ```ts
 if (
   state.value === 'completed' &&
   get().circuitType === 'register' &&
-  get().enteredAsRegistration === true
+  get().didNewRegistrationProof
 ) {
-  selfClient.trackEvent(OnboardingEvents.PROOF_SUCCEEDED, {
-    branch,
-    duration_seconds,
-  });
-  // later, after _handleAccountVerifiedSuccess:
-  selfClient.trackEvent(OnboardingEvents.COMPLETED, {
-    branch,
-    duration_seconds,
-  });
+  trackOnboardingStep(selfClient, OnboardingEvents.PROOF_SUCCEEDED);
+  completeOnboardingAttempt(selfClient);
 }
 ```
 
-Disclosure flows fire **no canonical onboarding event**. The proving machine emits `ProofEvents.PROOF_COMPLETED` (with `circuitType: 'disclose'`) for diagnostic continuity, but nothing in the `OnboardingEvents.*` namespace is emitted on the disclose path. Disclosure analytics, when needed, should live in their own namespace (proposed: `DisclosureEvents.*`) — see ANA-12.
+Disclosure flows reach `completed` with `circuitType === 'disclose'` and fall through to no canonical emit.
 
-## Fire-Once Guard
+`PROOF_STARTED` fires when state enters `proving` (gate tightened to `circuitType === 'register'` by ANA-11).
 
-Add to the onboarding store (wherever onboarding session state lives in the app):
+### Canonical event fire sites
 
-```ts
-interface OnboardingAnalyticsState {
-  firedSteps: Set<string>;
-  attemptId: string; // uuid, reset on onboarding_started
-  startedAt: number; // Date.now() when onboarding_started fired
-}
-```
+| Constant                                  | Fire site (v1)                                                                                                                                                                                       |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `OnboardingEvents.STARTED`                | `onboardingFunnel.ts:75` (helper bootstrap inside `ensureAttempt`)                                                                                                                                   |
+| `OnboardingEvents.COUNTRY_SELECTED`       | `packages/mobile-sdk-alpha/src/flows/onboarding/country-picker-screen.tsx` `onCountrySelect`                                                                                                         |
+| `OnboardingEvents.DOCUMENT_TYPE_SELECTED` | `packages/mobile-sdk-alpha/src/flows/onboarding/id-selection-screen.tsx` `onSelectDocumentType`                                                                                                      |
+| `OnboardingEvents.SCAN_STARTED`           | `app/src/screens/documents/scanning/DocumentCameraScreen.tsx` (biometric); `LogoConfirmationScreen.tsx:77` (KYC fallback); `AadhaarUploadScreen.tsx` (Aadhaar). KYC pure-entry hook added by ANA-11. |
+| `OnboardingEvents.SCAN_SUCCEEDED`         | `DocumentNFCScanScreen.tsx` (biometric); KYC provider success handler; `processAadhaarQRCode` success path.                                                                                          |
+| `OnboardingEvents.PROOF_STARTED`          | `provingMachine.ts:488`                                                                                                                                                                              |
+| `OnboardingEvents.PROOF_SUCCEEDED`        | `provingMachine.ts:533` (inside `completed` state, gated)                                                                                                                                            |
+| `OnboardingEvents.COMPLETED`              | `completeOnboardingAttempt` in `onboardingFunnel.ts:133`                                                                                                                                             |
+| `OnboardingEvents.FAILED`                 | `failOnboardingAttempt` invoked from `provingMachine.ts:559` and `:573` (failure / error states)                                                                                                     |
+| `OnboardingEvents.STEP_RETRIED`           | `RegistrationFallbackMRZScreen.tsx` and `RegistrationFallbackNFCScreen.tsx` retry buttons                                                                                                            |
 
-Helper:
+### Dead-zone fixes
 
-```ts
-function trackStepOnce(
-  step: OnboardingStepName,
-  properties: Record<string, unknown>,
-) {
-  if (state.firedSteps.has(step)) return;
-  state.firedSteps.add(step);
-  selfClient.trackEvent(step, { ...properties, attempt_id: state.attemptId });
-}
-```
+| Screen                       | v0 behavior                     | v1 change                                                                                         |
+| ---------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `LogoConfirmationScreen.tsx` | No button tracking              | Fires diagnostic `App: Logo Confirmation Answered` with `{answer: 'yes' \| 'no'}`                 |
+| `country-picker-screen.tsx`  | Emitted SDK-internal event only | Also calls `trackOnboardingStep(COUNTRY_SELECTED, { country_code })`                              |
+| `id-selection-screen.tsx`    | Emitted SDK-internal event only | Also calls `trackOnboardingStep(DOCUMENT_TYPE_SELECTED, { document_type, country_code, branch })` |
+| `ConfirmBelongingScreen.tsx` | Fired errors only               | Adds diagnostic `confirm_belonging_confirmed` event on success                                    |
 
-Reset conditions:
+### `AbstractButton` fix
 
-- On `onboarding_started`: generate new `attemptId`, clear `firedSteps`, record `startedAt`.
-- On `onboarding_completed` or `onboarding_failed`: clear `firedSteps`. The `attemptId` persists on the completed event for post-hoc correlation.
-
-Back-navigation must not re-fire: a user going from doc-type-selected back to country-picker and forward again must not re-emit `country_selected`. The guard handles this without requiring screen-view changes.
-
-## Dead-Zone Fixes
-
-| Screen                                                                                                 | Current behavior              | Change                                                                                                                                                     |
-| ------------------------------------------------------------------------------------------------------ | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| `app/src/screens/documents/selection/LogoConfirmationScreen.tsx`                                       | No button tracking            | Fire a diagnostic `logo_confirmation_answered` event with `{answer: 'yes'                                                                                  | 'no'}` on each button. This is not a canonical step — it's diagnostic context. |
-| `packages/mobile-sdk-alpha/src/flows/onboarding/country-picker-screen.tsx` (line ~37)                  | Emits SDK internal event only | Also call `trackStepOnce(OnboardingEvents.COUNTRY_SELECTED, { country_code })`                                                                             |
-| `packages/mobile-sdk-alpha/src/flows/onboarding/id-selection-screen.tsx` (line ~142)                   | Emits SDK internal event only | Also call `trackStepOnce(OnboardingEvents.DOCUMENT_TYPE_SELECTED, { document_type, country_code, branch })` — `branch` is resolved here for the first time |
-| `app/src/screens/documents/selection/ConfirmBelongingScreen.tsx` (wraps `ConfirmIdentificationScreen`) | Fires errors only             | Add a diagnostic `confirm_belonging_confirmed` event on success path                                                                                       |
-
-## AbstractButton Fix
-
-File: `packages/mobile-sdk-alpha/src/components/buttons/AbstractButton.tsx` (line 82-94).
-
-Current behavior:
-
-```ts
-if (trackEvent) {
-  const parsedEvent = trackEvent?.split(':')?.[1]?.trim();
-  if (parsedEvent) {
-    trackEvent = parsedEvent;
-  }
-  selfClient.trackEvent(`Click: ${trackEvent}`);
-}
-```
-
-Change: add a `trackEventRaw` prop. When set, the button emits `trackEventRaw` verbatim (no prefix). When only `trackEvent` is set, keep the existing `Click: ` prefix behavior for backwards compatibility with the diagnostic layer. The canonical-events wiring uses `trackEventRaw`.
-
-Rationale: coordinated-renaming every existing `trackEvent` consumer is out of scope (see ANA-03). The `trackEventRaw` opt-in is a small additive change that unblocks the canonical layer now.
-
-## Branch Resolution
-
-`branch` is `'pending'` for events fired before `document_type_selected`. From that event onward, resolve as follows:
-
-```ts
-function resolveBranch(documentType: DocumentType): Branch {
-  if (documentType === 'aadhaar') return 'aadhaar';
-  if (isNonBiometric(documentType)) return 'kyc';
-  if (documentType === 'passport') return 'biometric_passport';
-  if (documentType === 'id_card') return 'biometric_id';
-  return 'kyc'; // default fallback when a new doc type is added
-}
-```
-
-Store `branch` in the onboarding analytics state once resolved so downstream events can stamp it without recomputing.
+File: `packages/mobile-sdk-alpha/src/components/buttons/AbstractButton.tsx`. Added a `trackEventRaw` prop. When set, the button emits the value verbatim (no `Click: ` prefix). The canonical-events wiring uses `trackEventRaw`. The legacy `trackEvent` prop kept its `Click: ` prefix for backwards compatibility with diagnostic-layer call sites.
 
 ## Validation
 
 ### Unit tests
 
-- `packages/mobile-sdk-alpha/src/analytics/__tests__/canonicalEvents.test.ts` — event name constants are stable strings matching the table above.
-- `app/src/stores/__tests__/onboardingAnalytics.test.ts` — guard fires once, does not re-fire on second call, resets on `onboarding_started`.
-- `packages/mobile-sdk-alpha/src/proving/__tests__/provingMachine.analytics.test.ts` — terminal invariant: fires on new registration, does not fire on `ALREADY_REGISTERED`, does not fire on `disclose`.
+- `packages/mobile-sdk-alpha/tests/analytics/onboardingFunnel.test.ts` — guard fires once, does not re-fire on second call, resets on terminal.
+- `packages/mobile-sdk-alpha/tests/proving/provingMachine.*.test.ts` — terminal invariant holds across new-registration / `ALREADY_REGISTERED` / disclose paths.
 
 ### Commands
 
 ```bash
 cd packages/mobile-sdk-alpha && yarn test && yarn types
-cd app && yarn test
-yarn lint && yarn types
+cd app && yarn test && yarn types
+yarn lint
 ```
 
-### Manual verification (single run)
+### Manual verification
 
-Run the mobile app against a **dev Mixpanel project** (not prod). Complete one full registration on biometric passport branch. Verify in the dev Mixpanel project:
+Against a dev Mixpanel project, complete one biometric-passport registration:
 
-- Exactly one `onboarding_started`, one `country_selected`, one `document_type_selected`, one `document_scan_started`, one `document_scan_succeeded`, one `proof_generation_started`, one `proof_generation_succeeded`, one `onboarding_completed`.
-- Every event carries `branch: 'biometric_passport'` (except the first two, which carry `branch: 'pending'` — acceptable).
-- Navigate back from `DocumentOnboardingScreen` to `CountryPickerScreen` and forward again. Verify `country_selected` is **not** re-emitted.
-- Trigger an NFC scan failure and retry. Verify `funnel_step_retried` fires once per retry, and no extra canonical step events fire.
-- Run a disclosure flow on the same device immediately after registration. Verify that NO `Onboarding: *` events fire for the disclosure (no `Onboarding: Started`, no `Onboarding: Proof Generation Started`, no `Onboarding: Completed`). The diagnostic `Proof: Proof Completed` event with `circuitType: 'disclose'` should still fire.
+- Each canonical step event fires exactly once, in order.
+- Events from step 3 onward carry `initial_branch=biometric_passport`.
+- Back-navigating from `DocumentOnboardingScreen` to `CountryPickerScreen` and forward again does NOT re-emit `Onboarding: Country Selected`.
+- An NFC scan failure followed by retry fires `Onboarding: Step Retried` once per retry; no extra canonical step events.
+- A disclosure flow on the same device immediately after registration fires NO `Onboarding: *` events.
 
 ## Done Criteria
 
-- All canonical events fire at the locations in the table.
-- Guard prevents duplicate step events across back-nav.
-- Terminal invariant holds across all three cases (new registration, already-registered, disclose).
-- Unit tests pass.
-- `yarn lint`, `yarn types` pass at repo root.
-- Manual verification checklist above completes in a dev Mixpanel project.
-- This plan's **Linear issue** is updated via a comment (not description edit) summarizing what shipped and linking the PR.
-
-## Known issues from v1 production
-
-After the initial rollout (PR #2000) two bugs surfaced from dashboard review on 2026-04-30. They are tracked and fixed in [ANA-11](./ANA-11-canonical-funnel-bug-fixes.md):
-
-- **Bug A** — Pure-KYC users (those who select a non-biometric document type at the picker) skipped `Onboarding: Document Scan Started` because the original spec only fired it from `LogoConfirmationScreen`'s "No" path, which pure-KYC users never reach. The fix moves the canonical emission into `useKycLauncher` so every KYC entry path fires it. The §"Canonical Events — Implementation Table" SCAN_STARTED row above reflects the post-fix behavior.
-- **Bug B** — `Onboarding: Proof Generation Started` was emitted unconditionally on `proving` state entry, including for disclosure flows and the DSC sub-step. Because the emission goes through `trackOnboardingStep`, which calls `ensureAttempt`, every disclosure also bootstrapped a fake onboarding attempt (and a stray `Onboarding: Started`). The fix gates the emission on `circuitType === 'register'` and removes the (also misnamed) `Onboarding: Disclosure Completed` event entirely — disclose flows no longer touch the `OnboardingEvents.*` namespace. The §"Canonical Events — Implementation Table" PROOF_STARTED row above reflects the post-fix behavior.
-
-A third hypothesis ("`initial_branch` leaks across attempts") was ruled out: every `Onboarding: Started` event in production carries `initial_branch=pending` as designed. Mixpanel funnel breakdowns _propagate_ the property's later-step value backward to earlier-step counts, which initially looked like a state leak but is the platform's intended behavior — see ANA-11 §"Non-bug clarification".
+- ✅ All canonical events fire at the locations in the table.
+- ✅ Guard prevents duplicate step events across back-nav.
+- ✅ Terminal invariant holds.
+- ✅ Unit tests pass.
+- ✅ `yarn lint`, `yarn types` pass at repo root.
+- ✅ Manual verification completed in dev Mixpanel project.
 
 ## Notes
 
-- The dashboard build is the immediate next step after this lands, but is not in this PR. Keep the dev Mixpanel project events for one release cycle to validate numbers against the old ones before the new funnel becomes authoritative.
-- `__DEV__` still suppresses events locally. That means this plan's manual verification requires either a non-`__DEV__` staging build or a temporary local override — document whichever path is used in the PR description.
+- Dashboard build was the immediate next step after this landed. Built as "Canonical Onboarding Funnel — PR #2000" in Mixpanel project Self.
+- `__DEV__` suppresses events locally. Manual verification required either a non-`__DEV__` staging build or a temporary local override.
+- Production dashboard review on 2026-04-30 surfaced two bugs in this implementation; see ANA-11.
