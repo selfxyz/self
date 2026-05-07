@@ -39,10 +39,16 @@ describe('evaluateGoogleUsatGate', () => {
     mockGetAllDocuments.mockResolvedValue({});
   });
 
-  it('allows non Google USAT requests', async () => {
+  it('treats non Google USAT requests according to the force-test toggle', async () => {
+    // While FORCE_GOOGLE_USAT_FOR_TESTING is on, every request is gated as if
+    // it were a USAT request, so an empty doc catalog blocks. When the toggle
+    // is removed, this should allow without consulting the catalog.
     const result = await evaluateGoogleUsatGate({} as any, app);
     const expected = FORCE_GOOGLE_USAT_FOR_TESTING ? 'block' : 'allow';
     expect(result).toBe(expected);
+    if (!FORCE_GOOGLE_USAT_FOR_TESTING) {
+      expect(mockGetAllDocuments).not.toHaveBeenCalled();
+    }
   });
 
   it('blocks Google USAT when catalog is empty', async () => {

@@ -15,7 +15,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
-import GoogleUsatBlockModal from '@/components/GoogleUsatBlockModal';
+import VerificationGateModal from '@/components/VerificationGateModal';
 import { DefaultNavBar } from '@/components/navbar';
 import { usePendingKycRecovery } from '@/hooks/usePendingKycRecovery';
 import useRecoveryPrompts from '@/hooks/useRecoveryPrompts';
@@ -108,7 +108,7 @@ const NavigationWithTracking = () => {
   return (
     <GestureHandlerRootView>
       <Navigation ref={navigationRef} onStateChange={trackScreen} />
-      <GoogleUsatBlockModal />
+      <VerificationGateModal />
     </GestureHandlerRootView>
   );
 };
