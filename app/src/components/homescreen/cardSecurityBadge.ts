@@ -37,3 +37,19 @@ export function getSecurityLevel(
 
   return 'LOW-SECURITY'; // Fallback
 }
+
+export function getSecurityBadgeLabel(
+  document: PassportData | AadhaarData,
+): string {
+  if (isAadhaarDocument(document)) {
+    return 'QR verified';
+  }
+
+  if (isMRZDocument(document)) {
+    return getSecurityLevel(document) === 'HI-SECURITY'
+      ? 'NFC verified'
+      : 'MRZ verified';
+  }
+
+  return 'Document verified';
+}

@@ -24,6 +24,14 @@ export const PERKS: Record<string, Perk> = {
   },
 };
 
+export function getPerkRailLabel(perks: Perk[]): string {
+  if (perks.length === 1) {
+    return perks[0].label;
+  }
+
+  return `${perks[0].label} +${perks.length - 1} more`;
+}
+
 const ID_TYPE_TO_PERK_IDS: Record<string, string[]> = {
   p: ['google_usdt_faucet'],
   i: ['google_usdt_faucet'],

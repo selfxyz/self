@@ -17,9 +17,10 @@ import { resolveOnboardingBranch, trackOnboardingStep } from '../../analytics/on
 import { BodyText, PerkRail, RoundFlag, View, XStack, YStack } from '../../components';
 import { OnboardingEvents, RegistrationPickerEvents } from '../../constants/analytics';
 import { useSelfClient } from '../../context';
-import { getPerksForIdType } from './perks';
 import { buttonTap } from '../../haptic';
 import { SdkEvents } from '../../types/events';
+import { getDocumentBadgeLabel, getDocumentPerkLabel } from './badges';
+import { getPerksForIdType } from './perks';
 
 const KYC_DOC_TYPE = 'kyc';
 
@@ -91,7 +92,8 @@ type DocumentCardProps = {
 const DocumentCard: React.FC<DocumentCardProps> = ({ docType, onPress }) => {
   const subtitle = getDocumentSubtitle(docType);
   const perks = getPerksForIdType(docType);
-  const hasPerks = perks.length > 0;
+  const perkLabel = getDocumentPerkLabel(docType);
+  const hasPerks = perkLabel !== null;
 
   return (
     <View style={styles.cardOuter}>
@@ -103,7 +105,7 @@ const DocumentCard: React.FC<DocumentCardProps> = ({ docType, onPress }) => {
             {subtitle && <BodyText style={styles.cardSubtitle}>{subtitle}</BodyText>}
           </YStack>
           <View style={styles.hiSecurityPill}>
-            <BodyText style={styles.hiSecurityText}>HI-SECURITY</BodyText>
+            <BodyText style={styles.hiSecurityText}>{getDocumentBadgeLabel(docType)}</BodyText>
           </View>
         </XStack>
       </View>
@@ -111,7 +113,7 @@ const DocumentCard: React.FC<DocumentCardProps> = ({ docType, onPress }) => {
         <PerkRail
           variant="minimal"
           logos={perks.map(p => p.renderLogo())}
-          label={perks.length === 1 ? 'ELIGIBLE FOR 1 PERK' : `ELIGIBLE FOR ${perks.length} PERKS`}
+          label={perkLabel ?? undefined}
           onPress={onPress}
         />
       )}
@@ -264,14 +266,15 @@ const styles = StyleSheet.create({
   hiSecurityPill: {
     backgroundColor: 'rgba(0,0,0,0.5)',
     borderRadius: 30,
-    paddingHorizontal: 8,
+    paddingHorizontal: 10,
     paddingVertical: 4,
+    flexShrink: 1,
   },
   hiSecurityText: {
     fontFamily: fontFamily.dinOT.native,
     fontSize: 10,
     lineHeight: 12.9,
-    letterSpacing: 0.6,
+    letterSpacing: 0.3,
     color: colors.white,
     textTransform: 'uppercase',
   },
