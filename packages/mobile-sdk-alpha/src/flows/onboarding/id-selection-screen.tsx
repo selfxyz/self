@@ -70,20 +70,22 @@ const DocumentCard: React.FC<DocumentCardProps> = ({ docType, countryCode, onPre
 
   return (
     <View style={styles.cardOuter}>
-      <Pressable onPress={onPress} style={({ pressed }) => [styles.cardInner, pressed && styles.cardInnerPressed]}>
-        <RNView style={styles.cardRow}>
-          <RNView style={styles.cardLogoContainer}>
-            {useFlag ? <RoundFlag countryCode={countryCode} size={32} /> : getDocumentLogo(docType)}
+      <RNView style={styles.cardInnerShadow}>
+        <Pressable onPress={onPress} style={({ pressed }) => [styles.cardInner, pressed && styles.cardInnerPressed]}>
+          <RNView style={styles.cardRow}>
+            <RNView style={styles.cardLogoContainer}>
+              {useFlag ? <RoundFlag countryCode={countryCode} size={32} /> : getDocumentLogo(docType)}
+            </RNView>
+            <RNView style={styles.cardContentColumn}>
+              <Text style={styles.cardTitle}>{getDocumentDisplayTitle(docType, countryCode)}</Text>
+              {subtitle ? <Text style={styles.cardSubtitle}>{subtitle}</Text> : null}
+            </RNView>
+            <RNView style={styles.hiSecurityPill}>
+              <Text style={styles.hiSecurityText}>{getDocumentBadgeLabel(docType)}</Text>
+            </RNView>
           </RNView>
-          <RNView style={styles.cardContentColumn}>
-            <Text style={styles.cardTitle}>{getDocumentDisplayTitle(docType, countryCode)}</Text>
-            {subtitle ? <Text style={styles.cardSubtitle}>{subtitle}</Text> : null}
-          </RNView>
-          <RNView style={styles.hiSecurityPill}>
-            <Text style={styles.hiSecurityText}>{getDocumentBadgeLabel(docType)}</Text>
-          </RNView>
-        </RNView>
-      </Pressable>
+        </Pressable>
+      </RNView>
       {hasPerks && (
         <PerkRail
           variant="minimal"
@@ -215,17 +217,22 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     overflow: 'visible',
   },
-  cardInner: {
-    backgroundColor: colors.white,
-    borderColor: colors.zinc200,
-    borderWidth: 1,
-    borderRadius: 18,
-    padding: 16,
+  cardInnerShadow: {
     shadowColor: '#000',
     shadowOpacity: 0.15,
     shadowOffset: { width: 0, height: 0 },
     shadowRadius: 12,
     elevation: 6,
+    borderRadius: 18,
+    zIndex: 1,
+  },
+  cardInner: {
+    backgroundColor: colors.white,
+    borderColor: colors.zinc200,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: 18,
+    overflow: 'hidden',
+    padding: 16,
     zIndex: 1,
   },
   cardInnerPressed: {
