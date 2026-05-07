@@ -23,10 +23,11 @@ module.exports = {
   },
   rules: {
     'simple-import-sort/imports': 'error',
-    'sort-exports/sort-exports': [
-      'error',
-      { sortDir: 'asc', ignoreCase: false, sortExportKindFirst: 'type' },
-    ],
+    // Export sorting is opt-in per file via overrides below. The rule
+    // reorders `export const` declarations, which breaks files with
+    // inter-export dependencies or intentional grouping. Only enable on
+    // pure re-export barrels.
+    'sort-exports/sort-exports': 'off',
 
     'import/first': 'error',
     'import/no-duplicates': 'error',
@@ -34,6 +35,17 @@ module.exports = {
   },
   ignorePatterns: ['dist/', 'node_modules/'],
   overrides: [
+    {
+      // Opt the public-API barrel into export sorting. This file exists only
+      // to re-export from other modules. Do not add source files here.
+      files: ['index.ts'],
+      rules: {
+        'sort-exports/sort-exports': [
+          'error',
+          { sortDir: 'asc', ignoreCase: false, sortExportKindFirst: 'type' },
+        ],
+      },
+    },
     {
       files: ['*.cjs'],
       env: {
