@@ -24,6 +24,75 @@ Today's drop-off between `SCAN_STARTED` and `SCAN_SUCCEEDED` for biometric users
 
 The naming layer is also broken: `PassportEvents.*` is used for both passport AND biometric ID (same code path), there's no `KycEvents` group at all, and `AadhaarEvents.*` has 25 events most of which are operational noise.
 
+## Flow
+
+The canonical funnel collapses scanning into a single `SCAN_STARTED → SCAN_SUCCEEDED` step. ANA-12 layers a branch-specific funnel underneath each canonical step, joined back via `attempt_id`.
+
+```mermaid
+flowchart TD
+    Start([Onboarding: Started]) --> Country[Onboarding: Country Selected]
+    Country --> DocType[Onboarding: Document Type Selected<br/>locks initial_branch]
+
+    DocType --> ScanStart[Onboarding: Document Scan Started]
+
+    ScanStart --> Branch{initial_branch}
+    Branch -->|biometric_passport<br/>biometric_id| BIO[Biometric drilldown]
+    Branch -->|kyc| KYC[KYC drilldown]
+    Branch -->|aadhaar| AAD[Aadhaar drilldown]
+
+    subgraph BiometricFunnel[BiometricEvents]
+        BIO --> B1[MRZ_CAPTURE_STARTED<br/>camera mount]
+        B1 --> B2[MRZ_CAPTURED<br/>parseable MRZ + duration]
+        B2 --> B3[NFC_STARTED<br/>nfc_method: BAC or PACE]
+        B3 --> B4[NFC_SUCCEEDED<br/>chip read + duration]
+        B4 --> B5[DOCUMENT_PARSED<br/>country_code + signature_algorithm]
+        B5 -.->|unsupported branch| B6[DOCUMENT_UNSUPPORTED<br/>unsupported_reason]
+    end
+
+    subgraph KycFunnel[KycEvents]
+        KYC --> K1[SESSION_REQUESTED<br/>before createKycSession]
+        K1 --> K2[SESSION_CREATED<br/>provider + duration]
+        K2 --> K3[PROVIDER_OPENED<br/>before startKycVerification]
+        K3 --> K4[PROVIDER_CLOSED<br/>outcome: completed/cancelled/failed]
+        K4 -.->|on retry| K5[RETRY_TRIGGERED<br/>attempt_count]
+    end
+
+    subgraph AadhaarFunnel[AadhaarEvents - curated 25 to 7]
+        AAD --> A1[UPLOAD_STARTED<br/>photo library tap]
+        A1 -.->|denied| A1F[PHOTO_PERMISSION_DENIED]
+        A1 --> A2[QR_SELECTED]
+        A2 -.->|fail| A2F[QR_PARSE_FAILED<br/>reason]
+        A2 -.->|expired| A2T[TIMESTAMP_EXPIRED<br/>qr_age_days]
+        A2 --> A3[DATA_STORED<br/>duration]
+        A3 --> A4[CONTINUE_PRESSED]
+    end
+
+    B5 --> ScanOk
+    B6 --> ScanFail
+    K4 --> ScanOk
+    A4 --> ScanOk
+
+    ScanOk[Onboarding: Document Scan Succeeded] --> ProofStart[Onboarding: Proof Generation Started<br/>circuitType = register]
+    ProofStart --> ProofOk[Onboarding: Proof Generation Succeeded]
+    ProofOk --> Done([Onboarding: Completed<br/>used_fallback])
+
+    ScanFail([Onboarding: Failed<br/>stage + reason])
+
+    classDef canonical fill:#fef3c7,stroke:#b45309
+    classDef bio fill:#dbeafe,stroke:#1d4ed8
+    classDef kyc fill:#dcfce7,stroke:#15803d
+    classDef aad fill:#fce7f3,stroke:#be185d
+    classDef terminal fill:#f3f4f6,stroke:#374151
+
+    class Start,Country,DocType,ScanStart,ScanOk,ProofStart,ProofOk,Done canonical
+    class B1,B2,B3,B4,B5,B6 bio
+    class K1,K2,K3,K4,K5 kyc
+    class A1,A1F,A2,A2F,A2T,A3,A4 aad
+    class ScanFail terminal
+```
+
+Every branch event is stamped with `attempt_id` / `initial_branch` / `current_branch` by `trackBranchEvent`, which **no-ops if there is no active onboarding attempt** (avoids the disclosure-pollution class of bug ANA-11 fixed). Branch events do not dedupe — multiple OCR retries before a successful MRZ legitimately fire `MRZ_CAPTURE_STARTED` more than once.
+
 ## Scope
 
 ### In scope
