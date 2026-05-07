@@ -4,6 +4,13 @@
 
 import type { SelfApp } from '@selfxyz/common/utils';
 
+import {
+  CELO_MAINNET_CHAIN_ID,
+  CELO_SEPOLIA_CHAIN_ID,
+  GOOGLE_USAT_FAUCET_VERIFIERS,
+  GOOGLE_USAT_MAINNET_VERIFIER,
+  GOOGLE_USAT_SEPOLIA_VERIFIER,
+} from '../../src/constants/googleUsat';
 import { isGoogleUsatProofRequest } from '../../src/utils/googleUsat';
 
 const MAINNET_ADDRESS = '0x0000000000000000000000000000000000000001';
@@ -85,5 +92,51 @@ describe('isGoogleUsatProofRequest', () => {
     const app = buildApp({ endpointType: 'celo', endpoint: MAINNET_ADDRESS, chainID: 42220 });
 
     expect(isGoogleUsatProofRequest(app, emptyVerifiers)).toBe(false);
+  });
+
+  it('returns false for unknown chainID', () => {
+    const app = buildApp({ endpointType: 'celo', endpoint: MAINNET_ADDRESS, chainID: 1 });
+
+    expect(isGoogleUsatProofRequest(app, testVerifiers)).toBe(false);
+  });
+
+  describe('with default GOOGLE_USAT_FAUCET_VERIFIERS', () => {
+    it('matches the deployed mainnet verifier on Celo', () => {
+      const app = buildApp({
+        endpointType: 'celo',
+        endpoint: GOOGLE_USAT_MAINNET_VERIFIER,
+        chainID: CELO_MAINNET_CHAIN_ID,
+      });
+
+      expect(isGoogleUsatProofRequest(app)).toBe(true);
+    });
+
+    it('matches the deployed testnet verifier on Celo Sepolia', () => {
+      const app = buildApp({
+        endpointType: 'staging_celo',
+        endpoint: GOOGLE_USAT_SEPOLIA_VERIFIER,
+        chainID: CELO_SEPOLIA_CHAIN_ID,
+      });
+
+      expect(isGoogleUsatProofRequest(app)).toBe(true);
+    });
+
+    it('rejects testnet verifier address on mainnet chainID', () => {
+      const app = buildApp({
+        endpointType: 'celo',
+        endpoint: GOOGLE_USAT_SEPOLIA_VERIFIER,
+        chainID: CELO_MAINNET_CHAIN_ID,
+      });
+
+      expect(isGoogleUsatProofRequest(app)).toBe(false);
+    });
+
+    it('stores all verifier addresses lowercased', () => {
+      for (const addresses of Object.values(GOOGLE_USAT_FAUCET_VERIFIERS)) {
+        for (const address of addresses) {
+          expect(address).toBe(address.toLowerCase());
+        }
+      }
+    });
   });
 });
