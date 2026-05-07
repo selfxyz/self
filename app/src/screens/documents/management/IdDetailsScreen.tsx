@@ -2,13 +2,21 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import LinearGradient from 'react-native-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Text, XStack, YStack, ZStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 
 import type { DocumentCatalog, IDDocument } from '@selfxyz/common/utils/types';
+import type { PerkId } from '@selfxyz/mobile-sdk-alpha';
+import {
+  getPerkRecordsForIdType,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
+import type { EligiblePerksItem } from '@selfxyz/mobile-sdk-alpha/components';
+import { EligiblePerksCard } from '@selfxyz/mobile-sdk-alpha/components';
+import { IDDataEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import {
   black,
   slate50,
@@ -17,6 +25,7 @@ import {
   slate500,
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import GoogleLogo from '@selfxyz/mobile-sdk-alpha/svgs/icons/google.svg';
 
 import IdCardLayout from '@/components/homescreen/IdCard';
 import { usePassport } from '@/providers/passportDataProvider';
@@ -35,6 +44,7 @@ const IdDetailsScreen: React.FC = () => {
   const [isHidden, setIsHidden] = useState(true);
   const navigation = useNavigation();
   const { bottom } = useSafeAreaInsets();
+  const { trackEvent } = useSelfClient();
 
   useEffect(() => {
     const loadDocumentAndCatalog = async () => {
@@ -50,6 +60,46 @@ const IdDetailsScreen: React.FC = () => {
   }, [documentId, getAllDocuments, loadDocumentCatalog]);
 
   const isConnected = documentCatalog.selectedDocumentId === documentId;
+
+  const idType = useMemo(
+    () =>
+      document ? idTypeForDocumentCategory(document.documentCategory) : null,
+    [document],
+  );
+
+  const perkRecords = useMemo(
+    () => (idType ? getPerkRecordsForIdType(idType) : []),
+    [idType],
+  );
+
+  const perks = useMemo<EligiblePerksItem[]>(
+    () =>
+      perkRecords.map(perk => {
+        const renderLogo = PERK_LOGOS[perk.id];
+        return renderLogo ? { ...perk, renderLogo } : { ...perk };
+      }),
+    [perkRecords],
+  );
+
+  const handlePerksView = (perkIds: string[]) => {
+    trackEvent(IDDataEvents.PERKS_VIEWED, {
+      id_type: idType,
+      perk_count: perkIds.length,
+      perk_ids: perkIds,
+    });
+  };
+
+  const handlePerkPress = (perkId: string) => {
+    // TODO(perks): when PerkRecord.redeemUrl is set, open it via Linking.openURL
+    // and add `has_redemption` / `redemption_open_failed` analytics. Today the
+    // tap is intentionally a no-op while perk redemption pages are pre-launch.
+    const record = perkRecords.find(perk => perk.id === perkId);
+    trackEvent(IDDataEvents.PERK_TAPPED, {
+      id_type: idType,
+      perk_id: perkId,
+      has_redemption: Boolean(record?.redeemUrl),
+    });
+  };
 
   const handleConnectId = async () => {
     if (!isConnected) {
@@ -120,6 +170,15 @@ const IdDetailsScreen: React.FC = () => {
           Manage ID
         </Button>
       </XStack>
+      {perks.length > 0 ? (
+        <YStack marginTop={'$4'}>
+          <EligiblePerksCard
+            perks={perks}
+            onView={handlePerksView}
+            onPerkPress={handlePerkPress}
+          />
+        </YStack>
+      ) : null}
     </YStack>
   );
 
@@ -165,5 +224,24 @@ const IdDetailsScreen: React.FC = () => {
     </YStack>
   );
 };
+
+const PERK_LOGOS: Partial<Record<PerkId, () => React.ReactNode>> = {
+  google_usdt_faucet: () => <GoogleLogo width={24} height={24} />,
+};
+
+function idTypeForDocumentCategory(
+  category: IDDocument['documentCategory'],
+): string | null {
+  switch (category) {
+    case 'passport':
+      return 'p';
+    case 'id_card':
+      return 'i';
+    case 'aadhaar':
+      return 'a';
+    default:
+      return null;
+  }
+}
 
 export default IdDetailsScreen;

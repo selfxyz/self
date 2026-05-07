@@ -95,8 +95,8 @@ export const DocumentEvents = {
 };
 
 export const IDDataEvents = {
-  ID_DATA_PERKS_VIEWED: 'id_data_perks_viewed',
-  ID_DATA_PERK_TAPPED: 'id_data_perk_tapped',
+  PERKS_VIEWED: 'ID Data: Perks Viewed',
+  PERK_TAPPED: 'ID Data: Perk Tapped',
 };
 
 export const MockDataEvents = {
