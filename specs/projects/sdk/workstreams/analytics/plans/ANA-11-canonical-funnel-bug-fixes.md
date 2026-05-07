@@ -20,20 +20,20 @@ A 7-day analysis of the canonical events identified **two real bugs in the imple
 
 ### Bug A — Pure-KYC users never fire `Onboarding: Document Scan Started`
 
-ANA-01's Implementation Table specifies that for the KYC branch, `SCAN_STARTED` fires from `LogoConfirmationScreen.tsx:77`'s "No" button handler. That screen is shown only to users who selected a *biometric* document type (passport / id_card) and is the gate that diverts them into the KYC fallback.
+ANA-01's Implementation Table specifies that for the KYC branch, `SCAN_STARTED` fires from `LogoConfirmationScreen.tsx:77`'s "No" button handler. That screen is shown only to users who selected a _biometric_ document type (passport / id_card) and is the gate that diverts them into the KYC fallback.
 
 A user who selects a non-biometric document type at `IDSelectionScreen` (the "pure-KYC" path — driving licenses, residency cards, etc.) skips `LogoConfirmationScreen` entirely. Their flow goes straight from `DOCUMENT_TYPE_SELECTED` into `useKycLauncher` → Didit modal. There is no `SCAN_STARTED` emission anywhere on this path.
 
 Funnel evidence (7-day window, breakdown by `initial_branch`):
 
-| Step | kyc cohort count |
-| --- | --- |
-| 1. Started | 333 |
-| 2. Country Selected | 333 |
-| 3. Document Type Selected | 333 |
-| 4. Document Scan Started | **48** |
-| 5. Document Scan Succeeded | 3 |
-| 6. Proof Generation Started | 0 |
+| Step                        | kyc cohort count |
+| --------------------------- | ---------------- |
+| 1. Started                  | 333              |
+| 2. Country Selected         | 333              |
+| 3. Document Type Selected   | 333              |
+| 4. Document Scan Started    | **48**           |
+| 5. Document Scan Succeeded  | 3                |
+| 6. Proof Generation Started | 0                |
 
 The 333 → 48 step is implausible — the screen sequence for pure-KYC is doc-type → KYC-modal, with no real abandonment surface in between. The 48 are an artifact (probably users who took the biometric path, hit LogoConfirmation "No", and got reclassified into the kyc cohort by Mixpanel's funnel breakdown propagation). The vast majority of pure-KYC users drop out of the funnel at the missing event, not at a real abandonment point.
 
@@ -44,7 +44,7 @@ ANA-01's terminal-event invariant correctly gates `PROOF_SUCCEEDED` and `COMPLET
 1. **Disclosure flows** (`circuitType === 'disclose'`) of already-registered users, which reuse the same proving machine but are not part of the onboarding funnel.
 2. **DSC sub-step** (`circuitType === 'dsc'`) for users whose DSC is not yet in the tree. The proving machine enters `proving` first with `circuitType === 'dsc'`, runs the DSC proof, then `postProving` re-inits with `circuitType === 'register'` (provingMachine.ts:1695) and enters `proving` again — but the fire-once guard suppresses the second emission, so `PROOF_STARTED` ends up firing on the DSC step instead of the actual register proof.
 
-For the disclose case, the blast radius is larger than just `PROOF_STARTED`. The emission goes through `trackOnboardingStep`, which calls `ensureAttempt` at `onboardingFunnel.ts:254`. `ensureAttempt` sees no active attempt and **bootstraps a fake one — which itself emits `Onboarding: Started`** as the attempt's first event (`onboardingFunnel.ts:75`). So a single disclosure flow fires *both* `STARTED` and `PROOF_STARTED` against the canonical funnel, neither of which represents an onboarding attempt.
+For the disclose case, the blast radius is larger than just `PROOF_STARTED`. The emission goes through `trackOnboardingStep`, which calls `ensureAttempt` at `onboardingFunnel.ts:254`. `ensureAttempt` sees no active attempt and **bootstraps a fake one — which itself emits `Onboarding: Started`** as the attempt's first event (`onboardingFunnel.ts:75`). So a single disclosure flow fires _both_ `STARTED` and `PROOF_STARTED` against the canonical funnel, neither of which represents an onboarding attempt.
 
 `DISCLOSURE_COMPLETED` is emitted via raw `trackEvent` and does not clear `currentAttempt`. The fake attempt then lingers in module-level state until the next real onboarding either re-uses its `attempt_id` or gets silently no-op'd by the fire-once guard.
 
@@ -52,10 +52,10 @@ For the DSC case, the issue is semantic: `PROOF_STARTED` is meant to mark "the u
 
 Raw event evidence (7-day window):
 
-| Event | Total events | with `initial_branch=pending` |
-| --- | --- | --- |
-| `Onboarding: Started` | 1867 | **1867 (100%)** |
-| `Onboarding: Proof Generation Started` | 838 | 622 |
+| Event                                  | Total events | with `initial_branch=pending` |
+| -------------------------------------- | ------------ | ----------------------------- |
+| `Onboarding: Started`                  | 1867         | **1867 (100%)**               |
+| `Onboarding: Proof Generation Started` | 838          | 622                           |
 
 Every `STARTED` event has `initial_branch=pending` — confirming the implementation correctly emits `'pending'` at attempt creation. But the volume (1867 in 7 days) is substantially higher than the 1577 unique-user starts the funnel reports. The excess and the 622 `pending` PROOF_STARTED events are dominated by disclosure-triggered fake attempts.
 
@@ -63,7 +63,7 @@ Every `STARTED` event has `initial_branch=pending` — confirming the implementa
 
 A third hypothesis ("`initial_branch` leaks across onboarding attempts") was raised during investigation and turned out to be a misreading of Mixpanel's behavior, not a code bug.
 
-Mixpanel funnel breakdowns by `initial_branch` *propagate* the property value across all steps a user completed in the funnel. So a user whose `initial_branch` becomes `kyc` at step 3 (`DOCUMENT_TYPE_SELECTED`) is counted as "kyc cohort" at steps 1 and 2 retroactively, even though those events physically carry `initial_branch=pending`. This is by design — it lets the dashboard ask "of users who chose KYC, how many reached country selection" — and is not a defect of either the events or the dashboard.
+Mixpanel funnel breakdowns by `initial_branch` _propagate_ the property value across all steps a user completed in the funnel. So a user whose `initial_branch` becomes `kyc` at step 3 (`DOCUMENT_TYPE_SELECTED`) is counted as "kyc cohort" at steps 1 and 2 retroactively, even though those events physically carry `initial_branch=pending`. This is by design — it lets the dashboard ask "of users who chose KYC, how many reached country selection" — and is not a defect of either the events or the dashboard.
 
 The 1867 / 1867 result above (every `STARTED` event has `initial_branch=pending`) confirms the implementation is correct on this axis. **Do not** add code to "fix" branch state across attempts — there is nothing to fix.
 
@@ -237,7 +237,9 @@ import { OnboardingEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics'
 import { trackOnboardingStep } from '@selfxyz/mobile-sdk-alpha/analytics/onboardingFunnel';
 
 // Inside launchKycVerification, before startVerification(...):
-trackOnboardingStep(selfClient, OnboardingEvents.SCAN_STARTED, { branch: 'kyc' });
+trackOnboardingStep(selfClient, OnboardingEvents.SCAN_STARTED, {
+  branch: 'kyc',
+});
 ```
 
 (Adjust import paths to whatever the file already uses for SDK imports.)
@@ -317,6 +319,7 @@ Run the mobile app against the **dev Mixpanel project** (not prod). Run the foll
 ### Re-validation in Mixpanel (post-merge)
 
 Run the `Funnel by initial_branch` report (id 89777075) on the same 7-day window 7 days after merge. Acceptance:
+
 - KYC cohort step 4 (Document Scan Started) conversion is non-trivially > 14% (the buggy baseline). Realistic post-fix: 80–95% (single-button screen).
 - KYC cohort step 6 (Proof Generation Started) is non-zero.
 - Total `Onboarding: Started` event volume drops measurably (disclosure-triggered fake attempts no longer fire).
