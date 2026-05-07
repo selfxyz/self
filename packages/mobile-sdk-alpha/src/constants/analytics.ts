@@ -241,6 +241,15 @@ export const ProofEvents = {
   WS_HELLO_SENT: 'Proof: WS Hello Sent',
 };
 
+// Diagnostic events for the registration ID-type picker (SELF-2860). Names are
+// the literal Mixpanel event strings from the ticket — they intentionally use
+// snake_case rather than the 'Group: Event' convention used elsewhere.
+export const RegistrationPickerEvents = {
+  VIEWED: 'registration_id_picker_viewed',
+  SELECTED: 'registration_id_picker_selected',
+  UNSUPPORTED_TAPPED: 'registration_id_picker_unsupported_tapped',
+};
+
 export const SettingsEvents = {
   CONNECTION_MODAL_CLOSED: 'Settings: Connection Modal Closed',
   CONNECTION_MODAL_OPENED: 'Settings: Connection Modal Opened',
