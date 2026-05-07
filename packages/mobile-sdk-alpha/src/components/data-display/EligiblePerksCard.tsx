@@ -118,7 +118,6 @@ const styles = StyleSheet.create({
     color: colors.black,
     fontFamily: fontFamily.advercase.native,
     fontSize: 22,
-    lineHeight: 26,
     fontWeight: '400',
   },
   rows: {
