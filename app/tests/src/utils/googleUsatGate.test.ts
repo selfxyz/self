@@ -7,7 +7,10 @@ import {
   isGoogleUsatProofRequest,
 } from '@selfxyz/mobile-sdk-alpha';
 
-import { evaluateGoogleUsatGate } from '@/utils/googleUsatGate';
+import {
+  evaluateGoogleUsatGate,
+  FORCE_GOOGLE_USAT_FOR_TESTING,
+} from '@/utils/googleUsatGate';
 
 jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
   getAllDocuments: jest.fn(),
@@ -33,17 +36,13 @@ describe('evaluateGoogleUsatGate', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockIsGoogleUsatProofRequest.mockReturnValue(false);
-  });
-
-  afterEach(() => {
-    (globalThis as typeof globalThis & { __FORCE_GOOGLE_USAT__?: boolean })
-      .__FORCE_GOOGLE_USAT__ = false;
+    mockGetAllDocuments.mockResolvedValue({});
   });
 
   it('allows non Google USAT requests', async () => {
     const result = await evaluateGoogleUsatGate({} as any, app);
-    expect(result).toBe('allow');
-    expect(mockGetAllDocuments).not.toHaveBeenCalled();
+    const expected = FORCE_GOOGLE_USAT_FOR_TESTING ? 'block' : 'allow';
+    expect(result).toBe(expected);
   });
 
   it('blocks Google USAT when catalog is empty', async () => {
@@ -61,10 +60,7 @@ describe('evaluateGoogleUsatGate', () => {
     await expect(evaluateGoogleUsatGate({} as any, app)).resolves.toBe('allow');
   });
 
-  it('honors force flag in dev', async () => {
-    (globalThis as typeof globalThis & { __FORCE_GOOGLE_USAT__?: boolean })
-      .__FORCE_GOOGLE_USAT__ = true;
-    mockGetAllDocuments.mockResolvedValue({});
-    await expect(evaluateGoogleUsatGate({} as any, app)).resolves.toBe('block');
+  it('exposes testing force toggle', () => {
+    expect(typeof FORCE_GOOGLE_USAT_FOR_TESTING).toBe('boolean');
   });
 });

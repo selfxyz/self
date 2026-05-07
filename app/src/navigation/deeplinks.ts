@@ -7,15 +7,18 @@ import { Linking, Platform } from 'react-native';
 
 import { countries } from '@selfxyz/common/constants/countries';
 import type { IdDocInput } from '@selfxyz/common/utils';
-import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import type { SelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import type { RootStackParamList } from '@/navigation';
 import { navigationRef } from '@/navigation';
 import useUserStore from '@/stores/userStore';
-import { useGoogleUsatBlockStore } from '@/stores/googleUsatBlockStore';
-import { evaluateGoogleUsatGate } from '@/utils/googleUsatGate';
+import { useVerificationGateStore } from '@/stores/verificationGateStore';
 import { IS_DEV_MODE } from '@/utils/devUtils';
+import {
+  evaluateGoogleUsatGate,
+  isGoogleUsatForceEnabledForTesting,
+} from '@/utils/googleUsatGate';
 
 // Validation patterns for each expected parameter
 const VALIDATION_PATTERNS = {
@@ -131,7 +134,11 @@ export const handleUrl = async (selfClient: SelfClient, uri: string) => {
           entry_point: 'deeplink',
           reason: 'no_high_security_doc',
         });
-        useGoogleUsatBlockStore.getState().open('deeplink');
+        useVerificationGateStore.getState().open({
+          reason: 'google_usat_high_security_required',
+          entryPoint: 'deeplink',
+          requesterName: selfAppJson.appName,
+        });
         return;
       }
       selfClient.getSelfAppState().setSelfApp(selfAppJson);
@@ -154,6 +161,19 @@ export const handleUrl = async (selfClient: SelfClient, uri: string) => {
       );
     }
   } else if (sessionId && typeof sessionId === 'string') {
+    if (isGoogleUsatForceEnabledForTesting()) {
+      selfClient.trackEvent(ProofEvents.GOOGLE_USAT_BLOCKED, {
+        entry_point: 'deeplink',
+        reason: 'no_high_security_doc',
+      });
+      useVerificationGateStore.getState().open({
+        reason: 'google_usat_high_security_required',
+        entryPoint: 'deeplink',
+        requesterName: 'Google USAT Faucet',
+      });
+      return;
+    }
+
     selfClient.getSelfAppState().cleanSelfApp();
     selfClient.getSelfAppState().startAppListener(sessionId);
 
@@ -342,7 +362,11 @@ export const setupUniversalLinkListenerInNavigation = (
     //   return; // Don't call handleUrl for OAuth callbacks
     // }
     // For non-OAuth URLs, handle normally
-    void handleUrl(selfClient, url);
+    handleUrl(selfClient, url).catch(error => {
+      if (IS_DEV_MODE) {
+        console.error('Error handling URL event:', error);
+      }
+    });
   });
   return () => {
     linkingEventListener.remove();

@@ -18,7 +18,7 @@ import {
   pointsSelfApp,
 } from '@/services/points';
 import useUserStore from '@/stores/userStore';
-import { useGoogleUsatBlockStore } from '@/stores/googleUsatBlockStore';
+import { useVerificationGateStore } from '@/stores/verificationGateStore';
 import { evaluateGoogleUsatGate } from '@/utils/googleUsatGate';
 import { registerModalCallbacks } from '@/utils/modalCallbackRegistry';
 
@@ -45,7 +45,11 @@ export const useEarnPointsFlow = ({
         entry_point: 'earn_points',
         reason: 'no_high_security_doc',
       });
-      useGoogleUsatBlockStore.getState().open('earn_points');
+      useVerificationGateStore.getState().open({
+        reason: 'google_usat_high_security_required',
+        entryPoint: 'earn_points',
+        requesterName: selfApp.appName,
+      });
       return;
     }
 

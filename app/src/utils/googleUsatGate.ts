@@ -10,6 +10,11 @@ import {
 } from '@selfxyz/mobile-sdk-alpha';
 
 export type GoogleUsatGateResult = 'allow' | 'block';
+export const FORCE_GOOGLE_USAT_FOR_TESTING = true;
+
+export function isGoogleUsatForceEnabledForTesting(): boolean {
+  return __DEV__ && FORCE_GOOGLE_USAT_FOR_TESTING;
+}
 
 export async function evaluateGoogleUsatGate(
   selfClient: SelfClient,
@@ -27,10 +32,7 @@ export async function evaluateGoogleUsatGate(
 }
 
 function shouldTreatAsGoogleUsat(app: SelfApp): boolean {
-  const forceGoogleUsat = (
-    globalThis as typeof globalThis & { __FORCE_GOOGLE_USAT__?: boolean }
-  ).__FORCE_GOOGLE_USAT__;
-  if (__DEV__ && forceGoogleUsat) {
+  if (isGoogleUsatForceEnabledForTesting()) {
     return true;
   }
   return isGoogleUsatProofRequest(app);

@@ -52,6 +52,7 @@ jest.mock('@/stores/userStore', () => {
 
 jest.mock('@/utils/googleUsatGate', () => ({
   evaluateGoogleUsatGate: jest.fn(),
+  isGoogleUsatForceEnabledForTesting: jest.fn(() => false),
 }));
 
 const mockUserStore = jest.requireMock('@/stores/userStore') as {

@@ -2,19 +2,14 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { useNavigation } from '@react-navigation/native';
 import { render } from '@testing-library/react-native';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
-import GoogleUsatBlockModal from '@/components/GoogleUsatBlockModal';
 import AlertModal from '@/components/AlertModal';
-import { useGoogleUsatBlockStore } from '@/stores/googleUsatBlockStore';
-
-jest.mock('@react-navigation/native', () => ({
-  useNavigation: jest.fn(),
-}));
+import GoogleUsatBlockModal from '@/components/GoogleUsatBlockModal';
+import { useVerificationGateStore } from '@/stores/verificationGateStore';
 
 jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
   useSelfClient: jest.fn(),
@@ -23,31 +18,43 @@ jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
 jest.mock('@/components/AlertModal', () => jest.fn(() => null));
 
 describe('GoogleUsatBlockModal', () => {
-  const mockNavigate = jest.fn();
   const mockTrackEvent = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
-    useGoogleUsatBlockStore.setState({ isOpen: false, entryPoint: null });
-    (useNavigation as jest.Mock).mockReturnValue({ navigate: mockNavigate });
-    (useSelfClient as jest.Mock).mockReturnValue({ trackEvent: mockTrackEvent });
+    useVerificationGateStore.setState({
+      isOpen: false,
+      reason: null,
+      entryPoint: null,
+      requesterName: null,
+    });
+    (useSelfClient as jest.Mock).mockReturnValue({
+      trackEvent: mockTrackEvent,
+    });
   });
 
   it('renders when store is open and handles primary CTA', () => {
-    useGoogleUsatBlockStore.getState().open('qr_scan');
+    useVerificationGateStore.getState().open({
+      reason: 'google_usat_high_security_required',
+      entryPoint: 'qr_scan',
+      requesterName: 'Google USAT Faucet',
+    });
     render(<GoogleUsatBlockModal />);
     const modalProps = mockAlertModal.mock.calls[0]?.[0];
     expect(modalProps.visible).toBe(true);
+    expect(modalProps.modalParams.bodyText).toContain('Google USAT Faucet');
     modalProps.modalParams.onButtonPress();
 
     expect(mockTrackEvent).toHaveBeenCalledWith(
       ProofEvents.GOOGLE_USAT_RECOVER_CLICKED,
     );
-    expect(mockNavigate).toHaveBeenCalledWith('CountryPicker');
   });
 
   it('fires dismiss event on secondary action', () => {
-    useGoogleUsatBlockStore.getState().open('deeplink');
+    useVerificationGateStore.getState().open({
+      reason: 'google_usat_high_security_required',
+      entryPoint: 'deeplink',
+    });
     render(<GoogleUsatBlockModal />);
     const modalProps = mockAlertModal.mock.calls[0]?.[0];
     modalProps.modalParams.onSecondaryButtonPress?.();
@@ -57,4 +64,4 @@ describe('GoogleUsatBlockModal', () => {
     );
   });
 });
-  const mockAlertModal = AlertModal as jest.MockedFunction<typeof AlertModal>;
+const mockAlertModal = AlertModal as jest.MockedFunction<typeof AlertModal>;

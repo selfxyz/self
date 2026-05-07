@@ -216,7 +216,9 @@ const SplashScreen: React.FC = ({}) => {
     if (isAnimationFinished) {
       if (queuedDeepLink) {
         requestAnimationFrame(() => {
-          void handleUrl(selfClient, queuedDeepLink);
+          handleUrl(selfClient, queuedDeepLink).catch(error => {
+            console.error('Error handling queued deep link:', error);
+          });
         });
       } else if (nextScreen) {
         requestAnimationFrame(() => {

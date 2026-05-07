@@ -15,12 +15,12 @@ import {
   POINT_VALUES,
   pointsSelfApp,
 } from '@/services/points';
-import { evaluateGoogleUsatGate } from '@/utils/googleUsatGate';
 import {
   POINTS_SELF_APP_ENDPOINT,
   POINTS_SELF_APP_NAME,
 } from '@/services/points/constants';
 import useUserStore from '@/stores/userStore';
+import { evaluateGoogleUsatGate } from '@/utils/googleUsatGate';
 import { getModalCallbacks } from '@/utils/modalCallbackRegistry';
 
 jest.mock('@react-navigation/native', () => ({

@@ -36,8 +36,11 @@ import { buttonTap } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
 import { parseAndValidateUrlParams } from '@/navigation/deeplinks';
-import { useGoogleUsatBlockStore } from '@/stores/googleUsatBlockStore';
-import { evaluateGoogleUsatGate } from '@/utils/googleUsatGate';
+import { useVerificationGateStore } from '@/stores/verificationGateStore';
+import {
+  evaluateGoogleUsatGate,
+  isGoogleUsatForceEnabledForTesting,
+} from '@/utils/googleUsatGate';
 
 const QRCodeViewFinderScreen: React.FC = () => {
   const selfClient = useSelfClient();
@@ -89,7 +92,11 @@ const QRCodeViewFinderScreen: React.FC = () => {
                 entry_point: 'qr_scan',
                 reason: 'no_high_security_doc',
               });
-              useGoogleUsatBlockStore.getState().open('qr_scan');
+              useVerificationGateStore.getState().open({
+                reason: 'google_usat_high_security_required',
+                entryPoint: 'qr_scan',
+                requesterName: selfAppJson.appName,
+              });
               setDoneScanningQR(false);
               return;
             }
@@ -116,6 +123,20 @@ const QRCodeViewFinderScreen: React.FC = () => {
             return;
           }
         } else if (sessionId) {
+          if (isGoogleUsatForceEnabledForTesting()) {
+            trackEvent(ProofEvents.GOOGLE_USAT_BLOCKED, {
+              entry_point: 'qr_scan',
+              reason: 'no_high_security_doc',
+            });
+            useVerificationGateStore.getState().open({
+              reason: 'google_usat_high_security_required',
+              entryPoint: 'qr_scan',
+              requesterName: 'Google USAT Faucet',
+            });
+            setDoneScanningQR(false);
+            return;
+          }
+
           trackEvent(ProofEvents.QR_SCAN_SUCCESS, {
             scan_type: 'sessionId',
           });
