@@ -14,11 +14,11 @@
 
 ## Why
 
-The Self mobile app currently fires ~200 distinct events into Mixpanel (via Segment). After ANA-01 + ANA-11 + ANA-12 land, only ~30 of those events are consumed by a dashboard, alert, or product question. The remaining ~170 are operational noise: socket lifecycle, NFC handshake sub-steps, parser internals, retry plumbing. They cost real money (Mixpanel bills per event), pollute the analytics workspace, and — critically — provide a *worse* debugging experience than purpose-built observability tools would.
+The Self mobile app currently fires ~200 distinct events into Mixpanel (via Segment). After ANA-01 + ANA-11 + ANA-12 land, only ~30 of those events are consumed by a dashboard, alert, or product question. The remaining ~170 are operational noise: socket lifecycle, NFC handshake sub-steps, parser internals, retry plumbing. They cost real money (Mixpanel bills per event), pollute the analytics workspace, and — critically — provide a _worse_ debugging experience than purpose-built observability tools would.
 
 The migration framework: **each event needs one named consumer.** If you can't say "this event drives the X dashboard" or "this event answers the Y product question," the event doesn't belong in Mixpanel. It belongs in Sentry breadcrumbs (free until an error occurs) or Sentry Session Replay (visual session reconstruction with cohort filtering by tags).
 
-Sentry is already configured (`@sentry/react-native@7.0.0`) with `mobileReplayIntegration` and a `logProofEvent` → breadcrumb pipeline already wired through `selfClient.logProofEvent` in the SDK and `selfClientProvider.tsx:286-289` in the app. Most of the migration is *moving emissions from `selfClient.trackEvent` to `selfClient.logProofEvent`*, not setting up new infrastructure.
+Sentry is already configured (`@sentry/react-native@7.0.0`) with `mobileReplayIntegration` and a `logProofEvent` → breadcrumb pipeline already wired through `selfClient.logProofEvent` in the SDK and `selfClientProvider.tsx:286-289` in the app. Most of the migration is _moving emissions from `selfClient.trackEvent` to `selfClient.logProofEvent`_, not setting up new infrastructure.
 
 ## Goals
 
@@ -42,17 +42,17 @@ Sentry is already configured (`@sentry/react-native@7.0.0`) with `mobileReplayIn
 
 After this lands, exactly these event groups remain in Mixpanel:
 
-| Group | Count | Why kept |
-| --- | --- | --- |
-| `OnboardingEvents` | 10 | Canonical funnel — drives all top-level conversion dashboards. ANA-01. |
-| `BiometricEvents` | 6 | Branch funnel + DSC prioritization signal. ANA-12. |
-| `KycEvents` | 5 | Branch funnel. ANA-12. |
-| `AadhaarEvents` | 7 | Branch funnel. ANA-12 (curated from 25). |
-| `AppEvents` | ~6 | High-level app lifecycle (privacy disclaimer, get-started, update modals). Drives acquisition dashboards. |
-| `BackupEvents` | ~14 | Cloud backup conversion is its own funnel. Keep as-is for now; revisit if a separate spec curates them. |
-| `PointEvents` | ~13 | Rewards/referral funnel — distinct product surface. Keep. |
-| `NotificationEvents` | 2 | Push-notification engagement metric. Keep. |
-| `AuthEvents` | ~3 (curated) | Login success/failure funnel. Curate from 8 → 3 in this PR (success / failure / biometric_login_failed). |
+| Group                | Count        | Why kept                                                                                                  |
+| -------------------- | ------------ | --------------------------------------------------------------------------------------------------------- |
+| `OnboardingEvents`   | 10           | Canonical funnel — drives all top-level conversion dashboards. ANA-01.                                    |
+| `BiometricEvents`    | 6            | Branch funnel + DSC prioritization signal. ANA-12.                                                        |
+| `KycEvents`          | 5            | Branch funnel. ANA-12.                                                                                    |
+| `AadhaarEvents`      | 7            | Branch funnel. ANA-12 (curated from 25).                                                                  |
+| `AppEvents`          | ~6           | High-level app lifecycle (privacy disclaimer, get-started, update modals). Drives acquisition dashboards. |
+| `BackupEvents`       | ~14          | Cloud backup conversion is its own funnel. Keep as-is for now; revisit if a separate spec curates them.   |
+| `PointEvents`        | ~13          | Rewards/referral funnel — distinct product surface. Keep.                                                 |
+| `NotificationEvents` | 2            | Push-notification engagement metric. Keep.                                                                |
+| `AuthEvents`         | ~3 (curated) | Login success/failure funnel. Curate from 8 → 3 in this PR (success / failure / biometric_login_failed).  |
 
 Total target: ~66 events. Everything else moves to breadcrumbs or gets deleted.
 
@@ -60,12 +60,12 @@ Total target: ~66 events. Everything else moves to breadcrumbs or gets deleted.
 
 The bulk of `ProofEvents` (~43 events) and the deleted `AadhaarEvents` (~18 events) become breadcrumbs. Examples:
 
-| Currently emits | Becomes |
-| --- | --- |
-| `ProofEvents.SOCKETIO_CONN_STARTED` (Mixpanel) | `Sentry.addBreadcrumb({ category: 'proof.socket', message: 'connect started', level: 'info' })` |
-| `ProofEvents.NFC_RESPONSE_PARSE_FAILED` (Mixpanel) | breadcrumb with `level: 'warning'`, `category: 'proof.nfc'`, `data: { error_code }` |
-| `ProofEvents.PAYLOAD_GEN_STARTED` (Mixpanel) | breadcrumb with `category: 'proof.payload'` |
-| `AadhaarEvents.QR_DATA_EXTRACTION_STARTED` (Mixpanel — deleted in ANA-12) | breadcrumb with `category: 'aadhaar.qr'` |
+| Currently emits                                                           | Becomes                                                                                         |
+| ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `ProofEvents.SOCKETIO_CONN_STARTED` (Mixpanel)                            | `Sentry.addBreadcrumb({ category: 'proof.socket', message: 'connect started', level: 'info' })` |
+| `ProofEvents.NFC_RESPONSE_PARSE_FAILED` (Mixpanel)                        | breadcrumb with `level: 'warning'`, `category: 'proof.nfc'`, `data: { error_code }`             |
+| `ProofEvents.PAYLOAD_GEN_STARTED` (Mixpanel)                              | breadcrumb with `category: 'proof.payload'`                                                     |
+| `AadhaarEvents.QR_DATA_EXTRACTION_STARTED` (Mixpanel — deleted in ANA-12) | breadcrumb with `category: 'aadhaar.qr'`                                                        |
 
 Rule of thumb: **plumbing events become breadcrumbs; outcome events stay in Mixpanel.**
 
@@ -77,17 +77,17 @@ Events that are neither funnel inputs nor useful debugging context. Per-mock-par
 
 Add the following Sentry tags via the existing whitelist (`app/src/config/sentry.ts:28-40`). They power "filter all sessions by German passport with RSA-PSS algo" queries:
 
-| Tag | Set when | Cleared when | Source |
-| --- | --- | --- | --- |
-| `attempt_id` | Onboarding attempt starts (in `ensureAttempt`) | Attempt completes/fails | `currentAttempt.id` |
-| `initial_branch` | Locked at `DOCUMENT_TYPE_SELECTED` | Attempt ends | `currentAttempt.initialBranch` |
-| `current_branch` | Updated on every branch change | Attempt ends | `currentAttempt.currentBranch` |
-| `document_country` | After country-picker confirm | Attempt ends | `country_code` |
-| `document_type` | After ID-selection confirm | Attempt ends | Already whitelisted |
-| `signature_algorithm` | After `passport_parsed` (biometric only) | Attempt ends | From `passportData.dg1_hash_function` etc. |
-| `csca_hash_algorithm` | Same | Attempt ends | From `passportData.csca_hash_function` |
-| `kyc_provider` | At KYC session start | Attempt ends | configured provider id |
-| `app_build_channel` | App startup | Never (super-tag) | Out of scope here — flagged for ANA-02 |
+| Tag                   | Set when                                       | Cleared when            | Source                                     |
+| --------------------- | ---------------------------------------------- | ----------------------- | ------------------------------------------ |
+| `attempt_id`          | Onboarding attempt starts (in `ensureAttempt`) | Attempt completes/fails | `currentAttempt.id`                        |
+| `initial_branch`      | Locked at `DOCUMENT_TYPE_SELECTED`             | Attempt ends            | `currentAttempt.initialBranch`             |
+| `current_branch`      | Updated on every branch change                 | Attempt ends            | `currentAttempt.currentBranch`             |
+| `document_country`    | After country-picker confirm                   | Attempt ends            | `country_code`                             |
+| `document_type`       | After ID-selection confirm                     | Attempt ends            | Already whitelisted                        |
+| `signature_algorithm` | After `passport_parsed` (biometric only)       | Attempt ends            | From `passportData.dg1_hash_function` etc. |
+| `csca_hash_algorithm` | Same                                           | Attempt ends            | From `passportData.csca_hash_function`     |
+| `kyc_provider`        | At KYC session start                           | Attempt ends            | configured provider id                     |
+| `app_build_channel`   | App startup                                    | Never (super-tag)       | Out of scope here — flagged for ANA-02     |
 
 All tags are session-scoped via `Sentry.setTag` inside a scope. Tag setting is centralized in a new `app/src/observability/onboardingContext.ts` module (or extension to `app/src/config/sentry.ts`); call sites do not call `Sentry.setTag` directly.
 
