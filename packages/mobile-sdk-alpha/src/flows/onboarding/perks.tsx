@@ -12,7 +12,7 @@ import { getPerkRecordsForIdType, type PerkId, PERKS as SHARED_PERKS } from '../
 export type Perk = EligiblePerksItem;
 
 const PERK_LOGOS: Partial<Record<PerkId, () => React.ReactNode>> = {
-  google_cloud_faucet: () => <GoogleLogo width={32} height={32} />,
+  google_cloud_faucet: () => <GoogleLogo />,
 };
 
 export const PERKS: Record<string, Perk> = Object.fromEntries(
