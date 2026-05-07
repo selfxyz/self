@@ -4,7 +4,7 @@
 
 import type React from 'react';
 import { useEffect } from 'react';
-import { StyleSheet } from 'react-native';
+import { Pressable, StyleSheet, Text, View as RNView } from 'react-native';
 
 import { colors, fontFamily } from '@selfxyz/euclid-core';
 import AadhaarLogo from '@selfxyz/mobile-sdk-alpha/svgs/icons/aadhaar.svg';
@@ -20,6 +20,7 @@ import { useSelfClient } from '../../context';
 import { buttonTap } from '../../haptic';
 import { SdkEvents } from '../../types/events';
 import { getDocumentBadgeLabel, getDocumentPerkLabel } from './badges';
+import { getDocumentDisplaySubtitle, getDocumentDisplayTitle } from './documentCardCopy';
 import { getPerksForIdType } from './perks';
 
 const KYC_DOC_TYPE = 'kyc';
@@ -54,21 +55,6 @@ const getDocumentNameForEvent = (docType: string): string => {
   }
 };
 
-const getDocumentSubtitle = (docType: string): string | null => {
-  switch (docType) {
-    case 'p':
-      return 'Verified Biometric Passport';
-    case 'i':
-      return 'Verified Biometric ID card';
-    case 'a':
-      return 'Verified mAadhaar QR code';
-    case KYC_DOC_TYPE:
-      return "National ID, Driver's License etc.";
-    default:
-      return null;
-  }
-};
-
 const getDocumentLogo = (docType: string): React.ReactNode => {
   switch (docType) {
     case 'p':
@@ -91,7 +77,7 @@ type DocumentCardProps = {
 };
 
 const DocumentCard: React.FC<DocumentCardProps> = ({ docType, countryCode, onPress }) => {
-  const subtitle = getDocumentSubtitle(docType);
+  const subtitle = getDocumentDisplaySubtitle(docType, countryCode);
   const perks = getPerksForIdType(docType);
   const perkLabel = getDocumentPerkLabel(docType);
   const hasPerks = perkLabel !== null;
@@ -99,20 +85,20 @@ const DocumentCard: React.FC<DocumentCardProps> = ({ docType, countryCode, onPre
 
   return (
     <View style={styles.cardOuter}>
-      <View onPress={onPress} style={styles.cardInner} pressStyle={{ transform: [{ scale: 0.98 }], opacity: 0.95 }}>
-        <XStack alignItems="center" gap={12} flex={1}>
-          <View style={styles.cardLogoContainer}>
+      <Pressable onPress={onPress} style={({ pressed }) => [styles.cardInner, pressed && styles.cardInnerPressed]}>
+        <RNView style={styles.cardRow}>
+          <RNView style={styles.cardLogoContainer}>
             {useFlag ? <RoundFlag countryCode={countryCode} size={32} /> : getDocumentLogo(docType)}
-          </View>
-          <YStack gap={4} flex={1}>
-            <BodyText style={styles.cardTitle}>{getDocumentName(docType)}</BodyText>
-            {subtitle && <BodyText style={styles.cardSubtitle}>{subtitle}</BodyText>}
-          </YStack>
-          <View style={styles.hiSecurityPill}>
-            <BodyText style={styles.hiSecurityText}>{getDocumentBadgeLabel(docType)}</BodyText>
-          </View>
-        </XStack>
-      </View>
+          </RNView>
+          <RNView style={styles.cardContentColumn}>
+            <Text style={styles.cardTitle}>{getDocumentDisplayTitle(docType, countryCode)}</Text>
+            {subtitle ? <Text style={styles.cardSubtitle}>{subtitle}</Text> : null}
+          </RNView>
+          <RNView style={styles.hiSecurityPill}>
+            <Text style={styles.hiSecurityText}>{getDocumentBadgeLabel(docType)}</Text>
+          </RNView>
+        </RNView>
+      </Pressable>
       {hasPerks && (
         <PerkRail
           variant="minimal"
@@ -256,34 +242,51 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 3,
   },
+  cardInnerPressed: {
+    opacity: 0.95,
+    transform: [{ scale: 0.98 }],
+  },
+  cardRow: {
+    minHeight: 43,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   cardLogoContainer: {
     width: 32,
     height: 32,
+    marginRight: 12,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  cardContentColumn: {
+    flex: 1,
+    minWidth: 0,
+    marginRight: 12,
   },
   cardTitle: {
     fontFamily: fontFamily.dinOT.native,
     fontSize: 16,
+    lineHeight: 21,
     color: colors.black,
   },
   cardSubtitle: {
     fontFamily: fontFamily.dinOT.native,
     fontSize: 14,
+    lineHeight: 18,
     color: colors.slate500,
   },
   hiSecurityPill: {
     backgroundColor: 'rgba(0,0,0,0.5)',
     borderRadius: 30,
-    paddingHorizontal: 10,
+    paddingHorizontal: 8,
     paddingVertical: 4,
-    flexShrink: 1,
+    flexShrink: 0,
   },
   hiSecurityText: {
     fontFamily: fontFamily.dinOT.native,
     fontSize: 10,
     lineHeight: 12.9,
-    letterSpacing: 0.3,
+    letterSpacing: 0.6,
     color: colors.white,
     textTransform: 'uppercase',
   },

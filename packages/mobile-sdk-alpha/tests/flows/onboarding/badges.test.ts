@@ -9,8 +9,8 @@ import { getPerkRailLabel, PERKS } from '../../../src/flows/onboarding/perks';
 
 describe('onboarding badges', () => {
   it('uses scan-method copy for document badges', () => {
-    expect(getDocumentBadgeLabel('p')).toBe('NFC chip scan');
-    expect(getDocumentBadgeLabel('i')).toBe('NFC chip scan');
+    expect(getDocumentBadgeLabel('p')).toBe('Hi-security');
+    expect(getDocumentBadgeLabel('i')).toBe('Hi-security');
     expect(getDocumentBadgeLabel('a')).toBe('QR code scan');
     expect(getDocumentBadgeLabel('kyc')).toBe('Photo ID scan');
     expect(getDocumentBadgeLabel('unknown')).toBe('Document scan');

@@ -10,7 +10,7 @@ export function getDocumentBadgeLabel(docType: string): string {
   switch (docType) {
     case 'p':
     case 'i':
-      return 'NFC chip scan';
+      return 'Hi-security';
     case 'a':
       return 'QR code scan';
     case KYC_DOC_TYPE:
