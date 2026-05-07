@@ -15,6 +15,7 @@ import {
   POINT_VALUES,
   pointsSelfApp,
 } from '@/services/points';
+import { evaluateGoogleUsatGate } from '@/utils/googleUsatGate';
 import {
   POINTS_SELF_APP_ENDPOINT,
   POINTS_SELF_APP_NAME,
@@ -43,6 +44,10 @@ jest.mock('@/services/points', () => ({
   },
 }));
 
+jest.mock('@/utils/googleUsatGate', () => ({
+  evaluateGoogleUsatGate: jest.fn(),
+}));
+
 // userStore is used as-is, no mock needed
 
 const mockNavigate = jest.fn();
@@ -66,6 +71,8 @@ const mockHasUserDoneThePointsDisclosure =
 const mockPointsSelfApp = pointsSelfApp as jest.MockedFunction<
   typeof pointsSelfApp
 >;
+const mockEvaluateGoogleUsatGate =
+  evaluateGoogleUsatGate as jest.MockedFunction<typeof evaluateGoogleUsatGate>;
 
 describe('useEarnPointsFlow', () => {
   const mockSetSelfApp = jest.fn();
@@ -91,6 +98,7 @@ describe('useEarnPointsFlow', () => {
     } as any);
 
     mockUseSelfClient.mockReturnValue(mockSelfClient as any);
+    mockEvaluateGoogleUsatGate.mockResolvedValue('allow');
 
     mockUseRegisterReferral.mockReturnValue({
       registerReferral: mockRegisterReferral,

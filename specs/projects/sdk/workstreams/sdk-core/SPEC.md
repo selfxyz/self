@@ -75,16 +75,18 @@
 | SC-01 | Consolidate bridge-layer fallback duplicates with engine-owned adapters      | Done   | High     | -          | [plans/SC-01-fallback-adapter-dedup.md](./plans/SC-01-fallback-adapter-dedup.md)           | -   |
 | SC-02 | Expose `generateKey()` and `getPublicKey()` in bridge crypto adapter surface | Done   | Medium   | SC-01      | [plans/SC-02-crypto-bridge-surface.md](./plans/SC-02-crypto-bridge-surface.md)             | -   |
 | SC-03 | Extract reusable app adapter factories for SelfClient assembly               | Done   | Medium   | SC-02      | [plans/SC-03-selfclient-adapter-assembly.md](./plans/SC-03-selfclient-adapter-assembly.md) | -   |
+| SELF-2854 | Block Google USAT proof attempts when wallet has no high-security ID     | Ready  | High     | SELF-2862  | [plans/SELF-2854-google-usat-block.md](./plans/SELF-2854-google-usat-block.md)             | -   |
 
 Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 
 ## Active Plans
 
-| Plan                                                                                       | IDs   | Status |
-| ------------------------------------------------------------------------------------------ | ----- | ------ |
-| [plans/SC-01-fallback-adapter-dedup.md](./plans/SC-01-fallback-adapter-dedup.md)           | SC-01 | Done   |
-| [plans/SC-02-crypto-bridge-surface.md](./plans/SC-02-crypto-bridge-surface.md)             | SC-02 | Done   |
-| [plans/SC-03-selfclient-adapter-assembly.md](./plans/SC-03-selfclient-adapter-assembly.md) | SC-03 | Done   |
+| Plan                                                                                       | IDs       | Status |
+| ------------------------------------------------------------------------------------------ | --------- | ------ |
+| [plans/SC-01-fallback-adapter-dedup.md](./plans/SC-01-fallback-adapter-dedup.md)           | SC-01     | Done   |
+| [plans/SC-02-crypto-bridge-surface.md](./plans/SC-02-crypto-bridge-surface.md)             | SC-02     | Done   |
+| [plans/SC-03-selfclient-adapter-assembly.md](./plans/SC-03-selfclient-adapter-assembly.md) | SC-03     | Done   |
+| [plans/SELF-2854-google-usat-block.md](./plans/SELF-2854-google-usat-block.md)             | SELF-2854 | Ready  |
 
 ## Completion Checklist
 

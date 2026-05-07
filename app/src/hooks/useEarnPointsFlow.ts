@@ -7,6 +7,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import { useRegisterReferral } from '@/hooks/useRegisterReferral';
 import type { RootStackParamList } from '@/navigation';
@@ -17,6 +18,8 @@ import {
   pointsSelfApp,
 } from '@/services/points';
 import useUserStore from '@/stores/userStore';
+import { useGoogleUsatBlockStore } from '@/stores/googleUsatBlockStore';
+import { evaluateGoogleUsatGate } from '@/utils/googleUsatGate';
 import { registerModalCallbacks } from '@/utils/modalCallbackRegistry';
 
 type UseEarnPointsFlowParams = {
@@ -36,6 +39,16 @@ export const useEarnPointsFlow = ({
 
   const navigateToPointsProof = useCallback(async () => {
     const selfApp = await pointsSelfApp();
+    const gate = await evaluateGoogleUsatGate(selfClient, selfApp);
+    if (gate === 'block') {
+      selfClient.trackEvent(ProofEvents.GOOGLE_USAT_BLOCKED, {
+        entry_point: 'earn_points',
+        reason: 'no_high_security_doc',
+      });
+      useGoogleUsatBlockStore.getState().open('earn_points');
+      return;
+    }
+
     selfClient.getSelfAppState().setSelfApp(selfApp);
 
     // Use setTimeout to ensure modal dismisses before navigating

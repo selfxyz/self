@@ -7,11 +7,14 @@ import { Linking, Platform } from 'react-native';
 
 import { countries } from '@selfxyz/common/constants/countries';
 import type { IdDocInput } from '@selfxyz/common/utils';
+import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import type { SelfClient } from '@selfxyz/mobile-sdk-alpha';
 
 import type { RootStackParamList } from '@/navigation';
 import { navigationRef } from '@/navigation';
 import useUserStore from '@/stores/userStore';
+import { useGoogleUsatBlockStore } from '@/stores/googleUsatBlockStore';
+import { evaluateGoogleUsatGate } from '@/utils/googleUsatGate';
 import { IS_DEV_MODE } from '@/utils/devUtils';
 
 // Validation patterns for each expected parameter
@@ -108,7 +111,7 @@ export const getAndClearQueuedUrl = (): string | null => {
   return url;
 };
 
-export const handleUrl = (selfClient: SelfClient, uri: string) => {
+export const handleUrl = async (selfClient: SelfClient, uri: string) => {
   const validatedParams = parseAndValidateUrlParams(uri);
   const {
     sessionId,
@@ -122,6 +125,15 @@ export const handleUrl = (selfClient: SelfClient, uri: string) => {
   if (selfAppStr) {
     try {
       const selfAppJson = JSON.parse(selfAppStr);
+      const gate = await evaluateGoogleUsatGate(selfClient, selfAppJson);
+      if (gate === 'block') {
+        selfClient.trackEvent(ProofEvents.GOOGLE_USAT_BLOCKED, {
+          entry_point: 'deeplink',
+          reason: 'no_high_security_doc',
+        });
+        useGoogleUsatBlockStore.getState().open('deeplink');
+        return;
+      }
       selfClient.getSelfAppState().setSelfApp(selfAppJson);
       selfClient.getSelfAppState().startAppListener(selfAppJson.sessionId);
 
@@ -330,7 +342,7 @@ export const setupUniversalLinkListenerInNavigation = (
     //   return; // Don't call handleUrl for OAuth callbacks
     // }
     // For non-OAuth URLs, handle normally
-    handleUrl(selfClient, url);
+    void handleUrl(selfClient, url);
   });
   return () => {
     linkingEventListener.remove();

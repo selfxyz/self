@@ -36,6 +36,8 @@ import { buttonTap } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
 import { parseAndValidateUrlParams } from '@/navigation/deeplinks';
+import { useGoogleUsatBlockStore } from '@/stores/googleUsatBlockStore';
+import { evaluateGoogleUsatGate } from '@/utils/googleUsatGate';
 
 const QRCodeViewFinderScreen: React.FC = () => {
   const selfClient = useSelfClient();
@@ -81,6 +83,16 @@ const QRCodeViewFinderScreen: React.FC = () => {
               scan_type: 'selfApp',
             });
             const selfAppJson = JSON.parse(selfApp);
+            const gate = await evaluateGoogleUsatGate(selfClient, selfAppJson);
+            if (gate === 'block') {
+              trackEvent(ProofEvents.GOOGLE_USAT_BLOCKED, {
+                entry_point: 'qr_scan',
+                reason: 'no_high_security_doc',
+              });
+              useGoogleUsatBlockStore.getState().open('qr_scan');
+              setDoneScanningQR(false);
+              return;
+            }
 
             selfClient.getSelfAppState().setSelfApp(selfAppJson);
             selfClient

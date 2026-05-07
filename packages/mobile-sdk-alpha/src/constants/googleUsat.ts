@@ -10,6 +10,7 @@ export const CELO_MAINNET_CHAIN_ID = 42220;
 export const CELO_SEPOLIA_CHAIN_ID = 11142220;
 
 export const GOOGLE_USAT_MAINNET_VERIFIER = '0xc04157590b07914bcdd665f6a62cc220ab0ddec5';
+
 export const GOOGLE_USAT_SEPOLIA_VERIFIER = '0x5df9232ad9fdbf425cc1087e5396456ca6976299';
 
 // Verifier contract addresses are public, lowercased, and chain-scoped.

@@ -1,0 +1,37 @@
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
+
+import type { SelfApp } from '@selfxyz/common/utils';
+import {
+  getAllDocuments,
+  isGoogleUsatProofRequest,
+  type SelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
+
+export type GoogleUsatGateResult = 'allow' | 'block';
+
+export async function evaluateGoogleUsatGate(
+  selfClient: SelfClient,
+  app: SelfApp,
+): Promise<GoogleUsatGateResult> {
+  if (!shouldTreatAsGoogleUsat(app)) {
+    return 'allow';
+  }
+
+  const docs = await getAllDocuments(selfClient);
+  const hasHighSecurityDoc = Object.values(docs).some(
+    doc => doc.data.documentCategory !== 'kyc',
+  );
+  return hasHighSecurityDoc ? 'allow' : 'block';
+}
+
+function shouldTreatAsGoogleUsat(app: SelfApp): boolean {
+  const forceGoogleUsat = (
+    globalThis as typeof globalThis & { __FORCE_GOOGLE_USAT__?: boolean }
+  ).__FORCE_GOOGLE_USAT__;
+  if (__DEV__ && forceGoogleUsat) {
+    return true;
+  }
+  return isGoogleUsatProofRequest(app);
+}
