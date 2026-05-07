@@ -17,7 +17,7 @@ import { resolveOnboardingBranch, trackOnboardingStep } from '../../analytics/on
 import { BodyText, PerkRail, RoundFlag, View, XStack, YStack } from '../../components';
 import { OnboardingEvents, RegistrationPickerEvents } from '../../constants/analytics';
 import { useSelfClient } from '../../context';
-import { getPerksForIdType } from '../../data/perks';
+import { getPerksForIdType } from './perks';
 import { buttonTap } from '../../haptic';
 import { SdkEvents } from '../../types/events';
 
@@ -112,6 +112,7 @@ const DocumentCard: React.FC<DocumentCardProps> = ({ docType, onPress }) => {
           variant="minimal"
           logos={perks.map(p => p.renderLogo())}
           label={perks.length === 1 ? 'ELIGIBLE FOR 1 PERK' : `ELIGIBLE FOR ${perks.length} PERKS`}
+          onPress={onPress}
         />
       )}
     </View>
@@ -161,6 +162,9 @@ const IDSelectionScreen: React.FC<IDSelectionScreenProps> = ({ countryCode, docu
   };
 
   const onTapKyc = () => {
+    selfClient.trackEvent(RegistrationPickerEvents.UNSUPPORTED_TAPPED, {
+      country_code: countryCode,
+    });
     onSelectDocumentType(KYC_DOC_TYPE);
   };
 
