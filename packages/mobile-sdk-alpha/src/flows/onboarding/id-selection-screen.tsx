@@ -209,11 +209,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   cardOuter: {
-    backgroundColor: colors.slate100,
+    backgroundColor: colors.slate50,
     borderColor: colors.slate200,
-    borderWidth: 2,
+    borderWidth: 1,
     borderRadius: 18,
-    overflow: 'hidden',
+    overflow: 'visible',
   },
   cardInner: {
     backgroundColor: colors.white,
@@ -225,7 +225,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowOffset: { width: 0, height: 0 },
     shadowRadius: 12,
-    elevation: 3,
+    elevation: 6,
+    zIndex: 1,
   },
   cardInnerPressed: {
     opacity: 0.95,
