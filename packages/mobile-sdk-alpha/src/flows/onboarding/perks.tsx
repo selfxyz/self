@@ -29,7 +29,9 @@ export const PERKS: Record<string, Perk> = Object.fromEntries(
 
 /** Returns ready-to-render perks (label + logo + isNew) for a given ID type. */
 export function getEligiblePerksForIdType(idType: string): EligiblePerksItem[] {
-  return getPerksForIdType(idType);
+  return getPerkRecordsForIdType(idType)
+    .map(perk => PERKS[perk.id])
+    .filter((perk): perk is Perk => Boolean(perk));
 }
 
 export function getPerkRailLabel(perks: Perk[]): string {

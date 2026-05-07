@@ -7,7 +7,7 @@
 // mechanical.
 
 import type React from 'react';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import type { ViewStyle } from 'react-native';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -42,14 +42,13 @@ export const EligiblePerksCard: React.FC<EligiblePerksCardProps> = ({
   style,
 }) => {
   const viewedRef = useRef(false);
-  const perkIdsKey = useMemo(() => perks.map(perk => perk.id).join('|'), [perks]);
 
   useEffect(() => {
     if (!viewedRef.current && perks.length > 0) {
       viewedRef.current = true;
       onView?.(perks.map(perk => perk.id));
     }
-  }, [onView, perkIdsKey, perks]);
+  }, [onView, perks]);
 
   if (perks.length === 0) {
     return null;
