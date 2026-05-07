@@ -22,7 +22,7 @@ describe('onboarding badges', () => {
   });
 
   it('formats multi-perk labels predictably', () => {
-    const googlePerk = PERKS.google_usdt_faucet;
+    const googlePerk = PERKS.google_cloud_faucet;
     expect(getPerkRailLabel([googlePerk, googlePerk])).toBe('Eligible for 2 perks');
   });
 });

@@ -2,39 +2,44 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-// Canonical mapping of ID type → eligible perks. The data layer is the seam
-// that survives a future migration to remote-config or a perks API: callers
-// stay on `getPerksForIdType` and the rail render stays put.
-
 import type React from 'react';
 
 import GoogleLogo from '@selfxyz/mobile-sdk-alpha/svgs/icons/google.svg';
 
-export interface Perk {
-  id: string;
-  label: string;
-  renderLogo: () => React.ReactNode;
-}
+import type { EligiblePerksItem } from '../../components/data-display/EligiblePerksCard';
+import { getPerkRecordsForIdType, type PerkId, PERKS as SHARED_PERKS } from '../../data/perks';
 
-export const PERKS: Record<string, Perk> = {
-  google_usdt_faucet: {
-    id: 'google_usdt_faucet',
-    label: 'Google USDT faucet',
-    renderLogo: () => <GoogleLogo width={24} height={24} />,
-  },
+export type Perk = EligiblePerksItem;
+
+const PERK_LOGOS: Partial<Record<PerkId, () => React.ReactNode>> = {
+  google_cloud_faucet: () => <GoogleLogo />,
 };
+
+export const PERKS: Record<string, Perk> = Object.fromEntries(
+  Object.values(SHARED_PERKS).map(perk => [
+    perk.id,
+    {
+      id: perk.id,
+      label: perk.label,
+      ...(perk.isNew ? { isNew: true } : {}),
+      ...(PERK_LOGOS[perk.id] ? { renderLogo: PERK_LOGOS[perk.id] } : {}),
+    },
+  ]),
+);
+
+/** Returns ready-to-render perks (label + logo + isNew) for a given ID type. */
+export function getEligiblePerksForIdType(idType: string): EligiblePerksItem[] {
+  return getPerkRecordsForIdType(idType)
+    .map(perk => PERKS[perk.id])
+    .filter((perk): perk is Perk => Boolean(perk));
+}
 
 export function getPerkRailLabel(perks: Perk[]): string {
   return perks.length === 1 ? 'Eligible for 1 perk' : `Eligible for ${perks.length} perks`;
 }
 
-const ID_TYPE_TO_PERK_IDS: Record<string, string[]> = {
-  p: ['google_usdt_faucet'],
-  i: ['google_usdt_faucet'],
-  a: ['google_usdt_faucet'],
-};
-
 export function getPerksForIdType(idType: string): Perk[] {
-  const perkIds = ID_TYPE_TO_PERK_IDS[idType] ?? [];
-  return perkIds.map(id => PERKS[id]).filter((p): p is Perk => p !== undefined);
+  return getPerkRecordsForIdType(idType)
+    .map(perk => PERKS[perk.id])
+    .filter((perk): perk is Perk => Boolean(perk?.renderLogo));
 }

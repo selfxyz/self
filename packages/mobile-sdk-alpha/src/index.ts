@@ -55,16 +55,15 @@ export type { MRZScanOptions } from './mrz';
 export type { OnboardingBranch, OnboardingFailureStage, OnboardingStage } from './analytics/onboardingFunnel';
 
 export type { PassportValidationCallbacks } from './validation/document';
+export type { PerkId, PerkRecord } from './data/perks';
 export type { ProvingStateType } from './proving/provingMachine';
 
 export type { RecoveryValidationResult } from './proving/recoveryValidation';
 
 export type { SDKEvent, SDKEventMap } from './types/events';
-
 export type { SdkErrorCategory } from './errors';
 
 export type { provingMachineCircuitType } from './proving/provingMachine';
-
 export { DelayedLottieView } from './components/DelayedLottieView';
 
 export { ExpandableBottomLayout } from './layouts/ExpandableBottomLayout';
@@ -82,15 +81,12 @@ export {
 } from './errors';
 
 export { default as LogoConfirmationScreen } from './flows/onboarding/logo-confirmation-screen';
-
 export { NFCScannerScreen } from './components/screens/NFCScannerScreen';
-
 export { QRCodeScreen } from './components/screens/QRCodeScreen';
-
+export { PERKS as SHARED_PERKS, getPerkRecordsForIdType } from './data/perks';
 export { SdkEvents } from './types/events';
 
 export { SelfClientContext, SelfClientProvider, useSelfClient } from './context';
-
 export { advercase, dinot, dinotBold, plexMono } from './constants/fonts';
 
 export {
@@ -147,9 +143,7 @@ export { createListenersMap, createSelfClient } from './client';
 export { createNetworkAdapter } from './adapters/react-native/network';
 
 export { createReactNativeAdapters } from './adapters/react-native/factory';
-
 export { defaultConfig } from './config/defaults';
-
 export { defaultOptions } from './haptic/shared';
 
 /** @deprecated Use createSelfClient().extractMRZInfo or import from './mrz' */
@@ -157,11 +151,11 @@ export { extractMRZInfo } from './mrz';
 export { extractNameFromDocument } from './documents/utils';
 
 export { extractNameFromMRZ, formatDateToYYMMDD, parseMRZBirthDate, parseMRZExpiryDate } from './mrz';
-
 export { finalizeRecoveredDocumentRegistration, validateRecoverySecretForDocument } from './proving/recoveryValidation';
 
 export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
 
+export { getEligiblePerksForIdType } from './flows/onboarding/perks';
 export { isGoogleUsatProofRequest } from './utils/googleUsat';
 
 export { isPassportDataValid } from './validation/document';
