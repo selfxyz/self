@@ -6,7 +6,7 @@ import type React from 'react';
 
 import GoogleLogo from '@selfxyz/mobile-sdk-alpha/svgs/icons/google.svg';
 
-import { PERKS as SHARED_PERKS, type PerkId, getPerkRecordsForIdType } from '../../data/perks';
+import { getPerkRecordsForIdType, type PerkId, PERKS as SHARED_PERKS } from '../../data/perks';
 
 export interface Perk {
   id: string;

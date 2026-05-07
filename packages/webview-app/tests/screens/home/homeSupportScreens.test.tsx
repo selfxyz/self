@@ -82,14 +82,18 @@ vi.mock('@selfxyz/euclid', () => ({
   ),
 
   TopNavigationDialogue: ({ onEscape }: { onEscape: () => void }) => (
-    <button onClick={onEscape} type="button">Close ID data</button>
+    <button onClick={onEscape} type="button">
+      Close ID data
+    </button>
   ),
   ExposedIDCard: () => <div>ID card</div>,
   IdentificationDetailsCard: () => <div>Identification details</div>,
   DetailedTableView: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   DetailedTableViewCell: ({ label }: { label: string }) => <div>{label}</div>,
   Button: ({ onPress, text }: { onPress: () => void; text: string }) => (
-    <button onClick={onPress} type="button">{text}</button>
+    <button onClick={onPress} type="button">
+      {text}
+    </button>
   ),
 
   ManageDocumentsScreen: ({

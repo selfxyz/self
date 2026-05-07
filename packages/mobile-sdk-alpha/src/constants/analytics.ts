@@ -94,6 +94,11 @@ export const DocumentEvents = {
   VALIDATE_DOCUMENT_FAILED: 'Document: Validate Document Failed',
 };
 
+export const IDDataEvents = {
+  ID_DATA_PERKS_VIEWED: 'id_data_perks_viewed',
+  ID_DATA_PERK_TAPPED: 'id_data_perk_tapped',
+};
+
 export const MockDataEvents = {
   CANCEL_GENERATION: 'Mock Data: Cancel Generation',
   CREATE_DEEP_LINK: 'Mock Data: Create Deep Link',
@@ -248,12 +253,6 @@ export const RegistrationPickerEvents = {
   VIEWED: 'registration_id_picker_viewed',
   SELECTED: 'registration_id_picker_selected',
   UNSUPPORTED_TAPPED: 'registration_id_picker_unsupported_tapped',
-};
-
-
-export const IDDataEvents = {
-  ID_DATA_PERKS_VIEWED: 'id_data_perks_viewed',
-  ID_DATA_PERK_TAPPED: 'id_data_perk_tapped',
 };
 
 export const SettingsEvents = {

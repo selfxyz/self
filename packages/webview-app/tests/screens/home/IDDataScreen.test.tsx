@@ -7,9 +7,9 @@
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-
 import { IDDataScreen } from '../../../src/screens/home/IDDataScreen';
+
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 
 const { analytics, haptic, getPerkRecordsForIdType } = vi.hoisted(() => ({
   analytics: { trackEvent: vi.fn() },
@@ -50,7 +50,9 @@ describe('IDDataScreen perks card', () => {
       perk_count: 2,
       perk_ids: ['google_usdt_faucet', 'aave_boosted_rewards'],
     });
-    expect(analytics.trackEvent.mock.calls.filter(([eventName]) => eventName === 'id_data_perks_viewed')).toHaveLength(1);
+    expect(analytics.trackEvent.mock.calls.filter(([eventName]) => eventName === 'id_data_perks_viewed')).toHaveLength(
+      1,
+    );
   });
 
   it('tracks perk taps with perk id', () => {

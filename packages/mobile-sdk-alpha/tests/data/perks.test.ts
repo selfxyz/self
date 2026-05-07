@@ -4,7 +4,7 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { PERKS, getPerkRecordsForIdType } from '../../src/data/perks';
+import { getPerkRecordsForIdType, PERKS } from '../../src/data/perks';
 
 describe('shared perks catalog', () => {
   it('returns expected perks for passport id type in order', () => {

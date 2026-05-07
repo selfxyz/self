@@ -7,13 +7,6 @@ import { useEffect, useMemo, useRef } from 'react';
 
 import { borderRadius, colors, fontFamily, spacing } from '@selfxyz/euclid-core';
 
-export interface EligiblePerksItem {
-  id: string;
-  label: string;
-  isNew?: boolean;
-  renderLogo?: () => React.ReactNode;
-}
-
 export interface EligiblePerksCardProps {
   perks: EligiblePerksItem[];
   title?: string;
@@ -21,6 +14,13 @@ export interface EligiblePerksCardProps {
   aboutCopy?: string;
   onPerkPress?: (perkId: string) => void;
   onView?: (perkIds: string[]) => void;
+}
+
+export interface EligiblePerksItem {
+  id: string;
+  label: string;
+  isNew?: boolean;
+  renderLogo?: () => React.ReactNode;
 }
 
 export const EligiblePerksCard: React.FC<EligiblePerksCardProps> = ({

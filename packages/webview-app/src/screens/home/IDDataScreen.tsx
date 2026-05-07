@@ -6,8 +6,6 @@ import type React from 'react';
 import { useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import type { PerkId } from '@selfxyz/mobile-sdk-alpha/browser';
-import { getPerkRecordsForIdType } from '@selfxyz/mobile-sdk-alpha/browser';
 import {
   Button,
   DetailedTableView,
@@ -20,6 +18,8 @@ import {
   TopNavigationDialogue,
 } from '@selfxyz/euclid';
 import { borderRadius, colors, spacing } from '@selfxyz/euclid-core';
+import type { PerkId } from '@selfxyz/mobile-sdk-alpha/browser';
+import { getPerkRecordsForIdType } from '@selfxyz/mobile-sdk-alpha/browser';
 
 import { EligiblePerksCard } from '../../components/EligiblePerksCard';
 import { useSelfClient } from '../../providers/SelfClientProvider';
@@ -127,7 +127,9 @@ export const IDDataScreen: React.FC = () => {
                 title="Identification details"
                 description="All data is stored locally on your device. Self does not collect or share any of this information without your consent."
                 logo={
-                  <div style={{ width: 32, height: 21, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div
+                    style={{ width: 32, height: 21, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  >
                     <IdCardIcon size={24} color="#2563EB" />
                   </div>
                 }
