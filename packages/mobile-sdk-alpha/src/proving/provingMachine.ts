@@ -41,8 +41,13 @@ import {
 } from '@selfxyz/common/utils/proving';
 import type { IDDocument } from '@selfxyz/common/utils/types';
 
-import { completeOnboardingAttempt, failOnboardingAttempt, trackOnboardingStep } from '../analytics/onboardingFunnel';
-import { OnboardingEvents, PassportEvents, ProofEvents } from '../constants/analytics';
+import {
+  completeOnboardingAttempt,
+  failOnboardingAttempt,
+  trackBranchEvent,
+  trackOnboardingStep,
+} from '../analytics/onboardingFunnel';
+import { BiometricEvents, OnboardingEvents, ProofEvents } from '../constants/analytics';
 import {
   clearPassportData,
   hasAnyValidRegisteredDocument,
@@ -1111,7 +1116,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       const selectedDocument = await loadSelectedDocument(selfClient);
       if (!selectedDocument) {
         console.error('No document found for proving');
-        selfClient.trackEvent(PassportEvents.PASSPORT_DATA_NOT_FOUND, {
+        selfClient.trackEvent(BiometricEvents.PASSPORT_DATA_NOT_FOUND, {
           stage: 'init',
         });
         console.error('No document found for proving in init');
@@ -1190,7 +1195,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           dscObject = {};
         }
 
-        selfClient.trackEvent(PassportEvents.PASSPORT_PARSED, {
+        selfClient.trackEvent(BiometricEvents.PASSPORT_PARSED, {
           success: true,
           data_groups: passportMetadata.dataGroups,
           dg1_size: passportMetadata.dg1Size,
@@ -1218,6 +1223,12 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           dsc_aki: (passportData as PassportData).dsc_parsed?.authorityKeyIdentifier,
           dsc_ski: (passportData as PassportData).dsc_parsed?.subjectKeyIdentifier,
         });
+        trackBranchEvent(selfClient, BiometricEvents.DOCUMENT_PARSED, {
+          document_type: passportData.documentCategory === 'id_card' ? 'id_card' : 'passport',
+          country_code: passportMetadata.countryCode,
+          signature_algorithm: passportMetadata.signatureAlgorithm,
+          csca_hash_algorithm: passportMetadata.cscaHashFunction,
+        });
         console.log('passport data parsed successfully, storing in keychain');
         await storePassportData(selfClient, parsedPassportData);
         console.log('passport data stored in keychain');
@@ -1235,7 +1246,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         });
         console.error('Error parsing ID document:', error);
         const errMsg = error instanceof Error ? error.message : String(error);
-        selfClient.trackEvent(PassportEvents.PASSPORT_PARSE_FAILED, {
+        selfClient.trackEvent(BiometricEvents.PASSPORT_PARSE_FAILED, {
           error: errMsg,
         });
         actor!.send({ type: 'PARSE_ERROR' });
@@ -1339,10 +1350,25 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             duration_ms: Date.now() - startTime,
           });
           console.error('Passport not supported:', isSupported.status, isSupported.details);
-          selfClient.trackEvent(PassportEvents.COMING_SOON, {
+          selfClient.trackEvent(BiometricEvents.COMING_SOON, {
             status: isSupported.status,
             details: isSupported.details,
           });
+          if (passportData.documentCategory === 'passport' || passportData.documentCategory === 'id_card') {
+            const biometricData = passportData as PassportData;
+            trackBranchEvent(selfClient, BiometricEvents.DOCUMENT_UNSUPPORTED, {
+              document_type: passportData.documentCategory,
+              country_code: biometricData.passportMetadata?.countryCode,
+              signature_algorithm: biometricData.passportMetadata?.signatureAlgorithm,
+              unsupported_reason:
+                isSupported.status === 'csca_not_found' || isSupported.status === 'passport_metadata_missing'
+                  ? 'unknown_dsc'
+                  : isSupported.status === 'registration_circuit_not_supported' ||
+                      isSupported.status === 'dsc_circuit_not_supported'
+                    ? 'unsupported_algo'
+                    : 'country_not_in_list',
+            });
+          }
 
           await clearPassportData(selfClient);
 

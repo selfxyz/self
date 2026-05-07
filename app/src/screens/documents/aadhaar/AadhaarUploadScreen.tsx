@@ -9,7 +9,11 @@ import { Image, XStack, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { trackOnboardingStep, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import {
+  trackBranchEvent,
+  trackOnboardingStep,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
 import { BodyText, PrimaryButton } from '@selfxyz/mobile-sdk-alpha/components';
 import {
   AadhaarEvents,
@@ -40,7 +44,6 @@ const AadhaarUploadScreen: React.FC = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const selfClient = useSelfClient();
-  const { trackEvent } = selfClient;
   const [isProcessing, setIsProcessing] = useState(false);
   const aadhaarImageSource: ImageSourcePropType = AadhaarImage;
 
@@ -51,29 +54,18 @@ const AadhaarUploadScreen: React.FC = () => {
     buttonText: 'Open Settings',
     secondaryButtonText: 'Cancel',
     onButtonPress: () => {
-      trackEvent(AadhaarEvents.PERMISSION_SETTINGS_OPENED);
       Linking.openSettings();
     },
-    onModalDismiss: () => {
-      trackEvent(AadhaarEvents.PERMISSION_MODAL_DISMISSED);
-    },
+    onModalDismiss: () => {},
   });
 
-  // Track screen entry
+  // Fire SCAN_STARTED on canonical funnel only — branch funnel's UPLOAD_STARTED
+  // fires on actual photo-library tap, not screen mount.
   useEffect(() => {
-    trackEvent(AadhaarEvents.UPLOAD_SCREEN_OPENED);
     trackOnboardingStep(selfClient, OnboardingEvents.SCAN_STARTED, {
       branch: 'aadhaar',
     });
-
-    // Track button state based on photo library availability
-    if (isQRScannerPhotoLibraryAvailable()) {
-      trackEvent(AadhaarEvents.UPLOAD_BUTTON_ENABLED);
-    } else {
-      trackEvent(AadhaarEvents.UPLOAD_BUTTON_DISABLED);
-      trackEvent(AadhaarEvents.PHOTO_LIBRARY_UNAVAILABLE);
-    }
-  }, [selfClient, trackEvent]);
+  }, [selfClient]);
 
   const { processAadhaarQRCode } = useAadhaar();
 
@@ -84,24 +76,17 @@ const AadhaarUploadScreen: React.FC = () => {
 
     try {
       setIsProcessing(true);
-      trackEvent(AadhaarEvents.PROCESSING_STARTED);
+      trackBranchEvent(selfClient, AadhaarEvents.UPLOAD_STARTED);
 
       const qrCodeData = await scanQRCodeFromPhotoLibrary();
+      trackBranchEvent(selfClient, AadhaarEvents.QR_SELECTED);
       await processAadhaarQRCode(qrCodeData);
       trackOnboardingStep(selfClient, OnboardingEvents.SCAN_SUCCEEDED, {
         branch: 'aadhaar',
       });
     } catch (error) {
-      trackEvent(AadhaarEvents.QR_UPLOAD_FAILED, {
-        error:
-          error instanceof Error
-            ? error.message
-            : error?.toString() || 'Unknown error',
-      });
-
       // Don't show error for user cancellation
       if (error instanceof Error && error.message.includes('cancelled')) {
-        trackEvent(AadhaarEvents.USER_CANCELLED_SELECTION);
         return;
       }
 
@@ -110,7 +95,7 @@ const AadhaarUploadScreen: React.FC = () => {
         error instanceof Error ? error.message : String(error);
 
       if (errorMessage.includes('Photo library access is required')) {
-        trackEvent(AadhaarEvents.PERMISSION_MODAL_OPENED);
+        trackBranchEvent(selfClient, AadhaarEvents.PHOTO_PERMISSION_DENIED);
         showPermissionModal();
         return;
       }
@@ -122,7 +107,7 @@ const AadhaarUploadScreen: React.FC = () => {
         errorMessage.includes('Settings') ||
         errorMessage.includes('enable access')
       ) {
-        trackEvent(AadhaarEvents.PERMISSION_MODAL_OPENED);
+        trackBranchEvent(selfClient, AadhaarEvents.PHOTO_PERMISSION_DENIED);
         showPermissionModal();
         return;
       }
@@ -150,7 +135,6 @@ const AadhaarUploadScreen: React.FC = () => {
   }, [
     isProcessing,
     selfClient,
-    trackEvent,
     processAadhaarQRCode,
     navigation,
     showPermissionModal,
@@ -209,7 +193,6 @@ const AadhaarUploadScreen: React.FC = () => {
           <YStack flex={1}>
             <PrimaryButton
               disabled={!isQRScannerPhotoLibraryAvailable() || isProcessing}
-              trackEvent={AadhaarEvents.QR_UPLOAD_REQUESTED}
               onPress={onPhotoLibraryPress}
             >
               {isProcessing ? 'Processing...' : 'Upload QR code'}

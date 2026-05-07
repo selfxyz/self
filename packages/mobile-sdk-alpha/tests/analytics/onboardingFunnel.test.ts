@@ -11,10 +11,11 @@ import {
   failOnboardingAttempt,
   resolveOnboardingBranch,
   setOnboardingBranch,
+  trackBranchEvent,
   trackOnboardingRetry,
   trackOnboardingStep,
 } from '../../src/analytics/onboardingFunnel';
-import { OnboardingEvents } from '../../src/constants/analytics';
+import { BiometricEvents, OnboardingEvents } from '../../src/constants/analytics';
 
 function makeClient() {
   return { trackEvent: vi.fn() };
@@ -241,6 +242,78 @@ describe('completeOnboardingAttempt', () => {
       ([name]: string[]) => name === OnboardingEvents.COMPLETED,
     );
     expect(completedCalls).toHaveLength(1);
+  });
+});
+
+describe('trackBranchEvent', () => {
+  it('stamps attempt_id, initial_branch, current_branch on emitted properties', () => {
+    const client = makeClient();
+    trackOnboardingStep(client, OnboardingEvents.DOCUMENT_TYPE_SELECTED, {
+      branch: 'biometric_passport',
+    });
+    const attemptId = _getCurrentOnboardingAttempt()?.id;
+
+    trackBranchEvent(client, BiometricEvents.MRZ_CAPTURED, {
+      document_type: 'passport',
+      duration_seconds: 1.23,
+    });
+
+    const branchCall = client.trackEvent.mock.calls.find(([name]: string[]) => name === BiometricEvents.MRZ_CAPTURED);
+    expect(branchCall?.[1]).toMatchObject({
+      attempt_id: attemptId,
+      initial_branch: 'biometric_passport',
+      current_branch: 'biometric_passport',
+      document_type: 'passport',
+      duration_seconds: 1.23,
+    });
+  });
+
+  it('no-ops silently when no attempt is active (no disclosure pollution)', () => {
+    const client = makeClient();
+    trackBranchEvent(client, BiometricEvents.MRZ_CAPTURED, { document_type: 'passport' });
+
+    expect(client.trackEvent).not.toHaveBeenCalled();
+    expect(_getCurrentOnboardingAttempt()).toBeNull();
+  });
+
+  it('does NOT bootstrap a new attempt (unlike trackOnboardingStep)', () => {
+    const client = makeClient();
+    trackBranchEvent(client, BiometricEvents.NFC_STARTED, { document_type: 'passport' });
+
+    expect(client.trackEvent).not.toHaveBeenCalledWith(OnboardingEvents.STARTED, expect.anything());
+    expect(_getCurrentOnboardingAttempt()).toBeNull();
+  });
+
+  it('does NOT dedupe — repeated calls emit the event each time (e.g. OCR retries)', () => {
+    const client = makeClient();
+    trackOnboardingStep(client, OnboardingEvents.DOCUMENT_TYPE_SELECTED, {
+      branch: 'biometric_passport',
+    });
+    trackBranchEvent(client, BiometricEvents.MRZ_CAPTURE_STARTED, { document_type: 'passport' });
+    trackBranchEvent(client, BiometricEvents.MRZ_CAPTURE_STARTED, { document_type: 'passport' });
+    trackBranchEvent(client, BiometricEvents.MRZ_CAPTURE_STARTED, { document_type: 'passport' });
+
+    const captureCalls = client.trackEvent.mock.calls.filter(
+      ([name]: string[]) => name === BiometricEvents.MRZ_CAPTURE_STARTED,
+    );
+    expect(captureCalls).toHaveLength(3);
+  });
+
+  it('reflects current_branch after a fallback (initial preserved)', () => {
+    const client = makeClient();
+    trackOnboardingStep(client, OnboardingEvents.DOCUMENT_TYPE_SELECTED, {
+      branch: 'biometric_passport',
+    });
+    setOnboardingBranch('kyc');
+
+    trackBranchEvent(client, 'Kyc: Session Requested', { provider: 'didit' });
+
+    const kycCall = client.trackEvent.mock.calls.find(([name]: string[]) => name === 'Kyc: Session Requested');
+    expect(kycCall?.[1]).toMatchObject({
+      initial_branch: 'biometric_passport',
+      current_branch: 'kyc',
+      provider: 'didit',
+    });
   });
 });
 

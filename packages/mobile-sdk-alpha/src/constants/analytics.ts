@@ -2,34 +2,19 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+/**
+ * Aadhaar branch milestone events. Curated from 25 → 7 in ANA-12. The deleted
+ * events (UPLOAD_SCREEN_OPENED, PROCESSING_STARTED, QR_DATA_EXTRACTION_*, etc.)
+ * become Sentry breadcrumbs in ANA-13. Emit via `trackBranchEvent`.
+ */
 export const AadhaarEvents = {
-  CONTINUE_TO_REGISTRATION_PRESSED: 'Aadhaar: Continue to Registration Pressed',
-  DATA_STORAGE_STARTED: 'Aadhaar: Data Storage Started',
-  DATA_STORAGE_SUCCESS: 'Aadhaar: Data Storage Success',
-  ERROR_SCREEN_NAVIGATED: 'Aadhaar: Error Screen Navigated',
-  HELP_BUTTON_PRESSED: 'Aadhaar: Help Button Pressed',
-  PERMISSION_MODAL_DISMISSED: 'Aadhaar: Permission Modal Dismissed',
-  PERMISSION_MODAL_OPENED: 'Aadhaar: Permission Modal Opened',
-  PERMISSION_SETTINGS_OPENED: 'Aadhaar: Permission Settings Opened',
-  PHOTO_LIBRARY_UNAVAILABLE: 'Aadhaar: Photo Library Unavailable',
-  PROCESSING_STARTED: 'Aadhaar: Processing Started',
-  QR_CODE_EXPIRED: 'Aadhaar: QR Code Expired',
-  QR_CODE_INVALID_FORMAT: 'Aadhaar: QR Code Invalid Format',
-  QR_CODE_MISSING_FIELDS: 'Aadhaar: QR Code Missing Required Fields',
-  QR_CODE_PARSE_FAILED: 'Aadhaar: QR Code Parse Failed',
-  QR_DATA_EXTRACTION_STARTED: 'Aadhaar: QR Data Extraction Started',
-  QR_DATA_EXTRACTION_SUCCESS: 'Aadhaar: QR Data Extraction Success',
-  QR_UPLOAD_FAILED: 'Aadhaar: QR Upload Failed',
-  QR_UPLOAD_REQUESTED: 'Aadhaar: QR Upload Requested',
-  QR_UPLOAD_SUCCESS: 'Aadhaar: QR Upload Success',
-  RETRY_BUTTON_PRESSED: 'Aadhaar: Retry Button Pressed',
-  TIMESTAMP_VALIDATION_FAILED: 'Aadhaar: Timestamp Validation Failed',
-  TIMESTAMP_VALIDATION_STARTED: 'Aadhaar: Timestamp Validation Started',
-  TIMESTAMP_VALIDATION_SUCCESS: 'Aadhaar: Timestamp Validation Success',
-  UPLOAD_BUTTON_DISABLED: 'Aadhaar: Upload Button Disabled',
-  UPLOAD_BUTTON_ENABLED: 'Aadhaar: Upload Button Enabled',
-  UPLOAD_SCREEN_OPENED: 'Aadhaar: Upload Screen Opened',
-  USER_CANCELLED_SELECTION: 'Aadhaar: User Cancelled Photo Selection',
+  CONTINUE_PRESSED: 'Aadhaar: Continue Pressed',
+  DATA_STORED: 'Aadhaar: Data Stored',
+  PHOTO_PERMISSION_DENIED: 'Aadhaar: Photo Permission Denied',
+  QR_PARSE_FAILED: 'Aadhaar: QR Parse Failed',
+  QR_SELECTED: 'Aadhaar: QR Selected',
+  TIMESTAMP_EXPIRED: 'Aadhaar: Timestamp Expired',
+  UPLOAD_STARTED: 'Aadhaar: Upload Started',
 };
 
 export const AppEvents = {
@@ -78,6 +63,51 @@ export const BackupEvents = {
   MANUAL_RECOVERY_SELECTED: 'Backup: Manual Recovery Selected',
 };
 
+/**
+ * Biometric branch events. Covers passport AND biometric ID — the same code
+ * path serves both, distinguished by a `document_type` property on each event.
+ *
+ * The MRZ_*, NFC_*, DOCUMENT_* keys at the top are the canonical milestone
+ * events introduced in ANA-12; emit them via `trackBranchEvent`.
+ *
+ * The remaining keys are diagnostic events retained from the legacy
+ * `PassportEvents` group. Their string values keep the `Passport:` prefix
+ * deliberately, to preserve Mixpanel data continuity until ANA-13 migrates
+ * them off Mixpanel and onto Sentry breadcrumbs.
+ */
+export const BiometricEvents = {
+  // ANA-12 milestone events (emit via trackBranchEvent)
+  DOCUMENT_PARSED: 'Biometric: Document Parsed',
+  DOCUMENT_UNSUPPORTED: 'Biometric: Document Unsupported',
+  MRZ_CAPTURED: 'Biometric: MRZ Captured',
+  MRZ_CAPTURE_STARTED: 'Biometric: MRZ Capture Started',
+  NFC_STARTED: 'Biometric: NFC Started',
+  NFC_SUCCEEDED: 'Biometric: NFC Succeeded',
+
+  // Diagnostic events — slated for Sentry migration in ANA-13.
+  CAMERA_SCAN_CANCELLED: 'Passport: Camera Scan Cancelled',
+  CAMERA_SCAN_FAILED: 'Passport: Camera Scan Failed',
+  CAMERA_SCAN_STARTED: 'Passport: Camera Scan Started',
+  CAMERA_SCAN_SUCCESS: 'Passport: Camera Scan Success',
+  CAMERA_SCREEN_CLOSED: 'Passport: Camera View Closed',
+  CANCEL_PASSPORT_NFC: 'Passport: Cancel Passport NFC',
+  COMING_SOON: 'Passport: Passport Not Supported',
+  DATA_CONFIRMATION_COMPLETED: 'Passport: Data Confirmation Completed',
+  DATA_LOAD_ERROR: 'Passport: Passport Data Load Error',
+  DISMISS_COMING_SOON: 'Passport: Dismiss Unsupported Passport',
+  MRZ_DATA_MODIFIED: 'Passport: MRZ Data Modified',
+  NFC_RESPONSE_PARSE_FAILED: 'Passport: Parsing NFC Response Unsuccessful',
+  NFC_SCAN_FAILED: 'Passport: NFC Scan Failed',
+  NFC_SCAN_SUCCESS: 'Passport: NFC Scan Success',
+  NOTIFY_COMING_SOON: 'Passport: Notify Unsupported Passport',
+  OPEN_NFC_SETTINGS: 'Passport: Open NFC Settings',
+  OWNERSHIP_CONFIRMED: 'Passport: Passport Ownership Confirmed',
+  PASSPORT_DATA_NOT_FOUND: 'Passport: Passport Data Not Found',
+  PASSPORT_PARSE_FAILED: 'Passport: Passport Parse Failed',
+  PASSPORT_PARSED: 'Passport: Passport Parsed',
+  START_PASSPORT_NFC: 'Passport: Start Passport NFC',
+};
+
 export const DocumentEvents = {
   COUNTRY_HELP_TAPPED: 'Document: Country Help Tapped',
   ADD_NEW_AADHAAR_SELECTED: 'Document: Add Aadhaar',
@@ -92,6 +122,19 @@ export const DocumentEvents = {
   PASSPORT_INFO_OPENED: 'Document: Passport Info Screen Opened',
   PASSPORT_METADATA_LOADED: 'Document: Passport Metadata Loaded',
   VALIDATE_DOCUMENT_FAILED: 'Document: Validate Document Failed',
+};
+
+/**
+ * KYC branch milestone events. Provider-tagged from day one (`provider: 'didit'`)
+ * so adding Veriff/Sumsub later doesn't require renaming events. Emit via
+ * `trackBranchEvent`.
+ */
+export const KycEvents = {
+  PROVIDER_CLOSED: 'Kyc: Provider Closed',
+  PROVIDER_OPENED: 'Kyc: Provider Opened',
+  RETRY_TRIGGERED: 'Kyc: Retry Triggered',
+  SESSION_CREATED: 'Kyc: Session Created',
+  SESSION_REQUESTED: 'Kyc: Session Requested',
 };
 
 export const MockDataEvents = {
@@ -136,29 +179,13 @@ export const OnboardingEvents = {
   STEP_RETRIED: 'Onboarding: Step Retried',
 };
 
-export const PassportEvents = {
-  CAMERA_SCAN_CANCELLED: 'Passport: Camera Scan Cancelled',
-  CAMERA_SCAN_FAILED: 'Passport: Camera Scan Failed',
-  CAMERA_SCAN_STARTED: 'Passport: Camera Scan Started',
-  CAMERA_SCAN_SUCCESS: 'Passport: Camera Scan Success',
-  CAMERA_SCREEN_CLOSED: 'Passport: Camera View Closed',
-  CANCEL_PASSPORT_NFC: 'Passport: Cancel Passport NFC',
-  COMING_SOON: 'Passport: Passport Not Supported',
-  DATA_CONFIRMATION_COMPLETED: 'Passport: Data Confirmation Completed',
-  DATA_LOAD_ERROR: 'Passport: Passport Data Load Error',
-  DISMISS_COMING_SOON: 'Passport: Dismiss Unsupported Passport',
-  MRZ_DATA_MODIFIED: 'Passport: MRZ Data Modified',
-  NFC_RESPONSE_PARSE_FAILED: 'Passport: Parsing NFC Response Unsuccessful',
-  NFC_SCAN_FAILED: 'Passport: NFC Scan Failed',
-  NFC_SCAN_SUCCESS: 'Passport: NFC Scan Success',
-  NOTIFY_COMING_SOON: 'Passport: Notify Unsupported Passport',
-  OPEN_NFC_SETTINGS: 'Passport: Open NFC Settings',
-  OWNERSHIP_CONFIRMED: 'Passport: Passport Ownership Confirmed',
-  PASSPORT_DATA_NOT_FOUND: 'Passport: Passport Data Not Found',
-  PASSPORT_PARSE_FAILED: 'Passport: Passport Parse Failed',
-  PASSPORT_PARSED: 'Passport: Passport Parsed',
-  START_PASSPORT_NFC: 'Passport: Start Passport NFC',
-};
+/**
+ * @deprecated Renamed to `BiometricEvents` in ANA-12 — the same code path
+ * covers passports and biometric IDs, distinguished by a `document_type`
+ * property. This alias keeps existing call sites compiling for one release
+ * and is removed in the next minor.
+ */
+export const PassportEvents = BiometricEvents;
 
 export const PointEvents = {
   HOME_POINT_EARN_POINTS_OPENED: 'Points: Home Earn Points Opened',

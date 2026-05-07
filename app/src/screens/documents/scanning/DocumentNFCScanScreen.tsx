@@ -35,6 +35,7 @@ import type { PassportData } from '@selfxyz/common/types';
 import {
   resolveOnboardingBranch,
   sanitizeErrorMessage,
+  trackBranchEvent,
   trackOnboardingStep,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
@@ -47,8 +48,8 @@ import {
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import {
+  BiometricEvents,
   OnboardingEvents,
-  PassportEvents,
 } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import {
   black,
@@ -292,13 +293,20 @@ const DocumentNFCScanScreen: React.FC = () => {
       // Add timestamp when scan starts
       scanCancelledRef.current = false;
       const scanStartTime = Date.now();
+      trackBranchEvent(selfClient, BiometricEvents.NFC_STARTED, {
+        document_type:
+          resolveOnboardingBranch(documentType ?? 'p') === 'biometric_id'
+            ? 'id_card'
+            : 'passport',
+        nfc_method: isPacePolling ? 'PACE' : 'BAC',
+      });
       if (scanTimeoutRef.current) {
         clearTimeout(scanTimeoutRef.current);
         scanTimeoutRef.current = null;
       }
       scanTimeoutRef.current = setTimeout(() => {
         scanCancelledRef.current = true;
-        trackEvent(PassportEvents.NFC_SCAN_FAILED, {
+        trackEvent(BiometricEvents.NFC_SCAN_FAILED, {
           error: 'timeout',
         });
         logNFCEvent('warn', 'scan_timeout', {
@@ -323,10 +331,10 @@ const DocumentNFCScanScreen: React.FC = () => {
       scanTimeoutRef.current = setTimeout(() => {
         scanCancelledRef.current = true;
         setNfcScanningActive(false); // Clear scanning state on timeout
-        trackEvent(PassportEvents.NFC_SCAN_FAILED, {
+        trackEvent(BiometricEvents.NFC_SCAN_FAILED, {
           error: 'timeout',
         });
-        trackNfcEvent(PassportEvents.NFC_SCAN_FAILED, {
+        trackNfcEvent(BiometricEvents.NFC_SCAN_FAILED, {
           error: 'timeout',
         });
         logNFCEvent('warn', 'scan_timeout', {
@@ -392,7 +400,14 @@ const DocumentNFCScanScreen: React.FC = () => {
           scanDurationSeconds,
           'seconds',
         );
-        trackEvent(PassportEvents.NFC_SCAN_SUCCESS, {
+        trackEvent(BiometricEvents.NFC_SCAN_SUCCESS, {
+          duration_seconds: parseFloat(scanDurationSeconds),
+        });
+        trackBranchEvent(selfClient, BiometricEvents.NFC_SUCCEEDED, {
+          document_type:
+            resolveOnboardingBranch(documentType ?? 'p') === 'biometric_id'
+              ? 'id_card'
+              : 'passport',
           duration_seconds: parseFloat(scanDurationSeconds),
         });
         trackOnboardingStep(selfClient, OnboardingEvents.SCAN_SUCCEEDED, {
@@ -422,10 +437,10 @@ const DocumentNFCScanScreen: React.FC = () => {
           const errMsg = sanitizeErrorMessage(
             e instanceof Error ? e.message : String(e),
           );
-          trackEvent(PassportEvents.NFC_RESPONSE_PARSE_FAILED, {
+          trackEvent(BiometricEvents.NFC_RESPONSE_PARSE_FAILED, {
             error: errMsg,
           });
-          trackNfcEvent(PassportEvents.NFC_RESPONSE_PARSE_FAILED, {
+          trackNfcEvent(BiometricEvents.NFC_RESPONSE_PARSE_FAILED, {
             error: errMsg,
           });
           return;
@@ -453,11 +468,11 @@ const DocumentNFCScanScreen: React.FC = () => {
         console.error('NFC Scan Unsuccessful:', e);
         const message = e instanceof Error ? e.message : String(e);
         const sanitized = sanitizeErrorMessage(message);
-        trackEvent(PassportEvents.NFC_SCAN_FAILED, {
+        trackEvent(BiometricEvents.NFC_SCAN_FAILED, {
           error: sanitized,
           duration_seconds: parseFloat(scanDurationSeconds),
         });
-        trackNfcEvent(PassportEvents.NFC_SCAN_FAILED, {
+        trackNfcEvent(BiometricEvents.NFC_SCAN_FAILED, {
           error: sanitized,
           duration_seconds: parseFloat(scanDurationSeconds),
         });
@@ -664,8 +679,8 @@ const DocumentNFCScanScreen: React.FC = () => {
               <PrimaryButton
                 trackEvent={
                   isNfcEnabled || !isNfcSupported
-                    ? PassportEvents.START_PASSPORT_NFC
-                    : PassportEvents.OPEN_NFC_SETTINGS
+                    ? BiometricEvents.START_PASSPORT_NFC
+                    : BiometricEvents.OPEN_NFC_SETTINGS
                 }
                 onPress={onVerifyPress}
                 disabled={!isNfcSupported}
@@ -675,7 +690,7 @@ const DocumentNFCScanScreen: React.FC = () => {
                   : 'Open settings'}
               </PrimaryButton>
               <SecondaryButton
-                trackEvent={PassportEvents.CANCEL_PASSPORT_NFC}
+                trackEvent={BiometricEvents.CANCEL_PASSPORT_NFC}
                 onPress={onCancelPress}
               >
                 Cancel

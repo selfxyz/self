@@ -7,6 +7,7 @@ import { useCallback } from 'react';
 import { extractQRDataFields, getAadharRegistrationWindow } from '@selfxyz/common/utils';
 import type { AadhaarData } from '@selfxyz/common/utils/types';
 
+import { trackBranchEvent } from '../../analytics/onboardingFunnel';
 import { AadhaarEvents } from '../../constants/analytics';
 import { useSelfClient } from '../../context';
 import { storePassportData } from '../../documents/utils';
@@ -32,65 +33,51 @@ export function useAadhaar() {
   const selfClient = useSelfClient();
 
   const validateAAdhaarTimestamp = useCallback(
-    async (timestamp: string) => {
+    async (timestamp: string): Promise<{ isValid: boolean; ageDays: number }> => {
       //timestamp is in YYYY-MM-DD HH:MM format
-      selfClient.trackEvent(AadhaarEvents.TIMESTAMP_VALIDATION_STARTED);
-
       const currentTimestamp = new Date().getTime();
-      const timestampDate = new Date(timestamp);
-      const timestampTimestamp = timestampDate.getTime();
-      const diff = currentTimestamp - timestampTimestamp;
-      const diffMinutes = diff / (1000 * 60);
+      const timestampTimestamp = new Date(timestamp).getTime();
+      const diffMinutes = (currentTimestamp - timestampTimestamp) / (1000 * 60);
+      const ageDays = parseFloat((diffMinutes / (60 * 24)).toFixed(2));
 
       const allowedWindow = await getAadharRegistrationWindow();
       const isValid = diffMinutes <= allowedWindow;
 
-      if (isValid) {
-        selfClient.trackEvent(AadhaarEvents.TIMESTAMP_VALIDATION_SUCCESS);
-      } else {
-        selfClient.trackEvent(AadhaarEvents.TIMESTAMP_VALIDATION_FAILED);
-      }
-
-      return isValid;
+      return { isValid, ageDays };
     },
-    [selfClient.trackEvent],
+    [],
   );
 
   const processAadhaarQRCode = useCallback(
     async (qrCodeData: string) => {
+      const storeStartedAt = Date.now();
       try {
         if (!qrCodeData || typeof qrCodeData !== 'string' || qrCodeData.length < 100) {
-          selfClient.trackEvent(AadhaarEvents.QR_CODE_INVALID_FORMAT);
+          trackBranchEvent(selfClient, AadhaarEvents.QR_PARSE_FAILED, { reason: 'invalid_format' });
           throw new Error('Invalid QR code format - too short or not a string');
         }
 
         if (!/^\d+$/.test(qrCodeData)) {
-          selfClient.trackEvent(AadhaarEvents.QR_CODE_INVALID_FORMAT);
+          trackBranchEvent(selfClient, AadhaarEvents.QR_PARSE_FAILED, { reason: 'invalid_format' });
           throw new Error('Invalid QR code format - not a numeric string');
         }
 
-        if (qrCodeData.length < 100) {
-          selfClient.trackEvent(AadhaarEvents.QR_CODE_INVALID_FORMAT);
-          throw new Error('QR code too short - likely not a valid Aadhaar QR code');
-        }
-
-        selfClient.trackEvent(AadhaarEvents.QR_DATA_EXTRACTION_STARTED);
         let extractedFields;
         try {
           extractedFields = extractQRDataFields(qrCodeData);
-          selfClient.trackEvent(AadhaarEvents.QR_DATA_EXTRACTION_SUCCESS);
         } catch {
-          selfClient.trackEvent(AadhaarEvents.QR_CODE_PARSE_FAILED);
+          trackBranchEvent(selfClient, AadhaarEvents.QR_PARSE_FAILED, { reason: 'parse_error' });
           throw new Error('Failed to parse Aadhaar QR code - invalid format');
         }
 
         if (!extractedFields.name || !extractedFields.dob || !extractedFields.gender) {
-          selfClient.trackEvent(AadhaarEvents.QR_CODE_MISSING_FIELDS);
+          trackBranchEvent(selfClient, AadhaarEvents.QR_PARSE_FAILED, { reason: 'missing_fields' });
           throw new Error('Invalid Aadhaar QR code - missing required fields');
         }
 
-        if (!(await validateAAdhaarTimestamp(extractedFields.timestamp))) {
-          selfClient.trackEvent(AadhaarEvents.QR_CODE_EXPIRED);
+        const { isValid: timestampValid, ageDays } = await validateAAdhaarTimestamp(extractedFields.timestamp);
+        if (!timestampValid) {
+          trackBranchEvent(selfClient, AadhaarEvents.TIMESTAMP_EXPIRED, { qr_age_days: ageDays });
           throw new Error('QRCODE_EXPIRED');
         }
 
@@ -105,20 +92,17 @@ export function useAadhaar() {
           photoHash: '',
         };
 
-        selfClient.trackEvent(AadhaarEvents.DATA_STORAGE_STARTED);
         await storePassportData(selfClient, aadhaarData);
-        selfClient.trackEvent(AadhaarEvents.DATA_STORAGE_SUCCESS);
+        trackBranchEvent(selfClient, AadhaarEvents.DATA_STORED, {
+          duration_seconds: parseFloat(((Date.now() - storeStartedAt) / 1000).toFixed(2)),
+        });
 
-        selfClient.trackEvent(AadhaarEvents.QR_UPLOAD_SUCCESS);
         selfClient.emit(SdkEvents.PROVING_AADHAAR_UPLOAD_SUCCESS);
       } catch (error) {
         // Check if it's a QR code expiration error
         const errorType: 'expired' | 'general' =
           error instanceof Error && error.message === 'QRCODE_EXPIRED' ? 'expired' : 'general';
 
-        selfClient.trackEvent(AadhaarEvents.ERROR_SCREEN_NAVIGATED, {
-          errorType,
-        });
         selfClient.emit(SdkEvents.PROVING_AADHAAR_UPLOAD_FAILURE, {
           errorType,
         });

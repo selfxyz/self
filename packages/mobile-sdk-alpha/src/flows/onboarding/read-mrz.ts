@@ -6,7 +6,8 @@ import type { RefObject } from 'react';
 import { useCallback } from 'react';
 import { Platform } from 'react-native';
 
-import { PassportEvents } from '../../constants/analytics';
+import { trackBranchEvent } from '../../analytics/onboardingFunnel';
+import { BiometricEvents } from '../../constants/analytics';
 import { useSelfClient } from '../../context';
 import { checkScannedInfo, formatDateToYYMMDD } from '../../processing/mrz';
 import { SdkEvents } from '../../types/events';
@@ -41,7 +42,7 @@ export function useReadMRZ(scanStartTimeRef: RefObject<number>) {
         // Dev-only: Check for injected unknown error
         if (shouldTrigger?.('mrz_unknown_error')) {
           console.log('[DEV] Injecting MRZ unknown error');
-          selfClient.trackEvent(PassportEvents.CAMERA_SCAN_FAILED, {
+          selfClient.trackEvent(BiometricEvents.CAMERA_SCAN_FAILED, {
             reason: 'unknown_error',
             error: 'Injected error for testing',
             duration_seconds: parseFloat(scanDurationSeconds),
@@ -53,7 +54,7 @@ export function useReadMRZ(scanStartTimeRef: RefObject<number>) {
         if (error) {
           console.error(error);
 
-          selfClient.trackEvent(PassportEvents.CAMERA_SCAN_FAILED, {
+          selfClient.trackEvent(BiometricEvents.CAMERA_SCAN_FAILED, {
             reason: 'unknown_error',
             error: error.message || 'Unknown error',
             duration_seconds: parseFloat(scanDurationSeconds),
@@ -65,7 +66,7 @@ export function useReadMRZ(scanStartTimeRef: RefObject<number>) {
 
         if (!result) {
           console.error('No result from passport scan');
-          selfClient.trackEvent(PassportEvents.CAMERA_SCAN_FAILED, {
+          selfClient.trackEvent(BiometricEvents.CAMERA_SCAN_FAILED, {
             reason: 'invalid_input',
             error: 'No result from scan',
             duration_seconds: parseFloat(scanDurationSeconds),
@@ -89,7 +90,7 @@ export function useReadMRZ(scanStartTimeRef: RefObject<number>) {
           if (shouldInjectInvalidFormat) {
             console.log('[DEV] Injecting MRZ invalid format error');
           }
-          selfClient.trackEvent(PassportEvents.CAMERA_SCAN_FAILED, {
+          selfClient.trackEvent(BiometricEvents.CAMERA_SCAN_FAILED, {
             reason: 'invalid_format',
             passportNumberLength: documentNumber.length,
             dateOfBirthLength: formattedDateOfBirth.length,
@@ -109,7 +110,14 @@ export function useReadMRZ(scanStartTimeRef: RefObject<number>) {
           countryCode: issuingCountry?.trim().toUpperCase() || '',
         });
 
-        selfClient.trackEvent(PassportEvents.CAMERA_SCAN_SUCCESS, {
+        const trimmedDocType = documentType?.trim().toLowerCase() ?? '';
+        const branchDocumentType = trimmedDocType === 'i' || trimmedDocType.startsWith('id') ? 'id_card' : 'passport';
+
+        selfClient.trackEvent(BiometricEvents.CAMERA_SCAN_SUCCESS, {
+          duration_seconds: parseFloat(scanDurationSeconds),
+        });
+        trackBranchEvent(selfClient, BiometricEvents.MRZ_CAPTURED, {
+          document_type: branchDocumentType,
           duration_seconds: parseFloat(scanDurationSeconds),
         });
 

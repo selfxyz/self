@@ -13,6 +13,7 @@ import {
   DelayedLottieView,
   dinot,
   resolveOnboardingBranch,
+  trackBranchEvent,
   trackOnboardingStep,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
@@ -23,8 +24,8 @@ import {
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import {
+  BiometricEvents,
   OnboardingEvents,
-  PassportEvents,
 } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import {
   black,
@@ -68,8 +69,11 @@ const DocumentCameraScreen: React.FC = () => {
   useEffect(() => {
     const branch = resolveOnboardingBranch(selectedDocumentType ?? 'p');
     trackOnboardingStep(selfClient, OnboardingEvents.SCAN_STARTED, { branch });
-    // Fire once on mount for this attempt. `trackOnboardingStep` dedupes,
-    // so re-mounts from back-nav are no-ops.
+    // Branch funnel — biometric drilldown begins at camera mount. Re-mounts
+    // from back-nav legitimately re-fire (trackBranchEvent doesn't dedupe).
+    trackBranchEvent(selfClient, BiometricEvents.MRZ_CAPTURE_STARTED, {
+      document_type: branch === 'biometric_id' ? 'id_card' : 'passport',
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -180,7 +184,7 @@ const DocumentCameraScreen: React.FC = () => {
           </Additional>
 
           <SecondaryButton
-            trackEvent={PassportEvents.CAMERA_SCREEN_CLOSED}
+            trackEvent={BiometricEvents.CAMERA_SCREEN_CLOSED}
             onPress={onCancelPress}
           >
             Cancel
