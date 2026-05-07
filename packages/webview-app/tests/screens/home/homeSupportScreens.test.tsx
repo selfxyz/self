@@ -30,6 +30,10 @@ vi.mock('../../../src/providers/SelfClientProvider', () => ({
   }),
 }));
 
+vi.mock('@selfxyz/mobile-sdk-alpha/browser', () => ({
+  getPerkRecordsForIdType: () => [],
+}));
+
 vi.mock('@selfxyz/euclid', () => ({
   createSafeAreaProps: ({ top, bottom }: { top: number; bottom: number }) => ({
     insets: { top, bottom, left: 0, right: 0 },
@@ -76,6 +80,18 @@ vi.mock('@selfxyz/euclid', () => ({
       )}
     </div>
   ),
+
+  TopNavigationDialogue: ({ onEscape }: { onEscape: () => void }) => (
+    <button onClick={onEscape} type="button">Close ID data</button>
+  ),
+  ExposedIDCard: () => <div>ID card</div>,
+  IdentificationDetailsCard: () => <div>Identification details</div>,
+  DetailedTableView: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  DetailedTableViewCell: ({ label }: { label: string }) => <div>{label}</div>,
+  Button: ({ onPress, text }: { onPress: () => void; text: string }) => (
+    <button onClick={onPress} type="button">{text}</button>
+  ),
+
   ManageDocumentsScreen: ({
     documents: docs,
     onViewIdDetails,
@@ -104,16 +120,6 @@ vi.mock('@selfxyz/euclid', () => ({
           </button>
         </div>
       ) : null}
-    </div>
-  ),
-  IDDataScreen: ({ onManageID, onClose }: { onManageID: () => void; onClose: () => void }) => (
-    <div>
-      <button onClick={onManageID} type="button">
-        Manage ID
-      </button>
-      <button onClick={onClose} type="button">
-        Close ID data
-      </button>
     </div>
   ),
 }));

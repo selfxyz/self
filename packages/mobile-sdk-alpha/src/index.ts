@@ -173,3 +173,6 @@ export { useCountries } from './documents/useCountries';
 export { useMRZStore } from './stores/mrzStore';
 
 export { webNFCScannerShim } from './adapters/web/shims';
+
+export type { PerkId, PerkRecord } from './data/perks';
+export { PERKS as SHARED_PERKS, getPerkRecordsForIdType } from './data/perks';

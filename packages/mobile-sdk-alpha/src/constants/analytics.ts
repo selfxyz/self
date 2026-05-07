@@ -250,6 +250,12 @@ export const RegistrationPickerEvents = {
   UNSUPPORTED_TAPPED: 'registration_id_picker_unsupported_tapped',
 };
 
+
+export const IDDataEvents = {
+  ID_DATA_PERKS_VIEWED: 'id_data_perks_viewed',
+  ID_DATA_PERK_TAPPED: 'id_data_perk_tapped',
+};
+
 export const SettingsEvents = {
   CONNECTION_MODAL_CLOSED: 'Settings: Connection Modal Closed',
   CONNECTION_MODAL_OPENED: 'Settings: Connection Modal Opened',

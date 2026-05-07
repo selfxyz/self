@@ -106,3 +106,6 @@ export { parseNFCResponse, scanNFC } from './nfc';
 
 export { sanitizeErrorMessage } from './utils/utils';
 export { webNFCScannerShim } from './adapters/web/shims';
+
+export type { PerkId, PerkRecord } from './data/perks';
+export { PERKS as SHARED_PERKS, getPerkRecordsForIdType } from './data/perks';
