@@ -56,8 +56,11 @@ module.exports = {
         ],
       },
     ],
-    // Export sorting - using sort-exports for better type prioritization
-    'sort-exports/sort-exports': ['error', { sortDir: 'asc', ignoreCase: false, sortExportKindFirst: 'type' }],
+    // Export sorting is off here. The rule reorders `export const`
+    // declarations, which breaks files with inter-export dependencies or
+    // intentional grouping. It's only safe on pure re-export barrels —
+    // none in this app, since it's the WebView UI, not a published library.
+    'sort-exports/sort-exports': 'off',
 
     'import/first': 'error',
     'import/newline-after-import': 'error',

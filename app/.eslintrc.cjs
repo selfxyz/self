@@ -68,12 +68,13 @@ module.exports = {
       },
     ],
 
-    // Export sorting
+    // Export sorting is off here. The rule reorders `export const`
+    // declarations, which breaks files with inter-export dependencies or
+    // intentional grouping. It's only safe on pure re-export barrels —
+    // none in this app, since it's leaf code consumed via Metro, not a
+    // published library.
 
-    'sort-exports/sort-exports': [
-      'error',
-      { sortDir: 'asc', ignoreCase: false, sortExportKindFirst: 'type' },
-    ],
+    'sort-exports/sort-exports': 'off',
 
     // Standard import rules
 
@@ -206,19 +207,6 @@ module.exports = {
         'no-console': 'off',
         'no-unused-vars': 'off',
         'import/no-unresolved': 'off',
-      },
-    },
-    {
-      // Disable export sorting for files with dependency issues
-      files: [
-        'src/components/navbar/BaseNavBar.tsx',
-        'src/navigation/index.tsx',
-        'src/providers/passportDataProvider.tsx',
-        'src/services/cloud-backup/helpers.ts',
-        'src/integrations/haptics/index.ts',
-      ],
-      rules: {
-        'sort-exports/sort-exports': 'off',
       },
     },
     {
