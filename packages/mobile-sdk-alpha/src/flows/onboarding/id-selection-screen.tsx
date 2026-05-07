@@ -89,7 +89,7 @@ const DocumentCard: React.FC<DocumentCardProps> = ({ docType, countryCode, onPre
       {hasPerks && (
         <PerkRail
           variant="minimal"
-          logos={perks.map(p => p.renderLogo())}
+          logos={perks.map(p => p.renderLogo?.()).filter((logo): logo is React.ReactNode => logo != null)}
           label={perkLabel ?? undefined}
           onPress={onPress}
         />

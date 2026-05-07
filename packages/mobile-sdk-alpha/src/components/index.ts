@@ -4,6 +4,7 @@
 
 // Type exports
 export type { ButtonProps, ExtractedButtonStyleProps } from './buttons/AbstractButton';
+export type { EligiblePerksCardProps, EligiblePerksItem } from './data-display/EligiblePerksCard';
 export type { PerkRailProps, PerkRailVariant } from './data-display/PerkRail';
 export type { SecondaryButtonProps } from './buttons/SecondaryButton';
 export type { ViewProps } from './layout/View';
@@ -16,6 +17,7 @@ export { Caption } from './typography/Caption';
 export { default as Caution } from './typography/Caution';
 export { default as Description } from './typography/Description';
 export { DescriptionTitle } from './typography/DescriptionTitle';
+export { EligiblePerksCard } from './data-display/EligiblePerksCard';
 export { HeldPrimaryButton } from './buttons/PrimaryButtonLongHold';
 export { HeldPrimaryButtonProveScreen } from './buttons/HeldPrimaryButtonProveScreen';
 export { MRZScannerView } from './MRZScannerView';

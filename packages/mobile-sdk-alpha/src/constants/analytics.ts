@@ -94,6 +94,11 @@ export const DocumentEvents = {
   VALIDATE_DOCUMENT_FAILED: 'Document: Validate Document Failed',
 };
 
+export const IDDataEvents = {
+  PERKS_VIEWED: 'ID Data: Perks Viewed',
+  PERK_TAPPED: 'ID Data: Perk Tapped',
+};
+
 export const MockDataEvents = {
   CANCEL_GENERATION: 'Mock Data: Cancel Generation',
   CREATE_DEEP_LINK: 'Mock Data: Create Deep Link',

@@ -12,9 +12,9 @@ import { render, screen } from '@testing-library/react';
 
 describe('PerkRail', () => {
   it('renders descriptive perk copy instead of count-only messaging', () => {
-    render(<PerkRail variant="minimal" logos={[<div key="google">G</div>]} label="Google USDT faucet" />);
+    render(<PerkRail variant="minimal" logos={[<div key="google">G</div>]} label="Google Cloud Faucet" />);
 
-    expect(screen.getByText('Google USDT faucet')).toBeTruthy();
+    expect(screen.getByText('Google Cloud Faucet')).toBeTruthy();
   });
 
   it('renders the label without truncation', () => {
