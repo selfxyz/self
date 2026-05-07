@@ -66,9 +66,7 @@ export const PerkRail: React.FC<PerkRailProps> = ({ variant = 'dense', logos, la
         visibleLogos[0] !== undefined && <View style={styles.minimalLogoWrapper}>{visibleLogos[0]}</View>
       )}
       <View style={styles.labelPill}>
-        <Text numberOfLines={1} ellipsizeMode="tail" style={styles.labelText}>
-          {labelText}
-        </Text>
+        <Text style={styles.labelText}>{labelText}</Text>
       </View>
     </View>
   );
@@ -146,19 +144,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: colors.slate200,
     borderRadius: 30,
-    paddingHorizontal: 10,
+    paddingHorizontal: 8,
     paddingVertical: 4,
-    flexShrink: 1,
-    maxWidth: '78%',
+    flexShrink: 0,
   },
   labelText: {
     fontFamily: fontFamily.dinOT.native,
     fontWeight: '500',
     fontSize: 10,
     lineHeight: 12.9,
-    letterSpacing: 0.3,
+    letterSpacing: 0.6,
     color: colors.slate800,
     textTransform: 'uppercase',
-    flexShrink: 1,
   },
 });

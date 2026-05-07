@@ -16,13 +16,13 @@ describe('onboarding badges', () => {
     expect(getDocumentBadgeLabel('unknown')).toBe('Document scan');
   });
 
-  it('returns descriptive perk labels instead of count-only copy', () => {
-    expect(getDocumentPerkLabel('p')).toBe('Google USDT faucet');
+  it('returns count-based perk labels', () => {
+    expect(getDocumentPerkLabel('p')).toBe('Eligible for 1 perk');
     expect(getDocumentPerkLabel('unknown')).toBeNull();
   });
 
   it('formats multi-perk labels predictably', () => {
     const googlePerk = PERKS.google_usdt_faucet;
-    expect(getPerkRailLabel([googlePerk, googlePerk])).toBe('Google USDT faucet +1 more');
+    expect(getPerkRailLabel([googlePerk, googlePerk])).toBe('Eligible for 2 perks');
   });
 });

@@ -86,20 +86,24 @@ const getDocumentLogo = (docType: string): React.ReactNode => {
 
 type DocumentCardProps = {
   docType: string;
+  countryCode: string;
   onPress: () => void;
 };
 
-const DocumentCard: React.FC<DocumentCardProps> = ({ docType, onPress }) => {
+const DocumentCard: React.FC<DocumentCardProps> = ({ docType, countryCode, onPress }) => {
   const subtitle = getDocumentSubtitle(docType);
   const perks = getPerksForIdType(docType);
   const perkLabel = getDocumentPerkLabel(docType);
   const hasPerks = perkLabel !== null;
+  const useFlag = docType !== KYC_DOC_TYPE;
 
   return (
     <View style={styles.cardOuter}>
       <View onPress={onPress} style={styles.cardInner} pressStyle={{ transform: [{ scale: 0.98 }], opacity: 0.95 }}>
         <XStack alignItems="center" gap={12} flex={1}>
-          <View style={styles.cardLogoContainer}>{getDocumentLogo(docType)}</View>
+          <View style={styles.cardLogoContainer}>
+            {useFlag ? <RoundFlag countryCode={countryCode} size={32} /> : getDocumentLogo(docType)}
+          </View>
           <YStack gap={4} flex={1}>
             <BodyText style={styles.cardTitle}>{getDocumentName(docType)}</BodyText>
             {subtitle && <BodyText style={styles.cardSubtitle}>{subtitle}</BodyText>}
@@ -197,7 +201,12 @@ const IDSelectionScreen: React.FC<IDSelectionScreenProps> = ({ countryCode, docu
 
       <YStack gap={16}>
         {biometricTypes.map(docType => (
-          <DocumentCard key={docType} docType={docType} onPress={() => onSelectDocumentType(docType)} />
+          <DocumentCard
+            key={docType}
+            docType={docType}
+            countryCode={countryCode}
+            onPress={() => onSelectDocumentType(docType)}
+          />
         ))}
       </YStack>
 

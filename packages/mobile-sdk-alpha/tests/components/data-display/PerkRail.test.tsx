@@ -17,21 +17,13 @@ describe('PerkRail', () => {
     expect(screen.getByText('Google USDT faucet')).toBeTruthy();
   });
 
-  it('keeps long labels constrained inside the pill', () => {
+  it('renders the label without truncation', () => {
     const onPress = vi.fn();
     render(
-      <PerkRail
-        variant="minimal"
-        logos={[<div key="google">G</div>]}
-        label="Google USDT faucet +1 more"
-        onPress={onPress}
-      />,
+      <PerkRail variant="minimal" logos={[<div key="google">G</div>]} label="Eligible for 2 perks" onPress={onPress} />,
     );
 
-    const label = screen.getByText('Google USDT faucet +1 more');
-    const pill = label.parentElement as HTMLDivElement | null;
-
-    expect(pill).toBeTruthy();
-    expect(pill?.style.maxWidth).toBe('78%');
+    const label = screen.getByText('Eligible for 2 perks');
+    expect(label).toBeTruthy();
   });
 });

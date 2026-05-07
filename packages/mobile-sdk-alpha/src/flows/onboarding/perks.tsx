@@ -25,11 +25,7 @@ export const PERKS: Record<string, Perk> = {
 };
 
 export function getPerkRailLabel(perks: Perk[]): string {
-  if (perks.length === 1) {
-    return perks[0].label;
-  }
-
-  return `${perks[0].label} +${perks.length - 1} more`;
+  return perks.length === 1 ? 'Eligible for 1 perk' : `Eligible for ${perks.length} perks`;
 }
 
 const ID_TYPE_TO_PERK_IDS: Record<string, string[]> = {
