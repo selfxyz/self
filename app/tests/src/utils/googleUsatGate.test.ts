@@ -45,10 +45,11 @@ describe('evaluateGoogleUsatGate', () => {
     // is removed, this should allow without consulting the catalog.
     const result = await evaluateGoogleUsatGate({} as any, app);
     const expected = FORCE_GOOGLE_USAT_FOR_TESTING ? 'block' : 'allow';
+    const expectedGetAllDocumentsCalls = FORCE_GOOGLE_USAT_FOR_TESTING ? 1 : 0;
     expect(result).toBe(expected);
-    if (!FORCE_GOOGLE_USAT_FOR_TESTING) {
-      expect(mockGetAllDocuments).not.toHaveBeenCalled();
-    }
+    expect(mockGetAllDocuments).toHaveBeenCalledTimes(
+      expectedGetAllDocumentsCalls,
+    );
   });
 
   it('blocks Google USAT when catalog is empty', async () => {
