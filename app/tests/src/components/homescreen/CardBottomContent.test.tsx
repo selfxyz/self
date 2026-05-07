@@ -8,9 +8,15 @@ import { render } from '@testing-library/react-native';
 import CardBottomContent from '@/components/homescreen/CardBottomContent';
 
 jest.mock('tamagui', () => {
-  const MockYStack = ({ children, ...props }: any) => <div {...props}>{children}</div>;
-  const MockXStack = ({ children, ...props }: any) => <div {...props}>{children}</div>;
-  const MockText = ({ children, ...props }: any) => <span {...props}>{children}</span>;
+  const MockYStack = ({ children, ...props }: any) => (
+    <div {...props}>{children}</div>
+  );
+  const MockXStack = ({ children, ...props }: any) => (
+    <div {...props}>{children}</div>
+  );
+  const MockText = ({ children, ...props }: any) => (
+    <span {...props}>{children}</span>
+  );
 
   return {
     __esModule: true,

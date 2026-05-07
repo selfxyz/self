@@ -8,7 +8,7 @@
 
 import type React from 'react';
 
-import GoogleLogo from '../../../svgs/icons/google.svg';
+import GoogleLogo from '@selfxyz/mobile-sdk-alpha/svgs/icons/google.svg';
 
 export interface Perk {
   id: string;

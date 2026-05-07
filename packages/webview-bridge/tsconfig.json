@@ -13,6 +13,11 @@
     "sourceMap": true,
     "outDir": "dist",
     "rootDir": "src",
+    "baseUrl": ".",
+    "paths": {
+      "@selfxyz/mobile-sdk-alpha": ["../mobile-sdk-alpha/src/index.ts"],
+      "@selfxyz/mobile-sdk-alpha/browser": ["../mobile-sdk-alpha/src/browser.ts"]
+    },
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
