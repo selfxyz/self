@@ -94,8 +94,12 @@ describe('isGoogleUsatProofRequest', () => {
     expect(isGoogleUsatProofRequest(app, emptyVerifiers)).toBe(false);
   });
 
-  it('returns false for unknown chainID', () => {
-    const app = buildApp({ endpointType: 'celo', endpoint: MAINNET_ADDRESS, chainID: 1 });
+  it('returns false when chainID is missing', () => {
+    const app = buildApp({
+      endpointType: 'celo',
+      endpoint: MAINNET_ADDRESS,
+      chainID: undefined,
+    });
 
     expect(isGoogleUsatProofRequest(app, testVerifiers)).toBe(false);
   });
