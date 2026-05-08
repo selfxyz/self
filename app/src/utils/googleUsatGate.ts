@@ -24,7 +24,14 @@ export async function evaluateGoogleUsatGate(
     return 'allow';
   }
 
-  const docs = await getAllDocuments(selfClient);
+  let docs: Awaited<ReturnType<typeof getAllDocuments>>;
+  try {
+    docs = await getAllDocuments(selfClient);
+  } catch {
+    // Fail open: this gate is a UX guard, not a security boundary. A transient
+    // retrieval failure must not permanently block the proof session.
+    return 'allow';
+  }
   const hasHighSecurityDoc = Object.values(docs).some(
     doc => doc.data.documentCategory !== 'kyc',
   );

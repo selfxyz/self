@@ -67,6 +67,12 @@ describe('evaluateGoogleUsatGate', () => {
     await expect(evaluateGoogleUsatGate({} as any, app)).resolves.toBe('allow');
   });
 
+  it('fails open when getAllDocuments throws', async () => {
+    mockIsGoogleUsatProofRequest.mockReturnValue(true);
+    mockGetAllDocuments.mockRejectedValue(new Error('network down'));
+    await expect(evaluateGoogleUsatGate({} as any, app)).resolves.toBe('allow');
+  });
+
   it('exposes testing force toggle', () => {
     expect(typeof FORCE_GOOGLE_USAT_FOR_TESTING).toBe('boolean');
   });
