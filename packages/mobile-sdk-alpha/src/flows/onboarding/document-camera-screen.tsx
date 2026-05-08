@@ -6,7 +6,8 @@ import { useCallback, useRef } from 'react';
 import { StyleSheet } from 'react-native';
 import type { MRZInfo } from 'src/types/public';
 
-import Scan from '../../../svgs/icons/passport_camera_scan.svg';
+import Scan from '@selfxyz/mobile-sdk-alpha/svgs/icons/passport_camera_scan.svg';
+
 import passportScanAnimation from '../../animations/passport_scan.json';
 import { Additional, Description, SecondaryButton, Title, View, XStack, YStack } from '../../components';
 import { DelayedLottieView } from '../../components/DelayedLottieView';

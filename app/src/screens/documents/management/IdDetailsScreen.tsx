@@ -2,13 +2,21 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Linking } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Text, XStack, YStack, ZStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 
 import type { DocumentCatalog, IDDocument } from '@selfxyz/common/utils/types';
+import {
+  getEligiblePerksForIdType,
+  getPerkRecordsForIdType,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
+import { EligiblePerksCard } from '@selfxyz/mobile-sdk-alpha/components';
+import { IDDataEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import {
   black,
   slate50,
@@ -35,6 +43,7 @@ const IdDetailsScreen: React.FC = () => {
   const [isHidden, setIsHidden] = useState(true);
   const navigation = useNavigation();
   const { bottom } = useSafeAreaInsets();
+  const { trackEvent } = useSelfClient();
 
   useEffect(() => {
     const loadDocumentAndCatalog = async () => {
@@ -50,6 +59,52 @@ const IdDetailsScreen: React.FC = () => {
   }, [documentId, getAllDocuments, loadDocumentCatalog]);
 
   const isConnected = documentCatalog.selectedDocumentId === documentId;
+
+  const idType = useMemo(
+    () =>
+      document && !document.mock
+        ? idTypeForDocumentCategory(document.documentCategory)
+        : null,
+    [document],
+  );
+
+  const perkRecords = useMemo(
+    () => (idType ? getPerkRecordsForIdType(idType) : []),
+    [idType],
+  );
+
+  const perks = useMemo(
+    () => (idType ? getEligiblePerksForIdType(idType) : []),
+    [idType],
+  );
+
+  const handlePerksView = (perkIds: string[]) => {
+    trackEvent(IDDataEvents.PERKS_VIEWED, {
+      id_type: idType,
+      perk_count: perkIds.length,
+      perk_ids: perkIds,
+    });
+  };
+
+  const handlePerkPress = async (perkId: string) => {
+    const record = perkRecords.find(perk => perk.id === perkId);
+    trackEvent(IDDataEvents.PERK_TAPPED, {
+      id_type: idType,
+      perk_id: perkId,
+      has_outlink: Boolean(record?.outlinkUrl),
+    });
+    if (!record?.outlinkUrl) {
+      return;
+    }
+    try {
+      await Linking.openURL(record.outlinkUrl);
+    } catch {
+      trackEvent(IDDataEvents.PERK_OUTLINK_OPEN_FAILED, {
+        id_type: idType,
+        perk_id: perkId,
+      });
+    }
+  };
 
   const handleConnectId = async () => {
     if (!isConnected) {
@@ -120,6 +175,15 @@ const IdDetailsScreen: React.FC = () => {
           Manage ID
         </Button>
       </XStack>
+      {perks.length > 0 && isHidden ? (
+        <YStack marginTop={'$4'}>
+          <EligiblePerksCard
+            perks={perks}
+            onView={handlePerksView}
+            onPerkPress={handlePerkPress}
+          />
+        </YStack>
+      ) : null}
     </YStack>
   );
 
@@ -165,5 +229,20 @@ const IdDetailsScreen: React.FC = () => {
     </YStack>
   );
 };
+
+function idTypeForDocumentCategory(
+  category: IDDocument['documentCategory'],
+): string | null {
+  switch (category) {
+    case 'passport':
+      return 'p';
+    case 'id_card':
+      return 'i';
+    case 'aadhaar':
+      return 'a';
+    default:
+      return null;
+  }
+}
 
 export default IdDetailsScreen;

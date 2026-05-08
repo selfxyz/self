@@ -17,10 +17,12 @@ import {
   SdkEvents,
   SelfClientProvider as SDKSelfClientProvider,
   type TrackEventParams,
+  trackOnboardingStep,
   useMRZStore,
   webNFCScannerShim,
   type WsConn,
 } from '@selfxyz/mobile-sdk-alpha';
+import { OnboardingEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import { logNFCEvent, logProofEvent } from '@/config/sentry';
 import { createKycSession, launchKycVerification } from '@/integrations/kyc';
@@ -346,6 +348,12 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
             case 'kyc':
               (async () => {
                 try {
+                  trackOnboardingStep(
+                    { trackEvent },
+                    OnboardingEvents.SCAN_STARTED,
+                    { branch: 'kyc' },
+                  );
+
                   // Dev-only: Check for injected initialization error
                   if (
                     useErrorInjectionStore
@@ -358,7 +366,10 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
                     );
                   }
 
-                  const session = await createKycSession();
+                  const session = await createKycSession({
+                    country: countryCode,
+                    nationality: countryCode,
+                  });
                   const result = await launchKycVerification(
                     session.sessionToken,
                   );

@@ -481,10 +481,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         get().startProving(selfClient);
       }
 
-      if (state.value === 'proving') {
-        // Canonical funnel: fire-once per attempt. `trackOnboardingStep`
-        // dedupes, so transient re-entry into `proving` (e.g. via reconnect)
-        // does not re-emit.
+      if (state.value === 'proving' && get().circuitType === 'register') {
         trackOnboardingStep(selfClient, OnboardingEvents.PROOF_STARTED);
       }
 
@@ -524,16 +521,9 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           selfClient.getSelfAppState().handleProofResult(true);
         }
 
-        // Canonical funnel terminal events. Registration-completion fires
-        // only when we actually generated a new proof in this session
-        // (didNewRegistrationProof). The `ALREADY_REGISTERED` path reaches
-        // `completed` without going through `post_proving`, so the flag
-        // stays false and no canonical onboarding event fires.
         if (get().circuitType === 'register' && get().didNewRegistrationProof) {
           trackOnboardingStep(selfClient, OnboardingEvents.PROOF_SUCCEEDED);
           completeOnboardingAttempt(selfClient);
-        } else if (get().circuitType === 'disclose') {
-          selfClient.trackEvent(OnboardingEvents.DISCLOSURE_COMPLETED);
         }
 
         emitVerificationComplete(true);
@@ -559,9 +549,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
         if (get().circuitType === 'disclose') {
           selfClient.getSelfAppState().handleProofResult(false, error_code ?? undefined, reason ?? undefined);
-        } else if (get().circuitType === 'register') {
+        } else if (get().circuitType !== null) {
           failOnboardingAttempt(selfClient, 'proof_generation_started', reason ?? error_code ?? 'proof_failure', {
             recoverable: false,
+            proof_type: get().circuitType,
           });
         }
 
@@ -573,9 +564,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       if (state.value === 'error') {
         if (get().circuitType === 'disclose') {
           selfClient.getSelfAppState().handleProofResult(false, 'error', 'error');
-        } else if (get().circuitType === 'register') {
+        } else if (get().circuitType !== null) {
           failOnboardingAttempt(selfClient, 'proof_generation_started', get().reason ?? get().error_code ?? 'error', {
             recoverable: true,
+            proof_type: get().circuitType,
           });
         }
 

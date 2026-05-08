@@ -3,36 +3,27 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type React from 'react';
-import { StyleSheet } from 'react-native';
+import { useEffect } from 'react';
+import { Pressable, StyleSheet, Text, View as RNView } from 'react-native';
 
-import AadhaarLogo from '../../../svgs/icons/aadhaar.svg';
-import EPassportLogoRounded from '../../../svgs/icons/epassport_rounded.svg';
-import PassportCameraScanIcon from '../../../svgs/icons/passport_camera_scan.svg';
-import PlusIcon from '../../../svgs/icons/plus.svg';
-import SelfLogo from '../../../svgs/logo.svg';
+import { colors, fontFamily } from '@selfxyz/euclid-core';
+import AadhaarLogo from '@selfxyz/mobile-sdk-alpha/svgs/icons/aadhaar.svg';
+import EPassportLogoRounded from '@selfxyz/mobile-sdk-alpha/svgs/icons/epassport_rounded.svg';
+import PassportCameraScanIcon from '@selfxyz/mobile-sdk-alpha/svgs/icons/passport_camera_scan.svg';
+import PlusIcon from '@selfxyz/mobile-sdk-alpha/svgs/icons/plus.svg';
+import SelfLogo from '@selfxyz/mobile-sdk-alpha/svgs/logo.svg';
+
 import { resolveOnboardingBranch, trackOnboardingStep } from '../../analytics/onboardingFunnel';
-import { BodyText, RoundFlag, View, XStack, YStack } from '../../components';
-import { OnboardingEvents } from '../../constants/analytics';
-import { black, blue100, blue600, slate100, slate300, slate400, white } from '../../constants/colors';
-import { advercase, dinot } from '../../constants/fonts';
+import { BodyText, PerkRail, RoundFlag, View, XStack, YStack } from '../../components';
+import { OnboardingEvents, RegistrationPickerEvents } from '../../constants/analytics';
 import { useSelfClient } from '../../context';
 import { buttonTap } from '../../haptic';
 import { SdkEvents } from '../../types/events';
+import { getDocumentBadgeLabel, getDocumentPerkLabel } from './badges';
+import { getDocumentDisplaySubtitle, getDocumentDisplayTitle } from './documentCardCopy';
+import { getPerksForIdType } from './perks';
 
-const getDocumentName = (docType: string): string => {
-  switch (docType) {
-    case 'p':
-      return 'Passport';
-    case 'i':
-      return 'ID card';
-    case 'a':
-      return 'Aadhaar';
-    case 'kyc':
-      return 'Other IDs';
-    default:
-      return 'Unknown Document';
-  }
-};
+const KYC_DOC_TYPE = 'kyc';
 
 const getDocumentNameForEvent = (docType: string): string => {
   switch (docType) {
@@ -42,88 +33,69 @@ const getDocumentNameForEvent = (docType: string): string => {
       return 'id_card';
     case 'a':
       return 'aadhaar';
-    case 'kyc':
+    case KYC_DOC_TYPE:
       return 'kyc';
     default:
       return 'unknown_document';
   }
 };
 
-const getDocumentDescription = (docType: string): string | null => {
-  switch (docType) {
-    case 'p':
-      return 'Verified Biometric Passport';
-    case 'i':
-      return 'Verified Biometric ID card';
-    case 'a':
-      return 'Verified mAadhaar QR code';
-    case 'kyc':
-      return "National ID, Driver's License etc.";
-    default:
-      return 'Unknown Document';
-  }
-};
-
 const getDocumentLogo = (docType: string): React.ReactNode => {
   switch (docType) {
     case 'p':
-      return <EPassportLogoRounded />;
+      return <EPassportLogoRounded width={32} height={32} />;
     case 'i':
-      return <EPassportLogoRounded />;
+      return <EPassportLogoRounded width={32} height={32} />;
     case 'a':
-      return <AadhaarLogo />;
-    case 'kyc':
-      // same color as epassport_rounded.svg
-      return <PassportCameraScanIcon color={'#075985'} />;
+      return <AadhaarLogo width={32} height={32} />;
+    case KYC_DOC_TYPE:
+      return <PassportCameraScanIcon width={32} height={32} color={'#075985'} />;
     default:
       return null;
   }
 };
 
-const getDocumentSecurityBadge = (docType: string): string | null => {
-  switch (docType) {
-    case 'p':
-    case 'i':
-    case 'a':
-      return 'Best security';
-    default:
-      return null;
-  }
-};
-
-type DocumentItemProps = {
+type DocumentCardProps = {
   docType: string;
+  countryCode: string;
   onPress: () => void;
 };
 
-const DocumentItem: React.FC<DocumentItemProps> = ({ docType, onPress }) => {
-  const securityBadge = getDocumentSecurityBadge(docType);
-  const description = getDocumentDescription(docType);
+const DocumentCard: React.FC<DocumentCardProps> = ({ docType, countryCode, onPress }) => {
+  const subtitle = getDocumentDisplaySubtitle(docType, countryCode);
+  const perks = getPerksForIdType(docType);
+  const perkLabel = getDocumentPerkLabel(docType);
+  const hasPerks = perkLabel !== null;
+  const useFlag = docType !== KYC_DOC_TYPE;
+  const perkLogos = perks.flatMap(p => p.renderLogos?.() ?? []);
 
   return (
-    <XStack
-      style={styles.documentItem}
-      backgroundColor={white}
-      borderWidth={1}
-      borderColor={slate300}
-      elevation={4}
-      borderRadius={'$5'}
-      padding={'$3'}
-      pressStyle={{
-        transform: [{ scale: 0.97 }],
-        backgroundColor: slate100,
-      }}
-      onPress={onPress}
-    >
-      <XStack alignItems="center" gap={'$3'} flex={1}>
-        {securityBadge && <BodyText style={styles.securityBadgeText}>{securityBadge}</BodyText>}
-        <View style={styles.documentLogoContainer}>{getDocumentLogo(docType)}</View>
-        <YStack gap={'$1'}>
-          <BodyText style={styles.documentNameText}>{getDocumentName(docType)}</BodyText>
-          {description && <BodyText style={styles.documentDescriptionText}>{description}</BodyText>}
-        </YStack>
-      </XStack>
-    </XStack>
+    <View style={styles.cardOuter}>
+      <RNView style={styles.cardInnerShadow}>
+        <Pressable onPress={onPress} style={({ pressed }) => [styles.cardInner, pressed && styles.cardInnerPressed]}>
+          <RNView style={styles.cardRow}>
+            <RNView style={styles.cardLogoContainer}>
+              {useFlag ? <RoundFlag countryCode={countryCode} size={32} /> : getDocumentLogo(docType)}
+            </RNView>
+            <RNView style={styles.cardContentColumn}>
+              <Text style={styles.cardTitle}>{getDocumentDisplayTitle(docType, countryCode)}</Text>
+              {subtitle ? <Text style={styles.cardSubtitle}>{subtitle}</Text> : null}
+            </RNView>
+            <RNView style={styles.hiSecurityPill}>
+              <Text style={styles.hiSecurityText}>{getDocumentBadgeLabel(docType)}</Text>
+            </RNView>
+          </RNView>
+        </Pressable>
+      </RNView>
+      {hasPerks && (
+        <PerkRail
+          variant={perkLogos.length > 1 ? 'dense' : 'minimal'}
+          logos={perkLogos}
+          label={perkLabel ?? undefined}
+          onPress={onPress}
+        />
+      )}
+    </View>
   );
 };
 
@@ -132,9 +104,16 @@ type IDSelectionScreenProps = {
   documentTypes: string[];
 };
 
-const IDSelectionScreen: React.FC<IDSelectionScreenProps> = props => {
-  const { countryCode = '', documentTypes = [] } = props;
+const IDSelectionScreen: React.FC<IDSelectionScreenProps> = ({ countryCode, documentTypes }) => {
   const selfClient = useSelfClient();
+  const biometricTypes = documentTypes.filter(t => t !== KYC_DOC_TYPE);
+
+  const biometricTypesKey = biometricTypes.join(',');
+  useEffect(() => {
+    selfClient.trackEvent(RegistrationPickerEvents.VIEWED, {
+      available_id_types: biometricTypesKey ? biometricTypesKey.split(',') : [],
+    });
+  }, [selfClient, biometricTypesKey]);
 
   const onSelectDocumentType = (docType: string) => {
     buttonTap();
@@ -148,6 +127,13 @@ const IDSelectionScreen: React.FC<IDSelectionScreenProps> = props => {
       country_code: countryCode,
     });
 
+    const perks = getPerksForIdType(docType);
+    selfClient.trackEvent(RegistrationPickerEvents.SELECTED, {
+      id_type: getDocumentNameForEvent(docType),
+      was_eligible_for_perks: perks.length > 0,
+      perk_ids: perks.map(p => p.id),
+    });
+
     selfClient.emit(SdkEvents.DOCUMENT_TYPE_SELECTED, {
       documentType: docType,
       documentName: getDocumentNameForEvent(docType),
@@ -155,34 +141,56 @@ const IDSelectionScreen: React.FC<IDSelectionScreenProps> = props => {
     });
   };
 
+  const onTapKyc = () => {
+    selfClient.trackEvent(RegistrationPickerEvents.UNSUPPORTED_TAPPED, {
+      country_code: countryCode,
+    });
+    onSelectDocumentType(KYC_DOC_TYPE);
+  };
+
   return (
-    <YStack flex={1} paddingTop="$4" paddingHorizontal="$4" justifyContent="center">
-      <YStack marginTop="$4" marginBottom="$6">
-        <XStack justifyContent="center" alignItems="center" borderRadius={'$2'} gap={'$2.5'}>
-          <View width={48} height={48}>
-            <RoundFlag countryCode={countryCode} size={48} />
+    <YStack flex={1} paddingTop="$4" paddingHorizontal="$4">
+      <YStack alignItems="center" marginTop="$4" marginBottom="$5" gap={30}>
+        <XStack alignItems="center" gap={10}>
+          <View width={44} height={44}>
+            <RoundFlag countryCode={countryCode} size={44} />
           </View>
-          <PlusIcon width={18} height={18} color={slate400} />
+          <PlusIcon width={18} height={18} color={colors.slate400} />
           <YStack
-            backgroundColor={black}
-            borderRadius={'$2'}
-            height={48}
-            width={48}
+            backgroundColor={colors.black}
+            borderRadius={3}
+            height={46}
+            width={46}
             justifyContent="center"
             alignItems="center"
           >
-            <SelfLogo width={24} height={24} />
+            <SelfLogo width={26} height={26} />
           </YStack>
         </XStack>
-        <BodyText style={styles.titleText}>Select an ID type</BodyText>
+        <YStack alignItems="center" gap={16}>
+          <BodyText style={styles.titleText}>Select an ID{'\n'}type to register</BodyText>
+          <BodyText style={styles.subtitleText}>Be sure to have your{'\n'}document ready to scan</BodyText>
+        </YStack>
       </YStack>
-      <YStack gap="$3">
-        {documentTypes.map((docType: string) => (
-          <DocumentItem key={docType} docType={docType} onPress={() => onSelectDocumentType(docType)} />
+
+      <YStack gap={16}>
+        {biometricTypes.map(docType => (
+          <DocumentCard
+            key={docType}
+            docType={docType}
+            countryCode={countryCode}
+            onPress={() => onSelectDocumentType(docType)}
+          />
         ))}
-        <BodyText style={styles.footerText}>Be sure your document is ready to scan</BodyText>
-        <View style={styles.kycContainer}>
-          <DocumentItem docType="kyc" onPress={() => onSelectDocumentType('kyc')} />
+      </YStack>
+
+      <YStack alignItems="center" marginTop={32} gap={16}>
+        <BodyText style={styles.footerLabel}>LIMITED SECURITY IDS</BodyText>
+        <View onPress={onTapKyc} style={styles.kycButton} pressStyle={{ transform: [{ scale: 0.98 }], opacity: 0.9 }}>
+          <BodyText style={styles.kycButtonText}>View other supported IDs</BodyText>
+          <View style={styles.betaPill}>
+            <BodyText style={styles.betaText}>BETA</BodyText>
+          </View>
         </View>
       </YStack>
     </YStack>
@@ -191,54 +199,129 @@ const IDSelectionScreen: React.FC<IDSelectionScreenProps> = props => {
 
 const styles = StyleSheet.create({
   titleText: {
-    marginTop: 48,
-    fontSize: 29,
-    fontFamily: advercase,
+    fontFamily: fontFamily.advercase.native,
+    fontSize: 28,
+    letterSpacing: 1,
+    color: colors.black,
     textAlign: 'center',
-    color: black,
   },
-  documentLogoContainer: {
-    width: 48,
-    height: 48,
+  subtitleText: {
+    fontFamily: fontFamily.dinOT.native,
+    fontSize: 16,
+    color: colors.black,
+    textAlign: 'center',
+  },
+  cardOuter: {
+    backgroundColor: colors.slate50,
+    borderColor: colors.slate200,
+    borderWidth: 1,
+    borderRadius: 18,
+    overflow: 'visible',
+  },
+  cardInnerShadow: {
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowOffset: { width: 0, height: 0 },
+    shadowRadius: 12,
+    elevation: 6,
+    borderRadius: 18,
+    zIndex: 1,
+  },
+  cardInner: {
+    backgroundColor: colors.white,
+    borderColor: colors.zinc200,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: 18,
+    overflow: 'hidden',
+    padding: 16,
+    zIndex: 1,
+  },
+  cardInnerPressed: {
+    opacity: 0.95,
+    transform: [{ scale: 0.98 }],
+  },
+  cardRow: {
+    minHeight: 43,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  cardLogoContainer: {
+    width: 32,
+    height: 32,
+    marginRight: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  documentItem: {
-    position: 'relative',
-    borderWidth: 1,
+  cardContentColumn: {
+    flex: 1,
+    minWidth: 0,
+    marginRight: 12,
   },
-  securityBadgeText: {
-    fontSize: 12,
-    fontFamily: dinot,
-    color: blue600,
-    backgroundColor: blue100,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: blue600,
+  cardTitle: {
+    fontFamily: fontFamily.dinOT.native,
+    fontSize: 16,
+    lineHeight: 21,
+    color: colors.black,
+  },
+  cardSubtitle: {
+    fontFamily: fontFamily.dinOT.native,
+    fontSize: 14,
+    lineHeight: 18,
+    color: colors.slate500,
+  },
+  hiSecurityPill: {
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    borderRadius: 30,
     paddingHorizontal: 8,
     paddingVertical: 4,
-    position: 'absolute',
-    top: -20,
-    right: -20,
+    flexShrink: 0,
   },
-  kycContainer: {
-    marginTop: 36,
+  hiSecurityText: {
+    fontFamily: fontFamily.dinOT.native,
+    fontSize: 10,
+    lineHeight: 12.9,
+    letterSpacing: 0.6,
+    color: colors.white,
+    textTransform: 'uppercase',
   },
-  documentNameText: {
-    fontSize: 24,
-    fontFamily: dinot,
-    color: black,
+  footerLabel: {
+    fontFamily: fontFamily.ibmPlexMono.native,
+    fontSize: 10,
+    letterSpacing: 1,
+    color: colors.slate400,
+    textTransform: 'uppercase',
   },
-  documentDescriptionText: {
+  kycButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    height: 46,
+    paddingHorizontal: 14,
+    backgroundColor: colors.white,
+    borderColor: colors.slate300,
+    borderWidth: 1,
+    borderRadius: 60,
+  },
+  kycButtonText: {
+    fontFamily: fontFamily.dinOT.native,
     fontSize: 14,
-    fontFamily: dinot,
-    color: slate400,
+    color: colors.black,
   },
-  footerText: {
-    fontSize: 18,
-    fontFamily: dinot,
-    color: slate400,
-    textAlign: 'center',
+  betaPill: {
+    borderColor: colors.slate300,
+    borderWidth: 1,
+    borderRadius: 30,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  betaText: {
+    fontFamily: fontFamily.dinOT.native,
+    fontSize: 10,
+    lineHeight: 12.9,
+    letterSpacing: 0.6,
+    color: colors.slate500,
+    textTransform: 'uppercase',
   },
 });
 

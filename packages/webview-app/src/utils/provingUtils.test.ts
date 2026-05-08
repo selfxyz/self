@@ -73,16 +73,20 @@ describe('provingUtils', () => {
 
   describe('getIdCardProps', () => {
     it('should return passport props by default', () => {
-      expect(getIdCardProps()).toEqual({ variant: 'passport', title: 'Passport', subtitle: 'Verified Passport' });
+      expect(getIdCardProps()).toEqual({ variant: 'passport', title: 'Passport', subtitle: 'Biometric Passport' });
       expect(getIdCardProps('passport')).toEqual({
         variant: 'passport',
         title: 'Passport',
-        subtitle: 'Verified Passport',
+        subtitle: 'Biometric Passport',
       });
     });
 
     it('should return id-card props', () => {
-      expect(getIdCardProps('id_card')).toEqual({ variant: 'id-card', title: 'ID Card', subtitle: 'Verified ID' });
+      expect(getIdCardProps('id_card')).toEqual({
+        variant: 'id-card',
+        title: 'ID Card',
+        subtitle: 'Biometric Identification Card',
+      });
     });
 
     it('should return aadhaar props', () => {
@@ -105,7 +109,7 @@ describe('provingUtils', () => {
       expect(getIdCardProps('drivers_license')).toEqual({
         variant: 'passport',
         title: 'Passport',
-        subtitle: 'Verified Passport',
+        subtitle: 'Biometric Passport',
       });
     });
   });

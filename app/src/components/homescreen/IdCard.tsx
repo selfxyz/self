@@ -38,7 +38,7 @@ import SelfLogoPending from '@/assets/images/self_logo_pending.svg';
 import WaveOverlay from '@/assets/images/wave_overlay.png';
 import CardBottomContent from '@/components/homescreen/CardBottomContent';
 import CardHeader from '@/components/homescreen/CardHeader';
-import { getSecurityLevel } from '@/components/homescreen/cardSecurityBadge';
+import { getSecurityBadgeLabel } from '@/components/homescreen/cardSecurityBadge';
 import { cardStyles } from '@/components/homescreen/cardStyles';
 import IdCardRevealed from '@/components/homescreen/IdCardRevealed';
 import KycIdCard from '@/components/homescreen/KycIdCard';
@@ -175,7 +175,7 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
   };
 
   // Get security level for badge (only for real documents)
-  const securityLevel = getSecurityLevel(idDocument);
+  const securityBadgeLabel = getSecurityBadgeLabel(idDocument);
 
   // Header title - add "DEV" prefix for mock documents
   const headerTitle = isMockDocument
@@ -380,7 +380,7 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
                       ]
                     : []),
                   {
-                    text: securityLevel,
+                    text: securityBadgeLabel,
                     backgroundColor: 'rgba(0, 0, 0, 0.5)',
                     textColor: white,
                   },
