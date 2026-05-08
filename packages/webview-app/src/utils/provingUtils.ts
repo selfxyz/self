@@ -40,14 +40,14 @@ export function getGenerationStep(currentState: string): GenerationStep {
 export function getIdCardProps(documentCategory?: string): IDCardProps {
   switch (documentCategory) {
     case 'id_card':
-      return { variant: 'id-card', title: 'ID Card', subtitle: 'Verified ID' };
+      return { variant: 'id-card', title: 'ID Card', subtitle: 'Biometric Identification Card' };
     case 'aadhaar':
       return { variant: 'aadhaar', title: 'Aadhaar', subtitle: 'Verified IN Aadhaar ID' };
     case 'kyc':
       return { variant: 'pending', title: 'KYC Record', subtitle: 'Verification document loaded' };
     case 'passport':
     default:
-      return { variant: 'passport', title: 'Passport', subtitle: 'Verified Passport' };
+      return { variant: 'passport', title: 'Passport', subtitle: 'Biometric Passport' };
   }
 }
 

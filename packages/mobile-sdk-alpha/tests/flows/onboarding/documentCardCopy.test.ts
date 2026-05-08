@@ -14,8 +14,8 @@ describe('document card copy', () => {
   });
 
   it('matches the updated subtitle copy', () => {
-    expect(getDocumentDisplaySubtitle('p', 'IND')).toBe('Verified Passport');
-    expect(getDocumentDisplaySubtitle('i', 'IND')).toBe('Verified ID card');
+    expect(getDocumentDisplaySubtitle('p', 'IND')).toBe('Biometric Passport');
+    expect(getDocumentDisplaySubtitle('i', 'IND')).toBe('Biometric Identification Card');
     expect(getDocumentDisplaySubtitle('a', 'IND')).toBe('Verified India Aadhaar');
     expect(getDocumentDisplaySubtitle('kyc', 'IND')).toBe("National ID, Driver's License etc.");
   });

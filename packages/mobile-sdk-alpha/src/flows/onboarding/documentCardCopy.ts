@@ -75,9 +75,9 @@ function getCountryName(countryCode: string): string {
 export function getDocumentDisplaySubtitle(docType: string, countryCode: string): string | null {
   switch (docType) {
     case 'p':
-      return 'Verified Passport';
+      return 'Biometric Passport';
     case 'i':
-      return 'Verified ID card';
+      return 'Biometric Identification Card';
     case 'a':
       return `Verified ${getCountryName(countryCode)} Aadhaar`;
     case KYC_DOC_TYPE:
