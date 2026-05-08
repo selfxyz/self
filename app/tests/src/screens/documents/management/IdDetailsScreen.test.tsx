@@ -220,4 +220,26 @@ describe('IdDetailsScreen', () => {
       0,
     );
   });
+
+  it('hides the perks card for mock documents', async () => {
+    getAllDocuments.mockResolvedValue({
+      'doc-1': {
+        data: {
+          documentType: 'mock_passport',
+          documentCategory: 'passport',
+          mock: true,
+        },
+      },
+    });
+
+    const { UNSAFE_root } = render(<IdDetailsScreen />);
+
+    await waitFor(() => {
+      expect(UNSAFE_root.findByType('mock-stack' as never)).toBeTruthy();
+    });
+
+    expect(UNSAFE_root.findAllByType('mock-perks-card' as never)).toHaveLength(
+      0,
+    );
+  });
 });

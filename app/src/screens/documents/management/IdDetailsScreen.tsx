@@ -61,7 +61,9 @@ const IdDetailsScreen: React.FC = () => {
 
   const idType = useMemo(
     () =>
-      document ? idTypeForDocumentCategory(document.documentCategory) : null,
+      document && !document.mock
+        ? idTypeForDocumentCategory(document.documentCategory)
+        : null,
     [document],
   );
 
