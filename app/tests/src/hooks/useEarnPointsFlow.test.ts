@@ -20,6 +20,7 @@ import {
   POINTS_SELF_APP_NAME,
 } from '@/services/points/constants';
 import useUserStore from '@/stores/userStore';
+import { evaluateGoogleUsatGate } from '@/utils/googleUsatGate';
 import { getModalCallbacks } from '@/utils/modalCallbackRegistry';
 
 jest.mock('@react-navigation/native', () => ({
@@ -41,6 +42,10 @@ jest.mock('@/services/points', () => ({
   POINT_VALUES: {
     referee: 24,
   },
+}));
+
+jest.mock('@/utils/googleUsatGate', () => ({
+  evaluateGoogleUsatGate: jest.fn(),
 }));
 
 // userStore is used as-is, no mock needed
@@ -66,6 +71,8 @@ const mockHasUserDoneThePointsDisclosure =
 const mockPointsSelfApp = pointsSelfApp as jest.MockedFunction<
   typeof pointsSelfApp
 >;
+const mockEvaluateGoogleUsatGate =
+  evaluateGoogleUsatGate as jest.MockedFunction<typeof evaluateGoogleUsatGate>;
 
 describe('useEarnPointsFlow', () => {
   const mockSetSelfApp = jest.fn();
@@ -91,6 +98,7 @@ describe('useEarnPointsFlow', () => {
     } as any);
 
     mockUseSelfClient.mockReturnValue(mockSelfClient as any);
+    mockEvaluateGoogleUsatGate.mockResolvedValue('allow');
 
     mockUseRegisterReferral.mockReturnValue({
       registerReferral: mockRegisterReferral,
