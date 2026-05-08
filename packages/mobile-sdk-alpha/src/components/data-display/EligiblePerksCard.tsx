@@ -27,10 +27,11 @@ export interface EligiblePerksItem {
   id: string;
   label: string;
   isNew?: boolean;
-  renderLogo?: () => React.ReactNode;
+  renderLogos?: () => React.ReactNode[];
 }
 
 const LOGO_SIZE = 42;
+const STACK_OVERLAP = 12;
 
 export const EligiblePerksCard: React.FC<EligiblePerksCardProps> = ({
   perks,
@@ -59,12 +60,28 @@ export const EligiblePerksCard: React.FC<EligiblePerksCardProps> = ({
       <Text style={styles.title}>{title}</Text>
       <View style={styles.rows}>
         {perks.map(perk => {
-          const logo = perk.renderLogo?.();
+          const logos = perk.renderLogos?.() ?? [];
           const row = (
             <>
-              <View style={[styles.logoContainer, logo ? styles.logoContainerBordered : styles.logoContainerFallback]}>
-                {logo}
-              </View>
+              {logos.length > 0 ? (
+                <View style={styles.logoStack}>
+                  {logos.map((logo, index) => (
+                    <View
+                      key={index}
+                      style={[
+                        styles.logoContainer,
+                        styles.logoContainerBordered,
+                        index > 0 && { marginLeft: -STACK_OVERLAP },
+                        { zIndex: logos.length - index },
+                      ]}
+                    >
+                      {logo}
+                    </View>
+                  ))}
+                </View>
+              ) : (
+                <View style={[styles.logoContainer, styles.logoContainerFallback]} />
+              )}
               <Text style={styles.label} numberOfLines={1}>
                 {perk.label}
               </Text>
@@ -130,6 +147,11 @@ const styles = StyleSheet.create({
   rowPressed: {
     opacity: 0.6,
   },
+  logoStack: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexShrink: 0,
+  },
   logoContainer: {
     width: LOGO_SIZE,
     height: LOGO_SIZE,
@@ -138,6 +160,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     overflow: 'hidden',
     flexShrink: 0,
+    backgroundColor: colors.white,
   },
   logoContainerBordered: {
     borderWidth: 1,

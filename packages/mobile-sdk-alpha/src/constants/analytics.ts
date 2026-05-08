@@ -97,6 +97,7 @@ export const DocumentEvents = {
 export const IDDataEvents = {
   PERKS_VIEWED: 'ID Data: Perks Viewed',
   PERK_TAPPED: 'ID Data: Perk Tapped',
+  PERK_OUTLINK_OPEN_FAILED: 'ID Data: Perk Outlink Open Failed',
 };
 
 export const MockDataEvents = {

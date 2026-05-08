@@ -86,14 +86,17 @@ const DocumentCard: React.FC<DocumentCardProps> = ({ docType, countryCode, onPre
           </RNView>
         </Pressable>
       </RNView>
-      {hasPerks && (
-        <PerkRail
-          variant="minimal"
-          logos={perks.map(p => p.renderLogo?.()).filter((logo): logo is React.ReactNode => logo != null)}
-          label={perkLabel ?? undefined}
-          onPress={onPress}
-        />
-      )}
+      {hasPerks && (() => {
+        const logos = perks.flatMap(p => p.renderLogos?.() ?? []);
+        return (
+          <PerkRail
+            variant={logos.length > 1 ? 'dense' : 'minimal'}
+            logos={logos}
+            label={perkLabel ?? undefined}
+            onPress={onPress}
+          />
+        );
+      })()}
     </View>
   );
 };

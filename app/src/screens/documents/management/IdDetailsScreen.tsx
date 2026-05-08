@@ -3,6 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useEffect, useMemo, useState } from 'react';
+import { Linking } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Text, XStack, YStack, ZStack } from 'tamagui';
@@ -85,16 +86,24 @@ const IdDetailsScreen: React.FC = () => {
     });
   };
 
-  const handlePerkPress = (perkId: string) => {
-    // TODO(perks): when PerkRecord.redeemUrl is set, open it via Linking.openURL
-    // and add `has_redemption` / `redemption_open_failed` analytics. Today the
-    // tap is intentionally a no-op while perk redemption pages are pre-launch.
+  const handlePerkPress = async (perkId: string) => {
     const record = perkRecords.find(perk => perk.id === perkId);
     trackEvent(IDDataEvents.PERK_TAPPED, {
       id_type: idType,
       perk_id: perkId,
-      has_redemption: Boolean(record?.redeemUrl),
+      has_outlink: Boolean(record?.outlinkUrl),
     });
+    if (!record?.outlinkUrl) {
+      return;
+    }
+    try {
+      await Linking.openURL(record.outlinkUrl);
+    } catch {
+      trackEvent(IDDataEvents.PERK_OUTLINK_OPEN_FAILED, {
+        id_type: idType,
+        perk_id: perkId,
+      });
+    }
   };
 
   const handleConnectId = async () => {

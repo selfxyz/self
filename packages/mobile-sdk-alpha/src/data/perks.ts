@@ -10,15 +10,20 @@ export interface PerkRecord {
   /** Set when the perk should display a "NEW" badge on list surfaces. */
   isNew?: boolean;
   /**
-   * External URL to open when a user taps the perk to redeem it. Leave
-   * undefined while a perk is still in pre-launch / coming-soon state — the
-   * UI will track the tap analytics event but not navigate anywhere.
+   * External URL to open when a user taps the perk. Leave undefined while a
+   * perk is still in pre-launch / coming-soon state — the UI will track the
+   * tap analytics event but not navigate anywhere.
    */
-  redeemUrl?: string;
+  outlinkUrl?: string;
 }
 
 export const PERKS: Record<PerkId, PerkRecord> = {
-  google_cloud_faucet: { id: 'google_cloud_faucet', label: 'Google Cloud Faucet', isNew: true },
+  google_cloud_faucet: {
+    id: 'google_cloud_faucet',
+    label: 'Google Cloud Faucet',
+    isNew: true,
+    outlinkUrl: 'https://self.xyz/blog/google-self',
+  },
 };
 
 const ID_TYPE_TO_PERK_IDS: Record<string, PerkId[]> = {

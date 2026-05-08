@@ -71,8 +71,23 @@ jest.mock('@selfxyz/mobile-sdk-alpha/constants/analytics', () => ({
   IDDataEvents: {
     PERKS_VIEWED: 'IDDataEvents.PERKS_VIEWED',
     PERK_TAPPED: 'IDDataEvents.PERK_TAPPED',
+    PERK_OUTLINK_OPEN_FAILED: 'IDDataEvents.PERK_OUTLINK_OPEN_FAILED',
   },
 }));
+
+jest.mock('react-native', () => ({
+  __esModule: true,
+  Linking: { openURL: jest.fn(() => Promise.resolve()) },
+  Platform: { OS: 'ios' },
+  StyleSheet: {
+    create: (styles: unknown) => styles,
+    flatten: (style: unknown) => style,
+  },
+}));
+
+const mockLinking = jest.requireMock('react-native').Linking as jest.Mocked<{
+  openURL: jest.Mock;
+}>;
 
 jest.mock('@selfxyz/mobile-sdk-alpha/constants/colors', () => ({
   black: '#000',
@@ -115,6 +130,15 @@ const PASSPORT_PERKS = [
   { id: 'google_cloud_faucet', label: 'Google Cloud Faucet', isNew: true },
 ];
 
+const PASSPORT_PERK_RECORDS = [
+  {
+    id: 'google_cloud_faucet',
+    label: 'Google Cloud Faucet',
+    isNew: true,
+    outlinkUrl: 'https://self.xyz/blog/google-self',
+  },
+];
+
 const passportDoc = {
   documentType: 'passport',
   documentCategory: 'passport',
@@ -145,7 +169,7 @@ describe('IdDetailsScreen', () => {
     getAllDocuments.mockResolvedValue({
       'doc-1': { data: passportDoc },
     });
-    getPerkRecordsForIdType.mockReturnValue(PASSPORT_PERKS);
+    getPerkRecordsForIdType.mockReturnValue(PASSPORT_PERK_RECORDS);
     getEligiblePerksForIdType.mockReturnValue(PASSPORT_PERKS);
   });
 
@@ -168,20 +192,59 @@ describe('IdDetailsScreen', () => {
     });
   });
 
-  it('fires the perk-tapped analytics event with the tapped perk id', async () => {
+  it('opens the perk outlink URL and fires the perk-tapped analytics event', async () => {
     const { UNSAFE_root } = render(<IdDetailsScreen />);
 
     const card = await waitFor(() =>
       UNSAFE_root.findByType('mock-perks-card' as never),
     );
 
-    fireEvent(card, 'onPerkPress', 'google_cloud_faucet');
+    await card.props.onPerkPress('google_cloud_faucet');
 
     expect(trackEvent).toHaveBeenCalledWith('IDDataEvents.PERK_TAPPED', {
       id_type: 'p',
       perk_id: 'google_cloud_faucet',
-      has_redemption: false,
+      has_outlink: true,
     });
+    expect(mockLinking.openURL).toHaveBeenCalledWith(
+      'https://self.xyz/blog/google-self',
+    );
+  });
+
+  it('does not open a URL when the perk has no outlink URL', async () => {
+    getPerkRecordsForIdType.mockReturnValue([
+      { id: 'google_cloud_faucet', label: 'Google Cloud Faucet', isNew: true },
+    ]);
+
+    const { UNSAFE_root } = render(<IdDetailsScreen />);
+    const card = await waitFor(() =>
+      UNSAFE_root.findByType('mock-perks-card' as never),
+    );
+
+    await card.props.onPerkPress('google_cloud_faucet');
+
+    expect(trackEvent).toHaveBeenCalledWith('IDDataEvents.PERK_TAPPED', {
+      id_type: 'p',
+      perk_id: 'google_cloud_faucet',
+      has_outlink: false,
+    });
+    expect(mockLinking.openURL).not.toHaveBeenCalled();
+  });
+
+  it('fires the outlink-failed event when Linking rejects', async () => {
+    mockLinking.openURL.mockRejectedValueOnce(new Error('no handler'));
+
+    const { UNSAFE_root } = render(<IdDetailsScreen />);
+    const card = await waitFor(() =>
+      UNSAFE_root.findByType('mock-perks-card' as never),
+    );
+
+    await card.props.onPerkPress('google_cloud_faucet');
+
+    expect(trackEvent).toHaveBeenCalledWith(
+      'IDDataEvents.PERK_OUTLINK_OPEN_FAILED',
+      { id_type: 'p', perk_id: 'google_cloud_faucet' },
+    );
   });
 
   it('hides the perks card while ID data is being viewed', async () => {
