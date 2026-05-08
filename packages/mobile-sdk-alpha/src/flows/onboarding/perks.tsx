@@ -5,14 +5,15 @@
 import type React from 'react';
 
 import GoogleLogo from '@selfxyz/mobile-sdk-alpha/svgs/icons/google.svg';
+import UsatLogo from '@selfxyz/mobile-sdk-alpha/svgs/icons/usat.svg';
 
 import type { EligiblePerksItem } from '../../components/data-display/EligiblePerksCard';
 import { getPerkRecordsForIdType, type PerkId, PERKS as SHARED_PERKS } from '../../data/perks';
 
 export type Perk = EligiblePerksItem;
 
-const PERK_LOGOS: Partial<Record<PerkId, () => React.ReactNode>> = {
-  google_cloud_faucet: () => <GoogleLogo />,
+const PERK_LOGOS: Partial<Record<PerkId, () => React.ReactNode[]>> = {
+  google_cloud_faucet: () => [<GoogleLogo key="google" />, <UsatLogo key="usat" />],
 };
 
 export const PERKS: Record<string, Perk> = Object.fromEntries(
@@ -22,7 +23,7 @@ export const PERKS: Record<string, Perk> = Object.fromEntries(
       id: perk.id,
       label: perk.label,
       ...(perk.isNew ? { isNew: true } : {}),
-      ...(PERK_LOGOS[perk.id] ? { renderLogo: PERK_LOGOS[perk.id] } : {}),
+      ...(PERK_LOGOS[perk.id] ? { renderLogos: PERK_LOGOS[perk.id] } : {}),
     },
   ]),
 );
@@ -41,5 +42,5 @@ export function getPerkRailLabel(perks: Perk[]): string {
 export function getPerksForIdType(idType: string): Perk[] {
   return getPerkRecordsForIdType(idType)
     .map(perk => PERKS[perk.id])
-    .filter((perk): perk is Perk => Boolean(perk?.renderLogo));
+    .filter((perk): perk is Perk => Boolean(perk?.renderLogos));
 }

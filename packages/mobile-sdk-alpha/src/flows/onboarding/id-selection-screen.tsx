@@ -67,6 +67,7 @@ const DocumentCard: React.FC<DocumentCardProps> = ({ docType, countryCode, onPre
   const perkLabel = getDocumentPerkLabel(docType);
   const hasPerks = perkLabel !== null;
   const useFlag = docType !== KYC_DOC_TYPE;
+  const perkLogos = perks.flatMap(p => p.renderLogos?.() ?? []);
 
   return (
     <View style={styles.cardOuter}>
@@ -88,8 +89,8 @@ const DocumentCard: React.FC<DocumentCardProps> = ({ docType, countryCode, onPre
       </RNView>
       {hasPerks && (
         <PerkRail
-          variant="minimal"
-          logos={perks.map(p => p.renderLogo?.()).filter((logo): logo is React.ReactNode => logo != null)}
+          variant={perkLogos.length > 1 ? 'dense' : 'minimal'}
+          logos={perkLogos}
           label={perkLabel ?? undefined}
           onPress={onPress}
         />
