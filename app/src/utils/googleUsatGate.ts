@@ -10,7 +10,7 @@ import {
 } from '@selfxyz/mobile-sdk-alpha';
 
 export type GoogleUsatGateResult = 'allow' | 'block';
-export const FORCE_GOOGLE_USAT_FOR_TESTING = true;
+export const FORCE_GOOGLE_USAT_FOR_TESTING = false;
 
 export function isGoogleUsatForceEnabledForTesting(): boolean {
   return __DEV__ && FORCE_GOOGLE_USAT_FOR_TESTING;
