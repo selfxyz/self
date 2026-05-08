@@ -67,6 +67,7 @@ const DocumentCard: React.FC<DocumentCardProps> = ({ docType, countryCode, onPre
   const perkLabel = getDocumentPerkLabel(docType);
   const hasPerks = perkLabel !== null;
   const useFlag = docType !== KYC_DOC_TYPE;
+  const perkLogos = perks.flatMap(p => p.renderLogos?.() ?? []);
 
   return (
     <View style={styles.cardOuter}>
@@ -86,18 +87,14 @@ const DocumentCard: React.FC<DocumentCardProps> = ({ docType, countryCode, onPre
           </RNView>
         </Pressable>
       </RNView>
-      {hasPerks &&
-        (() => {
-          const logos = perks.flatMap(p => p.renderLogos?.() ?? []);
-          return (
-            <PerkRail
-              variant={logos.length > 1 ? 'dense' : 'minimal'}
-              logos={logos}
-              label={perkLabel ?? undefined}
-              onPress={onPress}
-            />
-          );
-        })()}
+      {hasPerks && (
+        <PerkRail
+          variant={perkLogos.length > 1 ? 'dense' : 'minimal'}
+          logos={perkLogos}
+          label={perkLabel ?? undefined}
+          onPress={onPress}
+        />
+      )}
     </View>
   );
 };
