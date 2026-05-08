@@ -16,8 +16,8 @@ describe('onboarding perks', () => {
 
   it('keeps rail label format', () => {
     expect(getPerkRailLabel([])).toBe('Eligible for 0 perks');
-    expect(
-      getPerkRailLabel([{ id: 'google_cloud_faucet', label: 'Google Cloud Faucet', renderLogos: () => [] }]),
-    ).toBe('Eligible for 1 perk');
+    expect(getPerkRailLabel([{ id: 'google_cloud_faucet', label: 'Google Cloud Faucet', renderLogos: () => [] }])).toBe(
+      'Eligible for 1 perk',
+    );
   });
 });

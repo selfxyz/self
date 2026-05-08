@@ -82,7 +82,11 @@ describe('provingUtils', () => {
     });
 
     it('should return id-card props', () => {
-      expect(getIdCardProps('id_card')).toEqual({ variant: 'id-card', title: 'ID Card', subtitle: 'Biometric Identification Card' });
+      expect(getIdCardProps('id_card')).toEqual({
+        variant: 'id-card',
+        title: 'ID Card',
+        subtitle: 'Biometric Identification Card',
+      });
     });
 
     it('should return aadhaar props', () => {
