@@ -67,6 +67,7 @@ export type { provingMachineCircuitType } from './proving/provingMachine';
 export { DelayedLottieView } from './components/DelayedLottieView';
 
 export { ExpandableBottomLayout } from './layouts/ExpandableBottomLayout';
+export { GOOGLE_USAT_FAUCET_VERIFIERS } from './constants/googleUsat';
 
 export {
   InitError,
@@ -148,12 +149,14 @@ export { defaultOptions } from './haptic/shared';
 /** @deprecated Use createSelfClient().extractMRZInfo or import from './mrz' */
 export { extractMRZInfo } from './mrz';
 export { extractNameFromDocument } from './documents/utils';
+
 export { extractNameFromMRZ, formatDateToYYMMDD, parseMRZBirthDate, parseMRZExpiryDate } from './mrz';
 export { finalizeRecoveredDocumentRegistration, validateRecoverySecretForDocument } from './proving/recoveryValidation';
 
 export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
 
 export { getEligiblePerksForIdType } from './flows/onboarding/perks';
+export { isGoogleUsatProofRequest } from './utils/googleUsat';
 
 export { isPassportDataValid } from './validation/document';
 export { mergeConfig } from './config/merge';
@@ -164,6 +167,5 @@ export { reactNativeScannerAdapter } from './adapters/react-native/nfc-scanner';
 export { sanitizeErrorMessage } from './utils/utils';
 
 export { useCountries } from './documents/useCountries';
-
 export { useMRZStore } from './stores/mrzStore';
 export { webNFCScannerShim } from './adapters/web/shims';
