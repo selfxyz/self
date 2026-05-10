@@ -3115,7 +3115,7 @@ PODS:
     - Firebase/RemoteConfig (= 11.11.0)
     - React-Core
     - RNFBApp
-  - RNGestureHandler (2.22.1):
+  - RNGestureHandler (2.31.2):
     - boost
     - DoubleConversion
     - fast_float
@@ -3129,6 +3129,7 @@ PODS:
     - React-Core
     - React-debug
     - React-Fabric
+    - React-FabricComponents
     - React-featureflags
     - React-graphics
     - React-ImageManager
@@ -4058,7 +4059,7 @@ SPEC CHECKSUMS:
   RNFBApp: a448037d2df74af9d374a0b765be12ff1e844dc0
   RNFBMessaging: 0f0498a95c605e3afcf13ac5f349d0b201ea65f6
   RNFBRemoteConfig: 4eb5fc9f21dc324153c7d3f5b48c935ab9031876
-  RNGestureHandler: 81e1aa6b39d8e36283fcc4b9b4048a5c020399f5
+  RNGestureHandler: 445f4e60308b44ab423660b37073afc01977f48c
   RNGoogleSignin: 32eac25be182674a2838c8bf6908c0296fe3bb5d
   RNInAppBrowser: 904d24dc75e8e6c6c98a3160329192608946f9df
   RNKeychain: 76d042fc1dfba47f3945920bc82e0bce9ad1ff55
