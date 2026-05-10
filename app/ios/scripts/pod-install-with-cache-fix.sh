@@ -1,23 +1,80 @@
 #!/bin/bash
 
-# Pod install with an on-demand Hermes cache fix.
-# Most installs should reuse CocoaPods caches; only clear them after a failure
-# that is likely caused by a stale Hermes artifact from a React Native upgrade.
+# Pod install with bounded automatic recovery for CocoaPods resolver drift.
+# Most installs should reuse CocoaPods caches; only run pod updates after
+# resolver failures and only for pods CocoaPods explicitly reports as conflicted.
 
-set -e
+set -euo pipefail
+
+LOG_FILE="$(mktemp -t pod-install-log.XXXXXX)"
+MAX_RECOVERY_ATTEMPTS=2
+
+run_pod_install() {
+  bundle exec pod install --no-repo-update 2>&1 | tee "$LOG_FILE"
+}
+
+extract_conflicting_pods() {
+  awk '
+    /could not find compatible versions for pod "/ {
+      line = $0
+      sub(/^.*pod "/, "", line)
+      sub(/".*$/, "", line)
+      if (length(line) > 0) {
+        print line
+      }
+    }
+  ' "$LOG_FILE" | sort -u
+}
+
+run_recovery_for_conflicts() {
+  mapfile -t conflicting_pods < <(extract_conflicting_pods)
+
+  if [ ${#conflicting_pods[@]} -eq 0 ]; then
+    return 1
+  fi
+
+  echo "⚠️ Detected resolver conflicts for pods: ${conflicting_pods[*]}"
+
+  # Keep Hermes cache cleanup behavior for hermes-specific failures.
+  for pod in "${conflicting_pods[@]}"; do
+    if [ "$pod" = "hermes-engine" ]; then
+      echo "🧹 Clearing hermes-engine cache before update..."
+      bundle exec pod cache clean hermes-engine --all >/dev/null 2>&1 || true
+      break
+    fi
+  done
+
+  echo "🔧 Running: bundle exec pod update ${conflicting_pods[*]} --no-repo-update --verbose"
+  bundle exec pod update "${conflicting_pods[@]}" --no-repo-update --verbose
+  return 0
+}
 
 echo "📦 Attempting pod install with existing CocoaPods caches..."
-if bundle exec pod install --no-repo-update; then
+if run_pod_install; then
   echo "✅ Pods installed successfully"
+  rm -f "$LOG_FILE"
   exit 0
 fi
 
-echo "⚠️ pod install failed; clearing Hermes cache and retrying..."
-bundle exec pod cache clean hermes-engine --all > /dev/null 2>&1 || true
+attempt=1
+while [ "$attempt" -le "$MAX_RECOVERY_ATTEMPTS" ]; do
+  echo "♻️ Recovery attempt ${attempt}/${MAX_RECOVERY_ATTEMPTS}..."
+  if ! run_recovery_for_conflicts; then
+    echo "❌ pod install failed with a non-resolver error; cannot auto-recover"
+    rm -f "$LOG_FILE"
+    exit 1
+  fi
 
-echo "🔧 Running targeted fix: bundle exec pod update hermes-engine..."
-bundle exec pod update hermes-engine --no-repo-update --verbose
+  echo "🔄 Retrying pod install..."
+  if run_pod_install; then
+    echo "✅ Pods installed successfully after automatic recovery"
+    rm -f "$LOG_FILE"
+    exit 0
+  fi
 
-echo "🔄 Retrying pod install..."
-bundle exec pod install --no-repo-update
-echo "✅ Pods installed successfully after cache fix"
+  attempt=$((attempt + 1))
+done
+
+echo "❌ pod install still failing after ${MAX_RECOVERY_ATTEMPTS} recovery attempts"
+rm -f "$LOG_FILE"
+exit 1
