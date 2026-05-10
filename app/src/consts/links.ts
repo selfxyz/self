@@ -40,4 +40,4 @@ export const telegramUrl = 'https://t.me/selfxyz';
 export const termsUrl = 'https://self.xyz/terms';
 export const turnkeyOAuthRedirectAndroidUri = 'https://redirect.self.xyz';
 export const turnkeyOAuthRedirectIosUri = 'https://oauth-redirect.turnkey.com';
-export const xUrl = 'https://x.com/selfprotocol';
+export const xUrl = 'https://x.com/selfxyz';

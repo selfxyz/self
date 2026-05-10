@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-export type { ButtonProps, ExtractedButtonStyleProps } from './buttons/AbstractButton';
 // Type exports
+export type { ButtonProps, ExtractedButtonStyleProps } from './buttons/AbstractButton';
+export type { EligiblePerksCardProps, EligiblePerksItem } from './data-display/EligiblePerksCard';
+export type { PerkRailProps, PerkRailVariant } from './data-display/PerkRail';
 export type { SecondaryButtonProps } from './buttons/SecondaryButton';
 export type { ViewProps } from './layout/View';
-
-// Button components
 export { default as AbstractButton } from './buttons/AbstractButton';
 export { default as Additional } from './typography/Additional';
 export { BodyText } from './typography/BodyText';
@@ -17,9 +17,11 @@ export { Caption } from './typography/Caption';
 export { default as Caution } from './typography/Caution';
 export { default as Description } from './typography/Description';
 export { DescriptionTitle } from './typography/DescriptionTitle';
+export { EligiblePerksCard } from './data-display/EligiblePerksCard';
 export { HeldPrimaryButton } from './buttons/PrimaryButtonLongHold';
 export { HeldPrimaryButtonProveScreen } from './buttons/HeldPrimaryButtonProveScreen';
 export { MRZScannerView } from './MRZScannerView';
+export { PerkRail } from './data-display/PerkRail';
 export { PrimaryButton } from './buttons/PrimaryButton';
 export { RoundFlag } from './flag/RoundFlag';
 export { SecondaryButton } from './buttons/SecondaryButton';

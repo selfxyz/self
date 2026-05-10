@@ -11,6 +11,26 @@ export const QRcodeSteps = {
   PROOF_VERIFIED: 6,
 };
 
+export const getDesktopDescription = (appName: string): string =>
+  `${appName} uses Self to verify identity without compromising your privacy.`;
+
+export const getDesktopStatusSubtitle = (): string => 'Verify the proof using the Self mobile app';
+
+export const getDesktopStatusTitle = (proofStep: number): string => {
+  switch (proofStep) {
+    case QRcodeSteps.MOBILE_CONNECTED:
+    case QRcodeSteps.PROOF_GENERATION_STARTED:
+    case QRcodeSteps.PROOF_GENERATED:
+      return 'Connecting to Self';
+    case QRcodeSteps.PROOF_VERIFIED:
+      return 'Proof Verified';
+    case QRcodeSteps.PROOF_GENERATION_FAILED:
+      return 'Proof Failed';
+    default:
+      return 'An error occurred';
+  }
+};
+
 export const getStatusAnimation = (proofStep: number) => {
   switch (proofStep) {
     case QRcodeSteps.MOBILE_CONNECTED:

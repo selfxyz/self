@@ -37,6 +37,7 @@ module.exports = {
     '^@tests/(.*)$': '<rootDir>/tests/src/$1',
     '^@tests$': '<rootDir>/tests/src',
     '^expo-camera$': '<rootDir>/tests/__setup__/expoCameraMock.js',
+    '^expo-application$': '<rootDir>/tests/__setup__/expoApplicationMock.js',
     // Map react-native-svg to app's node_modules for all packages
     '^react-native-svg$': '<rootDir>/node_modules/react-native-svg',
     '^@selfxyz/mobile-sdk-alpha$':

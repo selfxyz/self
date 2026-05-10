@@ -73,7 +73,10 @@ const LogoConfirmationScreen: React.FC = () => {
       onButtonPress: async () => {
         let scanStarted = false;
         try {
-          const session = await createKycSession();
+          const session = await createKycSession({
+            country: countryCode,
+            nationality: countryCode,
+          });
           trackOnboardingStep(selfClient, OnboardingEvents.SCAN_STARTED, {
             branch: 'kyc',
           });

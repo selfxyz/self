@@ -4,7 +4,7 @@
   "expo": {
     "name": "Self App",
     "slug": "self-app",
-    "version": "2.9.21",
+    "version": "2.9.23",
     "platforms": ["ios", "android"],
     "ios": {
       "bundleIdentifier": "com.proofofpassportapp"

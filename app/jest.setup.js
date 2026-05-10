@@ -900,9 +900,10 @@ jest.mock('react-native-check-version', () => ({
 }));
 
 // Mock @react-native-community/netinfo
-jest.mock('@react-native-community/netinfo', () => ({
-  addEventListener: jest.fn(() => jest.fn()),
-  useNetInfo: jest.fn().mockReturnValue({
+jest.mock('@react-native-community/netinfo', () => {
+  const addEventListener = jest.fn(() => jest.fn());
+  const configure = jest.fn();
+  const useNetInfo = jest.fn().mockReturnValue({
     type: 'wifi',
     isConnected: true,
     isInternetReachable: true,
@@ -910,11 +911,24 @@ jest.mock('@react-native-community/netinfo', () => ({
       isConnectionExpensive: false,
       cellularGeneration: '4g',
     },
-  }),
-  fetch: jest
+  });
+  const fetch = jest
     .fn()
-    .mockResolvedValue({ isConnected: true, isInternetReachable: true }),
-}));
+    .mockResolvedValue({ isConnected: true, isInternetReachable: true });
+
+  return {
+    __esModule: true,
+    addEventListener,
+    configure,
+    useNetInfo,
+    fetch,
+    default: {
+      addEventListener,
+      configure,
+      fetch,
+    },
+  };
+});
 
 // Mock react-native-nfc-manager
 jest.mock('react-native-nfc-manager', () => ({

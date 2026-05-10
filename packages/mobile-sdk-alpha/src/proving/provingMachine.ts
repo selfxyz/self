@@ -481,10 +481,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         get().startProving(selfClient);
       }
 
-      if (state.value === 'proving') {
-        // Canonical funnel: fire-once per attempt. `trackOnboardingStep`
-        // dedupes, so transient re-entry into `proving` (e.g. via reconnect)
-        // does not re-emit.
+      if (state.value === 'proving' && get().circuitType === 'register') {
         trackOnboardingStep(selfClient, OnboardingEvents.PROOF_STARTED);
       }
 
@@ -524,16 +521,9 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           selfClient.getSelfAppState().handleProofResult(true);
         }
 
-        // Canonical funnel terminal events. Registration-completion fires
-        // only when we actually generated a new proof in this session
-        // (didNewRegistrationProof). The `ALREADY_REGISTERED` path reaches
-        // `completed` without going through `post_proving`, so the flag
-        // stays false and no canonical onboarding event fires.
         if (get().circuitType === 'register' && get().didNewRegistrationProof) {
           trackOnboardingStep(selfClient, OnboardingEvents.PROOF_SUCCEEDED);
           completeOnboardingAttempt(selfClient);
-        } else if (get().circuitType === 'disclose') {
-          selfClient.trackEvent(OnboardingEvents.DISCLOSURE_COMPLETED);
         }
 
         emitVerificationComplete(true);
@@ -559,9 +549,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
         if (get().circuitType === 'disclose') {
           selfClient.getSelfAppState().handleProofResult(false, error_code ?? undefined, reason ?? undefined);
-        } else if (get().circuitType === 'register') {
+        } else if (get().circuitType !== null) {
           failOnboardingAttempt(selfClient, 'proof_generation_started', reason ?? error_code ?? 'proof_failure', {
             recoverable: false,
+            proof_type: get().circuitType,
           });
         }
 
@@ -573,9 +564,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       if (state.value === 'error') {
         if (get().circuitType === 'disclose') {
           selfClient.getSelfAppState().handleProofResult(false, 'error', 'error');
-        } else if (get().circuitType === 'register') {
+        } else if (get().circuitType !== null) {
           failOnboardingAttempt(selfClient, 'proof_generation_started', get().reason ?? get().error_code ?? 'error', {
             recoverable: true,
+            proof_type: get().circuitType,
           });
         }
 
@@ -1387,11 +1379,16 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
         /// registration
         else {
-          const bypassRegistrationCheck = selfClient.config?.devConfig?.shouldBypassRegistrationCheck?.() ?? false;
-          if (bypassRegistrationCheck) {
-            selfClient.logProofEvent('warn', 'Dev bypass active: skipping on-chain registration checks', context);
+          const bypassDocumentRegistrationCheck =
+            selfClient.config?.devConfig?.shouldBypassDocumentRegistrationCheck?.() ?? false;
+          if (bypassDocumentRegistrationCheck) {
+            selfClient.logProofEvent(
+              'warn',
+              'Dev bypass active: skipping document registration / nullifier checks',
+              context,
+            );
           }
-          const { isRegistered, csca } = bypassRegistrationCheck
+          const { isRegistered, csca } = bypassDocumentRegistrationCheck
             ? { isRegistered: false, csca: undefined }
             : await isUserRegisteredWithAlternativeCSCA(passportData, secret as string, {
                 getCommitmentTree: (docCategory: DocumentCategory) => getCommitmentTree(selfClient, docCategory),
@@ -1426,7 +1423,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             actor!.send({ type: 'ALREADY_REGISTERED' });
             return;
           }
-          const isNullifierOnchain = bypassRegistrationCheck ? false : await isDocumentNullified(passportData);
+          const isNullifierOnchain = bypassDocumentRegistrationCheck ? false : await isDocumentNullified(passportData);
           selfClient.logProofEvent('info', 'Nullifier check', context, {
             nullified: isNullifierOnchain,
           });
@@ -1444,10 +1441,16 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           }
           const document: DocumentCategory = passportData.documentCategory;
           if (document === 'passport' || document === 'id_card') {
-            const isDscRegistered = await checkIfPassportDscIsInTree(
-              passportData,
-              selfClient.getProtocolState()[document].dsc_tree,
-            );
+            // Consume the DSC bypass only here so arming it on a session that
+            // ends up scanning aadhaar/kyc does not silently waste the one-shot.
+            const bypassDscRegistrationCheck =
+              selfClient.config?.devConfig?.shouldBypassDscRegistrationCheck?.() ?? false;
+            if (bypassDscRegistrationCheck) {
+              selfClient.logProofEvent('warn', 'Dev bypass active: skipping DSC tree check', context);
+            }
+            const isDscRegistered = bypassDscRegistrationCheck
+              ? false
+              : await checkIfPassportDscIsInTree(passportData, selfClient.getProtocolState()[document].dsc_tree);
             selfClient.logProofEvent('info', 'DSC tree check', context, {
               dsc_registered: isDscRegistered,
             });

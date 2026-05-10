@@ -94,6 +94,12 @@ export const DocumentEvents = {
   VALIDATE_DOCUMENT_FAILED: 'Document: Validate Document Failed',
 };
 
+export const IDDataEvents = {
+  PERKS_VIEWED: 'ID Data: Perks Viewed',
+  PERK_TAPPED: 'ID Data: Perk Tapped',
+  PERK_OUTLINK_OPEN_FAILED: 'ID Data: Perk Outlink Open Failed',
+};
+
 export const MockDataEvents = {
   CANCEL_GENERATION: 'Mock Data: Cancel Generation',
   CREATE_DEEP_LINK: 'Mock Data: Create Deep Link',
@@ -134,7 +140,6 @@ export const OnboardingEvents = {
   COMPLETED: 'Onboarding: Completed',
   FAILED: 'Onboarding: Failed',
   STEP_RETRIED: 'Onboarding: Step Retried',
-  DISCLOSURE_COMPLETED: 'Onboarding: Disclosure Completed',
 };
 
 export const PassportEvents = {
@@ -194,6 +199,9 @@ export const ProofEvents = {
   FETCH_DATA_FAILED: 'Proof: Fetch Data Failed',
   FETCH_DATA_STARTED: 'Proof: Fetch Data Started',
   FETCH_DATA_SUCCESS: 'Proof: Fetch Data Succeeded',
+  GOOGLE_USAT_BLOCK_DISMISSED: 'Proof: Google USAT Disclosure Block Dismissed',
+  GOOGLE_USAT_BLOCKED: 'Proof: Google USAT Disclosure Blocked',
+  GOOGLE_USAT_RECOVER_CLICKED: 'Proof: Google USAT Disclosure Recover Clicked',
   LOAD_SECRET_FAILED: 'Proof: Load Secret Failed',
   PARSE_ID_DOCUMENT_STARTED: 'Proof: Parse ID Document Started',
   NOTIFICATION_PERMISSION_REQUESTED: 'Proof: Notification Permission Requested',
@@ -240,6 +248,15 @@ export const ProofEvents = {
   VALIDATION_SUCCESS: 'Proof: Validation Succeeded',
   WS_HELLO_ACK: 'Proof: WS Hello Acknowledged',
   WS_HELLO_SENT: 'Proof: WS Hello Sent',
+};
+
+// Diagnostic events for the registration ID-type picker (SELF-2860). Names are
+// the literal Mixpanel event strings from the ticket — they intentionally use
+// snake_case rather than the 'Group: Event' convention used elsewhere.
+export const RegistrationPickerEvents = {
+  VIEWED: 'registration_id_picker_viewed',
+  SELECTED: 'registration_id_picker_selected',
+  UNSUPPORTED_TAPPED: 'registration_id_picker_unsupported_tapped',
 };
 
 export const SettingsEvents = {

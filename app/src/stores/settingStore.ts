@@ -50,14 +50,19 @@ interface PersistedSettingsState {
 }
 
 interface NonPersistedSettingsState {
-  hideNetworkModal: boolean;
-  setHideNetworkModal: (hideNetworkModal: boolean) => void;
-  // Dev-only one-shot flag, armed by the "Test registration circuit" debug
-  // shortcut and consumed (cleared) by the proving machine on the next
-  // registration attempt. Not persisted so it never survives an app launch.
+  // Dev-only one-shot flag armed by the "Test registration circuit" debug
+  // shortcut. Bypasses only the document "already registered / nullifier"
+  // checks so the register circuit runs even when the document is on-chain.
+  // The DSC tree check still runs (use testDscCircuitArmed to bypass that).
   testRegistrationCircuitArmed: boolean;
   armTestRegistrationCircuit: () => void;
   consumeTestRegistrationCircuit: () => boolean;
+  // Dev-only one-shot flag armed by the "Test DSC circuit" debug shortcut.
+  // Bypasses only the DSC tree membership check so the DSC circuit runs even
+  // when the DSC is already on-chain.
+  testDscCircuitArmed: boolean;
+  armTestDscCircuit: () => void;
+  consumeTestDscCircuit: () => boolean;
 }
 
 type SettingsState = PersistedSettingsState & NonPersistedSettingsState;
@@ -181,12 +186,6 @@ export const useSettingStore = create<SettingsState>()(
       useStrongBox: false,
       setUseStrongBox: (useStrongBox: boolean) => set({ useStrongBox }),
 
-      // Non-persisted state (will not be saved to storage)
-      hideNetworkModal: false,
-      setHideNetworkModal: (hideNetworkModal: boolean) => {
-        set({ hideNetworkModal });
-      },
-
       testRegistrationCircuitArmed: false,
       armTestRegistrationCircuit: () =>
         set({ testRegistrationCircuitArmed: true }),
@@ -197,6 +196,16 @@ export const useSettingStore = create<SettingsState>()(
         }
         return armed;
       },
+
+      testDscCircuitArmed: false,
+      armTestDscCircuit: () => set({ testDscCircuitArmed: true }),
+      consumeTestDscCircuit: () => {
+        const armed = get().testDscCircuitArmed;
+        if (armed) {
+          set({ testDscCircuitArmed: false });
+        }
+        return armed;
+      },
     }),
     {
       name: 'setting-storage',
@@ -204,14 +213,15 @@ export const useSettingStore = create<SettingsState>()(
       onRehydrateStorage: () => undefined,
       partialize: state => {
         const persistedState = { ...state };
-        delete (persistedState as Partial<SettingsState>).hideNetworkModal;
-        delete (persistedState as Partial<SettingsState>).setHideNetworkModal;
         delete (persistedState as Partial<SettingsState>)
           .testRegistrationCircuitArmed;
         delete (persistedState as Partial<SettingsState>)
           .armTestRegistrationCircuit;
         delete (persistedState as Partial<SettingsState>)
           .consumeTestRegistrationCircuit;
+        delete (persistedState as Partial<SettingsState>).testDscCircuitArmed;
+        delete (persistedState as Partial<SettingsState>).armTestDscCircuit;
+        delete (persistedState as Partial<SettingsState>).consumeTestDscCircuit;
         return persistedState;
       },
       version: SETTING_STORE_VERSION,

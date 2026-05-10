@@ -31,17 +31,20 @@ import QRScan from '@/assets/icons/qr_code.svg';
 import type { QRCodeScannerViewProps } from '@/components/native/QRCodeScanner';
 import { QRCodeScannerView } from '@/components/native/QRCodeScanner';
 import { NavBar } from '@/components/navbar/BaseNavBar';
-import useConnectionModal from '@/hooks/useConnectionModal';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { buttonTap } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
 import { parseAndValidateUrlParams } from '@/navigation/deeplinks';
+import { useVerificationGateStore } from '@/stores/verificationGateStore';
+import {
+  evaluateGoogleUsatGate,
+  isGoogleUsatForceEnabledForTesting,
+} from '@/utils/googleUsatGate';
 
 const QRCodeViewFinderScreen: React.FC = () => {
   const selfClient = useSelfClient();
   const { trackEvent } = selfClient;
-  const { visible: connectionModalVisible } = useConnectionModal();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const isFocused = useIsFocused();
@@ -83,6 +86,20 @@ const QRCodeViewFinderScreen: React.FC = () => {
               scan_type: 'selfApp',
             });
             const selfAppJson = JSON.parse(selfApp);
+            const gate = await evaluateGoogleUsatGate(selfClient, selfAppJson);
+            if (gate === 'block') {
+              trackEvent(ProofEvents.GOOGLE_USAT_BLOCKED, {
+                entry_point: 'qr_scan',
+                reason: 'no_high_security_doc',
+              });
+              useVerificationGateStore.getState().open({
+                reason: 'google_usat_high_security_required',
+                entryPoint: 'qr_scan',
+                requesterName: selfAppJson.appName,
+              });
+              setDoneScanningQR(false);
+              return;
+            }
 
             selfClient.getSelfAppState().setSelfApp(selfAppJson);
             selfClient
@@ -106,6 +123,20 @@ const QRCodeViewFinderScreen: React.FC = () => {
             return;
           }
         } else if (sessionId) {
+          if (isGoogleUsatForceEnabledForTesting()) {
+            trackEvent(ProofEvents.GOOGLE_USAT_BLOCKED, {
+              entry_point: 'qr_scan',
+              reason: 'no_high_security_doc',
+            });
+            useVerificationGateStore.getState().open({
+              reason: 'google_usat_high_security_required',
+              entryPoint: 'qr_scan',
+              requesterName: 'Google USAT Faucet',
+            });
+            setDoneScanningQR(false);
+            return;
+          }
+
           trackEvent(ProofEvents.QR_SCAN_SUCCESS, {
             scan_type: 'sessionId',
           });
@@ -137,7 +168,7 @@ const QRCodeViewFinderScreen: React.FC = () => {
     ],
   );
 
-  const shouldRenderCamera = !connectionModalVisible && !doneScanningQR;
+  const shouldRenderCamera = !doneScanningQR;
 
   return (
     <>
