@@ -1,189 +1,156 @@
 # Onboarding Analytics & Funnel — Implementation Spec
 
-> Last updated: 2026-04-20
+> Last updated: 2026-05-06
 > Owner: Self Wallet / Product Analytics
 > Project: [SDK Overview](../../OVERVIEW.md)
 > Status: Active
 
-## Scope Statement
+## Why
 
-This workstream owns the **analytics instrumentation of the Self Wallet onboarding flow** so that a Mixpanel funnel can measure registration completion rate and drop-off by stage with statistical confidence.
+We need a Mixpanel onboarding funnel we can **trust** before we extend it. Trust means: every event has a named consumer, the numbers reflect reality (not implementation accidents), and disclosure / mock / dev traffic doesn't pollute prod metrics.
+
+The work splits into four phases, in priority order:
+
+1. **Make the funnel measurable** — canonical events at committed transitions, fire-once guard, terminal invariant. (ANA-01.)
+2. **Make the numbers correct** — fix bugs found post-deployment that produced misleading dashboards. (ANA-11.)
+3. **Make per-branch drop-off visible** — branch-specific milestone events and dashboards for biometric / KYC / Aadhaar. (ANA-12.)
+4. **Separate funnel signal from operational noise** — move ~80% of current Mixpanel events to Sentry breadcrumbs and Session Replay, with cohort tags for filtering. (ANA-13.)
+
+Smaller follow-ups (cohort filtering, fallback decision events, abandonment) come after.
+
+## Scope
 
 The workstream crosses the SDK/app boundary:
 
-- SDK-side changes (`packages/mobile-sdk-alpha/`) provide the low-level primitives: a canonical event emission point inside the proving machine and a fix to the `AbstractButton` event-name mangling.
-- App-side changes (`app/`) wire canonical step events into the onboarding state machine and fix "dead zone" screens that currently fire no decision event.
+- SDK-side (`packages/mobile-sdk-alpha/`) owns the canonical funnel helper, branch event helper, and proving-machine emission points.
+- App-side (`app/`) wires canonical and branch events into screens and hooks, manages Sentry session context, and configures Session Replay masking.
 
-The Mixpanel dashboard itself is built after the event layer lands; it is not a code deliverable but is specified here so event design is driven by dashboard requirements.
+### Out of scope (workstream-wide)
 
-## Why
-
-The current onboarding instrumentation is sprawl: ~200 distinct event names across Segment (primary) and a Mixpanel native channel (NFC-only, justified — the only way to report from native modules). The sprawl produces four measurable problems:
-
-1. **Dead zones.** `LogoConfirmationScreen`, `CountryPickerScreen`, `IDSelectionScreen`, and `ConfirmIdentificationScreen` fire no decision event, so drop-off at those choice points is invisible.
-2. **Silent renaming.** `AbstractButton` prepends `Click: ` to every `trackEvent` prop it receives, so the constants in `PassportEvents` / `ProofEvents` do not match the event names that land in Mixpanel.
-3. **Back-navigation pollution.** Screen-view events fire on every navigation state change; a user who goes back and forward re-fires the same step, inflating funnel re-entry counts.
-4. **Event/property granularity mismatch.** Failure modes are split across many named events with no properties, so you cannot slice by `stage` or `reason`.
-
-In combination, no accurate onboarding funnel can be built from the current event stream.
+- WebView observability — WebView (`packages/webview-app/`) has no Sentry integration today; out of scope for this workstream.
+- Native NFC analytics channel cleanup — see ANA-04 investigation.
+- KYC provider interior steps (selfie / liveness / doc capture) — black-box; requires provider contract work.
+- Mixpanel ID-merge / cross-session funnel windows — dashboard configuration, not instrumentation.
 
 ## Event Design Principles
 
-This workstream adopts a **three-layer event model**:
+Four observability layers, three in Mixpanel, one in Sentry:
 
-- **Canonical onboarding layer** (Layer 1, ANA-01). A small set of `onboarding_*` and `funnel_step_*` terminal events, fire-once-per-onboarding-attempt, guarded by state rather than component lifecycle. These are the only events the main Mixpanel funnel and its alerts consume.
-- **Canonical decision layer** (Layer 2, deferred to ANA-05). Per-occurrence events at decision points — currently `funnel_step_retried`, and eventually `Onboarding: Fallback Offered / Accepted / Declined`. Share `attempt_id` and the branch properties with Layer 1 for joining, but not part of the sequential funnel. Consumed by mini-funnels and friction analyses.
-- **Diagnostic layer**. The existing ~200 events remain as debugging signal. They are **not** excluded from Mixpanel; they are excluded from the funnel.
+- **Canonical onboarding funnel** (`OnboardingEvents.*`, ANA-01) — branch-agnostic, fire-once-per-attempt, drives the macro funnel.
+- **Branch-specific milestones** (`BiometricEvents.*` / `KycEvents.*` / `AadhaarEvents.*`, ANA-12) — per-branch drilldown, joined to canonical via `attempt_id`.
+- **Decision events** (`Onboarding: Fallback Offered/Accepted/Declined`, ANA-05) — per-occurrence at decision points; not part of the sequential funnel.
+- **Forensic context** (Sentry breadcrumbs + tags + Session Replay, ANA-13) — diagnostic plumbing that used to live in Mixpanel.
 
-**Invariants:**
+### Invariants
 
-- A canonical step event fires at most once per onboarding attempt, on a committed state transition — never on component mount, never on back-nav, never per-click.
-- Every canonical event carries `attempt_id`, `initial_branch`, and `current_branch` (see Cross-branch flows below).
-- **`Onboarding: Started` fires exactly once per attempt, emitted by the funnel helper's `ensureAttempt` bootstrap** when the first canonical step event arrives with no active attempt. Screens never call `startOnboardingAttempt` explicitly — the helper owns attempt lifecycle so entry-path proliferation (HomeNavBar "+", EmptyIdCard, ManageDocuments "Add new", KYC retry, recovery re-entry, etc.) can never cause zero or double STARTED events.
-- The terminal `onboarding_completed` event fires iff the proving machine reaches `completed` state **via a true new-registration proof** (not the `ALREADY_REGISTERED` shortcut, not a `disclose` proof). Disclosure proofs get their own `disclosure_completed` event that is outside this funnel entirely.
-- Screen-view (`Viewed X`) events are preserved as-is for Flows/Paths reports. They are not funnel steps.
-- `duration_seconds` on `onboarding_completed` measures time from the first canonical step (typically `country_selected`) to completion, not from privacy-disclaimer dismiss. The disclaimer is a one-time legal gate, not part of registration effort.
-
-## Cross-branch Flows
-
-A user who starts in one branch can switch mid-flow. The canonical example: a user picks Passport (→ `biometric_passport`), camera/MRZ succeed, the NFC scan fails repeatedly, the app offers the KYC fallback, and the user accepts. The same user ends the attempt in `kyc`.
-
-To avoid lying about these users in branch-filtered funnels, every canonical event carries two branch properties:
-
-- **`initial_branch`** — the user's original intent, captured the first time a non-`pending` branch is supplied (normally at `document_type_selected`). **Immutable** for the rest of the attempt.
-- **`current_branch`** — the currently active branch, updated by `setOnboardingBranch` when the user accepts a fallback. **Mutable**.
-
-On the two terminal events (`onboarding_completed`, `onboarding_failed`) the helper also stamps **`used_fallback: boolean`**, computed as `initial_branch !== current_branch`, for dashboard convenience.
-
-The caller-facing API still accepts a `branch` property on `trackOnboardingStep({ branch })` as input sugar; the helper translates that into an `initialBranch` lock + `currentBranch` update and emits `initial_branch`/`current_branch` on the wire. The input-side `branch` is never emitted verbatim.
-
-### Dashboard queries this enables
-
-| Question                                          | Filter                                                           |
-| ------------------------------------------------- | ---------------------------------------------------------------- |
-| Users who _started_ biometric                     | `initial_branch = biometric_passport` (or `biometric_id`)        |
-| Users who _completed_ via biometric               | `event = COMPLETED AND current_branch = biometric_passport`      |
-| Users who fell back from biometric to KYC         | `initial_branch starts_with biometric_ AND current_branch = kyc` |
-| Biometric starters' conversion regardless of path | `initial_branch starts_with biometric_ AND event = COMPLETED`    |
-| Pure KYC users (never intended biometric)         | `initial_branch = kyc AND current_branch = kyc`                  |
-| Cohort of users who used any fallback             | `event = COMPLETED AND used_fallback = true`                     |
-
-### What this does NOT cover (deferred to ANA-05)
-
-The current split tells you **what happened** — initial intent vs final outcome. It does **not** tell you **how the decision unfolded** at the fallback screen itself. To measure that, Layer 2 will add explicit events — `Onboarding: Fallback Offered / Accepted / Declined` — with `from_stage` and `reason` properties. Only with Layer 2 can the dashboard answer:
-
-- When the fallback screen appears, what % accept, decline, or silently abandon?
-- Which failure stage triggers fallback most (NFC vs MRZ vs parse error)?
-- Does _offering_ fallback save or destroy biometric conversions overall?
-- At which retry count do users typically switch branches?
-- Fallback-offer → fallback-completion sub-funnel, with attrition per step
-
-Layer 2 is filed as ANA-05 and should be the first follow-up after ANA-01 ships.
+- A canonical step event fires at most once per onboarding attempt, on a committed state transition. Never on component mount, never on back-nav, never per-click.
+- Every canonical and branch event carries `attempt_id`, `initial_branch`, `current_branch`. Branch events do NOT bootstrap an attempt — they no-op if no attempt is active.
+- `Onboarding: Started` fires exactly once per attempt, emitted by the funnel helper's `ensureAttempt` bootstrap when the first canonical step event arrives. Screens never call it directly.
+- Terminal `Onboarding: Completed` fires only when the proving machine reaches `completed` via a true new-registration proof (`circuitType === 'register' && didNewRegistrationProof`). The `ALREADY_REGISTERED` shortcut and disclosure flows fire **no** `Onboarding: *` event.
+- New Mixpanel events require a documented consumer (dashboard, alert, or product question) in the PR description. After ANA-13 phase 3, the cap is enforced at the type system.
 
 ## Canonical Event Set
 
-Every Layer 1 event carries `attempt_id`, `initial_branch`, and `current_branch` (see Cross-branch flows). Additional per-event properties below.
+Every event carries `attempt_id`, `initial_branch`, `current_branch` plus the additional properties below. Implementation details (file paths, fire-site line numbers, helper code) live in the plan that introduced or modified the event — see ANA-01 for v1, ANA-11 for the post-deployment bug fixes.
 
-| Event                        | Fires when                                                                                         | Additional properties                                    |
-| ---------------------------- | -------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| `onboarding_started`         | User dismisses the privacy disclaimer and enters the onboarding flow                               | — (both branches `pending` at this point)                |
-| `country_selected`           | User confirms a country in `CountryPickerScreen`                                                   | `country_code`                                           |
-| `document_type_selected`     | User confirms a document type in `IDSelectionScreen`                                               | `document_type`, `country_code` (locks `initial_branch`) |
-| `document_scan_started`      | User opens camera (biometric branches), launches the KYC web SDK, or opens the Aadhaar file picker | —                                                        |
-| `document_scan_succeeded`    | MRZ+NFC committed (biometric), KYC provider returns success, Aadhaar upload accepted               | `duration_seconds`, `attempt_count`                      |
-| `proof_generation_started`   | Proving machine enters `proving` state                                                             | —                                                        |
-| `proof_generation_succeeded` | Proving machine enters `completed` state with `circuitType === 'register'` (true new registration) | `duration_seconds`                                       |
-| `onboarding_completed`       | Post-proof wrap-up done (terminal success state for the registration path)                         | `duration_seconds` (total onboarding), `used_fallback`   |
+| Event                                    | Fires when                                                                                       | Additional properties                       |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------ | ------------------------------------------- |
+| `Onboarding: Started`                    | Helper-bootstrapped when the first canonical step event reaches an attempt-less state            | — (branches `pending`)                      |
+| `Onboarding: Country Selected`           | User confirms a country                                                                          | `country_code`                              |
+| `Onboarding: Document Type Selected`     | User confirms a document type. Locks `initial_branch`.                                           | `document_type`, `country_code`             |
+| `Onboarding: Document Scan Started`      | Camera open (biometric), KYC modal launch, or Aadhaar QR picker open                             | —                                           |
+| `Onboarding: Document Scan Succeeded`    | MRZ+NFC committed, provider returns success, or upload accepted                                  | `duration_seconds`                          |
+| `Onboarding: Proof Generation Started`   | Proving machine enters `proving` with `circuitType === 'register'`                               | —                                           |
+| `Onboarding: Proof Generation Succeeded` | Proving machine reaches `completed` with `circuitType === 'register' && didNewRegistrationProof` | `duration_seconds`                          |
+| `Onboarding: Completed`                  | Same gate as PROOF_SUCCEEDED, post-proof wrap-up done                                            | `duration_seconds` (total), `used_fallback` |
 
-Supporting events (outside the main funnel but on the same event stream):
+Supporting events on the same stream:
 
-| Event                  | Purpose                                                                                                                                                                           |
-| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `onboarding_failed`    | Terminal failure. Carries `{stage, reason, recoverable, used_fallback}`. One event replaces 10+ named failure events for dashboard purposes — the detailed events still fire too. |
-| `funnel_step_retried`  | User retried a step (e.g., NFC scan after a failure). Carries `{stage, reason, attempt_count}`. Distinct from drop-off signal.                                                    |
-| `disclosure_completed` | Disclosure proof reached `completed` state. Outside the onboarding funnel. Kept for disclosure analytics.                                                                         |
+| Event                      | Purpose                                                                                                                                                                                                          |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Onboarding: Failed`       | Terminal failure for any non-disclose `circuitType`. Properties: `stage`, `reason`, `recoverable`, `duration_seconds`, `used_fallback`, `proof_type` (`'register' \| 'dsc'`, present on proving-stage failures). |
+| `Onboarding: Step Retried` | User retried a step. Properties: `stage`, `reason`, `attempt_count`.                                                                                                                                             |
+
+Disclosure flows fire **no** `Onboarding: *` event. Diagnostic completion is captured by `ProofEvents.PROOF_COMPLETED` with `circuitType: 'disclose'`.
 
 ## Branch Model
 
-| `branch` value       | Flow                                                                                        | Canonical steps that apply                                                                                                                                                                                                                |
-| -------------------- | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `biometric_passport` | Passport with chip; MRZ + NFC + proof                                                       | All 8 canonical steps                                                                                                                                                                                                                     |
-| `biometric_id`       | eID card with chip; same mechanism as passport, different chip-scan animation and UX        | All 8 canonical steps                                                                                                                                                                                                                     |
-| `kyc`                | Embedded KYC provider web SDK (Didit) — used for non-biometric docs and as NFC/MRZ fallback | 5 steps: `onboarding_started` → `country_selected` → `document_type_selected` → `document_scan_started` → `document_scan_succeeded` → proof steps → `onboarding_completed` (no NFC visibility; interior selfie/liveness steps are opaque) |
-| `aadhaar`            | India-specific QR/PDF upload                                                                | Same 8 steps conceptually; `document_scan_*` maps to file pick + upload accept                                                                                                                                                            |
+| `branch` value       | Flow                                                           | Scanning mechanic                                     |
+| -------------------- | -------------------------------------------------------------- | ----------------------------------------------------- |
+| `biometric_passport` | Passport with chip                                             | MRZ + NFC + DSC validation                            |
+| `biometric_id`       | eID card with chip; same code path as passport                 | MRZ + NFC + DSC validation                            |
+| `kyc`                | Embedded KYC provider web SDK; non-biometric docs and fallback | Provider modal (interior is a black box)              |
+| `aadhaar`            | India-specific QR upload                                       | Photo library → QR parse → timestamp validate → store |
 
-Biometric passport and biometric ID are treated as distinct branches (different chip animations, different UX) but are rolled up into a `biometric_combined` dashboard view.
+Biometric passport and biometric ID are distinct branches but roll up into a `biometric_combined` dashboard view.
 
-## Mixpanel Dashboard Plan
+## Cross-branch Flows
 
-Built after event layer lands. One Mixpanel board:
+A user who starts in one branch can switch mid-flow. Canonical example: pick Passport, MRZ succeeds, NFC fails, accept KYC fallback. The user ends the attempt in `kyc`. Two branch properties on every canonical event:
 
-1. **Macro onboarding funnel** — `onboarding_started → document_scan_succeeded → proof_generation_succeeded → onboarding_completed`. Uniques mode. Conversion window 30 min. Filter: `is_internal != true` (when that property ships; see backlog ANA-02).
-2. **Per-branch funnels** — four boards, each filtered on `branch`. Biometric branches get the full 8 steps; KYC gets 5; Aadhaar gets its variant.
-3. **Biometric combined rollup** — `branch in (biometric_passport, biometric_id)`, otherwise identical to a per-branch funnel.
-4. **Failure breakdown** — `onboarding_failed` event, grouped by `stage` + `reason`. Tells us where and why, not just that.
-5. **Retry heat** — `funnel_step_retried` by stage and branch. Retry spikes are a UX signal distinct from drop-off.
+- **`initial_branch`** — original intent, locked at first non-`pending` value (normally at `document_type_selected`). Immutable for the attempt.
+- **`current_branch`** — currently active branch, updated by `setOnboardingBranch` on fallback. Mutable.
 
-## What This Doesn't Measure Yet
+On terminal events the helper additionally stamps `used_fallback: initial_branch !== current_branch`.
 
-ANA-01 gets the app from "the funnel is unmeasurable" to "the funnel is measurable." It is _not_ the Revolut-grade end-state. The following gaps are known, scoped as followup issues, and worth surfacing up front so nobody mistakes ANA-01's scope for "the final funnel":
+### Dashboard queries this enables
 
-- **User-centric vs session-centric metrics** — `duration_seconds` measures within-session time. A user who starts Monday, abandons, finishes Wednesday is invisible in duration tracking. Needs: longer Mixpanel conversion windows, stable `distinct_id` across sessions, and clarity that "attempt" is an engineering convenience, not the analytical unit. Mixpanel's Uniques counting handles user-level dedup in the funnel itself, so this is mostly a dashboard-configuration concern once ANA-02 ships the build/user properties.
-- **Segmentation fidelity** — only `country_code`, `document_type`, and the branch properties are attached today. A PM slicing drop-off wants device, OS, app_version, acquisition channel, experiment variant, build channel, time-of-day. Most of these belong as **super properties** set once per session. See ANA-02 (build + internal), ANA-06 (device/OS/version enrichment).
-- **Step-view vs step-commit mini-funnels** — canonical events are commitment events. Users who view a screen but don't commit are invisible at the canonical layer; they show up only in the preserved `Viewed X` diagnostic events. See ANA-07.
-- **Explicit abandonment modeling** — no event fires on app-background-with-incomplete-attempt. Silent drops look identical to "still thinking." See ANA-08.
-- **Fallback decision visibility** — we know _that_ fallback happened via `used_fallback`, but not the decision path that led there (see Cross-branch flows, ANA-05).
-- **A/B test tagging** — no `experiment_id` / `variant` on events. Blocks running experiments against the funnel. See ANA-09.
-- **PM-roll-up metrics** — D1/D7/D30 completion, median time-to-verified, top-3 drop-off reasons are not pre-built. The raw events support them; the dashboard work is not yet specced. See ANA-10.
-- **KYC provider interior** — selfie / liveness / doc-capture steps inside the provider web SDK are opaque. Requires provider-side instrumentation contract work.
+| Question                                  | Filter                                                           |
+| ----------------------------------------- | ---------------------------------------------------------------- |
+| Users who _started_ biometric             | `initial_branch in (biometric_passport, biometric_id)`           |
+| Users who _completed_ via KYC             | `event = COMPLETED AND current_branch = kyc`                     |
+| Users who fell back biometric → KYC       | `initial_branch starts_with biometric_ AND current_branch = kyc` |
+| Pure KYC users (never intended biometric) | `initial_branch = kyc AND current_branch = kyc`                  |
+| Cohort that used any fallback             | `event = COMPLETED AND used_fallback = true`                     |
 
-The conversion window for the Mixpanel funnel should be set to a value matching the longest reasonable onboarding session (current recommendation: 30 min), not the default 7 days. This is a dashboard-side decision.
+### Fallback decision visibility — gap
 
-## Out of Scope (this workstream)
-
-- TestFlight / internal-build contamination filtering (`build_channel`, `is_internal`). Deferred; see ANA-02.
-- Cleanup of raw-string events (`REGISTRATION_FALLBACK_*`, `DEVICE_TOKEN_REG_*`) to typed constants. Deferred; see ANA-03.
-- Consolidation of the Mixpanel NFC native channel vs Segment duplication. Deferred; see ANA-04. The dual firing is kept as-is because native-module events have no other path to reach the analytics backend.
-- Fallback decision events (Layer 2). Deferred; see ANA-05.
-- Super-property enrichment. Deferred; see ANA-06.
-- Step-view mini-funnels. Deferred; see ANA-07.
-- Abandonment events. Deferred; see ANA-08.
-- A/B test tagging. Deferred; see ANA-09.
-- PM dashboard roll-ups. Deferred; see ANA-10.
-- Migration of the KYC provider's interior steps (selfie, liveness, doc capture) into the funnel. Provider web SDK is a black box at that level; requires provider-side instrumentation contract work.
+The branch split tells you _what happened_ (initial intent vs final outcome) but not _how the decision unfolded_ at the fallback screen. ANA-05 will add `Onboarding: Fallback Offered/Accepted/Declined` to answer this.
 
 ## Execution Model
 
-- Stable context for this workstream lives in this file.
-- PR-sized execution lives under [`plans/`](./plans/).
-- Canonical event contract decisions live here; implementation deviations must be reconciled by updating this file.
+- This file is the durable workstream context. It owns the contract (event set, branch model, cross-branch flows, invariants).
+- PR-sized execution lives under [`plans/`](./plans/). Each plan describes one PR.
+- **Plan files are frozen on merge.** When a later plan modifies the contract (e.g., ANA-11 changed `PROOF_STARTED`'s gate), it updates this file and documents its delta in its own plan. The original plan is not edited after merge.
 
 ## Backlog
 
-| ID     | Title                                                                    | Status   | Priority | Depends On             | Plan                                                                                         | Notes                                                                                                                                                                                                                                                                                                                                           |
-| ------ | ------------------------------------------------------------------------ | -------- | -------- | ---------------------- | -------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ANA-01 | Canonical onboarding funnel events + dead-zone and AbstractButton fixes  | Ready    | High     | -                      | [plans/ANA-01-canonical-onboarding-funnel.md](./plans/ANA-01-canonical-onboarding-funnel.md) | The full "do now" scope: canonical events, state-machine guards, terminal event invariant, dead-zone fixes, `Click:` prefix fix.                                                                                                                                                                                                                |
-| ANA-02 | Filter TestFlight and internal-build traffic from onboarding funnel      | Deferred | Medium   | ANA-01                 | —                                                                                            | Add `build_channel` super property and `is_internal` user property with a debug-menu toggle. Optionally separate Mixpanel project per env.                                                                                                                                                                                                      |
-| ANA-03 | Convert raw-string analytics events to typed constants across onboarding | Deferred | Low      | ANA-01                 | —                                                                                            | `REGISTRATION_FALLBACK_*`, `DEVICE_TOKEN_REG_*`, and similar get moved into the existing event-constant enums. Cosmetic for the funnel, prevents future drift.                                                                                                                                                                                  |
-| ANA-04 | Consolidate Mixpanel NFC native channel with Segment (if feasible)       | Deferred | Low      | ANA-01                 | —                                                                                            | Investigate whether native NFC events can be routed through Segment. Expected outcome: not feasible for native-module origin, keep as-is with a doc comment.                                                                                                                                                                                    |
-| ANA-05 | Fallback decision events and fallback-offer mini-funnel                  | Ready    | High     | ANA-01                 | —                                                                                            | Layer 2 canonical events: `Onboarding: Fallback Offered / Accepted / Declined` at the fallback screens (MRZ, NFC, LogoConfirmation "No"). Carries `from_stage` and `reason`. Enables fallback-offer → fallback-completion sub-funnel and answers "does offering fallback save or lose conversions." Should be the next work after ANA-01 ships. |
-| ANA-06 | Super-property enrichment for segmentation                               | Deferred | High     | ANA-01                 | —                                                                                            | Attach device model, OS, OS version, app_version, acquisition_channel as super properties on every event. Blocks most Revolut-grade cohort analysis.                                                                                                                                                                                            |
-| ANA-07 | Step-view canonical events for commit-vs-view mini-funnel                | Deferred | Medium   | ANA-01                 | —                                                                                            | Add `*_viewed` events to the canonical layer for each screen with a decision (country_picker_viewed, id_selection_viewed, etc.) so drop-off between view and commit is measurable.                                                                                                                                                              |
-| ANA-08 | Explicit abandonment events on app background                            | Deferred | Medium   | ANA-01                 | —                                                                                            | Fire `Onboarding: Abandoned` with `{stage, reason}` when the app is backgrounded with an incomplete attempt, and/or when an attempt is overwritten by a new one. Turns silent drops into categorized ones.                                                                                                                                      |
-| ANA-09 | A/B test tagging at the super-property layer                             | Deferred | High     | ANA-06                 | —                                                                                            | Attach `experiment_id` and `variant` from a config source as super properties. Required for running any onboarding experiment.                                                                                                                                                                                                                  |
-| ANA-10 | PM-dashboard roll-ups (D1/D7/D30 conversion, TTV, top drop-off reasons)  | Deferred | Medium   | ANA-01, ANA-02, ANA-06 | —                                                                                            | Dashboard work, not instrumentation. Build the small set of "headline" metrics a PM watches weekly.                                                                                                                                                                                                                                             |
-| ANA-11 | Canonical funnel bug fixes (post-ANA-01 production findings)             | Ready    | High     | ANA-01                 | [plans/ANA-11-canonical-funnel-bug-fixes.md](./plans/ANA-11-canonical-funnel-bug-fixes.md)   | Two bugs found via Mixpanel dashboard review on 2026-04-30: (A) pure-KYC users skip `SCAN_STARTED` because the emission was bound to `LogoConfirmationScreen`'s "No" path; (B) `PROOF_STARTED` fires for disclosure flows and bootstraps a fake `Onboarding: Started` via `ensureAttempt`. Both fixes are small but block accurate funnel reads. |
+| ID     | Title                                                                       | Status    | Priority | Depends on             | Plan                                                            |
+| ------ | --------------------------------------------------------------------------- | --------- | -------- | ---------------------- | --------------------------------------------------------------- |
+| ANA-01 | Canonical onboarding funnel events + dead-zone fixes                        | **Done**  | —        | —                      | [plan](./plans/ANA-01-canonical-onboarding-funnel.md)           |
+| ANA-11 | Canonical funnel bug fixes (post-ANA-01 production findings)                | In Review | High     | ANA-01                 | [plan](./plans/ANA-11-canonical-funnel-bug-fixes.md) — PR #2048 |
+| ANA-12 | Branch-specific funnel events (Biometric / KYC / Aadhaar)                   | Ready     | High     | ANA-01, ANA-11         | [plan](./plans/ANA-12-branch-specific-funnel-events.md)         |
+| ANA-13 | Observability migration — Mixpanel diet, Sentry breadcrumbs, Session Replay | Ready     | High     | ANA-01, ANA-11, ANA-12 | [plan](./plans/ANA-13-observability-migration.md)               |
+| ANA-05 | Fallback decision events and fallback-offer mini-funnel                     | Ready     | Medium   | ANA-01, ANA-12         | —                                                               |
+| ANA-08 | Explicit abandonment events on app background                               | Ready     | Low      | ANA-01                 | —                                                               |
+| ANA-02 | Investigation: internal/TestFlight traffic filtering                        | Ready     | Medium   | —                      | —                                                               |
+| ANA-04 | Investigation: native NFC analytics channel                                 | Ready     | Low      | ANA-13                 | —                                                               |
 
-Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
+Allowed statuses: `Ready`, `In Progress`, `In Review`, `Blocked`, `Done`.
 
-## Active Plans
+**Investigation items** (ANA-02, ANA-04) are loose-scope: they produce a doc + recommendation, possibly followed by a small implementation spec. Not PR-shaped on creation.
 
-| Plan                                                                                         | IDs    | Status |
-| -------------------------------------------------------------------------------------------- | ------ | ------ |
-| [plans/ANA-01-canonical-onboarding-funnel.md](./plans/ANA-01-canonical-onboarding-funnel.md) | ANA-01 | Ready  |
+## Future Concerns (not tracked specs)
+
+- **A/B test tagging.** When experiments are introduced, attach `experiment_id` and `variant` as super properties. Trigger: first onboarding experiment scheduled.
+- **Acquisition channel attribution.** One super-property addition (`acquisition_channel`); bolt onto whichever spec touches the analytics service next.
+- **KYC provider interior instrumentation.** Selfie / liveness / doc capture inside the KYC provider are opaque. Trigger: provider-side conversation opens.
+- **Cross-session attempt continuity.** Today an "attempt" is in-memory module state. Mixpanel Uniques counting handles user-level dedup at the funnel layer; revisit the model only if PMs need true user-level metrics.
+
+## Cancelled / Superseded
+
+IDs are not reused.
+
+| ID     | Title                                                  | Reason                                                                                                                                                       |
+| ------ | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| ANA-03 | Convert raw-string analytics events to typed constants | Superseded by ANA-12 (curates event sets, renames `PassportEvents → BiometricEvents`, creates `KycEvents`, curates `AadhaarEvents`).                         |
+| ANA-06 | Super-property enrichment for segmentation             | Cancelled. Mixpanel auto-captures device, OS, OS version, app_version. Missing piece (`acquisition_channel`) is one line — see Future Concerns.              |
+| ANA-07 | Step-view canonical events                             | Cancelled. With ANA-13, "user saw this screen" is a Sentry breadcrumb (free, attached to errors and replays). View → commit dashboard metric is speculative. |
+| ANA-09 | A/B test tagging at the super-property layer           | Moved to Future Concerns. No spec until experiments are scheduled.                                                                                           |
+| ANA-10 | PM-dashboard roll-ups                                  | Cancelled. Dashboard work, not instrumentation. Build dashboards on demand.                                                                                  |
 
 ## References
 
-- Mixpanel funnels: [funnels-advanced](https://docs.mixpanel.com/docs/reports/funnels/funnels-advanced) — Uniques vs Totals counting, conversion windows, Optimized Re-entry, specific vs any-order modes.
-- Mixpanel identity: [identifying-users](https://docs.mixpanel.com/docs/tracking-methods/id-management/identifying-users) — ID merge requires an event _after_ `identify()` carrying both `$device_id` and `$user_id`.
-- Mixpanel retention: [retention](https://docs.mixpanel.com/docs/reports/retention) — retention is for "came back days later," not multi-step completion. Use funnels for onboarding drop-off.
+- Mixpanel funnels: [funnels-advanced](https://docs.mixpanel.com/docs/reports/funnels/funnels-advanced) — Uniques vs Totals, conversion windows, breakdown propagation behavior (relevant to ANA-11 §"Non-bug clarification").
+- Mixpanel identity: [identifying-users](https://docs.mixpanel.com/docs/tracking-methods/id-management/identifying-users) — ID merge requires an event after `identify()` carrying both `$device_id` and `$user_id`.
+- Sentry React Native: `@sentry/react-native@7.0.0` — breadcrumb + tag pipeline already wired via `selfClient.logProofEvent` → `app/src/config/sentry.ts:296`.

@@ -12,7 +12,12 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": true
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@selfxyz/mobile-sdk-alpha": ["../mobile-sdk-alpha/src/index.ts"],
+      "@selfxyz/mobile-sdk-alpha/browser": ["../mobile-sdk-alpha/src/browser.ts"]
+    }
   },
   "include": ["src", "tests", "vite-env.d.ts"],
   "exclude": ["node_modules", "dist"]

@@ -8,6 +8,22 @@ import { isAadhaarDocument, isMRZDocument } from '@selfxyz/common/utils/types';
 
 export type SecurityLevel = 'HI-SECURITY' | 'LOW-SECURITY' | 'STANDARD';
 
+export function getSecurityBadgeLabel(
+  document: PassportData | AadhaarData,
+): string {
+  if (isAadhaarDocument(document)) {
+    return 'QR verified';
+  }
+
+  if (isMRZDocument(document)) {
+    return getSecurityLevel(document) === 'HI-SECURITY'
+      ? 'NFC verified'
+      : 'MRZ verified';
+  }
+
+  return 'Document verified';
+}
+
 /**
  * Determines security badge based on document type and NFC presence.
  * - KYC documents -> STANDARD (always)
