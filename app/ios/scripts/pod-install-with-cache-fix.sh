@@ -13,6 +13,12 @@ run_pod_install() {
   bundle exec pod install --no-repo-update 2>&1 | tee "$LOG_FILE"
 }
 
+reset_local_pod_resolution_state() {
+  echo "🧹 Resetting local CocoaPods resolution state (Podfile.lock + Local Podspecs)..."
+  rm -f Podfile.lock
+  rm -rf Pods/Local\ Podspecs
+}
+
 extract_conflicting_pods() {
   awk '
     /could not find compatible versions for pod "/ {
@@ -34,6 +40,15 @@ run_recovery_for_conflicts() {
   fi
 
   echo "⚠️ Detected resolver conflicts for pods: ${conflicting_pods[*]}"
+
+  # Path-based React Native podspecs can drift from a cached lockfile snapshot.
+  # If fmt conflicts, force CocoaPods to rebuild local resolution state first.
+  for pod in "${conflicting_pods[@]}"; do
+    if [ "$pod" = "fmt" ]; then
+      reset_local_pod_resolution_state
+      return 0
+    fi
+  done
 
   # Keep Hermes cache cleanup behavior for hermes-specific failures.
   for pod in "${conflicting_pods[@]}"; do
