@@ -829,6 +829,11 @@ jobs:
       - name: Build iOS App
         env:
           E2E_TESTING: 1
+          # Expo's metro-config sets Metro's serverRoot to the yarn workspace
+          # root by default. Under Xcode's bundle phase, --entry-file is then
+          # resolved against the repo root (self/self/index.js) instead of
+          # app/index.js. Opt out so Metro anchors to projectRoot.
+          EXPO_NO_METRO_WORKSPACE_ROOT: 1
         run: |
           echo "Building iOS app..."
           echo "Project: ${{ env.IOS_PROJECT_NAME }}, Scheme: ${{ env.IOS_PROJECT_SCHEME }}"
