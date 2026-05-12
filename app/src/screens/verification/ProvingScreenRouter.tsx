@@ -5,7 +5,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator } from 'react-native';
 import { Text, View } from 'tamagui';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import type { RouteProp } from '@react-navigation/native';
+import {
+  useFocusEffect,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import {
@@ -39,6 +44,9 @@ import { evaluateGoogleUsatGate } from '@/utils/googleUsatGate';
 const ProvingScreenRouter: React.FC = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const route =
+    useRoute<RouteProp<RootStackParamList, 'ProvingScreenRouter'>>();
+  const { entryPoint } = route.params;
   const selfClient = useSelfClient();
   const { useSelfAppStore } = selfClient;
   const selfApp = useSelfAppStore(state => state.selfApp);
@@ -77,12 +85,12 @@ const ProvingScreenRouter: React.FC = () => {
       if (gate === 'block') {
         hasRoutedRef.current = true;
         selfClient.trackEvent(ProofEvents.GOOGLE_USAT_BLOCKED, {
-          entry_point: 'qr_scan',
+          entry_point: entryPoint,
           reason: 'no_high_security_doc',
         });
         useVerificationGateStore.getState().open({
           reason: 'google_usat_high_security_required',
-          entryPoint: 'qr_scan',
+          entryPoint,
           requesterName: selfApp.appName,
         });
         selfClient.getSelfAppState().cleanSelfApp();
@@ -176,6 +184,7 @@ const ProvingScreenRouter: React.FC = () => {
     navigation,
     selfApp,
     selfClient,
+    entryPoint,
     setSelectedDocument,
     skipDocumentSelector,
   ]);

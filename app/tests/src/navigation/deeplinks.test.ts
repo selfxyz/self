@@ -106,7 +106,10 @@ describe('deeplinks', () => {
       const { navigationRef } = require('@/navigation');
       expect(navigationRef.reset).toHaveBeenCalledWith({
         index: 1,
-        routes: [{ name: 'Home' }, { name: 'ProvingScreenRouter' }],
+        routes: [
+          { name: 'Home' },
+          { name: 'ProvingScreenRouter', params: { entryPoint: 'deeplink' } },
+        ],
       });
     });
 
@@ -132,7 +135,10 @@ describe('deeplinks', () => {
       const { navigationRef } = require('@/navigation');
       expect(navigationRef.reset).toHaveBeenCalledWith({
         index: 1,
-        routes: [{ name: 'Home' }, { name: 'ProvingScreenRouter' }],
+        routes: [
+          { name: 'Home' },
+          { name: 'ProvingScreenRouter', params: { entryPoint: 'deeplink' } },
+        ],
       });
     });
 

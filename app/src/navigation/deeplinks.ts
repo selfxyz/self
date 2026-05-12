@@ -100,9 +100,15 @@ const validateAndSanitizeParam = (
 const createDeeplinkNavigationState = (
   targetScreen: string,
   parentScreen: string = 'Home',
+  targetParams?: Record<string, unknown>,
 ) => ({
   index: 1, // Current screen index (targetScreen)
-  routes: [{ name: parentScreen }, { name: targetScreen }],
+  routes: [
+    { name: parentScreen },
+    targetParams
+      ? { name: targetScreen, params: targetParams }
+      : { name: targetScreen },
+  ],
 });
 
 // Store the correct parent screen determined by splash screen
@@ -148,6 +154,7 @@ export const handleUrl = async (selfClient: SelfClient, uri: string) => {
         createDeeplinkNavigationState(
           'ProvingScreenRouter',
           correctParentScreen,
+          { entryPoint: 'deeplink' },
         ),
       );
 
@@ -178,7 +185,13 @@ export const handleUrl = async (selfClient: SelfClient, uri: string) => {
     selfClient.getSelfAppState().startAppListener(sessionId);
 
     safeNavigate(
-      createDeeplinkNavigationState('ProvingScreenRouter', correctParentScreen),
+      createDeeplinkNavigationState(
+        'ProvingScreenRouter',
+        correctParentScreen,
+        {
+          entryPoint: 'deeplink',
+        },
+      ),
     );
   } else if (mock_passport) {
     try {
