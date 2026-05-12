@@ -164,8 +164,8 @@ jobs:
           working_directory: circuits
 
       - name: Run lint
-        run: pnpm workspace @selfxyz/circuits lint
+        run: pnpm --filter @selfxyz/circuits lint
       - name: Run Tests (Circuits)
         env:
           FULL_TEST_SUITE: false
-        run: pnpm workspace @selfxyz/circuits test
+        run: pnpm --filter @selfxyz/circuits test

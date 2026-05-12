@@ -95,9 +95,9 @@ jobs:
       - name: Build dependencies
         shell: bash
         run: |
-          pnpm workspace @selfxyz/common build
-          pnpm workspace @selfxyz/sdk-common build
-          pnpm workspace @selfxyz/qrcode build
+          pnpm --filter @selfxyz/common build
+          pnpm --filter @selfxyz/sdk-common build
+          pnpm --filter @selfxyz/qrcode build
 
       - name: Cache build artifacts
         uses: ./.github/actions/cache-sdk-build
@@ -159,18 +159,18 @@ jobs:
       - name: Build dependencies (fallback on cache miss)
         if: steps.restore-build.outputs.cache-hit != 'true'
         run: |
-          pnpm workspace @selfxyz/common build
-          pnpm workspace @selfxyz/sdk-common build
-          pnpm workspace @selfxyz/qrcode build
+          pnpm --filter @selfxyz/common build
+          pnpm --filter @selfxyz/sdk-common build
+          pnpm --filter @selfxyz/qrcode build
 
       - name: Run linter
-        run: pnpm workspace @selfxyz/qrcode lint:imports:check
+        run: pnpm --filter @selfxyz/qrcode lint:imports:check
 
       - name: Check Prettier formatting
-        run: pnpm workspace @selfxyz/qrcode lint
+        run: pnpm --filter @selfxyz/qrcode lint
 
       - name: Type checking
-        run: pnpm workspace @selfxyz/qrcode types
+        run: pnpm --filter @selfxyz/qrcode types
 
       - name: Log cache status
         run: |
@@ -231,9 +231,9 @@ jobs:
       - name: Build dependencies (fallback on cache miss)
         if: steps.restore-build.outputs.cache-hit != 'true'
         run: |
-          pnpm workspace @selfxyz/common build
-          pnpm workspace @selfxyz/sdk-common build
-          pnpm workspace @selfxyz/qrcode build
+          pnpm --filter @selfxyz/common build
+          pnpm --filter @selfxyz/sdk-common build
+          pnpm --filter @selfxyz/qrcode build
 
       - name: Verify build artifacts
         run: |
@@ -297,9 +297,9 @@ jobs:
       - name: Build dependencies (fallback on cache miss)
         if: steps.restore-build.outputs.cache-hit != 'true'
         run: |
-          pnpm workspace @selfxyz/common build
-          pnpm workspace @selfxyz/sdk-common build
-          pnpm workspace @selfxyz/qrcode build
+          pnpm --filter @selfxyz/common build
+          pnpm --filter @selfxyz/sdk-common build
+          pnpm --filter @selfxyz/qrcode build
 
       - name: Check for nested require() in tests
         run: |
@@ -311,7 +311,7 @@ jobs:
           echo "✅ No nested require() patterns found"
 
       - name: Run tests
-        run: pnpm workspace @selfxyz/qrcode test
+        run: pnpm --filter @selfxyz/qrcode test
 
       - name: Test package import
         run: |

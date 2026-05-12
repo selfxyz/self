@@ -315,7 +315,7 @@ jobs:
           # Ensure Yarn 4.12.0 is active
           corepack enable
           corepack prepare pnpm@10.28.1 --activate
-          pnpm workspace @selfxyz/mobile-app run build:deps || { echo "❌ Dependency build failed"; exit 1; }
+          pnpm --filter @selfxyz/mobile-app run build:deps || { echo "❌ Dependency build failed"; exit 1; }
           echo "✅ Dependencies built successfully"
       - name: Setup Android private modules
         run: |
@@ -736,7 +736,7 @@ jobs:
       - name: Build dependencies (outside main flow)
         run: |
           echo "Building dependencies..."
-          pnpm workspace @selfxyz/mobile-app run build:deps || { echo "❌ Dependency build failed"; exit 1; }
+          pnpm --filter @selfxyz/mobile-app run build:deps || { echo "❌ Dependency build failed"; exit 1; }
           echo "✅ Dependencies built successfully"
       - name: Install iOS dependencies
         uses: nick-fields/retry@v3

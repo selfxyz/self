@@ -31,13 +31,13 @@ jobs:
       - name: Install dependencies
         uses: ./.github/actions/pnpm-install
       - name: Build common
-        run: pnpm workspace @selfxyz/common build
+        run: pnpm --filter @selfxyz/common build
       - name: Build mobile-sdk-alpha
-        run: pnpm workspace @selfxyz/mobile-sdk-alpha build
+        run: pnpm --filter @selfxyz/mobile-sdk-alpha build
       - name: Build webview-bridge
-        run: pnpm workspace @selfxyz/webview-bridge build
+        run: pnpm --filter @selfxyz/webview-bridge build
       - name: Build webview-app
-        run: pnpm workspace @selfxyz/webview-app build
+        run: pnpm --filter @selfxyz/webview-app build
 
   lint:
     runs-on: ubuntu-latest
@@ -47,13 +47,13 @@ jobs:
       - name: Install dependencies
         uses: ./.github/actions/pnpm-install
       - name: Build common
-        run: pnpm workspace @selfxyz/common build
+        run: pnpm --filter @selfxyz/common build
       - name: Build mobile-sdk-alpha
-        run: pnpm workspace @selfxyz/mobile-sdk-alpha build
+        run: pnpm --filter @selfxyz/mobile-sdk-alpha build
       - name: Build webview-bridge
-        run: pnpm workspace @selfxyz/webview-bridge build
+        run: pnpm --filter @selfxyz/webview-bridge build
       - name: Run linter
-        run: pnpm workspace @selfxyz/webview-app lint
+        run: pnpm --filter @selfxyz/webview-app lint
 
   format:
     runs-on: ubuntu-latest
@@ -63,7 +63,7 @@ jobs:
       - name: Install dependencies
         uses: ./.github/actions/pnpm-install
       - name: Check Prettier formatting
-        run: pnpm workspace @selfxyz/webview-app fmt
+        run: pnpm --filter @selfxyz/webview-app fmt
 
   types:
     runs-on: ubuntu-latest
@@ -73,10 +73,10 @@ jobs:
       - name: Install dependencies
         uses: ./.github/actions/pnpm-install
       - name: Build common
-        run: pnpm workspace @selfxyz/common build
+        run: pnpm --filter @selfxyz/common build
       - name: Build mobile-sdk-alpha
-        run: pnpm workspace @selfxyz/mobile-sdk-alpha build
+        run: pnpm --filter @selfxyz/mobile-sdk-alpha build
       - name: Build webview-bridge
-        run: pnpm workspace @selfxyz/webview-bridge build
+        run: pnpm --filter @selfxyz/webview-bridge build
       - name: Typecheck
-        run: pnpm workspace @selfxyz/webview-app types
+        run: pnpm --filter @selfxyz/webview-app types

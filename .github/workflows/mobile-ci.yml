@@ -80,7 +80,7 @@ jobs:
         # if: steps.built-deps.outputs.cache-hit != 'true'
         run: |
           echo "Cache miss for built dependencies. Building now..."
-          pnpm workspace @selfxyz/mobile-app run build:deps
+          pnpm --filter @selfxyz/mobile-app run build:deps
       - name: Run linter
         run: pnpm lint
         working-directory: ./app
@@ -149,7 +149,7 @@ jobs:
         # TODO: Re-enable cache after fixing: if: steps.built-deps.outputs.cache-hit != 'true'
         run: |
           echo "Building dependencies (cache temporarily disabled for debugging)..."
-          pnpm workspace @selfxyz/mobile-app run build:deps
+          pnpm --filter @selfxyz/mobile-app run build:deps
           # Verify build completed successfully
           if [ ! -f "packages/mobile-sdk-alpha/dist/cjs/index.cjs" ] || [ ! -f "common/dist/cjs/index.cjs" ]; then
             echo "❌ Build failed - required files missing after build"
@@ -166,7 +166,7 @@ jobs:
             echo "Missing files:"
             [ ! -f "packages/mobile-sdk-alpha/dist/cjs/index.cjs" ] && echo "  - packages/mobile-sdk-alpha/dist/cjs/index.cjs"
             [ ! -f "common/dist/cjs/index.cjs" ] && echo "  - common/dist/cjs/index.cjs"
-            pnpm workspace @selfxyz/mobile-app run build:deps
+            pnpm --filter @selfxyz/mobile-app run build:deps
             # Verify build completed successfully
             if [ ! -f "packages/mobile-sdk-alpha/dist/cjs/index.cjs" ] || [ ! -f "common/dist/cjs/index.cjs" ]; then
               echo "❌ Forced build failed - required files still missing"

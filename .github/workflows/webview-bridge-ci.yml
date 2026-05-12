@@ -29,11 +29,11 @@ jobs:
       - name: Install dependencies
         uses: ./.github/actions/pnpm-install
       - name: Build common
-        run: pnpm workspace @selfxyz/common build
+        run: pnpm --filter @selfxyz/common build
       - name: Build mobile-sdk-alpha
-        run: pnpm workspace @selfxyz/mobile-sdk-alpha build
+        run: pnpm --filter @selfxyz/mobile-sdk-alpha build
       - name: Build
-        run: pnpm workspace @selfxyz/webview-bridge build
+        run: pnpm --filter @selfxyz/webview-bridge build
 
   lint:
     runs-on: ubuntu-latest
@@ -43,11 +43,11 @@ jobs:
       - name: Install dependencies
         uses: ./.github/actions/pnpm-install
       - name: Build common
-        run: pnpm workspace @selfxyz/common build
+        run: pnpm --filter @selfxyz/common build
       - name: Build mobile-sdk-alpha
-        run: pnpm workspace @selfxyz/mobile-sdk-alpha build
+        run: pnpm --filter @selfxyz/mobile-sdk-alpha build
       - name: Run linter
-        run: pnpm workspace @selfxyz/webview-bridge lint
+        run: pnpm --filter @selfxyz/webview-bridge lint
 
   format:
     runs-on: ubuntu-latest
@@ -57,7 +57,7 @@ jobs:
       - name: Install dependencies
         uses: ./.github/actions/pnpm-install
       - name: Check Prettier formatting
-        run: pnpm workspace @selfxyz/webview-bridge fmt
+        run: pnpm --filter @selfxyz/webview-bridge fmt
 
   types:
     runs-on: ubuntu-latest
@@ -67,11 +67,11 @@ jobs:
       - name: Install dependencies
         uses: ./.github/actions/pnpm-install
       - name: Build common
-        run: pnpm workspace @selfxyz/common build
+        run: pnpm --filter @selfxyz/common build
       - name: Build mobile-sdk-alpha
-        run: pnpm workspace @selfxyz/mobile-sdk-alpha build
+        run: pnpm --filter @selfxyz/mobile-sdk-alpha build
       - name: Typecheck
-        run: pnpm workspace @selfxyz/webview-bridge types
+        run: pnpm --filter @selfxyz/webview-bridge types
 
   test:
     runs-on: ubuntu-latest
@@ -81,4 +81,4 @@ jobs:
       - name: Install dependencies
         uses: ./.github/actions/pnpm-install
       - name: Test
-        run: pnpm workspace @selfxyz/webview-bridge test
+        run: pnpm --filter @selfxyz/webview-bridge test

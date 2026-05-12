@@ -21,6 +21,6 @@ jobs:
         uses: ./.github/actions/pnpm-install
       - name: Build dependencies
         shell: bash
-        run: pnpm workspace @selfxyz/common build
+        run: pnpm --filter @selfxyz/common build
       - name: Build web app
-        run: pnpm workspace @selfxyz/mobile-app web:build
+        run: pnpm --filter @selfxyz/mobile-app web:build

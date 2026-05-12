@@ -84,7 +84,7 @@ jobs:
         run: pnpm prettier:check
         working-directory: ./contracts
       - name: Build Common Dependencies
-        run: pnpm workspace @selfxyz/common build
+        run: pnpm --filter @selfxyz/common build
       - name: Build Contracts
         uses: nick-fields/retry@v3
         with:

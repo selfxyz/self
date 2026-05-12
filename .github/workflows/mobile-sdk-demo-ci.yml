@@ -23,10 +23,10 @@ jobs:
         shell: bash
         run: |
           # Build demo app and all its transitive workspace deps in the correct order
-          pnpm workspaces foreach -R -t --from mobile-sdk-demo run build
+          pnpm -r --filter mobile-sdk-demo... run build
       - name: Run demo app tests
         run: |
-          pnpm workspace mobile-sdk-demo test
+          pnpm --filter mobile-sdk-demo test
       - name: Build demo app
         run: |
           pnpm build:demo

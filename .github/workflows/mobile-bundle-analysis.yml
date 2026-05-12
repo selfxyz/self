@@ -91,7 +91,7 @@ jobs:
           SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
       - name: Build dependencies
         shell: bash
-        run: pnpm workspace @selfxyz/common build
+        run: pnpm --filter @selfxyz/common build
       - name: Run Android analysis
         run: pnpm analyze:bundle:android
         working-directory: ./app
@@ -172,7 +172,7 @@ jobs:
           SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
       - name: Build dependencies
         shell: bash
-        run: pnpm workspace @selfxyz/common build
+        run: pnpm --filter @selfxyz/common build
       - name: Run iOS analysis
         run: pnpm analyze:bundle:ios
         working-directory: ./app

@@ -34,7 +34,7 @@ jobs:
         uses: ./.github/actions/pnpm-install
 
       - name: Verify generated contract error selectors
-        run: pnpm workspace @selfxyz/contracts check:error-selectors
+        run: pnpm --filter @selfxyz/contracts check:error-selectors
 
   workspace-build:
     runs-on: ubuntu-latest

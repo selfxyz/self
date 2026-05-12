@@ -20,7 +20,7 @@ jobs:
       - name: Install Dependencies
         uses: ./.github/actions/pnpm-install
       - name: Build dependencies
-        run: pnpm workspace @selfxyz/mobile-app run build:deps
+        run: pnpm --filter @selfxyz/mobile-app run build:deps
       - name: Cache build artifacts
         uses: actions/cache/save@v4
         with:
@@ -46,7 +46,7 @@ jobs:
       - name: Install Dependencies
         uses: ./.github/actions/pnpm-install
       - name: Run linter
-        run: pnpm workspace @selfxyz/common lint
+        run: pnpm --filter @selfxyz/common lint
 
   type-check:
     runs-on: ubuntu-latest
@@ -76,11 +76,11 @@ jobs:
           fail-on-cache-miss: false
       - name: Build @selfxyz/common (fallback on cache miss)
         if: steps.restore-build-deps.outputs.cache-hit != 'true'
-        run: pnpm workspace @selfxyz/common build
+        run: pnpm --filter @selfxyz/common build
       - name: Build @selfxyz/mobile-sdk-alpha
-        run: pnpm workspace @selfxyz/mobile-sdk-alpha build
+        run: pnpm --filter @selfxyz/mobile-sdk-alpha build
       - name: Build @selfxyz/qrcode
-        run: pnpm workspace @selfxyz/qrcode build:deps
+        run: pnpm --filter @selfxyz/qrcode build:deps
       - name: Yarn types
         run: pnpm types
 
@@ -112,8 +112,8 @@ jobs:
           fail-on-cache-miss: false
       - name: Build @selfxyz/common (fallback on cache miss)
         if: steps.restore-build-deps.outputs.cache-hit != 'true'
-        run: pnpm workspace @selfxyz/common build
+        run: pnpm --filter @selfxyz/common build
       - name: Build @selfxyz/mobile-sdk-alpha
-        run: pnpm workspace @selfxyz/mobile-sdk-alpha build
+        run: pnpm --filter @selfxyz/mobile-sdk-alpha build
       - name: Run @selfxyz/common tests
-        run: pnpm workspace @selfxyz/common test
+        run: pnpm --filter @selfxyz/common test

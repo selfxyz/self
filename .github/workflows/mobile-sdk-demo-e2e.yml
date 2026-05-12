@@ -130,9 +130,9 @@ jobs:
         run: |
           echo "Building dependencies..."
           echo "📦 Building @selfxyz/common to refresh shared types..."
-          pnpm workspace @selfxyz/common build || { echo "❌ @selfxyz/common build failed"; exit 1; }
+          pnpm --filter @selfxyz/common build || { echo "❌ @selfxyz/common build failed"; exit 1; }
           echo "✅ @selfxyz/common build succeeded"
-          pnpm workspace mobile-sdk-demo run prebuild || { echo "❌ Dependency build failed"; exit 1; }
+          pnpm --filter mobile-sdk-demo run prebuild || { echo "❌ Dependency build failed"; exit 1; }
           echo "✅ Dependencies built successfully"
       - name: Build Android APK
         run: |
@@ -299,9 +299,9 @@ jobs:
         run: |
           echo "Building dependencies..."
           echo "📦 Building @selfxyz/common to refresh shared types..."
-          pnpm workspace @selfxyz/common build || { echo "❌ @selfxyz/common build failed"; exit 1; }
+          pnpm --filter @selfxyz/common build || { echo "❌ @selfxyz/common build failed"; exit 1; }
           echo "✅ @selfxyz/common build succeeded"
-          pnpm workspace mobile-sdk-demo run prebuild || { echo "❌ Dependency build failed"; exit 1; }
+          pnpm --filter mobile-sdk-demo run prebuild || { echo "❌ Dependency build failed"; exit 1; }
           echo "✅ Dependencies built successfully"
       - name: Install iOS dependencies
         uses: nick-fields/retry@v3

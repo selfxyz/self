@@ -112,7 +112,7 @@ jobs:
 
       - name: Build package
         run: |
-          pnpm workspace @selfxyz/core build:deps
+          pnpm --filter @selfxyz/core build:deps
 
       - name: Check version not already published
         id: check_version
@@ -177,7 +177,7 @@ jobs:
 
       - name: Build package
         run: |
-          pnpm workspace @selfxyz/qrcode build:deps
+          pnpm --filter @selfxyz/qrcode build:deps
 
       - name: Check version not already published
         id: check_version
@@ -241,7 +241,7 @@ jobs:
 
       - name: Build package
         run: |
-          pnpm workspace @selfxyz/common build
+          pnpm --filter @selfxyz/common build
 
       - name: Check version not already published
         id: check_version
@@ -303,7 +303,7 @@ jobs:
         uses: ./.github/actions/pnpm-install
       - name: Build package
         run: |
-          pnpm workspace @selfxyz/contracts build
+          pnpm --filter @selfxyz/contracts build
 
       - name: Check version not already published
         id: check_version
@@ -367,7 +367,7 @@ jobs:
 
       - name: Build package
         run: |
-          pnpm workspace @selfxyz/qrcode-angular build:deps
+          pnpm --filter @selfxyz/qrcode-angular build:deps
 
       - name: Check version not already published
         id: check_version
@@ -432,8 +432,8 @@ jobs:
 
       - name: Build package dependencies
         run: |
-          pnpm workspace @selfxyz/common build
-          pnpm workspace @selfxyz/mobile-sdk-alpha build
+          pnpm --filter @selfxyz/common build
+          pnpm --filter @selfxyz/mobile-sdk-alpha build
 
       - name: "Pack with pnpm (resolves workspace: protocol)"
         working-directory: packages/mobile-sdk-alpha
