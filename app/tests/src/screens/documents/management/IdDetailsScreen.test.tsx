@@ -104,7 +104,11 @@ jest.mock('@/components/homescreen/IdCard', () => ({
 }));
 
 jest.mock('@/screens/home/ProofHistoryList', () => ({
-  ProofHistoryList: ({ ListHeaderComponent }: { ListHeaderComponent?: React.ReactNode }) => (
+  ProofHistoryList: ({
+    ListHeaderComponent,
+  }: {
+    ListHeaderComponent?: React.ReactNode;
+  }) => (
     <mock-stack testID="proof-history">
       {ListHeaderComponent ?? null}
     </mock-stack>
