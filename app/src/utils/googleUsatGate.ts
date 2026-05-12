@@ -32,10 +32,29 @@ export async function evaluateGoogleUsatGate(
     // retrieval failure must not permanently block the proof session.
     return 'allow';
   }
-  const hasEligibleDoc = Object.values(docs).some(
-    doc => doc.data.documentCategory !== 'kyc' && doc.data.mock !== true,
-  );
-  return hasEligibleDoc ? 'allow' : 'block';
+  let selectedDocumentId: string | undefined;
+  try {
+    const catalog = await selfClient.loadDocumentCatalog();
+    selectedDocumentId = catalog.selectedDocumentId;
+  } catch {
+    // Fail open to match the same UX-only guard behavior on transient failures.
+    return 'allow';
+  }
+
+  if (!selectedDocumentId) {
+    return 'block';
+  }
+
+  const selectedDocument = docs[selectedDocumentId];
+  if (!selectedDocument) {
+    return 'block';
+  }
+
+  const isEligibleSelectedDoc =
+    selectedDocument.data.documentCategory !== 'kyc' &&
+    selectedDocument.data.mock !== true;
+
+  return isEligibleSelectedDoc ? 'allow' : 'block';
 }
 
 function shouldTreatAsGoogleUsat(app: SelfApp): boolean {
