@@ -221,6 +221,7 @@ export type VerificationRoutesParamList = {
   DocumentSelectorForProving:
     | {
         documentType?: string;
+        entryPoint?: VerificationGateEntryPoint;
       }
     | undefined;
 };

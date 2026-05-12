@@ -28,7 +28,10 @@ import { usePassport } from '@/providers/passportDataProvider';
 import { useSettingStore } from '@/stores/settingStore';
 import { useVerificationGateStore } from '@/stores/verificationGateStore';
 import { getDocumentTypeName } from '@/utils/documentUtils';
-import { evaluateGoogleUsatGate } from '@/utils/googleUsatGate';
+import {
+  evaluateGoogleUsatGate,
+  evaluateGoogleUsatGateForDocument,
+} from '@/utils/googleUsatGate';
 
 /**
  * Router screen for the proving flow that decides whether to skip the document selector.
@@ -146,6 +149,25 @@ const ProvingScreenRouter: React.FC = () => {
         const docToSelect = pickBestDocumentToSelect(catalog, docs);
         if (docToSelect) {
           try {
+            const selectedDocGate = await evaluateGoogleUsatGateForDocument(
+              selfClient,
+              selfApp,
+              docToSelect,
+            );
+            if (selectedDocGate === 'block') {
+              selfClient.trackEvent(ProofEvents.GOOGLE_USAT_BLOCKED, {
+                entry_point: entryPoint,
+                reason: 'no_high_security_doc',
+              });
+              useVerificationGateStore.getState().open({
+                reason: 'google_usat_high_security_required',
+                entryPoint,
+                requesterName: selfApp.appName,
+              });
+              selfClient.getSelfAppState().cleanSelfApp();
+              navigation.goBack();
+              return;
+            }
             await setSelectedDocument(docToSelect);
             navigation.replace('Prove');
           } catch (selectError) {
@@ -154,18 +176,21 @@ const ProvingScreenRouter: React.FC = () => {
             hasRoutedRef.current = false;
             navigation.replace('DocumentSelectorForProving', {
               documentType,
+              entryPoint,
             });
           }
         } else {
           // No valid document to select, show selector
           navigation.replace('DocumentSelectorForProving', {
             documentType,
+            entryPoint,
           });
         }
       } else {
         // Show the document selector
         navigation.replace('DocumentSelectorForProving', {
           documentType,
+          entryPoint,
         });
       }
     } catch (loadError) {

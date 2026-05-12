@@ -19,7 +19,10 @@ import {
 import { usePassport } from '@/providers/passportDataProvider';
 import { ProvingScreenRouter } from '@/screens/verification/ProvingScreenRouter';
 import { useSettingStore } from '@/stores/settingStore';
-import { evaluateGoogleUsatGate } from '@/utils/googleUsatGate';
+import {
+  evaluateGoogleUsatGate,
+  evaluateGoogleUsatGateForDocument,
+} from '@/utils/googleUsatGate';
 
 // Mock useFocusEffect to behave like useEffect in tests
 // Note: We use jest.requireActual for React to avoid nested require() which causes OOM in CI
@@ -53,6 +56,7 @@ jest.mock('@/stores/settingStore', () => ({
 
 jest.mock('@/utils/googleUsatGate', () => ({
   evaluateGoogleUsatGate: jest.fn(),
+  evaluateGoogleUsatGateForDocument: jest.fn(),
 }));
 
 const mockUseNavigation = useNavigation as jest.MockedFunction<
@@ -76,6 +80,10 @@ const mockUseSettingStore = useSettingStore as jest.MockedFunction<
 >;
 const mockEvaluateGoogleUsatGate =
   evaluateGoogleUsatGate as jest.MockedFunction<typeof evaluateGoogleUsatGate>;
+const mockEvaluateGoogleUsatGateForDocument =
+  evaluateGoogleUsatGateForDocument as jest.MockedFunction<
+    typeof evaluateGoogleUsatGateForDocument
+  >;
 const mockReplace = jest.fn();
 const mockLoadDocumentCatalog = jest.fn();
 const mockGetAllDocuments = jest.fn();
@@ -141,6 +149,7 @@ describe('ProvingScreenRouter', () => {
       }),
     } as any);
     mockEvaluateGoogleUsatGate.mockResolvedValue('allow');
+    mockEvaluateGoogleUsatGateForDocument.mockResolvedValue('allow');
 
     mockUsePassport.mockReturnValue({
       loadDocumentCatalog: mockLoadDocumentCatalog,
@@ -238,6 +247,7 @@ describe('ProvingScreenRouter', () => {
     await waitFor(() => {
       expect(mockReplace).toHaveBeenCalledWith('DocumentSelectorForProving', {
         documentType: 'Passport',
+        entryPoint: 'qr_scan',
       });
     });
   });
@@ -317,6 +327,7 @@ describe('ProvingScreenRouter', () => {
     await waitFor(() => {
       expect(mockReplace).toHaveBeenCalledWith('DocumentSelectorForProving', {
         documentType: 'Passport',
+        entryPoint: 'qr_scan',
       });
     });
 
@@ -351,6 +362,7 @@ describe('ProvingScreenRouter', () => {
       expect(mockSetSelectedDocument).toHaveBeenCalledWith('doc-1');
       expect(mockReplace).toHaveBeenCalledWith('DocumentSelectorForProving', {
         documentType: 'Passport',
+        entryPoint: 'qr_scan',
       });
     });
   });

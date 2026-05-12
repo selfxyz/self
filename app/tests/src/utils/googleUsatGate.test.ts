@@ -56,8 +56,11 @@ describe('evaluateGoogleUsatGate', () => {
     );
   });
 
-  it('blocks Google USAT when catalog is empty', async () => {
+  it('blocks Google USAT when selected document is not found in docs', async () => {
     mockIsGoogleUsatProofRequest.mockReturnValue(true);
+    selfClient.loadDocumentCatalog.mockResolvedValue({
+      selectedDocumentId: 'missing',
+    });
     mockGetAllDocuments.mockResolvedValue({});
     await expect(evaluateGoogleUsatGate(selfClient, app)).resolves.toBe(
       'block',
@@ -119,11 +122,25 @@ describe('evaluateGoogleUsatGate', () => {
     );
   });
 
-  it('blocks Google USAT when no selected document exists', async () => {
+  it('allows Google USAT when no selected document exists and defers to downstream selection checks', async () => {
     mockIsGoogleUsatProofRequest.mockReturnValue(true);
     selfClient.loadDocumentCatalog.mockResolvedValue({});
     mockGetAllDocuments.mockResolvedValue({
       a: { data: { documentCategory: 'passport', mock: false } } as any,
+    });
+    await expect(evaluateGoogleUsatGate(selfClient, app)).resolves.toBe(
+      'allow',
+    );
+  });
+
+  it('blocks Google USAT when selected document is aadhaar', async () => {
+    mockIsGoogleUsatProofRequest.mockReturnValue(true);
+    selfClient.loadDocumentCatalog.mockResolvedValue({
+      selectedDocumentId: 'a',
+    });
+    mockGetAllDocuments.mockResolvedValue({
+      a: { data: { documentCategory: 'aadhaar', mock: false } } as any,
+      b: { data: { documentCategory: 'passport', mock: false } } as any,
     });
     await expect(evaluateGoogleUsatGate(selfClient, app)).resolves.toBe(
       'block',
@@ -132,6 +149,9 @@ describe('evaluateGoogleUsatGate', () => {
 
   it('fails open when getAllDocuments throws', async () => {
     mockIsGoogleUsatProofRequest.mockReturnValue(true);
+    selfClient.loadDocumentCatalog.mockResolvedValue({
+      selectedDocumentId: 'a',
+    });
     mockGetAllDocuments.mockRejectedValue(new Error('network down'));
     await expect(evaluateGoogleUsatGate(selfClient, app)).resolves.toBe(
       'allow',
