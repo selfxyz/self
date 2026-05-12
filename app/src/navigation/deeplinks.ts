@@ -274,11 +274,11 @@ const safeNavigate = (
   const isColdLaunch = currentRoute?.name === 'Splash';
 
   if (!isColdLaunch && targetScreen) {
+    const targetParams = navigationState.routes[1]?.params;
     // Use object syntax to satisfy TypeScript's strict typing for navigate
-    // The params will be undefined for screens that don't require them
     navigationRef.navigate({
       name: targetScreen,
-      params: undefined,
+      params: targetParams,
     } as Parameters<typeof navigationRef.navigate>[0]);
   } else {
     navigationRef.reset(navigationState);

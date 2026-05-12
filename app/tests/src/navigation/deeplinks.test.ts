@@ -142,6 +142,33 @@ describe('deeplinks', () => {
       });
     });
 
+    it('preserves ProvingScreenRouter params on warm launch navigation', async () => {
+      const url = 'scheme://open?sessionId=123';
+      const mockCleanSelfApp = jest.fn();
+      const mockStartAppListener = jest.fn();
+      const { navigationRef } = require('@/navigation');
+      navigationRef.getCurrentRoute.mockReturnValue({ name: 'Home' });
+
+      await handleUrl(
+        {
+          getSelfAppState: () => ({
+            setSelfApp: jest.fn(),
+            startAppListener: mockStartAppListener,
+            cleanSelfApp: mockCleanSelfApp,
+          }),
+        } as unknown as SelfClient,
+        url,
+      );
+
+      expect(mockCleanSelfApp).toHaveBeenCalledWith();
+      expect(mockStartAppListener).toHaveBeenCalledWith('123');
+      expect(navigationRef.navigate).toHaveBeenCalledWith({
+        name: 'ProvingScreenRouter',
+        params: { entryPoint: 'deeplink' },
+      });
+      expect(navigationRef.reset).not.toHaveBeenCalled();
+    });
+
     it('handles mock_passport parameter', async () => {
       const mockData = { name: 'John', surname: 'Doe' };
       const url = `scheme://open?mock_passport=${encodeURIComponent(JSON.stringify(mockData))}`;
