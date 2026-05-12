@@ -6,7 +6,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Linking } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Button, Text, XStack, YStack, ZStack } from 'tamagui';
+import { Button, Text, XStack, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 
 import type { DocumentCatalog, IDDocument } from '@selfxyz/common/utils/types';
@@ -142,8 +142,13 @@ const IdDetailsScreen: React.FC = () => {
     );
   }
 
+  const FLOATING_BUTTON_HEIGHT = 56;
+  const FLOATING_BUTTON_GAP = 16;
+  const floatingButtonClearance =
+    bottom + 20 + FLOATING_BUTTON_HEIGHT + FLOATING_BUTTON_GAP;
+
   const ListHeader = (
-    <YStack padding={20}>
+    <YStack padding={20} paddingBottom={0}>
       <IdCardLayout idDocument={document} selected={true} hidden={isHidden} />
       <XStack marginTop={'$3'} justifyContent="flex-start" gap={'$4'}>
         <Button
@@ -189,43 +194,44 @@ const IdDetailsScreen: React.FC = () => {
 
   return (
     <YStack flex={1} backgroundColor={slate50}>
-      {ListHeader}
-      <ZStack flex={1}>
-        <ProofHistoryList documentId={documentId} />
-        <LinearGradient
-          colors={['transparent', slate50]}
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: 100,
-          }}
-          pointerEvents="none"
-        />
-        <YStack position="absolute" bottom={bottom + 20} left={20} right={20}>
-          <Button
-            backgroundColor={isConnected ? slate100 : white}
-            color={isConnected ? slate500 : '#2463EB'}
-            borderColor={isConnected ? slate300 : slate100}
-            borderWidth={1}
-            borderRadius={'$3'}
-            height={'$5'}
-            fontSize={17}
-            elevation={4}
-            shadowColor={black}
-            shadowOffset={{ width: 0, height: 2 }}
-            shadowOpacity={0.1}
-            shadowRadius={4}
-            fontWeight="bold"
-            opacity={isConnected ? 0.8 : 1}
-            disabled={isConnected}
-            onPress={handleConnectId}
-          >
-            {isConnected ? 'ID Connected' : 'Connect ID'}
-          </Button>
-        </YStack>
-      </ZStack>
+      <ProofHistoryList
+        documentId={documentId}
+        ListHeaderComponent={ListHeader}
+        contentBottomPadding={floatingButtonClearance}
+      />
+      <LinearGradient
+        colors={['transparent', slate50]}
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: 100,
+        }}
+        pointerEvents="none"
+      />
+      <YStack position="absolute" bottom={bottom + 20} left={20} right={20}>
+        <Button
+          backgroundColor={isConnected ? slate100 : white}
+          color={isConnected ? slate500 : '#2463EB'}
+          borderColor={isConnected ? slate300 : slate100}
+          borderWidth={1}
+          borderRadius={'$3'}
+          height={'$5'}
+          fontSize={17}
+          elevation={4}
+          shadowColor={black}
+          shadowOffset={{ width: 0, height: 2 }}
+          shadowOpacity={0.1}
+          shadowRadius={4}
+          fontWeight="bold"
+          opacity={isConnected ? 0.8 : 1}
+          disabled={isConnected}
+          onPress={handleConnectId}
+        >
+          {isConnected ? 'ID Connected' : 'Connect ID'}
+        </Button>
+      </YStack>
     </YStack>
   );
 };
