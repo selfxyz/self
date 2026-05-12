@@ -58,13 +58,31 @@ describe('evaluateGoogleUsatGate', () => {
     await expect(evaluateGoogleUsatGate({} as any, app)).resolves.toBe('block');
   });
 
-  it('allows Google USAT when non-kyc doc exists', async () => {
+  it('allows Google USAT when a real non-kyc doc exists', async () => {
     mockIsGoogleUsatProofRequest.mockReturnValue(true);
     mockGetAllDocuments.mockResolvedValue({
-      a: { data: { documentCategory: 'kyc' } } as any,
-      b: { data: { documentCategory: 'passport' } } as any,
+      a: { data: { documentCategory: 'kyc', mock: false } } as any,
+      b: { data: { documentCategory: 'passport', mock: false } } as any,
     });
     await expect(evaluateGoogleUsatGate({} as any, app)).resolves.toBe('allow');
+  });
+
+  it('blocks Google USAT when the only non-kyc doc is a mock', async () => {
+    mockIsGoogleUsatProofRequest.mockReturnValue(true);
+    mockGetAllDocuments.mockResolvedValue({
+      a: { data: { documentCategory: 'kyc', mock: false } } as any,
+      b: { data: { documentCategory: 'passport', mock: true } } as any,
+    });
+    await expect(evaluateGoogleUsatGate({} as any, app)).resolves.toBe('block');
+  });
+
+  it('blocks Google USAT when every doc is kyc or mock', async () => {
+    mockIsGoogleUsatProofRequest.mockReturnValue(true);
+    mockGetAllDocuments.mockResolvedValue({
+      a: { data: { documentCategory: 'kyc', mock: false } } as any,
+      b: { data: { documentCategory: 'id_card', mock: true } } as any,
+    });
+    await expect(evaluateGoogleUsatGate({} as any, app)).resolves.toBe('block');
   });
 
   it('fails open when getAllDocuments throws', async () => {

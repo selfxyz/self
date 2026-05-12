@@ -32,10 +32,10 @@ export async function evaluateGoogleUsatGate(
     // retrieval failure must not permanently block the proof session.
     return 'allow';
   }
-  const hasHighSecurityDoc = Object.values(docs).some(
-    doc => doc.data.documentCategory !== 'kyc',
+  const hasEligibleDoc = Object.values(docs).some(
+    doc => doc.data.documentCategory !== 'kyc' && doc.data.mock !== true,
   );
-  return hasHighSecurityDoc ? 'allow' : 'block';
+  return hasEligibleDoc ? 'allow' : 'block';
 }
 
 function shouldTreatAsGoogleUsat(app: SelfApp): boolean {

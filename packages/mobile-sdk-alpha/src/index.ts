@@ -67,7 +67,11 @@ export type { provingMachineCircuitType } from './proving/provingMachine';
 export { DelayedLottieView } from './components/DelayedLottieView';
 
 export { ExpandableBottomLayout } from './layouts/ExpandableBottomLayout';
-export { GOOGLE_USAT_FAUCET_VERIFIERS } from './constants/googleUsat';
+export {
+  GOOGLE_USAT_FAUCET_APP_NAME,
+  GOOGLE_USAT_FAUCET_ENDPOINT,
+  GOOGLE_USAT_FAUCET_SCOPE,
+} from './constants/googleUsat';
 
 export {
   InitError,
