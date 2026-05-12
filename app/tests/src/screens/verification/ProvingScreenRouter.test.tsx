@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { render, waitFor } from '@testing-library/react-native';
 
 import type {
@@ -13,11 +13,13 @@ import type {
 import {
   isDocumentValidForProving,
   pickBestDocumentToSelect,
+  useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
 
 import { usePassport } from '@/providers/passportDataProvider';
 import { ProvingScreenRouter } from '@/screens/verification/ProvingScreenRouter';
 import { useSettingStore } from '@/stores/settingStore';
+import { evaluateGoogleUsatGate } from '@/utils/googleUsatGate';
 
 // Mock useFocusEffect to behave like useEffect in tests
 // Note: We use jest.requireActual for React to avoid nested require() which causes OOM in CI
@@ -26,6 +28,7 @@ jest.mock('@react-navigation/native', () => {
   const ReactActual = jest.requireActual('react');
   return {
     ...actual,
+    useRoute: jest.fn(() => ({ params: { entryPoint: 'qr_scan' } })),
     useFocusEffect: (callback: () => void) => {
       ReactActual.useEffect(() => {
         callback();
@@ -37,6 +40,7 @@ jest.mock('@react-navigation/native', () => {
 jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
   isDocumentValidForProving: jest.fn(),
   pickBestDocumentToSelect: jest.fn(),
+  useSelfClient: jest.fn(),
 }));
 
 jest.mock('@/providers/passportDataProvider', () => ({
@@ -47,13 +51,21 @@ jest.mock('@/stores/settingStore', () => ({
   useSettingStore: jest.fn(),
 }));
 
+jest.mock('@/utils/googleUsatGate', () => ({
+  evaluateGoogleUsatGate: jest.fn(),
+}));
+
 const mockUseNavigation = useNavigation as jest.MockedFunction<
   typeof useNavigation
 >;
+const mockUseRoute = useRoute as jest.MockedFunction<typeof useRoute>;
 const mockIsDocumentValidForProving =
   isDocumentValidForProving as jest.MockedFunction<
     typeof isDocumentValidForProving
   >;
+const mockUseSelfClient = useSelfClient as jest.MockedFunction<
+  typeof useSelfClient
+>;
 const mockPickBestDocumentToSelect =
   pickBestDocumentToSelect as jest.MockedFunction<
     typeof pickBestDocumentToSelect
@@ -62,10 +74,15 @@ const mockUsePassport = usePassport as jest.MockedFunction<typeof usePassport>;
 const mockUseSettingStore = useSettingStore as jest.MockedFunction<
   typeof useSettingStore
 >;
+const mockEvaluateGoogleUsatGate =
+  evaluateGoogleUsatGate as jest.MockedFunction<typeof evaluateGoogleUsatGate>;
 const mockReplace = jest.fn();
 const mockLoadDocumentCatalog = jest.fn();
 const mockGetAllDocuments = jest.fn();
 const mockSetSelectedDocument = jest.fn();
+const mockTrackEvent = jest.fn();
+const mockCleanSelfApp = jest.fn();
+const mockSelfApp = { appName: 'Test App' };
 
 type MockDocumentEntry = {
   metadata: DocumentMetadata;
@@ -113,6 +130,17 @@ describe('ProvingScreenRouter', () => {
     jest.clearAllMocks();
 
     mockUseNavigation.mockReturnValue({ replace: mockReplace } as any);
+    mockUseRoute.mockReturnValue({ params: { entryPoint: 'qr_scan' } } as any);
+    mockUseSelfClient.mockReturnValue({
+      useSelfAppStore: (
+        selector: (state: { selfApp: { appName: string } }) => unknown,
+      ) => selector({ selfApp: mockSelfApp }),
+      trackEvent: mockTrackEvent,
+      getSelfAppState: () => ({
+        cleanSelfApp: mockCleanSelfApp,
+      }),
+    } as any);
+    mockEvaluateGoogleUsatGate.mockResolvedValue('allow');
 
     mockUsePassport.mockReturnValue({
       loadDocumentCatalog: mockLoadDocumentCatalog,

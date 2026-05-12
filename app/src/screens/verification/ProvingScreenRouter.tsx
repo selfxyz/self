@@ -5,13 +5,20 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator } from 'react-native';
 import { Text, View } from 'tamagui';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import type { RouteProp } from '@react-navigation/native';
+import {
+  useFocusEffect,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import {
   isDocumentValidForProving,
   pickBestDocumentToSelect,
+  useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
+import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import { black } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
@@ -19,7 +26,9 @@ import { proofRequestColors } from '@/components/proof-request';
 import type { RootStackParamList } from '@/navigation';
 import { usePassport } from '@/providers/passportDataProvider';
 import { useSettingStore } from '@/stores/settingStore';
+import { useVerificationGateStore } from '@/stores/verificationGateStore';
 import { getDocumentTypeName } from '@/utils/documentUtils';
+import { evaluateGoogleUsatGate } from '@/utils/googleUsatGate';
 
 /**
  * Router screen for the proving flow that decides whether to skip the document selector.
@@ -35,6 +44,12 @@ import { getDocumentTypeName } from '@/utils/documentUtils';
 const ProvingScreenRouter: React.FC = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const route =
+    useRoute<RouteProp<RootStackParamList, 'ProvingScreenRouter'>>();
+  const { entryPoint } = route.params;
+  const selfClient = useSelfClient();
+  const { useSelfAppStore } = selfClient;
+  const selfApp = useSelfAppStore(state => state.selfApp);
   const { loadDocumentCatalog, getAllDocuments, setSelectedDocument } =
     usePassport();
   const { skipDocumentSelector } = useSettingStore();
@@ -53,7 +68,42 @@ const ProvingScreenRouter: React.FC = () => {
       return;
     }
 
+    // For sessionId-only entries, selfApp arrives asynchronously over the
+    // websocket. Wait for it before evaluating the Google USAT gate so we don't
+    // navigate past the gate prematurely.
+    if (!selfApp) {
+      return;
+    }
+
     setError(null);
+
+    try {
+      const gate = await evaluateGoogleUsatGate(selfClient, selfApp);
+      if (controller.signal.aborted) {
+        return;
+      }
+      if (gate === 'block') {
+        hasRoutedRef.current = true;
+        selfClient.trackEvent(ProofEvents.GOOGLE_USAT_BLOCKED, {
+          entry_point: entryPoint,
+          reason: 'no_high_security_doc',
+        });
+        useVerificationGateStore.getState().open({
+          reason: 'google_usat_high_security_required',
+          entryPoint,
+          requesterName: selfApp.appName,
+        });
+        selfClient.getSelfAppState().cleanSelfApp();
+        navigation.goBack();
+        return;
+      }
+    } catch (gateError) {
+      if (controller.signal.aborted) {
+        return;
+      }
+      console.warn('Google USAT gate evaluation failed:', gateError);
+    }
+
     try {
       const catalog = await loadDocumentCatalog();
       const docs = await getAllDocuments();
@@ -132,6 +182,9 @@ const ProvingScreenRouter: React.FC = () => {
     getAllDocuments,
     loadDocumentCatalog,
     navigation,
+    selfApp,
+    selfClient,
+    entryPoint,
     setSelectedDocument,
     skipDocumentSelector,
   ]);
