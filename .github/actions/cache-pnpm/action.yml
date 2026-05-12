@@ -1,13 +1,13 @@
-name: Cache Yarn
+name: Cache PNPM
 
-description: Cache Yarn dependencies with consistent keys and paths.
+description: Cache pnpm dependencies with consistent keys and paths.
 
 inputs:
   path:
     description: Paths to cache
     required: false
     default: |
-      .yarn/cache
+      ~/.pnpm-store
   lock-file:
     description: Path to pnpm-lock.yaml
     required: false
@@ -36,11 +36,11 @@ runs:
           echo "hash=no-lock-file" >> $GITHUB_OUTPUT
         fi
     - id: cache
-      name: Cache Yarn dependencies
+      name: Cache pnpm dependencies
       uses: actions/cache@v4
       with:
         path: ${{ inputs.path }}
-        key: ${{ runner.os }}-yarn-${{ inputs.cache-version }}-${{ steps.get-hash.outputs.hash }}
+        key: ${{ runner.os }}-pnpm-${{ inputs.cache-version }}-${{ steps.get-hash.outputs.hash }}
         restore-keys: |
-          ${{ runner.os }}-yarn-${{ inputs.cache-version }}-
-          ${{ runner.os }}-yarn-
+          ${{ runner.os }}-pnpm-${{ inputs.cache-version }}-
+          ${{ runner.os }}-pnpm-

@@ -151,10 +151,10 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Install Yarn
-        run: npm i -g yarn
+        run: npm i -g pnpm
 
       - name: Install dependencies
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
         with:
           working_directory: circuits
 

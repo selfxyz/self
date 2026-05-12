@@ -108,11 +108,11 @@ jobs:
           registry-url: "https://registry.npmjs.org"
 
       - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
 
       - name: Build package
         run: |
-          yarn workspace @selfxyz/core build:deps
+          pnpm workspace @selfxyz/core build:deps
 
       - name: Check version not already published
         id: check_version
@@ -125,9 +125,9 @@ jobs:
             exit 1
           fi
 
-      - name: "Pack with yarn (resolves workspace: protocol)"
+      - name: "Pack with pnpm (resolves workspace: protocol)"
         working-directory: sdk/core
-        run: yarn pack --out package.tgz
+        run: pnpm pack --out package.tgz
 
       - name: Publish to npm
         working-directory: sdk/core
@@ -173,11 +173,11 @@ jobs:
           registry-url: "https://registry.npmjs.org"
 
       - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
 
       - name: Build package
         run: |
-          yarn workspace @selfxyz/qrcode build:deps
+          pnpm workspace @selfxyz/qrcode build:deps
 
       - name: Check version not already published
         id: check_version
@@ -190,9 +190,9 @@ jobs:
             exit 1
           fi
 
-      - name: "Pack with yarn (resolves workspace: protocol)"
+      - name: "Pack with pnpm (resolves workspace: protocol)"
         working-directory: sdk/qrcode
-        run: yarn pack --out package.tgz
+        run: pnpm pack --out package.tgz
 
       - name: Publish to npm
         working-directory: sdk/qrcode
@@ -237,11 +237,11 @@ jobs:
           node-version-file: .nvmrc
           registry-url: "https://registry.npmjs.org"
       - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
 
       - name: Build package
         run: |
-          yarn workspace @selfxyz/common build
+          pnpm workspace @selfxyz/common build
 
       - name: Check version not already published
         id: check_version
@@ -254,9 +254,9 @@ jobs:
             exit 1
           fi
 
-      - name: "Pack with yarn (resolves workspace: protocol)"
+      - name: "Pack with pnpm (resolves workspace: protocol)"
         working-directory: common
-        run: yarn pack --out package.tgz
+        run: pnpm pack --out package.tgz
 
       - name: Publish to npm
         working-directory: common
@@ -300,10 +300,10 @@ jobs:
           node-version-file: .nvmrc
           registry-url: "https://registry.npmjs.org"
       - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
       - name: Build package
         run: |
-          yarn workspace @selfxyz/contracts build
+          pnpm workspace @selfxyz/contracts build
 
       - name: Check version not already published
         id: check_version
@@ -316,9 +316,9 @@ jobs:
             exit 1
           fi
 
-      - name: "Pack with yarn (resolves workspace: protocol)"
+      - name: "Pack with pnpm (resolves workspace: protocol)"
         working-directory: contracts
-        run: yarn pack --out package.tgz
+        run: pnpm pack --out package.tgz
 
       - name: Publish to npm
         working-directory: contracts
@@ -363,11 +363,11 @@ jobs:
           registry-url: "https://registry.npmjs.org"
 
       - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
 
       - name: Build package
         run: |
-          yarn workspace @selfxyz/qrcode-angular build:deps
+          pnpm workspace @selfxyz/qrcode-angular build:deps
 
       - name: Check version not already published
         id: check_version
@@ -380,9 +380,9 @@ jobs:
             exit 1
           fi
 
-      - name: "Pack with yarn (resolves workspace: protocol)"
+      - name: "Pack with pnpm (resolves workspace: protocol)"
         working-directory: sdk/qrcode-angular
-        run: yarn pack --out package.tgz
+        run: pnpm pack --out package.tgz
 
       - name: Publish to npm
         working-directory: sdk/qrcode-angular
@@ -428,16 +428,16 @@ jobs:
           registry-url: "https://registry.npmjs.org"
 
       - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
 
       - name: Build package dependencies
         run: |
-          yarn workspace @selfxyz/common build
-          yarn workspace @selfxyz/mobile-sdk-alpha build
+          pnpm workspace @selfxyz/common build
+          pnpm workspace @selfxyz/mobile-sdk-alpha build
 
-      - name: "Pack with yarn (resolves workspace: protocol)"
+      - name: "Pack with pnpm (resolves workspace: protocol)"
         working-directory: packages/mobile-sdk-alpha
-        run: yarn pack --out package.tgz
+        run: pnpm pack --out package.tgz
 
       - name: Publish to npm
         working-directory: packages/mobile-sdk-alpha

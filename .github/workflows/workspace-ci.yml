@@ -21,7 +21,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Cache Yarn dependencies
-        uses: ./.github/actions/cache-yarn
+        uses: ./.github/actions/cache-pnpm
         with:
           path: |
             .yarn/cache
@@ -31,10 +31,10 @@ jobs:
           cache-version: v1
 
       - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
 
       - name: Verify generated contract error selectors
-        run: yarn workspace @selfxyz/contracts check:error-selectors
+        run: pnpm workspace @selfxyz/contracts check:error-selectors
 
   workspace-build:
     runs-on: ubuntu-latest
@@ -44,7 +44,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Cache Yarn dependencies
-        uses: ./.github/actions/cache-yarn
+        uses: ./.github/actions/cache-pnpm
         with:
           path: |
             .yarn/cache
@@ -54,10 +54,10 @@ jobs:
           cache-version: v1
 
       - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
 
       - name: Run workspace build
-        run: yarn build
+        run: pnpm build
 
       - name: Verify build artifacts
         run: |
@@ -73,7 +73,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Cache Yarn dependencies
-        uses: ./.github/actions/cache-yarn
+        uses: ./.github/actions/cache-pnpm
         with:
           path: |
             .yarn/cache
@@ -83,13 +83,13 @@ jobs:
           cache-version: v1
 
       - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
 
       - name: Build workspace dependencies
-        run: yarn build
+        run: pnpm build
 
       - name: Run workspace type checking
-        run: yarn types
+        run: pnpm types
 
       - name: Verify type checking passed
         run: echo "Type checking completed successfully!"
@@ -102,7 +102,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Cache Yarn dependencies
-        uses: ./.github/actions/cache-yarn
+        uses: ./.github/actions/cache-pnpm
         with:
           path: |
             .yarn/cache
@@ -112,7 +112,7 @@ jobs:
           cache-version: v1
 
       - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
 
       - name: Install SwiftLint
         run: |
@@ -121,10 +121,10 @@ jobs:
           sudo install /tmp/swiftlint/swiftlint /usr/local/bin/swiftlint
 
       - name: Build workspace dependencies
-        run: yarn build
+        run: pnpm build
 
       - name: Run workspace linting
-        run: yarn lint
+        run: pnpm lint
 
       - name: Verify linting passed
         run: echo "Linting completed successfully!"
@@ -138,7 +138,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Cache Yarn dependencies
-        uses: ./.github/actions/cache-yarn
+        uses: ./.github/actions/cache-pnpm
         with:
           path: |
             .yarn/cache
@@ -148,7 +148,7 @@ jobs:
           cache-version: v1
 
       - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
 
       - name: Check code formatting (dry run)
         run: |
@@ -159,7 +159,7 @@ jobs:
             git status --porcelain
             exit 1
           fi
-          yarn format
+          pnpm format
           if ! git diff --quiet --exit-code; then
             echo "❌ Code formatting issues found. The following files need formatting:"
             git diff --name-only
@@ -179,7 +179,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Cache Yarn dependencies
-        uses: ./.github/actions/cache-yarn
+        uses: ./.github/actions/cache-pnpm
         with:
           path: |
             .yarn/cache
@@ -189,13 +189,13 @@ jobs:
           cache-version: v1
 
       - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
 
       - name: Build workspace dependencies
-        run: yarn build
+        run: pnpm build
 
       - name: Run workspace tests
-        run: yarn test
+        run: pnpm test
 
       - name: Verify tests passed
         run: echo "Workspace tests completed successfully!"
@@ -208,7 +208,7 @@ jobs:
   #     - uses: actions/checkout@v6
 
   #     - name: Cache Yarn dependencies
-  #       uses: ./.github/actions/cache-yarn
+  #       uses: ./.github/actions/cache-pnpm
   #       with:
   #         path: |
   #           .yarn/cache
@@ -218,10 +218,10 @@ jobs:
   #         cache-version: v1
 
   #     - name: Install Dependencies
-  #       uses: ./.github/actions/yarn-install
+  #       uses: ./.github/actions/pnpm-install
 
   #     - name: Check package version consistency
-  #       run: yarn check:versions
+  #       run: pnpm check:versions
 
   #     - name: Verify version consistency
   #       run: echo "Package version consistency check passed!"

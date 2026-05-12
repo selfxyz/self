@@ -139,26 +139,26 @@
     "react-native.config.cjs"
   ],
   "scripts": {
-    "build": "yarn build:android && yarn build:ios && tsup && yarn postbuild",
+    "build": "pnpm build:android && pnpm build:ios && tsup && pnpm postbuild",
     "postbuild": "node ./scripts/postBuild.mjs",
     "build:android": "sh ./scripts/build-android.sh",
     "build:ios": "sh ./scripts/build-ios.sh",
-    "build:ts-only": "tsup && yarn postbuild",
+    "build:ts-only": "tsup && pnpm postbuild",
     "fmt": "prettier --check .",
     "fmt:fix": "prettier --write .",
-    "format": "yarn nice && prettier --write .",
+    "format": "pnpm nice && prettier --write .",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "nice": "yarn lint:fix",
+    "nice": "pnpm lint:fix",
     "prepublishOnly": "npm run build && npm run typecheck && npm run validate:exports && npm run validate:pkg",
     "report:exports": "node ./scripts/report-exports.mjs",
     "test": "vitest run",
-    "test:build": "yarn build && yarn test && yarn types && yarn lint",
+    "test:build": "pnpm build && pnpm test && pnpm types && pnpm lint",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "types": "tsc -p tsconfig.json --noEmit",
     "validate:exports": "node ./scripts/validate-exports.mjs",
     "validate:pkg": "node ./scripts/verify-conditions.mjs",
-    "watch": "pkill -f 'tsup.*--watch' 2>/dev/null || true && tsup && yarn postbuild && tsup --watch"
+    "watch": "pkill -f 'tsup.*--watch' 2>/dev/null || true && tsup && pnpm postbuild && tsup --watch"
   },
   "dependencies": {
     "@babel/runtime": "^7.28.6",
@@ -237,7 +237,7 @@
       "optional": true
     }
   },
-  "packageManager": "yarn@4.12.0",
+  "packageManager": "pnpm@10.28.1",
   "publishConfig": {
     "access": "restricted"
   }

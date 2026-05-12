@@ -29,7 +29,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Install dependencies
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
       - name: Check for nested require() in tests
         run: |
           if grep -rE "require\(['\"]react(-native)?['\"])" packages/rn-sdk/src/__tests__/ 2>/dev/null; then
@@ -38,21 +38,21 @@ jobs:
           fi
           echo "✅ No nested require() patterns found"
       - name: Build common
-        run: yarn workspace @selfxyz/common build
+        run: pnpm workspace @selfxyz/common build
       - name: Build mobile-sdk-alpha
-        run: yarn workspace @selfxyz/mobile-sdk-alpha build
+        run: pnpm workspace @selfxyz/mobile-sdk-alpha build
       - name: Build webview-bridge
-        run: yarn workspace @selfxyz/webview-bridge build
+        run: pnpm workspace @selfxyz/webview-bridge build
       - name: Build webview-app
-        run: yarn workspace @selfxyz/webview-app build
+        run: pnpm workspace @selfxyz/webview-app build
       - name: Typecheck rn-sdk
-        run: yarn workspace @selfxyz/rn-sdk typecheck
+        run: pnpm workspace @selfxyz/rn-sdk typecheck
       - name: Test rn-sdk
-        run: yarn workspace @selfxyz/rn-sdk test
+        run: pnpm workspace @selfxyz/rn-sdk test
       - name: Build rn-sdk types
-        run: yarn workspace @selfxyz/rn-sdk tsup
+        run: pnpm workspace @selfxyz/rn-sdk tsup
       - name: Typecheck rn-sdk-test-app
-        run: yarn workspace @selfxyz/rn-sdk-test-app types
+        run: pnpm workspace @selfxyz/rn-sdk-test-app types
 
   android-build:
     runs-on: ubuntu-latest
@@ -60,7 +60,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Install dependencies
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
@@ -104,19 +104,19 @@ jobs:
         with:
           node-version-file: .nvmrc
       - name: Install dependencies
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
       - name: Build common
-        run: yarn workspace @selfxyz/common build
+        run: pnpm workspace @selfxyz/common build
       - name: Build mobile-sdk-alpha iOS artifacts
-        run: yarn workspace @selfxyz/mobile-sdk-alpha build:ios
+        run: pnpm workspace @selfxyz/mobile-sdk-alpha build:ios
       - name: Build mobile-sdk-alpha TypeScript bundle
-        run: yarn workspace @selfxyz/mobile-sdk-alpha build:ts-only
+        run: pnpm workspace @selfxyz/mobile-sdk-alpha build:ts-only
       - name: Build webview-bridge
-        run: yarn workspace @selfxyz/webview-bridge build
+        run: pnpm workspace @selfxyz/webview-bridge build
       - name: Build webview-app
-        run: yarn workspace @selfxyz/webview-app build
+        run: pnpm workspace @selfxyz/webview-app build
       - name: Build rn-sdk (includes asset copy)
-        run: yarn workspace @selfxyz/rn-sdk build
+        run: pnpm workspace @selfxyz/rn-sdk build
       - name: Install CocoaPods dependencies
         working-directory: packages/rn-sdk-test-app/ios
         run: pod install

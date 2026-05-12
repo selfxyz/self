@@ -53,7 +53,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: Cache Yarn
-        uses: ./.github/actions/cache-yarn
+        uses: ./.github/actions/cache-pnpm
         with:
           path: |
             .yarn/cache
@@ -91,9 +91,9 @@ jobs:
           SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
       - name: Build dependencies
         shell: bash
-        run: yarn workspace @selfxyz/common build
+        run: pnpm workspace @selfxyz/common build
       - name: Run Android analysis
-        run: yarn analyze:bundle:android
+        run: pnpm analyze:bundle:android
         working-directory: ./app
 
   analyze-ios:
@@ -120,7 +120,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: Cache Yarn
-        uses: ./.github/actions/cache-yarn
+        uses: ./.github/actions/cache-pnpm
         with:
           path: |
             .yarn/cache
@@ -172,7 +172,7 @@ jobs:
           SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
       - name: Build dependencies
         shell: bash
-        run: yarn workspace @selfxyz/common build
+        run: pnpm workspace @selfxyz/common build
       - name: Run iOS analysis
-        run: yarn analyze:bundle:ios
+        run: pnpm analyze:bundle:ios
         working-directory: ./app

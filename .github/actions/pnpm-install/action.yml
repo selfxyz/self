@@ -1,6 +1,6 @@
-name: Yarn Install
+name: PNPM Install
 
-description: Install Yarn v4 and run pnpm install.
+description: Install pnpm and run pnpm install.
 
 inputs:
   working_directory:
@@ -11,22 +11,20 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Install Yarn v4
+    - name: Install pnpm
       shell: bash
       run: |
         corepack enable
         corepack prepare pnpm@10.28.1 --activate
-        # Ensure we're using the correct version
         pnpm --version
 
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version-file: .nvmrc
-        cache: "yarn"
+        cache: "pnpm"
         cache-dependency-path: |
           pnpm-lock.yaml
-          .yarnrc.yml
 
     - name: Install dependencies
       uses: nick-fields/retry@v3
@@ -34,4 +32,4 @@ runs:
         timeout_minutes: 10
         max_attempts: 3
         retry_wait_seconds: 5
-        command: pnpm install --immutable
+        command: pnpm install --frozen-lockfile

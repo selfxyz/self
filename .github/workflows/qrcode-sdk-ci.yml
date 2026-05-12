@@ -80,7 +80,7 @@ jobs:
 
       - name: Cache Yarn dependencies
         id: yarn-cache
-        uses: ./.github/actions/cache-yarn
+        uses: ./.github/actions/cache-pnpm
         with:
           path: |
             .yarn/cache
@@ -90,14 +90,14 @@ jobs:
           cache-version: ${{ env.GH_YARN_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}
 
       - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
 
       - name: Build dependencies
         shell: bash
         run: |
-          yarn workspace @selfxyz/common build
-          yarn workspace @selfxyz/sdk-common build
-          yarn workspace @selfxyz/qrcode build
+          pnpm workspace @selfxyz/common build
+          pnpm workspace @selfxyz/sdk-common build
+          pnpm workspace @selfxyz/qrcode build
 
       - name: Cache build artifacts
         uses: ./.github/actions/cache-sdk-build
@@ -136,7 +136,7 @@ jobs:
 
       - name: Cache Yarn dependencies
         id: yarn-cache
-        uses: ./.github/actions/cache-yarn
+        uses: ./.github/actions/cache-pnpm
         with:
           path: |
             .yarn/cache
@@ -146,7 +146,7 @@ jobs:
           cache-version: ${{ env.GH_YARN_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}
 
       - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
 
       - name: Restore build artifacts
         id: restore-build
@@ -159,18 +159,18 @@ jobs:
       - name: Build dependencies (fallback on cache miss)
         if: steps.restore-build.outputs.cache-hit != 'true'
         run: |
-          yarn workspace @selfxyz/common build
-          yarn workspace @selfxyz/sdk-common build
-          yarn workspace @selfxyz/qrcode build
+          pnpm workspace @selfxyz/common build
+          pnpm workspace @selfxyz/sdk-common build
+          pnpm workspace @selfxyz/qrcode build
 
       - name: Run linter
-        run: yarn workspace @selfxyz/qrcode lint:imports:check
+        run: pnpm workspace @selfxyz/qrcode lint:imports:check
 
       - name: Check Prettier formatting
-        run: yarn workspace @selfxyz/qrcode lint
+        run: pnpm workspace @selfxyz/qrcode lint
 
       - name: Type checking
-        run: yarn workspace @selfxyz/qrcode types
+        run: pnpm workspace @selfxyz/qrcode types
 
       - name: Log cache status
         run: |
@@ -208,7 +208,7 @@ jobs:
 
       - name: Cache Yarn dependencies
         id: yarn-cache
-        uses: ./.github/actions/cache-yarn
+        uses: ./.github/actions/cache-pnpm
         with:
           path: |
             .yarn/cache
@@ -218,7 +218,7 @@ jobs:
           cache-version: ${{ env.GH_YARN_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}
 
       - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
 
       - name: Restore build artifacts
         id: restore-build
@@ -231,9 +231,9 @@ jobs:
       - name: Build dependencies (fallback on cache miss)
         if: steps.restore-build.outputs.cache-hit != 'true'
         run: |
-          yarn workspace @selfxyz/common build
-          yarn workspace @selfxyz/sdk-common build
-          yarn workspace @selfxyz/qrcode build
+          pnpm workspace @selfxyz/common build
+          pnpm workspace @selfxyz/sdk-common build
+          pnpm workspace @selfxyz/qrcode build
 
       - name: Verify build artifacts
         run: |
@@ -274,7 +274,7 @@ jobs:
 
       - name: Cache Yarn dependencies
         id: yarn-cache
-        uses: ./.github/actions/cache-yarn
+        uses: ./.github/actions/cache-pnpm
         with:
           path: |
             .yarn/cache
@@ -284,7 +284,7 @@ jobs:
           cache-version: ${{ env.GH_YARN_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}
 
       - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
 
       - name: Restore build artifacts
         id: restore-build
@@ -297,9 +297,9 @@ jobs:
       - name: Build dependencies (fallback on cache miss)
         if: steps.restore-build.outputs.cache-hit != 'true'
         run: |
-          yarn workspace @selfxyz/common build
-          yarn workspace @selfxyz/sdk-common build
-          yarn workspace @selfxyz/qrcode build
+          pnpm workspace @selfxyz/common build
+          pnpm workspace @selfxyz/sdk-common build
+          pnpm workspace @selfxyz/qrcode build
 
       - name: Check for nested require() in tests
         run: |
@@ -311,7 +311,7 @@ jobs:
           echo "✅ No nested require() patterns found"
 
       - name: Run tests
-        run: yarn workspace @selfxyz/qrcode test
+        run: pnpm workspace @selfxyz/qrcode test
 
       - name: Test package import
         run: |

@@ -18,15 +18,15 @@ jobs:
         with:
           node-version-file: .nvmrc
       - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
       - name: Build dependencies (topological)
         shell: bash
         run: |
           # Build demo app and all its transitive workspace deps in the correct order
-          yarn workspaces foreach -R -t --from mobile-sdk-demo run build
+          pnpm workspaces foreach -R -t --from mobile-sdk-demo run build
       - name: Run demo app tests
         run: |
-          yarn workspace mobile-sdk-demo test
+          pnpm workspace mobile-sdk-demo test
       - name: Build demo app
         run: |
-          yarn build:demo
+          pnpm build:demo

@@ -72,12 +72,12 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - run: corepack enable
-      - run: corepack prepare yarn@4.12.0 --activate
+      - run: corepack prepare pnpm@10.28.1 --activate
       - name: Compute .yarnrc.yml hash
         id: yarnrc-hash
         uses: ./.github/actions/yarnrc-hash
       - name: Cache Yarn dependencies
-        uses: ./.github/actions/cache-yarn
+        uses: ./.github/actions/cache-pnpm
         with:
           path: |
             .yarn/cache
@@ -156,8 +156,8 @@ jobs:
             trap 'kill "${MONITOR_PID}" 2>/dev/null || true' EXIT
 
             for attempt in 1 2 3; do
-              echo "Starting yarn install attempt ${attempt}/3..."
-              if timeout 20m yarn install --immutable; then
+              echo "Starting pnpm install attempt ${attempt}/3..."
+              if timeout 20m pnpm install --immutable; then
                 echo "yarn install completed successfully on attempt ${attempt}."
                 kill "${MONITOR_PID}" 2>/dev/null || true
                 trap - EXIT
@@ -237,8 +237,8 @@ jobs:
             trap 'kill "${MONITOR_PID}" 2>/dev/null || true' EXIT
 
             for attempt in 1 2 3; do
-              echo "Starting yarn install attempt ${attempt}/3..."
-              if timeout 20m yarn install --immutable; then
+              echo "Starting pnpm install attempt ${attempt}/3..."
+              if timeout 20m pnpm install --immutable; then
                 echo "yarn install completed successfully on attempt ${attempt}."
                 kill "${MONITOR_PID}" 2>/dev/null || true
                 trap - EXIT
@@ -314,8 +314,8 @@ jobs:
           echo "Building dependencies..."
           # Ensure Yarn 4.12.0 is active
           corepack enable
-          corepack prepare yarn@4.12.0 --activate
-          yarn workspace @selfxyz/mobile-app run build:deps || { echo "❌ Dependency build failed"; exit 1; }
+          corepack prepare pnpm@10.28.1 --activate
+          pnpm workspace @selfxyz/mobile-app run build:deps || { echo "❌ Dependency build failed"; exit 1; }
           echo "✅ Dependencies built successfully"
       - name: Setup Android private modules
         run: |
@@ -345,7 +345,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: app/android/app/build/outputs/apk/debug/app-debug.apk
-          key: ${{ runner.os }}-apk-v1-${{ hashFiles('app/android/app/src/**', 'app/android/app/build.gradle', 'app/android/app/proguard-rules.pro', 'app/android/build.gradle', 'app/android/settings.gradle', 'app/android/gradle.properties', 'app/android/gradle/wrapper/**', 'app/android/gradlew', 'app/src/**', 'app/App.tsx', 'app/index.js', 'app/app.json', 'app/package.json', 'app/babel.config.cjs', 'app/metro.config.cjs', 'app/react-native.config.cjs', 'app/patches/**', 'patches/**', 'packages/mobile-sdk-alpha/src/**', 'packages/mobile-sdk-alpha/package.json', 'yarn.lock', '.nvmrc', '.apk-cache-inputs.txt') }}
+          key: ${{ runner.os }}-apk-v1-${{ hashFiles('app/android/app/src/**', 'app/android/app/build.gradle', 'app/android/app/proguard-rules.pro', 'app/android/build.gradle', 'app/android/settings.gradle', 'app/android/gradle.properties', 'app/android/gradle/wrapper/**', 'app/android/gradlew', 'app/src/**', 'app/App.tsx', 'app/index.js', 'app/app.json', 'app/package.json', 'app/babel.config.cjs', 'app/metro.config.cjs', 'app/react-native.config.cjs', 'app/patches/**', 'patches/**', 'packages/mobile-sdk-alpha/src/**', 'packages/mobile-sdk-alpha/package.json', 'pnpm-lock.yaml', '.nvmrc', '.apk-cache-inputs.txt') }}
 
       - name: Build Android APK
         if: steps.apk-cache.outputs.cache-hit != 'true'
@@ -559,12 +559,12 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - run: corepack enable
-      - run: corepack prepare yarn@4.12.0 --activate
+      - run: corepack prepare pnpm@10.28.1 --activate
       - name: Compute .yarnrc.yml hash
         id: yarnrc-hash
         uses: ./.github/actions/yarnrc-hash
       - name: Cache Yarn dependencies
-        uses: ./.github/actions/cache-yarn
+        uses: ./.github/actions/cache-pnpm
         with:
           path: |
             .yarn/cache
@@ -607,7 +607,7 @@ jobs:
           timeout_minutes: 10
           max_attempts: 3
           retry_wait_seconds: 5
-          command: yarn install --immutable --silent
+          command: pnpm install --immutable --silent
         env:
           SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
       - name: Install deps (forked PRs - no secrets)
@@ -617,7 +617,7 @@ jobs:
           timeout_minutes: 10
           max_attempts: 3
           retry_wait_seconds: 5
-          command: yarn install --immutable --silent
+          command: pnpm install --immutable --silent
       - name: Validate Maestro test file
         run: |
           [ -f app/tests/e2e/launch.ios.flow.yaml ] || { echo "❌ iOS E2E test file missing"; exit 1; }
@@ -736,7 +736,7 @@ jobs:
       - name: Build dependencies (outside main flow)
         run: |
           echo "Building dependencies..."
-          yarn workspace @selfxyz/mobile-app run build:deps || { echo "❌ Dependency build failed"; exit 1; }
+          pnpm workspace @selfxyz/mobile-app run build:deps || { echo "❌ Dependency build failed"; exit 1; }
           echo "✅ Dependencies built successfully"
       - name: Install iOS dependencies
         uses: nick-fields/retry@v3

@@ -376,7 +376,7 @@ jobs:
 
       - name: Cache Yarn artifacts
         id: yarn-cache
-        uses: ./.github/actions/cache-yarn
+        uses: ./.github/actions/cache-pnpm
         with:
           path: |
             .yarn/cache
@@ -417,10 +417,10 @@ jobs:
         run: |
           echo "🔍 Checking if lock files are in sync with dependency files..."
 
-          # For yarn workspaces, yarn.lock is at root
-          if [ ! -f "${{ env.WORKSPACE }}/yarn.lock" ]; then
-            echo "❌ ERROR: yarn.lock file is missing at workspace root!"
-            echo "Run 'yarn install' at the repository root and commit the yarn.lock file."
+          # For pnpm workspaces, pnpm-lock.yaml is at root
+          if [ ! -f "${{ env.WORKSPACE }}/pnpm-lock.yaml" ]; then
+            echo "❌ ERROR: pnpm-lock.yaml file is missing at workspace root!"
+            echo "Run 'yarn install' at the repository root and commit the pnpm-lock.yaml file."
             exit 1
           fi
 
@@ -687,7 +687,7 @@ jobs:
         run: |
           echo "🏗️ Building SDK dependencies..."
           cd ${{ env.APP_PATH }}
-          yarn workspace @selfxyz/mobile-app run build:deps --silent || { echo "❌ Dependency build failed"; exit 1; }
+          pnpm workspace @selfxyz/mobile-app run build:deps --silent || { echo "❌ Dependency build failed"; exit 1; }
           echo "✅ Dependencies built successfully"
 
       # act won't work with macos, but you can test with `bundle exec fastlane ios ...`
@@ -1017,7 +1017,7 @@ jobs:
 
       - name: Cache Yarn artifacts
         id: yarn-cache
-        uses: ./.github/actions/cache-yarn
+        uses: ./.github/actions/cache-pnpm
         with:
           path: |
             .yarn/cache
@@ -1061,10 +1061,10 @@ jobs:
         run: |
           echo "🔍 Checking if lock files are in sync with dependency files..."
 
-          # For yarn workspaces, yarn.lock is at root
-          if [ ! -f "${{ env.WORKSPACE }}/yarn.lock" ]; then
-            echo "❌ ERROR: yarn.lock file is missing at workspace root!"
-            echo "Run 'yarn install' at the repository root and commit the yarn.lock file."
+          # For pnpm workspaces, pnpm-lock.yaml is at root
+          if [ ! -f "${{ env.WORKSPACE }}/pnpm-lock.yaml" ]; then
+            echo "❌ ERROR: pnpm-lock.yaml file is missing at workspace root!"
+            echo "Run 'yarn install' at the repository root and commit the pnpm-lock.yaml file."
             exit 1
           fi
 
@@ -1159,7 +1159,7 @@ jobs:
         run: |
           echo "🏗️ Building SDK dependencies..."
           cd ${{ env.APP_PATH }}
-          yarn workspace @selfxyz/mobile-app run build:deps --silent || { echo "❌ Dependency build failed"; exit 1; }
+          pnpm workspace @selfxyz/mobile-app run build:deps --silent || { echo "❌ Dependency build failed"; exit 1; }
           echo "✅ Dependencies built successfully"
 
       - name: Build AAB with Fastlane

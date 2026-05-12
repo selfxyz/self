@@ -150,7 +150,7 @@ jobs:
         run: corepack enable
 
       - name: Cache Yarn dependencies
-        uses: ./.github/actions/cache-yarn
+        uses: ./.github/actions/cache-pnpm
         with:
           path: |
             .yarn/cache
@@ -159,13 +159,13 @@ jobs:
           cache-version: v1
 
       - name: Install Yarn dependencies
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
         with:
           working_directory: circuits
 
       - name: Run lint
-        run: yarn workspace @selfxyz/circuits lint
+        run: pnpm workspace @selfxyz/circuits lint
       - name: Run Tests (Circuits)
         env:
           FULL_TEST_SUITE: false
-        run: yarn workspace @selfxyz/circuits test
+        run: pnpm workspace @selfxyz/circuits test

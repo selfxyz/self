@@ -8,7 +8,7 @@
     "dev": "vite",
     "fmt": "prettier --check .",
     "fmt:fix": "prettier --write .",
-    "format": "yarn nice",
+    "format": "pnpm nice",
     "lint": "eslint . --max-warnings=0",
     "lint:fix": "eslint . --fix --max-warnings=0",
     "nice": "prettier --write . && eslint . --fix && tsc --noEmit",
@@ -59,7 +59,7 @@
     "vite": "^6.1.0",
     "vitest": "^2.1.8"
   },
-  "packageManager": "yarn@4.12.0",
+  "packageManager": "pnpm@10.28.1",
   "engines": {
     "node": ">=22 <23"
   }

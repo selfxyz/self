@@ -1,0 +1,10 @@
+packages:
+  - app
+  - circuits
+  - common
+  - contracts
+  - new-common
+  - packages/*
+  - prover/tests
+  - scripts/tests
+  - sdk/*

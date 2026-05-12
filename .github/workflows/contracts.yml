@@ -72,29 +72,29 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
       - name: Cache Hardhat compilers
         uses: actions/cache@v4
         with:
           path: ~/.cache/hardhat-nodejs/compilers-v2
-          key: ${{ runner.os }}-hardhat-compilers-${{ env.GH_HARDHAT_CACHE_VERSION }}-${{ hashFiles('contracts/hardhat.config.ts', 'contracts/package.json', 'yarn.lock') }}
+          key: ${{ runner.os }}-hardhat-compilers-${{ env.GH_HARDHAT_CACHE_VERSION }}-${{ hashFiles('contracts/hardhat.config.ts', 'contracts/package.json', 'pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-hardhat-compilers-${{ env.GH_HARDHAT_CACHE_VERSION }}-
       - name: Prettier Check - Code Formatting
-        run: yarn prettier:check
+        run: pnpm prettier:check
         working-directory: ./contracts
       - name: Build Common Dependencies
-        run: yarn workspace @selfxyz/common build
+        run: pnpm workspace @selfxyz/common build
       - name: Build Contracts
         uses: nick-fields/retry@v3
         with:
           timeout_minutes: 15
           max_attempts: 3
           retry_wait_seconds: 15
-          command: yarn build
+          command: pnpm build
           working_directory: ./contracts
       - name: Run Tests (Contracts)
         working-directory: ./contracts
         # skip until they get fixed
         if: false
-        run: yarn test
+        run: pnpm test

@@ -1,7 +1,7 @@
 {
   "name": "@selfxyz/rn-sdk",
   "version": "0.0.1-alpha.1",
-  "description": "Self Protocol React Native SDK — thin WebView wrapper for identity verification",
+  "description": "Self Protocol React Native SDK \u2014 thin WebView wrapper for identity verification",
   "sideEffects": false,
   "exports": {
     ".": {
@@ -19,10 +19,10 @@
     "assets"
   ],
   "scripts": {
-    "build": "yarn copy-assets && tsup",
+    "build": "pnpm copy-assets && tsup",
     "copy-assets": "mkdir -p ./assets/self-wallet && cp -r ../webview-app/dist/. ./assets/self-wallet/",
-    "prepublishOnly": "yarn build",
-    "test": "yarn copy-assets && tsup && vitest run",
+    "prepublishOnly": "pnpm build",
+    "test": "pnpm copy-assets && tsup && vitest run",
     "typecheck": "tsc --noEmit",
     "types": "tsup"
   },

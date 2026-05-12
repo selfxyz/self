@@ -18,9 +18,9 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
       - name: Build dependencies
         shell: bash
-        run: yarn workspace @selfxyz/common build
+        run: pnpm workspace @selfxyz/common build
       - name: Build web app
-        run: yarn workspace @selfxyz/mobile-app web:build
+        run: pnpm workspace @selfxyz/mobile-app web:build

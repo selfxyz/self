@@ -22,7 +22,7 @@
   "module": "./dist/esm/index.js",
   "types": "./dist/esm/index.d.ts",
   "scripts": {
-    "build": "tsup && yarn build:types",
+    "build": "tsup && pnpm build:types",
     "build:types": "tsc -p tsconfig.json --emitDeclarationOnly",
     "format": "npx prettier --write 'src/**/*.ts'",
     "format:check": "npx prettier --check 'src/**/*.ts'",
