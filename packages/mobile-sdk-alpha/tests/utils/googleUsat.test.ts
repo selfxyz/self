@@ -39,46 +39,28 @@ describe('isGoogleUsatProofRequest', () => {
   });
 
   it('returns false when appName differs', () => {
-    expect(
-      isGoogleUsatProofRequest(buildApp({ appName: 'Some Other App' })),
-    ).toBe(false);
+    expect(isGoogleUsatProofRequest(buildApp({ appName: 'Some Other App' }))).toBe(false);
   });
 
   it('returns false when scope differs', () => {
-    expect(
-      isGoogleUsatProofRequest(buildApp({ scope: 'some-other-scope' })),
-    ).toBe(false);
+    expect(isGoogleUsatProofRequest(buildApp({ scope: 'some-other-scope' }))).toBe(false);
   });
 
   it('returns false when endpoint differs', () => {
-    expect(
-      isGoogleUsatProofRequest(
-        buildApp({ endpoint: 'https://example.com/api/verify' }),
-      ),
-    ).toBe(false);
+    expect(isGoogleUsatProofRequest(buildApp({ endpoint: 'https://example.com/api/verify' }))).toBe(false);
   });
 
   it('is case-insensitive on the endpoint host and tolerates surrounding whitespace', () => {
     const variant = ` ${GOOGLE_USAT_FAUCET_ENDPOINT.toUpperCase()} `;
-    expect(isGoogleUsatProofRequest(buildApp({ endpoint: variant }))).toBe(
-      true,
-    );
+    expect(isGoogleUsatProofRequest(buildApp({ endpoint: variant }))).toBe(true);
   });
 
   it('requires exact scope match (case-sensitive)', () => {
-    expect(
-      isGoogleUsatProofRequest(
-        buildApp({ scope: GOOGLE_USAT_FAUCET_SCOPE.toUpperCase() }),
-      ),
-    ).toBe(false);
+    expect(isGoogleUsatProofRequest(buildApp({ scope: GOOGLE_USAT_FAUCET_SCOPE.toUpperCase() }))).toBe(false);
   });
 
   it('requires exact appName match (case-sensitive)', () => {
-    expect(
-      isGoogleUsatProofRequest(
-        buildApp({ appName: GOOGLE_USAT_FAUCET_APP_NAME.toUpperCase() }),
-      ),
-    ).toBe(false);
+    expect(isGoogleUsatProofRequest(buildApp({ appName: GOOGLE_USAT_FAUCET_APP_NAME.toUpperCase() }))).toBe(false);
   });
 
   it('accepts a custom identity override', () => {
