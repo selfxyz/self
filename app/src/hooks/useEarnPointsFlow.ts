@@ -57,7 +57,9 @@ export const useEarnPointsFlow = ({
 
     // Use setTimeout to ensure modal dismisses before navigating
     setTimeout(() => {
-      navigation.navigate('ProvingScreenRouter');
+      navigation.navigate('ProvingScreenRouter', {
+        entryPoint: 'earn_points',
+      });
     }, 100);
   }, [selfClient, navigation]);
 

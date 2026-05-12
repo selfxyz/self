@@ -106,7 +106,10 @@ describe('deeplinks', () => {
       const { navigationRef } = require('@/navigation');
       expect(navigationRef.reset).toHaveBeenCalledWith({
         index: 1,
-        routes: [{ name: 'Home' }, { name: 'ProvingScreenRouter' }],
+        routes: [
+          { name: 'Home' },
+          { name: 'ProvingScreenRouter', params: { entryPoint: 'deeplink' } },
+        ],
       });
     });
 
@@ -132,8 +135,38 @@ describe('deeplinks', () => {
       const { navigationRef } = require('@/navigation');
       expect(navigationRef.reset).toHaveBeenCalledWith({
         index: 1,
-        routes: [{ name: 'Home' }, { name: 'ProvingScreenRouter' }],
+        routes: [
+          { name: 'Home' },
+          { name: 'ProvingScreenRouter', params: { entryPoint: 'deeplink' } },
+        ],
       });
+    });
+
+    it('preserves ProvingScreenRouter params on warm launch navigation', async () => {
+      const url = 'scheme://open?sessionId=123';
+      const mockCleanSelfApp = jest.fn();
+      const mockStartAppListener = jest.fn();
+      const { navigationRef } = require('@/navigation');
+      navigationRef.getCurrentRoute.mockReturnValue({ name: 'Home' });
+
+      await handleUrl(
+        {
+          getSelfAppState: () => ({
+            setSelfApp: jest.fn(),
+            startAppListener: mockStartAppListener,
+            cleanSelfApp: mockCleanSelfApp,
+          }),
+        } as unknown as SelfClient,
+        url,
+      );
+
+      expect(mockCleanSelfApp).toHaveBeenCalledWith();
+      expect(mockStartAppListener).toHaveBeenCalledWith('123');
+      expect(navigationRef.navigate).toHaveBeenCalledWith({
+        name: 'ProvingScreenRouter',
+        params: { entryPoint: 'deeplink' },
+      });
+      expect(navigationRef.reset).not.toHaveBeenCalled();
     });
 
     it('handles mock_passport parameter', async () => {

@@ -48,7 +48,11 @@ export type { SelfApp, SelfAppDisclosureConfig } from '@selfxyz/common';
 export type { SelfAppState } from './stores/selfAppStore';
 
 export type { WebAnalyticsOptions } from './adapters/browser';
-export { GOOGLE_USAT_FAUCET_VERIFIERS } from './constants/googleUsat';
+export {
+  GOOGLE_USAT_FAUCET_APP_NAME,
+  GOOGLE_USAT_FAUCET_ENDPOINT,
+  GOOGLE_USAT_FAUCET_SCOPE,
+} from './constants/googleUsat';
 export {
   InitError,
   LivenessError,
