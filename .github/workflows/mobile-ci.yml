@@ -59,7 +59,7 @@ jobs:
       - name: Enable Corepack
         run: corepack enable
       - name: Activate Yarn 4.12.0
-        run: corepack prepare pnpm@10.28.1 --activate
+        run: corepack prepare pnpm@11.1.1 --activate
       - name: Cache Yarn
         uses: ./.github/actions/cache-pnpm
         with:
@@ -117,7 +117,7 @@ jobs:
       - name: Enable Corepack
         run: corepack enable
       - name: Activate Yarn 4.12.0
-        run: corepack prepare pnpm@10.28.1 --activate
+        run: corepack prepare pnpm@11.1.1 --activate
       - name: Cache Yarn
         uses: ./.github/actions/cache-pnpm
         with:

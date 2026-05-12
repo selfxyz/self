@@ -68,7 +68,7 @@ jobs:
           pnpm --filter @selfxyz/common build
           pnpm --filter @selfxyz/mobile-sdk-alpha build
       - name: Check Prettier formatting
-        run: pnpm --filter @selfxyz/mobile-sdk-alpha prettier --check .
+        run: pnpm --filter @selfxyz/mobile-sdk-alpha exec prettier --check .
 
   types:
     runs-on: ubuntu-latest

@@ -57,19 +57,19 @@ runs:
       run: |
         cd ${{ inputs.app_path }}
 
-        # Configure Yarn
+        # Configure pnpm
         corepack enable
-        pnpm set version 4.12.0
+        corepack prepare pnpm@11.1.1 --activate
 
         echo "📦 Installing JavaScript dependencies with strict lock file..."
-        if ! pnpm install --immutable --inline-builds; then
+        if ! pnpm install --frozen-lockfile; then
           echo ""
           echo "❌ ERROR: pnpm-lock.yaml is out of date!"
           echo ""
           echo "This happens when package.json was modified but pnpm-lock.yaml wasn't updated."
           echo ""
           echo "To fix this:"
-          echo "  1. Run 'yarn install' locally in the app directory"
+          echo "  1. Run 'pnpm install' locally at the repository root"
           echo "  2. Commit the updated pnpm-lock.yaml file"
           echo "  3. Push your changes"
           echo ""
