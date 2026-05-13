@@ -2,11 +2,10 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-const React = require('react');
+import React from 'react';
 
-const LottieViewMock = React.forwardRef((props, ref) =>
-  React.createElement('mock-lottie-view', { ...props, ref }),
-);
+const LottieViewMock = React.forwardRef(function LottieViewMock(props, ref) {
+  return React.createElement('mock-lottie-view', { ...props, ref });
+});
 
-module.exports = LottieViewMock;
-module.exports.default = LottieViewMock;
+export default LottieViewMock;
