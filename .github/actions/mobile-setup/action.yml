@@ -62,7 +62,8 @@ runs:
         corepack prepare pnpm@11.1.1 --activate
 
         echo "📦 Installing JavaScript dependencies with strict lock file..."
-        if ! pnpm install --frozen-lockfile; then
+        # Force full dependency installation even when workflows export NODE_ENV=production.
+        if ! NODE_ENV=development pnpm install --frozen-lockfile --prod=false; then
           echo ""
           echo "❌ ERROR: pnpm-lock.yaml is out of date!"
           echo ""
@@ -77,8 +78,8 @@ runs:
           exit 1
         fi
 
-        # Run mobile-specific installation
-        pnpm install-app:mobile-deploy
+        # Run mobile-specific installation with full dependency graph as well.
+        NODE_ENV=development pnpm install-app:mobile-deploy
 
     - name: Install Ruby dependencies
       shell: bash
