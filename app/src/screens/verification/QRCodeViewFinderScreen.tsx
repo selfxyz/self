@@ -50,7 +50,12 @@ const QRCodeViewFinderScreen: React.FC = () => {
   const isFocused = useIsFocused();
   const [doneScanningQR, setDoneScanningQR] = useState(false);
   const { top: safeAreaTop } = useSafeAreaInsets();
-  const navigateToDocumentSelector = useHapticNavigation('ProvingScreenRouter');
+  const navigateToDocumentSelector = useHapticNavigation(
+    'ProvingScreenRouter',
+    {
+      params: { entryPoint: 'qr_scan' },
+    },
+  );
 
   // This resets to the default state when we navigate back to this screen
   useFocusEffect(

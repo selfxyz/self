@@ -30,6 +30,7 @@ import {
   isDocumentValidForProving,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
+import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
@@ -47,7 +48,9 @@ import {
 import { useSelfAppData } from '@/hooks/useSelfAppData';
 import type { RootStackParamList } from '@/navigation';
 import { usePassport } from '@/providers/passportDataProvider';
+import { useVerificationGateStore } from '@/stores/verificationGateStore';
 import { getDocumentTypeName } from '@/utils/documentUtils';
+import { evaluateGoogleUsatGateForDocument } from '@/utils/googleUsatGate';
 
 function getDocumentDisplayName(
   metadata: DocumentMetadata,
@@ -113,6 +116,7 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route =
     useRoute<RouteProp<RootStackParamList, 'DocumentSelectorForProving'>>();
+  const entryPoint = route.params?.entryPoint ?? 'qr_scan';
   const selfClient = useSelfClient();
   const { useSelfAppStore } = selfClient;
   const selfApp = useSelfAppStore(state => state.selfApp);
@@ -289,6 +293,26 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
     setSubmitting(true);
     setError(null);
     try {
+      if (selfApp) {
+        const gate = await evaluateGoogleUsatGateForDocument(
+          selfClient,
+          selfApp,
+          selectedDocumentId,
+        );
+        if (gate === 'block') {
+          selfClient.trackEvent(ProofEvents.GOOGLE_USAT_BLOCKED, {
+            entry_point: entryPoint,
+            reason: 'no_high_security_doc',
+          });
+          useVerificationGateStore.getState().open({
+            reason: 'google_usat_high_security_required',
+            entryPoint,
+            requesterName: selfApp.appName,
+          });
+          setSheetOpen(false);
+          return;
+        }
+      }
       await setSelectedDocument(selectedDocumentId);
       setSheetOpen(false); // Close the sheet first
       navigation.navigate('Prove', { scrollOffset: scrollOffsetRef.current });
@@ -304,6 +328,9 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
     submitting,
     setSelectedDocument,
     navigation,
+    selfApp,
+    selfClient,
+    entryPoint,
   ]);
 
   const handleApprove = async () => {
@@ -314,6 +341,25 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
     setSubmitting(true);
     setError(null);
     try {
+      if (selfApp) {
+        const gate = await evaluateGoogleUsatGateForDocument(
+          selfClient,
+          selfApp,
+          selectedDocumentId,
+        );
+        if (gate === 'block') {
+          selfClient.trackEvent(ProofEvents.GOOGLE_USAT_BLOCKED, {
+            entry_point: entryPoint,
+            reason: 'no_high_security_doc',
+          });
+          useVerificationGateStore.getState().open({
+            reason: 'google_usat_high_security_required',
+            entryPoint,
+            requesterName: selfApp.appName,
+          });
+          return;
+        }
+      }
       await setSelectedDocument(selectedDocumentId);
       navigation.navigate('Prove', { scrollOffset: scrollOffsetRef.current });
     } catch (selectionError) {
