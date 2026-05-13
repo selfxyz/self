@@ -11,6 +11,7 @@ import type {
   IDDocument,
 } from '@selfxyz/common/utils/types';
 import {
+  hasEligibleAlternativeDocumentForPolicy,
   isDocumentValidForProving,
   pickBestDocumentToSelect,
   useSelfClient,
@@ -41,6 +42,8 @@ jest.mock('@react-navigation/native', () => {
 });
 
 jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
+  GOOGLE_USAT_FAUCET_POLICY: { id: 'google-usat-faucet' },
+  hasEligibleAlternativeDocumentForPolicy: jest.fn(() => false),
   isDocumentValidForProving: jest.fn(),
   pickBestDocumentToSelect: jest.fn(),
   useSelfClient: jest.fn(),
@@ -83,6 +86,10 @@ const mockEvaluateGoogleUsatGate =
 const mockEvaluateGoogleUsatGateForDocument =
   evaluateGoogleUsatGateForDocument as jest.MockedFunction<
     typeof evaluateGoogleUsatGateForDocument
+  >;
+const mockHasEligibleGoogleUsatAlternativeDocument =
+  hasEligibleAlternativeDocumentForPolicy as jest.MockedFunction<
+    typeof hasEligibleAlternativeDocumentForPolicy
   >;
 const mockReplace = jest.fn();
 const mockLoadDocumentCatalog = jest.fn();
@@ -150,6 +157,7 @@ describe('ProvingScreenRouter', () => {
     } as any);
     mockEvaluateGoogleUsatGate.mockResolvedValue('allow');
     mockEvaluateGoogleUsatGateForDocument.mockResolvedValue('allow');
+    mockHasEligibleGoogleUsatAlternativeDocument.mockReturnValue(false);
 
     mockUsePassport.mockReturnValue({
       loadDocumentCatalog: mockLoadDocumentCatalog,
@@ -333,6 +341,108 @@ describe('ProvingScreenRouter', () => {
 
     // Should NOT auto-select since there are multiple documents
     expect(mockSetSelectedDocument).not.toHaveBeenCalled();
+  });
+
+  it('routes to selector instead of hard-blocking when an eligible alternative doc exists', async () => {
+    const kyc = createMetadata({
+      id: 'doc-kyc',
+      documentCategory: 'kyc',
+      isRegistered: true,
+    });
+    const passport = createMetadata({
+      id: 'doc-passport',
+      documentType: 'us',
+      isRegistered: true,
+    });
+    const catalog: DocumentCatalog = {
+      documents: [kyc, passport],
+      selectedDocumentId: 'doc-kyc',
+    } as any;
+    const allDocs = createAllDocuments([
+      createDocumentEntry(kyc),
+      createDocumentEntry(passport),
+    ]);
+
+    mockLoadDocumentCatalog.mockResolvedValue(catalog);
+    mockGetAllDocuments.mockResolvedValue(allDocs);
+    mockEvaluateGoogleUsatGate.mockResolvedValue('block');
+    mockHasEligibleGoogleUsatAlternativeDocument.mockReturnValue(true);
+
+    render(<ProvingScreenRouter />);
+
+    await waitFor(() => {
+      expect(mockReplace).toHaveBeenCalledWith(
+        'DocumentSelectorForProving',
+        expect.objectContaining({ entryPoint: 'qr_scan' }),
+      );
+    });
+
+    expect(mockCleanSelfApp).not.toHaveBeenCalled();
+    expect(mockTrackEvent).not.toHaveBeenCalledWith(
+      'Proof: Google USAT Disclosure Blocked',
+      expect.anything(),
+    );
+  });
+
+  it('hard-blocks (modal + cleanSelfApp + goBack) when no eligible alternative doc exists', async () => {
+    const kyc = createMetadata({
+      id: 'doc-kyc',
+      documentCategory: 'kyc',
+      isRegistered: true,
+    });
+    const catalog: DocumentCatalog = {
+      documents: [kyc],
+      selectedDocumentId: 'doc-kyc',
+    } as any;
+    const allDocs = createAllDocuments([createDocumentEntry(kyc)]);
+
+    const mockGoBack = jest.fn();
+    mockUseNavigation.mockReturnValue({
+      replace: mockReplace,
+      goBack: mockGoBack,
+    } as any);
+
+    mockLoadDocumentCatalog.mockResolvedValue(catalog);
+    mockGetAllDocuments.mockResolvedValue(allDocs);
+    mockEvaluateGoogleUsatGate.mockResolvedValue('block');
+    mockHasEligibleGoogleUsatAlternativeDocument.mockReturnValue(false);
+
+    render(<ProvingScreenRouter />);
+
+    await waitFor(() => {
+      expect(mockCleanSelfApp).toHaveBeenCalledTimes(1);
+      expect(mockGoBack).toHaveBeenCalledTimes(1);
+    });
+
+    expect(mockTrackEvent).toHaveBeenCalledWith(
+      expect.stringContaining('Google USAT'),
+      expect.objectContaining({ reason: 'no_high_security_doc' }),
+    );
+    expect(mockReplace).not.toHaveBeenCalled();
+  });
+
+  it('fetches catalog and docs at most once per routing pass', async () => {
+    const passport = createMetadata({
+      id: 'doc-1',
+      documentType: 'us',
+      isRegistered: true,
+    });
+    const catalog: DocumentCatalog = {
+      documents: [passport],
+    };
+    const allDocs = createAllDocuments([createDocumentEntry(passport)]);
+
+    mockLoadDocumentCatalog.mockResolvedValue(catalog);
+    mockGetAllDocuments.mockResolvedValue(allDocs);
+
+    render(<ProvingScreenRouter />);
+
+    await waitFor(() => {
+      expect(mockReplace).toHaveBeenCalled();
+    });
+
+    expect(mockLoadDocumentCatalog).toHaveBeenCalledTimes(1);
+    expect(mockGetAllDocuments).toHaveBeenCalledTimes(1);
   });
 
   it('falls back to document selector when setSelectedDocument fails', async () => {

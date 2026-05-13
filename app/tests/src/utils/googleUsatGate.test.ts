@@ -9,15 +9,50 @@ import {
 
 import {
   evaluateGoogleUsatGate,
-  FORCE_GOOGLE_USAT_FOR_TESTING,
   evaluateGoogleUsatGateForDocument,
-  hasEligibleGoogleUsatAlternativeDocument,
+  FORCE_GOOGLE_USAT_FOR_TESTING,
 } from '@/utils/googleUsatGate';
 
-jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
-  getAllDocuments: jest.fn(),
-  isGoogleUsatProofRequest: jest.fn(),
-}));
+jest.mock('@selfxyz/mobile-sdk-alpha', () => {
+  const policy = {
+    id: 'google-usat-faucet',
+    match: {
+      endpoint: 'https://example/api/verify',
+      scope: 'celo-mainnet-tether-usat',
+      appName: 'Google Cloud Web3 Portal',
+    },
+    allowedCategories: ['passport', 'id_card'],
+    allowMock: false,
+  };
+  return {
+    getAllDocuments: jest.fn(),
+    isGoogleUsatProofRequest: jest.fn(),
+    GOOGLE_USAT_FAUCET_POLICY: policy,
+    isDocumentEligibleForPolicy: (
+      p: typeof policy,
+      category: string,
+      isMock: boolean | undefined,
+    ) =>
+      p.allowedCategories.includes(category) &&
+      !(isMock === true && !p.allowMock),
+    hasEligibleAlternativeDocumentForPolicy: (
+      p: typeof policy,
+      docs: Record<
+        string,
+        { data: { documentCategory: string; mock?: boolean } }
+      >,
+      excludedDocumentId: string,
+    ) =>
+      Object.entries(docs).some(([id, doc]) => {
+        if (id === excludedDocumentId) return false;
+        const { documentCategory, mock } = doc.data;
+        return (
+          p.allowedCategories.includes(documentCategory) &&
+          !(mock === true && !p.allowMock)
+        );
+      }),
+  };
+});
 
 const mockGetAllDocuments = getAllDocuments as jest.MockedFunction<
   typeof getAllDocuments
@@ -168,19 +203,5 @@ describe('evaluateGoogleUsatGate', () => {
       evaluateGoogleUsatGateForDocument(selfClient, app, 'selected', docs),
     ).resolves.toBe('allow');
     expect(mockGetAllDocuments).not.toHaveBeenCalled();
-  });
-
-  it('detects eligible alternative docs when selected one is excluded', () => {
-    expect(
-      hasEligibleGoogleUsatAlternativeDocument(
-        {
-          selected: { data: { documentCategory: 'kyc', mock: false } } as any,
-          eligible: {
-            data: { documentCategory: 'passport', mock: false },
-          } as any,
-        },
-        'selected',
-      ),
-    ).toBe(true);
   });
 });

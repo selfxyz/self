@@ -3,20 +3,24 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type { SelfApp } from '@selfxyz/common/utils';
-import type { DocumentCategory } from '@selfxyz/common/utils/types';
+import type { DocumentCatalog } from '@selfxyz/common/utils/types';
 import {
   getAllDocuments,
+  GOOGLE_USAT_FAUCET_POLICY,
+  isDocumentEligibleForPolicy,
   isGoogleUsatProofRequest,
   type SelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
 
 export type GoogleUsatGateResult = 'allow' | 'block';
 export const FORCE_GOOGLE_USAT_FOR_TESTING = false;
-type GoogleUsatEligibleDocumentCategory = 'passport' | 'id_card';
-const GOOGLE_USAT_ALLOWED_DOCUMENT_CATEGORIES: ReadonlySet<DocumentCategory> =
-  new Set(['passport', 'id_card']);
 
 type DocumentMap = Awaited<ReturnType<typeof getAllDocuments>>;
+
+export interface GoogleUsatGateContext {
+  catalog?: DocumentCatalog;
+  docs?: DocumentMap;
+}
 
 export function isGoogleUsatForceEnabledForTesting(): boolean {
   return __DEV__ && FORCE_GOOGLE_USAT_FOR_TESTING;
@@ -25,21 +29,27 @@ export function isGoogleUsatForceEnabledForTesting(): boolean {
 export async function evaluateGoogleUsatGate(
   selfClient: SelfClient,
   app: SelfApp,
+  context: GoogleUsatGateContext = {},
 ): Promise<GoogleUsatGateResult> {
   if (!shouldTreatAsGoogleUsat(app)) {
     return 'allow';
   }
 
   try {
-    const catalog = await selfClient.loadDocumentCatalog();
+    const catalog = context.catalog ?? (await selfClient.loadDocumentCatalog());
     const selectedDocumentId = catalog.selectedDocumentId;
 
     if (!selectedDocumentId) {
       return 'allow';
     }
 
-    const docs = await getAllDocuments(selfClient);
-    return evaluateGoogleUsatGateForDocument(selfClient, app, selectedDocumentId, docs);
+    const docs = context.docs ?? (await getAllDocuments(selfClient));
+    return evaluateGoogleUsatGateForDocument(
+      selfClient,
+      app,
+      selectedDocumentId,
+      docs,
+    );
   } catch {
     return 'allow';
   }
@@ -69,7 +79,8 @@ export async function evaluateGoogleUsatGateForDocument(
     return 'block';
   }
 
-  const isEligibleSelectedDoc = isGoogleUsatDocumentEligible(
+  const isEligibleSelectedDoc = isDocumentEligibleForPolicy(
+    GOOGLE_USAT_FAUCET_POLICY,
     documentToEvaluate.data.documentCategory,
     documentToEvaluate.data.mock,
   );
@@ -77,38 +88,9 @@ export async function evaluateGoogleUsatGateForDocument(
   return isEligibleSelectedDoc ? 'allow' : 'block';
 }
 
-export function hasEligibleGoogleUsatAlternativeDocument(
-  docs: DocumentMap,
-  excludedDocumentId: string,
-): boolean {
-  return Object.entries(docs).some(([documentId, document]) => {
-    if (documentId === excludedDocumentId) {
-      return false;
-    }
-
-    return isGoogleUsatDocumentEligible(
-      document.data.documentCategory,
-      document.data.mock,
-    );
-  });
-}
-
 function shouldTreatAsGoogleUsat(app: SelfApp): boolean {
   if (isGoogleUsatForceEnabledForTesting()) {
     return true;
   }
   return isGoogleUsatProofRequest(app);
-}
-
-function isGoogleUsatEligibleDocumentCategory(
-  category: DocumentCategory,
-): category is GoogleUsatEligibleDocumentCategory {
-  return GOOGLE_USAT_ALLOWED_DOCUMENT_CATEGORIES.has(category);
-}
-
-function isGoogleUsatDocumentEligible(
-  category: DocumentCategory,
-  isMock: boolean | undefined,
-): boolean {
-  return isGoogleUsatEligibleDocumentCategory(category) && isMock !== true;
 }

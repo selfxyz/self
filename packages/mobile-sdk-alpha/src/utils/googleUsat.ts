@@ -4,11 +4,8 @@
 
 import type { SelfApp } from '@selfxyz/common/utils';
 
-import {
-  GOOGLE_USAT_FAUCET_APP_NAME,
-  GOOGLE_USAT_FAUCET_ENDPOINT,
-  GOOGLE_USAT_FAUCET_SCOPE,
-} from '../constants/googleUsat';
+import { GOOGLE_USAT_FAUCET_POLICY } from '../constants/restrictedApps';
+import { findRestrictedAppPolicy } from './restrictedApps';
 
 export interface GoogleUsatFaucetIdentity {
   endpoint: string;
@@ -17,18 +14,28 @@ export interface GoogleUsatFaucetIdentity {
 }
 
 export const GOOGLE_USAT_FAUCET_IDENTITY: GoogleUsatFaucetIdentity = {
-  endpoint: GOOGLE_USAT_FAUCET_ENDPOINT,
-  scope: GOOGLE_USAT_FAUCET_SCOPE,
-  appName: GOOGLE_USAT_FAUCET_APP_NAME,
+  endpoint: GOOGLE_USAT_FAUCET_POLICY.match.endpoint,
+  scope: GOOGLE_USAT_FAUCET_POLICY.match.scope,
+  appName: GOOGLE_USAT_FAUCET_POLICY.match.appName,
 };
 
+/**
+ * Matches the Google USAT faucet app by identity. Backed by the
+ * RESTRICTED_APP_REGISTRY — for general restricted-app matching prefer
+ * findRestrictedAppPolicy(). This function exists so existing call sites
+ * continue to compile unchanged.
+ */
 export function isGoogleUsatProofRequest(
   app: SelfApp,
   identity: GoogleUsatFaucetIdentity = GOOGLE_USAT_FAUCET_IDENTITY,
 ): boolean {
-  return (
-    app.endpoint?.trim().toLowerCase() === identity.endpoint.trim().toLowerCase() &&
-    app.scope === identity.scope &&
-    app.appName === identity.appName
-  );
+  const matched = findRestrictedAppPolicy(app, [
+    {
+      id: GOOGLE_USAT_FAUCET_POLICY.id,
+      match: identity,
+      allowedCategories: GOOGLE_USAT_FAUCET_POLICY.allowedCategories,
+      allowMock: GOOGLE_USAT_FAUCET_POLICY.allowMock,
+    },
+  ]);
+  return matched !== null;
 }

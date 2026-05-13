@@ -14,6 +14,8 @@ import {
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import {
+  GOOGLE_USAT_FAUCET_POLICY,
+  hasEligibleAlternativeDocumentForPolicy,
   isDocumentValidForProving,
   pickBestDocumentToSelect,
   useSelfClient,
@@ -31,7 +33,6 @@ import { getDocumentTypeName } from '@/utils/documentUtils';
 import {
   evaluateGoogleUsatGate,
   evaluateGoogleUsatGateForDocument,
-  hasEligibleGoogleUsatAlternativeDocument,
 } from '@/utils/googleUsatGate';
 
 /**
@@ -85,11 +86,18 @@ const ProvingScreenRouter: React.FC = () => {
       const catalog = await loadDocumentCatalog();
       const docs = await getAllDocuments();
 
-      const gate = await evaluateGoogleUsatGate(selfClient, selfApp);
+      const gate = await evaluateGoogleUsatGate(selfClient, selfApp, {
+        catalog,
+        docs,
+      });
       if (gate === 'block') {
         const selectedDocumentId = catalog.selectedDocumentId;
         const hasAlternativeEligibleDocument = selectedDocumentId
-          ? hasEligibleGoogleUsatAlternativeDocument(docs, selectedDocumentId)
+          ? hasEligibleAlternativeDocumentForPolicy(
+              GOOGLE_USAT_FAUCET_POLICY,
+              docs,
+              selectedDocumentId,
+            )
           : false;
 
         if (!hasAlternativeEligibleDocument) {
