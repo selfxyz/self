@@ -50,7 +50,7 @@ jobs:
       - name: Test rn-sdk
         run: pnpm --filter @selfxyz/rn-sdk test
       - name: Build rn-sdk types
-        run: pnpm --filter @selfxyz/rn-sdk tsup
+        run: pnpm --filter @selfxyz/rn-sdk exec tsup
       - name: Typecheck rn-sdk-test-app
         run: pnpm --filter @selfxyz/rn-sdk-test-app types
 
