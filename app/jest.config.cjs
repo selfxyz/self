@@ -38,8 +38,10 @@ module.exports = {
     '^@tests$': '<rootDir>/tests/src',
     '^expo-camera$': '<rootDir>/tests/__setup__/expoCameraMock.js',
     '^expo-application$': '<rootDir>/tests/__setup__/expoApplicationMock.js',
-    // Map react-native-svg to app's node_modules for all packages
-    '^react-native-svg$': '<rootDir>/node_modules/react-native-svg',
+    // Map react-native-svg to the hoisted workspace copy (pnpm puts it at the
+    // repo root under nodeLinker: hoisted; the app workspace's node_modules
+    // does not contain a top-level entry for it).
+    '^react-native-svg$': '<rootDir>/../node_modules/react-native-svg',
     '^@selfxyz/mobile-sdk-alpha$':
       '<rootDir>/../packages/mobile-sdk-alpha/dist/cjs/index.cjs',
     '^@selfxyz/mobile-sdk-alpha/components$':

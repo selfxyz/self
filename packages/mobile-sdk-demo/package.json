@@ -14,7 +14,6 @@
     "clean": "rm -rf ios/build android/app/build android/build && cd android && ./gradlew clean && cd ..",
     "format": "pnpm nice",
     "ia": "pnpm install-app",
-    "postinstall": "npx patch-package --patch-dir ../../patches || true",
     "install-app": "pnpm install && pnpm prebuild && cd ios && pod install && cd ..",
     "preios": "pnpm prebuild",
     "ios": "react-native run-ios",
