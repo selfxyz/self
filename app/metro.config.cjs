@@ -14,7 +14,12 @@ const projectRoot = __dirname;
 const workspaceRoot =
   findYarnWorkspaceRoot(__dirname) || path.resolve(__dirname, '..');
 const escapeRegExp = value => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-const hasAppLocalReactCopies = ['react', 'react-dom', 'react-native', 'scheduler']
+const hasAppLocalReactCopies = [
+  'react',
+  'react-dom',
+  'react-native',
+  'scheduler',
+]
   .map(moduleName => path.resolve(projectRoot, 'node_modules', moduleName))
   .every(modulePath => fs.existsSync(modulePath));
 const workspaceReactBlockList = hasAppLocalReactCopies
@@ -24,9 +29,7 @@ const workspaceReactBlockList = hasAppLocalReactCopies
       new RegExp(
         `^${escapeRegExp(workspaceRoot)}/node_modules/react-native(/|$)`,
       ),
-      new RegExp(
-        `^${escapeRegExp(workspaceRoot)}/node_modules/scheduler(/|$)`,
-      ),
+      new RegExp(`^${escapeRegExp(workspaceRoot)}/node_modules/scheduler(/|$)`),
     ]
   : [];
 
