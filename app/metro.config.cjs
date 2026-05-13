@@ -52,9 +52,7 @@ const hasAppLocalReactCopies = reactDupePackages
 const workspaceReactBlockList = hasAppLocalReactCopies
   ? reactDupePackages.map(
       name =>
-        new RegExp(
-          `^${escapeRegExp(workspaceRoot)}/node_modules/${name}(/|$)`,
-        ),
+        new RegExp(`^${escapeRegExp(workspaceRoot)}/node_modules/${name}(/|$)`),
     )
   : [];
 

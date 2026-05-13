@@ -103,11 +103,11 @@ Cleanup steps (applies regardless of which path above is chosen):
 
 ## Dependencies
 
-| Depends On                | Type       | Status   | Notes                                                     |
-| ------------------------- | ---------- | -------- | --------------------------------------------------------- |
-| pnpm conversion (PR #2069) | Upstream   | Landing  | `packageManager: pnpm@11.1.1` already pinned; this spec runs after PR #2069 merges |
-| `@selfxyz/euclid`         | Upstream   | Active   | Owns the `BlurView` API the swap rewrites                 |
-| `expo` (already a dep)    | Upstream   | Active   | Provides `expo-blur`                                      |
+| Depends On                 | Type     | Status  | Notes                                                                              |
+| -------------------------- | -------- | ------- | ---------------------------------------------------------------------------------- |
+| pnpm conversion (PR #2069) | Upstream | Landing | `packageManager: pnpm@11.1.1` already pinned; this spec runs after PR #2069 merges |
+| `@selfxyz/euclid`          | Upstream | Active  | Owns the `BlurView` API the swap rewrites                                          |
+| `expo` (already a dep)     | Upstream | Active  | Provides `expo-blur`                                                               |
 
 ## Validation
 
@@ -168,26 +168,26 @@ Cleanup steps (applies regardless of which path above is chosen):
 
 ## Backlog
 
-| ID    | Title                                                | Status | Notes                                                                                                                |
-| ----- | ---------------------------------------------------- | ------ | -------------------------------------------------------------------------------------------------------------------- |
-| MT-1  | Swap blur-effect → expo-blur in Euclid               | Open   | One file (`BlurView.tsx`) + dep cleanup                                                                              |
-| MT-2  | Remove blur-effect jest mock                         | Open   | Depends on MT-1                                                                                                      |
-| MT-3  | Add Turborepo + `turbo.json`                         | Open   | Define pipeline tasks and dependencies                                                                               |
-| MT-4  | Migrate root scripts to `turbo run`                  | Open   | Depends on MT-3                                                                                                      |
-| MT-5  | Wire CI workflows to `turbo run`                     | Open   | Depends on MT-4; preserve existing job boundaries                                                                    |
-| MT-6  | Migrate `yarn` `resolutions` → `pnpm.overrides`      | Open   | Root `package.json` still has a `resolutions` block; pnpm ignores it. Move pins to `pnpm.overrides` so they apply.   |
-| MT-7  | Migrate `patch-package` → `pnpm.patchedDependencies` | Open   | Root `postinstall` runs `patch-package`. pnpm has native patching that integrates with the store and lockfile.       |
-| MT-8  | Update CLAUDE.md + workspace AGENTS.md for pnpm      | Open   | CLAUDE.md still says "Package manager: Yarn (never npm or pnpm)". Sweep docs for `yarn` commands.                    |
-| MT-9  | Re-enable `blockExoticSubdeps`                       | Open   | Currently disabled for `@zk-email/relayer-utils` (pulls `node-pre-gyp-github` via git ref). Re-enable once upstream. |
-| MT-10 | Audit and trim `allowBuilds` list                    | Open   | 17 entries today; some may not actually need install scripts. Verify each, drop the ones whose postinstall is a no-op. |
-| MT-11 | Tighten `strictPeerDependencies` to `true`           | Open   | Currently `false` to land the conversion. Turn on, fix the warnings, lock it in.                                     |
-| MT-12 | Replace `node-linker: hoisted` with isolated linker  | Open   | Hoisted defeats pnpm's main safety property. RN ≥0.71 autolinking + symlinks works; patches handled via MT-7. Big PR. |
+| ID    | Title                                                | Status | Notes                                                                                                                                                                                    |
+| ----- | ---------------------------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| MT-1  | Swap blur-effect → expo-blur in Euclid               | Open   | One file (`BlurView.tsx`) + dep cleanup                                                                                                                                                  |
+| MT-2  | Remove blur-effect jest mock                         | Open   | Depends on MT-1                                                                                                                                                                          |
+| MT-3  | Add Turborepo + `turbo.json`                         | Open   | Define pipeline tasks and dependencies                                                                                                                                                   |
+| MT-4  | Migrate root scripts to `turbo run`                  | Open   | Depends on MT-3                                                                                                                                                                          |
+| MT-5  | Wire CI workflows to `turbo run`                     | Open   | Depends on MT-4; preserve existing job boundaries                                                                                                                                        |
+| MT-6  | Migrate `yarn` `resolutions` → `pnpm.overrides`      | Open   | Root `package.json` still has a `resolutions` block; pnpm ignores it. Move pins to `pnpm.overrides` so they apply.                                                                       |
+| MT-7  | Migrate `patch-package` → `pnpm.patchedDependencies` | Open   | Root `postinstall` runs `patch-package`. pnpm has native patching that integrates with the store and lockfile.                                                                           |
+| MT-8  | Update CLAUDE.md + workspace AGENTS.md for pnpm      | Open   | CLAUDE.md still says "Package manager: Yarn (never npm or pnpm)". Sweep docs for `yarn` commands.                                                                                        |
+| MT-9  | Re-enable `blockExoticSubdeps`                       | Open   | Currently disabled for `@zk-email/relayer-utils` (pulls `node-pre-gyp-github` via git ref). Re-enable once upstream.                                                                     |
+| MT-10 | Audit and trim `allowBuilds` list                    | Open   | 17 entries today; some may not actually need install scripts. Verify each, drop the ones whose postinstall is a no-op.                                                                   |
+| MT-11 | Tighten `strictPeerDependencies` to `true`           | Open   | Currently `false` to land the conversion. Turn on, fix the warnings, lock it in.                                                                                                         |
+| MT-12 | Replace `node-linker: hoisted` with isolated linker  | Open   | Hoisted defeats pnpm's main safety property. RN ≥0.71 autolinking + symlinks works; patches handled via MT-7. Big PR.                                                                    |
 | MT-13 | Audit `.github/actions/cache-pnpm` hit rate          | Open   | Store cache already exists (`.github/actions/cache-pnpm/action.yml`). Check actual hit rate, tune the `cache-version` bump cadence, and confirm no workflow still caches `node_modules`. |
-| MT-14 | Sweep nested `node_modules/*/node_modules/*` dupes   | Open   | blur-effect was one. Likely more peer-resolution duplicates (every package with stale RN peer ranges). Inventory + fix.  |
-| MT-15 | Verify all `.yarn*` artifacts are gone               | Open   | Confirm `.yarnrc.yml`, `.yarn/`, `yarn.lock`, and `yarn` references in scripts are fully removed; add a lint to block re-introduction. |
-| MT-16 | Bump pnpm pin past `11.1.1`                          | Open   | Pinned via `packageManager`. Stay on a current minor; coordinate with Corepack rollout in CI.                        |
-| MT-17 | Add `pnpm.onlyBuiltDependencies` allowlist comments  | Open   | Each entry in `allowBuilds` should have a one-line justification (what the script does, why it's safe).              |
-| MT-18 | Verify dedupe of duplicate transitive versions       | Open   | Run `pnpm dedupe` and audit the diff. Lockfile is currently huge — pin where safe to shrink it.                      |
+| MT-14 | Sweep nested `node_modules/*/node_modules/*` dupes   | Open   | blur-effect was one. Likely more peer-resolution duplicates (every package with stale RN peer ranges). Inventory + fix.                                                                  |
+| MT-15 | Verify all `.yarn*` artifacts are gone               | Open   | Confirm `.yarnrc.yml`, `.yarn/`, `yarn.lock`, and `yarn` references in scripts are fully removed; add a lint to block re-introduction.                                                   |
+| MT-16 | Bump pnpm pin past `11.1.1`                          | Open   | Pinned via `packageManager`. Stay on a current minor; coordinate with Corepack rollout in CI.                                                                                            |
+| MT-17 | Add `pnpm.onlyBuiltDependencies` allowlist comments  | Open   | Each entry in `allowBuilds` should have a one-line justification (what the script does, why it's safe).                                                                                  |
+| MT-18 | Verify dedupe of duplicate transitive versions       | Open   | Run `pnpm dedupe` and audit the diff. Lockfile is currently huge — pin where safe to shrink it.                                                                                          |
 
 ## Open Questions
 
