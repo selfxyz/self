@@ -39,23 +39,23 @@ const resolveInstalledFile = (packageName, relativePath) => {
     }
   }
 };
-const hasAppLocalReactCopies = [
-  'react',
-  'react-dom',
-  'react-native',
-  'scheduler',
-]
-  .map(moduleName => path.resolve(projectRoot, 'node_modules', moduleName))
+// Block workspace-root React/RN copies only when app/node_modules has its own.
+// This matters in the yarn-style layout where both can co-exist. Under pnpm's
+// hoisted layout, react-native lives at the workspace root as a symlink into
+// node_modules/.pnpm — that IS the canonical single copy. Duplicate-version
+// prevention now happens at install time via pnpm-workspace.yaml `overrides`
+// and the `pnpm dedupe --check` step in mobile-bundle-analysis.yml.
+const reactDupePackages = ['react', 'react-dom', 'react-native', 'scheduler'];
+const hasAppLocalReactCopies = reactDupePackages
+  .map(name => path.resolve(projectRoot, 'node_modules', name))
   .every(modulePath => fs.existsSync(modulePath));
 const workspaceReactBlockList = hasAppLocalReactCopies
-  ? [
-      new RegExp(`^${escapeRegExp(workspaceRoot)}/node_modules/react(/|$)`),
-      new RegExp(`^${escapeRegExp(workspaceRoot)}/node_modules/react-dom(/|$)`),
-      new RegExp(
-        `^${escapeRegExp(workspaceRoot)}/node_modules/react-native(/|$)`,
-      ),
-      new RegExp(`^${escapeRegExp(workspaceRoot)}/node_modules/scheduler(/|$)`),
-    ]
+  ? reactDupePackages.map(
+      name =>
+        new RegExp(
+          `^${escapeRegExp(workspaceRoot)}/node_modules/${name}(/|$)`,
+        ),
+    )
   : [];
 
 /**
@@ -94,7 +94,7 @@ const config = {
       /.*\/dist\/esm\/package\.json$/,
       /.*\/dist\/cjs\/package\.json$/,
       /.*\/build\/package\.json$/,
-      // Prefer app-local React copies when present, but allow workspace fallback in CI if app copies are missing.
+      // Block workspace-root and .pnpm-nested duplicates of React/RN/scheduler.
       ...workspaceReactBlockList,
       new RegExp('packages/mobile-sdk-alpha/node_modules/react(/|$)'),
       new RegExp('packages/mobile-sdk-alpha/node_modules/react-dom(/|$)'),
