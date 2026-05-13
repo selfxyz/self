@@ -2,7 +2,7 @@
 
 ## Repository Overview
 
-Yarn v4 monorepo for Self — identity verification using passport NFC + zero-knowledge proofs. Two major surfaces:
+pnpm monorepo for Self — identity verification using passport NFC + zero-knowledge proofs. Two major surfaces:
 
 1. **React Native app** (`app/`) — Self Wallet, production mobile app
 2. **SDK packages** (`packages/`) — Embeddable verification SDK (WebView engine + native shells)
@@ -10,12 +10,12 @@ Yarn v4 monorepo for Self — identity verification using passport NFC + zero-kn
 ## Quick Setup
 
 ```bash
-nvm use && corepack enable && yarn install
+nvm use && corepack enable && pnpm install
 ```
 
 ## Key Rules
 
-- **Package manager:** Yarn (never npm or pnpm)
+- **Package manager:** pnpm (never npm or yarn). Pinned via `packageManager` in root `package.json`. Workspaces use `pnpm-workspace.yaml` with `nodeLinker: hoisted`.
 - **Keep the codebase DRY.** Before writing new code, search for existing utilities/components/flows and reuse or refactor to shared modules. Create new code only if a reusable option does not exist.
 - **Extract repeated UI.** If the same UI sub-structure appears in 2+ places, extract a shared component.
 - **Reusable UI belongs in shared libraries.** If a UI primitive is broadly reusable, add it to a shared library (e.g., `@selfxyz/euclid` or another shared package) instead of duplicating in feature code.
@@ -109,19 +109,19 @@ Run them in sequence with review pauses between each step.
 
 ```bash
 # SDK core
-cd packages/mobile-sdk-alpha && yarn test && yarn types
+cd packages/mobile-sdk-alpha && pnpm test && pnpm types
 
 # Bridge
-cd packages/webview-bridge && yarn build && yarn test
+cd packages/webview-bridge && pnpm build && pnpm test
 
 # WebView app
-cd packages/webview-app && yarn build
+cd packages/webview-app && pnpm build
 
 # KMP
 cd packages/kmp-sdk && ./gradlew :shared:jvmTest
 
 # Full repo
-yarn lint && yarn types && yarn build
+pnpm lint && pnpm types && pnpm build
 ```
 
 ## Workspace-Specific Instructions

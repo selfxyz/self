@@ -5,19 +5,13 @@
 > Parent: `../../OVERVIEW.md`
 > Status: Draft — follow-up to pnpm conversion (PR #2069)
 
-## Invariant Departure
+## Parent-doc Alignment
 
-CLAUDE.md and AGENTS.md still declare **Yarn** as the workspace package
-manager ("Package manager: Yarn (never npm or pnpm)"). This spec is
-pnpm-first. The conflict is intentional and matches the state already
-shipping on this branch: `packageManager: pnpm@11.1.1` in root
-`package.json`, `pnpm-lock.yaml` committed, `pnpm-workspace.yaml` in place,
-CI on `pnpm install`. Parent docs that must be updated as part of MT-8:
-
-- `CLAUDE.md` — "Quick Setup" + "Key Rules" package-manager line
-- `AGENTS.md` (root)
-- `app/AGENTS.md`, `packages/webview-app/AGENTS.md`,
-  `packages/mobile-sdk-alpha/AGENTS.md` — anywhere they reference `yarn`
+`CLAUDE.md` and `AGENTS.md` (root + per-workspace) are already pnpm-first
+as of this branch — the previous "Package manager: Yarn" rule has been
+flipped to pnpm and all `yarn <cmd>` examples migrated to `pnpm <cmd>`
+(or `pnpm --filter <workspace> <cmd>`). MT-8 retains coverage for any
+additional doc sweeps as they surface.
 
 ## Purpose
 

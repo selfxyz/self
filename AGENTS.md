@@ -2,13 +2,13 @@
 
 ## Package Management
 
-**Package Manager:** Yarn
+**Package Manager:** pnpm (pinned via `packageManager` in root `package.json`)
 
-**Commands to use:** yarn install, yarn add, yarn remove
+**Commands to use:** `pnpm install`, `pnpm add`, `pnpm remove`, `pnpm --filter <workspace>` for workspace-scoped commands.
 
-**Note:** Do not use npm or pnpm.
+**Note:** Do not use `npm` or `yarn`.
 
-This repository is a Yarn v4 monorepo with several workspaces:
+This repository is a pnpm monorepo (`pnpm-workspace.yaml`, `nodeLinker: hoisted`) with several workspaces:
 
 - `app` – mobile app (@selfxyz/mobile-app)
 - `circuits` – zk-SNARK circuits (@selfxyz/circuits)
@@ -25,9 +25,9 @@ This repository is a Yarn v4 monorepo with several workspaces:
 
 - Ensure Node.js 22.x is installed (see `.nvmrc` for exact version), then:
   - `nvm use`
-  - `corepack enable && corepack prepare yarn@stable --activate`
-  - Verify: `node -v && yarn -v`
-- Run `yarn install` once before running any other commands. This installs root dependencies and sets up husky hooks.
+  - `corepack enable` (Corepack reads the pinned pnpm version from `packageManager` in root `package.json`)
+  - Verify: `node -v && pnpm -v`
+- Run `pnpm install` once before running any other commands. This installs root dependencies and sets up husky hooks.
 
 ### Pre-PR Checklist
 
@@ -35,10 +35,10 @@ Before creating a PR, ensure:
 
 #### Code Quality
 
-- [ ] `yarn nice` (or equivalent) passes in affected workspaces
-- [ ] `yarn types` passes across the repo
-- [ ] `yarn test` passes in affected packages
-- [ ] `yarn build` succeeds for all workspaces
+- [ ] `pnpm nice` (or equivalent) passes in affected workspaces
+- [ ] `pnpm types` passes across the repo
+- [ ] `pnpm test` passes in affected packages
+- [ ] `pnpm build` succeeds for all workspaces
 
 #### AI Review Preparation
 
@@ -77,20 +77,20 @@ After PR creation:
 Before committing, run the following commands:
 
 ```bash
-# Fix linting and formatting issues automatically (for packages that support it)
-yarn workspaces foreach -A -p -v --topological-dev --since=HEAD run nice --if-present
+# Fix linting and formatting issues in workspaces changed since HEAD
+pnpm --filter '...[HEAD]' --if-present run nice
 
 # Lint all packages in parallel
-yarn lint
+pnpm lint
 
 # Build all workspaces except `contracts`
-yarn build
+pnpm build
 
 # Compile Solidity contracts (may occasionally throw a Hardhat config error)
-yarn workspace @selfxyz/contracts build
+pnpm --filter @selfxyz/contracts build
 
 # Run type-checking across the repo
-yarn types
+pnpm types
 ```
 
 ### Workflow Commands
@@ -100,41 +100,41 @@ yarn types
 ```bash
 # Run all checks before PR - only on changed workspaces since main
 # Format and lint changed workspaces (workspace-specific scripts first, then fallback to root)
-yarn workspaces foreach -A -p -v --topological-dev --since=origin/main run nice --if-present
+pnpm --filter '...[origin/main]' --if-present run nice
 
 # Run global checks across all workspaces
-yarn lint && yarn types && yarn build && yarn test
+pnpm lint && pnpm types && pnpm build && pnpm test
 
 # Alternative: Run workspace-specific checks for changed workspaces only
-# yarn workspaces foreach -A -p -v --topological-dev --since=origin/main run lint --if-present
-# yarn workspaces foreach -A -p -v --topological-dev --since=origin/main run types --if-present
-# yarn workspaces foreach -A -p -v --topological-dev --since=origin/main run build --if-present
-# yarn workspaces foreach -A -p -v --topological-dev --since=origin/main run test --if-present
+# pnpm --filter '...[origin/main]' --if-present run lint
+# pnpm --filter '...[origin/main]' --if-present run types
+# pnpm --filter '...[origin/main]' --if-present run build
+# pnpm --filter '...[origin/main]' --if-present run test
 ```
 
 #### Post-PR Cleanup
 
 ```bash
 # After addressing review feedback
-yarn nice  # Fix any formatting issues in affected workspaces
-yarn test  # Ensure tests still pass
-yarn types # Verify type checking
+pnpm nice  # Fix any formatting issues in affected workspaces
+pnpm test  # Ensure tests still pass
+pnpm types # Verify type checking
 ```
 
 ### Tests
 
 - Run unit tests where available:
-  - `yarn workspace @selfxyz/common test`
-  - `yarn workspace @selfxyz/circuits test` # may fail if OpenSSL algorithms are missing
-  - `yarn workspace @selfxyz/mobile-app test`
-  - `yarn workspace @selfxyz/mobile-sdk-alpha test`
+  - `pnpm --filter @selfxyz/common test`
+  - `pnpm --filter @selfxyz/circuits test` # may fail if OpenSSL algorithms are missing
+  - `pnpm --filter @selfxyz/mobile-app test`
+  - `pnpm --filter @selfxyz/mobile-sdk-alpha test`
   - For Noir circuits, run `nargo test -p <crate>` in each `noir/crates/*` directory.
   - Tests for `@selfxyz/contracts` are currently disabled in CI and may be skipped.
 
 - E2E tests (mobile app) - **Run automatically in CI/CD, not required locally**:
   - E2E tests execute automatically in GitHub Actions on PRs and main branch
   - Local E2E testing is optional (see `app/AGENTS.md` for local setup if needed)
-  - Commands available: `yarn workspace @selfxyz/mobile-app test:e2e:ios` / `test:e2e:android`
+  - Commands available: `pnpm --filter @selfxyz/mobile-app test:e2e:ios` / `test:e2e:android`
 
 #### Test Memory Optimization
 
@@ -149,7 +149,7 @@ yarn types # Verify type checking
 
 Use the shared composite actions in `.github/actions` when caching dependencies in GitHub workflows. They provide consistent cache paths and keys:
 
-- `cache-yarn` for Yarn dependencies
+- `cache-pnpm` for the pnpm content-addressable store (do not cache `node_modules`)
 - `cache-bundler` for Ruby gems
 - `cache-gradle` for Gradle wrappers and caches
 - `cache-pods` for CocoaPods
@@ -180,15 +180,15 @@ These workspace-specific files override or extend the root instructions for thei
 
 ### Common Issues
 
-#### Yarn Install Fails
+#### pnpm Install Fails
 
 - Ensure Node.js 22.x is installed: `nvm use`
-- Clear Yarn cache: `yarn cache clean`
-- Remove `node_modules` and reinstall: `rm -rf node_modules && yarn install`
+- Prune the pnpm store: `pnpm store prune`
+- Remove `node_modules` and reinstall: `rm -rf node_modules && pnpm install`
 
 #### Build Failures
 
-- Run `yarn build:deps` in affected workspace first
+- Run `pnpm build:deps` in affected workspace first
 - Check workspace-specific `AGENTS.md` for platform requirements
 - For mobile app: ensure iOS/Android prerequisites are met (see `app/AGENTS.md`)
 
@@ -200,8 +200,8 @@ These workspace-specific files override or extend the root instructions for thei
 
 #### Type Errors
 
-- Run `yarn types` to see all type errors across workspaces
-- Some packages may need to be built first: `yarn build:deps`
+- Run `pnpm types` to see all type errors across workspaces
+- Some packages may need to be built first: `pnpm build:deps`
 
 ## SDK Specs
 

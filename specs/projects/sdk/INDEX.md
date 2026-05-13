@@ -20,6 +20,7 @@ Status: Active (WebView-first, current pass is mock-first UI migration)
 | Build Pipeline       | [Build Pipeline Spec](./workstreams/build-pipeline/SPEC.md)         | Bundle webview-app into native shells                   |
 | SDK Distribution     | [SDK Distribution Spec](./workstreams/sdk-distribution/SPEC.md)     | Hosted URL loading + native shell publishing            |
 | Analytics            | [Analytics Spec](./workstreams/analytics/SPEC.md)                   | Canonical onboarding funnel events + Mixpanel dashboard |
+| Monorepo Tooling     | [Monorepo Tooling Spec](./workstreams/monorepo-tooling/SPEC.md)     | pnpm follow-ups, Turborepo, blur dependency swap        |
 
 ## Paused Workstreams
 

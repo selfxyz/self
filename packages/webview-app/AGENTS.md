@@ -3,16 +3,16 @@
 ## Development Workflow
 
 ```bash
-yarn dev        # Start Vite dev server at http://localhost:5173
-yarn build      # Type-check + production build
-yarn nice       # Fix linting + formatting + type-check in one command
-yarn types      # TypeScript type-check only
+pnpm dev        # Start Vite dev server at http://localhost:5173
+pnpm build      # Type-check + production build
+pnpm nice       # Fix linting + formatting + type-check in one command
+pnpm types      # TypeScript type-check only
 ```
 
 ### Pre-commit Checklist
 
-- [ ] `yarn nice` passes
-- [ ] `yarn build` succeeds
+- [ ] `pnpm nice` passes
+- [ ] `pnpm build` succeeds
 - [ ] Visually verify affected screens in the browser dev server
 
 ## Euclid Screen Migration Checklist
@@ -68,7 +68,7 @@ Every Euclid screen that accepts a `SafeArea` / `insets` prop **must** receive `
 
 ### 3. Validation
 
-After wiring the screen, visually verify in the browser dev server (`yarn dev`):
+After wiring the screen, visually verify in the browser dev server (`pnpm dev`):
 
 - Lottie animations play (not blank/black or a static dot).
 - Background images load (not a solid color fallback).
