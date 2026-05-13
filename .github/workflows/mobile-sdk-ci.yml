@@ -90,7 +90,7 @@ jobs:
           pnpm --filter @selfxyz/common build
           pnpm --filter @selfxyz/mobile-sdk-alpha build
       - name: Type checking
-        run: timeout 20m pnpm --filter @selfxyz/mobile-sdk-alpha exec tsc -p tsconfig.json --noEmit
+        run: timeout 20m pnpm --filter @selfxyz/mobile-sdk-alpha types
 
   test:
     runs-on: ubuntu-latest
