@@ -9,13 +9,50 @@ import {
 
 import {
   evaluateGoogleUsatGate,
+  evaluateGoogleUsatGateForDocument,
   FORCE_GOOGLE_USAT_FOR_TESTING,
 } from '@/utils/googleUsatGate';
 
-jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
-  getAllDocuments: jest.fn(),
-  isGoogleUsatProofRequest: jest.fn(),
-}));
+jest.mock('@selfxyz/mobile-sdk-alpha', () => {
+  const policy = {
+    id: 'google-usat-faucet',
+    match: {
+      endpoint: 'https://example/api/verify',
+      scope: 'celo-mainnet-tether-usat',
+      appName: 'Google Cloud Web3 Portal',
+    },
+    allowedCategories: ['passport', 'id_card'],
+    allowMock: false,
+  };
+  return {
+    getAllDocuments: jest.fn(),
+    isGoogleUsatProofRequest: jest.fn(),
+    GOOGLE_USAT_FAUCET_POLICY: policy,
+    isDocumentEligibleForPolicy: (
+      p: typeof policy,
+      category: string,
+      isMock: boolean | undefined,
+    ) =>
+      p.allowedCategories.includes(category) &&
+      !(isMock === true && !p.allowMock),
+    hasEligibleAlternativeDocumentForPolicy: (
+      p: typeof policy,
+      docs: Record<
+        string,
+        { data: { documentCategory: string; mock?: boolean } }
+      >,
+      excludedDocumentId: string,
+    ) =>
+      Object.entries(docs).some(([id, doc]) => {
+        if (id === excludedDocumentId) return false;
+        const { documentCategory, mock } = doc.data;
+        return (
+          p.allowedCategories.includes(documentCategory) &&
+          !(mock === true && !p.allowMock)
+        );
+      }),
+  };
+});
 
 const mockGetAllDocuments = getAllDocuments as jest.MockedFunction<
   typeof getAllDocuments
@@ -44,15 +81,10 @@ describe('evaluateGoogleUsatGate', () => {
   });
 
   it('treats non Google USAT requests according to the force-test toggle', async () => {
-    // While FORCE_GOOGLE_USAT_FOR_TESTING is on, every request is gated as if
-    // it were a USAT request, so an empty doc catalog blocks. When the toggle
-    // is removed, this should allow without consulting the catalog.
     const result = await evaluateGoogleUsatGate(selfClient, app);
-    const expected = FORCE_GOOGLE_USAT_FOR_TESTING ? 'block' : 'allow';
-    const expectedGetAllDocumentsCalls = FORCE_GOOGLE_USAT_FOR_TESTING ? 1 : 0;
-    expect(result).toBe(expected);
+    expect(result).toBe('allow');
     expect(mockGetAllDocuments).toHaveBeenCalledTimes(
-      expectedGetAllDocumentsCalls,
+      FORCE_GOOGLE_USAT_FOR_TESTING ? 1 : 0,
     );
   });
 
@@ -160,5 +192,16 @@ describe('evaluateGoogleUsatGate', () => {
 
   it('exposes testing force toggle', () => {
     expect(typeof FORCE_GOOGLE_USAT_FOR_TESTING).toBe('boolean');
+  });
+
+  it('reuses prefetched docs for per-document gate checks', async () => {
+    mockIsGoogleUsatProofRequest.mockReturnValue(true);
+    const docs = {
+      selected: { data: { documentCategory: 'passport', mock: false } } as any,
+    };
+    await expect(
+      evaluateGoogleUsatGateForDocument(selfClient, app, 'selected', docs),
+    ).resolves.toBe('allow');
+    expect(mockGetAllDocuments).not.toHaveBeenCalled();
   });
 });

@@ -14,6 +14,8 @@ import {
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import {
+  GOOGLE_USAT_FAUCET_POLICY,
+  hasEligibleAlternativeDocumentForPolicy,
   isDocumentValidForProving,
   pickBestDocumentToSelect,
   useSelfClient,
@@ -59,6 +61,29 @@ const ProvingScreenRouter: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const hasRoutedRef = useRef(false);
+  const openDocumentSelector = useCallback(
+    (documentType: string) => {
+      navigation.replace('DocumentSelectorForProving', {
+        documentType,
+        entryPoint,
+      });
+    },
+    [entryPoint, navigation],
+  );
+
+  const handleGoogleUsatBlocked = useCallback(() => {
+    selfClient.trackEvent(ProofEvents.GOOGLE_USAT_BLOCKED, {
+      entry_point: entryPoint,
+      reason: 'no_high_security_doc',
+    });
+    useVerificationGateStore.getState().open({
+      reason: 'google_usat_high_security_required',
+      entryPoint,
+      requesterName: selfApp?.appName ?? '',
+    });
+    selfClient.getSelfAppState().cleanSelfApp();
+    navigation.goBack();
+  }, [entryPoint, navigation, selfApp?.appName, selfClient]);
 
   const loadAndRoute = useCallback(async () => {
     // Cancel any in-flight request
@@ -81,48 +106,80 @@ const ProvingScreenRouter: React.FC = () => {
     setError(null);
 
     try {
-      const gate = await evaluateGoogleUsatGate(selfClient, selfApp);
-      if (controller.signal.aborted) {
-        return;
-      }
-      if (gate === 'block') {
-        hasRoutedRef.current = true;
-        selfClient.trackEvent(ProofEvents.GOOGLE_USAT_BLOCKED, {
-          entry_point: entryPoint,
-          reason: 'no_high_security_doc',
-        });
-        useVerificationGateStore.getState().open({
-          reason: 'google_usat_high_security_required',
-          entryPoint,
-          requesterName: selfApp.appName,
-        });
-        selfClient.getSelfAppState().cleanSelfApp();
-        navigation.goBack();
-        return;
-      }
-    } catch (gateError) {
-      if (controller.signal.aborted) {
-        return;
-      }
-      console.warn('Google USAT gate evaluation failed:', gateError);
-    }
-
-    try {
       const catalog = await loadDocumentCatalog();
+      if (controller.signal.aborted) {
+        return;
+      }
       const docs = await getAllDocuments();
-
-      // Don't continue if this request was aborted
       if (controller.signal.aborted) {
         return;
       }
 
-      // Count valid documents
+      const gate = await evaluateGoogleUsatGate(selfClient, selfApp, {
+        catalog,
+        docs,
+      });
+      if (controller.signal.aborted) {
+        return;
+      }
+
+      // Count valid documents up front so we can derive documentType for the
+      // selector even when the gate forces us there.
       const validDocuments = catalog.documents.filter(doc => {
         const docData = docs[doc.id];
         return isDocumentValidForProving(doc, docData?.data);
       });
-
       const validCount = validDocuments.length;
+      const firstValidDoc = validDocuments[0];
+      const documentType = getDocumentTypeName(
+        firstValidDoc?.documentCategory,
+        firstValidDoc?.idType,
+      );
+
+      if (gate === 'block') {
+        const selectedDocumentId = catalog.selectedDocumentId;
+        const hasAlternativeEligibleDocument = selectedDocumentId
+          ? hasEligibleAlternativeDocumentForPolicy(
+              GOOGLE_USAT_FAUCET_POLICY,
+              docs,
+              selectedDocumentId,
+            )
+          : false;
+
+        let hasAlternativeEligibleValidDocument = false;
+        if (hasAlternativeEligibleDocument && selectedDocumentId) {
+          const alternativeValidDocuments = validDocuments.filter(
+            doc => doc.id !== selectedDocumentId,
+          );
+          for (const doc of alternativeValidDocuments) {
+            const alternativeDocGate = await evaluateGoogleUsatGateForDocument(
+              selfClient,
+              selfApp,
+              doc.id,
+              docs,
+            );
+            if (controller.signal.aborted) {
+              return;
+            }
+            if (alternativeDocGate === 'allow') {
+              hasAlternativeEligibleValidDocument = true;
+              break;
+            }
+          }
+        }
+
+        if (hasAlternativeEligibleValidDocument) {
+          // Force selector regardless of skipDocumentSelector so the user can
+          // pick the eligible alternative.
+          hasRoutedRef.current = true;
+          openDocumentSelector(documentType);
+          return;
+        }
+
+        hasRoutedRef.current = true;
+        handleGoogleUsatBlocked();
+        return;
+      }
 
       // Mark as routed to prevent re-routing
       hasRoutedRef.current = true;
@@ -134,64 +191,42 @@ const ProvingScreenRouter: React.FC = () => {
         return;
       }
 
-      // Determine document type from first valid document for display
-      const firstValidDoc = validDocuments[0];
-      const documentType = getDocumentTypeName(
-        firstValidDoc?.documentCategory,
-        firstValidDoc?.idType,
-      );
-
       // Determine if we should skip the selector
       const shouldSkip = skipDocumentSelector || validCount === 1;
 
-      if (shouldSkip) {
-        // Auto-select and navigate to Prove
-        const docToSelect = pickBestDocumentToSelect(catalog, docs);
-        if (docToSelect) {
-          try {
-            const selectedDocGate = await evaluateGoogleUsatGateForDocument(
-              selfClient,
-              selfApp,
-              docToSelect,
-            );
-            if (selectedDocGate === 'block') {
-              selfClient.trackEvent(ProofEvents.GOOGLE_USAT_BLOCKED, {
-                entry_point: entryPoint,
-                reason: 'no_high_security_doc',
-              });
-              useVerificationGateStore.getState().open({
-                reason: 'google_usat_high_security_required',
-                entryPoint,
-                requesterName: selfApp.appName,
-              });
-              selfClient.getSelfAppState().cleanSelfApp();
-              navigation.goBack();
-              return;
-            }
-            await setSelectedDocument(docToSelect);
-            navigation.replace('Prove');
-          } catch (selectError) {
-            console.error('Failed to auto-select document:', selectError);
-            // On error, fall back to showing the selector
-            hasRoutedRef.current = false;
-            navigation.replace('DocumentSelectorForProving', {
-              documentType,
-              entryPoint,
-            });
-          }
-        } else {
-          // No valid document to select, show selector
-          navigation.replace('DocumentSelectorForProving', {
-            documentType,
-            entryPoint,
-          });
+      if (!shouldSkip) {
+        openDocumentSelector(documentType);
+        return;
+      }
+
+      // Auto-select and navigate to Prove
+      const docToSelect = pickBestDocumentToSelect(catalog, docs);
+      if (!docToSelect) {
+        openDocumentSelector(documentType);
+        return;
+      }
+
+      try {
+        const selectedDocGate = await evaluateGoogleUsatGateForDocument(
+          selfClient,
+          selfApp,
+          docToSelect,
+          docs,
+        );
+        if (controller.signal.aborted) {
+          return;
         }
-      } else {
-        // Show the document selector
-        navigation.replace('DocumentSelectorForProving', {
-          documentType,
-          entryPoint,
-        });
+        if (selectedDocGate === 'block') {
+          handleGoogleUsatBlocked();
+          return;
+        }
+        await setSelectedDocument(docToSelect);
+        navigation.replace('Prove');
+      } catch (selectError) {
+        console.error('Failed to auto-select document:', selectError);
+        // On error, fall back to showing the selector
+        hasRoutedRef.current = false;
+        openDocumentSelector(documentType);
       }
     } catch (loadError) {
       // Don't show error if this request was aborted
@@ -209,7 +244,8 @@ const ProvingScreenRouter: React.FC = () => {
     navigation,
     selfApp,
     selfClient,
-    entryPoint,
+    handleGoogleUsatBlocked,
+    openDocumentSelector,
     setSelectedDocument,
     skipDocumentSelector,
   ]);
