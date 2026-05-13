@@ -16,13 +16,27 @@ const workspaceRoot =
 const escapeRegExp = value => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const moduleResolutionRoots = [projectRoot, workspaceRoot];
 const resolveInstalledFile = (packageName, relativePath) => {
+  const fallbackPath = path.resolve(
+    projectRoot,
+    'node_modules',
+    packageName,
+    relativePath,
+  );
+
   try {
-    const packageEntry = require.resolve(packageName, {
+    const packageJson = require.resolve(`${packageName}/package.json`, {
       paths: moduleResolutionRoots,
     });
-    return path.resolve(path.dirname(packageEntry), relativePath);
+    return path.resolve(path.dirname(packageJson), relativePath);
   } catch {
-    return path.resolve(projectRoot, 'node_modules', packageName, relativePath);
+    try {
+      const packageEntry = require.resolve(packageName, {
+        paths: moduleResolutionRoots,
+      });
+      return path.resolve(path.dirname(packageEntry), relativePath);
+    } catch {
+      return fallbackPath;
+    }
   }
 };
 const hasAppLocalReactCopies = [
