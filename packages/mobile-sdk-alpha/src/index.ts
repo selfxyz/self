@@ -73,6 +73,8 @@ export {
   GOOGLE_USAT_FAUCET_SCOPE,
 } from './constants/googleUsat';
 
+export { GOOGLE_USAT_FAUCET_POLICY } from './constants/restrictedApps';
+
 export {
   InitError,
   LivenessError,
@@ -145,21 +147,21 @@ export { createDocumentsAdapter, createInMemoryDocumentsAdapter } from './adapte
 export { createListenersMap, createSelfClient } from './client';
 
 export { createNetworkAdapter } from './adapters/react-native/network';
-
 export { createReactNativeAdapters } from './adapters/react-native/factory';
 export { defaultConfig } from './config/defaults';
-export { defaultOptions } from './haptic/shared';
 
+export { defaultOptions } from './haptic/shared';
 /** @deprecated Use createSelfClient().extractMRZInfo or import from './mrz' */
 export { extractMRZInfo } from './mrz';
-export { extractNameFromDocument } from './documents/utils';
 
+export { extractNameFromDocument } from './documents/utils';
 export { extractNameFromMRZ, formatDateToYYMMDD, parseMRZBirthDate, parseMRZExpiryDate } from './mrz';
+
 export { finalizeRecoveredDocumentRegistration, validateRecoverySecretForDocument } from './proving/recoveryValidation';
 
 export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
-
 export { getEligiblePerksForIdType } from './flows/onboarding/perks';
+export { hasEligibleAlternativeDocumentForPolicy, isDocumentEligibleForPolicy } from './utils/restrictedApps';
 export { isGoogleUsatProofRequest } from './utils/googleUsat';
 
 export { isPassportDataValid } from './validation/document';
