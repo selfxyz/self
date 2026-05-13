@@ -468,10 +468,10 @@ describe('ProvingScreenRouter', () => {
     mockGetAllDocuments.mockResolvedValue(allDocs);
     mockEvaluateGoogleUsatGate.mockResolvedValue('block');
     mockHasEligibleGoogleUsatAlternativeDocument.mockReturnValue(true);
-    // pickBestDocumentToSelect would pick the blocked doc-kyc and the
-    // per-document gate would re-block it — proving the previous bug.
-    mockPickBestDocumentToSelect.mockReturnValue('doc-kyc');
-    mockEvaluateGoogleUsatGateForDocument.mockResolvedValue('block');
+    mockEvaluateGoogleUsatGateForDocument.mockImplementation(
+      async (_selfClient, _app, documentId) =>
+        documentId === 'doc-passport' ? 'allow' : 'block',
+    );
 
     render(<ProvingScreenRouter />);
 
@@ -486,7 +486,12 @@ describe('ProvingScreenRouter', () => {
     expect(mockReplace).not.toHaveBeenCalledWith('Prove');
     expect(mockGoBack).not.toHaveBeenCalled();
     expect(mockCleanSelfApp).not.toHaveBeenCalled();
-    expect(mockEvaluateGoogleUsatGateForDocument).not.toHaveBeenCalled();
+    expect(mockEvaluateGoogleUsatGateForDocument).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      'doc-passport',
+      expect.anything(),
+    );
   });
 
   it('skips block-path side effects when the routing pass is aborted mid-gate', async () => {
