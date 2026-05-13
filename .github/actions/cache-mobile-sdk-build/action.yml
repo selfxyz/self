@@ -29,9 +29,6 @@ runs:
         path: |
           common/dist
           packages/mobile-sdk-alpha/dist
-          node_modules
-          packages/mobile-sdk-alpha/node_modules
-          common/node_modules
         key: mobile-sdk-alpha-build-${{ inputs.cache-version }}-${{ github.sha }}
         fail-on-cache-miss: ${{ inputs.fail-on-cache-miss }}
     - id: save
@@ -41,7 +38,4 @@ runs:
         path: |
           common/dist
           packages/mobile-sdk-alpha/dist
-          node_modules
-          packages/mobile-sdk-alpha/node_modules
-          common/node_modules
         key: mobile-sdk-alpha-build-${{ inputs.cache-version }}-${{ github.sha }}
