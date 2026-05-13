@@ -237,7 +237,7 @@
       "optional": true
     }
   },
-  "packageManager": "pnpm@10.28.1",
+  "packageManager": "pnpm@11.1.1",
   "publishConfig": {
     "access": "restricted"
   }
