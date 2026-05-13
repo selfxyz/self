@@ -38,3 +38,9 @@ allowBuilds:
 # @zk-email/relayer-utils pulls in node-pre-gyp-github via a git ref; pnpm 11's
 # default block on exotic subdeps rejects it. Re-enable once that's removed.
 blockExoticSubdeps: false
+
+# Pin jsdom to v25 across the workspace. jsdom v26+ uses cssstyle v5, which
+# turns CSSStyleDeclaration into a strict Proxy that rejects react-dom v18's
+# numeric-index style writes (TypeError: 'set' on proxy: trap returned falsish).
+overrides:
+  jsdom: ^25.0.1
