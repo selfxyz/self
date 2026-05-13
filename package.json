@@ -99,24 +99,6 @@
       "@selfxyz/anon-aadhaar-core",
       "@selfxyz/euclid",
       "@selfxyz/euclid-core"
-    ],
-    "onlyBuiltDependencies": [
-      "@parcel/watcher",
-      "@scarf/scarf",
-      "@sentry/cli",
-      "@swc/core",
-      "@zk-email/zk-regex-circom",
-      "blake-hash",
-      "esbuild",
-      "keccak",
-      "less",
-      "lmdb",
-      "msgpackr-extract",
-      "node-forge",
-      "protobufjs",
-      "react-native-inappbrowser-reborn",
-      "snarkjs",
-      "unrs-resolver"
     ]
   }
 }

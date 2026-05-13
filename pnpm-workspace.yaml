@@ -8,3 +8,33 @@ packages:
   - prover/tests
   - scripts/tests
   - sdk/*
+
+# patch-package and React Native autolinking require a flat node_modules.
+nodeLinker: hoisted
+autoInstallPeers: true
+strictPeerDependencies: false
+
+# Whitelist of packages allowed to run install scripts (pnpm 11 default-denies).
+# Add new entries only after auditing the postinstall script.
+allowBuilds:
+  '@parcel/watcher': true
+  '@scarf/scarf': false
+  '@sentry/cli': true
+  '@swc/core': true
+  '@zk-email/zk-regex-circom': true
+  blake-hash: true
+  esbuild: true
+  keccak: true
+  less: true
+  lmdb: true
+  msgpackr-extract: true
+  node-forge: true
+  protobufjs: true
+  react-native-inappbrowser-reborn: true
+  secp256k1: true
+  snarkjs: true
+  unrs-resolver: true
+
+# @zk-email/relayer-utils pulls in node-pre-gyp-github via a git ref; pnpm 11's
+# default block on exotic subdeps rejects it. Re-enable once that's removed.
+blockExoticSubdeps: false
