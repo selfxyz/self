@@ -8,6 +8,8 @@ overrides:
   jsdom: ^25.0.1
   '@types/minimatch': 5.1.2
 
+packageExtensionsChecksum: sha256-tkCaKfiFwLlXS2dEjX1+6n9cFCgHIQwAxB7YmYB9p/E=
+
 importers:
 
   .:
