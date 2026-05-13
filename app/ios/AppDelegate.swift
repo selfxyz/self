@@ -3,7 +3,9 @@
 import ExpoModulesCore
 import React
 import React_RCTAppDelegate
+#if canImport(ReactAppDependencyProvider)
 import ReactAppDependencyProvider
+#endif
 import FirebaseCore
 import FirebaseMessaging
 import UserNotifications
@@ -26,7 +28,9 @@ class AppDelegate: EXAppDelegateWrapper, UNUserNotificationCenterDelegate {
     // (e.g., in Points screen or settings)
 
     self.moduleName = "OpenPassport"
+    #if canImport(ReactAppDependencyProvider)
     self.dependencyProvider = RCTAppDependencyProvider()
+    #endif
     self.initialProps = [:]
 
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
