@@ -5,7 +5,7 @@ env:
   # Node version is read from .nvmrc during workflow execution
   # Cache versioning - increment these to bust caches when needed
   GH_CACHE_VERSION: v1 # Global cache version
-  GH_YARN_CACHE_VERSION: v1 # Yarn-specific cache version
+  GH_PNPM_CACHE_VERSION: v1 # pnpm store cache version
   GH_SDK_CACHE_VERSION: v1 # SDK build cache version
 
 on:
@@ -78,16 +78,11 @@ jobs:
       - name: Enable Corepack
         run: corepack enable
 
-      - name: Cache Yarn dependencies
-        id: yarn-cache
+      - name: Cache pnpm store
+        id: pnpm-cache
         uses: ./.github/actions/cache-pnpm
         with:
-          path: |
-            .yarn/cache
-            node_modules
-            sdk/qrcode/node_modules
-            common/node_modules
-          cache-version: ${{ env.GH_YARN_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}
+          cache-version: ${{ env.GH_PNPM_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}
 
       - name: Install Dependencies
         uses: ./.github/actions/pnpm-install
@@ -134,16 +129,11 @@ jobs:
       - name: Enable Corepack
         run: corepack enable
 
-      - name: Cache Yarn dependencies
-        id: yarn-cache
+      - name: Cache pnpm store
+        id: pnpm-cache
         uses: ./.github/actions/cache-pnpm
         with:
-          path: |
-            .yarn/cache
-            node_modules
-            sdk/qrcode/node_modules
-            common/node_modules
-          cache-version: ${{ env.GH_YARN_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}
+          cache-version: ${{ env.GH_PNPM_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}
 
       - name: Install Dependencies
         uses: ./.github/actions/pnpm-install
@@ -175,7 +165,7 @@ jobs:
       - name: Log cache status
         run: |
           echo "Cache hit results:"
-          echo "- Yarn cache hit: ${{ steps.yarn-cache.outputs.cache-hit }}"
+          echo "- pnpm store cache hit: ${{ steps.pnpm-cache.outputs.cache-hit }}"
 
   # Build verification job
   build-verification:
@@ -206,16 +196,11 @@ jobs:
       - name: Enable Corepack
         run: corepack enable
 
-      - name: Cache Yarn dependencies
-        id: yarn-cache
+      - name: Cache pnpm store
+        id: pnpm-cache
         uses: ./.github/actions/cache-pnpm
         with:
-          path: |
-            .yarn/cache
-            node_modules
-            sdk/qrcode/node_modules
-            common/node_modules
-          cache-version: ${{ env.GH_YARN_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}
+          cache-version: ${{ env.GH_PNPM_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}
 
       - name: Install Dependencies
         uses: ./.github/actions/pnpm-install
@@ -272,16 +257,11 @@ jobs:
       - name: Enable Corepack
         run: corepack enable
 
-      - name: Cache Yarn dependencies
-        id: yarn-cache
+      - name: Cache pnpm store
+        id: pnpm-cache
         uses: ./.github/actions/cache-pnpm
         with:
-          path: |
-            .yarn/cache
-            node_modules
-            sdk/qrcode/node_modules
-            common/node_modules
-          cache-version: ${{ env.GH_YARN_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}
+          cache-version: ${{ env.GH_PNPM_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}
 
       - name: Install Dependencies
         uses: ./.github/actions/pnpm-install
@@ -325,4 +305,4 @@ jobs:
       - name: Log cache status
         run: |
           echo "Cache hit results:"
-          echo "- Yarn cache hit: ${{ steps.yarn-cache.outputs.cache-hit }}"
+          echo "- pnpm store cache hit: ${{ steps.pnpm-cache.outputs.cache-hit }}"

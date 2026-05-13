@@ -67,20 +67,10 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - run: corepack enable
       - run: corepack prepare pnpm@11.1.1 --activate
-      - name: Compute .yarnrc.yml hash
-        id: yarnrc-hash
-        uses: ./.github/actions/yarnrc-hash
-      - name: Cache Yarn dependencies
+      - name: Cache pnpm store
         uses: ./.github/actions/cache-pnpm
         with:
-          path: |
-            .yarn/cache
-            .yarn/install-state.gz
-            .yarn/unplugged
-          cache-version: ${{ env.GH_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-${{ steps.yarnrc-hash.outputs.hash }}
-      - name: Toggle Yarn hardened mode for trusted PRs
-        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false }}
-        run: echo "YARN_ENABLE_HARDENED_MODE=0" >> $GITHUB_ENV
+          cache-version: ${{ env.GH_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}
       - name: Generate token for self repositories
         if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
         uses: ./.github/actions/generate-github-token
@@ -189,20 +179,10 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - run: corepack enable
       - run: corepack prepare pnpm@11.1.1 --activate
-      - name: Compute .yarnrc.yml hash
-        id: yarnrc-hash
-        uses: ./.github/actions/yarnrc-hash
-      - name: Cache Yarn dependencies
+      - name: Cache pnpm store
         uses: ./.github/actions/cache-pnpm
         with:
-          path: |
-            .yarn/cache
-            .yarn/install-state.gz
-            .yarn/unplugged
-          cache-version: ${{ env.GH_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-${{ steps.yarnrc-hash.outputs.hash }}
-      - name: Toggle Yarn hardened mode for trusted PRs
-        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false }}
-        run: echo "YARN_ENABLE_HARDENED_MODE=0" >> $GITHUB_ENV
+          cache-version: ${{ env.GH_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}
       - name: Check Java installation
         run: |
           echo "INSTALL_JAVA=false" >> "$GITHUB_ENV"

@@ -10,7 +10,6 @@ env:
   GH_CACHE_VERSION: v2 # Global cache version - bumped to invalidate caches
   GH_GEMS_CACHE_VERSION: v1 # Ruby gems cache version
   # Performance optimizations
-  YARN_TASK_POOL_CONCURRENCY: 2 # Limit parallel native module builds to prevent OOM on self-hosted runners
   GRADLE_OPTS: -Dorg.gradle.workers.max=1 -Dorg.gradle.parallel=true -Dorg.gradle.caching=true -Dorg.gradle.jvmargs='-Xmx4096m -XX:MaxMetaspaceSize=1024m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8'
   CI: true
   # Disable Maestro analytics in CI
@@ -73,20 +72,10 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - run: corepack enable
       - run: corepack prepare pnpm@11.1.1 --activate
-      - name: Compute .yarnrc.yml hash
-        id: yarnrc-hash
-        uses: ./.github/actions/yarnrc-hash
-      - name: Cache Yarn dependencies
+      - name: Cache pnpm store
         uses: ./.github/actions/cache-pnpm
         with:
-          path: |
-            .yarn/cache
-            .yarn/install-state.gz
-            .yarn/unplugged
-          cache-version: ${{ env.GH_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-${{ steps.yarnrc-hash.outputs.hash }}
-      - name: Toggle Yarn hardened mode for trusted PRs
-        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false }}
-        run: echo "YARN_ENABLE_HARDENED_MODE=0" >> $GITHUB_ENV
+          cache-version: ${{ env.GH_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}
       - name: Generate token for self repositories
         if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
         uses: ./.github/actions/generate-github-token
@@ -129,8 +118,8 @@ jobs:
           }
 
           check_network() {
-            echo "Checking network prerequisites for Yarn install..."
-            for host in github.com api.github.com classic.yarnpkg.com repo.maven.apache.org; do
+            echo "Checking network prerequisites for pnpm install..."
+            for host in github.com api.github.com registry.npmjs.org repo.maven.apache.org; do
               echo "Resolving ${host}..."
               getent hosts "${host}" || true
             done
@@ -158,7 +147,7 @@ jobs:
             for attempt in 1 2 3; do
               echo "Starting pnpm install attempt ${attempt}/3..."
               if timeout 20m pnpm install --frozen-lockfile; then
-                echo "yarn install completed successfully on attempt ${attempt}."
+                echo "pnpm install completed successfully on attempt ${attempt}."
                 kill "${MONITOR_PID}" 2>/dev/null || true
                 trap - EXIT
                 return 0
@@ -166,7 +155,7 @@ jobs:
                 exit_code=$?
               fi
 
-              echo "yarn install failed on attempt ${attempt} with exit code ${exit_code}."
+              echo "pnpm install failed on attempt ${attempt} with exit code ${exit_code}."
               log_resources "post-failure"
 
               if [ "${attempt}" -eq 3 ]; then
@@ -210,8 +199,8 @@ jobs:
           }
 
           check_network() {
-            echo "Checking network prerequisites for Yarn install..."
-            for host in github.com api.github.com classic.yarnpkg.com repo.maven.apache.org; do
+            echo "Checking network prerequisites for pnpm install..."
+            for host in github.com api.github.com registry.npmjs.org repo.maven.apache.org; do
               echo "Resolving ${host}..."
               getent hosts "${host}" || true
             done
@@ -239,7 +228,7 @@ jobs:
             for attempt in 1 2 3; do
               echo "Starting pnpm install attempt ${attempt}/3..."
               if timeout 20m pnpm install --frozen-lockfile; then
-                echo "yarn install completed successfully on attempt ${attempt}."
+                echo "pnpm install completed successfully on attempt ${attempt}."
                 kill "${MONITOR_PID}" 2>/dev/null || true
                 trap - EXIT
                 return 0
@@ -247,7 +236,7 @@ jobs:
                 exit_code=$?
               fi
 
-              echo "yarn install failed on attempt ${attempt} with exit code ${exit_code}."
+              echo "pnpm install failed on attempt ${attempt} with exit code ${exit_code}."
               log_resources "post-failure"
 
               if [ "${attempt}" -eq 3 ]; then
@@ -312,7 +301,7 @@ jobs:
       - name: Build dependencies (outside emulator)
         run: |
           echo "Building dependencies..."
-          # Ensure Yarn 4.12.0 is active
+          # Ensure pnpm 11.1.1 is active
           corepack enable
           corepack prepare pnpm@11.1.1 --activate
           pnpm --filter @selfxyz/mobile-app run build:deps || { echo "❌ Dependency build failed"; exit 1; }
@@ -560,20 +549,10 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - run: corepack enable
       - run: corepack prepare pnpm@11.1.1 --activate
-      - name: Compute .yarnrc.yml hash
-        id: yarnrc-hash
-        uses: ./.github/actions/yarnrc-hash
-      - name: Cache Yarn dependencies
+      - name: Cache pnpm store
         uses: ./.github/actions/cache-pnpm
         with:
-          path: |
-            .yarn/cache
-            .yarn/install-state.gz
-            .yarn/unplugged
-          cache-version: ${{ env.GH_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-${{ steps.yarnrc-hash.outputs.hash }}
-      - name: Toggle Yarn hardened mode for trusted PRs
-        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false }}
-        run: echo "YARN_ENABLE_HARDENED_MODE=0" >> $GITHUB_ENV
+          cache-version: ${{ env.GH_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}
       - name: Check Java installation
         run: |
           echo "INSTALL_JAVA=false" >> "$GITHUB_ENV"

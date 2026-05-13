@@ -150,7 +150,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Install Yarn
+      - name: Install pnpm
         run: npm i -g pnpm
 
       - name: Install dependencies

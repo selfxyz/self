@@ -52,13 +52,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      - name: Cache Yarn
+      - name: Cache pnpm store
         uses: ./.github/actions/cache-pnpm
         with:
-          path: |
-            .yarn/cache
-            node_modules
-            app/node_modules
           cache-version: node-${{ env.NODE_VERSION_SANITIZED }}
       - name: Cache Bundler
         uses: ./.github/actions/cache-bundler
@@ -119,13 +115,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-      - name: Cache Yarn
+      - name: Cache pnpm store
         uses: ./.github/actions/cache-pnpm
         with:
-          path: |
-            .yarn/cache
-            node_modules
-            app/node_modules
           cache-version: node-${{ env.NODE_VERSION_SANITIZED }}
       - name: Cache Bundler
         uses: ./.github/actions/cache-bundler

@@ -40,13 +40,13 @@ handle_error() {
   rm -f "/tmp/mobile-ci-build-android.lock" 2>/dev/null || true
 
   # Attempt to restore backup package files if they exist
-  if [[ -f "package.json.backup" ]] && [[ -f "../yarn.lock.backup" ]]; then
+  if [[ -f "package.json.backup" ]] && [[ -f "../pnpm-lock.yaml.backup" ]]; then
     log "Restoring backup package files on error..."
     mv package.json.backup package.json 2>/dev/null || true
-    mv ../yarn.lock.backup ../yarn.lock 2>/dev/null || true
+    mv ../pnpm-lock.yaml.backup ../pnpm-lock.yaml 2>/dev/null || true
   elif [[ -f "package.json" ]] && grep -q "mobile-sdk-alpha.*file:/tmp" package.json 2>/dev/null; then
     log "WARNING: Package files modified but no backup found - manual fix required"
-    log "Please run 'yarn add @selfxyz/mobile-sdk-alpha@workspace:^' to restore"
+    log "Please run 'pnpm add @selfxyz/mobile-sdk-alpha@workspace:^' to restore"
   fi
 
   if is_ci; then
@@ -66,9 +66,9 @@ if [[ ! -d "$(dirname "$0")/../../packages/mobile-sdk-alpha" ]]; then
 fi
 
 # Check for and clean up any existing backup files (from previous failed runs)
-if [[ -f "app/package.json.backup" ]] || [[ -f "yarn.lock.backup" ]]; then
+if [[ -f "app/package.json.backup" ]] || [[ -f "pnpm-lock.yaml.backup" ]]; then
   log "WARNING: Found existing backup files from previous run - cleaning up..."
-  rm -f app/package.json.backup yarn.lock.backup
+  rm -f app/package.json.backup pnpm-lock.yaml.backup
 fi
 
 # Check if another instance is running
@@ -147,24 +147,37 @@ clone_private_module "react-native-passport-reader" "app/android/react-native-pa
 # Build and package the SDK with timeout (including dependencies)
 log "Building SDK and dependencies..."
 if is_ci; then
-  timeout 300 yarn workspaces foreach --from @selfxyz/mobile-sdk-alpha --topological --recursive run build || {
+  timeout 300 pnpm --filter @selfxyz/mobile-sdk-alpha... run build || {
     log "SDK build timed out after 5 minutes"
     exit 1
   }
 else
-  yarn workspaces foreach --from @selfxyz/mobile-sdk-alpha --topological --recursive run build
+  pnpm --filter @selfxyz/mobile-sdk-alpha... run build
 fi
 
 log "Creating SDK tarball..."
 TARBALL_PATH="/tmp/mobile-sdk-alpha-ci.tgz"
+PACK_DIR="/tmp/mobile-sdk-alpha-pack"
+rm -f "$TARBALL_PATH"
+rm -rf "$PACK_DIR"
+mkdir -p "$PACK_DIR"
+# pnpm pack writes <name>-<version>.tgz to --pack-destination; rename it to the
+# stable path the rest of this script (and error/cleanup paths) expects.
 if is_ci; then
-  timeout 60 yarn workspace @selfxyz/mobile-sdk-alpha pack --out "$TARBALL_PATH" || {
+  timeout 60 pnpm --filter @selfxyz/mobile-sdk-alpha exec pnpm pack --pack-destination "$PACK_DIR" || {
     log "SDK packaging timed out after 1 minute"
     exit 1
   }
 else
-  yarn workspace @selfxyz/mobile-sdk-alpha pack --out "$TARBALL_PATH"
+  pnpm --filter @selfxyz/mobile-sdk-alpha exec pnpm pack --pack-destination "$PACK_DIR"
 fi
+GENERATED_TARBALL=$(ls -t "$PACK_DIR"/*.tgz 2>/dev/null | head -1)
+if [[ -z "$GENERATED_TARBALL" ]]; then
+  log "ERROR: pnpm pack did not produce a tarball in $PACK_DIR"
+  exit 1
+fi
+mv "$GENERATED_TARBALL" "$TARBALL_PATH"
+rm -rf "$PACK_DIR"
 
 # Verify tarball was created
 if [[ ! -f "$TARBALL_PATH" ]]; then
@@ -172,7 +185,7 @@ if [[ ! -f "$TARBALL_PATH" ]]; then
   exit 1
 fi
 
-# Backup package.json and yarn.lock before modification
+# Backup package.json and pnpm-lock.yaml before modification
 log "Backing up package files..."
 cd app
 
@@ -181,8 +194,8 @@ if [[ ! -f "package.json" ]]; then
   log "ERROR: package.json not found in app directory"
   exit 1
 fi
-if [[ ! -f "../yarn.lock" ]]; then
-  log "ERROR: yarn.lock not found in project root"
+if [[ ! -f "../pnpm-lock.yaml" ]]; then
+  log "ERROR: pnpm-lock.yaml not found in project root"
   exit 1
 fi
 
@@ -191,8 +204,8 @@ cp package.json package.json.backup || {
   log "ERROR: Failed to backup package.json"
   exit 1
 }
-cp ../yarn.lock ../yarn.lock.backup || {
-  log "ERROR: Failed to backup yarn.lock"
+cp ../pnpm-lock.yaml ../pnpm-lock.yaml.backup || {
+  log "ERROR: Failed to backup pnpm-lock.yaml"
   exit 1
 }
 log "✅ Package files backed up successfully"
@@ -202,13 +215,13 @@ log "Installing SDK as real files..."
 if is_ci; then
   # Temporarily unset both auth tokens to skip private modules during SDK installation
   # Both tokens must be unset to prevent setup-private-modules.cjs from attempting clones
-  env -u SELFXYZ_INTERNAL_REPO_PAT -u SELFXYZ_APP_TOKEN timeout 180 yarn add "@selfxyz/mobile-sdk-alpha@file:$TARBALL_PATH" || {
+  env -u SELFXYZ_INTERNAL_REPO_PAT -u SELFXYZ_APP_TOKEN timeout 180 pnpm add "file:$TARBALL_PATH" || {
     log "SDK installation timed out after 3 minutes"
     exit 1
   }
 else
   # Temporarily unset both auth tokens to skip private modules during SDK installation
-  env -u SELFXYZ_INTERNAL_REPO_PAT -u SELFXYZ_APP_TOKEN yarn add "@selfxyz/mobile-sdk-alpha@file:$TARBALL_PATH"
+  env -u SELFXYZ_INTERNAL_REPO_PAT -u SELFXYZ_APP_TOKEN pnpm add "file:$TARBALL_PATH"
 fi
 
 # Verify installation (check for AAR file in both local and hoisted locations)
@@ -253,23 +266,23 @@ fi
 
 # Restore original package files
 log "Restoring original package files..."
-if [[ -f "package.json.backup" ]] && [[ -f "../yarn.lock.backup" ]]; then
-  if mv package.json.backup package.json && mv ../yarn.lock.backup ../yarn.lock; then
+if [[ -f "package.json.backup" ]] && [[ -f "../pnpm-lock.yaml.backup" ]]; then
+  if mv package.json.backup package.json && mv ../pnpm-lock.yaml.backup ../pnpm-lock.yaml; then
     log "✅ Package files restored successfully"
 
-    # Verify restoration by checking yarn.lock doesn't contain tarball references
-    if grep -q "file:/tmp/mobile-sdk-alpha-ci.tgz" ../yarn.lock 2>/dev/null; then
-      log "WARNING: yarn.lock still contains tarball references after restoration"
-      log "This may cause 'yarn.lock is out of date' errors in CI"
+    # Verify restoration by checking pnpm-lock.yaml doesn't contain tarball references
+    if grep -q "file:/tmp/mobile-sdk-alpha-ci.tgz" ../pnpm-lock.yaml 2>/dev/null; then
+      log "WARNING: pnpm-lock.yaml still contains tarball references after restoration"
+      log "This may cause 'lockfile is out of date' errors in CI"
     fi
   else
     log "ERROR: Failed to restore package files"
-    log "This may cause 'yarn.lock is out of date' errors in CI"
+    log "This may cause 'lockfile is out of date' errors in CI"
     exit 1
   fi
 else
   log "WARNING: Backup files not found - package.json may still reference tarball"
-  log "Please run 'yarn add @selfxyz/mobile-sdk-alpha@workspace:^' manually"
+  log "Please run 'pnpm add @selfxyz/mobile-sdk-alpha@workspace:^' manually"
 fi
 
 log "Mobile CI Build Android completed successfully!"

@@ -58,15 +58,11 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - name: Enable Corepack
         run: corepack enable
-      - name: Activate Yarn 4.12.0
+      - name: Activate pnpm 11.1.1
         run: corepack prepare pnpm@11.1.1 --activate
-      - name: Cache Yarn
+      - name: Cache pnpm store
         uses: ./.github/actions/cache-pnpm
         with:
-          path: |
-            .yarn/cache
-            node_modules
-            app/node_modules
           cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}
       - name: Install Dependencies
         uses: ./.github/actions/pnpm-install
@@ -76,7 +72,7 @@ jobs:
         with:
           cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}
       - name: Build dependencies (cache miss)
-        # Temporarily disabled due to `yarn types` failures when cache is used.
+        # Temporarily disabled due to `pnpm types` failures when cache is used.
         # if: steps.built-deps.outputs.cache-hit != 'true'
         run: |
           echo "Cache miss for built dependencies. Building now..."
@@ -116,15 +112,11 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - name: Enable Corepack
         run: corepack enable
-      - name: Activate Yarn 4.12.0
+      - name: Activate pnpm 11.1.1
         run: corepack prepare pnpm@11.1.1 --activate
-      - name: Cache Yarn
+      - name: Cache pnpm store
         uses: ./.github/actions/cache-pnpm
         with:
-          path: |
-            .yarn/cache
-            node_modules
-            app/node_modules
           cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}
       - name: Install Dependencies
         uses: ./.github/actions/pnpm-install

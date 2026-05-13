@@ -22,7 +22,7 @@ compute_fingerprint() {
     "$APP_DIR/package.json"
     "$APP_DIR/react-native.config.cjs"
     "$IOS_DIR/local-pods/DiditSDK/DiditSDK.podspec"
-    "$REPO_DIR/yarn.lock"
+    "$REPO_DIR/pnpm-lock.yaml"
   )
 
   for file in "${files[@]}"; do

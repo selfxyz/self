@@ -48,3 +48,12 @@ overrides:
   # which makes TS error "TS2688: Cannot find type definition file for 'minimatch'"
   # whenever the @types directory gets scanned (e.g. ng-packagr in sdk/qrcode-angular).
   '@types/minimatch': 5.1.2
+
+# @selfxyz/euclid lists react-native-blur-effect as a peer, but it is only
+# required by consumers that opt into blur effects. Mark it optional so
+# workspaces that do not install it (e.g. mobile-sdk-demo) don't warn.
+packageExtensions:
+  '@selfxyz/euclid@*':
+    peerDependenciesMeta:
+      react-native-blur-effect:
+        optional: true

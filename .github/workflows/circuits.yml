@@ -149,16 +149,12 @@ jobs:
       - name: Enable Corepack
         run: corepack enable
 
-      - name: Cache Yarn dependencies
+      - name: Cache pnpm store
         uses: ./.github/actions/cache-pnpm
         with:
-          path: |
-            .yarn/cache
-            node_modules
-            circuits/node_modules
           cache-version: v1
 
-      - name: Install Yarn dependencies
+      - name: Install dependencies
         uses: ./.github/actions/pnpm-install
         with:
           working_directory: circuits

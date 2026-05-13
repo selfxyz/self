@@ -37,7 +37,6 @@ env:
 
   # Cache versioning - increment these to bust caches when needed
   GH_CACHE_VERSION: v1 # Global cache version
-  GH_YARN_CACHE_VERSION: v1 # Yarn-specific cache version
   GH_GEMS_CACHE_VERSION: v1 # Ruby gems cache version
   GH_PODS_CACHE_VERSION: v1 # CocoaPods cache version
   GH_GRADLE_CACHE_VERSION: v1 # Gradle cache version
@@ -370,19 +369,11 @@ jobs:
           echo "Xcode path:"
           xcode-select -p
 
-      - name: Compute .yarnrc.yml hash
-        id: yarnrc-hash
-        uses: ./.github/actions/yarnrc-hash
-
-      - name: Cache Yarn artifacts
-        id: yarn-cache
+      - name: Cache pnpm store
+        id: pnpm-cache
         uses: ./.github/actions/cache-pnpm
         with:
-          path: |
-            .yarn/cache
-            .yarn/install-state.gz
-            .yarn/unplugged
-          cache-version: ${{ env.GH_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-${{ steps.yarnrc-hash.outputs.hash }}
+          cache-version: ${{ env.GH_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}
 
       - name: Cache Ruby gems
         id: gems-cache
@@ -406,12 +397,9 @@ jobs:
       - name: Log cache status
         run: |
           echo "Cache hit results:"
-          echo "- Yarn cache hit: ${{ steps.yarn-cache.outputs.cache-hit }}"
+          echo "- pnpm store cache hit: ${{ steps.pnpm-cache.outputs.cache-hit }}"
           echo "- Gems cache hit: ${{ steps.gems-cache.outputs.cache-hit }}"
           echo "- Pods cache hit: ${{ steps.pods-cache.outputs.cache-hit }}"
-
-      - name: Disable Yarn hardened mode
-        run: echo "YARN_ENABLE_HARDENED_MODE=0" >> $GITHUB_ENV
 
       - name: Verify lock files are up to date
         run: |
@@ -420,7 +408,7 @@ jobs:
           # For pnpm workspaces, pnpm-lock.yaml is at root
           if [ ! -f "${{ env.WORKSPACE }}/pnpm-lock.yaml" ]; then
             echo "❌ ERROR: pnpm-lock.yaml file is missing at workspace root!"
-            echo "Run 'yarn install' at the repository root and commit the pnpm-lock.yaml file."
+            echo "Run 'pnpm install' at the repository root and commit the pnpm-lock.yaml file."
             exit 1
           fi
 
@@ -1011,19 +999,11 @@ jobs:
           # Use version-manager script to apply versions
           node ${{ env.APP_PATH }}/scripts/version-manager.cjs apply "$VERSION" "$IOS_BUILD" "$ANDROID_BUILD"
 
-      - name: Compute .yarnrc.yml hash
-        id: yarnrc-hash
-        uses: ./.github/actions/yarnrc-hash
-
-      - name: Cache Yarn artifacts
-        id: yarn-cache
+      - name: Cache pnpm store
+        id: pnpm-cache
         uses: ./.github/actions/cache-pnpm
         with:
-          path: |
-            .yarn/cache
-            .yarn/install-state.gz
-            .yarn/unplugged
-          cache-version: ${{ env.GH_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-${{ steps.yarnrc-hash.outputs.hash }}
+          cache-version: ${{ env.GH_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}
 
       - name: Cache Ruby gems
         id: gems-cache
@@ -1049,13 +1029,10 @@ jobs:
       - name: Log cache status
         run: |
           echo "Cache hit results:"
-          echo "- Yarn cache hit: ${{ steps.yarn-cache.outputs.cache-hit }}"
+          echo "- pnpm store cache hit: ${{ steps.pnpm-cache.outputs.cache-hit }}"
           echo "- Gems cache hit: ${{ steps.gems-cache.outputs.cache-hit }}"
           echo "- Gradle cache hit: ${{ steps.gradle-cache.outputs.cache-hit }}"
           echo "- NDK cache hit: ${{ steps.ndk-cache.outputs.cache-hit }}"
-
-      - name: Disable Yarn hardened mode
-        run: echo "YARN_ENABLE_HARDENED_MODE=0" >> $GITHUB_ENV
 
       - name: Verify lock files are up to date
         run: |
@@ -1064,7 +1041,7 @@ jobs:
           # For pnpm workspaces, pnpm-lock.yaml is at root
           if [ ! -f "${{ env.WORKSPACE }}/pnpm-lock.yaml" ]; then
             echo "❌ ERROR: pnpm-lock.yaml file is missing at workspace root!"
-            echo "Run 'yarn install' at the repository root and commit the pnpm-lock.yaml file."
+            echo "Run 'pnpm install' at the repository root and commit the pnpm-lock.yaml file."
             exit 1
           fi
 

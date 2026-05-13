@@ -29,7 +29,7 @@
     "docstrings:sdk": "pnpm tsx scripts/docstring-report.ts \"packages/mobile-sdk-alpha/src/**/*.{ts,tsx}\" --label \"Mobile SDK Alpha\" --write-report docs/coverage/sdk.json",
     "format": "SKIP_BUILD_DEPS=1 pnpm format:root && pnpm format:github && GRADLE_USER_HOME=\"$PWD/.gradle-home\" pnpm --filter @selfxyz/kmp-sdk format && GRADLE_USER_HOME=\"$PWD/.gradle-home\" pnpm --filter @selfxyz/kmp-sdk-test-app format && pnpm native-shell:format && SKIP_BUILD_DEPS=1 pnpm -r --if-present --filter \"!self-workspace-root\" --filter \"!@selfxyz/kmp-sdk\" --filter \"!@selfxyz/kmp-sdk-test-app\" run format",
     "format:github": "pnpm prettier --parser yaml --write .github/**/*.yml --single-quote false",
-    "format:root": "echo 'format markdown' && pnpm prettier --parser markdown --write '*.md' 'docs/**/*.md' 'specs/**/*.md' && echo 'format yaml' && pnpm prettier --parser yaml --write .*.{yml,yaml} --single-quote false && pnpm prettier --write scripts/**/*.{js,mjs,ts} && pnpm prettier --parser json --write scripts/**/*.json",
+    "format:root": "echo 'format markdown' && pnpm prettier --parser markdown --write '*.md' 'docs/**/*.md' 'specs/**/*.md' && echo 'format yaml' && pnpm prettier --parser yaml --write .*.{yml,yaml} --single-quote false && pnpm prettier --write --no-error-on-unmatched-pattern 'scripts/**/*.{js,mjs,ts}' && pnpm prettier --parser json --write --no-error-on-unmatched-pattern 'scripts/**/*.json'",
     "gitleaks": "gitleaks protect --staged --redact --config=gitleaks-override.toml",
     "postinstall": "node scripts/run-patch-package.cjs",
     "native-shell:format": "cd packages/native-shell-android && ./gradlew ktlintFormat && cd ../../packages/native-shell-ios && swiftlint --fix",

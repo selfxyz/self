@@ -9,13 +9,9 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v6
-      - name: Cache Yarn dependencies
+      - name: Cache pnpm store
         uses: ./.github/actions/cache-pnpm
         with:
-          path: |
-            .yarn/cache
-            node_modules
-            common/node_modules
           cache-version: v1
       - name: Install Dependencies
         uses: ./.github/actions/pnpm-install
@@ -35,13 +31,9 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v6
-      - name: Cache Yarn dependencies
+      - name: Cache pnpm store
         uses: ./.github/actions/cache-pnpm
         with:
-          path: |
-            .yarn/cache
-            node_modules
-            common/node_modules
           cache-version: v1
       - name: Install Dependencies
         uses: ./.github/actions/pnpm-install
@@ -55,13 +47,9 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v6
-      - name: Cache Yarn dependencies
+      - name: Cache pnpm store
         uses: ./.github/actions/cache-pnpm
         with:
-          path: |
-            .yarn/cache
-            node_modules
-            common/node_modules
           cache-version: v1
       - name: Install Dependencies
         uses: ./.github/actions/pnpm-install
@@ -81,7 +69,7 @@ jobs:
         run: pnpm --filter @selfxyz/mobile-sdk-alpha build
       - name: Build @selfxyz/qrcode
         run: pnpm --filter @selfxyz/qrcode build:deps
-      - name: Yarn types
+      - name: Run pnpm types
         run: pnpm types
 
   test-common:
@@ -91,13 +79,9 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v6
-      - name: Cache Yarn dependencies
+      - name: Cache pnpm store
         uses: ./.github/actions/cache-pnpm
         with:
-          path: |
-            .yarn/cache
-            node_modules
-            common/node_modules
           cache-version: v1
       - name: Install Dependencies
         uses: ./.github/actions/pnpm-install

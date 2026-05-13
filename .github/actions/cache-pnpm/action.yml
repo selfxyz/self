@@ -3,10 +3,6 @@ name: Cache PNPM
 description: Cache the pnpm content-addressable store. Do not cache node_modules — pnpm uses `.modules.yaml` as an up-to-date marker and will skip re-linking workspace packages if a partial node_modules tree is restored.
 
 inputs:
-  path:
-    description: Ignored. Retained for backwards compatibility with callers that still pass yarn-era node_modules paths. The action always caches the pnpm store.
-    required: false
-    default: ""
   lock-file:
     description: Path to pnpm-lock.yaml
     required: false

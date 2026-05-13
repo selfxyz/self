@@ -2,34 +2,31 @@
 
 ## Current state (as of 2026-05-12)
 
-We are **not fully migrated** to pnpm yet.
+**Migration complete.** The repo is pnpm-only.
 
-What is done:
-- Root `packageManager` points to pnpm.
-- `pnpm-workspace.yaml` exists.
-- `pnpm-lock.yaml` exists.
+What changed in the cutover:
 
-What is not done:
-- Most package scripts still call `yarn ...`.
-- CI workflows and composite actions are still Yarn-first.
-- Some workspaces still declare `packageManager: yarn@4.x`.
-- Repo still includes Yarn artifacts (for now), including `yarn.lock` and `.yarnrc.yml`.
+- All workspace `package.json` scripts call `pnpm` (no `yarn` invocations remain).
+- All `packageManager` fields point at `pnpm@11.1.1`.
+- CI workflows use `./.github/actions/cache-pnpm` and `./.github/actions/pnpm-install`. The yarn-only composite actions (`cache-yarn`, `yarn-install`, `yarnrc-hash`) have been removed.
+- App build scripts (`app/scripts/mobile-ci-build-android.sh`, `app/ios/scripts/install-ios-deps-if-needed.sh`) use `pnpm-lock.yaml` and `pnpm pack` / `pnpm add file:…` flows.
+- `.yarnrc.yml` packageExtensions for `@selfxyz/euclid` have been migrated to `packageExtensions` in `pnpm-workspace.yaml`.
+- `yarn.lock` and `.yarnrc.yml` are removed.
 
-## Should we remove Yarn artifacts now?
+## Residual yarn references (intentional)
 
-**No — not yet.**
+These are not blockers and live outside the install/build path:
 
-Removing Yarn artifacts before script + CI migration would break local workflows and CI.
+- `.gitignore` / `.prettierignore` / `.cursorignore` entries that match `yarn.lock` or `.yarnrc.yml` — kept so any stray regeneration is ignored.
+- `app/README.md`, `app/docs/MOBILE_DEPLOYMENT.md` — narrative docs that mention `yarn.lock`; will be refreshed in a docs pass.
+- `circuits/package.json` declares `@yarnpkg/sdks` as a dev dependency for editor SDKs; harmless under pnpm and removed in a follow-up if unused.
+- `packages/mobile-sdk-demo` depends on the third-party package `find-yarn-workspace-root`. That is a package name; it does not require Yarn.
 
-## Recommended phased migration
+## Verification
 
-1. **Script migration (safe first):** convert root scripts from `yarn` to `pnpm` and validate commands.
-2. **Workspace migration:** update each workspace `package.json` scripts and `packageManager` fields.
-3. **CI migration:** replace `yarn-install` and `cache-yarn` usage with pnpm equivalents.
-4. **Cutover cleanup:** remove `yarn.lock`, `.yarnrc.yml`, and Yarn-only CI actions after green CI.
+Run from a clean clone:
 
-## Definition of done
-
-- `rg -n "\byarn\b" package.json app circuits common contracts sdk packages .github` returns only intentional historical/docs references.
-- CI passes end-to-end with pnpm-only install and caching.
-- Yarn artifacts removed in same cutover PR.
+```
+nvm use && corepack enable && pnpm install
+pnpm lint && pnpm types && pnpm build
+```
