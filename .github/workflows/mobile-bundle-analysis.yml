@@ -89,6 +89,9 @@ jobs:
         shell: bash
         run: pnpm --filter @selfxyz/common build
       - name: Run Android analysis
+        env:
+          # Prevent V8 heap OOM during Metro bundle generation on larger dependency graphs
+          NODE_OPTIONS: --max-old-space-size=8192
         run: pnpm analyze:bundle:android
         working-directory: ./app
 
@@ -166,5 +169,8 @@ jobs:
         shell: bash
         run: pnpm --filter @selfxyz/common build
       - name: Run iOS analysis
+        env:
+          # Keep parity with Android analysis to avoid platform-specific heap regressions
+          NODE_OPTIONS: --max-old-space-size=8192
         run: pnpm analyze:bundle:ios
         working-directory: ./app
