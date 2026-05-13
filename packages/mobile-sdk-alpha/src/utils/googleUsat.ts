@@ -27,7 +27,7 @@ export function isGoogleUsatProofRequest(
   identity: GoogleUsatFaucetIdentity = GOOGLE_USAT_FAUCET_IDENTITY,
 ): boolean {
   return (
-    app.endpoint?.trim().toLowerCase() === identity.endpoint.toLowerCase() &&
+    app.endpoint?.trim().toLowerCase() === identity.endpoint.trim().toLowerCase() &&
     app.scope === identity.scope &&
     app.appName === identity.appName
   );

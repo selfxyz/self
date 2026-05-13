@@ -10,6 +10,8 @@ import {
 import {
   evaluateGoogleUsatGate,
   FORCE_GOOGLE_USAT_FOR_TESTING,
+  evaluateGoogleUsatGateForDocument,
+  hasEligibleGoogleUsatAlternativeDocument,
 } from '@/utils/googleUsatGate';
 
 jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
@@ -44,15 +46,10 @@ describe('evaluateGoogleUsatGate', () => {
   });
 
   it('treats non Google USAT requests according to the force-test toggle', async () => {
-    // While FORCE_GOOGLE_USAT_FOR_TESTING is on, every request is gated as if
-    // it were a USAT request, so an empty doc catalog blocks. When the toggle
-    // is removed, this should allow without consulting the catalog.
     const result = await evaluateGoogleUsatGate(selfClient, app);
-    const expected = FORCE_GOOGLE_USAT_FOR_TESTING ? 'block' : 'allow';
-    const expectedGetAllDocumentsCalls = FORCE_GOOGLE_USAT_FOR_TESTING ? 1 : 0;
-    expect(result).toBe(expected);
+    expect(result).toBe('allow');
     expect(mockGetAllDocuments).toHaveBeenCalledTimes(
-      expectedGetAllDocumentsCalls,
+      FORCE_GOOGLE_USAT_FOR_TESTING ? 1 : 0,
     );
   });
 
@@ -160,5 +157,30 @@ describe('evaluateGoogleUsatGate', () => {
 
   it('exposes testing force toggle', () => {
     expect(typeof FORCE_GOOGLE_USAT_FOR_TESTING).toBe('boolean');
+  });
+
+  it('reuses prefetched docs for per-document gate checks', async () => {
+    mockIsGoogleUsatProofRequest.mockReturnValue(true);
+    const docs = {
+      selected: { data: { documentCategory: 'passport', mock: false } } as any,
+    };
+    await expect(
+      evaluateGoogleUsatGateForDocument(selfClient, app, 'selected', docs),
+    ).resolves.toBe('allow');
+    expect(mockGetAllDocuments).not.toHaveBeenCalled();
+  });
+
+  it('detects eligible alternative docs when selected one is excluded', () => {
+    expect(
+      hasEligibleGoogleUsatAlternativeDocument(
+        {
+          selected: { data: { documentCategory: 'kyc', mock: false } } as any,
+          eligible: {
+            data: { documentCategory: 'passport', mock: false },
+          } as any,
+        },
+        'selected',
+      ),
+    ).toBe(true);
   });
 });

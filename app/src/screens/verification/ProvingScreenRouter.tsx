@@ -31,6 +31,7 @@ import { getDocumentTypeName } from '@/utils/documentUtils';
 import {
   evaluateGoogleUsatGate,
   evaluateGoogleUsatGateForDocument,
+  hasEligibleGoogleUsatAlternativeDocument,
 } from '@/utils/googleUsatGate';
 
 /**
@@ -81,35 +82,32 @@ const ProvingScreenRouter: React.FC = () => {
     setError(null);
 
     try {
-      const gate = await evaluateGoogleUsatGate(selfClient, selfApp);
-      if (controller.signal.aborted) {
-        return;
-      }
-      if (gate === 'block') {
-        hasRoutedRef.current = true;
-        selfClient.trackEvent(ProofEvents.GOOGLE_USAT_BLOCKED, {
-          entry_point: entryPoint,
-          reason: 'no_high_security_doc',
-        });
-        useVerificationGateStore.getState().open({
-          reason: 'google_usat_high_security_required',
-          entryPoint,
-          requesterName: selfApp.appName,
-        });
-        selfClient.getSelfAppState().cleanSelfApp();
-        navigation.goBack();
-        return;
-      }
-    } catch (gateError) {
-      if (controller.signal.aborted) {
-        return;
-      }
-      console.warn('Google USAT gate evaluation failed:', gateError);
-    }
-
-    try {
       const catalog = await loadDocumentCatalog();
       const docs = await getAllDocuments();
+
+      const gate = await evaluateGoogleUsatGate(selfClient, selfApp);
+      if (gate === 'block') {
+        const selectedDocumentId = catalog.selectedDocumentId;
+        const hasAlternativeEligibleDocument = selectedDocumentId
+          ? hasEligibleGoogleUsatAlternativeDocument(docs, selectedDocumentId)
+          : false;
+
+        if (!hasAlternativeEligibleDocument) {
+          hasRoutedRef.current = true;
+          selfClient.trackEvent(ProofEvents.GOOGLE_USAT_BLOCKED, {
+            entry_point: entryPoint,
+            reason: 'no_high_security_doc',
+          });
+          useVerificationGateStore.getState().open({
+            reason: 'google_usat_high_security_required',
+            entryPoint,
+            requesterName: selfApp.appName,
+          });
+          selfClient.getSelfAppState().cleanSelfApp();
+          navigation.goBack();
+          return;
+        }
+      }
 
       // Don't continue if this request was aborted
       if (controller.signal.aborted) {
@@ -153,6 +151,7 @@ const ProvingScreenRouter: React.FC = () => {
               selfClient,
               selfApp,
               docToSelect,
+              docs,
             );
             if (selectedDocGate === 'block') {
               selfClient.trackEvent(ProofEvents.GOOGLE_USAT_BLOCKED, {

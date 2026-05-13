@@ -16,6 +16,8 @@ type GoogleUsatEligibleDocumentCategory = 'passport' | 'id_card';
 const GOOGLE_USAT_ALLOWED_DOCUMENT_CATEGORIES: ReadonlySet<DocumentCategory> =
   new Set(['passport', 'id_card']);
 
+type DocumentMap = Awaited<ReturnType<typeof getAllDocuments>>;
+
 export function isGoogleUsatForceEnabledForTesting(): boolean {
   return __DEV__ && FORCE_GOOGLE_USAT_FOR_TESTING;
 }
@@ -28,38 +30,38 @@ export async function evaluateGoogleUsatGate(
     return 'allow';
   }
 
-  let selectedDocumentId: string | undefined;
   try {
     const catalog = await selfClient.loadDocumentCatalog();
-    selectedDocumentId = catalog.selectedDocumentId;
+    const selectedDocumentId = catalog.selectedDocumentId;
+
+    if (!selectedDocumentId) {
+      return 'allow';
+    }
+
+    const docs = await getAllDocuments(selfClient);
+    return evaluateGoogleUsatGateForDocument(selfClient, app, selectedDocumentId, docs);
   } catch {
-    // Fail open to match the same UX-only guard behavior on transient failures.
     return 'allow';
   }
-
-  if (!selectedDocumentId) {
-    // Defer document eligibility checks to explicit document selection
-    // chokepoints when no stored selection exists yet.
-    return 'allow';
-  }
-
-  return evaluateGoogleUsatGateForDocument(selfClient, app, selectedDocumentId);
 }
 
 export async function evaluateGoogleUsatGateForDocument(
   selfClient: SelfClient,
   app: SelfApp,
   documentId: string,
+  prefetchedDocs?: DocumentMap,
 ): Promise<GoogleUsatGateResult> {
   if (!shouldTreatAsGoogleUsat(app)) {
     return 'allow';
   }
 
-  let docs: Awaited<ReturnType<typeof getAllDocuments>>;
-  try {
-    docs = await getAllDocuments(selfClient);
-  } catch {
-    return 'allow';
+  let docs = prefetchedDocs;
+  if (!docs) {
+    try {
+      docs = await getAllDocuments(selfClient);
+    } catch {
+      return 'allow';
+    }
   }
 
   const documentToEvaluate = docs[documentId];
@@ -67,12 +69,28 @@ export async function evaluateGoogleUsatGateForDocument(
     return 'block';
   }
 
-  const isEligibleSelectedDoc =
-    isGoogleUsatEligibleDocumentCategory(
-      documentToEvaluate.data.documentCategory,
-    ) && documentToEvaluate.data.mock !== true;
+  const isEligibleSelectedDoc = isGoogleUsatDocumentEligible(
+    documentToEvaluate.data.documentCategory,
+    documentToEvaluate.data.mock,
+  );
 
   return isEligibleSelectedDoc ? 'allow' : 'block';
+}
+
+export function hasEligibleGoogleUsatAlternativeDocument(
+  docs: DocumentMap,
+  excludedDocumentId: string,
+): boolean {
+  return Object.entries(docs).some(([documentId, document]) => {
+    if (documentId === excludedDocumentId) {
+      return false;
+    }
+
+    return isGoogleUsatDocumentEligible(
+      document.data.documentCategory,
+      document.data.mock,
+    );
+  });
 }
 
 function shouldTreatAsGoogleUsat(app: SelfApp): boolean {
@@ -86,4 +104,11 @@ function isGoogleUsatEligibleDocumentCategory(
   category: DocumentCategory,
 ): category is GoogleUsatEligibleDocumentCategory {
   return GOOGLE_USAT_ALLOWED_DOCUMENT_CATEGORIES.has(category);
+}
+
+function isGoogleUsatDocumentEligible(
+  category: DocumentCategory,
+  isMock: boolean | undefined,
+): boolean {
+  return isGoogleUsatEligibleDocumentCategory(category) && isMock !== true;
 }

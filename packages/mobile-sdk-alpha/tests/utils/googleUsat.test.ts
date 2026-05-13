@@ -63,6 +63,20 @@ describe('isGoogleUsatProofRequest', () => {
     expect(isGoogleUsatProofRequest(buildApp({ appName: GOOGLE_USAT_FAUCET_APP_NAME.toUpperCase() }))).toBe(false);
   });
 
+
+  it('normalizes identity endpoint whitespace and case in override comparisons', () => {
+    expect(
+      isGoogleUsatProofRequest(
+        buildApp({ endpoint: 'https://override.example/api' }),
+        {
+          endpoint: '  HTTPS://OVERRIDE.EXAMPLE/API  ',
+          scope: GOOGLE_USAT_FAUCET_SCOPE,
+          appName: GOOGLE_USAT_FAUCET_APP_NAME,
+        },
+      ),
+    ).toBe(true);
+  });
+
   it('accepts a custom identity override', () => {
     const identity = {
       endpoint: 'https://override.example/api',
