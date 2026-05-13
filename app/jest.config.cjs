@@ -38,6 +38,10 @@ module.exports = {
     '^@tests$': '<rootDir>/tests/src',
     '^expo-camera$': '<rootDir>/tests/__setup__/expoCameraMock.js',
     '^expo-application$': '<rootDir>/tests/__setup__/expoApplicationMock.js',
+    // Mock react-native-blur-effect: under pnpm hoisted, it ships a nested
+    // react-native copy that escapes the jest RN preset's mocks (see
+    // blurEffectMock.js for details). Visual-only, not exercised in tests.
+    '^react-native-blur-effect$': '<rootDir>/tests/__setup__/blurEffectMock.js',
     // Force a single react-native runtime in tests under pnpm's hoisted layout.
     '^react-native$': '<rootDir>/node_modules/react-native',
     // Map react-native-svg to the hoisted workspace copy (pnpm puts it at the
