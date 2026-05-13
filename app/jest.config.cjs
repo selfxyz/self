@@ -45,7 +45,8 @@ module.exports = {
     // blurEffectMock.js for details). Visual-only, not exercised in tests.
     '^react-native-blur-effect$': '<rootDir>/tests/__setup__/blurEffectMock.js',
     // Force a single react-native runtime in tests under pnpm's hoisted layout.
-    '^react-native$': '<rootDir>/node_modules/react-native',
+    // react-native is hoisted to the repo root, not app/node_modules.
+    '^react-native$': '<rootDir>/../node_modules/react-native',
     // Map react-native-svg to the hoisted workspace copy (pnpm puts it at the
     // repo root under nodeLinker: hoisted; the app workspace's node_modules
     // does not contain a top-level entry for it).
