@@ -16,7 +16,7 @@ module.exports = {
     'node',
   ],
   transformIgnorePatterns: [
-    'node_modules/(?!(react-native|@react-native|@react-navigation|@react-native-community|@segment/analytics-react-native|@openpassport|react-native-keychain|react-native-check-version|react-native-nfc-manager|react-native-passport-reader|react-native-gesture-handler|uuid|@stablelib|@react-native-google-signin|react-native-cloud-storage|@react-native-clipboard|@react-native-firebase|@selfxyz|@sentry|@anon-aadhaar|react-native-svg|react-native-svg-circle-country-flags|react-native-blur-effect|react-native-permissions|@didit-protocol|react-native-date-picker)/)',
+    'node_modules/(?!(react-native|@react-native|@react-navigation|@react-native-community|@segment/analytics-react-native|@openpassport|react-native-keychain|react-native-check-version|react-native-nfc-manager|react-native-passport-reader|react-native-gesture-handler|uuid|@stablelib|@react-native-google-signin|react-native-cloud-storage|@react-native-clipboard|@react-native-firebase|@selfxyz|@sentry|@anon-aadhaar|@testing-library|react-native-svg|react-native-svg-circle-country-flags|react-native-blur-effect|react-native-permissions|@didit-protocol|react-native-date-picker)/)',
   ],
   setupFiles: ['<rootDir>/jest.setup.js'],
   testMatch: [
@@ -63,7 +63,7 @@ module.exports = {
       '<rootDir>/../circuits/node_modules/ffjavascript/build/main.cjs',
     // Fix @anon-aadhaar/core resolution
     '^@anon-aadhaar/core$':
-      '<rootDir>/../common/node_modules/@anon-aadhaar/core/dist/index.js',
+      '<rootDir>/../node_modules/@anon-aadhaar/core/dist/index.js',
   },
   transform: {
     '\\.[jt]sx?$': ['babel-jest', { configFile: './babel.config.test.cjs' }],

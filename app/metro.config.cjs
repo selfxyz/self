@@ -13,6 +13,22 @@ const { assetExts, sourceExts } = defaultConfig.resolver;
 const projectRoot = __dirname;
 const workspaceRoot =
   findYarnWorkspaceRoot(__dirname) || path.resolve(__dirname, '..');
+const escapeRegExp = value => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const hasAppLocalReactCopies = ['react', 'react-dom', 'react-native', 'scheduler']
+  .map(moduleName => path.resolve(projectRoot, 'node_modules', moduleName))
+  .every(modulePath => fs.existsSync(modulePath));
+const workspaceReactBlockList = hasAppLocalReactCopies
+  ? [
+      new RegExp(`^${escapeRegExp(workspaceRoot)}/node_modules/react(/|$)`),
+      new RegExp(`^${escapeRegExp(workspaceRoot)}/node_modules/react-dom(/|$)`),
+      new RegExp(
+        `^${escapeRegExp(workspaceRoot)}/node_modules/react-native(/|$)`,
+      ),
+      new RegExp(
+        `^${escapeRegExp(workspaceRoot)}/node_modules/scheduler(/|$)`,
+      ),
+    ]
+  : [];
 
 /**
  * Modern Metro configuration using native workspace capabilities
@@ -50,20 +66,8 @@ const config = {
       /.*\/dist\/esm\/package\.json$/,
       /.*\/dist\/cjs\/package\.json$/,
       /.*\/build\/package\.json$/,
-      // Prevent duplicate React/React Native - block workspace root versions and use app's versions
-      // Use precise regex patterns to avoid blocking packages like react-native-get-random-values
-      new RegExp(
-        `^${workspaceRoot.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/node_modules/react(/|$)`,
-      ),
-      new RegExp(
-        `^${workspaceRoot.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/node_modules/react-dom(/|$)`,
-      ),
-      new RegExp(
-        `^${workspaceRoot.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/node_modules/react-native(/|$)`,
-      ),
-      new RegExp(
-        `^${workspaceRoot.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/node_modules/scheduler(/|$)`,
-      ),
+      // Prefer app-local React copies when present, but allow workspace fallback in CI if app copies are missing.
+      ...workspaceReactBlockList,
       new RegExp('packages/mobile-sdk-alpha/node_modules/react(/|$)'),
       new RegExp('packages/mobile-sdk-alpha/node_modules/react-dom(/|$)'),
       new RegExp('packages/mobile-sdk-alpha/node_modules/react-native(/|$)'),
