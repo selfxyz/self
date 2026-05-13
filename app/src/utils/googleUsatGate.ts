@@ -51,6 +51,9 @@ export async function evaluateGoogleUsatGate(
       docs,
     );
   } catch {
+    // Fail open: this gate is a UX guard, not a security boundary. Faucet
+    // eligibility is enforced server-side. A transient local-storage failure
+    // must not permanently block the proof session.
     return 'allow';
   }
 }
@@ -70,6 +73,9 @@ export async function evaluateGoogleUsatGateForDocument(
     try {
       docs = await getAllDocuments(selfClient);
     } catch {
+      // Fail open: this gate is a UX guard, not a security boundary. Faucet
+      // eligibility is enforced server-side. A transient local-storage failure
+      // must not permanently block the proof session.
       return 'allow';
     }
   }
