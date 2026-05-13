@@ -14,6 +14,17 @@ const projectRoot = __dirname;
 const workspaceRoot =
   findYarnWorkspaceRoot(__dirname) || path.resolve(__dirname, '..');
 const escapeRegExp = value => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const moduleResolutionRoots = [projectRoot, workspaceRoot];
+const resolveInstalledFile = (packageName, relativePath) => {
+  try {
+    const packageEntry = require.resolve(packageName, {
+      paths: moduleResolutionRoots,
+    });
+    return path.resolve(path.dirname(packageEntry), relativePath);
+  } catch {
+    return path.resolve(projectRoot, 'node_modules', packageName, relativePath);
+  }
+};
 const hasAppLocalReactCopies = [
   'react',
   'react-dom',
@@ -205,10 +216,7 @@ const config = {
 
       // Fix @turnkey/encoding to use CommonJS instead of ESM
       if (moduleName === '@turnkey/encoding') {
-        const filePath = path.resolve(
-          projectRoot,
-          'node_modules/@turnkey/encoding/dist/index.js',
-        );
+        const filePath = resolveInstalledFile('@turnkey/encoding', 'index.js');
         return {
           type: 'sourceFile',
           filePath,
@@ -218,9 +226,9 @@ const config = {
       // Fix @turnkey/encoding submodules to use CommonJS
       if (moduleName.startsWith('@turnkey/encoding/')) {
         const subpath = moduleName.replace('@turnkey/encoding/', '');
-        const filePath = path.resolve(
-          projectRoot,
-          `node_modules/@turnkey/encoding/dist/${subpath}.js`,
+        const filePath = resolveInstalledFile(
+          '@turnkey/encoding',
+          `${subpath}.js`,
         );
         return {
           type: 'sourceFile',
@@ -230,9 +238,9 @@ const config = {
 
       // Fix @turnkey/api-key-stamper to use CommonJS instead of ESM
       if (moduleName === '@turnkey/api-key-stamper') {
-        const filePath = path.resolve(
-          projectRoot,
-          'node_modules/@turnkey/api-key-stamper/dist/index.js',
+        const filePath = resolveInstalledFile(
+          '@turnkey/api-key-stamper',
+          'index.js',
         );
         return {
           type: 'sourceFile',
@@ -243,9 +251,9 @@ const config = {
       // Fix @turnkey/api-key-stamper dynamic imports by resolving submodules statically
       if (moduleName.startsWith('@turnkey/api-key-stamper/')) {
         const subpath = moduleName.replace('@turnkey/api-key-stamper/', '');
-        const filePath = path.resolve(
-          projectRoot,
-          `node_modules/@turnkey/api-key-stamper/dist/${subpath}`,
+        const filePath = resolveInstalledFile(
+          '@turnkey/api-key-stamper',
+          subpath,
         );
         return {
           type: 'sourceFile',
