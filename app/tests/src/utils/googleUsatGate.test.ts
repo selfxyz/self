@@ -26,6 +26,9 @@ const mockIsGoogleUsatProofRequest =
   >;
 
 describe('evaluateGoogleUsatGate', () => {
+  const selfClient = {
+    loadDocumentCatalog: jest.fn(),
+  } as any;
   const app = {
     sessionId: 'session-id',
     endpointType: 'celo',
@@ -37,13 +40,14 @@ describe('evaluateGoogleUsatGate', () => {
     jest.clearAllMocks();
     mockIsGoogleUsatProofRequest.mockReturnValue(false);
     mockGetAllDocuments.mockResolvedValue({});
+    selfClient.loadDocumentCatalog.mockResolvedValue({});
   });
 
   it('treats non Google USAT requests according to the force-test toggle', async () => {
     // While FORCE_GOOGLE_USAT_FOR_TESTING is on, every request is gated as if
     // it were a USAT request, so an empty doc catalog blocks. When the toggle
     // is removed, this should allow without consulting the catalog.
-    const result = await evaluateGoogleUsatGate({} as any, app);
+    const result = await evaluateGoogleUsatGate(selfClient, app);
     const expected = FORCE_GOOGLE_USAT_FOR_TESTING ? 'block' : 'allow';
     const expectedGetAllDocumentsCalls = FORCE_GOOGLE_USAT_FOR_TESTING ? 1 : 0;
     expect(result).toBe(expected);
@@ -52,25 +56,106 @@ describe('evaluateGoogleUsatGate', () => {
     );
   });
 
-  it('blocks Google USAT when catalog is empty', async () => {
+  it('blocks Google USAT when selected document is not found in docs', async () => {
     mockIsGoogleUsatProofRequest.mockReturnValue(true);
+    selfClient.loadDocumentCatalog.mockResolvedValue({
+      selectedDocumentId: 'missing',
+    });
     mockGetAllDocuments.mockResolvedValue({});
-    await expect(evaluateGoogleUsatGate({} as any, app)).resolves.toBe('block');
+    await expect(evaluateGoogleUsatGate(selfClient, app)).resolves.toBe(
+      'block',
+    );
   });
 
-  it('allows Google USAT when non-kyc doc exists', async () => {
+  it('allows Google USAT when selected document is real and non-kyc', async () => {
     mockIsGoogleUsatProofRequest.mockReturnValue(true);
-    mockGetAllDocuments.mockResolvedValue({
-      a: { data: { documentCategory: 'kyc' } } as any,
-      b: { data: { documentCategory: 'passport' } } as any,
+    selfClient.loadDocumentCatalog.mockResolvedValue({
+      selectedDocumentId: 'b',
     });
-    await expect(evaluateGoogleUsatGate({} as any, app)).resolves.toBe('allow');
+    mockGetAllDocuments.mockResolvedValue({
+      a: { data: { documentCategory: 'kyc', mock: false } } as any,
+      b: { data: { documentCategory: 'passport', mock: false } } as any,
+    });
+    await expect(evaluateGoogleUsatGate(selfClient, app)).resolves.toBe(
+      'allow',
+    );
+  });
+
+  it('blocks Google USAT when selected document is kyc even if another real non-kyc exists', async () => {
+    mockIsGoogleUsatProofRequest.mockReturnValue(true);
+    selfClient.loadDocumentCatalog.mockResolvedValue({
+      selectedDocumentId: 'a',
+    });
+    mockGetAllDocuments.mockResolvedValue({
+      a: { data: { documentCategory: 'kyc', mock: false } } as any,
+      b: { data: { documentCategory: 'passport', mock: false } } as any,
+    });
+    await expect(evaluateGoogleUsatGate(selfClient, app)).resolves.toBe(
+      'block',
+    );
+  });
+
+  it('blocks Google USAT when selected non-kyc document is a mock', async () => {
+    mockIsGoogleUsatProofRequest.mockReturnValue(true);
+    selfClient.loadDocumentCatalog.mockResolvedValue({
+      selectedDocumentId: 'b',
+    });
+    mockGetAllDocuments.mockResolvedValue({
+      a: { data: { documentCategory: 'kyc', mock: false } } as any,
+      b: { data: { documentCategory: 'id_card', mock: true } } as any,
+    });
+    await expect(evaluateGoogleUsatGate(selfClient, app)).resolves.toBe(
+      'block',
+    );
+  });
+
+  it('blocks Google USAT when selected document is missing from loaded docs', async () => {
+    mockIsGoogleUsatProofRequest.mockReturnValue(true);
+    selfClient.loadDocumentCatalog.mockResolvedValue({
+      selectedDocumentId: 'missing',
+    });
+    mockGetAllDocuments.mockResolvedValue({
+      a: { data: { documentCategory: 'passport', mock: false } } as any,
+    });
+    await expect(evaluateGoogleUsatGate(selfClient, app)).resolves.toBe(
+      'block',
+    );
+  });
+
+  it('allows Google USAT when no selected document exists and defers to downstream selection checks', async () => {
+    mockIsGoogleUsatProofRequest.mockReturnValue(true);
+    selfClient.loadDocumentCatalog.mockResolvedValue({});
+    mockGetAllDocuments.mockResolvedValue({
+      a: { data: { documentCategory: 'passport', mock: false } } as any,
+    });
+    await expect(evaluateGoogleUsatGate(selfClient, app)).resolves.toBe(
+      'allow',
+    );
+  });
+
+  it('blocks Google USAT when selected document is aadhaar', async () => {
+    mockIsGoogleUsatProofRequest.mockReturnValue(true);
+    selfClient.loadDocumentCatalog.mockResolvedValue({
+      selectedDocumentId: 'a',
+    });
+    mockGetAllDocuments.mockResolvedValue({
+      a: { data: { documentCategory: 'aadhaar', mock: false } } as any,
+      b: { data: { documentCategory: 'passport', mock: false } } as any,
+    });
+    await expect(evaluateGoogleUsatGate(selfClient, app)).resolves.toBe(
+      'block',
+    );
   });
 
   it('fails open when getAllDocuments throws', async () => {
     mockIsGoogleUsatProofRequest.mockReturnValue(true);
+    selfClient.loadDocumentCatalog.mockResolvedValue({
+      selectedDocumentId: 'a',
+    });
     mockGetAllDocuments.mockRejectedValue(new Error('network down'));
-    await expect(evaluateGoogleUsatGate({} as any, app)).resolves.toBe('allow');
+    await expect(evaluateGoogleUsatGate(selfClient, app)).resolves.toBe(
+      'allow',
+    );
   });
 
   it('exposes testing force toggle', () => {

@@ -4,16 +4,31 @@
 
 import type { SelfApp } from '@selfxyz/common/utils';
 
-import { GOOGLE_USAT_FAUCET_VERIFIERS } from '../constants/googleUsat';
+import {
+  GOOGLE_USAT_FAUCET_APP_NAME,
+  GOOGLE_USAT_FAUCET_ENDPOINT,
+  GOOGLE_USAT_FAUCET_SCOPE,
+} from '../constants/googleUsat';
+
+export interface GoogleUsatFaucetIdentity {
+  endpoint: string;
+  scope: string;
+  appName: string;
+}
+
+export const GOOGLE_USAT_FAUCET_IDENTITY: GoogleUsatFaucetIdentity = {
+  endpoint: GOOGLE_USAT_FAUCET_ENDPOINT,
+  scope: GOOGLE_USAT_FAUCET_SCOPE,
+  appName: GOOGLE_USAT_FAUCET_APP_NAME,
+};
 
 export function isGoogleUsatProofRequest(
   app: SelfApp,
-  verifiers: Readonly<Record<number, ReadonlySet<string>>> = GOOGLE_USAT_FAUCET_VERIFIERS,
+  identity: GoogleUsatFaucetIdentity = GOOGLE_USAT_FAUCET_IDENTITY,
 ): boolean {
-  if (app.endpointType !== 'celo' && app.endpointType !== 'staging_celo') return false;
-
-  const chainVerifiers = verifiers[app.chainID];
-  if (!chainVerifiers || chainVerifiers.size === 0) return false;
-
-  return chainVerifiers.has(app.endpoint.toLowerCase());
+  return (
+    app.endpoint?.trim().toLowerCase() === identity.endpoint.toLowerCase() &&
+    app.scope === identity.scope &&
+    app.appName === identity.appName
+  );
 }
