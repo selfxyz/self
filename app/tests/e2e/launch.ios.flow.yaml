@@ -1,5 +1,7 @@
 appId: com.warroom.proofofpassport
 ---
+- clearState
+- clearKeychain
 - launchApp
 - runFlow:
     when:

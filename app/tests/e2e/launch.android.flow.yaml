@@ -1,5 +1,7 @@
 appId: com.proofofpassportapp
 ---
+- clearState
+- clearKeychain
 - launchApp
 - runFlow:
     when:
