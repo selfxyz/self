@@ -16,7 +16,7 @@ module.exports = {
     'node',
   ],
   transformIgnorePatterns: [
-    'node_modules/(?!(react-native|@react-native|@react-navigation|@react-native-community|@segment/analytics-react-native|@openpassport|react-native-keychain|react-native-check-version|react-native-nfc-manager|react-native-passport-reader|react-native-gesture-handler|react-native-edge-to-edge|uuid|@stablelib|@react-native-google-signin|react-native-cloud-storage|@react-native-clipboard|@react-native-firebase|@selfxyz|@sentry|@anon-aadhaar|@testing-library|react-native-svg|react-native-svg-circle-country-flags|react-native-blur-effect|react-native-permissions|@didit-protocol|react-native-date-picker)/)',
+    'node_modules/(?!(react-native|@react-native|@react-navigation|@react-native-community|@segment/analytics-react-native|@openpassport|react-native-keychain|react-native-check-version|react-native-nfc-manager|react-native-passport-reader|react-native-gesture-handler|react-native-edge-to-edge|uuid|@stablelib|@react-native-google-signin|react-native-cloud-storage|@react-native-clipboard|@react-native-firebase|@selfxyz|@sentry|@anon-aadhaar|@testing-library|react-native-svg|react-native-svg-circle-country-flags|react-native-blur-effect|react-native-webview|react-native-permissions|@didit-protocol|react-native-date-picker)/)',
   ],
   setupFiles: ['<rootDir>/jest.setup.js'],
   testMatch: [
@@ -58,11 +58,10 @@ module.exports = {
       '<rootDir>/../packages/mobile-sdk-alpha/dist/$1.json',
     '^@selfxyz/mobile-sdk-alpha/(.*)$':
       '<rootDir>/../packages/mobile-sdk-alpha/dist/cjs/$1.cjs',
-    // Fix snarkjs resolution for @anon-aadhaar/core
-    '^snarkjs$': '<rootDir>/../circuits/node_modules/snarkjs/build/main.cjs',
-    // Fix ffjavascript resolution for snarkjs dependencies
-    '^ffjavascript$':
-      '<rootDir>/../circuits/node_modules/ffjavascript/build/main.cjs',
+    // Resolve ZK deps from the hoisted workspace root (CI may not have
+    // package-local node_modules under circuits/ with pnpm layouts).
+    '^snarkjs$': '<rootDir>/../node_modules/snarkjs/build/main.cjs',
+    '^ffjavascript$': '<rootDir>/../node_modules/ffjavascript/build/main.cjs',
     // Fix @anon-aadhaar/core resolution
     '^@anon-aadhaar/core$':
       '<rootDir>/../node_modules/@anon-aadhaar/core/dist/index.js',
