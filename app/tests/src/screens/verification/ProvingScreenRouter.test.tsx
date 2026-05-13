@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { render, waitFor } from '@testing-library/react-native';
+import { act, render, waitFor } from '@testing-library/react-native';
 
 import type {
   DocumentCatalog,
@@ -25,21 +25,9 @@ import {
   evaluateGoogleUsatGateForDocument,
 } from '@/utils/googleUsatGate';
 
-// Mock useFocusEffect to behave like useEffect in tests
-// Note: We use jest.requireActual for React to avoid nested require() which causes OOM in CI
-jest.mock('@react-navigation/native', () => {
-  const actual = jest.requireActual('@react-navigation/native');
-  const ReactActual = jest.requireActual('react');
-  return {
-    ...actual,
-    useRoute: jest.fn(() => ({ params: { entryPoint: 'qr_scan' } })),
-    useFocusEffect: (callback: () => void) => {
-      ReactActual.useEffect(() => {
-        callback();
-      }, [callback]);
-    },
-  };
-});
+// `@react-navigation/native` is globally mocked in tests/__setup__/mocks/navigation.js
+// (loaded via jest.setup.js). Reuse it instead of requireActual, which pulls in
+// the real react-native ESM and fails to parse.
 
 jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
   GOOGLE_USAT_FAUCET_POLICY: { id: 'google-usat-faucet' },
@@ -443,6 +431,112 @@ describe('ProvingScreenRouter', () => {
 
     expect(mockLoadDocumentCatalog).toHaveBeenCalledTimes(1);
     expect(mockGetAllDocuments).toHaveBeenCalledTimes(1);
+  });
+
+  it('routes to selector even when skipDocumentSelector is true if an eligible alternative exists', async () => {
+    const kyc = createMetadata({
+      id: 'doc-kyc',
+      documentCategory: 'kyc',
+      isRegistered: true,
+    });
+    const passport = createMetadata({
+      id: 'doc-passport',
+      documentType: 'us',
+      isRegistered: true,
+    });
+    const catalog: DocumentCatalog = {
+      documents: [kyc, passport],
+      selectedDocumentId: 'doc-kyc',
+    } as any;
+    const allDocs = createAllDocuments([
+      createDocumentEntry(kyc),
+      createDocumentEntry(passport),
+    ]);
+
+    const mockGoBack = jest.fn();
+    mockUseNavigation.mockReturnValue({
+      replace: mockReplace,
+      goBack: mockGoBack,
+    } as any);
+
+    mockUseSettingStore.mockReturnValue({
+      skipDocumentSelector: true,
+      skipDocumentSelectorIfSingle: false,
+    } as any);
+
+    mockLoadDocumentCatalog.mockResolvedValue(catalog);
+    mockGetAllDocuments.mockResolvedValue(allDocs);
+    mockEvaluateGoogleUsatGate.mockResolvedValue('block');
+    mockHasEligibleGoogleUsatAlternativeDocument.mockReturnValue(true);
+    // pickBestDocumentToSelect would pick the blocked doc-kyc and the
+    // per-document gate would re-block it — proving the previous bug.
+    mockPickBestDocumentToSelect.mockReturnValue('doc-kyc');
+    mockEvaluateGoogleUsatGateForDocument.mockResolvedValue('block');
+
+    render(<ProvingScreenRouter />);
+
+    await waitFor(() => {
+      expect(mockReplace).toHaveBeenCalledWith(
+        'DocumentSelectorForProving',
+        expect.objectContaining({ entryPoint: 'qr_scan' }),
+      );
+    });
+
+    expect(mockSetSelectedDocument).not.toHaveBeenCalled();
+    expect(mockReplace).not.toHaveBeenCalledWith('Prove');
+    expect(mockGoBack).not.toHaveBeenCalled();
+    expect(mockCleanSelfApp).not.toHaveBeenCalled();
+    expect(mockEvaluateGoogleUsatGateForDocument).not.toHaveBeenCalled();
+  });
+
+  it('skips block-path side effects when the routing pass is aborted mid-gate', async () => {
+    const kyc = createMetadata({
+      id: 'doc-kyc',
+      documentCategory: 'kyc',
+      isRegistered: true,
+    });
+    const catalog: DocumentCatalog = {
+      documents: [kyc],
+      selectedDocumentId: 'doc-kyc',
+    } as any;
+    const allDocs = createAllDocuments([createDocumentEntry(kyc)]);
+
+    const mockGoBack = jest.fn();
+    mockUseNavigation.mockReturnValue({
+      replace: mockReplace,
+      goBack: mockGoBack,
+    } as any);
+
+    mockLoadDocumentCatalog.mockResolvedValue(catalog);
+    mockGetAllDocuments.mockResolvedValue(allDocs);
+
+    // Hold the gate evaluation pending until we abort.
+    let resolveGate: (value: 'allow' | 'block') => void = () => {};
+    mockEvaluateGoogleUsatGate.mockReturnValueOnce(
+      new Promise(resolve => {
+        resolveGate = resolve;
+      }),
+    );
+    mockHasEligibleGoogleUsatAlternativeDocument.mockReturnValue(false);
+
+    const { unmount } = render(<ProvingScreenRouter />);
+
+    await waitFor(() => {
+      expect(mockEvaluateGoogleUsatGate).toHaveBeenCalledTimes(1);
+    });
+
+    // Unmount triggers the cleanup effect, which aborts the in-flight pass.
+    unmount();
+
+    await act(async () => {
+      resolveGate('block');
+      await Promise.resolve();
+    });
+
+    expect(mockTrackEvent).not.toHaveBeenCalled();
+    expect(mockCleanSelfApp).not.toHaveBeenCalled();
+    expect(mockGoBack).not.toHaveBeenCalled();
+    expect(mockReplace).not.toHaveBeenCalled();
   });
 
   it('falls back to document selector when setSelectedDocument fails', async () => {

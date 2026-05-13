@@ -84,12 +84,35 @@ const ProvingScreenRouter: React.FC = () => {
 
     try {
       const catalog = await loadDocumentCatalog();
+      if (controller.signal.aborted) {
+        return;
+      }
       const docs = await getAllDocuments();
+      if (controller.signal.aborted) {
+        return;
+      }
 
       const gate = await evaluateGoogleUsatGate(selfClient, selfApp, {
         catalog,
         docs,
       });
+      if (controller.signal.aborted) {
+        return;
+      }
+
+      // Count valid documents up front so we can derive documentType for the
+      // selector even when the gate forces us there.
+      const validDocuments = catalog.documents.filter(doc => {
+        const docData = docs[doc.id];
+        return isDocumentValidForProving(doc, docData?.data);
+      });
+      const validCount = validDocuments.length;
+      const firstValidDoc = validDocuments[0];
+      const documentType = getDocumentTypeName(
+        firstValidDoc?.documentCategory,
+        firstValidDoc?.idType,
+      );
+
       if (gate === 'block') {
         const selectedDocumentId = catalog.selectedDocumentId;
         const hasAlternativeEligibleDocument = selectedDocumentId
@@ -100,35 +123,31 @@ const ProvingScreenRouter: React.FC = () => {
             )
           : false;
 
-        if (!hasAlternativeEligibleDocument) {
+        if (hasAlternativeEligibleDocument) {
+          // Force selector regardless of skipDocumentSelector so the user can
+          // pick the eligible alternative.
           hasRoutedRef.current = true;
-          selfClient.trackEvent(ProofEvents.GOOGLE_USAT_BLOCKED, {
-            entry_point: entryPoint,
-            reason: 'no_high_security_doc',
-          });
-          useVerificationGateStore.getState().open({
-            reason: 'google_usat_high_security_required',
+          navigation.replace('DocumentSelectorForProving', {
+            documentType,
             entryPoint,
-            requesterName: selfApp.appName,
           });
-          selfClient.getSelfAppState().cleanSelfApp();
-          navigation.goBack();
           return;
         }
-      }
 
-      // Don't continue if this request was aborted
-      if (controller.signal.aborted) {
+        hasRoutedRef.current = true;
+        selfClient.trackEvent(ProofEvents.GOOGLE_USAT_BLOCKED, {
+          entry_point: entryPoint,
+          reason: 'no_high_security_doc',
+        });
+        useVerificationGateStore.getState().open({
+          reason: 'google_usat_high_security_required',
+          entryPoint,
+          requesterName: selfApp.appName,
+        });
+        selfClient.getSelfAppState().cleanSelfApp();
+        navigation.goBack();
         return;
       }
-
-      // Count valid documents
-      const validDocuments = catalog.documents.filter(doc => {
-        const docData = docs[doc.id];
-        return isDocumentValidForProving(doc, docData?.data);
-      });
-
-      const validCount = validDocuments.length;
 
       // Mark as routed to prevent re-routing
       hasRoutedRef.current = true;
@@ -139,13 +158,6 @@ const ProvingScreenRouter: React.FC = () => {
         navigation.replace('DocumentDataNotFound');
         return;
       }
-
-      // Determine document type from first valid document for display
-      const firstValidDoc = validDocuments[0];
-      const documentType = getDocumentTypeName(
-        firstValidDoc?.documentCategory,
-        firstValidDoc?.idType,
-      );
 
       // Determine if we should skip the selector
       const shouldSkip = skipDocumentSelector || validCount === 1;
@@ -161,6 +173,9 @@ const ProvingScreenRouter: React.FC = () => {
               docToSelect,
               docs,
             );
+            if (controller.signal.aborted) {
+              return;
+            }
             if (selectedDocGate === 'block') {
               selfClient.trackEvent(ProofEvents.GOOGLE_USAT_BLOCKED, {
                 entry_point: entryPoint,
