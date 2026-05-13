@@ -8,6 +8,7 @@
     "strict": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
+    "types": ["node", "mocha"],
     "baseUrl": ".",
     "paths": {
       "@selfxyz/new-common/src/*": ["../new-common/src/*"],
