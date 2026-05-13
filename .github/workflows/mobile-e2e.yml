@@ -6,6 +6,7 @@ env:
   ANDROID_API_LEVEL: 34
   ANDROID_NDK_VERSION: 28.0.13004108
   XCODE_VERSION: 26
+  NODE_OPTIONS: --max-old-space-size=8192
   # Cache versions
   GH_CACHE_VERSION: v2 # Global cache version - bumped to invalidate caches
   GH_GEMS_CACHE_VERSION: v1 # Ruby gems cache version

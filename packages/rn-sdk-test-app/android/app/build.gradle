@@ -2,6 +2,8 @@ apply plugin: "com.android.application"
 apply plugin: "com.facebook.react"
 apply plugin: "org.jetbrains.kotlin.android"
 
+project.ext.REACT_NATIVE_NODE_MODULES_DIR = file("../../../../node_modules/react-native")
+
 react {
     root = file("../../")
     reactNativeDir = file("../../../../node_modules/react-native")

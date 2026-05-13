@@ -46,7 +46,7 @@ jobs:
           pnpm --filter @selfxyz/common build
           pnpm --filter @selfxyz/mobile-sdk-alpha build
       - name: Run linter
-        run: pnpm --filter @selfxyz/mobile-sdk-alpha lint
+        run: timeout 20m pnpm --filter @selfxyz/mobile-sdk-alpha exec eslint .
 
   format:
     runs-on: ubuntu-latest
@@ -90,7 +90,7 @@ jobs:
           pnpm --filter @selfxyz/common build
           pnpm --filter @selfxyz/mobile-sdk-alpha build
       - name: Type checking
-        run: pnpm --filter @selfxyz/mobile-sdk-alpha types
+        run: timeout 20m pnpm --filter @selfxyz/mobile-sdk-alpha exec tsc -p tsconfig.json --noEmit
 
   test:
     runs-on: ubuntu-latest

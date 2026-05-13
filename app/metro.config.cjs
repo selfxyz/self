@@ -264,11 +264,7 @@ const config = {
       // Fix viem dynamic import resolution
       if (moduleName === 'viem') {
         try {
-          // Viem uses package exports, so we need to resolve to the actual file path
-          const viemPath = path.resolve(
-            projectRoot,
-            'node_modules/viem/_cjs/index.js',
-          );
+          const viemPath = resolveInstalledFile('viem', '_cjs/index.js');
           return {
             type: 'sourceFile',
             filePath: viemPath,

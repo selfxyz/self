@@ -16,7 +16,7 @@ module.exports = {
     'node',
   ],
   transformIgnorePatterns: [
-    'node_modules/(?!(react-native|@react-native|@react-navigation|@react-native-community|@segment/analytics-react-native|@openpassport|react-native-keychain|react-native-check-version|react-native-nfc-manager|react-native-passport-reader|react-native-gesture-handler|uuid|@stablelib|@react-native-google-signin|react-native-cloud-storage|@react-native-clipboard|@react-native-firebase|@selfxyz|@sentry|@anon-aadhaar|@testing-library|react-native-svg|react-native-svg-circle-country-flags|react-native-blur-effect|react-native-permissions|@didit-protocol|react-native-date-picker)/)',
+    'node_modules/(?!(react-native|@react-native|@react-navigation|@react-native-community|@segment/analytics-react-native|@openpassport|react-native-keychain|react-native-check-version|react-native-nfc-manager|react-native-passport-reader|react-native-gesture-handler|react-native-edge-to-edge|uuid|@stablelib|@react-native-google-signin|react-native-cloud-storage|@react-native-clipboard|@react-native-firebase|@selfxyz|@sentry|@anon-aadhaar|@testing-library|react-native-svg|react-native-svg-circle-country-flags|react-native-blur-effect|react-native-permissions|@didit-protocol|react-native-date-picker)/)',
   ],
   setupFiles: ['<rootDir>/jest.setup.js'],
   testMatch: [
@@ -38,6 +38,8 @@ module.exports = {
     '^@tests$': '<rootDir>/tests/src',
     '^expo-camera$': '<rootDir>/tests/__setup__/expoCameraMock.js',
     '^expo-application$': '<rootDir>/tests/__setup__/expoApplicationMock.js',
+    // Force a single react-native runtime in tests under pnpm's hoisted layout.
+    '^react-native$': '<rootDir>/node_modules/react-native',
     // Map react-native-svg to the hoisted workspace copy (pnpm puts it at the
     // repo root under nodeLinker: hoisted; the app workspace's node_modules
     // does not contain a top-level entry for it).
