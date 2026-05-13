@@ -1,13 +1,12 @@
 name: Cache PNPM
 
-description: Cache pnpm dependencies with consistent keys and paths.
+description: Cache the pnpm content-addressable store. Do not cache node_modules — pnpm uses `.modules.yaml` as an up-to-date marker and will skip re-linking workspace packages if a partial node_modules tree is restored.
 
 inputs:
   path:
-    description: Paths to cache
+    description: Ignored. Retained for backwards compatibility with callers that still pass yarn-era node_modules paths. The action always caches the pnpm store.
     required: false
-    default: |
-      ~/.pnpm-store
+    default: ""
   lock-file:
     description: Path to pnpm-lock.yaml
     required: false
@@ -15,7 +14,7 @@ inputs:
   cache-version:
     description: Additional cache version segment
     required: false
-    default: v1
+    default: v2
 
 outputs:
   cache-hit:
@@ -36,11 +35,13 @@ runs:
           echo "hash=no-lock-file" >> $GITHUB_OUTPUT
         fi
     - id: cache
-      name: Cache pnpm dependencies
+      name: Cache pnpm store
       uses: actions/cache@v4
       with:
-        path: ${{ inputs.path }}
-        key: ${{ runner.os }}-pnpm-${{ inputs.cache-version }}-${{ steps.get-hash.outputs.hash }}
+        path: |
+          ~/.local/share/pnpm/store
+          ~/Library/pnpm/store
+        key: ${{ runner.os }}-pnpm-store-${{ inputs.cache-version }}-${{ steps.get-hash.outputs.hash }}
         restore-keys: |
-          ${{ runner.os }}-pnpm-${{ inputs.cache-version }}-
-          ${{ runner.os }}-pnpm-
+          ${{ runner.os }}-pnpm-store-${{ inputs.cache-version }}-
+          ${{ runner.os }}-pnpm-store-
