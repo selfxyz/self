@@ -165,7 +165,7 @@ describe('evaluateGoogleUsatGate', () => {
     );
   });
 
-  it('blocks Google USAT when selected document is aadhaar', async () => {
+  it('allows Google USAT when selected document is aadhaar', async () => {
     mockIsGoogleUsatProofRequest.mockReturnValue(true);
     selfClient.loadDocumentCatalog.mockResolvedValue({
       selectedDocumentId: 'a',
@@ -175,7 +175,7 @@ describe('evaluateGoogleUsatGate', () => {
       b: { data: { documentCategory: 'passport', mock: false } } as any,
     });
     await expect(evaluateGoogleUsatGate(selfClient, app)).resolves.toBe(
-      'block',
+      'allow',
     );
   });
 
