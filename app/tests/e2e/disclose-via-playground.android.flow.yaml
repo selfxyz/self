@@ -1,0 +1,138 @@
+appId: com.proofofpassportapp
+---
+# Disclosure end-to-end via the on-device playground browser button — the
+# production user flow:
+#
+#   1. Open https://playground.staging.self.xyz in the device's browser.
+#   2. Tap the lower "Open Self app" button (the one with the full
+#      `selfApp=<JSON>` payload — see "Two launcher buttons" below).
+#   3. The Self app receives the deeplink, renders ProveScreen with the
+#      disclosure list, the user scrolls + long-presses verify, the proof
+#      generates and we land back on Home.
+#
+# Preconditions the runner is responsible for:
+#   1. A mock passport is already registered and the on-chain commitment
+#      has settled (a disclose proof generated before the registration
+#      leaf is on-chain fails with [InvalidRoot]).
+#   2. Chrome is open at https://playground.staging.self.xyz/ right before
+#      this flow is invoked. The runner can do this with
+#      `adb shell am start -a android.intent.action.VIEW \
+#                          -d https://playground.staging.self.xyz/ \
+#                          com.android.chrome`.
+#   3. App Links for redirect.self.xyz are approved on this boot. Debug
+#      builds aren't auto-verified — the debug keystore fingerprint isn't
+#      in the production assetlinks.json — so without an explicit
+#      approval Chrome treats redirect.self.xyz as a regular web URL, the
+#      redirect page's 1-second JS fallback fires, and the user lands on
+#      the Play Store. Either run against a release-signed APK, or have
+#      the runner approve App Links after boot:
+#          adb shell pm set-app-links --package com.proofofpassportapp 1 all
+#
+# Two "Open Self app" launcher buttons on the playground:
+#   - Top:    href = https://redirect.self.xyz?sessionId=<uuid>
+#             Relies on a relayer websocket roundtrip pushing the SelfApp
+#             config to the device; on slow or constrained environments
+#             the app lands on "Waiting for app…" indefinitely. Avoid.
+#   - Bottom: href = https://redirect.self.xyz?selfApp=<urlencoded JSON>
+#             Carries the full disclosure payload inline; the deeplink
+#             handler renders ProveScreen directly. Use this one.
+#
+# Selector strategy:
+# - Page scroll: Maestro's scrollUntilVisible doesn't drive Chrome's
+#   WebView reliably. Five explicit swipes parks the lower button at
+#   y≈1864 on a 1080×2400 viewport.
+# - Tap: Maestro's `tapOn { text: "Open Self app", index: 1 }` is flaky
+#   against Chrome's WebView accessibility tree ("Element not found"
+#   trips intermittently even when uiautomator dump shows the element).
+#   A pixel tap on the lower button's stable position (the lowest
+#   interactive element on the page) is more reliable.
+# - ProveScreen scroll: `prove-screen-card` is scrollable=false; the
+#   actual ScrollView is a descendant. `swipe { from: id: "prove-screen-card" }`
+#   is a no-op against the current layout, so we use coordinate swipes
+#   inside the ScrollView's bounds instead.
+
+# 1. Wait for Chrome to render the page header.
+- extendedWaitUntil:
+    visible: "Proof Request Playground"
+    timeout: 60000
+
+# 2. Scroll the page down so the lower launcher button is on screen.
+- swipe:
+    start: 50%, 80%
+    end: 50%, 20%
+    duration: 400
+- swipe:
+    start: 50%, 80%
+    end: 50%, 20%
+    duration: 400
+- swipe:
+    start: 50%, 80%
+    end: 50%, 20%
+    duration: 400
+- swipe:
+    start: 50%, 80%
+    end: 50%, 20%
+    duration: 400
+- swipe:
+    start: 50%, 80%
+    end: 50%, 20%
+    duration: 400
+- waitForAnimationToEnd:
+    timeout: 5000
+
+# 3. Tap the lower "Open Self app" by pixel coords. Bounds on Pixel 6
+#    1080×2400 after the swipe budget above: [126,1794][954,1934]. The
+#    lower button is the lowest interactive element on the page, so the
+#    coordinate is stable against new fields being added higher up.
+- tapOn:
+    point: "540,1864"
+
+# 4. Self app should receive the deeplink and render ProveScreen.
+- extendedWaitUntil:
+    visible:
+      id: "prove-screen-card"
+    timeout: 60000
+
+# 5. Scroll the inner disclosure ScrollView until the verify bar flips
+#    out of "Scroll to read full request". Four swipes covers the current
+#    disclosure budget (nationality + OFAC + excluded-countries); bump
+#    if the disclosure list grows.
+- swipe:
+    start: 50%, 78%
+    end: 50%, 58%
+    duration: 600
+- swipe:
+    start: 50%, 78%
+    end: 50%, 58%
+    duration: 600
+- swipe:
+    start: 50%, 78%
+    end: 50%, 58%
+    duration: 600
+- swipe:
+    start: 50%, 78%
+    end: 50%, 58%
+    duration: 600
+
+# 6. Wait for the bar to be ready, then long-press it. ACTION_TIMER = 600ms
+#    in BottomVerifyBar; Maestro's default longPressOn duration covers that.
+- extendedWaitUntil:
+    visible: "Press and hold to verify"
+    timeout: 30000
+- longPressOn:
+    id: "prove-screen-verify-bar"
+
+# 7. Wait for the disclose proof to complete. Staging proofs typically
+#    finish in 60-180s; the upper bound is generous to absorb slower
+#    renderers.
+- extendedWaitUntil:
+    visible: "Proof Verified"
+    timeout: 600000
+- assertNotVisible: "Proof Failed"
+
+# 8. Dismiss success screen, assert we're back on Home.
+- tapOn: "OK"
+- extendedWaitUntil:
+    visible:
+      id: "home-screen-root"
+    timeout: 30000
