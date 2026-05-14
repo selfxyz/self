@@ -30,7 +30,7 @@ jobs:
               echo "Error: Failed to diff against base branch"
               exit 1
             }
-            if echo "$CHANGED_FILES" | grep -qE "^circuits/"; then
+            if echo "$CHANGED_FILES" | grep -qE "^(circuits/|\.github/CI_FORCE_RUN$)"; then
               echo "should_run=true" >> $GITHUB_OUTPUT
               echo "Running for dev - circuits files changed"
             else

@@ -1,0 +1,41 @@
+# CI Force-Run Sentinel
+
+Every path-filtered CI workflow under `.github/workflows/` lists this file
+in its `paths:` filter (or, for workflows with an internal `check_changes`
+gate, in its diff allowlist). Editing this file forces those workflows to
+run on the next push, which is useful when:
+
+- Migrating tooling (package manager, Node version, monorepo runner)
+- Refactoring shared `.github/actions/*` composite actions
+- Pre-merge confidence check on a large branch
+- Verifying that a workflow you _think_ is unrelated to your changes still
+  passes
+
+## Scope and limitations
+
+- Triggers path-filtered `pull_request` / `push` workflows only.
+- Does **not** trigger workflows gated on `workflow_dispatch` / `schedule`
+  only (e.g. `release-calendar.yml`), nor workflows whose `push:` event
+  filters this branch out (e.g. `npm-publish.yml` only runs on `push` to
+  `dev`).
+- Jobs guarded by `if: github.event.pull_request.head.repo.fork == false`
+  still skip on fork PRs by design (secrets are not exposed to forks).
+- Jobs hard-disabled with `if: false` stay disabled regardless of the
+  sentinel.
+
+Run `python3 scripts/ci/add-force-run-sentinel.py --check` to verify that
+every workflow with a `paths:` block lists this sentinel and that internal
+`check_changes` allowlists include it too.
+
+## How to use
+
+1. Add a one-line entry to the log below with date + reason.
+2. Commit on your branch. Path-filtered CI workflows will run on the PR.
+3. After verification, you may revert the entry before merge (optional —
+   the file is intentionally low-churn; leaving entries as a history is
+   also fine).
+
+## Log
+
+- 2026-05-13 — Force-run all workflows to verify Yarn → pnpm migration
+  (PR #2069).

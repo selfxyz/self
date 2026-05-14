@@ -18,6 +18,7 @@ on:
       - "packages/mobile-sdk-alpha/**"
       - ".github/workflows/mobile-bundle-analysis.yml"
       - ".github/actions/**"
+      - ".github/CI_FORCE_RUN"
   pull_request:
     branches:
       - dev
@@ -28,6 +29,7 @@ on:
       - "packages/mobile-sdk-alpha/**"
       - ".github/workflows/mobile-bundle-analysis.yml"
       - ".github/actions/**"
+      - ".github/CI_FORCE_RUN"
   workflow_dispatch:
 
 jobs:

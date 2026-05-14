@@ -10,6 +10,7 @@ on:
       - "app/**"
       - ".github/workflows/web.yml"
       - ".github/actions/**"
+      - ".github/CI_FORCE_RUN"
 
 jobs:
   web-build:

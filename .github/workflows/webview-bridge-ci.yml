@@ -11,6 +11,7 @@ on:
       - "packages/webview-bridge/**"
       - ".github/workflows/webview-bridge-ci.yml"
       - ".github/actions/**"
+      - ".github/CI_FORCE_RUN"
   push:
     branches: [dev, staging, main]
     paths:
@@ -19,6 +20,7 @@ on:
       - "packages/webview-bridge/**"
       - ".github/workflows/webview-bridge-ci.yml"
       - ".github/actions/**"
+      - ".github/CI_FORCE_RUN"
 
 jobs:
   build:

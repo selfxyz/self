@@ -7,6 +7,7 @@ on:
       - "packages/mobile-sdk-demo/**"
       - ".github/workflows/mobile-sdk-demo-ci.yml"
       - ".github/actions/**"
+      - ".github/CI_FORCE_RUN"
 
 jobs:
   test:

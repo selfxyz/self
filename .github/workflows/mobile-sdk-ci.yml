@@ -6,6 +6,7 @@ on:
       - "packages/mobile-sdk-alpha/**"
       - ".github/workflows/mobile-sdk-ci.yml"
       - ".github/actions/**"
+      - ".github/CI_FORCE_RUN"
 
 jobs:
   # Build dependencies once and cache for other jobs

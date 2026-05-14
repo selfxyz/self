@@ -11,6 +11,7 @@ on:
       - "packages/mobile-sdk-alpha/package.json"
       - "sdk/qrcode-angular/package.json"
       - "contracts/package.json"
+      - ".github/CI_FORCE_RUN"
   workflow_dispatch:
     inputs:
       dry_run:

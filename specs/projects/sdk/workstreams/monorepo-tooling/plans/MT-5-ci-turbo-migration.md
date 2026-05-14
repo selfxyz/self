@@ -57,9 +57,9 @@ for `.turbo/`.
 
 ### Files Modified
 
-| File                              | Change                                        |
-| --------------------------------- | --------------------------------------------- |
-| `.github/workflows/*.yml`         | Add `.turbo/` cache step; preserve job shape  |
+| File                      | Change                                       |
+| ------------------------- | -------------------------------------------- |
+| `.github/workflows/*.yml` | Add `.turbo/` cache step; preserve job shape |
 
 ### Files NOT Modified
 

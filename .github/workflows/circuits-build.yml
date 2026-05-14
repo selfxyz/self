@@ -8,6 +8,7 @@ on:
     paths:
       - "circuits/circuits/**"
       - ".github/workflows/artifacts.yml"
+      - ".github/CI_FORCE_RUN"
   workflow_dispatch:
     inputs:
       circuit-type:

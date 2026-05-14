@@ -27,6 +27,7 @@ on:
       - "packages/mobile-sdk-alpha/**"
       - ".github/workflows/mobile-ci.yml"
       - ".github/actions/**"
+      - ".github/CI_FORCE_RUN"
   workflow_dispatch: {}
 
 concurrency:

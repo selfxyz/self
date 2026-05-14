@@ -9,6 +9,7 @@ on:
       - "!app/**/*.md"
       - "!app/docs/**"
       - "packages/mobile-sdk-alpha/**"
+      - ".github/CI_FORCE_RUN"
 
 concurrency:
   group: mobile-deploy-${{ github.ref }}

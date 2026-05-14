@@ -28,6 +28,7 @@ on:
       - "packages/mobile-sdk-demo/**"
       - "packages/mobile-sdk-alpha/**"
       - ".github/workflows/mobile-sdk-demo-e2e.yml"
+      - ".github/CI_FORCE_RUN"
   pull_request:
     branches:
       - dev
@@ -37,6 +38,7 @@ on:
       - "packages/mobile-sdk-demo/**"
       - "packages/mobile-sdk-alpha/**"
       - ".github/workflows/mobile-sdk-demo-e2e.yml"
+      - ".github/CI_FORCE_RUN"
   workflow_dispatch:
 
 jobs:

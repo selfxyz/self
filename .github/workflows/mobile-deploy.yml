@@ -111,6 +111,7 @@ on:
       - "!app/docs/**"
       - "packages/mobile-sdk-alpha/**"
       - ".github/workflows/mobile-deploy.yml"
+      - ".github/CI_FORCE_RUN"
 
   workflow_call:
     inputs:

@@ -38,7 +38,7 @@ jobs:
               echo "Error: Failed to diff against base branch"
               exit 1
             }
-            if echo "$CHANGED_FILES" | grep -qE "^(contracts|common)/"; then
+            if echo "$CHANGED_FILES" | grep -qE "^((contracts|common)/|\.github/CI_FORCE_RUN$)"; then
               echo "should_run=true" >> $GITHUB_OUTPUT
               echo "Running for dev - contracts or common files changed"
             else

@@ -150,6 +150,21 @@ pnpm types # Verify type checking
 Use the shared composite actions in `.github/actions` when caching dependencies in GitHub workflows. They provide consistent cache paths and keys:
 
 - `cache-pnpm` for the pnpm content-addressable store (do not cache `node_modules`)
+
+### Forcing every workflow to run
+
+`.github/CI_FORCE_RUN` is a sentinel file included in the `paths:` filter
+of every path-filtered workflow. Edit it (add a dated entry to its log) to
+trigger every path-filtered PR/push workflow on the next push — useful
+before merging a large tooling migration or refactor. It does **not**
+trigger `workflow_dispatch`/`schedule`-only workflows, fork-gated jobs, or
+jobs hard-disabled with `if: false`; see the file's own header for the
+full scope. New workflows added later should include
+`.github/CI_FORCE_RUN` in their `paths:`; run
+`python3 scripts/ci/add-force-run-sentinel.py` to inject it, or
+`--check` to verify in CI (including internal `check_changes` diff
+allowlists).
+
 - `cache-bundler` for Ruby gems
 - `cache-gradle` for Gradle wrappers and caches
 - `cache-pods` for CocoaPods
