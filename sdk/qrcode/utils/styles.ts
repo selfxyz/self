@@ -27,12 +27,16 @@ export const desktopAppLogoStyle = (): React.CSSProperties => ({
   objectFit: 'contain',
 });
 
-export const desktopCardStyle = (): React.CSSProperties => baseCardStyle();
+export const desktopCardStyle = (darkMode: boolean = false): React.CSSProperties => ({
+  ...baseCardStyle(),
+  border: `1px solid ${darkMode ? '#2A2A2A' : '#E2E8F0'}`,
+  backgroundColor: darkMode ? '#121212' : '#FFFFFF',
+});
 
-export const desktopDescriptionStyle = (): React.CSSProperties => ({
+export const desktopDescriptionStyle = (darkMode: boolean = false): React.CSSProperties => ({
   fontSize: '16px',
   lineHeight: 'normal',
-  color: '#000000',
+  color: darkMode ? '#E2E8F0' : '#000000',
   textAlign: 'center',
   margin: 0,
 });
@@ -67,13 +71,13 @@ const baseCardStyle = (): React.CSSProperties => ({
   fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
 });
 
-export const desktopFooterStyle = (): React.CSSProperties => ({
+export const desktopFooterStyle = (darkMode: boolean = false): React.CSSProperties => ({
   display: 'flex',
   flexDirection: 'column',
   gap: '6px',
   width: '100%',
   padding: '20px',
-  borderTop: '1px solid #E2E8F0',
+  borderTop: `1px solid ${darkMode ? '#2A2A2A' : '#E2E8F0'}`,
   boxSizing: 'border-box',
 });
 
@@ -105,13 +109,16 @@ export const desktopQrSectionStyle = (): React.CSSProperties => ({
   boxSizing: 'border-box',
 });
 
-export const desktopQrWrapperStyle = (step: number): React.CSSProperties => ({
+export const desktopQrWrapperStyle = (
+  step: number,
+  darkMode: boolean = false
+): React.CSSProperties => ({
   display: 'inline-flex',
   flexDirection: 'column',
   alignItems: 'center',
   padding: '10px',
   borderRadius: '10px',
-  border: `6px solid ${getDesktopBorderColor(step)}`,
+  border: `6px solid ${darkMode ? '#2A2A2A' : getDesktopBorderColor(step)}`,
   backgroundColor: '#FFF',
   transition: 'border-color 0.3s ease',
 });
@@ -132,8 +139,8 @@ export const desktopSelfLogoImgStyle = (): React.CSSProperties => ({
   height: '20px',
 });
 
-export const desktopStatusCardStyle = (): React.CSSProperties => ({
-  backgroundColor: '#F8FAFC',
+export const desktopStatusCardStyle = (darkMode: boolean = false): React.CSSProperties => ({
+  backgroundColor: darkMode ? '#1E1E1E' : '#F8FAFC',
   borderRadius: '5px',
   padding: '6px 10px',
   width: '100%',
@@ -148,12 +155,12 @@ export const desktopStatusContentStyle = (): React.CSSProperties => ({
   padding: '8px 0',
 });
 
-export const desktopStatusFooterStyle = (): React.CSSProperties => ({
+export const desktopStatusFooterStyle = (darkMode: boolean = false): React.CSSProperties => ({
   display: 'flex',
   flexDirection: 'column',
   width: '100%',
   padding: '20px',
-  borderTop: '1px solid #E2E8F0',
+  borderTop: `1px solid ${darkMode ? '#2A2A2A' : '#E2E8F0'}`,
   boxSizing: 'border-box',
 });
 
@@ -180,20 +187,21 @@ export const desktopStatusTextStyle = (): React.CSSProperties => ({
   textAlign: 'center',
 });
 
-export const desktopStatusTitleStyle = (): React.CSSProperties => ({
+export const desktopStatusTitleStyle = (darkMode: boolean = false): React.CSSProperties => ({
   fontSize: '18px',
   fontWeight: 500,
-  color: '#000000',
+  color: darkMode ? '#E2E8F0' : '#000000',
   margin: 0,
 });
 
-export const desktopStepIconStyle = (): React.CSSProperties => ({
+export const desktopStepIconStyle = (darkMode: boolean = false): React.CSSProperties => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
   width: '26px',
   height: '26px',
   flexShrink: 0,
+  ...(darkMode ? { filter: 'invert(1)' } : {}),
 });
 
 export const desktopStepInnerStyle = (): React.CSSProperties => ({
@@ -204,18 +212,18 @@ export const desktopStepInnerStyle = (): React.CSSProperties => ({
   width: '100%',
 });
 
-export const desktopStepStyle = (): React.CSSProperties => ({
-  backgroundColor: '#F8FAFC',
+export const desktopStepStyle = (darkMode: boolean = false): React.CSSProperties => ({
+  backgroundColor: darkMode ? '#2A2A2A' : '#F8FAFC',
   borderRadius: '5px',
   padding: '6px 10px',
   width: '100%',
   boxSizing: 'border-box',
 });
 
-export const desktopStepTextStyle = (): React.CSSProperties => ({
+export const desktopStepTextStyle = (darkMode: boolean = false): React.CSSProperties => ({
   fontSize: '14px',
   lineHeight: 'normal',
-  color: '#0F172A',
+  color: darkMode ? '#94A3B8' : '#0F172A',
 });
 
 // Mobile variant styles
@@ -312,14 +320,18 @@ export const qrContainerStyle = (size: number): React.CSSProperties => ({
   height: size,
 });
 
-export const qrWrapperStyle = (step: number, showBorder: boolean = true): React.CSSProperties => ({
+export const qrWrapperStyle = (
+  step: number,
+  showBorder: boolean = true,
+  darkMode: boolean = false
+): React.CSSProperties => ({
   display: 'inline-flex',
   flexDirection: 'column',
   alignItems: 'center',
   gap: '6px',
   padding: '3px',
   borderRadius: '10px',
-  border: showBorder ? `6px solid ${getBorderColor(step)}` : 'none',
+  border: showBorder ? `6px solid ${darkMode ? '#2A2A2A' : getBorderColor(step)}` : 'none',
   backgroundColor: '#FFF',
   transition: 'border-color 0.3s ease',
 });
