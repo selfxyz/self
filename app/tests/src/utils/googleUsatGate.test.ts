@@ -21,7 +21,8 @@ jest.mock('@selfxyz/mobile-sdk-alpha', () => {
       scope: 'celo-mainnet-tether-usat',
       appName: 'Google Cloud Web3 Portal',
     },
-    allowedCategories: ['passport', 'id_card'],
+    // Mirror GOOGLE_USAT_FAUCET_POLICY defaults to avoid drift.
+    allowedCategories: ['passport', 'id_card', 'aadhaar'],
     allowMock: false,
   };
   return {
@@ -165,7 +166,7 @@ describe('evaluateGoogleUsatGate', () => {
     );
   });
 
-  it('allows Google USAT when selected document is aadhaar', async () => {
+  it('allows Google USAT when selected real document is aadhaar', async () => {
     mockIsGoogleUsatProofRequest.mockReturnValue(true);
     selfClient.loadDocumentCatalog.mockResolvedValue({
       selectedDocumentId: 'a',
