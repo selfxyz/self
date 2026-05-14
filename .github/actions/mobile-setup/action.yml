@@ -63,7 +63,7 @@ runs:
 
         echo "📦 Installing JavaScript dependencies with strict lock file..."
         # Force full dependency installation even when workflows export NODE_ENV=production.
-        if ! NODE_ENV=development pnpm install --frozen-lockfile --prod=false; then
+        if ! NODE_ENV=development pnpm install --frozen-lockfile --no-prod; then
           echo ""
           echo "❌ ERROR: pnpm-lock.yaml is out of date!"
           echo ""

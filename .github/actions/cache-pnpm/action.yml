@@ -34,6 +34,9 @@ runs:
       name: Cache pnpm store
       uses: actions/cache@v4
       with:
+        # Default pnpm store locations on Linux/macOS. If PNPM_HOME is set or
+        # pnpm changes its default store path in a future release, update
+        # these paths or invoke `pnpm store path --silent` dynamically.
         path: |
           ~/.local/share/pnpm/store
           ~/Library/pnpm/store

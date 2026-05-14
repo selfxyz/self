@@ -95,7 +95,6 @@ jobs:
           cache-version: v1
           fail-on-cache-miss: false
       - name: Install Dependencies
-        if: steps.build-cache.outputs.cache-hit != 'true'
         uses: ./.github/actions/pnpm-install
       - name: Build dependencies (fallback on cache miss)
         if: steps.build-cache.outputs.cache-hit != 'true'
@@ -125,7 +124,6 @@ jobs:
           cache-version: v1
           fail-on-cache-miss: false
       - name: Install Dependencies
-        if: steps.build-cache.outputs.cache-hit != 'true'
         uses: ./.github/actions/pnpm-install
       - name: Build dependencies (fallback on cache miss)
         if: steps.build-cache.outputs.cache-hit != 'true'
@@ -155,7 +153,6 @@ jobs:
           cache-version: v1
           fail-on-cache-miss: false
       - name: Install Dependencies
-        if: steps.build-cache.outputs.cache-hit != 'true'
         uses: ./.github/actions/pnpm-install
       - name: Build dependencies (fallback on cache miss)
         if: steps.build-cache.outputs.cache-hit != 'true'
