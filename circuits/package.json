@@ -19,6 +19,7 @@
     "install-circuits": "pnpm install --filter @selfxyz/circuits...",
     "lint": "prettier --check .",
     "nice": "prettier --write .",
+    "pretest": "node scripts/link-circom-deps.cjs",
     "test": "pnpm test-base 'tests/**/*.test.ts' --exit",
     "test-base": "pnpm ts-mocha -n import=tsx --max-old-space-size=8192 --paths -p tsconfig.json",
     "test-custom-hasher": "pnpm test-base 'tests/other_circuits/custom_hasher.test.ts' --exit",
