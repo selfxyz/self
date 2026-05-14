@@ -20,7 +20,8 @@ import {
 } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import NfcManager from 'react-native-nfc-manager';
-import { Button, Image, XStack } from 'tamagui';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Image } from 'tamagui';
 import { v4 as uuidv4 } from 'uuid';
 import type { RouteProp } from '@react-navigation/native';
 import {
@@ -29,7 +30,6 @@ import {
   useRoute,
 } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { CircleHelp } from '@tamagui/lucide-icons';
 
 import type { PassportData } from '@selfxyz/common/types';
 import {
@@ -61,12 +61,12 @@ import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import passportVerifyAnimation from '@/assets/animations/passport_verify.json';
 import NFC_IMAGE from '@/assets/images/nfc.png';
+import { NavBar } from '@/components/navbar/BaseNavBar';
 import { logNFCEvent } from '@/config/sentry';
 import { useErrorInjection } from '@/hooks/useErrorInjection';
 import { useFeedbackAutoHide } from '@/hooks/useFeedbackAutoHide';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { useKycLauncher } from '@/hooks/useKycLauncher';
-import useOpenSupportForm from '@/hooks/useOpenSupportForm';
 import {
   buttonTap,
   feedbackSuccess,
@@ -83,10 +83,7 @@ import {
   setNfcScanningActive,
   trackNfcEvent,
 } from '@/services/analytics';
-import {
-  SUPPORT_FORM_BUTTON_TEXT,
-  SUPPORT_FORM_MESSAGE,
-} from '@/services/support';
+import { extraYPadding } from '@/utils/styleUtils';
 
 const emitter =
   Platform.OS === 'android'
@@ -111,7 +108,7 @@ type DocumentNFCScanRoute = RouteProp<
 const DocumentNFCScanScreen: React.FC = () => {
   const selfClient = useSelfClient();
   const { trackEvent, useMRZStore } = selfClient;
-  const openSupportForm = useOpenSupportForm();
+  const insets = useSafeAreaInsets();
 
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -194,10 +191,6 @@ const DocumentNFCScanScreen: React.FC = () => {
     .onStart(() => {
       goToNFCMethodSelection();
     });
-
-  const onReportIssue = useCallback(() => {
-    openSupportForm();
-  }, [openSupportForm]);
 
   const openErrorModal = useCallback(
     (message: string) => {
@@ -573,6 +566,23 @@ const DocumentNFCScanScreen: React.FC = () => {
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>
+      {!isNfcSheetOpen && (
+        <NavBar.Container
+          style={styles.backNavBar}
+          backgroundColor="transparent"
+          barStyle="light"
+          paddingHorizontal="$4"
+          paddingTop={insets.top + extraYPadding}
+          paddingBottom={10}
+        >
+          <NavBar.LeftAction
+            component="back"
+            color={white}
+            onPress={onCancelPress}
+            aria-label="Back"
+          />
+        </NavBar.Container>
+      )}
       <ExpandableBottomLayout.TopSection roundTop backgroundColor={slate100}>
         <LottieView
           ref={animationRef}
@@ -619,19 +629,7 @@ const DocumentNFCScanScreen: React.FC = () => {
             <TextsContainer>
               <GestureDetector gesture={devModeTap}>
                 <View collapsable={false}>
-                  <XStack
-                    justifyContent="space-between"
-                    alignItems="center"
-                    gap="$1.5"
-                  >
-                    <Title>Verify your ID</Title>
-                    <Button
-                      unstyled
-                      onPress={goToNFCTrouble}
-                      icon={<CircleHelp size={28} color={slate500} />}
-                      aria-label="Help"
-                    />
-                  </XStack>
+                  <Title>Verify your ID</Title>
                 </View>
               </GestureDetector>
               {isNfcEnabled ? (
@@ -656,9 +654,6 @@ const DocumentNFCScanScreen: React.FC = () => {
                   </BodyText>
                 </>
               )}
-              <BodyText style={[styles.disclaimer, { marginTop: 12 }]}>
-                {SUPPORT_FORM_MESSAGE}
-              </BodyText>
             </TextsContainer>
             <ButtonsContainer>
               <PrimaryButton
@@ -676,12 +671,9 @@ const DocumentNFCScanScreen: React.FC = () => {
               </PrimaryButton>
               <SecondaryButton
                 trackEvent={PassportEvents.CANCEL_PASSPORT_NFC}
-                onPress={onCancelPress}
+                onPress={goToNFCTrouble}
               >
-                Cancel
-              </SecondaryButton>
-              <SecondaryButton onPress={onReportIssue}>
-                {SUPPORT_FORM_BUTTON_TEXT}
+                Need help?
               </SecondaryButton>
               {(!isNfcSupported || !isNfcEnabled) && (
                 <SecondaryButton
@@ -702,6 +694,13 @@ const DocumentNFCScanScreen: React.FC = () => {
 export default DocumentNFCScanScreen;
 
 const styles = StyleSheet.create({
+  backNavBar: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
+  },
   title: {
     fontFamily: dinot,
     fontSize: 18,
