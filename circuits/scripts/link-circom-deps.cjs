@@ -19,10 +19,7 @@ const links = [
     '@openpassport/zk-email-circuits',
     path.join(root, 'node_modules', '@openpassport', 'zk-email-circuits'),
   ],
-  [
-    'anon-aadhaar-circuits',
-    path.join(root, 'node_modules', 'anon-aadhaar-circuits'),
-  ],
+  ['anon-aadhaar-circuits', path.join(root, 'node_modules', 'anon-aadhaar-circuits')],
   [
     '@zk-kit/binary-merkle-root.circom',
     path.join(root, 'node_modules', '@zk-kit', 'binary-merkle-root.circom'),
