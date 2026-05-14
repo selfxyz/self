@@ -41,6 +41,20 @@ jobs:
             fi
           fi
 
+  debug_check_changes:
+    needs: check_changes
+    runs-on: ubuntu-slim
+    steps:
+      - name: Dump gating values
+        env:
+          SHOULD_RUN: ${{ needs.check_changes.outputs.should_run }}
+          IS_DRAFT: ${{ github.event.pull_request.draft }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          echo "needs.check_changes.outputs.should_run = '$SHOULD_RUN'"
+          echo "github.event.pull_request.draft       = '$IS_DRAFT'"
+          echo "github.event_name                     = '$EVENT_NAME'"
+
   build:
     needs: check_changes
     if: github.event.pull_request.draft == false && needs.check_changes.outputs.should_run == 'true'

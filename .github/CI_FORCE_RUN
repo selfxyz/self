@@ -39,3 +39,5 @@ every workflow with a `paths:` block lists this sentinel and that internal
 
 - 2026-05-13 — Force-run all workflows to verify Yarn → pnpm migration
   (PR #2069).
+- 2026-05-13 — Re-trigger after enabling check_changes sentinel + debug
+  step + re-enabling web/workspace jobs (PR #2069).

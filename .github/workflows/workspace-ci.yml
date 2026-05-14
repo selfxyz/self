@@ -110,7 +110,6 @@ jobs:
         run: echo "Linting completed successfully!"
 
   workspace-format-check:
-    if: false
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -146,7 +145,6 @@ jobs:
         run: echo "Code formatting check completed successfully!"
 
   workspace-test:
-    if: false
     runs-on: ubuntu-latest
     permissions:
       contents: read
