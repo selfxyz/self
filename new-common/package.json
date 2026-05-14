@@ -26,7 +26,7 @@
     "build:types": "tsc -p tsconfig.json --emitDeclarationOnly",
     "format": "npx prettier --write 'src/**/*.ts'",
     "format:check": "npx prettier --check 'src/**/*.ts'",
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "types": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

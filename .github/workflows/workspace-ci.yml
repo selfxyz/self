@@ -124,6 +124,12 @@ jobs:
       - name: Install Dependencies
         uses: ./.github/actions/pnpm-install
 
+      - name: Install SwiftLint
+        run: |
+          curl -sL "https://github.com/realm/SwiftLint/releases/download/0.57.1/swiftlint_linux.zip" -o /tmp/swiftlint.zip
+          unzip -o /tmp/swiftlint.zip -d /tmp/swiftlint
+          sudo install /tmp/swiftlint/swiftlint /usr/local/bin/swiftlint
+
       - name: Check code formatting (dry run)
         run: |
           echo "Checking if code is properly formatted..."
