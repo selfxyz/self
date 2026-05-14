@@ -1,0 +1,16 @@
+diff --git a/node_modules/@didit-protocol/sdk-react-native/ios/SdkReactNative.mm b/node_modules/@didit-protocol/sdk-react-native/ios/SdkReactNative.mm
+index 7679ab4..5412a15 100644
+--- a/node_modules/@didit-protocol/sdk-react-native/ios/SdkReactNative.mm
++++ b/node_modules/@didit-protocol/sdk-react-native/ios/SdkReactNative.mm
+@@ -13,6 +13,11 @@
+     DiditSdkBridge *_bridge;
+ }
+ 
++// Register the module so RN's TurboModuleRegistry can resolve it under New Arch.
++// Without RCT_EXPORT_MODULE the ObjC class can be dead-stripped from the static
++// framework and NSClassFromString("SdkReactNative") returns nil at runtime.
++RCT_EXPORT_MODULE()
++
+ - (instancetype)init {
+     if (self = [super init]) {
+         _bridge = [[DiditSdkBridge alloc] init];
