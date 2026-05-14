@@ -731,6 +731,7 @@ jobs:
             echo "📦 Installing pods via centralized script…"
             BUNDLE_GEMFILE=../Gemfile bundle exec bash scripts/pod-install-with-cache-fix.sh
         env:
+          RCT_BUILD_HERMES_FROM_SOURCE: "false"
           SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
           E2E_TESTING: 1
       - name: Resolve iOS workspace

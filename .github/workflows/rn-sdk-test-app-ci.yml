@@ -121,6 +121,8 @@ jobs:
         run: pnpm --filter @selfxyz/rn-sdk build
       - name: Install CocoaPods dependencies
         working-directory: packages/rn-sdk-test-app/ios
+        env:
+          RCT_BUILD_HERMES_FROM_SOURCE: "false"
         run: pod install
       - name: Find iOS Simulator
         id: sim
