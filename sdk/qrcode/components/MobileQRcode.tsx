@@ -25,6 +25,7 @@ interface MobileQRcodeProps {
   proofStep: number;
   qrValue: string;
   selfApp: SelfApp;
+  darkMode?: boolean;
 }
 
 const MOBILE_STEPS = [
@@ -33,9 +34,9 @@ const MOBILE_STEPS = [
   { icon: ArrowReturnIcon, text: 'Return to this application and click on the button below' },
 ];
 
-const MobileQRcode = memo(({ qrValue, selfApp }: MobileQRcodeProps) => (
-  <div style={mobileCardStyle()} role="region" aria-label="Self authentication">
-    <DesktopHeader appName={selfApp.appName} appLogo={selfApp.logoBase64} />
+const MobileQRcode = memo(({ qrValue, selfApp, darkMode = false }: MobileQRcodeProps) => (
+  <div style={mobileCardStyle(darkMode)} role="region" aria-label="Self authentication">
+    <DesktopHeader appName={selfApp.appName} appLogo={selfApp.logoBase64} darkMode={darkMode} />
     <div style={mobilePhoneSectionWrapperStyle()}>
       <div style={mobilePhoneSectionStyle()}>
         <img src={phoneMockup} alt="Self app preview" style={mobilePhoneImgStyle()} />
@@ -45,18 +46,18 @@ const MobileQRcode = memo(({ qrValue, selfApp }: MobileQRcodeProps) => (
       {MOBILE_STEPS.map((step, index) => {
         const Icon = step.icon;
         return (
-          <div key={index} style={desktopStepStyle()}>
+          <div key={index} style={desktopStepStyle(darkMode)}>
             <div style={desktopStepInnerStyle()}>
-              <div style={desktopStepIconStyle()}>
+              <div style={desktopStepIconStyle(darkMode)}>
                 <Icon size={18} />
               </div>
-              <span style={desktopStepTextStyle()}>{step.text}</span>
+              <span style={desktopStepTextStyle(darkMode)}>{step.text}</span>
             </div>
           </div>
         );
       })}
     </div>
-    <div style={mobileCtaSectionStyle()}>
+    <div style={mobileCtaSectionStyle(darkMode)}>
       <a href={qrValue} style={mobileCtaButtonStyle()}>
         <img src={selfLogo} alt="" style={mobileCtaLogoStyle()} />
         <span style={mobileCtaTextStyle()}>Open Self app</span>

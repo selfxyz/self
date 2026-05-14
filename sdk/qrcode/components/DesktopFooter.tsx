@@ -27,6 +27,7 @@ import {
 
 interface DesktopFooterProps {
   proofStep: number;
+  darkMode?: boolean;
 }
 
 const INSTRUCTION_STEPS = [
@@ -50,22 +51,22 @@ const getStatusIcon = (proofStep: number) => {
   }
 };
 
-const DesktopFooter = memo(({ proofStep }: DesktopFooterProps) => {
+const DesktopFooter = memo(({ proofStep, darkMode = false }: DesktopFooterProps) => {
   const isInitialState =
     proofStep === QRcodeSteps.DISCONNECTED || proofStep === QRcodeSteps.WAITING_FOR_MOBILE;
 
   if (isInitialState) {
     return (
-      <div style={desktopFooterStyle()}>
+      <div style={desktopFooterStyle(darkMode)}>
         {INSTRUCTION_STEPS.map((step, index) => {
           const Icon = step.icon;
           return (
-            <div key={index} style={desktopStepStyle()}>
+            <div key={index} style={desktopStepStyle(darkMode)}>
               <div style={desktopStepInnerStyle()}>
-                <div style={desktopStepIconStyle()}>
+                <div style={desktopStepIconStyle(darkMode)}>
                   <Icon size={18} />
                 </div>
-                <span style={desktopStepTextStyle()}>{step.text}</span>
+                <span style={desktopStepTextStyle(darkMode)}>{step.text}</span>
               </div>
             </div>
           );
@@ -77,14 +78,14 @@ const DesktopFooter = memo(({ proofStep }: DesktopFooterProps) => {
   const StatusIcon = getStatusIcon(proofStep);
 
   return (
-    <div style={desktopStatusFooterStyle()}>
-      <div style={desktopStatusCardStyle()}>
+    <div style={desktopStatusFooterStyle(darkMode)}>
+      <div style={desktopStatusCardStyle(darkMode)}>
         <div style={desktopStatusContentStyle()}>
           <div style={desktopStatusIconStyle()}>
             <StatusIcon size={34} />
           </div>
           <div style={desktopStatusTextStyle()}>
-            <p style={desktopStatusTitleStyle()}>{getDesktopStatusTitle(proofStep)}</p>
+            <p style={desktopStatusTitleStyle(darkMode)}>{getDesktopStatusTitle(proofStep)}</p>
             <p style={desktopStatusSubtitleStyle()}>{getDesktopStatusSubtitle()}</p>
           </div>
         </div>
