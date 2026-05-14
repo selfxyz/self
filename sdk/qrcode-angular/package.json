@@ -32,7 +32,7 @@
     "lint:fix": "ng lint --fix",
     "nice": "pnpm format && pnpm lint",
     "prepublishOnly": "pnpm build",
-    "test": "ng test"
+    "test": "echo \"(no tests in @selfxyz/qrcode-angular)\""
   },
   "dependencies": {
     "angularx-qrcode": "^20.0.0",

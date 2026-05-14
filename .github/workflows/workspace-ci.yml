@@ -130,6 +130,9 @@ jobs:
           unzip -o /tmp/swiftlint.zip -d /tmp/swiftlint
           sudo install /tmp/swiftlint/swiftlint /usr/local/bin/swiftlint
 
+      - name: Build workspace dependencies
+        run: pnpm build
+
       - name: Check code formatting (dry run)
         run: |
           echo "Checking if code is properly formatted..."
