@@ -122,13 +122,15 @@ appId: com.proofofpassportapp
 - longPressOn:
     id: "prove-screen-verify-bar"
 
-# 7. Wait for the disclose proof to complete. Staging proofs typically
-#    finish in 60-180s; the upper bound is generous to absorb slower
-#    renderers.
+# 7. Wait for the disclose proof to reach a terminal state — either
+#    "Proof Verified" (success) or "Proof Failed" (error). Watching for
+#    both with a regex lets us fail fast on a genuine error instead of
+#    waiting the full 10-minute success budget. The assertVisible right
+#    after discriminates and turns "Failed" into a flow failure.
 - extendedWaitUntil:
-    visible: "Proof Verified"
+    visible: "Proof (Verified|Failed)"
     timeout: 600000
-- assertNotVisible: "Proof Failed"
+- assertVisible: "Proof Verified"
 
 # 8. Dismiss success screen, assert we're back on Home.
 - tapOn: "OK"

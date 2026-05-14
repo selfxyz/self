@@ -20,22 +20,31 @@ appId: com.proofofpassportapp
       id: "home-screen-root"
     timeout: 30000
 
-# 5. Self's react-native-check-version fires async and renders a
-#    "New Version Available" modal. Wait for it to actually render before
-#    tapping the X close icon. Verified coords: (881,800) on 1080×2400.
-#    The X is a plain SVG with no testID and not exposed as a clickable in
-#    the accessibility tree, so the absolute pixel tap is the only path.
-#    Once dismissed, also assert it disappears so we don't race the next step.
-- extendedWaitUntil:
-    visible: "New Version Available"
-    timeout: 20000
-- tapOn:
-    point: "881,800"
-- extendedWaitUntil:
-    notVisible: "New Version Available"
+# 4. Self's react-native-check-version fires async after the app reaches
+#    Home and *may* render a "New Version Available" modal — only if the
+#    installed build is older than the store-advertised version. On the
+#    QA snapshot it currently does; on a release build or a runner with no
+#    network it won't. Treat the dismissal as optional so the flow doesn't
+#    abort when the modal never renders.
+#
+#    Give the async check ~5s to fire (waitForAnimationToEnd returns as
+#    soon as the UI quiesces, so this is a soft upper bound), then use
+#    `runFlow when:` to dismiss conditionally. Verified close-X coords:
+#    (881,800) on 1080×2400 — the X is a plain SVG with no testID, pixel
+#    tap is the only path.
+- waitForAnimationToEnd:
     timeout: 5000
+- runFlow:
+    when:
+      visible: "New Version Available"
+    commands:
+      - tapOn:
+          point: "881,800"
+      - extendedWaitUntil:
+          notVisible: "New Version Available"
+          timeout: 5000
 
-# 6. Open Settings (cog icon, top-right of HomeNavBar). No testID — verified
+# 5. Open Settings (cog icon, top-right of HomeNavBar). No testID — verified
 #    coordinates (989,232) on 1080×2400.
 - tapOn:
     point: "989,232"
@@ -43,7 +52,7 @@ appId: com.proofofpassportapp
     visible: "Manage ID documents"
     timeout: 15000
 
-# 7. Settings → Manage Documents → CreateMock screen.
+# 6. Settings → Manage Documents → CreateMock screen.
 #    Use anchored regex on the button label to avoid matching the on-screen
 #    description text "Generate mock document data" which is a substring match.
 - tapOn: "Manage ID documents"
@@ -52,7 +61,7 @@ appId: com.proofofpassportapp
     timeout: 15000
 - tapOn: "^Generate Mock Document$"
 
-# 8. CreateMock screen. The Generate button is below the fold on a 1080×2400
+# 7. CreateMock screen. The Generate button is below the fold on a 1080×2400
 #    screen — scroll to it explicitly, then tap.
 - extendedWaitUntil:
     visible: "Mock Document Parameters"
@@ -64,19 +73,19 @@ appId: com.proofofpassportapp
     timeout: 15000
 - tapOn: "^Generate Mock Document$"
 
-# 9. Generation takes ~20-30s on swiftshader, then routes to
+# 8. Generation takes ~20-30s on swiftshader, then routes to
 #    ConfirmBelonging which shows a "Confirm" primary button next to a
 #    "Confirm your identity" title. Wait for that to appear.
 - extendedWaitUntil:
     visible: "Confirm your identity"
     timeout: 90000
 
-# 10. Confirm ownership → emits DOCUMENT_OWNERSHIP_CONFIRMED → app navigates
-#     to Loading screen, which runs ZK proof generation. Tap Confirm.
-#     selfClientProvider listens for the event and routes to 'Loading'.
+# 9. Confirm ownership → emits DOCUMENT_OWNERSHIP_CONFIRMED → app navigates
+#    to Loading screen, which runs ZK proof generation. Tap Confirm.
+#    selfClientProvider listens for the event and routes to 'Loading'.
 - tapOn: "^Confirm$"
 
-# 11. Wait for the ZK proof to complete. On swiftshader_indirect this can take
+# 10. Wait for the ZK proof to complete. On swiftshader_indirect this can take
 #     anywhere from 90s to 5+ min depending on circuit + passport algorithm.
 #     On success the app emits PROVING_ACCOUNT_VERIFIED_SUCCESS and routes to
 #     AccountVerifiedSuccessScreen which shows "ID Verified" + Continue button.
@@ -84,10 +93,10 @@ appId: com.proofofpassportapp
     visible: "ID Verified"
     timeout: 600000
 
-# 12. Tap Continue to return to Home.
+# 11. Tap Continue to return to Home.
 - tapOn: "Continue"
 
-# 13. Final assertion: we're back on the home screen with a registered doc.
+# 12. Final assertion: we're back on the home screen with a registered doc.
 - extendedWaitUntil:
     visible:
       id: "home-screen-root"
