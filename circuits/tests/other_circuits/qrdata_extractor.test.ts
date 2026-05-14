@@ -14,9 +14,7 @@ import { createRequire } from 'module';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
-const anonAadhaarCircuitsRoot = path.dirname(
-  require.resolve('anon-aadhaar-circuits/package.json')
-);
+const anonAadhaarCircuitsRoot = path.dirname(require.resolve('anon-aadhaar-circuits/package.json'));
 const circomlibRoot = path.dirname(require.resolve('circomlib/package.json'));
 
 const privateKeyPem = fs.readFileSync(
