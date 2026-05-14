@@ -85,11 +85,11 @@ describe('isDocumentEligibleForPolicy', () => {
   it('allows categories that are in allowedCategories', () => {
     expect(isDocumentEligibleForPolicy(policy, 'passport', false)).toBe(true);
     expect(isDocumentEligibleForPolicy(policy, 'id_card', false)).toBe(true);
+    expect(isDocumentEligibleForPolicy(policy, 'aadhaar', false)).toBe(true);
   });
 
   it('rejects categories not in allowedCategories', () => {
     expect(isDocumentEligibleForPolicy(policy, 'kyc', false)).toBe(false);
-    expect(isDocumentEligibleForPolicy(policy, 'aadhaar', false)).toBe(false);
   });
 
   it('rejects mock documents when allowMock is false', () => {
@@ -126,7 +126,7 @@ describe('hasEligibleAlternativeDocumentForPolicy', () => {
         policy,
         {
           selected: buildDoc('kyc'),
-          alt: buildDoc('aadhaar'),
+          alt: buildDoc('kyc'),
         },
         'selected',
       ),
