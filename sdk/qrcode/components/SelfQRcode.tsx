@@ -105,7 +105,14 @@ const SelfQRcode = ({
         });
 
   if (variant === 'mobile') {
-    return <MobileQRcode proofStep={proofStep} qrValue={qrValue} selfApp={selfAppRef.current} />;
+    return (
+      <MobileQRcode
+        proofStep={proofStep}
+        qrValue={qrValue}
+        selfApp={selfAppRef.current}
+        darkMode={darkMode}
+      />
+    );
   }
 
   if (variant === 'desktop') {
@@ -126,7 +133,7 @@ const SelfQRcode = ({
       role="img"
       aria-label="Self authentication QR code"
     >
-      <QRCode value={qrValue} size={size} darkMode={darkMode} proofStep={proofStep} />
+      <QRCode value={qrValue} size={size} proofStep={proofStep} />
       {showStatusText && <StatusBanner proofStep={proofStep} qrSize={size} />}
     </div>
   );

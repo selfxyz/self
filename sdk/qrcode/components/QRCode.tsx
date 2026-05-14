@@ -11,7 +11,6 @@ const QR_IMAGE_SIZE_RATIO = 0.32;
 interface QRCodeProps {
   value: string;
   size: number;
-  darkMode: boolean;
   proofStep: number;
 }
 

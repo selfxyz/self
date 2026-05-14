@@ -2,11 +2,12 @@ import React from 'react';
 
 import { QRcodeSteps } from './utils.js';
 
-const getBorderColor = (step: number): string => {
+const getBorderColor = (step: number, darkMode: boolean = false): string => {
+  const idleColor = darkMode ? '#2A2A2A' : '#E2E8F0';
   switch (step) {
     case QRcodeSteps.DISCONNECTED:
     case QRcodeSteps.WAITING_FOR_MOBILE:
-      return '#E2E8F0';
+      return idleColor;
     case QRcodeSteps.MOBILE_CONNECTED:
     case QRcodeSteps.PROOF_GENERATION_STARTED:
     case QRcodeSteps.PROOF_GENERATED:
@@ -16,7 +17,7 @@ const getBorderColor = (step: number): string => {
     case QRcodeSteps.PROOF_VERIFIED:
       return '#01BFFF';
     default:
-      return '#E2E8F0';
+      return idleColor;
   }
 };
 
@@ -41,11 +42,12 @@ export const desktopDescriptionStyle = (darkMode: boolean = false): React.CSSPro
   margin: 0,
 });
 
-const getDesktopBorderColor = (step: number): string => {
+const getDesktopBorderColor = (step: number, darkMode: boolean = false): string => {
+  const idleColor = darkMode ? '#2A2A2A' : '#E2E8F0';
   switch (step) {
     case QRcodeSteps.DISCONNECTED:
     case QRcodeSteps.WAITING_FOR_MOBILE:
-      return '#E2E8F0';
+      return idleColor;
     case QRcodeSteps.MOBILE_CONNECTED:
     case QRcodeSteps.PROOF_GENERATION_STARTED:
     case QRcodeSteps.PROOF_GENERATED:
@@ -55,7 +57,7 @@ const getDesktopBorderColor = (step: number): string => {
     case QRcodeSteps.PROOF_VERIFIED:
       return '#00FFB6';
     default:
-      return '#E2E8F0';
+      return idleColor;
   }
 };
 
@@ -118,7 +120,7 @@ export const desktopQrWrapperStyle = (
   alignItems: 'center',
   padding: '10px',
   borderRadius: '10px',
-  border: `6px solid ${darkMode ? '#2A2A2A' : getDesktopBorderColor(step)}`,
+  border: `6px solid ${getDesktopBorderColor(step, darkMode)}`,
   backgroundColor: '#FFF',
   transition: 'border-color 0.3s ease',
 });
@@ -227,7 +229,11 @@ export const desktopStepTextStyle = (darkMode: boolean = false): React.CSSProper
 });
 
 // Mobile variant styles
-export const mobileCardStyle = (): React.CSSProperties => baseCardStyle();
+export const mobileCardStyle = (darkMode: boolean = false): React.CSSProperties => ({
+  ...baseCardStyle(),
+  border: `1px solid ${darkMode ? '#2A2A2A' : '#E2E8F0'}`,
+  backgroundColor: darkMode ? '#121212' : '#FFFFFF',
+});
 
 export const mobileCtaButtonStyle = (): React.CSSProperties => ({
   display: 'flex',
@@ -248,13 +254,13 @@ export const mobileCtaLogoStyle = (): React.CSSProperties => ({
   height: '26px',
 });
 
-export const mobileCtaSectionStyle = (): React.CSSProperties => ({
+export const mobileCtaSectionStyle = (darkMode: boolean = false): React.CSSProperties => ({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
   padding: '16px 20px',
   width: '100%',
-  borderTop: '1px solid #E2E8F0',
+  borderTop: `1px solid ${darkMode ? '#2A2A2A' : '#E2E8F0'}`,
   boxSizing: 'border-box',
 });
 
@@ -331,7 +337,7 @@ export const qrWrapperStyle = (
   gap: '6px',
   padding: '3px',
   borderRadius: '10px',
-  border: showBorder ? `6px solid ${darkMode ? '#2A2A2A' : getBorderColor(step)}` : 'none',
+  border: showBorder ? `6px solid ${getBorderColor(step, darkMode)}` : 'none',
   backgroundColor: '#FFF',
   transition: 'border-color 0.3s ease',
 });
