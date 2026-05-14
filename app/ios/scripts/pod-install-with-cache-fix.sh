@@ -42,9 +42,10 @@ run_recovery_for_conflicts() {
   echo "⚠️ Detected resolver conflicts for pods: ${conflicting_pods[*]}"
 
   # Path-based React Native podspecs can drift from a cached lockfile snapshot.
-  # If fmt conflicts, force CocoaPods to rebuild local resolution state first.
+  # When RN core pods conflict, force CocoaPods to rebuild local resolution
+  # state instead of trying partial pod updates against stale local podspecs.
   for pod in "${conflicting_pods[@]}"; do
-    if [ "$pod" = "fmt" ]; then
+    if [ "$pod" = "fmt" ] || [ "$pod" = "fast_float" ] || [ "$pod" = "hermes-engine" ] || [ "$pod" = "RCT-Folly" ]; then
       reset_local_pod_resolution_state
       return 0
     fi
