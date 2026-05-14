@@ -18,6 +18,10 @@ interface SelfQRcodeProps {
   type?: 'websocket' | 'deeplink';
   websocketUrl?: string;
   size?: number;
+  /**
+   * Currently a no-op. The prop is kept for backward compatibility so existing
+   * integrations don't break, but the wrapper always renders in light mode.
+   */
   darkMode?: boolean;
   showBorder?: boolean;
   showStatusText?: boolean;
@@ -43,11 +47,14 @@ const SelfQRcode = ({
   type = 'websocket',
   websocketUrl = WS_DB_RELAYER,
   size = 300,
-  darkMode = false,
+  // darkMode is intentionally accepted but ignored — see SelfQRcodeProps.
+  darkMode: _darkMode = false,
   showBorder = true,
   showStatusText = true,
   variant = 'hybrid',
 }: SelfQRcodeProps) => {
+  // Force light mode regardless of the caller-provided flag.
+  const darkMode = false;
   const [proofStep, setProofStep] = useState(QRcodeSteps.WAITING_FOR_MOBILE);
   const [sessionId, setSessionId] = useState('');
   const socketRef = useRef<ReturnType<typeof initWebSocket> | null>(null);
