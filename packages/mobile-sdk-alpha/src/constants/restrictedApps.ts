@@ -37,7 +37,7 @@ export const GOOGLE_USAT_FAUCET_POLICY: RestrictedAppPolicy = {
     scope: GOOGLE_USAT_FAUCET_SCOPE,
     appName: GOOGLE_USAT_FAUCET_APP_NAME,
   },
-  allowedCategories: ['passport', 'id_card'],
+  allowedCategories: ['passport', 'id_card', 'aadhaar'],
   allowMock: false,
 };
 
