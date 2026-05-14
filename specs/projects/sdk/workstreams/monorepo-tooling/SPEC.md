@@ -101,6 +101,11 @@ Cleanup steps (applies regardless of which path above is chosen):
   chains in root scripts.
 - Local `turbo run build` from a clean checkout must produce the same
   artifacts as today's `pnpm build`.
+- Root `package.json` scripts stay as thin orchestration wrappers. Complex
+  shell logic (conditionals, retries, long chained commands, heavy quoting /
+  globbing) must live in versioned Node tooling scripts under `scripts/*.cjs`.
+  The script entry in `package.json` should be a single command invoking that
+  script (for example, `node scripts/<name>.cjs`).
 
 ## Dependencies
 
