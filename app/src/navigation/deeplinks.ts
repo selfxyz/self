@@ -184,6 +184,9 @@ export const handleUrl = async (selfClient: SelfClient, uri: string) => {
         entryPoint: 'deeplink',
         requesterName: 'Google USAT Faucet',
       });
+      // Match the selfApp gate path: on cold launch, advance off Splash so
+      // dismissing the gate modal doesn't strand the user.
+      safeNavigate(createDeeplinkNavigationState('Home', correctParentScreen));
       return;
     }
 
