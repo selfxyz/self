@@ -7,7 +7,6 @@ import { create } from 'zustand';
 interface NfcTroubleState {
   optionsRevealed: boolean;
   revealOptions: () => void;
-  reset: () => void;
 }
 
 // Tracks whether "Open NFC Options" should be visible on the
@@ -17,5 +16,4 @@ interface NfcTroubleState {
 export const useNfcTroubleStore = create<NfcTroubleState>(set => ({
   optionsRevealed: false,
   revealOptions: () => set({ optionsRevealed: true }),
-  reset: () => set({ optionsRevealed: false }),
 }));

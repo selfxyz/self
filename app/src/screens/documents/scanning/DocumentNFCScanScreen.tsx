@@ -415,8 +415,9 @@ const DocumentNFCScanScreen: React.FC = () => {
           passportData = parseScanResponse(scanResponse);
         } catch (e: unknown) {
           console.error('Parsing NFC Response Unsuccessful');
-          const rawMessage = e instanceof Error ? e.message : String(e);
-          const sanitized = sanitizeErrorMessage(rawMessage);
+          const sanitized = sanitizeErrorMessage(
+            e instanceof Error ? e.message : String(e),
+          );
           trackEvent(PassportEvents.NFC_RESPONSE_PARSE_FAILED, {
             error: sanitized,
           });
@@ -424,7 +425,7 @@ const DocumentNFCScanScreen: React.FC = () => {
             error: sanitized,
           });
           revealNfcOptions();
-          openErrorModal(rawMessage);
+          openErrorModal(sanitized);
           return;
         }
         if (passportData) {
@@ -501,6 +502,7 @@ const DocumentNFCScanScreen: React.FC = () => {
   });
 
   const onCancelPress = () => {
+    trackEvent(PassportEvents.CANCEL_PASSPORT_NFC);
     flushAllAnalytics();
     logNFCEvent('info', 'scan_cancelled', { ...baseContext, stage: 'cancel' });
     if (isNfcSupported && isNfcEnabled) {
