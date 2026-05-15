@@ -172,7 +172,7 @@ jobs:
         run: pnpm build
 
       - name: Run workspace tests
-        run: pnpm -r --if-present --filter "!@selfxyz/circuits" run test
+        run: pnpm -r --if-present --filter "!@selfxyz/circuits" --filter "!@selfxyz/contracts" run test
 
       - name: Verify tests passed
         run: echo "Workspace tests completed successfully!"

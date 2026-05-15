@@ -15,6 +15,7 @@ fs.mkdirSync(path.join(localModules, '@zk-kit'), { recursive: true });
 
 const links = [
   ['circomlib', path.join(root, 'node_modules', 'circomlib')],
+  ['circom-bigint', path.join(root, 'node_modules', 'circom-bigint')],
   [
     '@openpassport/zk-email-circuits',
     path.join(root, 'node_modules', '@openpassport', 'zk-email-circuits'),
