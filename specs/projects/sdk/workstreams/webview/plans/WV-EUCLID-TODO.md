@@ -56,10 +56,10 @@ Running list of UI work that should land in `@selfxyz/euclid` (so WebView and th
 yarn workspace @selfxyz/euclid build && yarn workspace @selfxyz/euclid test
 
 # Webview consumer
-cd packages/webview-app && yarn build && yarn test
+(cd packages/webview-app && yarn build && yarn test)
 
 # RN app consumer
-cd app && yarn test
+(cd app && yarn test)
 
 # Repo gates
 yarn lint && yarn types

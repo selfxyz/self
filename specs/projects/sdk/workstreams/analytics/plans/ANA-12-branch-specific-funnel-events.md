@@ -124,7 +124,7 @@ Wire emission sites in `app/src/hooks/useKycLauncher.ts`:
 
 Wire `RETRY_TRIGGERED` in `KycFailureScreen.tsx` retry button handler.
 
-`LogoConfirmationScreen.tsx` direct path (the one not using the hook) — same emission additions, since it's a separate code path. Or migrate it to use `useKycLauncher` (out of scope for ANA-12; flag as follow-up).
+`LogoConfirmationScreen.tsx` direct path (the one not using the hook) — add the same emissions inline. Migrating it to `useKycLauncher` is out of scope for ANA-12; track as a follow-up.
 
 ### Step 3 — curate `AadhaarEvents`
 

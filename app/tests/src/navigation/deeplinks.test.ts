@@ -4,12 +4,17 @@
 
 import type { SelfClient } from '@selfxyz/mobile-sdk-alpha';
 
+import { navigationRef as MockNavigationRef } from '@/navigation';
 import {
   handleUrl,
   parseAndValidateUrlParams,
   setupUniversalLinkListenerInNavigation,
 } from '@/navigation/deeplinks';
-import { evaluateGoogleUsatGate } from '@/utils/googleUsatGate';
+import { useVerificationGateStore } from '@/stores/verificationGateStore';
+import {
+  evaluateGoogleUsatGate,
+  isGoogleUsatForceEnabledForTesting,
+} from '@/utils/googleUsatGate';
 
 jest.mock('react-native', () => {
   const mockLinking = {
@@ -55,6 +60,10 @@ jest.mock('@/utils/googleUsatGate', () => ({
   isGoogleUsatForceEnabledForTesting: jest.fn(() => false),
 }));
 
+jest.mock('@/stores/verificationGateStore', () => ({
+  useVerificationGateStore: { getState: jest.fn() },
+}));
+
 const mockUserStore = jest.requireMock('@/stores/userStore') as {
   default: { getState: jest.Mock };
 };
@@ -62,6 +71,13 @@ const mockUserStore = jest.requireMock('@/stores/userStore') as {
 let setDeepLinkUserDetails: jest.Mock;
 const mockEvaluateGoogleUsatGate =
   evaluateGoogleUsatGate as jest.MockedFunction<typeof evaluateGoogleUsatGate>;
+const mockIsGoogleUsatForceEnabledForTesting =
+  isGoogleUsatForceEnabledForTesting as jest.MockedFunction<
+    typeof isGoogleUsatForceEnabledForTesting
+  >;
+const mockGateStoreGetState = (
+  useVerificationGateStore as unknown as { getState: jest.Mock }
+).getState;
 
 describe('deeplinks', () => {
   beforeEach(() => {
@@ -76,6 +92,8 @@ describe('deeplinks', () => {
     });
     mockPlatform.OS = 'ios';
     mockEvaluateGoogleUsatGate.mockResolvedValue('allow');
+    mockIsGoogleUsatForceEnabledForTesting.mockReturnValue(false);
+    mockGateStoreGetState.mockReturnValue({ open: jest.fn() });
 
     // Setup default getCurrentRoute mock to return Splash (cold launch scenario)
     const { navigationRef } = require('@/navigation');
@@ -106,8 +124,140 @@ describe('deeplinks', () => {
       const { navigationRef } = require('@/navigation');
       expect(navigationRef.reset).toHaveBeenCalledWith({
         index: 1,
-        routes: [{ name: 'Home' }, { name: 'ProvingScreenRouter' }],
+        routes: [
+          { name: 'Home' },
+          { name: 'ProvingScreenRouter', params: { entryPoint: 'deeplink' } },
+        ],
       });
+    });
+
+    it('opens gate and resets off Splash when selfApp is blocked on cold launch', async () => {
+      const open = jest.fn();
+      mockGateStoreGetState.mockReturnValue({ open });
+      mockEvaluateGoogleUsatGate.mockResolvedValue('block');
+
+      const selfApp = { sessionId: 'abc', appName: 'TestApp' };
+      const url = `scheme://open?selfApp=${encodeURIComponent(JSON.stringify(selfApp))}`;
+
+      const trackEvent = jest.fn();
+      const mockSetSelfApp = jest.fn();
+      const mockStartAppListener = jest.fn();
+      await handleUrl(
+        {
+          trackEvent,
+          getSelfAppState: () => ({
+            setSelfApp: mockSetSelfApp,
+            startAppListener: mockStartAppListener,
+          }),
+        } as unknown as SelfClient,
+        url,
+      );
+
+      expect(open).toHaveBeenCalledWith({
+        reason: 'google_usat_high_security_required',
+        entryPoint: 'deeplink',
+        requesterName: 'TestApp',
+      });
+      // Blocked path must not start the proving flow.
+      expect(mockSetSelfApp).not.toHaveBeenCalled();
+      expect(mockStartAppListener).not.toHaveBeenCalled();
+
+      // Cold launch → reset stack so dismissing the gate modal lands on Home.
+      expect(MockNavigationRef.reset).toHaveBeenCalledWith({
+        index: 1,
+        routes: [{ name: 'Home' }, { name: 'Home' }],
+      });
+    });
+
+    it('does not navigate on warm launch when selfApp is blocked', async () => {
+      const open = jest.fn();
+      mockGateStoreGetState.mockReturnValue({ open });
+      mockEvaluateGoogleUsatGate.mockResolvedValue('block');
+      (MockNavigationRef.getCurrentRoute as jest.Mock).mockReturnValue({
+        name: 'SettingsScreen',
+      });
+
+      const selfApp = { sessionId: 'abc', appName: 'TestApp' };
+      const url = `scheme://open?selfApp=${encodeURIComponent(JSON.stringify(selfApp))}`;
+
+      await handleUrl(
+        {
+          trackEvent: jest.fn(),
+          getSelfAppState: () => ({
+            setSelfApp: jest.fn(),
+            startAppListener: jest.fn(),
+          }),
+        } as unknown as SelfClient,
+        url,
+      );
+
+      expect(open).toHaveBeenCalled();
+      // Warm launch: leave the user where they were.
+      expect(MockNavigationRef.reset).not.toHaveBeenCalled();
+      expect(MockNavigationRef.navigate).not.toHaveBeenCalled();
+    });
+
+    it('opens gate and resets off Splash when sessionId force-flag is enabled on cold launch', async () => {
+      const open = jest.fn();
+      mockGateStoreGetState.mockReturnValue({ open });
+      mockIsGoogleUsatForceEnabledForTesting.mockReturnValue(true);
+
+      const url = 'scheme://open?sessionId=abc123';
+      const mockCleanSelfApp = jest.fn();
+      const mockStartAppListener = jest.fn();
+      const trackEvent = jest.fn();
+
+      await handleUrl(
+        {
+          trackEvent,
+          getSelfAppState: () => ({
+            setSelfApp: jest.fn(),
+            startAppListener: mockStartAppListener,
+            cleanSelfApp: mockCleanSelfApp,
+          }),
+        } as unknown as SelfClient,
+        url,
+      );
+
+      expect(open).toHaveBeenCalledWith({
+        reason: 'google_usat_high_security_required',
+        entryPoint: 'deeplink',
+        requesterName: 'Google USAT Faucet',
+      });
+      // Blocked path must not advance the proving flow.
+      expect(mockCleanSelfApp).not.toHaveBeenCalled();
+      expect(mockStartAppListener).not.toHaveBeenCalled();
+
+      expect(MockNavigationRef.reset).toHaveBeenCalledWith({
+        index: 1,
+        routes: [{ name: 'Home' }, { name: 'Home' }],
+      });
+    });
+
+    it('does not navigate on warm launch when sessionId force-flag is enabled', async () => {
+      const open = jest.fn();
+      mockGateStoreGetState.mockReturnValue({ open });
+      mockIsGoogleUsatForceEnabledForTesting.mockReturnValue(true);
+      (MockNavigationRef.getCurrentRoute as jest.Mock).mockReturnValue({
+        name: 'SettingsScreen',
+      });
+
+      const url = 'scheme://open?sessionId=abc123';
+      await handleUrl(
+        {
+          trackEvent: jest.fn(),
+          getSelfAppState: () => ({
+            setSelfApp: jest.fn(),
+            startAppListener: jest.fn(),
+            cleanSelfApp: jest.fn(),
+          }),
+        } as unknown as SelfClient,
+        url,
+      );
+
+      expect(open).toHaveBeenCalled();
+      expect(MockNavigationRef.reset).not.toHaveBeenCalled();
+      expect(MockNavigationRef.navigate).not.toHaveBeenCalled();
     });
 
     it('handles sessionId parameter', async () => {
@@ -132,8 +282,38 @@ describe('deeplinks', () => {
       const { navigationRef } = require('@/navigation');
       expect(navigationRef.reset).toHaveBeenCalledWith({
         index: 1,
-        routes: [{ name: 'Home' }, { name: 'ProvingScreenRouter' }],
+        routes: [
+          { name: 'Home' },
+          { name: 'ProvingScreenRouter', params: { entryPoint: 'deeplink' } },
+        ],
       });
+    });
+
+    it('preserves ProvingScreenRouter params on warm launch navigation', async () => {
+      const url = 'scheme://open?sessionId=123';
+      const mockCleanSelfApp = jest.fn();
+      const mockStartAppListener = jest.fn();
+      const { navigationRef } = require('@/navigation');
+      navigationRef.getCurrentRoute.mockReturnValue({ name: 'Home' });
+
+      await handleUrl(
+        {
+          getSelfAppState: () => ({
+            setSelfApp: jest.fn(),
+            startAppListener: mockStartAppListener,
+            cleanSelfApp: mockCleanSelfApp,
+          }),
+        } as unknown as SelfClient,
+        url,
+      );
+
+      expect(mockCleanSelfApp).toHaveBeenCalledWith();
+      expect(mockStartAppListener).toHaveBeenCalledWith('123');
+      expect(navigationRef.navigate).toHaveBeenCalledWith({
+        name: 'ProvingScreenRouter',
+        params: { entryPoint: 'deeplink' },
+      });
+      expect(navigationRef.reset).not.toHaveBeenCalled();
     });
 
     it('handles mock_passport parameter', async () => {
