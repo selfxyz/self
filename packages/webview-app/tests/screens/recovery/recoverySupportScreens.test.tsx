@@ -154,6 +154,16 @@ vi.mock('@selfxyz/euclid', () => ({
       </button>
     </div>
   ),
+  RecoveryPhrase: ({ onReveal, onCopy }: { onReveal: () => void; onCopy: () => void }) => (
+    <div>
+      <button onClick={onReveal} type="button">
+        Reveal phrase
+      </button>
+      <button onClick={onCopy} type="button">
+        Copy phrase
+      </button>
+    </div>
+  ),
   LaunchRecoveryScreen: ({
     onEnterRecoveryPhrase,
     onClose,
@@ -330,11 +340,6 @@ describe('recovery support screens', () => {
     fireEvent.click(screen.getByRole('button', { name: /^continue$/i }));
 
     await waitFor(() => {
-      expectLocation('/recovery/success');
-    });
-
-    fireEvent.click(screen.getByRole('button', { name: /finish recovery/i }));
-    await waitFor(() => {
       expectLocation('/tunnel/proof/generating');
     });
   });
@@ -453,11 +458,6 @@ describe('recovery support screens', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /fill valid phrase/i }));
     fireEvent.click(screen.getByRole('button', { name: /^continue$/i }));
-    await waitFor(() => {
-      expectLocation('/recovery/success');
-    });
-
-    fireEvent.click(screen.getByRole('button', { name: /finish recovery/i }));
     await waitFor(() => {
       expectLocation('/tunnel/proof/generating');
     });

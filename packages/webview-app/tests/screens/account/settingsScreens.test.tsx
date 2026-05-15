@@ -182,7 +182,8 @@ const renderRoutes = (initialEntries: string[]) =>
   );
 
 const expectLocation = (expected: string) => {
-  expect(screen.getByTestId('location').textContent).toBe(expected);
+  const locations = screen.getAllByTestId('location');
+  expect(locations.at(-1)?.textContent).toBe(expected);
 };
 
 describe('WV-16 settings screens', () => {

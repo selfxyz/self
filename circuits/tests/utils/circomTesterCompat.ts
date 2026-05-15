@@ -46,7 +46,10 @@ const extractWitnessIndex = (entry: unknown): number | null => {
 };
 
 const getSymbols = (circuit: Circuit): Record<string, unknown> => {
-  const symbols = (circuit.symbols ?? circuit.sym ?? circuit.signalMap ?? {}) as Record<string, unknown>;
+  const symbols = (circuit.symbols ?? circuit.sym ?? circuit.signalMap ?? {}) as Record<
+    string,
+    unknown
+  >;
   return symbols;
 };
 
@@ -105,10 +108,8 @@ const installGetOutputShim = (circuit: Circuit): Circuit => {
   return circuit;
 };
 
-const wrapFactory = <
-  TFactory extends ((...args: unknown[]) => Promise<Circuit>) | undefined,
->(
-  factory: TFactory,
+const wrapFactory = <TFactory extends ((...args: unknown[]) => Promise<Circuit>) | undefined>(
+  factory: TFactory
 ) => {
   if (!factory) return factory;
   return (async (...args: unknown[]) => {
@@ -117,5 +118,7 @@ const wrapFactory = <
   }) as TFactory;
 };
 
-export const wasm = wrapFactory((circomTester as { wasm?: (...args: unknown[]) => Promise<Circuit> }).wasm);
+export const wasm = wrapFactory(
+  (circomTester as { wasm?: (...args: unknown[]) => Promise<Circuit> }).wasm
+);
 export const c = wrapFactory((circomTester as { c?: (...args: unknown[]) => Promise<Circuit> }).c);

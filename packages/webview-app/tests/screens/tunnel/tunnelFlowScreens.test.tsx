@@ -397,7 +397,7 @@ describe('tunnel flow screens', () => {
     expectLocation('/tunnel/proof/receipt');
   });
 
-  it('dismisses proving failure via lifecycle without route change', () => {
+  it('dismisses proving failure via lifecycle without route change', async () => {
     renderResultRoute({
       pathname: '/tunnel/proof/result',
       state: { success: false, error: 'TEE down', source: 'proving' },
@@ -406,11 +406,13 @@ describe('tunnel flow screens', () => {
     fireEvent.click(screen.getByRole('button', { name: /close/i }));
 
     expectLocation('/tunnel/proof/result');
-    expect(lifecycle.setResult).toHaveBeenCalledTimes(1);
-    expect(lifecycle.dismiss).toHaveBeenCalledTimes(1);
+    await waitFor(() => {
+      expect(lifecycle.setResult).toHaveBeenCalledTimes(1);
+      expect(lifecycle.dismiss).toHaveBeenCalledTimes(1);
+    });
   });
 
-  it('dismisses disclose failure via lifecycle without route change', () => {
+  it('dismisses disclose failure via lifecycle without route change', async () => {
     renderResultRoute({
       pathname: '/tunnel/proof/result',
       state: { success: false, error: 'TEE down', source: 'disclose' },
@@ -419,11 +421,13 @@ describe('tunnel flow screens', () => {
     fireEvent.click(screen.getByRole('button', { name: /close/i }));
 
     expectLocation('/tunnel/proof/result');
-    expect(lifecycle.setResult).toHaveBeenCalledTimes(1);
-    expect(lifecycle.dismiss).toHaveBeenCalledTimes(1);
+    await waitFor(() => {
+      expect(lifecycle.setResult).toHaveBeenCalledTimes(1);
+      expect(lifecycle.dismiss).toHaveBeenCalledTimes(1);
+    });
   });
 
-  it('dismisses kyc failure via lifecycle without route change', () => {
+  it('dismisses kyc failure via lifecycle without route change', async () => {
     renderResultRoute({
       pathname: '/tunnel/proof/result',
       state: { success: false, error: 'Provider cancelled', source: 'kyc' },
@@ -432,8 +436,10 @@ describe('tunnel flow screens', () => {
     fireEvent.click(screen.getByRole('button', { name: /close/i }));
 
     expectLocation('/tunnel/proof/result');
-    expect(lifecycle.setResult).toHaveBeenCalledTimes(1);
-    expect(lifecycle.dismiss).toHaveBeenCalledTimes(1);
+    await waitFor(() => {
+      expect(lifecycle.setResult).toHaveBeenCalledTimes(1);
+      expect(lifecycle.dismiss).toHaveBeenCalledTimes(1);
+    });
   });
 
   it('routes account recovery choice to the recovery-required screen', async () => {
@@ -599,7 +605,7 @@ describe('tunnel flow screens', () => {
     expectLocation('/tunnel/proof/result');
   });
 
-  it('defaults missing failure source close to lifecycle dismiss without route change', () => {
+  it('defaults missing failure source close to lifecycle dismiss without route change', async () => {
     renderResultRoute({
       pathname: '/tunnel/proof/result',
       state: { success: false, error: 'Unknown error' },
@@ -608,8 +614,10 @@ describe('tunnel flow screens', () => {
     fireEvent.click(screen.getByRole('button', { name: /close/i }));
 
     expectLocation('/tunnel/proof/result');
-    expect(lifecycle.setResult).toHaveBeenCalledTimes(1);
-    expect(lifecycle.dismiss).toHaveBeenCalledTimes(1);
+    await waitFor(() => {
+      expect(lifecycle.setResult).toHaveBeenCalledTimes(1);
+      expect(lifecycle.dismiss).toHaveBeenCalledTimes(1);
+    });
   });
 
   it('keeps tour restore back button inside the tunnel flow', () => {
