@@ -9,7 +9,9 @@ const dependencies = {
   ...(diditE2EBypassEnabled
     ? {
         // Debug-only bypass: disables Didit native module autolinking.
-        '@didit-protocol/sdk-react-native': { platforms: { android: null, ios: null } },
+        '@didit-protocol/sdk-react-native': {
+          platforms: { android: null, ios: null },
+        },
       }
     : {}),
 };

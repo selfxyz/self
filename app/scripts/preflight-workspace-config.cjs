@@ -22,19 +22,19 @@ const STRAY_PATTERNS = [
   'metro.config.mjs',
 ];
 
-const stray = STRAY_PATTERNS
-  .map(name => path.join(WORKSPACE_ROOT, name))
-  .filter(p => fs.existsSync(p));
+const stray = STRAY_PATTERNS.map(name =>
+  path.join(WORKSPACE_ROOT, name),
+).filter(p => fs.existsSync(p));
 
 if (stray.length > 0) {
   console.error('\n[31m[preflight] Stray config file(s) at workspace root:[0m');
   for (const p of stray) console.error(`  - ${p}`);
   console.error(
     '\nThese hijack the React Native CLI / Metro project root and break bundling\n' +
-    '(e.g. "Metro resolver failed for module \\"./index\\""). They may be hidden\n' +
-    'from `git status` by a broad personal gitignore rule like `*.config.*`.\n\n' +
-    'Remove them and re-run:\n' +
-    `  rm ${stray.join(' ')}\n`,
+      '(e.g. "Metro resolver failed for module \\"./index\\""). They may be hidden\n' +
+      'from `git status` by a broad personal gitignore rule like `*.config.*`.\n\n' +
+      'Remove them and re-run:\n' +
+      `  rm ${stray.join(' ')}\n`,
   );
   process.exit(1);
 }
