@@ -348,12 +348,6 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
             case 'kyc':
               (async () => {
                 try {
-                  trackOnboardingStep(
-                    { trackEvent },
-                    OnboardingEvents.SCAN_STARTED,
-                    { branch: 'kyc' },
-                  );
-
                   // Dev-only: Check for injected initialization error
                   if (
                     useErrorInjectionStore
@@ -370,6 +364,11 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
                     country: countryCode,
                     nationality: countryCode,
                   });
+                  trackOnboardingStep(
+                    { trackEvent },
+                    OnboardingEvents.SCAN_STARTED,
+                    { branch: 'kyc' },
+                  );
                   const result = await launchKycVerification(
                     session.sessionToken,
                   );
