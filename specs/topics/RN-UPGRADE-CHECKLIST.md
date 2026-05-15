@@ -1,6 +1,6 @@
 # RN Upgrade Checklist
 
-_Last updated: May 4, 2026_
+_Last updated: May 15, 2026_
 
 Use this file as the working state tracker for the React Native upgrade. The narrative plan lives in [React Native Upgrade Plan](./RN-UPGRADE-PLAN.md).
 
@@ -39,21 +39,21 @@ Use this file as the working state tracker for the React Native upgrade. The nar
 
 | Item                              | Current   | Target SDK `55.0.0` / RN `0.83` | Target SDK `56` / RN `0.85.x`    | Owner         | Backup        | Status        | Last Validation | Last Note                           |
 | --------------------------------- | --------- | ------------------------------- | -------------------------------- | ------------- | ------------- | ------------- | --------------- | ----------------------------------- |
-| `react-native`                    | `0.77.0`  | `0.83.9`                        | `Gate-dependent: pin at kickoff` | `@unassigned` | `@unassigned` | `In Progress` | `None`          | Latest 0.83 patch on npm 2026-05-04 |
-| `@react-native/babel-preset`      | `0.77.0`  | `0.83.9`                        | `Gate-dependent: pin at kickoff` | `@unassigned` | `@unassigned` | `In Progress` | `None`          | Lockstep with RN core               |
-| `@react-native/eslint-config`     | `0.77.0`  | `0.83.9`                        | `Gate-dependent: pin at kickoff` | `@unassigned` | `@unassigned` | `In Progress` | `None`          | Lockstep with RN core               |
-| `@react-native/gradle-plugin`     | `0.77.0`  | `0.83.9`                        | `Gate-dependent: pin at kickoff` | `@unassigned` | `@unassigned` | `In Progress` | `None`          | Lockstep with RN core               |
-| `@react-native/metro-config`      | `0.77.0`  | `0.83.9`                        | `Gate-dependent: pin at kickoff` | `@unassigned` | `@unassigned` | `In Progress` | `None`          | Lockstep with RN core               |
-| `@react-native/typescript-config` | `0.77.0`  | `0.83.9`                        | `Gate-dependent: pin at kickoff` | `@unassigned` | `@unassigned` | `In Progress` | `None`          | Lockstep with RN core               |
-| `@react-native-community/cli`     | `^16.0.3` | `^20.0.0`                       | `Gate-dependent: pin at kickoff` | `@unassigned` | `@unassigned` | `In Progress` | `None`          | RN 0.83 era; latest 20.x is 20.1.3  |
+| `react-native`                    | `0.77.0`  | `0.83.9`                        | `Gate-dependent: pin at kickoff` | `@unassigned` | `@unassigned` | `Done`        | `2026-05-15`    | Upgraded in app workspace for SDK 55 fallback path |
+| `@react-native/babel-preset`      | `0.77.0`  | `0.83.9`                        | `Gate-dependent: pin at kickoff` | `@unassigned` | `@unassigned` | `Done`        | `2026-05-15`    | Upgraded in lockstep with RN core               |
+| `@react-native/eslint-config`     | `0.77.0`  | `0.83.9`                        | `Gate-dependent: pin at kickoff` | `@unassigned` | `@unassigned` | `Done`        | `2026-05-15`    | Upgraded in lockstep with RN core               |
+| `@react-native/gradle-plugin`     | `0.77.0`  | `0.83.9`                        | `Gate-dependent: pin at kickoff` | `@unassigned` | `@unassigned` | `Done`        | `2026-05-15`    | Upgraded in lockstep with RN core               |
+| `@react-native/metro-config`      | `0.77.0`  | `0.83.9`                        | `Gate-dependent: pin at kickoff` | `@unassigned` | `@unassigned` | `Done`        | `2026-05-15`    | Upgraded in lockstep with RN core               |
+| `@react-native/typescript-config` | `0.77.0`  | `0.83.9`                        | `Gate-dependent: pin at kickoff` | `@unassigned` | `@unassigned` | `Done`        | `2026-05-15`    | Upgraded in lockstep with RN core               |
+| `@react-native-community/cli`     | `^16.0.3` | `^20.0.0`                       | `Gate-dependent: pin at kickoff` | `@unassigned` | `@unassigned` | `Done`        | `2026-05-15`    | Upgraded to 20.x line for RN 0.83               |
 
 ### Expo alignment
 
 | Item               | Current    | Target SDK `55.0.0` / RN `0.83` | Target SDK `56` / RN `0.85.x`    | Owner         | Backup        | Status        | Last Validation | Last Note                                                                                        |
 | ------------------ | ---------- | ------------------------------- | -------------------------------- | ------------- | ------------- | ------------- | --------------- | ------------------------------------------------------------------------------------------------ |
-| `expo`             | `~52.0.40` | `55.0.20`                       | `Gate-dependent: pin at kickoff` | `@unassigned` | `@unassigned` | `Not Started` | `None`          | Latest stable SDK 55 verified on npm 2026-05-04                                                  |
-| `expo-application` | `~6.0.2`   | `55.0.14`                       | `Gate-dependent: pin at kickoff` | `@unassigned` | `@unassigned` | `Not Started` | `None`          | Latest stable on SDK 55 line; no SDK 55-prefixed release exists for older `6.x` line             |
-| `expo-camera`      | `~16.0.18` | `55.0.17`                       | `Gate-dependent: pin at kickoff` | `@unassigned` | `@unassigned` | `Not Started` | `None`          | Latest stable on SDK 55 line; major version jump from `16.x` to `55.x` (Expo unified versioning) |
+| `expo`             | `~52.0.40` | `55.0.20`                       | `Gate-dependent: pin at kickoff` | `@unassigned` | `@unassigned` | `Done`        | `2026-05-15`    | Upgraded to SDK 55 fallback path                                                  |
+| `expo-application` | `~6.0.2`   | `55.0.14`                       | `Gate-dependent: pin at kickoff` | `@unassigned` | `@unassigned` | `Done`        | `2026-05-15`    | Upgraded to SDK 55 line             |
+| `expo-camera`      | `~16.0.18` | `55.0.17`                       | `Gate-dependent: pin at kickoff` | `@unassigned` | `@unassigned` | `Done`        | `2026-05-15`    | Upgraded to SDK 55 line |
 
 ### Critical native dependencies
 
@@ -84,6 +84,7 @@ Use this file as the working state tracker for the React Native upgrade. The nar
 | Root `react-native` dependency         | `0.76.9`  | `Keep or align if required`     | `Keep or align if required`      | `@unassigned` | `@unassigned` | `Not Started` | `None`          | Only change if it blocks app build/test integrity |
 | Root `react` resolution                | `^18.3.1` | `Verify`                        | `Verify`                         | `@unassigned` | `@unassigned` | `Not Started` | `None`          | Confirm RN target compatibility                   |
 | Root `react-native-webview` resolution | `13.16.0` | `13.16.0` (keep)                | `Gate-dependent: pin at kickoff` | `@unassigned` | `@unassigned` | `Not Started` | `None`          | Matches app decision; revisit if app dep aligned  |
+| SDK peer range truthfulness (`mobile-sdk-alpha`) | `react-native: >=0.76.0 <0.86.0` | Keep peers broad enough to include every in-repo consumer until all consumers are upgraded | Same rule; tighten only after full consumer migration | `@unassigned` | `@unassigned` | `In Progress` | `yarn install` | Do not narrow SDK peer ranges based on `app/` alone; include `mobile-sdk-demo`, `rn-sdk`, `rn-sdk-test-app`, and root consumers |
 
 ## Work Breakdown Checklist
 
@@ -103,13 +104,13 @@ Use this file as the working state tracker for the React Native upgrade. The nar
 
 ### Upgrade track
 
-- [ ] Bump RN core and companion packages for the chosen path
-- [ ] Bump Expo packages for the chosen path
-- [ ] Regenerate iOS pods
-- [ ] Regenerate Android dependencies
-- [ ] Resolve Metro/Babel/Jest config drift
-- [ ] Resolve iOS build breaks
-- [ ] Resolve Android build breaks
+- [x] Bump RN core and companion packages for the chosen path
+- [x] Bump Expo packages for the chosen path
+- [x] Regenerate iOS pods
+- [x] Regenerate Android dependencies
+- [x] Resolve Metro/Babel/Jest config drift
+- [x] Resolve iOS build breaks
+- [x] Resolve Android build breaks
 - [ ] Resolve RN `0.85` Jest preset migration if the `SDK 56 now` path was chosen
 - [ ] Validate auth flow
 - [ ] Validate camera flow
@@ -128,13 +129,13 @@ Use this file as the working state tracker for the React Native upgrade. The nar
 
 | Date         | Owner   | Command / Check                           | Result      | Notes        |
 | ------------ | ------- | ----------------------------------------- | ----------- | ------------ |
-| `YYYY-MM-DD` | `@name` | `yarn workspace @selfxyz/mobile-app test` | `Pass/Fail` | `Short note` |
+| `2026-05-15` | `@unassigned` | `CI history on this branch` | `Pending` | `No green CI runs recorded in this checklist yet; add run URLs/results as they complete.` |
 
 ## Open Questions
 
 - [ ] Which exact SDK `56` package versions should be pinned if the gate passes?
-- [ ] Does the root `react-native` dependency need to move, or can it remain isolated from the app upgrade?
-- [ ] Which current overrides/resolutions can be removed after the upgrade instead of carried forward?
+- [x] Does the root `react-native` dependency need to move, or can it remain isolated from the app upgrade? Answer: keep root on `0.76.9` for this PR; tracked in `Follow-Up: Align Remaining Workspaces` in `RN-UPGRADE-PLAN.md`.
+- [x] Which current overrides/resolutions can be removed after the upgrade instead of carried forward? Answer: removed the breaking patch tracked by commit `32b373d11`; continue cleanup in follow-up PRs as remaining entries are validated.
 
 ## Phase 0 Findings (recorded 2026-05-04)
 
@@ -159,6 +160,12 @@ Source: `package.json:55-73` (root resolutions), `app/package.json:78-82` (app o
 - Root `package.json:78` pins `react-native: 0.76.9`.
 - `app/package.json:142` pins `react-native: 0.77.0`.
 - The skew is real but isolated: the root `react-native` is consumed by non-app workspaces. Decide at Phase 1 whether the upgrade should also bump the root pin or leave it alone — recorded as an open question above.
+
+### Peer-range guardrail (added 2026-05-15)
+
+- `packages/mobile-sdk-alpha` peer dependency ranges must match the oldest actively supported in-repo consumer, not just `app/`.
+- During partial RN upgrades (for example, `app/` on RN `0.83` while `mobile-sdk-demo`, `rn-sdk`, `rn-sdk-test-app`, and root remain on RN `0.76.x`), keep SDK peers broad (`>=0.76.0 <0.86.0`) to avoid false peer warnings.
+- Tighten the RN peer floor only in the same change set that upgrades all listed consumers.
 
 ### Baseline validation
 

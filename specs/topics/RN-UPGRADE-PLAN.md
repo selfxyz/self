@@ -1,6 +1,6 @@
 # React Native Upgrade Plan (Mobile App)
 
-_Last updated: May 4, 2026_
+_Last updated: May 15, 2026_
 
 ## Purpose
 
@@ -209,10 +209,12 @@ If a developer ends their day with a track in progress, they should leave the ch
 
 1. **Native module incompatibility**
    - Mitigation: per-package tracking, explicit owner assignment, and stop/go decisions recorded in the checklist.
+   - Materialized on this branch as iOS native build breakage after RN/Expo bumps; mitigated by Pods regeneration plus targeted native dependency alignment in the app workspace.
 2. **Expo package mismatch with RN target**
    - Mitigation: fire the SDK `56 now vs SDK 55 first` gate before code changes and do not mix speculative bumps into the same PR.
 3. **CI instability during toolchain changes**
    - Mitigation: keep tooling changes isolated from app behavior fixes where practical.
+   - Materialized as Metro/Babel config drift; mitigated by applying RN companion package updates in lockstep and resolving config drift before runtime validation.
 4. **Monorepo RN skew causing hidden failures**
    - Mitigation: track root and sibling RN versions explicitly; resolve only the skew that blocks app build or test integrity.
 5. **Cross-time-zone handoff loss**
@@ -261,6 +263,25 @@ Keep PRs aligned to ownership boundaries so two developers can parallelize safel
   Only used if the chosen path is SDK `55.0.0` and you need a separate future spec/PR chain for SDK `56`.
 
 Do not merge a later PR if it depends on unmerged fixes from an earlier track unless the dependency is explicitly documented in the checklist.
+
+## Follow-Up: Align Remaining Workspaces
+
+The `app/` workspace is on RN `0.83.9` / React 19. Four sibling workspaces remain on RN `0.76.9` / React 18:
+
+- Root `package.json` (hoisted devDep)
+- `packages/mobile-sdk-demo` (full RN app — `ios/`, `android/`)
+- `packages/rn-sdk` (pure TS library — devDep only)
+- `packages/rn-sdk-test-app` (full RN app — `ios/`, `android/`)
+
+Consequence: `@selfxyz/mobile-sdk-alpha` keeps wide peer ranges (`react: ^18.3.1 || ^19.0.0`, `react-native: >=0.76.0 <0.86.0`) to satisfy all five consumers. The ranges no longer reflect the actual support matrix the SDK is exercised against.
+
+Tracked as a follow-up rather than a blocker for this upgrade PR. The two pure-JS bumps (root + `rn-sdk`) are trivial; the two RN apps (`mobile-sdk-demo`, `rn-sdk-test-app`) each need their own Pods/Gradle/Hermes pass and are non-trivial.
+
+Done when:
+
+- All five workspaces declare RN `0.83.x` / React 19.
+- `@selfxyz/mobile-sdk-alpha` peer ranges narrow to `react: ^19.0.0` and `react-native: >=0.83.0 <0.86.0`.
+- `yarn install` completes with no `react`/`react-native` peer warnings.
 
 ## Known Gaps This Plan Now Closes
 
