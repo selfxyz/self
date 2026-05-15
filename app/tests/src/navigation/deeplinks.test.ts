@@ -169,6 +169,34 @@ describe('deeplinks', () => {
       });
     });
 
+    it('does not navigate on warm launch when selfApp is blocked', async () => {
+      const open = jest.fn();
+      mockGateStoreGetState.mockReturnValue({ open });
+      mockEvaluateGoogleUsatGate.mockResolvedValue('block');
+      (MockNavigationRef.getCurrentRoute as jest.Mock).mockReturnValue({
+        name: 'SettingsScreen',
+      });
+
+      const selfApp = { sessionId: 'abc', appName: 'TestApp' };
+      const url = `scheme://open?selfApp=${encodeURIComponent(JSON.stringify(selfApp))}`;
+
+      await handleUrl(
+        {
+          trackEvent: jest.fn(),
+          getSelfAppState: () => ({
+            setSelfApp: jest.fn(),
+            startAppListener: jest.fn(),
+          }),
+        } as unknown as SelfClient,
+        url,
+      );
+
+      expect(open).toHaveBeenCalled();
+      // Warm launch: leave the user where they were.
+      expect(MockNavigationRef.reset).not.toHaveBeenCalled();
+      expect(MockNavigationRef.navigate).not.toHaveBeenCalled();
+    });
+
     it('opens gate and resets off Splash when sessionId force-flag is enabled on cold launch', async () => {
       const open = jest.fn();
       mockGateStoreGetState.mockReturnValue({ open });
@@ -204,6 +232,32 @@ describe('deeplinks', () => {
         index: 1,
         routes: [{ name: 'Home' }, { name: 'Home' }],
       });
+    });
+
+    it('does not navigate on warm launch when sessionId force-flag is enabled', async () => {
+      const open = jest.fn();
+      mockGateStoreGetState.mockReturnValue({ open });
+      mockIsGoogleUsatForceEnabledForTesting.mockReturnValue(true);
+      (MockNavigationRef.getCurrentRoute as jest.Mock).mockReturnValue({
+        name: 'SettingsScreen',
+      });
+
+      const url = 'scheme://open?sessionId=abc123';
+      await handleUrl(
+        {
+          trackEvent: jest.fn(),
+          getSelfAppState: () => ({
+            setSelfApp: jest.fn(),
+            startAppListener: jest.fn(),
+            cleanSelfApp: jest.fn(),
+          }),
+        } as unknown as SelfClient,
+        url,
+      );
+
+      expect(open).toHaveBeenCalled();
+      expect(MockNavigationRef.reset).not.toHaveBeenCalled();
+      expect(MockNavigationRef.navigate).not.toHaveBeenCalled();
     });
 
     it('handles sessionId parameter', async () => {
