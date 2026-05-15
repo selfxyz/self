@@ -145,6 +145,12 @@ export const handleUrl = async (selfClient: SelfClient, uri: string) => {
           entryPoint: 'deeplink',
           requesterName: selfAppJson.appName,
         });
+        // On cold launch, handleUrl runs from Splash and never advances the
+        // stack on its own; without this nav, dismissing the gate modal
+        // strands the user on Splash.
+        safeNavigate(
+          createDeeplinkNavigationState('Home', correctParentScreen),
+        );
         return;
       }
       selfClient.getSelfAppState().setSelfApp(selfAppJson);
