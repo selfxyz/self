@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { wasm as wasmTester } from 'circom_tester';
+import { wasm as wasmTester } from 'tests/utils/circomTesterCompat.js';
 import path from 'path';
 import { packBytesAndPoseidon } from '@selfxyz/new-common/src/crypto/hash/poseidon.js';
 import { poseidon2 } from 'poseidon-lite';

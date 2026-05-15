@@ -1,6 +1,6 @@
 import { SMT } from '@openpassport/zk-kit-smt';
 import { expect } from 'chai';
-import { wasm as wasm_tester } from 'circom_tester';
+import { wasm as wasm_tester } from 'tests/utils/circomTesterCompat.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { poseidon2 } from 'poseidon-lite';

@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { wasm as wasm_tester } from 'circom_tester';
+import { wasm as wasm_tester } from 'tests/utils/circomTesterCompat.js';
 import dotenv from 'dotenv';
 import { describe } from 'mocha';
 import path from 'path';

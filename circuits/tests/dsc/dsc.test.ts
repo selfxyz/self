@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { wasm as wasm_tester } from 'circom_tester';
+import { wasm as wasm_tester } from 'tests/utils/circomTesterCompat.js';
 import dotenv from 'dotenv';
 import path from 'path';
 import serialized_csca_tree from '@selfxyz/new-common/src/data/serialized_csca_tree.json' with { type: 'json' };

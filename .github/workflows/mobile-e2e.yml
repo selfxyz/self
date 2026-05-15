@@ -1024,6 +1024,12 @@ jobs:
             MAESTRO_OUTPUT_RETRY=$(run_maestro)
             MAESTRO_EXIT_CODE=$?
             MAESTRO_OUTPUT=$(printf '%s\n\n===== RETRY AFTER DRIVER STARTUP FAILURE =====\n\n%s' "$MAESTRO_OUTPUT" "$MAESTRO_OUTPUT_RETRY")
+          elif [ $MAESTRO_EXIT_CODE -ne 0 ] && printf '%s' "$MAESTRO_OUTPUT" | grep -Eq "App crashed or stopped while executing flow"; then
+            echo "⚠️ App crashed during Maestro flow, retrying once after 20s..."
+            sleep 20
+            MAESTRO_OUTPUT_RETRY=$(run_maestro)
+            MAESTRO_EXIT_CODE=$?
+            MAESTRO_OUTPUT=$(printf '%s\n\n===== RETRY AFTER APP CRASH =====\n\n%s' "$MAESTRO_OUTPUT" "$MAESTRO_OUTPUT_RETRY")
           fi
           set -e
 

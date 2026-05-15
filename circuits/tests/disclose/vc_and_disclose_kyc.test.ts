@@ -1,4 +1,4 @@
-import { wasm as wasmTester } from 'circom_tester';
+import { wasm as wasmTester } from 'tests/utils/circomTesterCompat.js';
 import * as path from 'path';
 import {
   NON_OFAC_DUMMY_KYC_DATA,

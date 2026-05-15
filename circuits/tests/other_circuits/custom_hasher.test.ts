@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import path from 'path';
-import { wasm as wasm_tester } from 'circom_tester';
+import { wasm as wasm_tester } from 'tests/utils/circomTesterCompat.js';
 import { formatInput } from '@selfxyz/new-common/src/circuits/inputs/format.js';
 import {
   customHasher,

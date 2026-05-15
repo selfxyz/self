@@ -85,6 +85,9 @@ vi.mock('@selfxyz/euclid', () => ({
   fontWeight: {
     medium: 500,
   },
+  borderRadius: {
+    mdd: 14,
+  },
   ChatStrokeIcon: () => null,
   CloudKeyIcon: () => null,
   CodeIcon: () => null,

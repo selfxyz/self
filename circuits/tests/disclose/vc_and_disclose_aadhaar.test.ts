@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { wasm as wasmTester } from 'circom_tester';
+import { wasm as wasmTester } from 'tests/utils/circomTesterCompat.js';
 import path from 'path';
 import assert from 'assert';
 import { SMT } from '@openpassport/zk-kit-smt';

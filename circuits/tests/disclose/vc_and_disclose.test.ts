@@ -1,7 +1,7 @@
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import { SMT } from '@openpassport/zk-kit-smt';
 import { assert, expect } from 'chai';
-import { wasm as wasm_tester } from 'circom_tester';
+import { wasm as wasm_tester } from 'tests/utils/circomTesterCompat.js';
 import crypto from 'crypto';
 import { describe } from 'mocha';
 import path from 'path';

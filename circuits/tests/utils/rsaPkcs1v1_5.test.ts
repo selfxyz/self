@@ -1,4 +1,4 @@
-import { wasm as wasmTester } from 'circom_tester';
+import { wasm as wasmTester } from 'tests/utils/circomTesterCompat.js';
 import { describe, it } from 'mocha';
 import path from 'path';
 import { generateMockRsaPkcs1v1_5Inputs } from './generateMockInputsInCircuits.js';

@@ -1,4 +1,4 @@
-import { wasm as wasmTester } from 'circom_tester';
+import { wasm as wasmTester } from 'tests/utils/circomTesterCompat.js';
 import * as crypto from 'crypto';
 import { initElliptic } from '@selfxyz/new-common/src/certificates/parsing/elliptic.js';
 import * as path from 'path';

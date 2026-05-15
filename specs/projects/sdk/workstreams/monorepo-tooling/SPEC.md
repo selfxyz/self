@@ -106,6 +106,10 @@ Cleanup steps (applies regardless of which path above is chosen):
   globbing) must live in versioned Node tooling scripts under `scripts/*.cjs`.
   The script entry in `package.json` should be a single command invoking that
   script (for example, `node scripts/<name>.cjs`).
+- Circuits tests must import `wasm`/`c` from
+  `circuits/tests/utils/circomTesterCompat.ts`, not directly from
+  `circom_tester`, until upstream guarantees stable `getOutput(...)` behavior
+  across the tested circuit set.
 
 ## Dependencies
 
@@ -148,6 +152,16 @@ the new Euclid version (and against MT-2 directly):
 - `pnpm install` succeeds with `strictPeerDependencies: true` and
   `blockExoticSubdeps: true`.
 - Every `allowBuilds` entry has a one-line justification comment.
+
+**Circom tester compatibility (MT-21):**
+
+- `pnpm --filter @selfxyz/circuits test` passes in CI with
+  `circom_tester` pinned to the current upstream Git ref (no forced downgrade
+  to older npm-only versions).
+- `circuits/tests/utils/circomTesterCompat.ts` is the single compatibility
+  boundary. No ad-hoc `getOutput` shims duplicated across tests.
+- A follow-up can remove the compat import only after proving direct imports
+  from `circom_tester` pass consistently in Circuits CI.
 
 **Linker change (MT-12):**
 
@@ -207,6 +221,7 @@ docs or `turbo.json` `outputs` declarations are exempt.
 | MT-18 | Verify dedupe of duplicate transitive versions              | Open   | Run `pnpm dedupe` and audit the diff. Lockfile is currently huge — pin where safe to shrink it.                                                                                                                                                                                                                                                          |
 | MT-19 | Keep WebView bundle script outside Turbo in this workstream | Open   | Decision: do not wire `scripts/build-webview-bundle.sh` into `turbo.json` here. Track integration under `build-pipeline` as a separate follow-up after owner sign-off.                                                                                                                                                                                   |
 | MT-20 | Declare Turbo cache contract for build outputs + inputs     | Open   | Decision: define explicit `outputs` for build tasks and set `globalDependencies` for shared config files (at minimum root tsconfig + lockfile + env templates) in `turbo.json`.                                                                                                                                                                          |
+| MT-21 | Normalize `circom_tester` compat boundary for circuits tests | Open   | Keep current upstream `circom_tester` and route test imports through `circomTesterCompat` until upstream `getOutput` behavior is stable. Remove shim only with CI proof.                                                                                                                                                                                    |
 
 ## Decisions Captured
 

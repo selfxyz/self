@@ -27,13 +27,15 @@ vi.mock('../../../src/providers/SelfClientProvider', () => ({
   }),
 }));
 
-const mockDocumentStore = {
-  addDocument: vi.fn(),
-  clear: vi.fn(),
-  hasDocuments: vi.fn().mockReturnValue(false),
-  getCatalog: vi.fn().mockReturnValue({ documents: [] }),
-  subscribe: vi.fn().mockReturnValue(() => {}),
-};
+const { mockDocumentStore } = vi.hoisted(() => ({
+  mockDocumentStore: {
+    addDocument: vi.fn(),
+    clear: vi.fn(),
+    hasDocuments: vi.fn().mockReturnValue(false),
+    getCatalog: vi.fn().mockReturnValue({ documents: [] }),
+    subscribe: vi.fn().mockReturnValue(() => {}),
+  },
+}));
 
 vi.mock('../../../src/utils/mockDocumentStore', () => ({
   mockDocumentStore,
