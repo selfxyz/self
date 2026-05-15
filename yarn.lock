@@ -5068,13 +5068,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ethersproject/shims@npm:^5.8.0":
-  version: 5.8.0
-  resolution: "@ethersproject/shims@npm:5.8.0"
-  checksum: 10c0/4cb851dd366928694cfe186c782bf19015f5650758ba88541e0e50ec8188f82d6d5dfb7e22813989f1f46ebb2b19c30407b83639bba0aae9e9e131d2e046ea3e
-  languageName: node
-  linkType: hard
-
 "@ethersproject/signing-key@npm:5.8.0, @ethersproject/signing-key@npm:^5.8.0":
   version: 5.8.0
   resolution: "@ethersproject/signing-key@npm:5.8.0"
@@ -11518,7 +11511,6 @@ __metadata:
     "@babel/preset-react": "npm:^7.28.5"
     "@babel/runtime": "npm:^7.29.2"
     "@didit-protocol/sdk-react-native": "npm:^3.2.11"
-    "@ethersproject/shims": "npm:^5.8.0"
     "@invertase/react-native-apple-authentication": "npm:^2.5.1"
     "@noble/hashes": "npm:^1.5.0"
     "@openpassport/zk-kit-lean-imt": "npm:^0.0.6"
@@ -11549,7 +11541,6 @@ __metadata:
     "@sentry/react": "npm:^9.32.0"
     "@sentry/react-native": "npm:7.0.0"
     "@stablelib/cbor": "npm:^2.0.4"
-    "@tamagui/animations-css": "npm:1.144.4"
     "@tamagui/animations-react-native": "npm:1.144.4"
     "@tamagui/config": "npm:1.144.4"
     "@tamagui/lucide-icons": "npm:1.144.4"
@@ -11600,13 +11591,8 @@ __metadata:
     expo: "npm:55.0.20"
     expo-application: "npm:55.0.14"
     expo-camera: "npm:55.0.17"
-    hash.js: "npm:^1.1.7"
     hermes-eslint: "npm:^0.33.3"
     jest: "npm:^30.3.0"
-    js-sha1: "npm:^0.7.0"
-    js-sha256: "npm:^0.11.1"
-    js-sha512: "npm:^0.9.0"
-    lottie-react: "npm:^2.4.1"
     lottie-react-native: "npm:7.3.6"
     node-forge: "npm:^1.4.0"
     pkijs: "npm:^3.4.0"
@@ -29276,7 +29262,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-sha256@npm:^0.11.0, js-sha256@npm:^0.11.1":
+"js-sha256@npm:^0.11.0":
   version: 0.11.1
   resolution: "js-sha256@npm:0.11.1"
   checksum: 10c0/ef8e294b6f38f218e4834cb653471dd1a76808cea93dc66eaffcb04124116bc36d6cebc4e8866753e184ab4e57892b6ef21918e8ab0450179a7e093ea962d974
