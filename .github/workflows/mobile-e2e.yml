@@ -17,9 +17,12 @@ env:
   MAESTRO_CLI_NO_ANALYTICS: true
   MAESTRO_VERSION: 1.41.0
   MAESTRO_CACHE_VERSION: v1 # Bump this to clear Maestro cache
-  # Maestro recording/artifacts. Default on so iOS e2e failures are diagnosable
-  # from a single CI run (video + screenshots + sim log archive uploaded as artifacts).
-  ENABLE_MAESTRO_RECORDING: true
+  # Debug-only Didit native module bypass for E2E autolinking.
+  # Keep false by default; set true only when isolating Didit-specific build failures.
+  DIDIT_E2E_BYPASS: ${{ github.event.inputs.didit_e2e_bypass == 'true' && 'true' || 'false' }}
+  # Maestro recording/artifacts. Default off to reduce CI overhead.
+  # Enable only when debugging by setting ENABLE_MAESTRO_RECORDING=true.
+  ENABLE_MAESTRO_RECORDING: false
 
 on:
   push:
@@ -40,6 +43,12 @@ on:
       - "patches/**"
       - ".github/workflows/mobile-e2e.yml"
   workflow_dispatch:
+    inputs:
+      didit_e2e_bypass:
+        description: "Disable Didit RN native module autolinking for this run (debug only)"
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   e2e-android:
@@ -353,6 +362,7 @@ jobs:
         if: steps.apk-cache.outputs.cache-hit != 'true'
         run: |
           echo "Building Android APK..."
+          echo "DIDIT_E2E_BYPASS=${DIDIT_E2E_BYPASS}"
           chmod +x app/android/gradlew
 
           # Resource monitor so we have memory data if the build is killed
@@ -752,6 +762,7 @@ jobs:
           retry_wait_seconds: 10
           command: |
             cd app/ios
+            echo "DIDIT_E2E_BYPASS=${DIDIT_E2E_BYPASS}"
             echo "📦 Installing pods via centralized script…"
             BUNDLE_GEMFILE=../Gemfile bundle exec bash scripts/pod-install-with-cache-fix.sh
         env:
