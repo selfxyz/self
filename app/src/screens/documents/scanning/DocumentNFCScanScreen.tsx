@@ -20,6 +20,7 @@ import {
 } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import NfcManager from 'react-native-nfc-manager';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Image, XStack } from 'tamagui';
 import { v4 as uuidv4 } from 'uuid';
 import type { RouteProp } from '@react-navigation/native';
@@ -29,7 +30,7 @@ import {
   useRoute,
 } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { CircleHelp } from '@tamagui/lucide-icons';
+import { ChevronLeft, CircleHelp } from '@tamagui/lucide-icons';
 
 import type { PassportData } from '@selfxyz/common/types';
 import {
@@ -66,7 +67,6 @@ import { useErrorInjection } from '@/hooks/useErrorInjection';
 import { useFeedbackAutoHide } from '@/hooks/useFeedbackAutoHide';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { useKycLauncher } from '@/hooks/useKycLauncher';
-import useOpenSupportForm from '@/hooks/useOpenSupportForm';
 import {
   buttonTap,
   feedbackSuccess,
@@ -83,10 +83,7 @@ import {
   setNfcScanningActive,
   trackNfcEvent,
 } from '@/services/analytics';
-import {
-  SUPPORT_FORM_BUTTON_TEXT,
-  SUPPORT_FORM_MESSAGE,
-} from '@/services/support';
+import { useNfcTroubleStore } from '@/stores/nfcTroubleStore';
 
 const emitter =
   Platform.OS === 'android'
@@ -111,7 +108,8 @@ type DocumentNFCScanRoute = RouteProp<
 const DocumentNFCScanScreen: React.FC = () => {
   const selfClient = useSelfClient();
   const { trackEvent, useMRZStore } = selfClient;
-  const openSupportForm = useOpenSupportForm();
+  const insets = useSafeAreaInsets();
+  const revealNfcOptions = useNfcTroubleStore(state => state.revealOptions);
 
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -194,10 +192,6 @@ const DocumentNFCScanScreen: React.FC = () => {
     .onStart(() => {
       goToNFCMethodSelection();
     });
-
-  const onReportIssue = useCallback(() => {
-    openSupportForm();
-  }, [openSupportForm]);
 
   const openErrorModal = useCallback(
     (message: string) => {
@@ -305,6 +299,7 @@ const DocumentNFCScanScreen: React.FC = () => {
           ...baseContext,
           stage: 'timeout',
         });
+        revealNfcOptions();
         openErrorModal('Scan timed out. Please try again.');
         setIsNfcSheetOpen(false);
         logNFCEvent('info', 'sheet_close', {
@@ -333,6 +328,7 @@ const DocumentNFCScanScreen: React.FC = () => {
           ...baseContext,
           stage: 'timeout',
         });
+        revealNfcOptions();
         openErrorModal('Scan timed out. Please try again.');
         setIsNfcSheetOpen(false);
         logNFCEvent('info', 'sheet_close', {
@@ -419,15 +415,17 @@ const DocumentNFCScanScreen: React.FC = () => {
           passportData = parseScanResponse(scanResponse);
         } catch (e: unknown) {
           console.error('Parsing NFC Response Unsuccessful');
-          const errMsg = sanitizeErrorMessage(
+          const sanitized = sanitizeErrorMessage(
             e instanceof Error ? e.message : String(e),
           );
           trackEvent(PassportEvents.NFC_RESPONSE_PARSE_FAILED, {
-            error: errMsg,
+            error: sanitized,
           });
           trackNfcEvent(PassportEvents.NFC_RESPONSE_PARSE_FAILED, {
-            error: errMsg,
+            error: sanitized,
           });
+          revealNfcOptions();
+          openErrorModal(sanitized);
           return;
         }
         if (passportData) {
@@ -461,6 +459,7 @@ const DocumentNFCScanScreen: React.FC = () => {
           error: sanitized,
           duration_seconds: parseFloat(scanDurationSeconds),
         });
+        revealNfcOptions();
         openErrorModal(message);
         // We deliberately avoid opening any external feedback widgets here;
         // users can request support via the support form action in the modal.
@@ -495,6 +494,7 @@ const DocumentNFCScanScreen: React.FC = () => {
     selfClient,
     trackEvent,
     shouldInjectError,
+    revealNfcOptions,
   ]);
 
   const navigateToHome = useHapticNavigation('Home', {
@@ -502,6 +502,7 @@ const DocumentNFCScanScreen: React.FC = () => {
   });
 
   const onCancelPress = () => {
+    trackEvent(PassportEvents.CANCEL_PASSPORT_NFC);
     flushAllAnalytics();
     logNFCEvent('info', 'scan_cancelled', { ...baseContext, stage: 'cancel' });
     if (isNfcSupported && isNfcEnabled) {
@@ -588,6 +589,19 @@ const DocumentNFCScanScreen: React.FC = () => {
           cacheComposition={true}
           renderMode="HARDWARE"
         />
+        {!isNfcSheetOpen && (
+          <Button
+            unstyled
+            onPress={onCancelPress}
+            position="absolute"
+            top={Math.max(insets.top, 12) + 4}
+            left={12}
+            padding={8}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            aria-label="Back"
+            icon={<ChevronLeft size={30} color={black} />}
+          />
+        )}
       </ExpandableBottomLayout.TopSection>
       <ExpandableBottomLayout.BottomSection backgroundColor={white}>
         {isNfcSheetOpen ? (
@@ -645,20 +659,12 @@ const DocumentNFCScanScreen: React.FC = () => {
                     Place your phone against the chip and keep it still until
                     the sensor reads it.
                   </BodyText>
-                  <BodyText style={[styles.disclaimer, { marginTop: 16 }]}>
-                    SELF DOES NOT STORE THIS INFORMATION.
-                  </BodyText>
                 </>
               ) : (
-                <>
-                  <BodyText style={[styles.disclaimer, { marginTop: 16 }]}>
-                    {dialogMessage}
-                  </BodyText>
-                </>
+                <BodyText style={[styles.disclaimer, { marginTop: 16 }]}>
+                  {dialogMessage}
+                </BodyText>
               )}
-              <BodyText style={[styles.disclaimer, { marginTop: 12 }]}>
-                {SUPPORT_FORM_MESSAGE}
-              </BodyText>
             </TextsContainer>
             <ButtonsContainer>
               <PrimaryButton
@@ -674,14 +680,8 @@ const DocumentNFCScanScreen: React.FC = () => {
                   ? 'Start Scan'
                   : 'Open settings'}
               </PrimaryButton>
-              <SecondaryButton
-                trackEvent={PassportEvents.CANCEL_PASSPORT_NFC}
-                onPress={onCancelPress}
-              >
-                Cancel
-              </SecondaryButton>
-              <SecondaryButton onPress={onReportIssue}>
-                {SUPPORT_FORM_BUTTON_TEXT}
+              <SecondaryButton onPress={goToNFCTrouble}>
+                Need help?
               </SecondaryButton>
               {(!isNfcSupported || !isNfcEnabled) && (
                 <SecondaryButton
