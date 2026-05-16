@@ -23,7 +23,10 @@ import {
   webNFCScannerShim,
   type WsConn,
 } from '@selfxyz/mobile-sdk-alpha';
-import { KycEvents, OnboardingEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import {
+  KycEvents,
+  OnboardingEvents,
+} from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import { logNFCEvent, logProofEvent } from '@/config/sentry';
 import { createKycSession, launchKycVerification } from '@/integrations/kyc';
