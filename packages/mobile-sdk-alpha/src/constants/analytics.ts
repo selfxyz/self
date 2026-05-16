@@ -189,13 +189,6 @@ export const PointEvents = {
   REFRESH_HISTORY: 'Points: Refresh History',
 };
 
-/**
- * ANA-13 is migrating diagnostic `Proof:` events to Sentry breadcrumbs. Entries
- * here that no longer have call sites after the migration are dead and should be
- * pruned in a follow-up. `PROVING_PROCESS_ERROR` is emitted via `trackNfcEvent`
- * through the native NFC Mixpanel pipe (out of scope for ANA-13; see ANA-04).
- * The `GOOGLE_USAT_*` entries are part of the disclosure gate flow and remain.
- */
 export const ProofEvents = {
   ALREADY_REGISTERED: 'Proof: Already Registered',
   ATTESTATION_RECEIVED: 'Proof: Attestation Received',
