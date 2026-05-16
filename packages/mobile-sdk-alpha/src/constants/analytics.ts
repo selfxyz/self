@@ -2,11 +2,6 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-/**
- * Aadhaar branch milestone events. Curated from 25 → 7 in ANA-12. The deleted
- * events (UPLOAD_SCREEN_OPENED, PROCESSING_STARTED, QR_DATA_EXTRACTION_*, etc.)
- * become Sentry breadcrumbs in ANA-13. Emit via `trackBranchEvent`.
- */
 export const AadhaarEvents = {
   CONTINUE_PRESSED: 'Aadhaar: Continue Pressed',
   DATA_STORED: 'Aadhaar: Data Stored',
@@ -63,12 +58,6 @@ export const BackupEvents = {
   MANUAL_RECOVERY_SELECTED: 'Backup: Manual Recovery Selected',
 };
 
-/**
- * Biometric branch events. Covers passport AND biometric ID — the same code
- * path serves both, distinguished by a `document_type` property on each event.
- *
- * Emit via `trackBranchEvent`.
- */
 export const BiometricEvents = {
   DOCUMENT_PARSED: 'Biometric: Document Parsed',
   DOCUMENT_UNSUPPORTED: 'Biometric: Document Unsupported',
@@ -94,11 +83,6 @@ export const DocumentEvents = {
   VALIDATE_DOCUMENT_FAILED: 'Document: Validate Document Failed',
 };
 
-/**
- * KYC branch milestone events. Provider-tagged from day one (`provider: 'didit'`)
- * so adding Veriff/Sumsub later doesn't require renaming events. Emit via
- * `trackBranchEvent`.
- */
 export const KycEvents = {
   PROVIDER_CLOSED: 'KYC: Provider Closed',
   PROVIDER_OPENED: 'KYC: Provider Opened',
@@ -135,13 +119,6 @@ export const NotificationEvents = {
   COLD_START_NOTIFICATION_OPENED: 'Notification: Cold Start Notification Opened',
 };
 
-/**
- * Canonical onboarding funnel events. These are the ONLY events the Mixpanel
- * onboarding funnel consumes. They fire at most once per onboarding attempt,
- * guarded by the canonical funnel helper — never on component mount, never on
- * back-navigation. Every other `*Events` group in this file is the diagnostic
- * layer and is excluded from the funnel.
- */
 export const OnboardingEvents = {
   STARTED: 'Onboarding: Started',
   COUNTRY_SELECTED: 'Onboarding: Country Selected',
