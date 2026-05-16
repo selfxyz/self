@@ -98,14 +98,6 @@ Three Claude Code skills automate the review-to-implementation pipeline:
 
 Run them in sequence with review pauses between each step.
 
-### Why Specs
-
-- Prevents scope creep — writing "files NOT modified" forces focus
-- Survives session loss — specs live in the repo and Linear, not session memory
-- Enables parallel work — multiple agents can pick up specs from the same project
-- Creates audit trail — what was planned vs what was built (version-controlled in git)
-- Enables cross-tool review — Linear documents let non-GitHub users review specs
-
 ## Validation Commands
 
 ```bash
