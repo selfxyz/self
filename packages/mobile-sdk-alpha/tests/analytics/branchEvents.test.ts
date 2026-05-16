@@ -20,11 +20,11 @@ describe('branch event constants (ANA-12)', () => {
   });
 
   it('KycEvents covers the five spec milestones', () => {
-    expect(KycEvents.SESSION_REQUESTED).toBe('Kyc: Session Requested');
-    expect(KycEvents.SESSION_CREATED).toBe('Kyc: Session Created');
-    expect(KycEvents.PROVIDER_OPENED).toBe('Kyc: Provider Opened');
-    expect(KycEvents.PROVIDER_CLOSED).toBe('Kyc: Provider Closed');
-    expect(KycEvents.RETRY_TRIGGERED).toBe('Kyc: Retry Triggered');
+    expect(KycEvents.SESSION_REQUESTED).toBe('KYC: Session Requested');
+    expect(KycEvents.SESSION_CREATED).toBe('KYC: Session Created');
+    expect(KycEvents.PROVIDER_OPENED).toBe('KYC: Provider Opened');
+    expect(KycEvents.PROVIDER_CLOSED).toBe('KYC: Provider Closed');
+    expect(KycEvents.RETRY_TRIGGERED).toBe('KYC: Retry Triggered');
   });
 
   it('AadhaarEvents is curated to exactly seven milestone events', () => {

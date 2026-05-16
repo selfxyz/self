@@ -130,11 +130,11 @@ export const DocumentEvents = {
  * `trackBranchEvent`.
  */
 export const KycEvents = {
-  PROVIDER_CLOSED: 'Kyc: Provider Closed',
-  PROVIDER_OPENED: 'Kyc: Provider Opened',
-  RETRY_TRIGGERED: 'Kyc: Retry Triggered',
-  SESSION_CREATED: 'Kyc: Session Created',
-  SESSION_REQUESTED: 'Kyc: Session Requested',
+  PROVIDER_CLOSED: 'KYC: Provider Closed',
+  PROVIDER_OPENED: 'KYC: Provider Opened',
+  RETRY_TRIGGERED: 'KYC: Retry Triggered',
+  SESSION_CREATED: 'KYC: Session Created',
+  SESSION_REQUESTED: 'KYC: Session Requested',
 };
 
 export const IDDataEvents = {

@@ -333,9 +333,9 @@ describe('trackBranchEvent', () => {
     });
     setOnboardingBranch('kyc');
 
-    trackBranchEvent(client, 'Kyc: Session Requested', { provider: 'didit' });
+    trackBranchEvent(client, 'KYC: Session Requested', { provider: 'didit' });
 
-    const kycCall = client.trackEvent.mock.calls.find(([name]: string[]) => name === 'Kyc: Session Requested');
+    const kycCall = client.trackEvent.mock.calls.find(([name]: string[]) => name === 'KYC: Session Requested');
     expect(kycCall?.[1]).toMatchObject({
       initial_branch: 'biometric_passport',
       current_branch: 'kyc',

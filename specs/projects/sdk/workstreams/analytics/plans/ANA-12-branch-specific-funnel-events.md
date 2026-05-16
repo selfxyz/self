@@ -40,31 +40,31 @@ flowchart TD
     Branch -->|kyc| KYC[KYC drilldown]
     Branch -->|aadhaar| AAD[Aadhaar drilldown]
 
-    subgraph BiometricFunnel[BiometricEvents]
-        BIO --> B1[MRZ_STARTED<br/>camera mount]
-        B1 --> B2[MRZ_CAPTURED<br/>fires when MRZ parses; payload is duration only]
-        B2 --> B3[NFC_STARTED<br/>nfc_method: BAC or PACE]
-        B3 --> B4[NFC_SUCCEEDED<br/>chip read + duration]
-        B4 --> B5[DOCUMENT_PARSED<br/>country_code + signature_algorithm]
-        B5 -.->|unsupported branch| B6[DOCUMENT_UNSUPPORTED<br/>unsupported_reason]
+    subgraph BiometricFunnel[Biometric branch events]
+        BIO --> B1[Biometric: MRZ Started<br/>camera mount]
+        B1 --> B2[Biometric: MRZ Captured<br/>fires when MRZ parses; payload is duration only]
+        B2 --> B3[Biometric: NFC Started<br/>nfc_method: BAC or PACE]
+        B3 --> B4[Biometric: NFC Succeeded<br/>chip read + duration]
+        B4 --> B5[Biometric: Document Parsed<br/>country_code + signature_algorithm]
+        B5 -.->|unsupported branch| B6[Biometric: Document Unsupported<br/>unsupported_reason]
     end
 
-    subgraph KycFunnel[KycEvents]
-        KYC --> K1[SESSION_REQUESTED<br/>before createKycSession]
-        K1 --> K2[SESSION_CREATED<br/>provider + duration]
-        K2 --> K3[PROVIDER_OPENED<br/>before startKycVerification]
-        K3 --> K4[PROVIDER_CLOSED<br/>outcome: completed/cancelled/failed]
-        K4 -.->|on retry| K5[RETRY_TRIGGERED<br/>attempt_count]
+    subgraph KycFunnel[KYC branch events]
+        KYC --> K1[KYC: Session Requested<br/>before createKycSession]
+        K1 --> K2[KYC: Session Created<br/>provider + duration]
+        K2 --> K3[KYC: Provider Opened<br/>before startKycVerification]
+        K3 --> K4[KYC: Provider Closed<br/>outcome: completed/cancelled/failed]
+        K4 -.->|on retry| K5[KYC: Retry Triggered<br/>attempt_count]
     end
 
-    subgraph AadhaarFunnel[AadhaarEvents - curated 25 to 7]
-        AAD --> A1[UPLOAD_STARTED<br/>photo library tap]
-        A1 -.->|denied| A1F[PHOTO_PERMISSION_DENIED]
-        A1 --> A2[QR_SELECTED]
-        A2 -.->|fail| A2F[QR_PARSE_FAILED<br/>reason]
-        A2 -.->|expired| A2T[TIMESTAMP_EXPIRED<br/>qr_age_days]
-        A2 --> A3[DATA_STORED<br/>duration]
-        A3 --> A4[CONTINUE_PRESSED]
+    subgraph AadhaarFunnel[Aadhaar branch events - curated 25 to 7]
+        AAD --> A1[Aadhaar: Upload Started<br/>photo library tap]
+        A1 -.->|denied| A1F[Aadhaar: Photo Permission Denied]
+        A1 --> A2[Aadhaar: QR Selected]
+        A2 -.->|fail| A2F[Aadhaar: QR Parse Failed<br/>reason]
+        A2 -.->|expired| A2T[Aadhaar: Timestamp Expired<br/>qr_age_days]
+        A2 --> A3[Aadhaar: Data Stored<br/>duration]
+        A3 --> A4[Aadhaar: Continue Pressed]
     end
 
     B5 --> ScanOk
@@ -113,11 +113,14 @@ Every branch event is stamped with `attempt_id` / `initial_branch` / `current_br
 
 ## Naming convention
 
+Follows [Mixpanel's recommended convention](https://mixpanel.com/blog/community-tip-naming-conventions-to-stay-organized/): Title Case event names with past-tense verbs, snake_case properties, Object-Action structure, namespace prefix for lexicon clustering.
+
 | Pattern | Example | Notes |
 | --- | --- | --- |
-| Constant group | `BiometricEvents`, `KycEvents`, `AadhaarEvents` | Mirror the canonical `OnboardingEvents` group format |
-| Event name | `'Biometric: MRZ Captured'` | `<Flow>: <Noun> <PastVerb>` — one noun, one verb. Use the domain verb when it's natural (`Captured`, `Parsed`, `Stored`, `Created`); fall back to `Started` / `Succeeded` / `Failed` / `Cancelled` when no clean domain verb exists. **Never double up**: `MRZ Started` not `MRZ Capture Started`; `MRZ Restarted` not `MRZ Capture Restarted`. The noun already implies the action. |
-| Mandatory properties | `attempt_id`, `initial_branch`, `current_branch` | Same triple as canonical events. Stamp via a small shared helper, not hand-written per call site |
+| Constant group | `BiometricEvents`, `KycEvents`, `AadhaarEvents` | Mirror the canonical `OnboardingEvents` group format. TS identifier, not the wire string — Title Case is fine even for acronyms in the constant name. |
+| Event name (wire string) | `'Biometric: MRZ Captured'` | `<Namespace>: <Noun> <PastVerb>` — Title Case, past tense, one noun, one verb. Use the domain verb when it's natural (`Captured`, `Parsed`, `Stored`, `Created`); fall back to `Started` / `Succeeded` / `Failed` / `Cancelled` when no clean domain verb exists. **Never double up**: `MRZ Started` not `MRZ Capture Started`; `MRZ Restarted` not `MRZ Capture Restarted`. The noun already implies the action. |
+| Acronyms in event names | `'KYC: Session Requested'`, `'API Called'` | Acronyms are ALL CAPS in the wire string, not Title Case. `'KYC: ...'` not `'Kyc: ...'`. Applies to the namespace prefix and to any acronym inside the event body. |
+| Mandatory properties | `attempt_id`, `initial_branch`, `current_branch` | snake_case (Mixpanel property convention). Same triple as canonical events. Stamp via a small shared helper, not hand-written per call site. |
 
 ### Event helper
 
@@ -156,11 +159,11 @@ The signature-algorithm and country properties on `DOCUMENT_PARSED` and `DOCUMEN
 
 | Constant | Event name | Fire site | Additional properties |
 | --- | --- | --- | --- |
-| `KycEvents.SESSION_REQUESTED` | `Kyc: Session Requested` | `app/src/hooks/useKycLauncher.ts` immediately before `createKycSession` | `provider` (provider id string) |
-| `KycEvents.SESSION_CREATED` | `Kyc: Session Created` | Same hook, after `createKycSession` resolves | `provider`, `duration_seconds` |
-| `KycEvents.PROVIDER_OPENED` | `Kyc: Provider Opened` | Immediately before `startKycVerification` | `provider` |
-| `KycEvents.PROVIDER_CLOSED` | `Kyc: Provider Closed` | Same hook, single event for all three provider terminal `type`s | `provider`, `outcome` (`'completed' \| 'cancelled' \| 'failed'`), `error_code` (when `outcome === 'failed'`), `duration_seconds` |
-| `KycEvents.RETRY_TRIGGERED` | `Kyc: Retry Triggered` | `KycFailureScreen.tsx` retry button | `provider`, `attempt_count` (sourced from `incrementAttemptRetryCount('kyc')` — counter lives on the funnel attempt, NOT a `useRef` on the screen, since the screen unmounts on navigation) |
+| `KycEvents.SESSION_REQUESTED` | `KYC: Session Requested` | `app/src/hooks/useKycLauncher.ts` immediately before `createKycSession` | `provider` (provider id string) |
+| `KycEvents.SESSION_CREATED` | `KYC: Session Created` | Same hook, after `createKycSession` resolves | `provider`, `duration_seconds` |
+| `KycEvents.PROVIDER_OPENED` | `KYC: Provider Opened` | Immediately before `startKycVerification` | `provider` |
+| `KycEvents.PROVIDER_CLOSED` | `KYC: Provider Closed` | Same hook, single event for all three provider terminal `type`s | `provider`, `outcome` (`'completed' \| 'cancelled' \| 'failed'`), `error_code` (when `outcome === 'failed'`), `duration_seconds` |
+| `KycEvents.RETRY_TRIGGERED` | `KYC: Retry Triggered` | `KycFailureScreen.tsx` retry button | `provider`, `attempt_count` (sourced from `incrementAttemptRetryCount('kyc')` — counter lives on the funnel attempt, NOT a `useRef` on the screen, since the screen unmounts on navigation) |
 
 `provider` is stamped from day one with the configured KYC provider id so we can A/B different providers later without renaming events.
 
