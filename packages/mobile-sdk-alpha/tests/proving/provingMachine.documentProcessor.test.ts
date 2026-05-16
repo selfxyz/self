@@ -26,6 +26,8 @@ import { actorMock } from './actorMock';
 
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 
+const asNonMock = <T extends { mock?: boolean }>(doc: T): T => ({ ...doc, mock: false });
+
 vi.mock('xstate', async () => {
   const actual = await vi.importActual<typeof import('xstate')>('xstate');
   return {
@@ -73,7 +75,7 @@ const buildPassportFixture = (): PassportData =>
     encryptedDigest: [11, 12, 13, 14, 15],
     documentType: 'passport',
     documentCategory: 'passport',
-    mock: true,
+    mock: false,
     passportMetadata: {
       dataGroups: '1,2,3',
       dg1Size: 88,
@@ -232,7 +234,7 @@ describe('parseIDDocument', () => {
   });
 
   it('parses passport data successfully and updates state with parsed result', async () => {
-    const passportData = genMockIdDoc({ idType: 'mock_passport' }) as PassportData;
+    const passportData = asNonMock(genMockIdDoc({ idType: 'mock_passport' })) as PassportData;
     const protocolState = buildProtocolState({
       commitmentTree: null,
       dscTree: null,
@@ -257,7 +259,7 @@ describe('parseIDDocument', () => {
     await useProvingStore.getState().parseIDDocument(selfClient);
 
     const state = useProvingStore.getState();
-    expect(getSKIPEMSpy).toHaveBeenCalledWith('staging');
+    expect(getSKIPEMSpy).toHaveBeenCalledWith('production');
     expect(storePassportDataMock).toHaveBeenCalledWith(selfClient, state.passportData);
     if (state.passportData && isMRZDocument(state.passportData)) {
       expect(state.passportData.passportMetadata).toBeDefined();
@@ -288,7 +290,7 @@ describe('parseIDDocument', () => {
     });
     const selfClient = createSelfClient(protocolState);
 
-    loadSelectedDocumentMock.mockResolvedValue({ data: genMockIdDoc({ idType: 'mock_passport' }) } as any);
+    loadSelectedDocumentMock.mockResolvedValue({ data: asNonMock(genMockIdDoc({ idType: 'mock_passport' })) } as any);
 
     vi.spyOn(commonUtils, 'getSKIPEM').mockResolvedValue({});
 
@@ -308,7 +310,7 @@ describe('parseIDDocument', () => {
 
   it('surfaces parsing failures when the DSC cannot be parsed', async () => {
     const passportData = {
-      ...(genMockIdDoc({ idType: 'mock_passport' }) as PassportData),
+      ...(asNonMock(genMockIdDoc({ idType: 'mock_passport' })) as PassportData),
       dsc: 'invalid-certificate',
     } as PassportData;
     const protocolState = buildProtocolState({
@@ -344,7 +346,7 @@ describe('parseIDDocument', () => {
   });
 
   it('continues when DSC metadata cannot be read and logs empty dsc payload', async () => {
-    const passportData = genMockIdDoc({ idType: 'mock_passport' }) as PassportData;
+    const passportData = asNonMock(genMockIdDoc({ idType: 'mock_passport' })) as PassportData;
     let metadataProxy: PassportData['passportMetadata'];
     Object.defineProperty(passportData, 'passportMetadata', {
       get() {
@@ -399,7 +401,7 @@ describe('parseIDDocument', () => {
   });
 
   it('emits PARSE_ERROR when storing parsed passport data fails', async () => {
-    const passportData = genMockIdDoc({ idType: 'mock_passport' }) as PassportData;
+    const passportData = asNonMock(genMockIdDoc({ idType: 'mock_passport' })) as PassportData;
     const protocolState = buildProtocolState({
       commitmentTree: null,
       dscTree: null,
@@ -442,7 +444,7 @@ describe('startFetchingData', () => {
 
   it('fetches trees and circuits for passport documents', async () => {
     const passportData = {
-      ...(genMockIdDoc({ idType: 'mock_passport' }) as PassportData),
+      ...(asNonMock(genMockIdDoc({ idType: 'mock_passport' })) as PassportData),
       dsc_parsed: { authorityKeyIdentifier: 'KEY123' } as any,
       documentCategory: 'passport',
     } as PassportData;
@@ -476,7 +478,7 @@ describe('startFetchingData', () => {
 
   it('fetches trees and circuits for id cards', async () => {
     const idCardData = {
-      ...(genMockIdDoc({ idType: 'mock_id_card' }) as PassportData),
+      ...(asNonMock(genMockIdDoc({ idType: 'mock_id_card' })) as PassportData),
       dsc_parsed: { authorityKeyIdentifier: 'IDKEY' } as any,
       documentCategory: 'id_card',
     } as PassportData;
@@ -508,7 +510,7 @@ describe('startFetchingData', () => {
   });
 
   it('fetches aadhaar protocol data via aadhaar fetcher', async () => {
-    const aadhaarData = genMockIdDoc({ idType: 'mock_aadhaar' }) as AadhaarData;
+    const aadhaarData = asNonMock(genMockIdDoc({ idType: 'mock_aadhaar' })) as AadhaarData;
     const protocolState = buildProtocolState({
       commitmentTree: null,
       dscTree: null,
@@ -551,7 +553,7 @@ describe('startFetchingData', () => {
     });
     const selfClient = createSelfClient(protocolState);
 
-    loadSelectedDocumentMock.mockResolvedValue({ data: genMockIdDoc({ idType: 'mock_passport' }) } as any);
+    loadSelectedDocumentMock.mockResolvedValue({ data: asNonMock(genMockIdDoc({ idType: 'mock_passport' })) } as any);
 
     await useProvingStore.getState().init(selfClient, 'register');
     actorMock.send.mockClear();
@@ -569,7 +571,7 @@ describe('startFetchingData', () => {
 
   it('emits FETCH_ERROR when DSC data is missing for passports', async () => {
     const passportData = {
-      ...(genMockIdDoc({ idType: 'mock_passport' }) as PassportData),
+      ...(asNonMock(genMockIdDoc({ idType: 'mock_passport' })) as PassportData),
       dsc_parsed: undefined,
       documentCategory: 'passport',
     } as PassportData;
@@ -604,7 +606,7 @@ describe('startFetchingData', () => {
 
   it('emits FETCH_ERROR when protocol fetch fails', async () => {
     const passportData = {
-      ...(genMockIdDoc({ idType: 'mock_passport' }) as PassportData),
+      ...(asNonMock(genMockIdDoc({ idType: 'mock_passport' })) as PassportData),
       dsc_parsed: { authorityKeyIdentifier: 'KEY123' } as any,
       documentCategory: 'passport',
     } as PassportData;
@@ -756,7 +758,7 @@ describe('validatingDocument', () => {
   });
 
   it('restores data when aadhaar is already registered with alternative keys', async () => {
-    const aadhaarData = genMockIdDoc({ idType: 'mock_aadhaar' }) as AadhaarData;
+    const aadhaarData = asNonMock(genMockIdDoc({ idType: 'mock_aadhaar' })) as AadhaarData;
     const secret = '123456789';
     const { commitment_list: commitmentList } = generateCommitmentInAppAadhaar(
       secret,

@@ -1,6 +1,6 @@
 # Onboarding Analytics & Funnel — Implementation Spec
 
-> Last updated: 2026-05-06
+> Last updated: 2026-05-07
 > Owner: Self Wallet / Product Analytics
 > Project: [SDK Overview](../../OVERVIEW.md)
 > Status: Active
@@ -48,6 +48,7 @@ Four observability layers, three in Mixpanel, one in Sentry:
 - `Onboarding: Started` fires exactly once per attempt, emitted by the funnel helper's `ensureAttempt` bootstrap when the first canonical step event arrives. Screens never call it directly.
 - Terminal `Onboarding: Completed` fires only when the proving machine reaches `completed` via a true new-registration proof (`circuitType === 'register' && didNewRegistrationProof`). The `ALREADY_REGISTERED` shortcut and disclosure flows fire **no** `Onboarding: *` event.
 - New Mixpanel events require a documented consumer (dashboard, alert, or product question) in the PR description. After ANA-13 phase 3, the cap is enforced at the type system.
+- Mock-passport attempts (`passportData.mock === true`) emit no Mixpanel events from the proving machine or funnel helper (ANA-14). The dev-only `MockDataEvents.*` namespace is the sole telemetry surface for mock flows. The proving machine marks the active attempt as mock immediately after `loadSelectedDocument` and routes all `selfClient.trackEvent` calls through a mock-aware helper.
 
 ## Canonical Event Set
 
@@ -115,16 +116,17 @@ The branch split tells you _what happened_ (initial intent vs final outcome) but
 
 ## Backlog
 
-| ID     | Title                                                                       | Status    | Priority | Depends on             | Plan                                                            |
-| ------ | --------------------------------------------------------------------------- | --------- | -------- | ---------------------- | --------------------------------------------------------------- |
-| ANA-01 | Canonical onboarding funnel events + dead-zone fixes                        | **Done**  | —        | —                      | [plan](./plans/ANA-01-canonical-onboarding-funnel.md)           |
-| ANA-11 | Canonical funnel bug fixes (post-ANA-01 production findings)                | In Review | High     | ANA-01                 | [plan](./plans/ANA-11-canonical-funnel-bug-fixes.md) — PR #2048 |
-| ANA-12 | Branch-specific funnel events (Biometric / KYC / Aadhaar)                   | Ready     | High     | ANA-01, ANA-11         | [plan](./plans/ANA-12-branch-specific-funnel-events.md)         |
-| ANA-13 | Observability migration — Mixpanel diet, Sentry breadcrumbs, Session Replay | Ready     | High     | ANA-01, ANA-11, ANA-12 | [plan](./plans/ANA-13-observability-migration.md)               |
-| ANA-05 | Fallback decision events and fallback-offer mini-funnel                     | Ready     | Medium   | ANA-01, ANA-12         | —                                                               |
-| ANA-08 | Explicit abandonment events on app background                               | Ready     | Low      | ANA-01                 | —                                                               |
-| ANA-02 | Investigation: internal/TestFlight traffic filtering                        | Ready     | Medium   | —                      | —                                                               |
-| ANA-04 | Investigation: native NFC analytics channel                                 | Ready     | Low      | ANA-13                 | —                                                               |
+| ID     | Title                                                                       | Status      | Priority | Depends on             | Plan                                                            |
+| ------ | --------------------------------------------------------------------------- | ----------- | -------- | ---------------------- | --------------------------------------------------------------- |
+| ANA-01 | Canonical onboarding funnel events + dead-zone fixes                        | **Done**    | —        | —                      | [plan](./plans/ANA-01-canonical-onboarding-funnel.md)           |
+| ANA-11 | Canonical funnel bug fixes (post-ANA-01 production findings)                | In Review   | High     | ANA-01                 | [plan](./plans/ANA-11-canonical-funnel-bug-fixes.md) — PR #2048 |
+| ANA-12 | Branch-specific funnel events (Biometric / KYC / Aadhaar)                   | Ready       | High     | ANA-01, ANA-11         | [plan](./plans/ANA-12-branch-specific-funnel-events.md)         |
+| ANA-13 | Observability migration — Mixpanel diet, Sentry breadcrumbs, Session Replay | Ready       | High     | ANA-01, ANA-11, ANA-12 | [plan](./plans/ANA-13-observability-migration.md)               |
+| ANA-14 | Suppress all analytics events from mock passport flow                       | In Progress | High     | ANA-01                 | [plan](./plans/ANA-14-suppress-mock-analytics.md)               |
+| ANA-05 | Fallback decision events and fallback-offer mini-funnel                     | Ready       | Medium   | ANA-01, ANA-12         | —                                                               |
+| ANA-08 | Explicit abandonment events on app background                               | Ready       | Low      | ANA-01                 | —                                                               |
+| ANA-02 | Investigation: internal/TestFlight traffic filtering                        | Ready       | Medium   | —                      | —                                                               |
+| ANA-04 | Investigation: native NFC analytics channel                                 | Ready       | Low      | ANA-13                 | —                                                               |
 
 Allowed statuses: `Ready`, `In Progress`, `In Review`, `Blocked`, `Done`.
 
