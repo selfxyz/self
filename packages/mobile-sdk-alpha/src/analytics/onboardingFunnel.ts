@@ -94,12 +94,12 @@ export function completeOnboardingAttempt(
   }
 
   selfClient.trackEvent(OnboardingEvents.COMPLETED, {
+    ...properties,
     ...baseProperties(currentAttempt),
     duration_seconds: durationSeconds(currentAttempt.startedAt),
     country_code: currentAttempt.countryCode,
     document_type: currentAttempt.documentType,
     used_fallback: currentAttempt.initialBranch !== currentAttempt.currentBranch,
-    ...properties,
   });
 
   currentAttempt = null;
@@ -118,12 +118,12 @@ export function failOnboardingAttempt(
   if (attempt.isMock) return;
 
   selfClient.trackEvent(OnboardingEvents.FAILED, {
+    ...properties,
     ...baseProperties(attempt),
     stage,
     reason,
     duration_seconds: durationSeconds(attempt.startedAt),
     used_fallback: attempt.initialBranch !== attempt.currentBranch,
-    ...properties,
   });
 }
 
@@ -173,8 +173,8 @@ export function trackBranchEvent(
 ): void {
   if (!currentAttempt) return;
   selfClient.trackEvent(event, {
-    ...baseProperties(currentAttempt),
     ...properties,
+    ...baseProperties(currentAttempt),
   });
 }
 
@@ -194,11 +194,11 @@ export function trackOnboardingRetry(
   attempt.retryCounts[stage] = (attempt.retryCounts[stage] ?? 0) + 1;
   if (attempt.isMock) return;
   selfClient.trackEvent(OnboardingEvents.STEP_RETRIED, {
+    ...properties,
     ...baseProperties(attempt),
     stage,
     reason,
     attempt_count: attempt.retryCounts[stage],
-    ...properties,
   });
 }
 
@@ -227,7 +227,7 @@ export function trackOnboardingStep(
   const { branch: _discardedBranch, ...stampableProperties } = properties ?? {};
 
   selfClient.trackEvent(event, {
-    ...baseProperties(attempt),
     ...stampableProperties,
+    ...baseProperties(attempt),
   });
 }
