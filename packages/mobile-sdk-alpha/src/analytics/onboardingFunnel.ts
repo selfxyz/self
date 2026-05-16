@@ -268,6 +268,12 @@ export function trackBranchEvent(
  * per-stage retry counter so later `trackOnboardingStep` calls on the
  * success path can include `attempt_count`.
  */
+export function incrementAttemptRetryCount(key: string): number {
+  if (!currentAttempt) return 0;
+  currentAttempt.retryCounts[key] = (currentAttempt.retryCounts[key] ?? 0) + 1;
+  return currentAttempt.retryCounts[key];
+}
+
 export function trackOnboardingRetry(
   selfClient: Pick<SelfClient, 'trackEvent'>,
   stage: OnboardingStage,

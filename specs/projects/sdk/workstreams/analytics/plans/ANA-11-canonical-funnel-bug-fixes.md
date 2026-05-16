@@ -73,35 +73,35 @@ The 1867 / 1867 result above (every `STARTED` event has `initial_branch=pending`
 flowchart TD
     A[App launch / dismiss disclaimer]
     A --> B[CountryPickerScreen]
-    B -->|COUNTRY_SELECTED| C[IDSelectionScreen]
-    C -->|"DOCUMENT_TYPE_SELECTED<br/>locks initial_branch"| D{Document type}
+    B -->|"Onboarding: Country Selected"| C[IDSelectionScreen]
+    C -->|"Onboarding: Document Type Selected<br/>locks initial_branch"| D{Document type}
 
     D -->|passport / id_card| E[LogoConfirmationScreen]
     D -->|"non-biometric<br/>(pure-KYC)"| K1["useKycLauncher<br/>→ KYC provider modal"]
     D -->|aadhaar| AA[AadhaarUploadScreen]
 
     E -->|"Yes"| F[DocumentCameraScreen]
-    E -->|"No, fires SCAN_STARTED branch=kyc"| K2["useKycLauncher<br/>→ KYC provider modal"]
+    E -->|"No, fires Onboarding: Document Scan Started branch=kyc"| K2["useKycLauncher<br/>→ KYC provider modal"]
 
-    F -->|"SCAN_STARTED branch=biometric_*"| G[NFC method + scan]
-    G -->|"SCAN_SUCCEEDED branch=biometric_*"| H[DataConfirmationScreen]
+    F -->|"Onboarding: Document Scan Started branch=biometric_*"| G[NFC method + scan]
+    G -->|"Onboarding: Document Scan Succeeded branch=biometric_*"| H[DataConfirmationScreen]
 
-    K1 -.->|"Bug A: NO SCAN_STARTED fires"| KR[KYC result handler]
+    K1 -.->|"Bug A: NO Onboarding: Document Scan Started fires"| KR[KYC result handler]
     K2 --> KR
-    KR -->|"SCAN_SUCCEEDED branch=kyc"| KV[KYCVerifiedScreen]
+    KR -->|"Onboarding: Document Scan Succeeded branch=kyc"| KV[KYCVerifiedScreen]
 
-    AA -->|"SCAN_STARTED branch=aadhaar"| AP[QR processing]
-    AP -->|"SCAN_SUCCEEDED branch=aadhaar"| AS[AadhaarUploadedSuccessScreen]
+    AA -->|"Onboarding: Document Scan Started branch=aadhaar"| AP[QR processing]
+    AP -->|"Onboarding: Document Scan Succeeded branch=aadhaar"| AS[AadhaarUploadedSuccessScreen]
 
     H --> P["provingMachine.ts:488<br/>state = 'proving'"]
     KV --> P
     AS --> P
     DX([Existing user opens disclosure]) -.-> P
 
-    P -->|"Bug B: trackOnboardingStep(PROOF_STARTED)<br/>fires unconditionally for register AND disclose<br/>bootstraps fake attempt → emits STARTED too"| T{Terminal}
-    T -->|"register: PROOF_SUCCEEDED, COMPLETED<br/>(correctly gated by didNewRegistrationProof)"| Z[Done]
-    T -->|"disclose: DISCLOSURE_COMPLETED leaks here<br/>(misnamed Onboarding: * event)"| Z
-    T -->|"failure: FAILED"| Z
+    P -->|"Bug B: Onboarding: Proof Generation Started fires unconditionally<br/>for register AND disclose; bootstraps fake attempt → emits<br/>Onboarding: Started too"| T{Terminal}
+    T -->|"register: Onboarding: Proof Generation Succeeded, Onboarding: Completed<br/>(correctly gated by didNewRegistrationProof)"| Z[Done]
+    T -->|"disclose: Onboarding: Completed leaks here<br/>(misnamed in disclose path)"| Z
+    T -->|"failure: Onboarding: Failed"| Z
 
     A:::start
     K1:::bug
@@ -117,8 +117,8 @@ flowchart TD
 flowchart TD
     A[App launch / dismiss disclaimer]
     A --> B[CountryPickerScreen]
-    B -->|COUNTRY_SELECTED| C[IDSelectionScreen]
-    C -->|"DOCUMENT_TYPE_SELECTED<br/>locks initial_branch"| D{Document type}
+    B -->|"Onboarding: Country Selected"| C[IDSelectionScreen]
+    C -->|"Onboarding: Document Type Selected<br/>locks initial_branch"| D{Document type}
 
     D -->|passport / id_card| E[LogoConfirmationScreen]
     D -->|non-biometric| KH[useKycLauncher]
@@ -127,25 +127,25 @@ flowchart TD
     E -->|Yes| F[DocumentCameraScreen]
     E -->|"No → setOnboardingBranch('kyc')"| KH
 
-    F -->|"SCAN_STARTED branch=biometric_*"| G[NFC method + scan]
-    G -->|"SCAN_SUCCEEDED branch=biometric_*"| H[DataConfirmationScreen]
+    F -->|"Onboarding: Document Scan Started branch=biometric_*"| G[NFC method + scan]
+    G -->|"Onboarding: Document Scan Succeeded branch=biometric_*"| H[DataConfirmationScreen]
 
-    KH -->|"Fix A: SCAN_STARTED branch=kyc<br/>(single firing point covers both pure-KYC<br/>and biometric→KYC fallback)"| KM[KYC provider modal]
+    KH -->|"Fix A: Onboarding: Document Scan Started branch=kyc<br/>(single firing point covers both pure-KYC<br/>and biometric→KYC fallback)"| KM[KYC provider modal]
     KM --> KR[KYC result handler]
-    KR -->|"SCAN_SUCCEEDED branch=kyc"| KV[KYCVerifiedScreen]
+    KR -->|"Onboarding: Document Scan Succeeded branch=kyc"| KV[KYCVerifiedScreen]
 
-    AA -->|"SCAN_STARTED branch=aadhaar"| AP[QR processing]
-    AP -->|"SCAN_SUCCEEDED branch=aadhaar"| AS[AadhaarUploadedSuccessScreen]
+    AA -->|"Onboarding: Document Scan Started branch=aadhaar"| AP[QR processing]
+    AP -->|"Onboarding: Document Scan Succeeded branch=aadhaar"| AS[AadhaarUploadedSuccessScreen]
 
     H --> P["provingMachine.ts<br/>state = 'proving'"]
     KV --> P
     AS --> P
     DX([Existing user opens disclosure]) -.-> P
 
-    P -->|"Fix B: emit PROOF_STARTED only when<br/>circuitType === 'register'<br/>(skips DSC sub-step and disclose)"| T{Terminal}
-    T -->|"register: PROOF_STARTED, PROOF_SUCCEEDED, COMPLETED"| Z[Done]
+    P -->|"Fix B: emit Onboarding: Proof Generation Started only when<br/>circuitType === 'register'<br/>(skips DSC sub-step and disclose)"| T{Terminal}
+    T -->|"register: Onboarding: Proof Generation Started → Succeeded → Completed"| Z[Done]
     T -.->|"disclose: no canonical event<br/>(diagnostic only)"| Z
-    T -->|"register/dsc fail: FAILED with proof_type"| Z
+    T -->|"register/dsc fail: Onboarding: Failed with proof_type"| Z
 
     KH:::fixed
     P:::fixed

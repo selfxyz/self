@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { YStack } from 'tamagui';
@@ -10,7 +10,11 @@ import type { RouteProp } from '@react-navigation/native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { trackBranchEvent, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import {
+  incrementAttemptRetryCount,
+  trackBranchEvent,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
 import {
   AbstractButton,
   Description,
@@ -41,7 +45,6 @@ const KycFailureScreen: React.FC = () => {
   const route = useRoute<KycFailureRoute>();
   const insets = useSafeAreaInsets();
   const selfClient = useSelfClient();
-  const retryCountRef = useRef(0);
 
   const canRetry = route.params?.canRetry ?? true;
 
@@ -52,10 +55,10 @@ const KycFailureScreen: React.FC = () => {
 
   const handleTryAgain = useCallback(() => {
     buttonTap();
-    retryCountRef.current += 1;
+    const attemptCount = incrementAttemptRetryCount('kyc');
     trackBranchEvent(selfClient, KycEvents.RETRY_TRIGGERED, {
       provider: 'didit',
-      attempt_count: retryCountRef.current,
+      attempt_count: attemptCount,
     });
     navigation.navigate('CountryPicker');
   }, [navigation, selfClient]);

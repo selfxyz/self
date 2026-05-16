@@ -9,6 +9,7 @@ import {
   _resetOnboardingFunnelForTests,
   completeOnboardingAttempt,
   failOnboardingAttempt,
+  incrementAttemptRetryCount,
   resolveOnboardingBranch,
   setOnboardingBranch,
   trackBranchEvent,
@@ -195,6 +196,32 @@ describe('trackOnboardingRetry', () => {
   });
 });
 
+describe('incrementAttemptRetryCount', () => {
+  it('returns increasing counts across calls within the same attempt', () => {
+    const client = makeClient();
+    trackOnboardingStep(client, OnboardingEvents.DOCUMENT_TYPE_SELECTED, {
+      branch: 'biometric_passport',
+    });
+
+    expect(incrementAttemptRetryCount('kyc')).toBe(1);
+    expect(incrementAttemptRetryCount('kyc')).toBe(2);
+    expect(incrementAttemptRetryCount('kyc')).toBe(3);
+  });
+
+  it('tracks counters per key independently', () => {
+    const client = makeClient();
+    trackOnboardingStep(client, OnboardingEvents.COUNTRY_SELECTED, { country_code: 'FR' });
+
+    expect(incrementAttemptRetryCount('kyc')).toBe(1);
+    expect(incrementAttemptRetryCount('biometric')).toBe(1);
+    expect(incrementAttemptRetryCount('kyc')).toBe(2);
+  });
+
+  it('returns 0 when no attempt is active', () => {
+    expect(incrementAttemptRetryCount('kyc')).toBe(0);
+  });
+});
+
 describe('completeOnboardingAttempt', () => {
   it('fires COMPLETED with duration_seconds, used_fallback=false, and clears the attempt', () => {
     const client = makeClient();
@@ -289,12 +316,12 @@ describe('trackBranchEvent', () => {
     trackOnboardingStep(client, OnboardingEvents.DOCUMENT_TYPE_SELECTED, {
       branch: 'biometric_passport',
     });
-    trackBranchEvent(client, BiometricEvents.MRZ_CAPTURE_STARTED, { document_type: 'passport' });
-    trackBranchEvent(client, BiometricEvents.MRZ_CAPTURE_STARTED, { document_type: 'passport' });
-    trackBranchEvent(client, BiometricEvents.MRZ_CAPTURE_STARTED, { document_type: 'passport' });
+    trackBranchEvent(client, BiometricEvents.MRZ_STARTED, { document_type: 'passport' });
+    trackBranchEvent(client, BiometricEvents.MRZ_STARTED, { document_type: 'passport' });
+    trackBranchEvent(client, BiometricEvents.MRZ_STARTED, { document_type: 'passport' });
 
     const captureCalls = client.trackEvent.mock.calls.filter(
-      ([name]: string[]) => name === BiometricEvents.MRZ_CAPTURE_STARTED,
+      ([name]: string[]) => name === BiometricEvents.MRZ_STARTED,
     );
     expect(captureCalls).toHaveLength(3);
   });
@@ -306,9 +333,9 @@ describe('trackBranchEvent', () => {
     });
     setOnboardingBranch('kyc');
 
-    trackBranchEvent(client, 'Kyc: Session Requested', { provider: 'didit' });
+    trackBranchEvent(client, 'KYC: Session Requested', { provider: 'didit' });
 
-    const kycCall = client.trackEvent.mock.calls.find(([name]: string[]) => name === 'Kyc: Session Requested');
+    const kycCall = client.trackEvent.mock.calls.find(([name]: string[]) => name === 'KYC: Session Requested');
     expect(kycCall?.[1]).toMatchObject({
       initial_branch: 'biometric_passport',
       current_branch: 'kyc',

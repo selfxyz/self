@@ -72,7 +72,7 @@ const DocumentCameraScreen: React.FC = () => {
     trackOnboardingStep(selfClient, OnboardingEvents.SCAN_STARTED, { branch });
     // Branch funnel — biometric drilldown begins at camera mount. Re-mounts
     // from back-nav legitimately re-fire (trackBranchEvent doesn't dedupe).
-    trackBranchEvent(selfClient, BiometricEvents.MRZ_CAPTURE_STARTED, {
+    trackBranchEvent(selfClient, BiometricEvents.MRZ_STARTED, {
       document_type: branch === 'biometric_id' ? 'id_card' : 'passport',
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps

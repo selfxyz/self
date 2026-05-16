@@ -78,7 +78,7 @@ export const BiometricEvents = {
   DOCUMENT_PARSED: 'Biometric: Document Parsed',
   DOCUMENT_UNSUPPORTED: 'Biometric: Document Unsupported',
   MRZ_CAPTURED: 'Biometric: MRZ Captured',
-  MRZ_CAPTURE_STARTED: 'Biometric: MRZ Capture Started',
+  MRZ_STARTED: 'Biometric: MRZ Started',
   NFC_STARTED: 'Biometric: NFC Started',
   NFC_SUCCEEDED: 'Biometric: NFC Succeeded',
 
@@ -105,23 +105,23 @@ export const DocumentEvents = {
   VALIDATE_DOCUMENT_FAILED: 'Document: Validate Document Failed',
 };
 
-export const IDDataEvents = {
-  PERKS_VIEWED: 'ID Data: Perks Viewed',
-  PERK_TAPPED: 'ID Data: Perk Tapped',
-  PERK_OUTLINK_OPEN_FAILED: 'ID Data: Perk Outlink Open Failed',
-};
-
 /**
  * KYC branch milestone events. Provider-tagged from day one (`provider: 'didit'`)
  * so adding Veriff/Sumsub later doesn't require renaming events. Emit via
  * `trackBranchEvent`.
  */
 export const KycEvents = {
-  PROVIDER_CLOSED: 'Kyc: Provider Closed',
-  PROVIDER_OPENED: 'Kyc: Provider Opened',
-  RETRY_TRIGGERED: 'Kyc: Retry Triggered',
-  SESSION_CREATED: 'Kyc: Session Created',
-  SESSION_REQUESTED: 'Kyc: Session Requested',
+  PROVIDER_CLOSED: 'KYC: Provider Closed',
+  PROVIDER_OPENED: 'KYC: Provider Opened',
+  RETRY_TRIGGERED: 'KYC: Retry Triggered',
+  SESSION_CREATED: 'KYC: Session Created',
+  SESSION_REQUESTED: 'KYC: Session Requested',
+};
+
+export const IDDataEvents = {
+  PERKS_VIEWED: 'ID Data: Perks Viewed',
+  PERK_TAPPED: 'ID Data: Perk Tapped',
+  PERK_OUTLINK_OPEN_FAILED: 'ID Data: Perk Outlink Open Failed',
 };
 
 export const MockDataEvents = {
