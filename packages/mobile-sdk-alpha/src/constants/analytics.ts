@@ -105,6 +105,12 @@ export const DocumentEvents = {
   VALIDATE_DOCUMENT_FAILED: 'Document: Validate Document Failed',
 };
 
+export const IDDataEvents = {
+  PERKS_VIEWED: 'ID Data: Perks Viewed',
+  PERK_TAPPED: 'ID Data: Perk Tapped',
+  PERK_OUTLINK_OPEN_FAILED: 'ID Data: Perk Outlink Open Failed',
+};
+
 /**
  * KYC branch milestone events. Provider-tagged from day one (`provider: 'didit'`)
  * so adding Veriff/Sumsub later doesn't require renaming events. Emit via
@@ -116,6 +122,23 @@ export const KycEvents = {
   RETRY_TRIGGERED: 'Kyc: Retry Triggered',
   SESSION_CREATED: 'Kyc: Session Created',
   SESSION_REQUESTED: 'Kyc: Session Requested',
+};
+
+export const MockDataEvents = {
+  CANCEL_GENERATION: 'Mock Data: Cancel Generation',
+  CREATE_DEEP_LINK: 'Mock Data: Create Deep Link',
+  DECREASE_AGE: 'Mock Data: Decrease Age',
+  DECREASE_EXPIRY_YEARS: 'Mock Data: Decrease Expiry Years',
+  ENABLE_ADVANCED_MODE: 'Mock Data: Enable Advanced Mode',
+  GENERATE_DATA: 'Mock Data: Generate Data',
+  INCREASE_AGE: 'Mock Data: Increase Age',
+  INCREASE_EXPIRY_YEARS: 'Mock Data: Increase Expiry Years',
+  OPEN_ALGORITHM_SELECTION: 'Mock Data: Open Algorithm Selection',
+  OPEN_COUNTRY_SELECTION: 'Mock Data: Open Country Selection',
+  SELECT_ALGORITHM: 'Mock Data: Select Algorithm',
+  SELECT_COUNTRY: 'Mock Data: Select Country',
+  SELECT_DOCUMENT_TYPE: 'Mock Data: Select Document Type',
+  TOGGLE_OFAC_LIST: 'Mock Data: Toggle OFAC List',
 };
 
 export const NotificationEvents = {
@@ -167,12 +190,90 @@ export const PointEvents = {
 };
 
 /**
- * Native-NFC-channel constants only. The Mixpanel `trackEvent` pipe no longer
- * emits any `Proof:`-prefixed events as of ANA-13 — those are now Sentry
- * breadcrumbs. `PROVING_PROCESS_ERROR` survives because it is emitted via
- * `trackNfcEvent`, which still ships to the native NFC Mixpanel project
- * (out of scope for ANA-13; see ANA-04).
+ * ANA-13 is migrating diagnostic `Proof:` events to Sentry breadcrumbs. Entries
+ * here that no longer have call sites after the migration are dead and should be
+ * pruned in a follow-up. `PROVING_PROCESS_ERROR` is emitted via `trackNfcEvent`
+ * through the native NFC Mixpanel pipe (out of scope for ANA-13; see ANA-04).
+ * The `GOOGLE_USAT_*` entries are part of the disclosure gate flow and remain.
  */
 export const ProofEvents = {
+  ALREADY_REGISTERED: 'Proof: Already Registered',
+  ATTESTATION_RECEIVED: 'Proof: Attestation Received',
+  ATTESTATION_VERIFIED: 'Proof: Attestation Verified',
+  CLEANUP_COMPLETED: 'Proof: Connections Cleanup Completed',
+  CLEANUP_STARTED: 'Proof: Connections Cleanup Started',
+  CONNECTION_UUID_GENERATED: 'Proof: Connection UUID Generated',
+  DEVICE_TOKEN_REG_FAILED: 'Proof: Device Token Registration Failed',
+  DEVICE_TOKEN_REG_STARTED: 'Proof: Device Token Registration Started',
+  DEVICE_TOKEN_REG_SUCCESS: 'Proof: Device Token Registration Succeeded',
+  DOCUMENT_LOAD_STARTED: 'Proof: Load Selected Document Started',
+  DSC_IN_TREE: 'Proof: DSC Already In Tree',
+  FCM_TOKEN_STORED: 'Proof: FCM Token Stored Successfully',
+  FETCH_DATA_FAILED: 'Proof: Fetch Data Failed',
+  FETCH_DATA_STARTED: 'Proof: Fetch Data Started',
+  FETCH_DATA_SUCCESS: 'Proof: Fetch Data Succeeded',
+  GOOGLE_USAT_BLOCK_DISMISSED: 'Proof: Google USAT Disclosure Block Dismissed',
+  GOOGLE_USAT_BLOCKED: 'Proof: Google USAT Disclosure Blocked',
+  GOOGLE_USAT_RECOVER_CLICKED: 'Proof: Google USAT Disclosure Recover Clicked',
+  LOAD_SECRET_FAILED: 'Proof: Load Secret Failed',
+  PARSE_ID_DOCUMENT_STARTED: 'Proof: Parse ID Document Started',
+  NOTIFICATION_PERMISSION_REQUESTED: 'Proof: Notification Permission Requested',
+  PASSPORT_NULLIFIER_ONCHAIN: 'Proof: Passport Nullifier Onchain',
+  PAYLOAD_ENCRYPTED: 'Proof: Payload Encrypted',
+  PAYLOAD_GEN_COMPLETED: 'Proof: Payload Generation Completed',
+  PAYLOAD_GEN_STARTED: 'Proof: Payload Generation Started',
+  PAYLOAD_SENT: 'Proof: Payload Sent',
+  POST_PROVING_CHAIN_STEP: 'Proof: Post Proving Chain Step',
+  POST_PROVING_COMPLETED: 'Proof: Post Proving Completed',
+  POST_PROVING_STARTED: 'Proof: Post Proving Started',
+  PROOF_COMPLETED: 'Proof: Proof Completed',
+  PROOF_DISCLOSURES_SCROLLED: 'Proof: Proof Disclosures Scrolled',
+  PROOF_FAILED: 'Proof: Proof Failed',
+  POINTS_NULLIFIER_ALREADY_USED: 'Proof: Points Nullifier Already Used',
+  PROOF_RESULT_ACKNOWLEDGED: 'Proof: Proof Result Acknowledged',
+  PROOF_VERIFY_CONFIRMATION_ACCEPTED: 'Proof: Verify Confirmation Accepted',
+  PROOF_VERIFY_LONG_PRESS: 'Proof: Verify Button Long Pressed',
+  PROVING_INIT: 'Proof: Proving Machine Init',
   PROVING_PROCESS_ERROR: 'Proof: Proving Process Error',
+  PROVING_PROCESS_STARTED: 'Proof: Proving Process Started',
+  PROVING_STATE_CHANGE: 'Proof: Proving State Change',
+  QR_SCAN_CANCELLED: 'Proof: QR Scan Cancelled',
+  QR_SCAN_FAILED: 'Proof: QR Scan Failed',
+  QR_SCAN_REQUESTED: 'Proof: QR Scan Requested',
+  QR_SCAN_SUCCESS: 'Proof: QR Scan Success',
+  REGISTER_COMPLETED: 'Proof: Register Completed',
+  SHARED_KEY_DERIVED: 'Proof: Shared Key Derived',
+  SOCKETIO_CONNECT_ERROR: 'Proof: Socket.IO Connect Error',
+  SOCKETIO_CONN_STARTED: 'Proof: Socket.IO Connection Started',
+  SOCKETIO_DISCONNECT_UNEXPECTED: 'Proof: Socket.IO Disconnected Unexpectedly',
+  SOCKETIO_PROOF_FAILURE: 'Proof: Socket.IO Proof Failure',
+  SOCKETIO_PROOF_SUCCESS: 'Proof: Socket.IO Proof Success',
+  SOCKETIO_STATUS_RECEIVED: 'Proof: Socket.IO Status Received',
+  SOCKETIO_SUBSCRIBED: 'Proof: Socket.IO Subscribed',
+  TEE_CONN_FAILED: 'Proof: TEE Connection Failed',
+  TEE_CONN_STARTED: 'Proof: TEE Connection Started',
+  TEE_CONN_SUCCESS: 'Proof: TEE Connection Succeeded',
+  TEE_WS_CLOSED: 'Proof: TEE WS Closed',
+  TEE_WS_ERROR: 'Proof: TEE WS Error',
+  USER_CONFIRMED: 'Proof: User Confirmed',
+  VALIDATION_FAILED: 'Proof: Validation Failed',
+  VALIDATION_STARTED: 'Proof: Validation Started',
+  VALIDATION_SUCCESS: 'Proof: Validation Succeeded',
+  WS_HELLO_ACK: 'Proof: WS Hello Acknowledged',
+  WS_HELLO_SENT: 'Proof: WS Hello Sent',
+};
+
+// Diagnostic events for the registration ID-type picker (SELF-2860). Names are
+// the literal Mixpanel event strings from the ticket — they intentionally use
+// snake_case rather than the 'Group: Event' convention used elsewhere.
+export const RegistrationPickerEvents = {
+  VIEWED: 'registration_id_picker_viewed',
+  SELECTED: 'registration_id_picker_selected',
+  UNSUPPORTED_TAPPED: 'registration_id_picker_unsupported_tapped',
+};
+
+export const SettingsEvents = {
+  CONNECTION_MODAL_CLOSED: 'Settings: Connection Modal Closed',
+  CONNECTION_MODAL_OPENED: 'Settings: Connection Modal Opened',
+  CONNECTION_SETTINGS_OPENED: 'Settings: Connection Settings Opened',
 };

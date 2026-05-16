@@ -51,10 +51,16 @@ const TIME_PERIODS = {
 
 interface ProofHistoryListProps {
   documentId: string;
+  ListHeaderComponent?: React.ComponentProps<
+    typeof SectionList
+  >['ListHeaderComponent'];
+  contentBottomPadding?: number;
 }
 
 export const ProofHistoryList: React.FC<ProofHistoryListProps> = ({
   documentId,
+  ListHeaderComponent,
+  contentBottomPadding,
 }) => {
   const {
     proofHistory,
@@ -391,10 +397,14 @@ export const ProofHistoryList: React.FC<ProofHistoryListProps> = ({
       }
       contentContainerStyle={[
         styles.listContent,
+        contentBottomPadding !== undefined && {
+          paddingBottom: contentBottomPadding,
+        },
         groupedProofs.length === 0 && styles.emptyList,
       ]}
       showsVerticalScrollIndicator={false}
       stickySectionHeadersEnabled={false}
+      ListHeaderComponent={ListHeaderComponent}
       ListEmptyComponent={renderEmptyComponent}
       ListFooterComponent={renderFooter}
       initialNumToRender={10}

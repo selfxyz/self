@@ -365,6 +365,13 @@ const SuccessScreen: React.FC = () => {
         backgroundColor={black}
       >
         <DelayedLottieView
+          key={
+            animationSource === succesAnimation
+              ? 'success'
+              : animationSource === failAnimation
+                ? 'fail'
+                : 'loading'
+          }
           autoPlay
           loop={animationSource === loadingAnimation}
           source={animationSource}

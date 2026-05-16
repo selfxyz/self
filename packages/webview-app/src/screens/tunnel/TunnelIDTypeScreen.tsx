@@ -15,9 +15,9 @@ import { WEB_SAFE_AREA } from '../../utils/insets';
 const docTypeToIDType = (docType: string): IDType => {
   switch (docType) {
     case 'p':
-      return { id: 'p', title: 'Passport', subtitle: 'Verified Biometric Passport' };
+      return { id: 'p', title: 'Passport', subtitle: 'Biometric Passport' };
     case 'i':
-      return { id: 'i', title: 'ID Card', subtitle: 'Verified Biometric ID card' };
+      return { id: 'i', title: 'ID Card', subtitle: 'Biometric Identification Card' };
     default:
       return { id: docType, title: 'Unknown Document', subtitle: '' };
   }

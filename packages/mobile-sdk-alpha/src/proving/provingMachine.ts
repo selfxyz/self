@@ -44,6 +44,7 @@ import type { IDDocument } from '@selfxyz/common/utils/types';
 import {
   completeOnboardingAttempt,
   failOnboardingAttempt,
+  markCurrentAttemptAsMock,
   trackBranchEvent,
   trackOnboardingStep,
 } from '../analytics/onboardingFunnel';
@@ -1079,6 +1080,9 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
       // Set environment based on mock property
       const env = passportData.mock ? 'stg' : 'prod';
+      if (passportData.mock === true) {
+        markCurrentAttemptAsMock(selfClient);
+      }
 
       set({ passportData, secret, env });
       set({ circuitType });

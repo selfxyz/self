@@ -55,19 +55,25 @@ export type { MRZScanOptions } from './mrz';
 export type { OnboardingBranch, OnboardingFailureStage, OnboardingStage } from './analytics/onboardingFunnel';
 
 export type { PassportValidationCallbacks } from './validation/document';
+export type { PerkId, PerkRecord } from './data/perks';
 export type { ProvingStateType } from './proving/provingMachine';
 
 export type { RecoveryValidationResult } from './proving/recoveryValidation';
 
 export type { SDKEvent, SDKEventMap } from './types/events';
-
 export type { SdkErrorCategory } from './errors';
 
 export type { provingMachineCircuitType } from './proving/provingMachine';
-
 export { DelayedLottieView } from './components/DelayedLottieView';
 
 export { ExpandableBottomLayout } from './layouts/ExpandableBottomLayout';
+export {
+  GOOGLE_USAT_FAUCET_APP_NAME,
+  GOOGLE_USAT_FAUCET_ENDPOINT,
+  GOOGLE_USAT_FAUCET_SCOPE,
+} from './constants/googleUsat';
+
+export { GOOGLE_USAT_FAUCET_POLICY } from './constants/restrictedApps';
 
 export {
   InitError,
@@ -81,15 +87,12 @@ export {
 } from './errors';
 
 export { default as LogoConfirmationScreen } from './flows/onboarding/logo-confirmation-screen';
-
 export { NFCScannerScreen } from './components/screens/NFCScannerScreen';
-
 export { QRCodeScreen } from './components/screens/QRCodeScreen';
-
+export { PERKS as SHARED_PERKS, getPerkRecordsForIdType } from './data/perks';
 export { SdkEvents } from './types/events';
 
 export { SelfClientContext, SelfClientProvider, useSelfClient } from './context';
-
 export { advercase, dinot, dinotBold, plexMono } from './constants/fonts';
 
 export {
@@ -145,32 +148,31 @@ export { createDocumentsAdapter, createInMemoryDocumentsAdapter } from './adapte
 export { createListenersMap, createSelfClient } from './client';
 
 export { createNetworkAdapter } from './adapters/react-native/network';
-
 export { createReactNativeAdapters } from './adapters/react-native/factory';
-
 export { defaultConfig } from './config/defaults';
 
 export { defaultOptions } from './haptic/shared';
-
 /** @deprecated Use createSelfClient().extractMRZInfo or import from './mrz' */
 export { extractMRZInfo } from './mrz';
+
 export { extractNameFromDocument } from './documents/utils';
 export { extractNameFromMRZ, formatDateToYYMMDD, parseMRZBirthDate, parseMRZExpiryDate } from './mrz';
 
 export { finalizeRecoveredDocumentRegistration, validateRecoverySecretForDocument } from './proving/recoveryValidation';
 
 export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
+export { getEligiblePerksForIdType } from './flows/onboarding/perks';
+export { hasEligibleAlternativeDocumentForPolicy, isDocumentEligibleForPolicy } from './utils/restrictedApps';
+export { isGoogleUsatProofRequest } from './utils/googleUsat';
 
 export { isPassportDataValid } from './validation/document';
-
 export { mergeConfig } from './config/merge';
-
 export { parseNFCResponse, scanNFC } from './nfc';
+
 export { reactNativeScannerAdapter } from './adapters/react-native/nfc-scanner';
+
 export { sanitizeErrorMessage } from './utils/utils';
 
 export { useCountries } from './documents/useCountries';
-
 export { useMRZStore } from './stores/mrzStore';
-
 export { webNFCScannerShim } from './adapters/web/shims';

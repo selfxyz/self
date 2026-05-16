@@ -7,6 +7,7 @@ import type { DocumentCategory } from '@selfxyz/common/utils/types';
 import type { ModalNavigationParams } from '@/screens/app/ModalScreen';
 import type { WebViewScreenParams } from '@/screens/shared/WebViewScreen';
 import type { ProofHistory } from '@/stores/proofTypes';
+import type { VerificationGateEntryPoint } from '@/stores/verificationGateStore';
 
 // =============================================================================
 // Aadhaar Screens
@@ -214,10 +215,13 @@ export type VerificationRoutesParamList = {
         scrollOffset?: number;
       }
     | undefined;
-  ProvingScreenRouter: undefined;
+  ProvingScreenRouter: {
+    entryPoint: VerificationGateEntryPoint;
+  };
   DocumentSelectorForProving:
     | {
         documentType?: string;
+        entryPoint?: VerificationGateEntryPoint;
       }
     | undefined;
 };

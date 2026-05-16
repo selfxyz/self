@@ -435,14 +435,18 @@ jest.mock('react-native/Libraries/StyleSheet/StyleSheet', () => ({
 }));
 
 // Mock NativeDeviceInfo specs for both main app and mobile-sdk-alpha
-jest.mock('react-native/src/private/specs/modules/NativeDeviceInfo', () => ({
-  getConstants: jest.fn(() => ({
-    Dimensions: {
-      window: { width: 375, height: 667, scale: 2 },
-      screen: { width: 375, height: 667, scale: 2 },
-    },
-  })),
-}));
+jest.mock(
+  'react-native/src/private/specs/modules/NativeDeviceInfo',
+  () => ({
+    getConstants: jest.fn(() => ({
+      Dimensions: {
+        window: { width: 375, height: 667, scale: 2 },
+        screen: { width: 375, height: 667, scale: 2 },
+      },
+    })),
+  }),
+  { virtual: true },
+);
 
 // Mock NativeStatusBarManagerIOS for react-native-edge-to-edge SystemBars
 jest.mock(
@@ -452,6 +456,7 @@ jest.mock(
     setHidden: jest.fn(),
     setNetworkActivityIndicatorVisible: jest.fn(),
   }),
+  { virtual: true },
 );
 
 // Mock react-native-gesture-handler to prevent getConstants errors
@@ -1051,6 +1056,9 @@ jest.mock('react-native-app-auth', () => ({
 // Mock @robinbobin/react-native-google-drive-api-wrapper
 jest.mock('@robinbobin/react-native-google-drive-api-wrapper', () => {
   class MockUploader {
+    constructor() {
+      this.execute = jest.fn();
+    }
     setData() {
       return this;
     }
@@ -1060,21 +1068,24 @@ jest.mock('@robinbobin/react-native-google-drive-api-wrapper', () => {
     setRequestBody() {
       return this;
     }
-    execute = jest.fn();
   }
 
   class MockFiles {
+    constructor() {
+      this.list = jest.fn().mockResolvedValue({ files: [] });
+      this.delete = jest.fn();
+      this.getText = jest.fn().mockResolvedValue('');
+    }
     newMultipartUploader() {
       return new MockUploader();
     }
-    list = jest.fn().mockResolvedValue({ files: [] });
-    delete = jest.fn();
-    getText = jest.fn().mockResolvedValue('');
   }
 
   class GDrive {
-    accessToken = '';
-    files = new MockFiles();
+    constructor() {
+      this.accessToken = '';
+      this.files = new MockFiles();
+    }
   }
 
   return {
@@ -1260,17 +1271,19 @@ jest.mock('react-native-biometrics', () => {
   class MockReactNativeBiometrics {
     constructor(options) {
       // Constructor accepts options but doesn't need to do anything
+      this.isSensorAvailable = jest.fn().mockResolvedValue({
+        available: true,
+        biometryType: 'TouchID',
+      });
+      this.createKeys = jest
+        .fn()
+        .mockResolvedValue({ publicKey: 'mock-public-key' });
+      this.deleteKeys = jest.fn().mockResolvedValue(true);
+      this.createSignature = jest
+        .fn()
+        .mockResolvedValue({ signature: 'mock-signature' });
+      this.simplePrompt = jest.fn().mockResolvedValue({ success: true });
     }
-    isSensorAvailable = jest.fn().mockResolvedValue({
-      available: true,
-      biometryType: 'TouchID',
-    });
-    createKeys = jest.fn().mockResolvedValue({ publicKey: 'mock-public-key' });
-    deleteKeys = jest.fn().mockResolvedValue(true);
-    createSignature = jest
-      .fn()
-      .mockResolvedValue({ signature: 'mock-signature' });
-    simplePrompt = jest.fn().mockResolvedValue({ success: true });
   }
   return {
     __esModule: true,

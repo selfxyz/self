@@ -17,10 +17,12 @@ import {
   SdkEvents,
   SelfClientProvider as SDKSelfClientProvider,
   type TrackEventParams,
+  trackOnboardingStep,
   useMRZStore,
   webNFCScannerShim,
   type WsConn,
 } from '@selfxyz/mobile-sdk-alpha';
+import { OnboardingEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import { logNFCEvent, logProofEvent } from '@/config/sentry';
 import { createKycSession, launchKycVerification } from '@/integrations/kyc';
@@ -357,6 +359,11 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
                     country: countryCode,
                     nationality: countryCode,
                   });
+                  trackOnboardingStep(
+                    { trackEvent },
+                    OnboardingEvents.SCAN_STARTED,
+                    { branch: 'kyc' },
+                  );
                   const result = await launchKycVerification(
                     session.sessionToken,
                   );

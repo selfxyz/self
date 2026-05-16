@@ -18,16 +18,15 @@ import Tips from '@/components/Tips';
 import { useFeedbackAutoHide } from '@/hooks/useFeedbackAutoHide';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { useKycLauncher } from '@/hooks/useKycLauncher';
-import useOpenSupportForm from '@/hooks/useOpenSupportForm';
 import { selectionChange } from '@/integrations/haptics';
 import SimpleScrolledTitleLayout from '@/layouts/SimpleScrolledTitleLayout';
 import { flushAllAnalytics } from '@/services/analytics';
-import { SUPPORT_FORM_BUTTON_TEXT } from '@/services/support';
+import { useNfcTroubleStore } from '@/stores/nfcTroubleStore';
 
 const tips: TipProps[] = [
   {
     title: 'Know Your Chip Location',
-    body: "Depending on your passport's country of origin, the RFID chip could be in the front cover, back cover, or a specific page. Move your device slowly around these areas to locate the chip.",
+    body: 'The RFID chip is usually embedded in the photo page or the front or back cover of your passport — look for a small rectangular symbol that resembles a camera. Rest your phone flat against that area and move it slowly in small increments until the scan engages.',
   },
   {
     title: 'Remove Any Obstructions',
@@ -52,7 +51,6 @@ const tips: TipProps[] = [
 ];
 
 const DocumentNFCTroubleScreen: React.FC = () => {
-  const openSupportForm = useOpenSupportForm();
   const navigation = useNavigation();
   const handleDismiss = useCallback(() => {
     selectionChange();
@@ -67,6 +65,7 @@ const DocumentNFCTroubleScreen: React.FC = () => {
   const { launchKycVerification, isLoading } = useKycLauncher({
     countryCode,
   });
+  const nfcOptionsRevealed = useNfcTroubleStore(state => state.optionsRevealed);
   useFeedbackAutoHide();
 
   // error screen, flush analytics
@@ -85,19 +84,13 @@ const DocumentNFCTroubleScreen: React.FC = () => {
     <SimpleScrolledTitleLayout
       title="Having trouble verifying your ID?"
       onDismiss={handleDismiss}
-      secondaryButtonText="Open NFC Options"
-      onSecondaryButtonPress={goToNFCMethodSelection}
+      secondaryButtonText={nfcOptionsRevealed ? 'Open NFC Options' : undefined}
+      onSecondaryButtonPress={
+        nfcOptionsRevealed ? goToNFCMethodSelection : undefined
+      }
       footer={
         <YStack gap="$3">
           <SupportUuidRow />
-
-          <SecondaryButton
-            onPress={openSupportForm}
-            textColor={slate700}
-            style={{ marginBottom: 0 }}
-          >
-            {SUPPORT_FORM_BUTTON_TEXT}
-          </SecondaryButton>
 
           <SecondaryButton
             onPress={launchKycVerification}

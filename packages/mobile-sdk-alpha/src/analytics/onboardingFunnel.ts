@@ -46,6 +46,7 @@ interface OnboardingAttempt {
   retryCounts: Record<string, number>;
   countryCode?: string;
   documentType?: string;
+  isMock: boolean;
 }
 
 let currentAttempt: OnboardingAttempt | null = null;
@@ -71,6 +72,7 @@ function ensureAttempt(selfClient: Pick<SelfClient, 'trackEvent'>): OnboardingAt
       startedAt: Date.now(),
       firedSteps: new Set([OnboardingEvents.STARTED]),
       retryCounts: {},
+      isMock: false,
     };
     selfClient.trackEvent(OnboardingEvents.STARTED, baseProperties(currentAttempt));
   }
@@ -138,6 +140,11 @@ export function completeOnboardingAttempt(
   if (currentAttempt.firedSteps.has(OnboardingEvents.COMPLETED)) return;
   currentAttempt.firedSteps.add(OnboardingEvents.COMPLETED);
 
+  if (currentAttempt.isMock) {
+    currentAttempt = null;
+    return;
+  }
+
   selfClient.trackEvent(OnboardingEvents.COMPLETED, {
     ...baseProperties(currentAttempt),
     duration_seconds: durationSeconds(currentAttempt.startedAt),
@@ -165,6 +172,8 @@ export function failOnboardingAttempt(
   const attempt = currentAttempt;
   currentAttempt = null;
 
+  if (attempt.isMock) return;
+
   selfClient.trackEvent(OnboardingEvents.FAILED, {
     ...baseProperties(attempt),
     stage,
@@ -173,6 +182,22 @@ export function failOnboardingAttempt(
     used_fallback: attempt.initialBranch !== attempt.currentBranch,
     ...properties,
   });
+}
+
+export function markCurrentAttemptAsMock(_selfClient: Pick<SelfClient, 'trackEvent'>): void {
+  if (currentAttempt) {
+    currentAttempt.isMock = true;
+    return;
+  }
+  currentAttempt = {
+    id: uuid(),
+    initialBranch: 'pending',
+    currentBranch: 'pending',
+    startedAt: Date.now(),
+    firedSteps: new Set([OnboardingEvents.STARTED]),
+    retryCounts: {},
+    isMock: true,
+  };
 }
 
 /**
@@ -251,6 +276,7 @@ export function trackOnboardingRetry(
 ): void {
   const attempt = ensureAttempt(selfClient);
   attempt.retryCounts[stage] = (attempt.retryCounts[stage] ?? 0) + 1;
+  if (attempt.isMock) return;
   selfClient.trackEvent(OnboardingEvents.STEP_RETRIED, {
     ...baseProperties(attempt),
     stage,
@@ -289,6 +315,8 @@ export function trackOnboardingStep(
 
   if (attempt.firedSteps.has(event)) return;
   attempt.firedSteps.add(event);
+
+  if (attempt.isMock) return;
 
   // Strip the caller-supplied `branch` — emitted event uses the richer
   // `initial_branch` / `current_branch` pair from `baseProperties`.

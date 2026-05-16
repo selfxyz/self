@@ -44,10 +44,10 @@ The naming layer is also broken: `PassportEvents.*` is used for both passport AN
 
 ## Naming convention
 
-| Pattern | Example | Notes |
-| --- | --- | --- |
-| Constant group | `BiometricEvents`, `KycEvents`, `AadhaarEvents` | Mirror the canonical `OnboardingEvents` group format |
-| Event name | `'Biometric: MRZ Captured'` | `<Flow>: <Stage> <Outcome>` — outcomes: `Started` / `Succeeded` / `Failed` / `Cancelled` |
+| Pattern              | Example                                          | Notes                                                                                            |
+| -------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
+| Constant group       | `BiometricEvents`, `KycEvents`, `AadhaarEvents`  | Mirror the canonical `OnboardingEvents` group format                                             |
+| Event name           | `'Biometric: MRZ Captured'`                      | `<Flow>: <Stage> <Outcome>` — outcomes: `Started` / `Succeeded` / `Failed` / `Cancelled`         |
 | Mandatory properties | `attempt_id`, `initial_branch`, `current_branch` | Same triple as canonical events. Stamp via a small shared helper, not hand-written per call site |
 
 ### Event helper
@@ -62,26 +62,26 @@ Add `trackBranchEvent(selfClient, eventName, properties)` to `packages/mobile-sd
 
 ### Biometric (passport + biometric ID)
 
-| Constant | Event name | Fire site | Additional properties |
-| --- | --- | --- | --- |
-| `BiometricEvents.MRZ_CAPTURE_STARTED` | `Biometric: MRZ Capture Started` | `app/src/screens/documents/scanning/DocumentCameraScreen.tsx` on camera mount | `document_type` |
-| `BiometricEvents.MRZ_CAPTURED` | `Biometric: MRZ Captured` | Same screen, when `useReadMRZ` returns a parseable MRZ | `document_type`, `duration_seconds` |
-| `BiometricEvents.NFC_STARTED` | `Biometric: NFC Started` | `DocumentNFCScanScreen.tsx` on NFC begin | `document_type`, `nfc_method` (`'BAC' \| 'PACE'`) |
-| `BiometricEvents.NFC_SUCCEEDED` | `Biometric: NFC Succeeded` | Same screen on chip read complete | `document_type`, `duration_seconds` |
-| `BiometricEvents.DOCUMENT_PARSED` | `Biometric: Document Parsed` | `provingMachine.ts` `validating_document` state on successful parse | `document_type`, `country_code`, `signature_algorithm`, `csca_hash_algorithm` |
-| `BiometricEvents.DOCUMENT_UNSUPPORTED` | `Biometric: Document Unsupported` | `provingMachine.ts` when `checkDocumentSupported` returns non-supported | `document_type`, `country_code`, `signature_algorithm`, `unsupported_reason` (`'unknown_dsc' \| 'unsupported_algo' \| 'country_not_in_list'`) |
+| Constant                               | Event name                        | Fire site                                                                     | Additional properties                                                                                                                         |
+| -------------------------------------- | --------------------------------- | ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `BiometricEvents.MRZ_CAPTURE_STARTED`  | `Biometric: MRZ Capture Started`  | `app/src/screens/documents/scanning/DocumentCameraScreen.tsx` on camera mount | `document_type`                                                                                                                               |
+| `BiometricEvents.MRZ_CAPTURED`         | `Biometric: MRZ Captured`         | Same screen, when `useReadMRZ` returns a parseable MRZ                        | `document_type`, `duration_seconds`                                                                                                           |
+| `BiometricEvents.NFC_STARTED`          | `Biometric: NFC Started`          | `DocumentNFCScanScreen.tsx` on NFC begin                                      | `document_type`, `nfc_method` (`'BAC' \| 'PACE'`)                                                                                             |
+| `BiometricEvents.NFC_SUCCEEDED`        | `Biometric: NFC Succeeded`        | Same screen on chip read complete                                             | `document_type`, `duration_seconds`                                                                                                           |
+| `BiometricEvents.DOCUMENT_PARSED`      | `Biometric: Document Parsed`      | `provingMachine.ts` `validating_document` state on successful parse           | `document_type`, `country_code`, `signature_algorithm`, `csca_hash_algorithm`                                                                 |
+| `BiometricEvents.DOCUMENT_UNSUPPORTED` | `Biometric: Document Unsupported` | `provingMachine.ts` when `checkDocumentSupported` returns non-supported       | `document_type`, `country_code`, `signature_algorithm`, `unsupported_reason` (`'unknown_dsc' \| 'unsupported_algo' \| 'country_not_in_list'`) |
 
 The signature-algorithm and country properties on `DOCUMENT_PARSED` and `DOCUMENT_UNSUPPORTED` are the actual product-prioritization signal — the dashboard query "top 10 (country, sig_algo) combinations failing the support check" tells the team which DSCs to add next.
 
 ### KYC
 
-| Constant | Event name | Fire site | Additional properties |
-| --- | --- | --- | --- |
-| `KycEvents.SESSION_REQUESTED` | `Kyc: Session Requested` | `app/src/hooks/useKycLauncher.ts` immediately before `createKycSession` | `provider` (provider id string) |
-| `KycEvents.SESSION_CREATED` | `Kyc: Session Created` | Same hook, after `createKycSession` resolves | `provider`, `duration_seconds` |
-| `KycEvents.PROVIDER_OPENED` | `Kyc: Provider Opened` | Immediately before `startKycVerification` | `provider` |
-| `KycEvents.PROVIDER_CLOSED` | `Kyc: Provider Closed` | Same hook, single event for all three provider terminal `type`s | `provider`, `outcome` (`'completed' \| 'cancelled' \| 'failed'`), `error_code` (when `outcome === 'failed'`), `duration_seconds` |
-| `KycEvents.RETRY_TRIGGERED` | `Kyc: Retry Triggered` | `KycFailureScreen.tsx` retry button | `provider`, `attempt_count` |
+| Constant                      | Event name               | Fire site                                                               | Additional properties                                                                                                            |
+| ----------------------------- | ------------------------ | ----------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `KycEvents.SESSION_REQUESTED` | `Kyc: Session Requested` | `app/src/hooks/useKycLauncher.ts` immediately before `createKycSession` | `provider` (provider id string)                                                                                                  |
+| `KycEvents.SESSION_CREATED`   | `Kyc: Session Created`   | Same hook, after `createKycSession` resolves                            | `provider`, `duration_seconds`                                                                                                   |
+| `KycEvents.PROVIDER_OPENED`   | `Kyc: Provider Opened`   | Immediately before `startKycVerification`                               | `provider`                                                                                                                       |
+| `KycEvents.PROVIDER_CLOSED`   | `Kyc: Provider Closed`   | Same hook, single event for all three provider terminal `type`s         | `provider`, `outcome` (`'completed' \| 'cancelled' \| 'failed'`), `error_code` (when `outcome === 'failed'`), `duration_seconds` |
+| `KycEvents.RETRY_TRIGGERED`   | `Kyc: Retry Triggered`   | `KycFailureScreen.tsx` retry button                                     | `provider`, `attempt_count`                                                                                                      |
 
 `provider` is stamped from day one with the configured KYC provider id so we can A/B different providers later without renaming events.
 
@@ -89,15 +89,15 @@ The signature-algorithm and country properties on `DOCUMENT_PARSED` and `DOCUMEN
 
 Curate the existing 25-event `AadhaarEvents` group down to 7. **Delete the rest** from Mixpanel emission (their useful counterparts move to Sentry breadcrumbs in ANA-13).
 
-| Constant | Event name | Fire site | Additional properties |
-| --- | --- | --- | --- |
-| `AadhaarEvents.UPLOAD_STARTED` | `Aadhaar: Upload Started` | `app/src/screens/documents/aadhaar/AadhaarUploadScreen.tsx` on photo library tap | — |
-| `AadhaarEvents.PHOTO_PERMISSION_DENIED` | `Aadhaar: Photo Permission Denied` | Same screen when permission denied | — |
-| `AadhaarEvents.QR_SELECTED` | `Aadhaar: QR Selected` | After photo picker returns image | — |
-| `AadhaarEvents.QR_PARSE_FAILED` | `Aadhaar: QR Parse Failed` | Replace `QR_CODE_PARSE_FAILED` + `QR_CODE_INVALID_FORMAT` + `QR_CODE_MISSING_FIELDS` | `reason` (`'parse_error' \| 'invalid_format' \| 'missing_fields'`) |
-| `AadhaarEvents.TIMESTAMP_EXPIRED` | `Aadhaar: Timestamp Expired` | Replace `TIMESTAMP_VALIDATION_FAILED` | `qr_age_days` |
-| `AadhaarEvents.DATA_STORED` | `Aadhaar: Data Stored` | After successful storage | `duration_seconds` |
-| `AadhaarEvents.CONTINUE_PRESSED` | `Aadhaar: Continue Pressed` | `AadhaarUploadedSuccessScreen.tsx` continue button | — |
+| Constant                                | Event name                         | Fire site                                                                            | Additional properties                                              |
+| --------------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------ |
+| `AadhaarEvents.UPLOAD_STARTED`          | `Aadhaar: Upload Started`          | `app/src/screens/documents/aadhaar/AadhaarUploadScreen.tsx` on photo library tap     | —                                                                  |
+| `AadhaarEvents.PHOTO_PERMISSION_DENIED` | `Aadhaar: Photo Permission Denied` | Same screen when permission denied                                                   | —                                                                  |
+| `AadhaarEvents.QR_SELECTED`             | `Aadhaar: QR Selected`             | After photo picker returns image                                                     | —                                                                  |
+| `AadhaarEvents.QR_PARSE_FAILED`         | `Aadhaar: QR Parse Failed`         | Replace `QR_CODE_PARSE_FAILED` + `QR_CODE_INVALID_FORMAT` + `QR_CODE_MISSING_FIELDS` | `reason` (`'parse_error' \| 'invalid_format' \| 'missing_fields'`) |
+| `AadhaarEvents.TIMESTAMP_EXPIRED`       | `Aadhaar: Timestamp Expired`       | Replace `TIMESTAMP_VALIDATION_FAILED`                                                | `qr_age_days`                                                      |
+| `AadhaarEvents.DATA_STORED`             | `Aadhaar: Data Stored`             | After successful storage                                                             | `duration_seconds`                                                 |
+| `AadhaarEvents.CONTINUE_PRESSED`        | `Aadhaar: Continue Pressed`        | `AadhaarUploadedSuccessScreen.tsx` continue button                                   | —                                                                  |
 
 Events to **delete from Mixpanel emission** in this PR: `UPLOAD_SCREEN_OPENED`, `UPLOAD_BUTTON_ENABLED`, `UPLOAD_BUTTON_DISABLED`, `PHOTO_LIBRARY_UNAVAILABLE`, `PROCESSING_STARTED`, `QR_DATA_EXTRACTION_STARTED`, `QR_DATA_EXTRACTION_SUCCESS`, `TIMESTAMP_VALIDATION_STARTED`, `TIMESTAMP_VALIDATION_SUCCESS`, `DATA_STORAGE_STARTED`, `DATA_STORAGE_SUCCESS`, `QR_UPLOAD_REQUESTED`, `QR_UPLOAD_SUCCESS`, `QR_UPLOAD_FAILED`, `ERROR_SCREEN_NAVIGATED`, `RETRY_BUTTON_PRESSED`, `PERMISSION_MODAL_OPENED`, `PERMISSION_MODAL_DISMISSED`, `PERMISSION_SETTINGS_OPENED`, `HELP_BUTTON_PRESSED`, `USER_CANCELLED_SELECTION`, `QR_CODE_PARSE_FAILED`, `QR_CODE_INVALID_FORMAT`, `QR_CODE_MISSING_FIELDS`, `TIMESTAMP_VALIDATION_FAILED`. Their constants stay in `analytics.ts` only if ANA-13 needs them as breadcrumb categories; otherwise delete the constants too.
 
@@ -124,7 +124,7 @@ Wire emission sites in `app/src/hooks/useKycLauncher.ts`:
 
 Wire `RETRY_TRIGGERED` in `KycFailureScreen.tsx` retry button handler.
 
-`LogoConfirmationScreen.tsx` direct path (the one not using the hook) — same emission additions, since it's a separate code path. Or migrate it to use `useKycLauncher` (out of scope for ANA-12; flag as follow-up).
+`LogoConfirmationScreen.tsx` direct path (the one not using the hook) — add the same emissions inline. Migrating it to `useKycLauncher` is out of scope for ANA-12; track as a follow-up.
 
 ### Step 3 — curate `AadhaarEvents`
 
@@ -171,7 +171,7 @@ After events are live in production for 24 hours and verified in the dev Mixpane
 - **KYC Funnel**: canonical funnel filtered to `initial_branch = 'kyc'`, plus a sequential funnel of `SESSION_REQUESTED → SESSION_CREATED → PROVIDER_OPENED → PROVIDER_CLOSED (outcome=completed)`. Side panel: outcome breakdown of `PROVIDER_CLOSED`.
 - **Aadhaar Funnel**: canonical funnel filtered to `initial_branch = 'aadhaar'`, plus the 7-step Aadhaar drilldown.
 
-Dashboard build is *part* of this PR (docs + screenshots). The dashboards themselves are constructed in the dev Mixpanel project and migrated to prod with the merge.
+Dashboard build is _part_ of this PR (docs + screenshots). The dashboards themselves are constructed in the dev Mixpanel project and migrated to prod with the merge.
 
 ## Validation
 
