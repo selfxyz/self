@@ -316,12 +316,12 @@ describe('trackBranchEvent', () => {
     trackOnboardingStep(client, OnboardingEvents.DOCUMENT_TYPE_SELECTED, {
       branch: 'biometric_passport',
     });
-    trackBranchEvent(client, BiometricEvents.MRZ_CAPTURE_STARTED, { document_type: 'passport' });
-    trackBranchEvent(client, BiometricEvents.MRZ_CAPTURE_STARTED, { document_type: 'passport' });
-    trackBranchEvent(client, BiometricEvents.MRZ_CAPTURE_STARTED, { document_type: 'passport' });
+    trackBranchEvent(client, BiometricEvents.MRZ_STARTED, { document_type: 'passport' });
+    trackBranchEvent(client, BiometricEvents.MRZ_STARTED, { document_type: 'passport' });
+    trackBranchEvent(client, BiometricEvents.MRZ_STARTED, { document_type: 'passport' });
 
     const captureCalls = client.trackEvent.mock.calls.filter(
-      ([name]: string[]) => name === BiometricEvents.MRZ_CAPTURE_STARTED,
+      ([name]: string[]) => name === BiometricEvents.MRZ_STARTED,
     );
     expect(captureCalls).toHaveLength(3);
   });

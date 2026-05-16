@@ -80,7 +80,7 @@ export const BiometricEvents = {
   DOCUMENT_PARSED: 'Biometric: Document Parsed',
   DOCUMENT_UNSUPPORTED: 'Biometric: Document Unsupported',
   MRZ_CAPTURED: 'Biometric: MRZ Captured',
-  MRZ_CAPTURE_STARTED: 'Biometric: MRZ Capture Started',
+  MRZ_STARTED: 'Biometric: MRZ Started',
   NFC_STARTED: 'Biometric: NFC Started',
   NFC_SUCCEEDED: 'Biometric: NFC Succeeded',
 

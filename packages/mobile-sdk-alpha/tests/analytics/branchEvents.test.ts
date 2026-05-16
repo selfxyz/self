@@ -11,7 +11,7 @@ import { AadhaarEvents, BiometricEvents, KycEvents, PassportEvents } from '../..
 // rename forces an explicit test update plus a dashboard migration.
 describe('branch event constants (ANA-12)', () => {
   it('BiometricEvents covers the six ANA-12 milestones with the spec strings', () => {
-    expect(BiometricEvents.MRZ_CAPTURE_STARTED).toBe('Biometric: MRZ Capture Started');
+    expect(BiometricEvents.MRZ_STARTED).toBe('Biometric: MRZ Started');
     expect(BiometricEvents.MRZ_CAPTURED).toBe('Biometric: MRZ Captured');
     expect(BiometricEvents.NFC_STARTED).toBe('Biometric: NFC Started');
     expect(BiometricEvents.NFC_SUCCEEDED).toBe('Biometric: NFC Succeeded');
