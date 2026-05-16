@@ -155,6 +155,25 @@ If a new event would help product but requires a forbidden field, the answer is 
 
 The signature-algorithm and country properties on `DOCUMENT_PARSED` and `DOCUMENT_UNSUPPORTED` are the actual product-prioritization signal — the dashboard query "top 10 (country, sig_algo) combinations failing the support check" tells the team which DSCs to add next.
 
+#### `document_type` is intentionally sourced from three different places
+
+The `document_type` property name is the same on all six biometric events, but the underlying source differs by event — by design. Each source answers a different question, and collapsing them would erase information.
+
+| Event | `document_type` source | Question it answers |
+| --- | --- | --- |
+| `MRZ_STARTED` | User's IDPicker selection (`selectedDocumentType` → `resolveOnboardingBranch`) | **Intent** — what did the user say they had? |
+| `MRZ_CAPTURED` | First character of the OCR'd MRZ (line 1 of the document itself) | **Ground truth** — what does the physical document say it is? |
+| `NFC_STARTED` / `NFC_SUCCEEDED` | MRZ store, normalized after parse | **Pipeline state at NFC time** |
+| `DOCUMENT_PARSED` / `DOCUMENT_UNSUPPORTED` | `passportData.documentCategory` from the proving machine after full parse | **Confirmed state post-validation** |
+
+The disagreements across these sources are signal, not noise:
+
+- `MRZ_STARTED.document_type ≠ MRZ_CAPTURED.document_type` on the same `attempt_id` = user tapped the wrong document type in the picker and the camera caught the mismatch. UX-confusion signal.
+- `MRZ_CAPTURED.document_type ≠ DOCUMENT_PARSED.document_type` = OCR and proving-machine parse disagreed. Data-quality / parser-bug signal.
+- The three pipeline-state events (`NFC_STARTED`, `NFC_SUCCEEDED`, `DOCUMENT_PARSED`) should always agree within the same `attempt_id`; divergence is a bug in the MRZ-store-to-proving-machine handoff.
+
+Dashboards must be deliberate about which source they query. For "what types of documents do users try to scan?" use `MRZ_CAPTURED` (ground truth). For "what types do users intend to scan?" use `MRZ_STARTED` (intent). Do NOT average or coalesce across events — they're not measuring the same thing.
+
 ### KYC
 
 | Constant | Event name | Fire site | Additional properties |
@@ -302,9 +321,10 @@ All branch event emissions go through this helper, never raw `selfClient.trackEv
 
 After events are live in production for 24 hours and verified in the dev Mixpanel project, build three new dashboards in Mixpanel:
 
-- **Biometric Funnel**: canonical funnel filtered to `initial_branch in (biometric_passport, biometric_id)`, plus a sequential funnel of `MRZ_STARTED → MRZ_CAPTURED → NFC_STARTED → NFC_SUCCEEDED → DOCUMENT_PARSED`. Side panel: top 10 `(country_code, signature_algorithm)` combinations from `DOCUMENT_UNSUPPORTED`.
-- **KYC Funnel**: canonical funnel filtered to `initial_branch = 'kyc'`, plus a sequential funnel of `SESSION_REQUESTED → SESSION_CREATED → PROVIDER_OPENED → PROVIDER_CLOSED (outcome=completed)`. Side panel: outcome breakdown of `PROVIDER_CLOSED`.
+- **Biometric Funnel**: canonical funnel filtered to `initial_branch in (biometric_passport, biometric_id)`, plus a sequential funnel of `Biometric: MRZ Started → Biometric: MRZ Captured → Biometric: NFC Started → Biometric: NFC Succeeded → Biometric: Document Parsed`. Side panel: top 10 `(country_code, signature_algorithm)` combinations from `Biometric: Document Unsupported`.
+- **KYC Funnel**: canonical funnel filtered to `initial_branch = 'kyc'`, plus a sequential funnel of `KYC: Session Requested → KYC: Session Created → KYC: Provider Opened → KYC: Provider Closed (outcome=completed)`. Side panel: outcome breakdown of `KYC: Provider Closed`. Note: query both `initial_branch = 'kyc'` AND `current_branch = 'kyc'` to capture all three KYC entry paths (pure-KYC + biometric→KYC fallback via either `LogoConfirmationScreen` or `useKycLauncher`).
 - **Aadhaar Funnel**: canonical funnel filtered to `initial_branch = 'aadhaar'`, plus the 7-step Aadhaar drilldown.
+- **Document Type Mismatch** (new signal): count of attempts where `MRZ_STARTED.document_type ≠ MRZ_CAPTURED.document_type` for the same `attempt_id`. Reflects users who tapped the wrong document type in the IDPicker — UX-confusion signal. Break down by `(intended, scanned)` pair (e.g. *"intended: passport, scanned: id_card: 142 attempts"*) to see which direction the confusion runs. If one direction dominates, the IDPicker copy or iconography likely needs work.
 
 Dashboard build is *part* of this PR (docs + screenshots). The dashboards themselves are constructed in the dev Mixpanel project and migrated to prod with the merge.
 
