@@ -42,7 +42,7 @@ flowchart TD
 
     subgraph BiometricFunnel[BiometricEvents]
         BIO --> B1[MRZ_STARTED<br/>camera mount]
-        B1 --> B2[MRZ_CAPTURED<br/>parseable MRZ + duration]
+        B1 --> B2[MRZ_CAPTURED<br/>fires when MRZ parses; payload is duration only]
         B2 --> B3[NFC_STARTED<br/>nfc_method: BAC or PACE]
         B3 --> B4[NFC_SUCCEEDED<br/>chip read + duration]
         B4 --> B5[DOCUMENT_PARSED<br/>country_code + signature_algorithm]
@@ -127,6 +127,16 @@ Add `trackBranchEvent(selfClient, eventName, properties)` to `packages/mobile-sd
 - NOT bootstrap a fake attempt if `currentAttempt` is null (unlike `trackOnboardingStep`). Branch events fire only inside an active onboarding attempt; if there's no attempt, they no-op silently. This prevents the same disclosure-pollution class of bug ANA-11 fixed for `PROOF_STARTED`.
 - NOT dedupe (no fire-once guard). Branch events can legitimately fire multiple times per attempt (e.g. multiple OCR retries before a successful MRZ).
 
+### Payload invariant — no PII
+
+Branch event payloads carry **categorical, operational, and timing properties only**. Never fire raw document fields, raw user input, raw provider responses, or anything that identifies a person.
+
+- Allowed: enum-style categories (`document_type`, `outcome`, `unsupported_reason`, `nfc_method`), operational identifiers (`provider`, `signature_algorithm`, `csca_hash_algorithm`), aggregate metrics (`duration_seconds`, `qr_age_days`, `attempt_count`), error codes from typed error enums.
+- Allowed but treat as quasi-identifiers: `country_code`. Already present on the canonical funnel (`Onboarding: Country Selected`), so per-event stamping on `DOCUMENT_PARSED` / `DOCUMENT_UNSUPPORTED` is not new exposure and is needed for the (country × signature_algorithm) DSC-prioritization view.
+- Forbidden: MRZ contents, document number, name, DOB, expiry, nationality string, photo bytes, Aadhaar QR payload, KYC selfie/liveness frames, provider-returned PII, sanitized-but-readable error messages that include any of the above.
+
+If a new event would help product but requires a forbidden field, the answer is a Sentry breadcrumb (ANA-13), not a new Mixpanel event. Tests that snapshot event strings should also assert the property whitelist for that event.
+
 ## Branch event tables
 
 ### Biometric (passport + biometric ID)
@@ -134,7 +144,7 @@ Add `trackBranchEvent(selfClient, eventName, properties)` to `packages/mobile-sd
 | Constant | Event name | Fire site | Additional properties |
 | --- | --- | --- | --- |
 | `BiometricEvents.MRZ_STARTED` | `Biometric: MRZ Started` | `app/src/screens/documents/scanning/DocumentCameraScreen.tsx` on camera mount | `document_type` |
-| `BiometricEvents.MRZ_CAPTURED` | `Biometric: MRZ Captured` | Same screen, when `useReadMRZ` returns a parseable MRZ | `document_type`, `duration_seconds` |
+| `BiometricEvents.MRZ_CAPTURED` | `Biometric: MRZ Captured` | `useReadMRZ` success callback, when the camera returns a parseable MRZ. The MRZ contents themselves are NEVER fired — `document_type` is the document category enum, `duration_seconds` is wall-clock from camera mount. | `document_type`, `duration_seconds` |
 | `BiometricEvents.NFC_STARTED` | `Biometric: NFC Started` | `DocumentNFCScanScreen.tsx` on NFC begin | `document_type`, `nfc_method` (`'BAC' \| 'PACE'`) |
 | `BiometricEvents.NFC_SUCCEEDED` | `Biometric: NFC Succeeded` | Same screen on chip read complete | `document_type`, `duration_seconds` |
 | `BiometricEvents.DOCUMENT_PARSED` | `Biometric: Document Parsed` | `provingMachine.ts` `validating_document` state on successful parse | `document_type`, `country_code`, `signature_algorithm`, `csca_hash_algorithm` |
