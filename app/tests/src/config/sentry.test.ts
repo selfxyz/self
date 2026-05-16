@@ -129,4 +129,18 @@ describe('redactSensitiveFields (ANA-13)', () => {
   it('handles events without breadcrumbs/contexts/extra', () => {
     expect(() => redactSensitiveFields({})).not.toThrow();
   });
+
+  it('preserves standard Sentry context keys that contain "name"', () => {
+    const event = redactSensitiveFields({
+      contexts: {
+        os: { name: 'iOS', version: '17.4' },
+        device: { name: 'iPhone 15', model: 'iPhone16,1' },
+        app: { app_name: 'Self', app_version: '2.9.23' },
+      },
+    });
+    const ctx = event.contexts as Record<string, Record<string, unknown>>;
+    expect(ctx.os.name).toBe('iOS');
+    expect(ctx.device.name).toBe('iPhone 15');
+    expect(ctx.app.app_name).toBe('Self');
+  });
 });

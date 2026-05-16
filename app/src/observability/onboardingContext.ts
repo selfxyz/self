@@ -33,7 +33,7 @@ const COHORT_TAG_KEYS: readonly (keyof OnboardingTagSnapshot)[] = [
 
 export function clearOnboardingTags(): void {
   for (const key of COHORT_TAG_KEYS) {
-    Sentry.setTag(key, null as unknown as string);
+    Sentry.setTag(key, null);
   }
 }
 

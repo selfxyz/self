@@ -65,7 +65,7 @@ export const captureException = (
 // concrete fields the onboarding flow surfaces; broaden it cautiously — every
 // added term silently strips data from forensic context.
 const SENSITIVE_KEY_PATTERN =
-  /passport|mrz|dg\d|chip|aadhaar|name|dob|birth|photo/i;
+  /passport|mrz|dg\d|chip|aadhaar|(?:first|last|full|given|family|holder|sur)_?name|name_?(?:first|last|of_?holder|holder)|date_?of_?birth|dob|birth|photo/i;
 const REDACTED = '[REDACTED]';
 
 const redactObjectInPlace = <T extends Record<string, unknown>>(obj: T): T => {
