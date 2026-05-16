@@ -11,7 +11,6 @@ import { BodyText, PrimaryButton, SecondaryButton, Title, View, XStack } from 's
 import ButtonsContainer from 'src/components/ButtonsContainer';
 import { DelayedLottieView } from 'src/components/DelayedLottieView';
 import TextsContainer from 'src/components/TextsContainer';
-import { PassportEvents } from 'src/constants/analytics';
 import { black, slate100, slate400, slate500, white } from 'src/constants/colors';
 import { dinot } from 'src/constants/fonts';
 import { NFC_IMAGE } from 'src/constants/images';
@@ -43,7 +42,7 @@ type DocumentNFCScreenProps = {
 
 export const DocumentNFCScreen: React.FC<DocumentNFCScreenProps> = (props: DocumentNFCScreenProps) => {
   const selfClient = useSelfClient();
-  const { trackEvent, logNFCEvent, trackNfcEvent, useMRZStore } = selfClient;
+  const { logNFCEvent, useMRZStore } = selfClient;
 
   const { passportNumber, dateOfBirth, dateOfExpiry, documentType, countryCode } = useMRZStore();
 
@@ -190,15 +189,9 @@ export const DocumentNFCScreen: React.FC<DocumentNFCScreenProps> = (props: Docum
       }
       scanTimeoutRef.current = setTimeout(() => {
         scanCancelledRef.current = true;
-        trackEvent(PassportEvents.NFC_SCAN_FAILED, {
-          error: 'timeout',
-        });
         logNFCEvent('warn', 'scan_timeout', {
           ...baseContext,
           stage: 'timeout',
-        });
-        trackNfcEvent(PassportEvents.NFC_SCAN_FAILED, {
-          error: 'timeout',
         });
         handleNFCError('Scan timed out. Please try again.');
         setIsNfcSheetOpen(false);
@@ -231,9 +224,6 @@ export const DocumentNFCScreen: React.FC<DocumentNFCScreenProps> = (props: Docum
 
         const scanDurationSeconds = ((Date.now() - scanStartTime) / 1000).toFixed(2);
         console.log('NFC Scan Successful - Duration:', scanDurationSeconds, 'seconds');
-        trackEvent(PassportEvents.NFC_SCAN_SUCCESS, {
-          duration_seconds: parseFloat(scanDurationSeconds),
-        });
         logNFCEvent(
           'info',
           'scan_success',
@@ -248,13 +238,6 @@ export const DocumentNFCScreen: React.FC<DocumentNFCScreenProps> = (props: Docum
           passportData = scanResponse.passportData;
         } catch (e: unknown) {
           console.error('Parsing NFC Response Unsuccessful');
-          const errMsg = sanitizeErrorMessage(e instanceof Error ? e.message : String(e));
-          trackEvent(PassportEvents.NFC_RESPONSE_PARSE_FAILED, {
-            error: errMsg,
-          });
-          trackNfcEvent(PassportEvents.NFC_RESPONSE_PARSE_FAILED, {
-            error: errMsg,
-          });
           return;
         }
         if (passportData) {
@@ -275,18 +258,8 @@ export const DocumentNFCScreen: React.FC<DocumentNFCScreenProps> = (props: Docum
           return;
         }
 
-        const scanDurationSeconds = ((Date.now() - scanStartTime) / 1000).toFixed(2);
         console.error('NFC Scan Unsuccessful:', e);
         const message = e instanceof Error ? e.message : String(e);
-        const sanitized = sanitizeErrorMessage(message);
-        trackEvent(PassportEvents.NFC_SCAN_FAILED, {
-          error: sanitized,
-          duration_seconds: parseFloat(scanDurationSeconds),
-        });
-        trackNfcEvent(PassportEvents.NFC_SCAN_FAILED, {
-          error: sanitized,
-          duration_seconds: parseFloat(scanDurationSeconds),
-        });
         handleNFCError(message);
         // We deliberately avoid opening any external feedback widgets here;
         // users can send feedback via the email action in the modal.
@@ -318,7 +291,6 @@ export const DocumentNFCScreen: React.FC<DocumentNFCScreenProps> = (props: Docum
     dateOfBirth,
     dateOfExpiry,
     isPacePolling,
-    trackEvent,
   ]);
 
   const onCancelPress = useCallback(() => {
@@ -450,18 +422,10 @@ export const DocumentNFCScreen: React.FC<DocumentNFCScreenProps> = (props: Docum
               )}
             </TextsContainer>
             <ButtonsContainer>
-              <PrimaryButton
-                trackEvent={
-                  isNfcEnabled || !isNfcSupported ? PassportEvents.START_PASSPORT_NFC : PassportEvents.OPEN_NFC_SETTINGS
-                }
-                onPress={onVerifyPress}
-                disabled={!isNfcSupported}
-              >
+              <PrimaryButton onPress={onVerifyPress} disabled={!isNfcSupported}>
                 {isNfcEnabled || !isNfcSupported ? 'Start Scan' : 'Open settings'}
               </PrimaryButton>
-              <SecondaryButton trackEvent={PassportEvents.CANCEL_PASSPORT_NFC} onPress={onCancelPress}>
-                Cancel
-              </SecondaryButton>
+              <SecondaryButton onPress={onCancelPress}>Cancel</SecondaryButton>
             </ButtonsContainer>
           </>
         )}

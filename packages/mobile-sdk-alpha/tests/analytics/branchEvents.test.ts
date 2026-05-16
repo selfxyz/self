@@ -4,7 +4,7 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { AadhaarEvents, BiometricEvents, KycEvents, PassportEvents } from '../../src/constants/analytics';
+import { AadhaarEvents, BiometricEvents, KycEvents } from '../../src/constants/analytics';
 
 // Branch event names are dashboard-load-bearing — Mixpanel funnels are keyed
 // off these exact strings. Lock them with a snapshot-style assertion so a
@@ -46,9 +46,4 @@ describe('branch event constants (ANA-12)', () => {
     expect(AadhaarEvents.CONTINUE_PRESSED).toBe('Aadhaar: Continue Pressed');
   });
 
-  it('PassportEvents remains as a deprecation alias of BiometricEvents', () => {
-    // Same identity — call sites importing PassportEvents continue to work
-    // until the next minor drops the alias.
-    expect(PassportEvents).toBe(BiometricEvents);
-  });
 });

@@ -82,7 +82,6 @@ import {
   configureNfcAnalytics,
   flushAllAnalytics,
   setNfcScanningActive,
-  trackNfcEvent,
 } from '@/services/analytics';
 import { useNfcTroubleStore } from '@/stores/nfcTroubleStore';
 
@@ -108,7 +107,7 @@ type DocumentNFCScanRoute = RouteProp<
 
 const DocumentNFCScanScreen: React.FC = () => {
   const selfClient = useSelfClient();
-  const { trackEvent, useMRZStore } = selfClient;
+  const { useMRZStore } = selfClient;
   const insets = useSafeAreaInsets();
   const revealNfcOptions = useNfcTroubleStore(state => state.revealOptions);
 
@@ -300,9 +299,6 @@ const DocumentNFCScanScreen: React.FC = () => {
       }
       scanTimeoutRef.current = setTimeout(() => {
         scanCancelledRef.current = true;
-        trackEvent(BiometricEvents.NFC_SCAN_FAILED, {
-          error: 'timeout',
-        });
         logNFCEvent('warn', 'scan_timeout', {
           ...baseContext,
           stage: 'timeout',
@@ -326,12 +322,6 @@ const DocumentNFCScanScreen: React.FC = () => {
       scanTimeoutRef.current = setTimeout(() => {
         scanCancelledRef.current = true;
         setNfcScanningActive(false); // Clear scanning state on timeout
-        trackEvent(BiometricEvents.NFC_SCAN_FAILED, {
-          error: 'timeout',
-        });
-        trackNfcEvent(BiometricEvents.NFC_SCAN_FAILED, {
-          error: 'timeout',
-        });
         logNFCEvent('warn', 'scan_timeout', {
           ...baseContext,
           stage: 'timeout',
@@ -396,9 +386,6 @@ const DocumentNFCScanScreen: React.FC = () => {
           scanDurationSeconds,
           'seconds',
         );
-        trackEvent(BiometricEvents.NFC_SCAN_SUCCESS, {
-          duration_seconds: parseFloat(scanDurationSeconds),
-        });
         trackBranchEvent(selfClient, BiometricEvents.NFC_SUCCEEDED, {
           document_type:
             resolveOnboardingBranch(documentType ?? 'p') === 'biometric_id'
@@ -433,12 +420,6 @@ const DocumentNFCScanScreen: React.FC = () => {
           const sanitized = sanitizeErrorMessage(
             e instanceof Error ? e.message : String(e),
           );
-          trackEvent(BiometricEvents.NFC_RESPONSE_PARSE_FAILED, {
-            error: sanitized,
-          });
-          trackNfcEvent(BiometricEvents.NFC_RESPONSE_PARSE_FAILED, {
-            error: sanitized,
-          });
           revealNfcOptions();
           openErrorModal(sanitized);
           return;
@@ -459,21 +440,8 @@ const DocumentNFCScanScreen: React.FC = () => {
         if (scanCancelledRef.current) {
           return;
         }
-        const scanDurationSeconds = (
-          (Date.now() - scanStartTime) /
-          1000
-        ).toFixed(2);
         console.error('NFC Scan Unsuccessful:', e);
         const message = e instanceof Error ? e.message : String(e);
-        const sanitized = sanitizeErrorMessage(message);
-        trackEvent(BiometricEvents.NFC_SCAN_FAILED, {
-          error: sanitized,
-          duration_seconds: parseFloat(scanDurationSeconds),
-        });
-        trackNfcEvent(BiometricEvents.NFC_SCAN_FAILED, {
-          error: sanitized,
-          duration_seconds: parseFloat(scanDurationSeconds),
-        });
         revealNfcOptions();
         openErrorModal(message);
         // We deliberately avoid opening any external feedback widgets here;
@@ -507,7 +475,6 @@ const DocumentNFCScanScreen: React.FC = () => {
     navigation,
     openErrorModal,
     selfClient,
-    trackEvent,
     shouldInjectError,
     revealNfcOptions,
   ]);
@@ -517,7 +484,6 @@ const DocumentNFCScanScreen: React.FC = () => {
   });
 
   const onCancelPress = () => {
-    trackEvent(BiometricEvents.CANCEL_PASSPORT_NFC);
     flushAllAnalytics();
     logNFCEvent('info', 'scan_cancelled', { ...baseContext, stage: 'cancel' });
     if (isNfcSupported && isNfcEnabled) {
@@ -683,11 +649,6 @@ const DocumentNFCScanScreen: React.FC = () => {
             </TextsContainer>
             <ButtonsContainer>
               <PrimaryButton
-                trackEvent={
-                  isNfcEnabled || !isNfcSupported
-                    ? BiometricEvents.START_PASSPORT_NFC
-                    : BiometricEvents.OPEN_NFC_SETTINGS
-                }
                 onPress={onVerifyPress}
                 disabled={!isNfcSupported}
               >

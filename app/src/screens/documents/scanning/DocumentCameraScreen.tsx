@@ -183,12 +183,7 @@ const DocumentCameraScreen: React.FC = () => {
             Self will not capture an image of your ID.
           </Additional>
 
-          <SecondaryButton
-            trackEvent={BiometricEvents.CAMERA_SCREEN_CLOSED}
-            onPress={onCancelPress}
-          >
-            Cancel
-          </SecondaryButton>
+          <SecondaryButton onPress={onCancelPress}>Cancel</SecondaryButton>
         </YStack>
       </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>

@@ -67,45 +67,15 @@ export const BackupEvents = {
  * Biometric branch events. Covers passport AND biometric ID — the same code
  * path serves both, distinguished by a `document_type` property on each event.
  *
- * The MRZ_*, NFC_*, DOCUMENT_* keys at the top are the canonical milestone
- * events introduced in ANA-12; emit them via `trackBranchEvent`.
- *
- * The remaining keys are diagnostic events retained from the legacy
- * `PassportEvents` group. Their string values keep the `Passport:` prefix
- * deliberately, to preserve Mixpanel data continuity until ANA-13 migrates
- * them off Mixpanel and onto Sentry breadcrumbs.
+ * Emit via `trackBranchEvent`.
  */
 export const BiometricEvents = {
-  // ANA-12 milestone events (emit via trackBranchEvent)
   DOCUMENT_PARSED: 'Biometric: Document Parsed',
   DOCUMENT_UNSUPPORTED: 'Biometric: Document Unsupported',
   MRZ_CAPTURED: 'Biometric: MRZ Captured',
   MRZ_STARTED: 'Biometric: MRZ Started',
   NFC_STARTED: 'Biometric: NFC Started',
   NFC_SUCCEEDED: 'Biometric: NFC Succeeded',
-
-  // Diagnostic events — slated for Sentry migration in ANA-13.
-  CAMERA_SCAN_CANCELLED: 'Passport: Camera Scan Cancelled',
-  CAMERA_SCAN_FAILED: 'Passport: Camera Scan Failed',
-  CAMERA_SCAN_STARTED: 'Passport: Camera Scan Started',
-  CAMERA_SCAN_SUCCESS: 'Passport: Camera Scan Success',
-  CAMERA_SCREEN_CLOSED: 'Passport: Camera View Closed',
-  CANCEL_PASSPORT_NFC: 'Passport: Cancel Passport NFC',
-  COMING_SOON: 'Passport: Passport Not Supported',
-  DATA_CONFIRMATION_COMPLETED: 'Passport: Data Confirmation Completed',
-  DATA_LOAD_ERROR: 'Passport: Passport Data Load Error',
-  DISMISS_COMING_SOON: 'Passport: Dismiss Unsupported Passport',
-  MRZ_DATA_MODIFIED: 'Passport: MRZ Data Modified',
-  NFC_RESPONSE_PARSE_FAILED: 'Passport: Parsing NFC Response Unsuccessful',
-  NFC_SCAN_FAILED: 'Passport: NFC Scan Failed',
-  NFC_SCAN_SUCCESS: 'Passport: NFC Scan Success',
-  NOTIFY_COMING_SOON: 'Passport: Notify Unsupported Passport',
-  OPEN_NFC_SETTINGS: 'Passport: Open NFC Settings',
-  OWNERSHIP_CONFIRMED: 'Passport: Passport Ownership Confirmed',
-  PASSPORT_DATA_NOT_FOUND: 'Passport: Passport Data Not Found',
-  PASSPORT_PARSE_FAILED: 'Passport: Passport Parse Failed',
-  PASSPORT_PARSED: 'Passport: Passport Parsed',
-  START_PASSPORT_NFC: 'Passport: Start Passport NFC',
 };
 
 export const DocumentEvents = {
@@ -184,14 +154,6 @@ export const OnboardingEvents = {
   FAILED: 'Onboarding: Failed',
   STEP_RETRIED: 'Onboarding: Step Retried',
 };
-
-/**
- * @deprecated Renamed to `BiometricEvents` in ANA-12 — the same code path
- * covers passports and biometric IDs, distinguished by a `document_type`
- * property. This alias keeps existing call sites compiling for one release
- * and is removed in the next minor.
- */
-export const PassportEvents = BiometricEvents;
 
 export const PointEvents = {
   HOME_POINT_EARN_POINTS_OPENED: 'Points: Home Earn Points Opened',
