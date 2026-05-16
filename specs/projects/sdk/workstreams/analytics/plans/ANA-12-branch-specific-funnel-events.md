@@ -194,16 +194,69 @@ Update all call sites in `app/src/` and `packages/mobile-sdk-alpha/src/` to impo
 
 File: `packages/mobile-sdk-alpha/src/constants/analytics.ts` — add the `KycEvents` group.
 
-Wire emission sites in `app/src/hooks/useKycLauncher.ts`:
+KYC has **three** entry paths into the same provider call. All three must emit the full `SESSION_REQUESTED → SESSION_CREATED → PROVIDER_OPENED → PROVIDER_CLOSED` sequence — if any path is silent, the KYC dashboard under-counts that segment.
+
+```mermaid
+flowchart TD
+    Start[User in onboarding] --> Pick[IDPicker: user selects document type]
+
+    Pick -->|"selects 'kyc' directly"| Path3
+    Pick -->|"selects passport/ID"| Logo[LogoConfirmationScreen]
+    Logo -->|"taps 'No' on chip check"| Path2
+    Logo -->|"taps 'Yes'"| Bio[Biometric flow]
+    Bio -->|"NFC fails / unsupported device"| Path1
+    Bio -->|"MRZ fails repeatedly"| Path1
+
+    subgraph Path1 [Path A — useKycLauncher hook]
+        A1[useKycLauncher.launchKycVerification]
+        A1 --> A2[SCAN_STARTED + 5 KYC events inline in the hook]
+    end
+
+    subgraph Path2 [Path B — LogoConfirmationScreen inline]
+        B0[setOnboardingBranch kyc, then modal]
+        B0 --> B1[SCAN_STARTED + 5 KYC events inline in the screen]
+    end
+
+    subgraph Path3 [Path C — selfClientProvider DOCUMENT_TYPE_SELECTED listener]
+        C1[case 'kyc' inline IIFE]
+        C1 --> C2[SCAN_STARTED + 5 KYC events inline in the listener]
+    end
+
+    Path1 --> Provider[createKycSession + launchKycVerification]
+    Path2 --> Provider
+    Path3 --> Provider
+    Provider --> Outcome{result.type}
+    Outcome -->|completed| Success[KycSuccess screen]
+    Outcome -->|cancelled| Cancel[stay / navigate home]
+    Outcome -->|failed| Fail[KycFailureScreen → RETRY_TRIGGERED]
+
+    classDef path fill:#dcfce7,stroke:#15803d
+    classDef entry fill:#fef3c7,stroke:#b45309
+    class Path1,Path2,Path3 path
+    class Start,Pick,Logo,Bio entry
+```
+
+| Path | Trigger | File | Emits |
+| --- | --- | --- | --- |
+| A | Biometric fallback (NFC/MRZ failure, unsupported device) | `app/src/hooks/useKycLauncher.ts` | `SCAN_STARTED` + 5 KYC events |
+| B | User says "no chip" on `LogoConfirmation` | `app/src/screens/documents/selection/LogoConfirmationScreen.tsx` | `SCAN_STARTED` + 5 KYC events |
+| C | User picks `kyc` directly from IDPicker | `app/src/providers/selfClientProvider.tsx` (`DOCUMENT_TYPE_SELECTED` listener, `case 'kyc'`) | `SCAN_STARTED` + 5 KYC events |
+
+Wire the emissions in each:
 
 - Before `createKycSession` → `SESSION_REQUESTED`
 - After `createKycSession` resolves → `SESSION_CREATED` with `duration_seconds`
-- Before `startKycVerification` → `PROVIDER_OPENED`
-- After `startKycVerification` resolves (any of the three result types) → `PROVIDER_CLOSED` with `outcome`
+- Before `launchKycVerification` / `startKycVerification` → `PROVIDER_OPENED`
+- After the provider call resolves (all three result types) → `PROVIDER_CLOSED` with `outcome` + `error_code` (when failed) + `duration_seconds`
+- If an unhandled exception happens after the provider opened → also `PROVIDER_CLOSED` with `outcome: 'failed'`, `error_code: 'exception'`
 
-Wire `RETRY_TRIGGERED` in `KycFailureScreen.tsx` retry button handler.
+Wire `RETRY_TRIGGERED` in `KycFailureScreen.tsx` retry button handler. `attempt_count` MUST come from `incrementAttemptRetryCount('kyc')` on the funnel attempt — NOT a screen-local `useRef` — because the screen unmounts on `navigation.navigate('CountryPicker')` and a `useRef` would always emit `1`.
 
-`LogoConfirmationScreen.tsx` direct path (the one not using the hook) gets the same emission additions inline. Note that `setOnboardingBranch('kyc')` MUST fire before any KYC branch event so `current_branch` is already `'kyc'` when `SESSION_REQUESTED` / `SESSION_CREATED` are stamped — otherwise those two events ship with the stale biometric branch. Consolidating onto `useKycLauncher` is a separate follow-up.
+**Path B invariant**: `setOnboardingBranch('kyc')` MUST fire before any KYC branch event so `current_branch` is already `'kyc'` when `SESSION_REQUESTED` / `SESSION_CREATED` are stamped — otherwise those two events ship with the stale biometric branch.
+
+**Path C invariant**: this path runs inside an `addListener(SdkEvents.DOCUMENT_TYPE_SELECTED, ...)` callback. The canonical `SCAN_STARTED` step bootstraps the funnel attempt via `ensureAttempt` — fire it before any `trackBranchEvent` call or the branch events no-op (helper returns early when `currentAttempt` is null).
+
+Consolidating these three paths onto a single helper is a separate follow-up. Until then, any change to KYC emission must be applied in all three places.
 
 ### Step 3 — curate `AadhaarEvents`
 
