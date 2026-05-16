@@ -4,7 +4,11 @@
 
 import { act, renderHook, waitFor } from '@testing-library/react-native';
 
-import { trackOnboardingStep, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import {
+  trackBranchEvent,
+  trackOnboardingStep,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
 import { OnboardingEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import { useKycLauncher } from '@/hooks/useKycLauncher';
@@ -23,12 +27,20 @@ jest.mock('@react-navigation/native', () => ({
 jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
   __esModule: true,
   sanitizeErrorMessage: (msg: unknown) => String(msg),
+  trackBranchEvent: jest.fn(),
   trackOnboardingStep: jest.fn(),
   useSelfClient: jest.fn(),
 }));
 
 jest.mock('@selfxyz/mobile-sdk-alpha/constants/analytics', () => ({
   OnboardingEvents: { SCAN_STARTED: 'Onboarding: Document Scan Started' },
+  KycEvents: {
+    SESSION_REQUESTED: 'KYC: Session Requested',
+    SESSION_CREATED: 'KYC: Session Created',
+    PROVIDER_OPENED: 'KYC: Provider Opened',
+    PROVIDER_CLOSED: 'KYC: Provider Closed',
+    RETRY_TRIGGERED: 'KYC: Retry Triggered',
+  },
 }));
 
 jest.mock('@/integrations/kyc', () => ({
@@ -49,6 +61,9 @@ const mockStartKycVerification = startKycVerification as jest.MockedFunction<
 const mockTrackOnboardingStep = trackOnboardingStep as jest.MockedFunction<
   typeof trackOnboardingStep
 >;
+const mockTrackBranchEvent = trackBranchEvent as jest.MockedFunction<
+  typeof trackBranchEvent
+>;
 const mockUseSelfClient = useSelfClient as jest.MockedFunction<
   typeof useSelfClient
 >;
@@ -67,17 +82,17 @@ describe('useKycLauncher', () => {
     } as unknown as ReturnType<typeof useFeedback>);
   });
 
-  it('emits SCAN_STARTED after createKycSession resolves and before launch', async () => {
+  it('emits SCAN_STARTED before createKycSession (intent-based, matches biometric and Aadhaar)', async () => {
     const callOrder: string[] = [];
+    mockTrackOnboardingStep.mockImplementation(((..._args: unknown[]) => {
+      callOrder.push('trackOnboardingStep');
+    }) as unknown as typeof trackOnboardingStep);
     mockCreateKycSession.mockImplementation(async () => {
       callOrder.push('createKycSession');
       return { sessionId: 'sess-1', sessionToken: 'tok-1' } as Awaited<
         ReturnType<typeof createKycSession>
       >;
     });
-    mockTrackOnboardingStep.mockImplementation(((..._args: unknown[]) => {
-      callOrder.push('trackOnboardingStep');
-    }) as unknown as typeof trackOnboardingStep);
     mockStartKycVerification.mockImplementation(async () => {
       callOrder.push('launchKycVerification');
       return { type: 'cancelled' } as Awaited<
@@ -94,8 +109,8 @@ describe('useKycLauncher', () => {
     });
 
     expect(callOrder).toEqual([
-      'createKycSession',
       'trackOnboardingStep',
+      'createKycSession',
       'launchKycVerification',
     ]);
     expect(mockTrackOnboardingStep).toHaveBeenCalledWith(
@@ -105,7 +120,7 @@ describe('useKycLauncher', () => {
     );
   });
 
-  it('does not emit SCAN_STARTED when createKycSession fails', async () => {
+  it('still emits SCAN_STARTED when createKycSession fails (captures attempted-but-failed intent)', async () => {
     const consoleErrorSpy = jest
       .spyOn(console, 'error')
       .mockImplementation(() => {});
@@ -123,8 +138,17 @@ describe('useKycLauncher', () => {
 
     await waitFor(() => expect(onError).toHaveBeenCalled());
 
-    expect(mockTrackOnboardingStep).not.toHaveBeenCalled();
+    expect(mockTrackOnboardingStep).toHaveBeenCalledWith(
+      selfClientStub,
+      OnboardingEvents.SCAN_STARTED,
+      { branch: 'kyc' },
+    );
     expect(mockStartKycVerification).not.toHaveBeenCalled();
+    expect(mockTrackBranchEvent).not.toHaveBeenCalledWith(
+      selfClientStub,
+      expect.stringMatching(/^KYC: Session Created$/),
+      expect.anything(),
+    );
 
     consoleErrorSpy.mockRestore();
   });
