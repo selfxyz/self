@@ -132,6 +132,7 @@ export {
 export {
   completeOnboardingAttempt,
   failOnboardingAttempt,
+  incrementAttemptRetryCount,
   resolveOnboardingBranch,
   setOnboardingBranch,
   trackBranchEvent,

@@ -268,6 +268,17 @@ export function trackBranchEvent(
  * per-stage retry counter so later `trackOnboardingStep` calls on the
  * success path can include `attempt_count`.
  */
+/**
+ * Increment and return a named retry counter on the active attempt. Survives
+ * screen unmounts because the attempt is module-scoped. Returns 0 when no
+ * attempt is active (caller should generally skip the event in that case).
+ */
+export function incrementAttemptRetryCount(key: string): number {
+  if (!currentAttempt) return 0;
+  currentAttempt.retryCounts[key] = (currentAttempt.retryCounts[key] ?? 0) + 1;
+  return currentAttempt.retryCounts[key];
+}
+
 export function trackOnboardingRetry(
   selfClient: Pick<SelfClient, 'trackEvent'>,
   stage: OnboardingStage,

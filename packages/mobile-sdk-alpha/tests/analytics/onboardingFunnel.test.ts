@@ -9,6 +9,7 @@ import {
   _resetOnboardingFunnelForTests,
   completeOnboardingAttempt,
   failOnboardingAttempt,
+  incrementAttemptRetryCount,
   resolveOnboardingBranch,
   setOnboardingBranch,
   trackBranchEvent,
@@ -192,6 +193,32 @@ describe('trackOnboardingRetry', () => {
     expect(retryCalls).toHaveLength(2);
     expect(retryCalls[0][1].attempt_count).toBe(1);
     expect(retryCalls[1][1].attempt_count).toBe(2);
+  });
+});
+
+describe('incrementAttemptRetryCount', () => {
+  it('returns increasing counts across calls within the same attempt', () => {
+    const client = makeClient();
+    trackOnboardingStep(client, OnboardingEvents.DOCUMENT_TYPE_SELECTED, {
+      branch: 'biometric_passport',
+    });
+
+    expect(incrementAttemptRetryCount('kyc')).toBe(1);
+    expect(incrementAttemptRetryCount('kyc')).toBe(2);
+    expect(incrementAttemptRetryCount('kyc')).toBe(3);
+  });
+
+  it('tracks counters per key independently', () => {
+    const client = makeClient();
+    trackOnboardingStep(client, OnboardingEvents.COUNTRY_SELECTED, { country_code: 'FR' });
+
+    expect(incrementAttemptRetryCount('kyc')).toBe(1);
+    expect(incrementAttemptRetryCount('biometric')).toBe(1);
+    expect(incrementAttemptRetryCount('kyc')).toBe(2);
+  });
+
+  it('returns 0 when no attempt is active', () => {
+    expect(incrementAttemptRetryCount('kyc')).toBe(0);
   });
 });
 
