@@ -78,11 +78,19 @@ function trackOnboardingStep(selfClient, event, properties?) {
 ```ts
 function resolveOnboardingBranch(documentType: string): OnboardingBranch {
   switch (documentType) {
-    case 'p': case 'passport': return 'biometric_passport';
-    case 'i': case 'id_card': return 'biometric_id';
-    case 'a': case 'aadhaar': return 'aadhaar';
-    case 'kyc': return 'kyc';
-    default: return 'kyc';
+    case 'p':
+    case 'passport':
+      return 'biometric_passport';
+    case 'i':
+    case 'id_card':
+      return 'biometric_id';
+    case 'a':
+    case 'aadhaar':
+      return 'aadhaar';
+    case 'kyc':
+      return 'kyc';
+    default:
+      return 'kyc';
   }
 }
 ```
@@ -94,7 +102,11 @@ Lives in `onboardingFunnel.ts:187`. Called at `DOCUMENT_TYPE_SELECTED`; `capture
 `provingMachine.ts` subscribes to state transitions and fires canonical events from the `completed`, `failure`, and `error` states. The `completed` handler uses `didNewRegistrationProof` (set in `post_proving` only when `circuitType === 'register'`) to distinguish a real new registration from the `ALREADY_REGISTERED` shortcut:
 
 ```ts
-if (state.value === 'completed' && get().circuitType === 'register' && get().didNewRegistrationProof) {
+if (
+  state.value === 'completed' &&
+  get().circuitType === 'register' &&
+  get().didNewRegistrationProof
+) {
   trackOnboardingStep(selfClient, OnboardingEvents.PROOF_SUCCEEDED);
   completeOnboardingAttempt(selfClient);
 }
@@ -106,27 +118,27 @@ Disclosure flows reach `completed` with `circuitType === 'disclose'` and fall th
 
 ### Canonical event fire sites
 
-| Constant | Fire site (v1) |
-| --- | --- |
-| `OnboardingEvents.STARTED` | `onboardingFunnel.ts:75` (helper bootstrap inside `ensureAttempt`) |
-| `OnboardingEvents.COUNTRY_SELECTED` | `packages/mobile-sdk-alpha/src/flows/onboarding/country-picker-screen.tsx` `onCountrySelect` |
-| `OnboardingEvents.DOCUMENT_TYPE_SELECTED` | `packages/mobile-sdk-alpha/src/flows/onboarding/id-selection-screen.tsx` `onSelectDocumentType` |
-| `OnboardingEvents.SCAN_STARTED` | `app/src/screens/documents/scanning/DocumentCameraScreen.tsx` (biometric); `LogoConfirmationScreen.tsx:77` (KYC fallback); `AadhaarUploadScreen.tsx` (Aadhaar). KYC pure-entry hook added by ANA-11. |
-| `OnboardingEvents.SCAN_SUCCEEDED` | `DocumentNFCScanScreen.tsx` (biometric); KYC provider success handler; `processAadhaarQRCode` success path. |
-| `OnboardingEvents.PROOF_STARTED` | `provingMachine.ts:488` |
-| `OnboardingEvents.PROOF_SUCCEEDED` | `provingMachine.ts:533` (inside `completed` state, gated) |
-| `OnboardingEvents.COMPLETED` | `completeOnboardingAttempt` in `onboardingFunnel.ts:133` |
-| `OnboardingEvents.FAILED` | `failOnboardingAttempt` invoked from `provingMachine.ts:559` and `:573` (failure / error states) |
-| `OnboardingEvents.STEP_RETRIED` | `RegistrationFallbackMRZScreen.tsx` and `RegistrationFallbackNFCScreen.tsx` retry buttons |
+| Constant                                  | Fire site (v1)                                                                                                                                                                                       |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `OnboardingEvents.STARTED`                | `onboardingFunnel.ts:75` (helper bootstrap inside `ensureAttempt`)                                                                                                                                   |
+| `OnboardingEvents.COUNTRY_SELECTED`       | `packages/mobile-sdk-alpha/src/flows/onboarding/country-picker-screen.tsx` `onCountrySelect`                                                                                                         |
+| `OnboardingEvents.DOCUMENT_TYPE_SELECTED` | `packages/mobile-sdk-alpha/src/flows/onboarding/id-selection-screen.tsx` `onSelectDocumentType`                                                                                                      |
+| `OnboardingEvents.SCAN_STARTED`           | `app/src/screens/documents/scanning/DocumentCameraScreen.tsx` (biometric); `LogoConfirmationScreen.tsx:77` (KYC fallback); `AadhaarUploadScreen.tsx` (Aadhaar). KYC pure-entry hook added by ANA-11. |
+| `OnboardingEvents.SCAN_SUCCEEDED`         | `DocumentNFCScanScreen.tsx` (biometric); KYC provider success handler; `processAadhaarQRCode` success path.                                                                                          |
+| `OnboardingEvents.PROOF_STARTED`          | `provingMachine.ts:488`                                                                                                                                                                              |
+| `OnboardingEvents.PROOF_SUCCEEDED`        | `provingMachine.ts:533` (inside `completed` state, gated)                                                                                                                                            |
+| `OnboardingEvents.COMPLETED`              | `completeOnboardingAttempt` in `onboardingFunnel.ts:133`                                                                                                                                             |
+| `OnboardingEvents.FAILED`                 | `failOnboardingAttempt` invoked from `provingMachine.ts:559` and `:573` (failure / error states)                                                                                                     |
+| `OnboardingEvents.STEP_RETRIED`           | `RegistrationFallbackMRZScreen.tsx` and `RegistrationFallbackNFCScreen.tsx` retry buttons                                                                                                            |
 
 ### Dead-zone fixes
 
-| Screen | v0 behavior | v1 change |
-| --- | --- | --- |
-| `LogoConfirmationScreen.tsx` | No button tracking | Fires diagnostic `App: Logo Confirmation Answered` with `{answer: 'yes' \| 'no'}` |
-| `country-picker-screen.tsx` | Emitted SDK-internal event only | Also calls `trackOnboardingStep(COUNTRY_SELECTED, { country_code })` |
-| `id-selection-screen.tsx` | Emitted SDK-internal event only | Also calls `trackOnboardingStep(DOCUMENT_TYPE_SELECTED, { document_type, country_code, branch })` |
-| `ConfirmBelongingScreen.tsx` | Fired errors only | Adds diagnostic `confirm_belonging_confirmed` event on success |
+| Screen                       | v0 behavior                     | v1 change                                                                                         |
+| ---------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `LogoConfirmationScreen.tsx` | No button tracking              | Fires diagnostic `App: Logo Confirmation Answered` with `{answer: 'yes' \| 'no'}`                 |
+| `country-picker-screen.tsx`  | Emitted SDK-internal event only | Also calls `trackOnboardingStep(COUNTRY_SELECTED, { country_code })`                              |
+| `id-selection-screen.tsx`    | Emitted SDK-internal event only | Also calls `trackOnboardingStep(DOCUMENT_TYPE_SELECTED, { document_type, country_code, branch })` |
+| `ConfirmBelongingScreen.tsx` | Fired errors only               | Adds diagnostic `confirm_belonging_confirmed` event on success                                    |
 
 ### `AbstractButton` fix
 

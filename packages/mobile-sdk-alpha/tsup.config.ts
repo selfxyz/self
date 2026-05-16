@@ -68,6 +68,7 @@ export default defineConfig([
       /^react-native\/.*/,
       '@selfxyz/common',
       /^@selfxyz\/common\/.*/,
+      /^@selfxyz\/mobile-sdk-alpha\/.*/,
       // Common crypto dependencies (already in main app)
       'elliptic',
       'js-sha256',
@@ -126,6 +127,7 @@ export default defineConfig([
       /^react-native\/.*/,
       '@selfxyz/common',
       /^@selfxyz\/common\/.*/,
+      /^@selfxyz\/mobile-sdk-alpha\/.*/,
       // Common crypto dependencies (already in main app)
       'elliptic',
       'js-sha256',

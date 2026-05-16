@@ -61,10 +61,10 @@ vi.mock('react-native', () => ({
   Image: 'div',
   Text: 'span',
   View: 'div',
-  Pressable: vi.fn(({ children, style, ...props }) => {
+  Pressable: vi.fn(({ children, style, onPress, ...props }) => {
     // Handle style as function (for pressed state)
     const computedStyle = typeof style === 'function' ? style({ pressed: false }) : style;
-    return createElement('button', { ...props, style: computedStyle }, children);
+    return createElement('button', { ...props, style: computedStyle, onClick: onPress }, children);
   }),
   TouchableOpacity: 'button',
   ScrollView: 'div',

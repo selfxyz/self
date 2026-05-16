@@ -11103,12 +11103,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@selfxyz/euclid-core@npm:1.4.1":
-  version: 1.4.1
-  resolution: "@selfxyz/euclid-core@npm:1.4.1"
+"@selfxyz/euclid-core@npm:1.4.4, @selfxyz/euclid-core@npm:^1.4.4":
+  version: 1.4.4
+  resolution: "@selfxyz/euclid-core@npm:1.4.4"
   peerDependencies:
     react: ">=18.2.0"
-  checksum: 10c0/9536638ae3ae47ebc125cc36e0b2e54e5ee6c04b4dd35c5839230127d3bd91bae3b668790f3d892381cea776a3231a14ae39fe1284e709f869236b69d3409c1c
+  checksum: 10c0/7d93eeaa73b610cfba562564b1c8beca6727d56b4dc9dff2f8bfe91ab5b7c45153beff57eb143305cb9cd578628154ef238108e3d7a547061634de5daa0ceedf
   languageName: node
   linkType: hard
 
@@ -11328,6 +11328,7 @@ __metadata:
     "@react-native-async-storage/async-storage": "npm:^2.1.2"
     "@selfxyz/common": "workspace:^"
     "@selfxyz/euclid": "npm:^0.6.1"
+    "@selfxyz/euclid-core": "npm:^1.4.4"
     "@testing-library/react": "npm:^14.1.2"
     "@types/react": "npm:^18.3.4"
     "@types/react-dom": "npm:^18.3.0"
@@ -11599,7 +11600,7 @@ __metadata:
     "@scure/bip32": "npm:^2.0.1"
     "@scure/bip39": "npm:^1.6.0"
     "@selfxyz/euclid": "npm:1.4.2"
-    "@selfxyz/euclid-core": "npm:1.4.1"
+    "@selfxyz/euclid-core": "npm:1.4.4"
     "@selfxyz/mobile-sdk-alpha": "workspace:^"
     "@selfxyz/webview-bridge": "workspace:^"
     "@testing-library/react": "npm:^14.1.2"

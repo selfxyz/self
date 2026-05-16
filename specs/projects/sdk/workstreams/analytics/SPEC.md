@@ -1,6 +1,6 @@
 # Onboarding Analytics & Funnel — Implementation Spec
 
-> Last updated: 2026-05-06
+> Last updated: 2026-05-07
 > Owner: Self Wallet / Product Analytics
 > Project: [SDK Overview](../../OVERVIEW.md)
 > Status: Active
@@ -48,39 +48,40 @@ Four observability layers, three in Mixpanel, one in Sentry:
 - `Onboarding: Started` fires exactly once per attempt, emitted by the funnel helper's `ensureAttempt` bootstrap when the first canonical step event arrives. Screens never call it directly.
 - Terminal `Onboarding: Completed` fires only when the proving machine reaches `completed` via a true new-registration proof (`circuitType === 'register' && didNewRegistrationProof`). The `ALREADY_REGISTERED` shortcut and disclosure flows fire **no** `Onboarding: *` event.
 - New Mixpanel events require a documented consumer (dashboard, alert, or product question) in the PR description. After ANA-13 phase 3, the cap is enforced at the type system.
+- Mock-passport attempts (`passportData.mock === true`) emit no Mixpanel events from the proving machine or funnel helper (ANA-14). The dev-only `MockDataEvents.*` namespace is the sole telemetry surface for mock flows. The proving machine marks the active attempt as mock immediately after `loadSelectedDocument` and routes all `selfClient.trackEvent` calls through a mock-aware helper.
 
 ## Canonical Event Set
 
 Every event carries `attempt_id`, `initial_branch`, `current_branch` plus the additional properties below. Implementation details (file paths, fire-site line numbers, helper code) live in the plan that introduced or modified the event — see ANA-01 for v1, ANA-11 for the post-deployment bug fixes.
 
-| Event | Fires when | Additional properties |
-| --- | --- | --- |
-| `Onboarding: Started` | Helper-bootstrapped when the first canonical step event reaches an attempt-less state | — (branches `pending`) |
-| `Onboarding: Country Selected` | User confirms a country | `country_code` |
-| `Onboarding: Document Type Selected` | User confirms a document type. Locks `initial_branch`. | `document_type`, `country_code` |
-| `Onboarding: Document Scan Started` | Camera open (biometric), KYC modal launch, or Aadhaar QR picker open | — |
-| `Onboarding: Document Scan Succeeded` | MRZ+NFC committed, provider returns success, or upload accepted | `duration_seconds` |
-| `Onboarding: Proof Generation Started` | Proving machine enters `proving` with `circuitType === 'register'` | — |
-| `Onboarding: Proof Generation Succeeded` | Proving machine reaches `completed` with `circuitType === 'register' && didNewRegistrationProof` | `duration_seconds` |
-| `Onboarding: Completed` | Same gate as PROOF_SUCCEEDED, post-proof wrap-up done | `duration_seconds` (total), `used_fallback` |
+| Event                                    | Fires when                                                                                       | Additional properties                       |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------ | ------------------------------------------- |
+| `Onboarding: Started`                    | Helper-bootstrapped when the first canonical step event reaches an attempt-less state            | — (branches `pending`)                      |
+| `Onboarding: Country Selected`           | User confirms a country                                                                          | `country_code`                              |
+| `Onboarding: Document Type Selected`     | User confirms a document type. Locks `initial_branch`.                                           | `document_type`, `country_code`             |
+| `Onboarding: Document Scan Started`      | Camera open (biometric), KYC modal launch, or Aadhaar QR picker open                             | —                                           |
+| `Onboarding: Document Scan Succeeded`    | MRZ+NFC committed, provider returns success, or upload accepted                                  | `duration_seconds`                          |
+| `Onboarding: Proof Generation Started`   | Proving machine enters `proving` with `circuitType === 'register'`                               | —                                           |
+| `Onboarding: Proof Generation Succeeded` | Proving machine reaches `completed` with `circuitType === 'register' && didNewRegistrationProof` | `duration_seconds`                          |
+| `Onboarding: Completed`                  | Same gate as PROOF_SUCCEEDED, post-proof wrap-up done                                            | `duration_seconds` (total), `used_fallback` |
 
 Supporting events on the same stream:
 
-| Event | Purpose |
-| --- | --- |
-| `Onboarding: Failed` | Terminal failure for any non-disclose `circuitType`. Properties: `stage`, `reason`, `recoverable`, `duration_seconds`, `used_fallback`, `proof_type` (`'register' \| 'dsc'`, present on proving-stage failures). |
-| `Onboarding: Step Retried` | User retried a step. Properties: `stage`, `reason`, `attempt_count`. |
+| Event                      | Purpose                                                                                                                                                                                                          |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Onboarding: Failed`       | Terminal failure for any non-disclose `circuitType`. Properties: `stage`, `reason`, `recoverable`, `duration_seconds`, `used_fallback`, `proof_type` (`'register' \| 'dsc'`, present on proving-stage failures). |
+| `Onboarding: Step Retried` | User retried a step. Properties: `stage`, `reason`, `attempt_count`.                                                                                                                                             |
 
 Disclosure flows fire **no** `Onboarding: *` event. Diagnostic completion is captured by `ProofEvents.PROOF_COMPLETED` with `circuitType: 'disclose'`.
 
 ## Branch Model
 
-| `branch` value | Flow | Scanning mechanic |
-| --- | --- | --- |
-| `biometric_passport` | Passport with chip | MRZ + NFC + DSC validation |
-| `biometric_id` | eID card with chip; same code path as passport | MRZ + NFC + DSC validation |
-| `kyc` | Embedded KYC provider web SDK; non-biometric docs and fallback | Provider modal (interior is a black box) |
-| `aadhaar` | India-specific QR upload | Photo library → QR parse → timestamp validate → store |
+| `branch` value       | Flow                                                           | Scanning mechanic                                     |
+| -------------------- | -------------------------------------------------------------- | ----------------------------------------------------- |
+| `biometric_passport` | Passport with chip                                             | MRZ + NFC + DSC validation                            |
+| `biometric_id`       | eID card with chip; same code path as passport                 | MRZ + NFC + DSC validation                            |
+| `kyc`                | Embedded KYC provider web SDK; non-biometric docs and fallback | Provider modal (interior is a black box)              |
+| `aadhaar`            | India-specific QR upload                                       | Photo library → QR parse → timestamp validate → store |
 
 Biometric passport and biometric ID are distinct branches but roll up into a `biometric_combined` dashboard view.
 
@@ -95,17 +96,17 @@ On terminal events the helper additionally stamps `used_fallback: initial_branch
 
 ### Dashboard queries this enables
 
-| Question | Filter |
-| --- | --- |
-| Users who *started* biometric | `initial_branch in (biometric_passport, biometric_id)` |
-| Users who *completed* via KYC | `event = COMPLETED AND current_branch = kyc` |
-| Users who fell back biometric → KYC | `initial_branch starts_with biometric_ AND current_branch = kyc` |
-| Pure KYC users (never intended biometric) | `initial_branch = kyc AND current_branch = kyc` |
-| Cohort that used any fallback | `event = COMPLETED AND used_fallback = true` |
+| Question                                  | Filter                                                           |
+| ----------------------------------------- | ---------------------------------------------------------------- |
+| Users who _started_ biometric             | `initial_branch in (biometric_passport, biometric_id)`           |
+| Users who _completed_ via KYC             | `event = COMPLETED AND current_branch = kyc`                     |
+| Users who fell back biometric → KYC       | `initial_branch starts_with biometric_ AND current_branch = kyc` |
+| Pure KYC users (never intended biometric) | `initial_branch = kyc AND current_branch = kyc`                  |
+| Cohort that used any fallback             | `event = COMPLETED AND used_fallback = true`                     |
 
 ### Fallback decision visibility — gap
 
-The branch split tells you *what happened* (initial intent vs final outcome) but not *how the decision unfolded* at the fallback screen. ANA-05 will add `Onboarding: Fallback Offered/Accepted/Declined` to answer this.
+The branch split tells you _what happened_ (initial intent vs final outcome) but not _how the decision unfolded_ at the fallback screen. ANA-05 will add `Onboarding: Fallback Offered/Accepted/Declined` to answer this.
 
 ## Execution Model
 
@@ -115,16 +116,17 @@ The branch split tells you *what happened* (initial intent vs final outcome) but
 
 ## Backlog
 
-| ID | Title | Status | Priority | Depends on | Plan |
-| --- | --- | --- | --- | --- | --- |
-| ANA-01 | Canonical onboarding funnel events + dead-zone fixes | **Done** | — | — | [plan](./plans/ANA-01-canonical-onboarding-funnel.md) |
-| ANA-11 | Canonical funnel bug fixes (post-ANA-01 production findings) | In Review | High | ANA-01 | [plan](./plans/ANA-11-canonical-funnel-bug-fixes.md) — PR #2048 |
-| ANA-12 | Branch-specific funnel events (Biometric / KYC / Aadhaar) | Ready | High | ANA-01, ANA-11 | [plan](./plans/ANA-12-branch-specific-funnel-events.md) |
-| ANA-13 | Observability migration — Mixpanel diet, Sentry breadcrumbs, Session Replay | Ready | High | ANA-01, ANA-11, ANA-12 | [plan](./plans/ANA-13-observability-migration.md) |
-| ANA-05 | Fallback decision events and fallback-offer mini-funnel | Ready | Medium | ANA-01, ANA-12 | — |
-| ANA-08 | Explicit abandonment events on app background | Ready | Low | ANA-01 | — |
-| ANA-02 | Investigation: internal/TestFlight traffic filtering | Ready | Medium | — | — |
-| ANA-04 | Investigation: native NFC analytics channel | Ready | Low | ANA-13 | — |
+| ID     | Title                                                                       | Status      | Priority | Depends on             | Plan                                                            |
+| ------ | --------------------------------------------------------------------------- | ----------- | -------- | ---------------------- | --------------------------------------------------------------- |
+| ANA-01 | Canonical onboarding funnel events + dead-zone fixes                        | **Done**    | —        | —                      | [plan](./plans/ANA-01-canonical-onboarding-funnel.md)           |
+| ANA-11 | Canonical funnel bug fixes (post-ANA-01 production findings)                | In Review   | High     | ANA-01                 | [plan](./plans/ANA-11-canonical-funnel-bug-fixes.md) — PR #2048 |
+| ANA-12 | Branch-specific funnel events (Biometric / KYC / Aadhaar)                   | Ready       | High     | ANA-01, ANA-11         | [plan](./plans/ANA-12-branch-specific-funnel-events.md)         |
+| ANA-13 | Observability migration — Mixpanel diet, Sentry breadcrumbs, Session Replay | Ready       | High     | ANA-01, ANA-11, ANA-12 | [plan](./plans/ANA-13-observability-migration.md)               |
+| ANA-14 | Suppress all analytics events from mock passport flow                       | In Progress | High     | ANA-01                 | [plan](./plans/ANA-14-suppress-mock-analytics.md)               |
+| ANA-05 | Fallback decision events and fallback-offer mini-funnel                     | Ready       | Medium   | ANA-01, ANA-12         | —                                                               |
+| ANA-08 | Explicit abandonment events on app background                               | Ready       | Low      | ANA-01                 | —                                                               |
+| ANA-02 | Investigation: internal/TestFlight traffic filtering                        | Ready       | Medium   | —                      | —                                                               |
+| ANA-04 | Investigation: native NFC analytics channel                                 | Ready       | Low      | ANA-13                 | —                                                               |
 
 Allowed statuses: `Ready`, `In Progress`, `In Review`, `Blocked`, `Done`.
 
@@ -141,13 +143,13 @@ Allowed statuses: `Ready`, `In Progress`, `In Review`, `Blocked`, `Done`.
 
 IDs are not reused.
 
-| ID | Title | Reason |
-| --- | --- | --- |
-| ANA-03 | Convert raw-string analytics events to typed constants | Superseded by ANA-12 (curates event sets, renames `PassportEvents → BiometricEvents`, creates `KycEvents`, curates `AadhaarEvents`). |
-| ANA-06 | Super-property enrichment for segmentation | Cancelled. Mixpanel auto-captures device, OS, OS version, app_version. Missing piece (`acquisition_channel`) is one line — see Future Concerns. |
-| ANA-07 | Step-view canonical events | Cancelled. With ANA-13, "user saw this screen" is a Sentry breadcrumb (free, attached to errors and replays). View → commit dashboard metric is speculative. |
-| ANA-09 | A/B test tagging at the super-property layer | Moved to Future Concerns. No spec until experiments are scheduled. |
-| ANA-10 | PM-dashboard roll-ups | Cancelled. Dashboard work, not instrumentation. Build dashboards on demand. |
+| ID     | Title                                                  | Reason                                                                                                                                                       |
+| ------ | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| ANA-03 | Convert raw-string analytics events to typed constants | Superseded by ANA-12 (curates event sets, renames `PassportEvents → BiometricEvents`, creates `KycEvents`, curates `AadhaarEvents`).                         |
+| ANA-06 | Super-property enrichment for segmentation             | Cancelled. Mixpanel auto-captures device, OS, OS version, app_version. Missing piece (`acquisition_channel`) is one line — see Future Concerns.              |
+| ANA-07 | Step-view canonical events                             | Cancelled. With ANA-13, "user saw this screen" is a Sentry breadcrumb (free, attached to errors and replays). View → commit dashboard metric is speculative. |
+| ANA-09 | A/B test tagging at the super-property layer           | Moved to Future Concerns. No spec until experiments are scheduled.                                                                                           |
+| ANA-10 | PM-dashboard roll-ups                                  | Cancelled. Dashboard work, not instrumentation. Build dashboards on demand.                                                                                  |
 
 ## References
 
