@@ -60,8 +60,6 @@ const AadhaarUploadScreen: React.FC = () => {
     onModalDismiss: () => {},
   });
 
-  // Fire SCAN_STARTED on canonical funnel only — branch funnel's UPLOAD_STARTED
-  // fires on actual photo-library tap, not screen mount.
   useEffect(() => {
     trackOnboardingStep(selfClient, OnboardingEvents.SCAN_STARTED, {
       branch: 'aadhaar',

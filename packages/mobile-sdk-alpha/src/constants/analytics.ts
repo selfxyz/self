@@ -2,11 +2,6 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-/**
- * Aadhaar branch milestone events. Curated from 25 → 7 in ANA-12. Diagnostic
- * events from the legacy set were either deleted (ANA-12) or migrated to
- * Sentry breadcrumbs (ANA-13). Emit via `trackBranchEvent`.
- */
 export const AadhaarEvents = {
   CONTINUE_PRESSED: 'Aadhaar: Continue Pressed',
   DATA_STORED: 'Aadhaar: Data Stored',
@@ -28,13 +23,6 @@ export const AppEvents = {
   UPDATE_STARTED: 'App: Update Started',
 };
 
-/**
- * Login funnel events. Curated from 12 → 3 in ANA-13. The deleted keys
- * (BIOMETRIC_AUTH_*, BIOMETRIC_CHECK, BIOMETRIC_LOGIN_ATTEMPT, MNEMONIC_*,
- * AUTHENTICATION_TIMEOUT) were diagnostic and now flow through Sentry
- * breadcrumbs / captured exceptions. The three remaining keys are the
- * mutually-exclusive terminal states of a biometric login attempt.
- */
 export const AuthEvents = {
   BIOMETRIC_LOGIN_CANCELLED: 'Auth: Biometric Login Cancelled',
   BIOMETRIC_LOGIN_FAILED: 'Auth: Biometric Login Failed',
@@ -61,19 +49,6 @@ export const BackupEvents = {
   MANUAL_RECOVERY_SELECTED: 'Backup: Manual Recovery Selected',
 };
 
-/**
- * Biometric branch events. Covers passport AND biometric ID — same code
- * path, distinguished by a `document_type` property. Curated to 6 milestone
- * keys in ANA-12; the legacy `Passport:`-prefixed diagnostic keys were
- * migrated to Sentry breadcrumbs in ANA-13.
- *
- * NFC_SCAN_FAILED / NFC_RESPONSE_PARSE_FAILED stay as constants because the
- * native NFC channel (`trackNfcEvent`) still emits them via the
- * `PassportReader` Mixpanel pipe — that pipe is out of scope for ANA-13.
- *
- * Emit milestone keys via `trackBranchEvent`; native NFC pipe uses
- * `trackNfcEvent`.
- */
 export const BiometricEvents = {
   DOCUMENT_PARSED: 'Biometric: Document Parsed',
   DOCUMENT_UNSUPPORTED: 'Biometric: Document Unsupported',
@@ -82,9 +57,6 @@ export const BiometricEvents = {
   NFC_STARTED: 'Biometric: NFC Started',
   NFC_SUCCEEDED: 'Biometric: NFC Succeeded',
 
-  // Native NFC pipe constants — emitted only via `trackNfcEvent`, not
-  // `trackEvent`. Names retain the legacy `Passport:` prefix to preserve
-  // Mixpanel data continuity in the native NFC project.
   NFC_RESPONSE_PARSE_FAILED: 'Passport: Parsing NFC Response Unsuccessful',
   NFC_SCAN_FAILED: 'Passport: NFC Scan Failed',
 };
@@ -105,11 +77,6 @@ export const DocumentEvents = {
   VALIDATE_DOCUMENT_FAILED: 'Document: Validate Document Failed',
 };
 
-/**
- * KYC branch milestone events. Provider-tagged from day one (`provider: 'didit'`)
- * so adding Veriff/Sumsub later doesn't require renaming events. Emit via
- * `trackBranchEvent`.
- */
 export const KycEvents = {
   PROVIDER_CLOSED: 'KYC: Provider Closed',
   PROVIDER_OPENED: 'KYC: Provider Opened',
@@ -146,13 +113,6 @@ export const NotificationEvents = {
   COLD_START_NOTIFICATION_OPENED: 'Notification: Cold Start Notification Opened',
 };
 
-/**
- * Canonical onboarding funnel events. These are the ONLY events the Mixpanel
- * onboarding funnel consumes. They fire at most once per onboarding attempt,
- * guarded by the canonical funnel helper — never on component mount, never on
- * back-navigation. Every other `*Events` group in this file is a sibling
- * surface (branch, login, app lifecycle), excluded from the funnel.
- */
 export const OnboardingEvents = {
   STARTED: 'Onboarding: Started',
   COUNTRY_SELECTED: 'Onboarding: Country Selected',
@@ -166,10 +126,6 @@ export const OnboardingEvents = {
   STEP_RETRIED: 'Onboarding: Step Retried',
 };
 
-/**
- * @deprecated Use `BiometricEvents` directly. Kept as an alias for the
- * native-NFC-channel call sites that still reference the historic name.
- */
 export const PassportEvents = BiometricEvents;
 
 export const PointEvents = {
@@ -256,9 +212,6 @@ export const ProofEvents = {
   WS_HELLO_SENT: 'Proof: WS Hello Sent',
 };
 
-// Diagnostic events for the registration ID-type picker (SELF-2860). Names are
-// the literal Mixpanel event strings from the ticket — they intentionally use
-// snake_case rather than the 'Group: Event' convention used elsewhere.
 export const RegistrationPickerEvents = {
   VIEWED: 'registration_id_picker_viewed',
   SELECTED: 'registration_id_picker_selected',

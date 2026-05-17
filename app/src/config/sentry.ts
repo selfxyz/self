@@ -37,7 +37,6 @@ const ALLOWED_TAG_KEYS = new Set([
   'scan_result',
   'verification_status',
   'document_type',
-  // ANA-13 cohort tags. Set/cleared via app/src/observability/onboardingContext.ts.
   'attempt_id',
   'initial_branch',
   'current_branch',
@@ -59,11 +58,6 @@ export const captureException = (
   });
 };
 
-// ANA-13: belt-and-suspenders against accidental biometric/PII leaks in
-// Sentry payloads. Any breadcrumb or context data key matching this pattern
-// has its value replaced with `[REDACTED]` before send. The regex covers the
-// concrete fields the onboarding flow surfaces; broaden it cautiously — every
-// added term silently strips data from forensic context.
 const SENSITIVE_KEY_PATTERN =
   /passport|mrz|dg\d|chip|aadhaar|(?:first|last|full|given|family|holder|sur)_?name|name_?(?:first|last|of_?holder|holder)|date_?of_?birth|dob|birth|photo/i;
 const REDACTED = '[REDACTED]';
@@ -185,10 +179,6 @@ export const initSentry = () => {
   if (!disableSimulatorHeavyIntegrations) {
     integrations.unshift(
       mobileReplayIntegration({
-        // ANA-13: biometric data (passport photos, MRZ contents, NFC chip
-        // dumps, Aadhaar QR images) must never appear in Session Replays.
-        // Default-deny on text/images/vectors; specific safe regions can opt
-        // back in with <Unmask>.
         maskAllText: true,
         maskAllImages: true,
         maskAllVectors: true,
@@ -296,9 +286,6 @@ export const logProofEvent = (
   extra?: Record<string, unknown>,
 ) => logEvent(level, 'proof', message, context, extra);
 
-// Sentry's Event type is broad (browser/node/RN unified); we only need to
-// touch breadcrumb and context bags, which all carry `Record<string, unknown>`
-// shape under their respective keys. Cast narrowly at the entry point.
 export const redactSensitiveFields = <
   T extends {
     breadcrumbs?: Array<{ data?: Record<string, unknown> | undefined }>;

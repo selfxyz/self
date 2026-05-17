@@ -10,7 +10,6 @@ import {
   tagsFromAnalyticsEvent,
 } from '@/observability/onboardingContext';
 
-// @sentry/react-native + @env are mocked globally in jest.setup.js.
 const setTagMock = Sentry.setTag as jest.Mock;
 
 describe('setOnboardingTags', () => {

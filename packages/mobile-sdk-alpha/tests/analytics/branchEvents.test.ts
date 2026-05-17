@@ -6,9 +6,6 @@ import { describe, expect, it } from 'vitest';
 
 import { AadhaarEvents, BiometricEvents, KycEvents, PassportEvents } from '../../src/constants/analytics';
 
-// Branch event names are dashboard-load-bearing — Mixpanel funnels are keyed
-// off these exact strings. Lock them with a snapshot-style assertion so a
-// rename forces an explicit test update plus a dashboard migration.
 describe('branch event constants (ANA-12)', () => {
   it('BiometricEvents covers the six ANA-12 milestones with the spec strings', () => {
     expect(BiometricEvents.MRZ_STARTED).toBe('Biometric: MRZ Started');
@@ -47,8 +44,6 @@ describe('branch event constants (ANA-12)', () => {
   });
 
   it('PassportEvents remains as a deprecation alias of BiometricEvents', () => {
-    // Same identity — call sites importing PassportEvents continue to work
-    // until the next minor drops the alias.
     expect(PassportEvents).toBe(BiometricEvents);
   });
 });

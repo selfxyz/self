@@ -698,8 +698,6 @@ jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
 // Mock Sentry to prevent NativeModule.getConstants errors
 jest.mock('@sentry/react-native', () => {
   const React = jest.requireActual('react');
-  // Render children inside a Fragment — we don't need a host view, the screen
-  // tests just want PrivacyMask/Mask/Unmask to be valid components.
   const passThrough = ({ children }) =>
     React.createElement(React.Fragment, null, children);
   return {

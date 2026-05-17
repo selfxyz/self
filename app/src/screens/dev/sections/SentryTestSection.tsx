@@ -13,15 +13,6 @@ import BugIcon from '@/assets/icons/bug_icon.svg';
 import { captureException } from '@/config/sentry';
 import { ParameterSection } from '@/screens/dev/components/ParameterSection';
 
-// ANA-13 verification helper. Triggers a captured exception so an engineer can
-// confirm in Sentry that the cohort tags (attempt_id, initial_branch,
-// document_country, signature_algorithm, ...) and the breadcrumb trail attached
-// in Phase 1 actually land on the error event.
-//
-// The error is fired through `captureException` so it shows up as a Sentry
-// issue without crashing the app — there's no `throw` here on purpose. To
-// exercise the JS error path (uncaught exception) instead, use the second
-// button which throws synchronously.
 export const SentryTestSection: React.FC = () => {
   const handleCapture = () => {
     Alert.alert(
@@ -52,7 +43,6 @@ export const SentryTestSection: React.FC = () => {
           text: 'Throw',
           style: 'destructive',
           onPress: () => {
-            // Defer one tick so the Alert closes before the error propagates.
             setTimeout(() => {
               throw new Error(
                 `ANA-13 dev uncaught error @ ${new Date().toISOString()}`,

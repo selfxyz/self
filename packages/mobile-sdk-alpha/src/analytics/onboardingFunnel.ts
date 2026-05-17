@@ -238,18 +238,6 @@ export function setOnboardingBranch(branch: OnboardingBranch): void {
   currentAttempt.currentBranch = branch;
 }
 
-/**
- * Fire a branch drilldown event (Biometric / KYC / Aadhaar) stamped with
- * the active attempt's `attempt_id`, `initial_branch`, and `current_branch`.
- *
- * Differs from `trackOnboardingStep` in two ways:
- *   - No-ops silently when no attempt is active. Branch events fire only
- *     inside an active onboarding attempt; firing them in unrelated
- *     surfaces (e.g. the disclosure flow) would pollute the funnel
- *     in the same way ANA-11 fixed for `PROOF_STARTED`.
- *   - Does NOT dedupe. Branch events legitimately fire multiple times per
- *     attempt — e.g. multiple OCR retries before a successful MRZ.
- */
 export function trackBranchEvent(
   selfClient: Pick<SelfClient, 'trackEvent'>,
   event: string,

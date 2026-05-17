@@ -1041,8 +1041,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     ) => {
       get()._closeConnections(selfClient);
 
-      // Enable keychain error modal for proving flows
-      // This ensures users are notified if keychain access fails during critical operations
       selfClient.navigation?.enableKeychainErrorModal?.();
 
       if (actor) {

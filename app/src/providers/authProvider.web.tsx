@@ -98,8 +98,6 @@ const _getSecurely = async function <T>(
     return null;
   }
 
-  // For web, we need to figure out exactly how this will interact with the
-  // Android bridge or any other secure storage mechanism.
   return {
     signature: 'authenticated',
     data: formatter(dataString),

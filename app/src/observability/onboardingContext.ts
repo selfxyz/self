@@ -6,9 +6,6 @@ import * as Sentry from '@sentry/react-native';
 
 import { sanitizeTagValue } from '@/config/sentry';
 
-// Cohort tags applied at the Sentry session scope. The keys must match the
-// whitelist enforced by sanitizeTagKey in app/src/config/sentry.ts. Adding a
-// new key here also requires adding it to ALLOWED_TAG_KEYS.
 export interface OnboardingTagSnapshot {
   attempt_id?: string;
   initial_branch?: string;
@@ -47,10 +44,6 @@ export function setOnboardingTags(snapshot: OnboardingTagSnapshot): void {
   }
 }
 
-// Map an analytics event payload onto the cohort tag snapshot. The mapping is
-// the only place we translate between analytics property names and Sentry tag
-// names — keep it narrow so a typo in one event payload doesn't quietly
-// pollute every session's tags.
 export function tagsFromAnalyticsEvent(
   eventName: string,
   properties: Record<string, unknown> | undefined,
@@ -94,7 +87,6 @@ function isOnboardingEvent(eventName: string): boolean {
     eventName.startsWith('Biometric:') ||
     eventName.startsWith('Kyc:') ||
     eventName.startsWith('Aadhaar:') ||
-    // Legacy Passport: events still emit during the ANA-13 transition window.
     eventName.startsWith('Passport:')
   );
 }

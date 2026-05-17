@@ -7,11 +7,6 @@ import type { ViewProps } from 'react-native';
 import { StyleSheet } from 'react-native';
 import { Mask } from '@sentry/react-native';
 
-// ANA-13: defense-in-depth wrapper for screens that display biometric or
-// document data. The global mobileReplayIntegration already masks all text /
-// images / vectors; this wrapper marks an entire subtree as redacted so that
-// even unmasked native primitives (camera previews, custom views) do not leak
-// into Session Replay.
 export const PrivacyMask: React.FC<ViewProps> = ({
   children,
   style,
