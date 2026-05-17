@@ -3,12 +3,13 @@ appId: com.warroom.proofofpassport
 - clearState
 - clearKeychain
 - launchApp
-- extendedWaitUntil:
-    visible:
-      id: "disclaimer-screen-root"
-    timeout: 60000
-- tapOn:
-    id: "disclaimer-dismiss-button"
+- runFlow:
+    when:
+      visible:
+        id: "disclaimer-dismiss-button"
+    commands:
+      - tapOn:
+          id: "disclaimer-dismiss-button"
 - extendedWaitUntil:
     visible:
       id: "home-screen-root"
