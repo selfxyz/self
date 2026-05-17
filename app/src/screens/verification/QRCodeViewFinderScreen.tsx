@@ -19,6 +19,7 @@ import {
   Description,
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
+import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import {
   black,
   slate800,
@@ -43,6 +44,7 @@ import {
 
 const QRCodeViewFinderScreen: React.FC = () => {
   const selfClient = useSelfClient();
+  const { trackEvent } = selfClient;
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const isFocused = useIsFocused();

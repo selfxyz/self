@@ -243,6 +243,7 @@ export interface ProvingState {
   // event so it does not fire when `completed` is reached via the
   // `ALREADY_REGISTERED` shortcut from `validating_document`.
   didNewRegistrationProof: boolean;
+  isMock: boolean;
   init: (
     selfClient: SelfClient,
     circuitType: 'dsc' | 'disclose' | 'register',
@@ -423,6 +424,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       secret: null,
       circuitType: null,
       didNewRegistrationProof: false,
+      isMock: false,
       endpointType: null,
       env: null,
       error_code: null,
@@ -1079,13 +1081,13 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         return;
       }
 
-      // Set environment based on mock property
       const env = passportData.mock ? 'stg' : 'prod';
-      if (passportData.mock === true) {
+      const isMock = passportData.mock === true;
+      if (isMock) {
         markCurrentAttemptAsMock(selfClient);
       }
 
-      set({ passportData, secret, env });
+      set({ passportData, secret, env, isMock });
       set({ circuitType });
       // Only skip parsing when the document has already been parsed for non-DSC circuits.
       // Re-parsing would overwrite the alternative CSCA used during registration and is unnecessary
