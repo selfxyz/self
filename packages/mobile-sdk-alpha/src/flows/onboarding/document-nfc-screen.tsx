@@ -236,7 +236,7 @@ export const DocumentNFCScreen: React.FC<DocumentNFCScreenProps> = (props: Docum
         let passportData: PassportData | null = null;
         try {
           passportData = scanResponse.passportData;
-        } catch (e: unknown) {
+        } catch {
           console.error('Parsing NFC Response Unsuccessful');
           return;
         }

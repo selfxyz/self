@@ -648,10 +648,7 @@ const DocumentNFCScanScreen: React.FC = () => {
               )}
             </TextsContainer>
             <ButtonsContainer>
-              <PrimaryButton
-                onPress={onVerifyPress}
-                disabled={!isNfcSupported}
-              >
+              <PrimaryButton onPress={onVerifyPress} disabled={!isNfcSupported}>
                 {isNfcEnabled || !isNfcSupported
                   ? 'Start Scan'
                   : 'Open settings'}

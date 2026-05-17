@@ -45,5 +45,4 @@ describe('branch event constants (ANA-12)', () => {
     expect(AadhaarEvents.DATA_STORED).toBe('Aadhaar: Data Stored');
     expect(AadhaarEvents.CONTINUE_PRESSED).toBe('Aadhaar: Continue Pressed');
   });
-
 });
