@@ -7,7 +7,7 @@ import { YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { trackBranchEvent, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { BodyText, PrimaryButton } from '@selfxyz/mobile-sdk-alpha/components';
 import { AadhaarEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import {
@@ -27,7 +27,7 @@ const AadhaarUploadedSuccessScreen: React.FC = () => {
   const paddingBottom = useSafeBottomPadding(extraYPadding + 35);
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { trackEvent } = useSelfClient();
+  const selfClient = useSelfClient();
 
   return (
     <YStack flex={1} backgroundColor={slate100}>
@@ -73,7 +73,7 @@ const AadhaarUploadedSuccessScreen: React.FC = () => {
       >
         <PrimaryButton
           onPress={() => {
-            trackEvent(AadhaarEvents.CONTINUE_TO_REGISTRATION_PRESSED);
+            trackBranchEvent(selfClient, AadhaarEvents.CONTINUE_PRESSED);
             navigation.navigate('ConfirmBelonging', {});
           }}
         >

@@ -45,9 +45,11 @@ import {
   completeOnboardingAttempt,
   failOnboardingAttempt,
   markCurrentAttemptAsMock,
+  recoverOnboardingAttempt,
+  trackBranchEvent,
   trackOnboardingStep,
 } from '../analytics/onboardingFunnel';
-import { OnboardingEvents, PassportEvents, ProofEvents } from '../constants/analytics';
+import { BiometricEvents, OnboardingEvents, ProofEvents } from '../constants/analytics';
 import {
   clearPassportData,
   hasAnyValidRegisteredDocument,
@@ -545,6 +547,8 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         if (get().circuitType === 'register' && get().didNewRegistrationProof) {
           trackOnboardingStep(selfClient, OnboardingEvents.PROOF_SUCCEEDED);
           completeOnboardingAttempt(selfClient);
+        } else if (get().circuitType === 'register' && !get().didNewRegistrationProof) {
+          recoverOnboardingAttempt(selfClient);
         }
 
         emitVerificationComplete(true);
@@ -1138,9 +1142,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       trackEventIfNotMock(selfClient, isMock, ProofEvents.DOCUMENT_LOAD_STARTED);
       if (!selectedDocument) {
         console.error('No document found for proving');
-        trackEventIfNotMock(selfClient, isMock, PassportEvents.PASSPORT_DATA_NOT_FOUND, {
-          stage: 'init',
-        });
         console.error('No document found for proving in init');
         actor!.send({ type: 'PASSPORT_DATA_NOT_FOUND' });
         return;
@@ -1209,41 +1210,12 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         }
 
         const passportMetadata = parsedPassportData.passportMetadata!;
-        let dscObject;
-        try {
-          dscObject = { dsc: passportMetadata.dsc };
-        } catch (error) {
-          console.error('Failed to parse dsc:', error);
-          dscObject = {};
-        }
 
-        trackEventIfNotMock(selfClient, get().isMock, PassportEvents.PASSPORT_PARSED, {
-          success: true,
-          data_groups: passportMetadata.dataGroups,
-          dg1_size: passportMetadata.dg1Size,
-          dg1_hash_size: passportMetadata.dg1HashSize,
-          dg1_hash_function: passportMetadata.dg1HashFunction,
-          dg1_hash_offset: passportMetadata.dg1HashOffset,
-          dg_padding_bytes: passportMetadata.dgPaddingBytes,
-          e_content_size: passportMetadata.eContentSize,
-          e_content_hash_function: passportMetadata.eContentHashFunction,
-          e_content_hash_offset: passportMetadata.eContentHashOffset,
-          signed_attr_size: passportMetadata.signedAttrSize,
-          signed_attr_hash_function: passportMetadata.signedAttrHashFunction,
-          signature_algorithm: passportMetadata.signatureAlgorithm,
-          salt_length: passportMetadata.saltLength,
-          curve_or_exponent: passportMetadata.curveOrExponent,
-          signature_algorithm_bits: passportMetadata.signatureAlgorithmBits,
+        trackBranchEvent(selfClient, BiometricEvents.DOCUMENT_PARSED, {
+          document_type: passportData.documentCategory === 'id_card' ? 'id_card' : 'passport',
           country_code: passportMetadata.countryCode,
-          csca_found: passportMetadata.cscaFound,
-          csca_hash_function: passportMetadata.cscaHashFunction,
-          csca_signature_algorithm: passportMetadata.cscaSignatureAlgorithm,
-          csca_salt_length: passportMetadata.cscaSaltLength,
-          csca_curve_or_exponent: passportMetadata.cscaCurveOrExponent,
-          csca_signature_algorithm_bits: passportMetadata.cscaSignatureAlgorithmBits,
-          dsc: dscObject,
-          dsc_aki: (passportData as PassportData).dsc_parsed?.authorityKeyIdentifier,
-          dsc_ski: (passportData as PassportData).dsc_parsed?.subjectKeyIdentifier,
+          signature_algorithm: passportMetadata.signatureAlgorithm,
+          csca_hash_algorithm: passportMetadata.cscaHashFunction,
         });
         console.log('passport data parsed successfully, storing in keychain');
         await storePassportData(selfClient, parsedPassportData);
@@ -1261,10 +1233,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           duration_ms: Date.now() - startTime,
         });
         console.error('Error parsing ID document:', error);
-        const errMsg = error instanceof Error ? error.message : String(error);
-        trackEventIfNotMock(selfClient, get().isMock, PassportEvents.PASSPORT_PARSE_FAILED, {
-          error: errMsg,
-        });
         actor!.send({ type: 'PARSE_ERROR' });
       }
     },
@@ -1366,10 +1334,21 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             duration_ms: Date.now() - startTime,
           });
           console.error('Passport not supported:', isSupported.status, isSupported.details);
-          trackEventIfNotMock(selfClient, get().isMock, PassportEvents.COMING_SOON, {
-            status: isSupported.status,
-            details: isSupported.details,
-          });
+          if (passportData.documentCategory === 'passport' || passportData.documentCategory === 'id_card') {
+            const biometricData = passportData as PassportData;
+            trackBranchEvent(selfClient, BiometricEvents.DOCUMENT_UNSUPPORTED, {
+              document_type: passportData.documentCategory,
+              country_code: biometricData.passportMetadata?.countryCode,
+              signature_algorithm: biometricData.passportMetadata?.signatureAlgorithm,
+              unsupported_reason:
+                isSupported.status === 'csca_not_found' || isSupported.status === 'passport_metadata_missing'
+                  ? 'unknown_dsc'
+                  : isSupported.status === 'registration_circuit_not_supported' ||
+                      isSupported.status === 'dsc_circuit_not_supported'
+                    ? 'unsupported_algo'
+                    : 'country_not_in_list',
+            });
+          }
 
           await clearPassportData(selfClient);
 

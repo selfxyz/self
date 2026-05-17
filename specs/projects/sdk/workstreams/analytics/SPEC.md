@@ -46,7 +46,7 @@ Four observability layers, three in Mixpanel, one in Sentry:
 - A canonical step event fires at most once per onboarding attempt, on a committed state transition. Never on component mount, never on back-nav, never per-click.
 - Every canonical and branch event carries `attempt_id`, `initial_branch`, `current_branch`. Branch events do NOT bootstrap an attempt — they no-op if no attempt is active.
 - `Onboarding: Started` fires exactly once per attempt, emitted by the funnel helper's `ensureAttempt` bootstrap when the first canonical step event arrives. Screens never call it directly.
-- Terminal `Onboarding: Completed` fires only when the proving machine reaches `completed` via a true new-registration proof (`circuitType === 'register' && didNewRegistrationProof`). The `ALREADY_REGISTERED` shortcut and disclosure flows fire **no** `Onboarding: *` event.
+- An onboarding attempt has three terminal outcomes, mutually exclusive: `Onboarding: Completed` (new-registration proof succeeded — `circuitType === 'register' && didNewRegistrationProof`), `Onboarding: Recovered` (already-registered shortcut, user got their account back — `circuitType === 'register' && !didNewRegistrationProof`), `Onboarding: Failed` (any non-disclose failure). Exactly one fires per attempt; the attempt is cleared on emission. Disclosure flows fire **no** `Onboarding: *` event.
 - New Mixpanel events require a documented consumer (dashboard, alert, or product question) in the PR description. After ANA-13 phase 3, the cap is enforced at the type system.
 - Mock-passport attempts (`passportData.mock === true`) emit no Mixpanel events from the proving machine or funnel helper (ANA-14). The dev-only `MockDataEvents.*` namespace is the sole telemetry surface for mock flows. The proving machine marks the active attempt as mock immediately after `loadSelectedDocument` and routes all `selfClient.trackEvent` calls through a mock-aware helper.
 
@@ -64,6 +64,7 @@ Every event carries `attempt_id`, `initial_branch`, `current_branch` plus the ad
 | `Onboarding: Proof Generation Started`   | Proving machine enters `proving` with `circuitType === 'register'`                               | —                                           |
 | `Onboarding: Proof Generation Succeeded` | Proving machine reaches `completed` with `circuitType === 'register' && didNewRegistrationProof` | `duration_seconds`                          |
 | `Onboarding: Completed`                  | Same gate as PROOF_SUCCEEDED, post-proof wrap-up done                                            | `duration_seconds` (total), `used_fallback` |
+| `Onboarding: Recovered`                  | Proving machine reaches `completed` via `ALREADY_REGISTERED` shortcut (user re-scanned a doc already on-chain — account recovery, not new registration). Mutually exclusive with `Completed`. | `duration_seconds` (total), `used_fallback`, `country_code`, `document_type` |
 
 Supporting events on the same stream:
 

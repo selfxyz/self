@@ -19,7 +19,6 @@ vi.mock('../../../src/constants/analytics', () => ({
     SOCKETIO_PROOF_SUCCESS: 'SOCKETIO_PROOF_SUCCESS',
     REGISTER_COMPLETED: 'REGISTER_COMPLETED',
   },
-  PassportEvents: {},
 }));
 
 vi.mock('../../../src/proving/internal/logging', () => ({
