@@ -19,7 +19,6 @@ import {
   TextsContainer,
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
-import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import {
   amber50,
   amber200,
@@ -155,18 +154,8 @@ const DocumentOnboardingScreen: React.FC = () => {
           </Additional>
         </TextsContainer>
         <ButtonsContainer>
-          <PrimaryButton
-            trackEvent={PassportEvents.CAMERA_SCAN_STARTED}
-            onPress={handleCameraPress}
-          >
-            Open Camera
-          </PrimaryButton>
-          <SecondaryButton
-            trackEvent={PassportEvents.CAMERA_SCAN_CANCELLED}
-            onPress={onCancelPress}
-          >
-            Cancel
-          </SecondaryButton>
+          <PrimaryButton onPress={handleCameraPress}>Open Camera</PrimaryButton>
+          <SecondaryButton onPress={onCancelPress}>Cancel</SecondaryButton>
         </ButtonsContainer>
       </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>

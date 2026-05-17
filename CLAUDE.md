@@ -26,6 +26,7 @@ nvm use && corepack enable && yarn install
 - **Native handlers are thin wrappers.** No business logic in Kotlin or Swift. All logic lives in TypeScript.
 - **Keychain is always native-managed.** No web fallbacks for secure storage. This is a security boundary.
 - **No “slop comments.”** Only add comments when they convey non-obvious intent or constraints. Never add generic or chatty comments.
+- **Do not add comments in PRs.** When changing code in a PR, default to writing zero new comments. The only acceptable reasons to add a comment are: (a) a `TODO:` / `FIXME:` flagging follow-up work, (b) a temporary workaround that explains why the workaround exists and what removes it, (c) a non-obvious invariant or constraint that a future reader would otherwise re-discover by breaking things. JSDoc describing what a function does, restated parameter meanings, narration of what the next line of code is about to do, and "// Handle X" section labels are all out. Well-named identifiers carry that load.
 - **Signal over praise in docs/reviews.** Remove feel-good or back-patting text that does not change decisions or actions. Keep only actionable content: concrete issues, risks, decisions, owners, next steps, and validation evidence.
 - **Spec naming and structure must be context-first.** Use doc-type file names (for example `OVERVIEW.md`, `SPEC.md`) and do not repeat project prefixes in file names. Use descriptive labels in markdown links — `[SDK Overview](./OVERVIEW.md)` not `[OVERVIEW.md](./OVERVIEW.md)` — so the link text is meaningful without folder context.
 - **No singleton spec folders.** Do not create a folder that exists only to hold one markdown file; keep single docs at the nearest meaningful project/shared root.
@@ -96,14 +97,6 @@ Three Claude Code skills automate the review-to-implementation pipeline:
 3. **`/spec-from-audit`** — Generates agent-executable specs (repo file + Linear document), one per issue
 
 Run them in sequence with review pauses between each step.
-
-### Why Specs
-
-- Prevents scope creep — writing "files NOT modified" forces focus
-- Survives session loss — specs live in the repo and Linear, not session memory
-- Enables parallel work — multiple agents can pick up specs from the same project
-- Creates audit trail — what was planned vs what was built (version-controlled in git)
-- Enables cross-tool review — Linear documents let non-GitHub users review specs
 
 ## Validation Commands
 
