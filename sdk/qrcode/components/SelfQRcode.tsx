@@ -47,13 +47,11 @@ const SelfQRcode = ({
   type = 'websocket',
   websocketUrl = WS_DB_RELAYER,
   size = 300,
-  // darkMode is intentionally accepted but ignored — see SelfQRcodeProps.
-  darkMode: _darkMode = false,
   showBorder = true,
   showStatusText = true,
   variant = 'hybrid',
 }: SelfQRcodeProps) => {
-  // Force light mode regardless of the caller-provided flag.
+  // darkMode prop is accepted in the type for back-compat but always ignored.
   const darkMode = false;
   const [proofStep, setProofStep] = useState(QRcodeSteps.WAITING_FOR_MOBILE);
   const [sessionId, setSessionId] = useState('');
