@@ -45,6 +45,7 @@ import {
   completeOnboardingAttempt,
   failOnboardingAttempt,
   markCurrentAttemptAsMock,
+  recoverOnboardingAttempt,
   trackBranchEvent,
   trackOnboardingStep,
 } from '../analytics/onboardingFunnel';
@@ -546,6 +547,8 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         if (get().circuitType === 'register' && get().didNewRegistrationProof) {
           trackOnboardingStep(selfClient, OnboardingEvents.PROOF_SUCCEEDED);
           completeOnboardingAttempt(selfClient);
+        } else if (get().circuitType === 'register' && !get().didNewRegistrationProof) {
+          recoverOnboardingAttempt(selfClient);
         }
 
         emitVerificationComplete(true);

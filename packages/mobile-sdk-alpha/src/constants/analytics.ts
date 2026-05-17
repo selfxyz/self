@@ -128,6 +128,7 @@ export const OnboardingEvents = {
   PROOF_STARTED: 'Onboarding: Proof Generation Started',
   PROOF_SUCCEEDED: 'Onboarding: Proof Generation Succeeded',
   COMPLETED: 'Onboarding: Completed',
+  RECOVERED: 'Onboarding: Recovered',
   FAILED: 'Onboarding: Failed',
   STEP_RETRIED: 'Onboarding: Step Retried',
 };

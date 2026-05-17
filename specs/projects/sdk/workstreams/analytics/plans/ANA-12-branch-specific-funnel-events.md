@@ -72,7 +72,9 @@ flowchart TD
     K4 --> ScanOk
     A4 --> ScanOk
 
-    ScanOk[Onboarding: Document Scan Succeeded] --> ProofStart[Onboarding: Proof Generation Started<br/>circuitType = register]
+    ScanOk[Onboarding: Document Scan Succeeded] --> Validate{validating_document}
+    Validate -->|new document| ProofStart[Onboarding: Proof Generation Started<br/>circuitType = register]
+    Validate -->|already on-chain| Recovered([Onboarding: Recovered<br/>account recovery, no new proof])
     ProofStart --> ProofOk[Onboarding: Proof Generation Succeeded]
     ProofOk --> Done([Onboarding: Completed<br/>used_fallback])
 
@@ -84,7 +86,7 @@ flowchart TD
     classDef aad fill:#fce7f3,stroke:#be185d
     classDef terminal fill:#f3f4f6,stroke:#374151
 
-    class Start,Country,DocType,ScanStart,ScanOk,ProofStart,ProofOk,Done canonical
+    class Start,Country,DocType,ScanStart,ScanOk,ProofStart,ProofOk,Done,Recovered canonical
     class B1,B2,B3,B4,B5,B6 bio
     class K1,K2,K3,K4,K5 kyc
     class A1,A1F,A2,A2F,A2T,A3,A4 aad
@@ -325,6 +327,10 @@ After events are live in production for 24 hours and verified in the dev Mixpane
 - **KYC Funnel**: canonical funnel filtered to `initial_branch = 'kyc'`, plus a sequential funnel of `KYC: Session Requested → KYC: Session Created → KYC: Provider Opened → KYC: Provider Closed (outcome=completed)`. Side panel: outcome breakdown of `KYC: Provider Closed`. Note: query both `initial_branch = 'kyc'` AND `current_branch = 'kyc'` to capture all three KYC entry paths (pure-KYC + biometric→KYC fallback via either `LogoConfirmationScreen` or `useKycLauncher`).
 - **Aadhaar Funnel**: canonical funnel filtered to `initial_branch = 'aadhaar'`, plus the 7-step Aadhaar drilldown.
 - **Document Type Mismatch** (new signal): count of attempts where `MRZ_STARTED.document_type ≠ MRZ_CAPTURED.document_type` for the same `attempt_id`. Reflects users who tapped the wrong document type in the IDPicker — UX-confusion signal. Break down by `(intended, scanned)` pair (e.g. *"intended: passport, scanned: id_card: 142 attempts"*) to see which direction the confusion runs. If one direction dominates, the IDPicker copy or iconography likely needs work.
+- **Account Recovery** (new signal): users who re-scan a document already registered on-chain emit `Onboarding: Recovered` instead of `Onboarding: Completed`. Show three metrics:
+    - **Recovery rate**: `count(Recovered) / (count(Recovered) + count(Completed))` over time. Rising = either healthy returning-user re-engagement or a UX bug where users repeatedly try to "re-register." Segment by `initial_branch` to see if one path produces more recoveries than another.
+    - **Recovery latency**: `Onboarding: Recovered.duration_seconds`, P50/P95. If the median is the same as new-registration latency, the app is making recovering users do unnecessary work — the existing-identity check should run on launch, not after a full scan.
+    - **Conversion adjustment**: the top-line "Started → Completed" funnel currently undercounts success by treating recoveries as silent drop-off. The correct conversion metric is `(Completed + Recovered) / Started`. Surface both numbers side-by-side; the gap is the recovery cohort the old funnel was hiding.
 
 Dashboard build is *part* of this PR (docs + screenshots). The dashboards themselves are constructed in the dev Mixpanel project and migrated to prod with the merge.
 

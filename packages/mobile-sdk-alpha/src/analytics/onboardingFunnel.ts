@@ -105,6 +105,31 @@ export function completeOnboardingAttempt(
   currentAttempt = null;
 }
 
+export function recoverOnboardingAttempt(
+  selfClient: Pick<SelfClient, 'trackEvent'>,
+  properties?: Record<string, unknown>,
+): void {
+  if (!currentAttempt) return;
+  if (currentAttempt.firedSteps.has(OnboardingEvents.RECOVERED)) return;
+  currentAttempt.firedSteps.add(OnboardingEvents.RECOVERED);
+
+  if (currentAttempt.isMock) {
+    currentAttempt = null;
+    return;
+  }
+
+  selfClient.trackEvent(OnboardingEvents.RECOVERED, {
+    ...properties,
+    ...baseProperties(currentAttempt),
+    duration_seconds: durationSeconds(currentAttempt.startedAt),
+    country_code: currentAttempt.countryCode,
+    document_type: currentAttempt.documentType,
+    used_fallback: currentAttempt.initialBranch !== currentAttempt.currentBranch,
+  });
+
+  currentAttempt = null;
+}
+
 export function failOnboardingAttempt(
   selfClient: Pick<SelfClient, 'trackEvent'>,
   stage: OnboardingFailureStage,

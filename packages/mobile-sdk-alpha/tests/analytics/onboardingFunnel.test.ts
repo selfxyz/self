@@ -10,6 +10,7 @@ import {
   completeOnboardingAttempt,
   failOnboardingAttempt,
   incrementAttemptRetryCount,
+  recoverOnboardingAttempt,
   resolveOnboardingBranch,
   setOnboardingBranch,
   trackBranchEvent,
@@ -269,6 +270,55 @@ describe('completeOnboardingAttempt', () => {
       ([name]: string[]) => name === OnboardingEvents.COMPLETED,
     );
     expect(completedCalls).toHaveLength(1);
+  });
+});
+
+describe('recoverOnboardingAttempt', () => {
+  it('fires RECOVERED with duration_seconds, used_fallback=false, and clears the attempt', () => {
+    const client = makeClient();
+    trackOnboardingStep(client, OnboardingEvents.DOCUMENT_TYPE_SELECTED, {
+      branch: 'biometric_passport',
+    });
+    recoverOnboardingAttempt(client);
+
+    const recoveredCall = client.trackEvent.mock.calls.find(([name]: string[]) => name === OnboardingEvents.RECOVERED);
+    expect(recoveredCall).toBeTruthy();
+    expect(typeof recoveredCall![1].duration_seconds).toBe('number');
+    expect(recoveredCall![1].used_fallback).toBe(false);
+    expect(recoveredCall![1].initial_branch).toBe('biometric_passport');
+    expect(recoveredCall![1].current_branch).toBe('biometric_passport');
+    expect(_getCurrentOnboardingAttempt()).toBeNull();
+  });
+
+  it('does NOT fire RECOVERED and does NOT fire COMPLETED on the same attempt', () => {
+    const client = makeClient();
+    trackOnboardingStep(client, OnboardingEvents.DOCUMENT_TYPE_SELECTED, {
+      branch: 'biometric_passport',
+    });
+    recoverOnboardingAttempt(client);
+
+    expect(client.trackEvent.mock.calls.find(([name]: string[]) => name === OnboardingEvents.RECOVERED)).toBeTruthy();
+    expect(
+      client.trackEvent.mock.calls.find(([name]: string[]) => name === OnboardingEvents.COMPLETED),
+    ).toBeUndefined();
+  });
+
+  it('is a no-op when no attempt is active', () => {
+    const client = makeClient();
+    recoverOnboardingAttempt(client);
+    expect(client.trackEvent).not.toHaveBeenCalled();
+  });
+
+  it('is idempotent — repeated calls fire RECOVERED only once', () => {
+    const client = makeClient();
+    trackOnboardingStep(client, OnboardingEvents.COUNTRY_SELECTED, { country_code: 'FR' });
+    recoverOnboardingAttempt(client);
+    recoverOnboardingAttempt(client);
+
+    const recoveredCalls = client.trackEvent.mock.calls.filter(
+      ([name]: string[]) => name === OnboardingEvents.RECOVERED,
+    );
+    expect(recoveredCalls).toHaveLength(1);
   });
 });
 
