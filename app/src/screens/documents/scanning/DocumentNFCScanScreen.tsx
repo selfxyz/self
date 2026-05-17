@@ -83,6 +83,7 @@ import {
   configureNfcAnalytics,
   flushAllAnalytics,
   setNfcScanningActive,
+  trackNfcEvent,
 } from '@/services/analytics';
 import {
   SUPPORT_FORM_BUTTON_TEXT,
