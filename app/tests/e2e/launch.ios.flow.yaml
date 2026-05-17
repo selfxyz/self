@@ -5,11 +5,15 @@ appId: com.warroom.proofofpassport
 - launchApp
 - extendedWaitUntil:
     visible:
+      id: "disclaimer-screen-root"
+    timeout: ${LAUNCH_WAIT_MS:120000}
+- extendedWaitUntil:
+    visible:
       id: "disclaimer-dismiss-button"
-    timeout: 60000
+    timeout: 30000
 - tapOn:
     id: "disclaimer-dismiss-button"
 - extendedWaitUntil:
     visible:
       id: "home-screen-root"
-    timeout: ${LAUNCH_WAIT_MS:120000}
+    timeout: 60000
