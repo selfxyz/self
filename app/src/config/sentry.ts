@@ -105,14 +105,11 @@ export const captureFeedback = (
   );
 };
 
-// Security: Sanitize tag key to prevent XSS
 const sanitizeTagKey = (key: string): string | null => {
-  // Only allow whitelisted keys
   if (!ALLOWED_TAG_KEYS.has(key)) {
     return null;
   }
 
-  // Additional validation: alphanumeric and underscores only
   if (!/^[a-zA-Z0-9_]+$/.test(key)) {
     return null;
   }
@@ -309,41 +306,35 @@ export const redactSensitiveFields = <
   return event;
 };
 
-// Security: Sanitize tag values to prevent XSS
 export const sanitizeTagValue = (value: unknown): string => {
   if (value == null) return '';
 
   const stringValue = String(value);
 
-  // Truncate to safe length
   const MAX_TAG_LENGTH = 200;
   const truncated =
     stringValue.length > MAX_TAG_LENGTH
       ? stringValue.substring(0, MAX_TAG_LENGTH) + '...'
       : stringValue;
 
-  // Escape HTML characters and remove potentially dangerous characters
-  return (
-    truncated
-      .replace(/[<>&"']/g, char => {
-        switch (char) {
-          case '<':
-            return '&lt;';
-          case '>':
-            return '&gt;';
-          case '&':
-            return '&amp;';
-          case '"':
-            return '&quot;';
-          case "'":
-            return '&#x27;';
-          default:
-            return char;
-        }
-      })
-      // Remove control characters and non-printable characters
-      .replace(/[^\x20-\x7E]/g, '')
-  );
+  return truncated
+    .replace(/[<>&"']/g, char => {
+      switch (char) {
+        case '<':
+          return '&lt;';
+        case '>':
+          return '&gt;';
+        case '&':
+          return '&amp;';
+        case '"':
+          return '&quot;';
+        case "'":
+          return '&#x27;';
+        default:
+          return char;
+      }
+    })
+    .replace(/[^\x20-\x7E]/g, '');
 };
 
 export const setSupportUuidInSentry = (
