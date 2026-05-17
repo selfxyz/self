@@ -122,11 +122,10 @@ export const OnboardingEvents = {
   PROOF_STARTED: 'Onboarding: Proof Generation Started',
   PROOF_SUCCEEDED: 'Onboarding: Proof Generation Succeeded',
   COMPLETED: 'Onboarding: Completed',
+  RECOVERED: 'Onboarding: Recovered',
   FAILED: 'Onboarding: Failed',
   STEP_RETRIED: 'Onboarding: Step Retried',
 };
-
-export const PassportEvents = BiometricEvents;
 
 export const PointEvents = {
   HOME_POINT_EARN_POINTS_OPENED: 'Points: Home Earn Points Opened',

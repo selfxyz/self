@@ -95,8 +95,6 @@ describe('useReadMRZ', () => {
       countryCode: 'UTO',
     });
 
-    // Verify success analytics event was tracked
-
     // Verify success event was emitted
     expect(mockSelfClient.emit).toHaveBeenCalledWith(SdkEvents.DOCUMENT_MRZ_READ_SUCCESS);
   });
@@ -135,8 +133,6 @@ describe('useReadMRZ', () => {
       documentType: 'P',
       countryCode: 'UTO',
     });
-
-    // Verify success analytics event was tracked
 
     // Verify success event was emitted
     expect(mockSelfClient.emit).toHaveBeenCalledWith(SdkEvents.DOCUMENT_MRZ_READ_SUCCESS);

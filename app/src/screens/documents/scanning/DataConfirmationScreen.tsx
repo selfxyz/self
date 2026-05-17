@@ -23,7 +23,6 @@ import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { useKycLauncher } from '@/hooks/useKycLauncher';
 import type { RootStackParamList } from '@/navigation';
 import type { DocumentRoutesParamList } from '@/navigation/types';
-import { PrivacyMask } from '@/observability/PrivacyMask';
 
 const EscapeIcon = ({ size, color }: { size: number; color: string }) => (
   <View testID="escape-button">
@@ -97,64 +96,62 @@ const DataConfirmationScreen: React.FC & {
   };
 
   return (
-    <PrivacyMask>
-      <View
-        style={[
-          styles.container,
-          {
-            paddingTop: insets.top,
-            paddingBottom: insets.bottom,
-          },
-        ]}
-      >
-        <TopNavigationDialogue
-          variant="Primary"
-          label="Data confirmation"
-          escapeIcon={EscapeIcon}
-          onEscape={() => navigateToHome()}
+    <View
+      style={[
+        styles.container,
+        {
+          paddingTop: insets.top,
+          paddingBottom: insets.bottom,
+        },
+      ]}
+    >
+      <TopNavigationDialogue
+        variant="Primary"
+        label="Data confirmation"
+        escapeIcon={EscapeIcon}
+        onEscape={() => navigateToHome()}
+      />
+      <Text style={styles.instructionText}>
+        Please confirm the following information
+      </Text>
+      <View style={styles.fieldsContainer}>
+        <InputField
+          type="alphanumeric"
+          label="Document number"
+          value={fields.documentNumber}
+          onChangeText={text => handleFieldChange('documentNumber', text)}
+          style={styles.field}
         />
-        <Text style={styles.instructionText}>
-          Please confirm the following information
-        </Text>
-        <View style={styles.fieldsContainer}>
-          <InputField
-            type="alphanumeric"
-            label="Document number"
-            value={fields.documentNumber}
-            onChangeText={text => handleFieldChange('documentNumber', text)}
-            style={styles.field}
-          />
 
-          <InputField
-            type="date-of-birth"
-            label="Date of birth"
-            value={fields.dateOfBirth}
-            onChangeText={text => handleFieldChange('dateOfBirth', text)}
-            style={styles.field}
-          />
+        <InputField
+          type="date-of-birth"
+          label="Date of birth"
+          value={fields.dateOfBirth}
+          onChangeText={text => handleFieldChange('dateOfBirth', text)}
+          style={styles.field}
+        />
 
-          <InputField
-            type="expiry-date"
-            label="Document expiration date"
-            value={fields.documentExpiryDate}
-            onChangeText={text => handleFieldChange('documentExpiryDate', text)}
-            style={styles.field}
-          />
-        </View>
-
-        <YStack gap={12} style={styles.buttonContainer}>
-          <PrimaryButton onPress={handleConfirmPress}>Continue</PrimaryButton>
-          {fromNfcFailure && (
-            <SecondaryButton
-              onPress={launchKycVerification}
-              disabled={isKycLoading}
-            >
-              {isKycLoading ? 'Loading...' : 'Try Alternative Verification'}
-            </SecondaryButton>
-          )}
-        </YStack>
+        <InputField
+          type="expiry-date"
+          label="Document expiration date"
+          value={fields.documentExpiryDate}
+          onChangeText={text => handleFieldChange('documentExpiryDate', text)}
+          style={styles.field}
+        />
       </View>
-    </PrivacyMask>
+
+      <YStack gap={12} style={styles.buttonContainer}>
+        <PrimaryButton onPress={handleConfirmPress}>Continue</PrimaryButton>
+        {fromNfcFailure && (
+          <SecondaryButton
+            onPress={launchKycVerification}
+            disabled={isKycLoading}
+          >
+            {isKycLoading ? 'Loading...' : 'Try Alternative Verification'}
+          </SecondaryButton>
+        )}
+      </YStack>
+    </View>
   );
 };
 

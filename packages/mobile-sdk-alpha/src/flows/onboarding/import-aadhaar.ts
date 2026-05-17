@@ -41,7 +41,7 @@ export function useAadhaar() {
       const ageDays = parseFloat((diffMinutes / (60 * 24)).toFixed(2));
 
       const allowedWindow = await getAadharRegistrationWindow();
-      const isValid = diffMinutes <= allowedWindow;
+      const isValid = Number.isFinite(diffMinutes) && diffMinutes >= 0 && diffMinutes <= allowedWindow;
 
       return { isValid, ageDays };
     },

@@ -48,14 +48,12 @@ export function useReadMRZ(scanStartTimeRef: RefObject<number>) {
 
         if (error) {
           console.error(error);
-
           selfClient.emit(SdkEvents.DOCUMENT_MRZ_READ_FAILURE);
           return;
         }
 
         if (!result) {
           console.error('No result from passport scan');
-
           return;
         }
 
@@ -74,7 +72,6 @@ export function useReadMRZ(scanStartTimeRef: RefObject<number>) {
           if (shouldInjectInvalidFormat) {
             console.log('[DEV] Injecting MRZ invalid format error');
           }
-
           selfClient.emit(SdkEvents.DOCUMENT_MRZ_READ_FAILURE);
           return;
         }

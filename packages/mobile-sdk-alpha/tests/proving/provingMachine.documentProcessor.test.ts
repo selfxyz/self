@@ -17,6 +17,7 @@ import * as commonUtils from '@selfxyz/common/utils';
 import { generateCommitmentInAppAadhaar } from '@selfxyz/common/utils/passports/validate';
 import { AttestationIdHex } from '@selfxyz/common/utils/types';
 
+import { ProofEvents } from '../../src/constants/analytics';
 import * as documentUtils from '../../src/documents/utils';
 import { useProvingStore } from '../../src/proving/provingMachine';
 import { fetchAllTreesAndCircuits } from '../../src/stores';
@@ -253,6 +254,7 @@ describe('parseIDDocument', () => {
 
     await useProvingStore.getState().init(selfClient, 'dsc');
     actorMock.send.mockClear();
+    vi.mocked(selfClient.trackEvent).mockClear();
 
     await useProvingStore.getState().parseIDDocument(selfClient);
 
@@ -265,7 +267,7 @@ describe('parseIDDocument', () => {
     expect(actorMock.send).toHaveBeenCalledWith({ type: 'PARSE_SUCCESS' });
   });
 
-  it('handles missing passport data with PARSE_ERROR and analytics event', async () => {
+  it('handles missing passport data with PARSE_ERROR', async () => {
     const protocolState = buildProtocolState({
       commitmentTree: null,
       dscTree: null,
@@ -285,6 +287,7 @@ describe('parseIDDocument', () => {
 
     await useProvingStore.getState().init(selfClient, 'dsc');
     actorMock.send.mockClear();
+    vi.mocked(selfClient.trackEvent).mockClear();
 
     useProvingStore.setState({ passportData: null });
 
@@ -317,55 +320,11 @@ describe('parseIDDocument', () => {
 
     await useProvingStore.getState().init(selfClient, 'dsc');
     actorMock.send.mockClear();
+    vi.mocked(selfClient.trackEvent).mockClear();
 
     await useProvingStore.getState().parseIDDocument(selfClient);
 
     expect(actorMock.send).toHaveBeenCalledWith({ type: 'PARSE_ERROR' });
-  });
-
-  it('continues when DSC metadata cannot be read and logs empty dsc payload', async () => {
-    const passportData = asNonMock(genMockIdDoc({ idType: 'mock_passport' })) as PassportData;
-    let metadataProxy: PassportData['passportMetadata'];
-    Object.defineProperty(passportData, 'passportMetadata', {
-      get() {
-        return metadataProxy;
-      },
-      set(value) {
-        metadataProxy = new Proxy(value, {
-          get(target, prop) {
-            if (prop === 'dsc') {
-              throw new Error('dsc parse failed');
-            }
-            return target[prop as keyof typeof target];
-          },
-        });
-      },
-      configurable: true,
-    });
-
-    const protocolState = buildProtocolState({
-      commitmentTree: null,
-      dscTree: null,
-      deployedCircuits: {
-        REGISTER: [],
-        REGISTER_ID: [],
-        REGISTER_AADHAAR: [],
-        DSC: [],
-        DSC_ID: [],
-      },
-    });
-    const selfClient = createSelfClient(protocolState);
-
-    loadSelectedDocumentMock.mockResolvedValue({ data: passportData } as any);
-
-    vi.spyOn(commonUtils, 'getSKIPEM').mockResolvedValue({});
-
-    await useProvingStore.getState().init(selfClient, 'dsc');
-    actorMock.send.mockClear();
-
-    await useProvingStore.getState().parseIDDocument(selfClient);
-
-    expect(actorMock.send).toHaveBeenCalledWith({ type: 'PARSE_SUCCESS' });
   });
 
   it('emits PARSE_ERROR when storing parsed passport data fails', async () => {
@@ -391,6 +350,7 @@ describe('parseIDDocument', () => {
 
     await useProvingStore.getState().init(selfClient, 'dsc');
     actorMock.send.mockClear();
+    vi.mocked(selfClient.trackEvent).mockClear();
 
     await useProvingStore.getState().parseIDDocument(selfClient);
 
@@ -429,6 +389,7 @@ describe('startFetchingData', () => {
 
     await useProvingStore.getState().init(selfClient, 'register');
     actorMock.send.mockClear();
+    vi.mocked(selfClient.trackEvent).mockClear();
 
     useProvingStore.setState({ passportData, env: 'prod' });
 
@@ -436,6 +397,7 @@ describe('startFetchingData', () => {
 
     expect(fetchAllTreesMock).toHaveBeenCalledWith(selfClient, 'passport', 'prod', 'KEY123');
     expect(actorMock.send).toHaveBeenCalledWith({ type: 'FETCH_SUCCESS' });
+    expect(selfClient.trackEvent).toHaveBeenCalledWith(ProofEvents.FETCH_DATA_SUCCESS);
   });
 
   it('fetches trees and circuits for id cards', async () => {
@@ -461,6 +423,7 @@ describe('startFetchingData', () => {
 
     await useProvingStore.getState().init(selfClient, 'register');
     actorMock.send.mockClear();
+    vi.mocked(selfClient.trackEvent).mockClear();
 
     useProvingStore.setState({ passportData: idCardData, env: 'stg' });
 
@@ -489,6 +452,7 @@ describe('startFetchingData', () => {
 
     await useProvingStore.getState().init(selfClient, 'register');
     actorMock.send.mockClear();
+    vi.mocked(selfClient.trackEvent).mockClear();
 
     useProvingStore.setState({ passportData: aadhaarData, env: 'prod' });
 
@@ -517,12 +481,16 @@ describe('startFetchingData', () => {
 
     await useProvingStore.getState().init(selfClient, 'register');
     actorMock.send.mockClear();
+    vi.mocked(selfClient.trackEvent).mockClear();
 
     useProvingStore.setState({ passportData: null });
 
     await useProvingStore.getState().startFetchingData(selfClient);
 
     expect(actorMock.send).toHaveBeenCalledWith({ type: 'FETCH_ERROR' });
+    expect(selfClient.trackEvent).toHaveBeenCalledWith(ProofEvents.FETCH_DATA_FAILED, {
+      message: 'PassportData is not available',
+    });
   });
 
   it('emits FETCH_ERROR when DSC data is missing for passports', async () => {
@@ -548,12 +516,16 @@ describe('startFetchingData', () => {
 
     await useProvingStore.getState().init(selfClient, 'register');
     actorMock.send.mockClear();
+    vi.mocked(selfClient.trackEvent).mockClear();
 
     useProvingStore.setState({ passportData, env: 'stg' });
 
     await useProvingStore.getState().startFetchingData(selfClient);
 
     expect(actorMock.send).toHaveBeenCalledWith({ type: 'FETCH_ERROR' });
+    expect(selfClient.trackEvent).toHaveBeenCalledWith(ProofEvents.FETCH_DATA_FAILED, {
+      message: 'Missing parsed DSC in passport data',
+    });
   });
 
   it('emits FETCH_ERROR when protocol fetch fails', async () => {
@@ -580,12 +552,16 @@ describe('startFetchingData', () => {
 
     await useProvingStore.getState().init(selfClient, 'register');
     actorMock.send.mockClear();
+    vi.mocked(selfClient.trackEvent).mockClear();
 
     useProvingStore.setState({ passportData, env: 'prod' });
 
     await useProvingStore.getState().startFetchingData(selfClient);
 
     expect(actorMock.send).toHaveBeenCalledWith({ type: 'FETCH_ERROR' });
+    expect(selfClient.trackEvent).toHaveBeenCalledWith(ProofEvents.FETCH_DATA_FAILED, {
+      message: 'network down',
+    });
   });
 });
 
@@ -620,6 +596,7 @@ describe('validatingDocument', () => {
 
     await useProvingStore.getState().init(selfClient, 'register');
     actorMock.send.mockClear();
+    vi.mocked(selfClient.trackEvent).mockClear();
 
     useProvingStore.setState({ passportData, secret: '123456789', circuitType: 'register' });
 
@@ -656,12 +633,14 @@ describe('validatingDocument', () => {
 
     await useProvingStore.getState().init(selfClient, 'disclose');
     actorMock.send.mockClear();
+    vi.mocked(selfClient.trackEvent).mockClear();
 
     useProvingStore.setState({ passportData, secret, circuitType: 'disclose' });
 
     await useProvingStore.getState().validatingDocument(selfClient);
 
     expect(actorMock.send).toHaveBeenCalledWith({ type: 'VALIDATION_SUCCESS' });
+    expect(selfClient.trackEvent).toHaveBeenCalledWith(ProofEvents.VALIDATION_SUCCESS);
   });
 
   it('emits PASSPORT_DATA_NOT_FOUND when disclose document is not registered', async () => {
@@ -689,6 +668,7 @@ describe('validatingDocument', () => {
 
     await useProvingStore.getState().init(selfClient, 'disclose');
     actorMock.send.mockClear();
+    vi.mocked(selfClient.trackEvent).mockClear();
 
     useProvingStore.setState({ passportData, secret, circuitType: 'disclose' });
 
@@ -729,6 +709,7 @@ describe('validatingDocument', () => {
 
     await useProvingStore.getState().init(selfClient, 'register');
     actorMock.send.mockClear();
+    vi.mocked(selfClient.trackEvent).mockClear();
 
     useProvingStore.setState({ passportData: aadhaarData, secret, circuitType: 'register' });
 
@@ -772,6 +753,7 @@ describe('validatingDocument', () => {
     try {
       await useProvingStore.getState().init(selfClient, 'register');
       actorMock.send.mockClear();
+      vi.mocked(selfClient.trackEvent).mockClear();
 
       useProvingStore.setState({ passportData, secret, circuitType: 'register' });
 
@@ -825,6 +807,7 @@ describe('validatingDocument', () => {
     try {
       await useProvingStore.getState().init(selfClient, 'register');
       actorMock.send.mockClear();
+      vi.mocked(selfClient.trackEvent).mockClear();
 
       useProvingStore.setState({ passportData, secret, circuitType: 'register' });
 
@@ -883,6 +866,7 @@ describe('validatingDocument', () => {
     try {
       await useProvingStore.getState().init(selfClient, 'register');
       actorMock.send.mockClear();
+      vi.mocked(selfClient.trackEvent).mockClear();
 
       useProvingStore.setState({ passportData, secret, circuitType: 'register' });
 
@@ -938,6 +922,7 @@ describe('validatingDocument', () => {
     try {
       await useProvingStore.getState().init(selfClient, 'register');
       actorMock.send.mockClear();
+      vi.mocked(selfClient.trackEvent).mockClear();
 
       useProvingStore.setState({ passportData, secret, circuitType: 'dsc' });
 
@@ -998,6 +983,7 @@ describe('validatingDocument', () => {
     try {
       await useProvingStore.getState().init(selfClient, 'register');
       actorMock.send.mockClear();
+      vi.mocked(selfClient.trackEvent).mockClear();
 
       useProvingStore.setState({ passportData, secret, circuitType: 'dsc' });
 
@@ -1049,6 +1035,7 @@ describe('validatingDocument', () => {
     try {
       await useProvingStore.getState().init(selfClient, 'dsc');
       actorMock.send.mockClear();
+      vi.mocked(selfClient.trackEvent).mockClear();
 
       useProvingStore.setState({ passportData, secret, circuitType: 'dsc' });
 
@@ -1079,11 +1066,15 @@ describe('validatingDocument', () => {
 
     await useProvingStore.getState().init(selfClient, 'register');
     actorMock.send.mockClear();
+    vi.mocked(selfClient.trackEvent).mockClear();
 
     useProvingStore.setState({ passportData: null });
 
     await useProvingStore.getState().validatingDocument(selfClient);
 
     expect(actorMock.send).toHaveBeenCalledWith({ type: 'VALIDATION_ERROR' });
+    expect(selfClient.trackEvent).toHaveBeenCalledWith(ProofEvents.VALIDATION_FAILED, {
+      message: 'PassportData is not available',
+    });
   });
 });

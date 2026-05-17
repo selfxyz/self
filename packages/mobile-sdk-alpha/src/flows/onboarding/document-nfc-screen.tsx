@@ -11,7 +11,6 @@ import { BodyText, PrimaryButton, SecondaryButton, Title, View, XStack } from 's
 import ButtonsContainer from 'src/components/ButtonsContainer';
 import { DelayedLottieView } from 'src/components/DelayedLottieView';
 import TextsContainer from 'src/components/TextsContainer';
-import { PassportEvents } from 'src/constants/analytics';
 import { black, slate100, slate400, slate500, white } from 'src/constants/colors';
 import { dinot } from 'src/constants/fonts';
 import { NFC_IMAGE } from 'src/constants/images';
@@ -43,7 +42,7 @@ type DocumentNFCScreenProps = {
 
 export const DocumentNFCScreen: React.FC<DocumentNFCScreenProps> = (props: DocumentNFCScreenProps) => {
   const selfClient = useSelfClient();
-  const { logNFCEvent, trackNfcEvent, useMRZStore } = selfClient;
+  const { logNFCEvent, useMRZStore } = selfClient;
 
   const { passportNumber, dateOfBirth, dateOfExpiry, documentType, countryCode } = useMRZStore();
 
@@ -194,9 +193,6 @@ export const DocumentNFCScreen: React.FC<DocumentNFCScreenProps> = (props: Docum
           ...baseContext,
           stage: 'timeout',
         });
-        trackNfcEvent(PassportEvents.NFC_SCAN_FAILED, {
-          error: 'timeout',
-        });
         handleNFCError('Scan timed out. Please try again.');
         setIsNfcSheetOpen(false);
         logNFCEvent('info', 'sheet_close', {
@@ -240,12 +236,8 @@ export const DocumentNFCScreen: React.FC<DocumentNFCScreenProps> = (props: Docum
         let passportData: PassportData | null = null;
         try {
           passportData = scanResponse.passportData;
-        } catch (e: unknown) {
+        } catch {
           console.error('Parsing NFC Response Unsuccessful');
-          const errMsg = sanitizeErrorMessage(e instanceof Error ? e.message : String(e));
-          trackNfcEvent(PassportEvents.NFC_RESPONSE_PARSE_FAILED, {
-            error: errMsg,
-          });
           return;
         }
         if (passportData) {
@@ -266,14 +258,8 @@ export const DocumentNFCScreen: React.FC<DocumentNFCScreenProps> = (props: Docum
           return;
         }
 
-        const scanDurationSeconds = ((Date.now() - scanStartTime) / 1000).toFixed(2);
         console.error('NFC Scan Unsuccessful:', e);
         const message = e instanceof Error ? e.message : String(e);
-        const sanitized = sanitizeErrorMessage(message);
-        trackNfcEvent(PassportEvents.NFC_SCAN_FAILED, {
-          error: sanitized,
-          duration_seconds: parseFloat(scanDurationSeconds),
-        });
         handleNFCError(message);
         // We deliberately avoid opening any external feedback widgets here;
         // users can send feedback via the email action in the modal.

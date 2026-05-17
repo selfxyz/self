@@ -83,7 +83,6 @@ import {
   configureNfcAnalytics,
   flushAllAnalytics,
   setNfcScanningActive,
-  trackNfcEvent,
 } from '@/services/analytics';
 import {
   SUPPORT_FORM_BUTTON_TEXT,
@@ -328,7 +327,7 @@ const DocumentNFCScanScreen: React.FC = () => {
       }
       scanTimeoutRef.current = setTimeout(() => {
         scanCancelledRef.current = true;
-        setNfcScanningActive(false); // Clear scanning state on timeout
+        setNfcScanningActive(false);
         trackNfcEvent(BiometricEvents.NFC_SCAN_FAILED, {
           error: 'timeout',
         });
@@ -456,25 +455,24 @@ const DocumentNFCScanScreen: React.FC = () => {
         if (scanCancelledRef.current) {
           return;
         }
-        const scanDurationSeconds = (
-          (Date.now() - scanStartTime) /
-          1000
-        ).toFixed(2);
         console.error('NFC Scan Unsuccessful:', e);
         const message = e instanceof Error ? e.message : String(e);
         const sanitized = sanitizeErrorMessage(message);
+        const failureDurationSeconds = parseFloat(
+          ((Date.now() - scanStartTime) / 1000).toFixed(2),
+        );
         logNFCEvent(
           'error',
           'nfc_scan_failed',
           { ...baseContext, stage: 'scan_failed' },
           {
             error: sanitized,
-            duration_seconds: parseFloat(scanDurationSeconds),
+            duration_seconds: failureDurationSeconds,
           },
         );
         trackNfcEvent(BiometricEvents.NFC_SCAN_FAILED, {
           error: sanitized,
-          duration_seconds: parseFloat(scanDurationSeconds),
+          duration_seconds: failureDurationSeconds,
         });
         openErrorModal(message);
         // We deliberately avoid opening any external feedback widgets here;

@@ -12,10 +12,6 @@ const mockView = View;
 const mockText = Text;
 const mockTouchableOpacity = TouchableOpacity;
 
-jest.mock('@/services/analytics', () => ({
-  trackEvent: jest.fn(),
-}));
-
 const mockSetMRZForNFC = jest.fn();
 
 jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
@@ -87,14 +83,6 @@ jest.mock('@selfxyz/mobile-sdk-alpha/components', () => ({
       { onPress, disabled },
       mockReact.createElement(mockText, null, children),
     ),
-}));
-
-jest.mock('@selfxyz/mobile-sdk-alpha/constants/analytics', () => ({
-  PassportEvents: {
-    DATA_CONFIRMATION_CONTINUE: 'Passport: Data Confirmation Continue',
-    DATA_CONFIRMATION_CANCEL: 'Passport: Data Confirmation Cancel',
-    DATA_CONFIRMATION_COMPLETED: 'Passport: Data Confirmation Completed',
-  },
 }));
 
 const mockNavigate = jest.fn();

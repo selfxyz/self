@@ -95,6 +95,7 @@ export const useKycLauncher = (options: UseKycLauncherOptions) => {
   const launchKycVerification = useCallback(async () => {
     setIsLoading(true);
     const sessionRequestedAt = Date.now();
+    let providerOpenedAt: number | null = null;
     try {
       trackOnboardingStep(selfClient, OnboardingEvents.SCAN_STARTED, {
         branch: 'kyc',
@@ -112,13 +113,14 @@ export const useKycLauncher = (options: UseKycLauncherOptions) => {
           ((Date.now() - sessionRequestedAt) / 1000).toFixed(2),
         ),
       });
-      const providerOpenedAt = Date.now();
+      providerOpenedAt = Date.now();
+      const openedAt = providerOpenedAt;
       trackBranchEvent(selfClient, KycEvents.PROVIDER_OPENED, {
         provider: KYC_PROVIDER,
       });
       const result = await startKycVerification(session.sessionToken);
       const providerDurationSeconds = parseFloat(
-        ((Date.now() - providerOpenedAt) / 1000).toFixed(2),
+        ((Date.now() - openedAt) / 1000).toFixed(2),
       );
 
       // Handle user cancellation
@@ -173,6 +175,17 @@ export const useKycLauncher = (options: UseKycLauncherOptions) => {
         error instanceof Error ? error.message : String(error);
       const safeError = sanitizeErrorMessage(errorMessage);
       console.error('Error launching alternative verification:', safeError);
+
+      if (providerOpenedAt !== null) {
+        trackBranchEvent(selfClient, KycEvents.PROVIDER_CLOSED, {
+          provider: KYC_PROVIDER,
+          outcome: 'failed',
+          error_code: 'launch_error',
+          duration_seconds: parseFloat(
+            ((Date.now() - providerOpenedAt) / 1000).toFixed(2),
+          ),
+        });
+      }
 
       // Call custom error handler if provided, otherwise navigate to fallback screen
       if (onError) {

@@ -79,6 +79,7 @@ const LogoConfirmationScreen: React.FC = () => {
       onButtonPress: async () => {
         let scanStarted = false;
         const sessionRequestedAt = Date.now();
+        let providerOpenedAt: number | null = null;
         try {
           trackBranchEvent(selfClient, KycEvents.SESSION_REQUESTED, {
             provider: KYC_PROVIDER,
@@ -97,7 +98,7 @@ const LogoConfirmationScreen: React.FC = () => {
             branch: 'kyc',
           });
           scanStarted = true;
-          const providerOpenedAt = Date.now();
+          providerOpenedAt = Date.now();
           trackBranchEvent(selfClient, KycEvents.PROVIDER_OPENED, {
             provider: KYC_PROVIDER,
           });
@@ -152,6 +153,16 @@ const LogoConfirmationScreen: React.FC = () => {
           });
           navigation.navigate('KycSuccess', { sessionId: session.sessionId });
         } catch {
+          if (providerOpenedAt !== null) {
+            trackBranchEvent(selfClient, KycEvents.PROVIDER_CLOSED, {
+              provider: KYC_PROVIDER,
+              outcome: 'failed',
+              error_code: 'launch_error',
+              duration_seconds: parseFloat(
+                ((Date.now() - providerOpenedAt) / 1000).toFixed(2),
+              ),
+            });
+          }
           console.error('Error launching KYC verification');
           failOnboardingAttempt(
             selfClient,

@@ -60,6 +60,8 @@ const AadhaarUploadScreen: React.FC = () => {
     onModalDismiss: () => {},
   });
 
+  // Fire SCAN_STARTED on canonical funnel only — branch funnel's UPLOAD_STARTED
+  // fires on actual photo-library tap, not screen mount.
   useEffect(() => {
     trackOnboardingStep(selfClient, OnboardingEvents.SCAN_STARTED, {
       branch: 'aadhaar',
@@ -198,25 +200,6 @@ const AadhaarUploadScreen: React.FC = () => {
                 {isProcessing ? 'Processing...' : 'Upload QR code'}
               </PrimaryButton>
             </YStack>
-            {/* TODO: Implement camera-based QR scanning for Aadhaar */}
-            {/* <Button
-            aspectRatio={1}
-            backgroundColor={slate200}
-            borderRadius="$2"
-            justifyContent="center"
-            alignItems="center"
-            pressStyle={{
-              backgroundColor: slate50,
-              scale: 0.98,
-            }}
-            hoverStyle={{
-              backgroundColor: slate300,
-            }}
-            onPress={onCameraScanPress}
-            disabled={isProcessing}
-          >
-            <ScanIcon width={28} height={28} color={black} />
-          </Button> */}
           </XStack>
         </YStack>
       </YStack>
