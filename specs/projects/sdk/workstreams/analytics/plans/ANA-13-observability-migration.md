@@ -93,6 +93,26 @@ All tags are session-scoped via `Sentry.setTag` inside a scope. Tag setting is c
 
 Sanitization: all tag values pass through the existing `sanitizeTagValue` (alphanumeric + underscores, 200 char limit). No raw IDs or user names ever land in tags.
 
+### Cohort-tag flow
+
+```mermaid
+flowchart TD
+    A[Call site: selfClient.trackEvent eventName, properties] --> B[app/src/services/analytics.ts _track]
+    B --> C[Mixpanel / Segment send]
+    B --> D{eventName matches<br/>Onboarding: COMPLETED<br/>or FAILED?}
+    D -- yes --> E[clearOnboardingTags<br/>setTag null for each<br/>cohort key]
+    D -- no --> F[tagsFromAnalyticsEvent<br/>eventName, properties]
+    F --> G{isOnboardingEvent?<br/>Onboarding: / Biometric: /<br/>Kyc: / Aadhaar: / Passport:}
+    G -- no --> H[empty snapshot,<br/>no tags written]
+    G -- yes --> I[Map payload keys onto<br/>OnboardingTagSnapshot<br/>country_code → document_country<br/>csca_hash_function → csca_hash_algorithm<br/>provider → kyc_provider only on Kyc:]
+    I --> J[setOnboardingTags<br/>sanitizeTagValue each<br/>then Sentry.setTag]
+    E --> K[Sentry session scope]
+    J --> K
+    K --> L[Later: Sentry.captureException<br/>error event carries cohort tags]
+```
+
+The mapping layer is the single place property names cross the analytics/Sentry boundary, so a typo in one event payload cannot quietly pollute every session's tags. Non-string values are silently skipped; partial snapshots never blow away previously-set tags (empty/`undefined`/`null` are no-ops, not clears).
+
 ## Session Replay configuration
 
 Current state: `mobileReplayIntegration` is enabled with `maskAllText: true`, `maskAllImages: false`, `maskAllVectors: false`. Sample rate 10% session / 100% on error.
