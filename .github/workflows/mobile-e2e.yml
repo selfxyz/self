@@ -441,14 +441,15 @@ jobs:
           # A Hermes-enabled APK that ships a non-Hermes bundle will launch but
           # fail to mount JS — exactly the failure mode where Maestro never sees
           # `home-screen-root`. The Hermes bundle starts with the magic bytes
-          # c61fbc03c103191898... (Hermes magic), so a hexdump is sufficient.
+          # c61fbc03; the following bytecode version changes across Hermes
+          # releases, so only the stable magic prefix is checked.
           echo "🔍 Inspecting JS bundle format in APK..."
           BUNDLE_TMP=$(mktemp)
           if unzip -p "$APK_PATH" assets/index.android.bundle > "$BUNDLE_TMP" 2>/dev/null && [ -s "$BUNDLE_TMP" ]; then
             BUNDLE_SIZE=$(stat -f%z "$BUNDLE_TMP" 2>/dev/null || stat -c%s "$BUNDLE_TMP" 2>/dev/null || echo "unknown")
             MAGIC=$(od -An -N8 -tx1 "$BUNDLE_TMP" | tr -d ' \n')
             echo "📦 index.android.bundle size: $BUNDLE_SIZE bytes; magic: $MAGIC"
-            if [ "$MAGIC" = "c61fbc03c1031918" ]; then
+            if [ "${MAGIC#c61fbc03}" != "$MAGIC" ]; then
               echo "✅ Bundle is Hermes bytecode"
             else
               FIRST_LINE=$(head -c 200 "$BUNDLE_TMP" | tr -d '\0' | head -1)
