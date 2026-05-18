@@ -44,7 +44,6 @@ import {
 
 const QRCodeViewFinderScreen: React.FC = () => {
   const selfClient = useSelfClient();
-  const { trackEvent } = selfClient;
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const isFocused = useIsFocused();
@@ -86,7 +85,7 @@ const QRCodeViewFinderScreen: React.FC = () => {
             const selfAppJson = JSON.parse(selfApp);
             const gate = await evaluateGoogleUsatGate(selfClient, selfAppJson);
             if (gate === 'block') {
-              trackEvent(ProofEvents.GOOGLE_USAT_BLOCKED, {
+              selfClient.trackEvent(ProofEvents.GOOGLE_USAT_BLOCKED, {
                 entry_point: 'qr_scan',
                 reason: 'no_high_security_doc',
               });
@@ -115,7 +114,7 @@ const QRCodeViewFinderScreen: React.FC = () => {
           }
         } else if (sessionId) {
           if (isGoogleUsatForceEnabledForTesting()) {
-            trackEvent(ProofEvents.GOOGLE_USAT_BLOCKED, {
+            selfClient.trackEvent(ProofEvents.GOOGLE_USAT_BLOCKED, {
               entry_point: 'qr_scan',
               reason: 'no_high_security_doc',
             });

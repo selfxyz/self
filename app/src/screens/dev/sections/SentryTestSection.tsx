@@ -145,9 +145,7 @@ export const SentryTestSection: React.FC = () => {
           text: 'Send',
           onPress: () => {
             captureException(
-              new Error(
-                `ANA-13 bare test error @ ${new Date().toISOString()}`,
-              ),
+              new Error(`ANA-13 bare test error @ ${new Date().toISOString()}`),
               { source: 'dev_settings_sentry_test' },
             );
           },
@@ -194,10 +192,7 @@ export const SentryTestSection: React.FC = () => {
           label="Simulate happy path (clears cohort)"
           onPress={handleHappyPathSmoke}
         />
-        <SentryTestRow
-          label="Send bare test error"
-          onPress={handleCapture}
-        />
+        <SentryTestRow label="Send bare test error" onPress={handleCapture} />
         <SentryTestRow
           label="Throw uncaught error"
           onPress={handleThrow}
