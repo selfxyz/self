@@ -446,7 +446,7 @@ jobs:
           BUNDLE_TMP=$(mktemp)
           if unzip -p "$APK_PATH" assets/index.android.bundle > "$BUNDLE_TMP" 2>/dev/null && [ -s "$BUNDLE_TMP" ]; then
             BUNDLE_SIZE=$(stat -f%z "$BUNDLE_TMP" 2>/dev/null || stat -c%s "$BUNDLE_TMP" 2>/dev/null || echo "unknown")
-            MAGIC=$(xxd -p -l 8 "$BUNDLE_TMP" | tr -d '\n')
+            MAGIC=$(od -An -N8 -tx1 "$BUNDLE_TMP" | tr -d ' \n')
             echo "📦 index.android.bundle size: $BUNDLE_SIZE bytes; magic: $MAGIC"
             if [ "$MAGIC" = "c61fbc03c1031918" ]; then
               echo "✅ Bundle is Hermes bytecode"
