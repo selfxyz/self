@@ -52,30 +52,22 @@ export function tagsFromAnalyticsEvent(
   if (!isOnboardingEvent(eventName)) return {};
 
   const snapshot: OnboardingTagSnapshot = {};
+  const setString = <K extends keyof OnboardingTagSnapshot>(
+    key: K,
+    value: unknown,
+  ): void => {
+    if (typeof value === 'string') snapshot[key] = value;
+  };
 
-  if (typeof properties.attempt_id === 'string') {
-    snapshot.attempt_id = properties.attempt_id;
-  }
-  if (typeof properties.initial_branch === 'string') {
-    snapshot.initial_branch = properties.initial_branch;
-  }
-  if (typeof properties.current_branch === 'string') {
-    snapshot.current_branch = properties.current_branch;
-  }
-  if (typeof properties.country_code === 'string') {
-    snapshot.document_country = properties.country_code;
-  }
-  if (typeof properties.document_type === 'string') {
-    snapshot.document_type = properties.document_type;
-  }
-  if (typeof properties.signature_algorithm === 'string') {
-    snapshot.signature_algorithm = properties.signature_algorithm;
-  }
-  if (typeof properties.csca_hash_function === 'string') {
-    snapshot.csca_hash_algorithm = properties.csca_hash_function;
-  }
-  if (typeof properties.provider === 'string' && eventName.startsWith('Kyc:')) {
-    snapshot.kyc_provider = properties.provider;
+  setString('attempt_id', properties.attempt_id);
+  setString('initial_branch', properties.initial_branch);
+  setString('current_branch', properties.current_branch);
+  setString('document_country', properties.country_code);
+  setString('document_type', properties.document_type);
+  setString('signature_algorithm', properties.signature_algorithm);
+  setString('csca_hash_algorithm', properties.csca_hash_function);
+  if (eventName.startsWith('Kyc:')) {
+    setString('kyc_provider', properties.provider);
   }
 
   return snapshot;
