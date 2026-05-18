@@ -356,13 +356,19 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: app/android/app/build/outputs/apk/debug/app-debug.apk
-          key: ${{ runner.os }}-apk-v1-${{ hashFiles('app/android/app/src/**', 'app/android/app/build.gradle', 'app/android/app/proguard-rules.pro', 'app/android/build.gradle', 'app/android/settings.gradle', 'app/android/gradle.properties', 'app/android/gradle/wrapper/**', 'app/android/gradlew', 'app/src/**', 'app/App.tsx', 'app/index.js', 'app/app.json', 'app/package.json', 'app/babel.config.cjs', 'app/metro.config.cjs', 'app/react-native.config.cjs', 'app/patches/**', 'patches/**', 'packages/mobile-sdk-alpha/src/**', 'packages/mobile-sdk-alpha/package.json', 'yarn.lock', '.nvmrc', '.apk-cache-inputs.txt') }}
+          key: ${{ runner.os }}-apk-v2-${{ hashFiles('app/android/app/src/**', 'app/android/app/build.gradle', 'app/android/app/proguard-rules.pro', 'app/android/build.gradle', 'app/android/settings.gradle', 'app/android/gradle.properties', 'app/android/gradle/wrapper/**', 'app/android/gradlew', 'app/src/**', 'app/App.tsx', 'app/index.js', 'app/app.json', 'app/package.json', 'app/babel.config.cjs', 'app/metro.config.cjs', 'app/react-native.config.cjs', 'app/patches/**', 'patches/**', 'packages/mobile-sdk-alpha/src/**', 'packages/mobile-sdk-alpha/package.json', 'yarn.lock', '.nvmrc', '.apk-cache-inputs.txt') }}
 
       - name: Build Android APK
         if: steps.apk-cache.outputs.cache-hit != 'true'
+        env:
+          # Keep Metro root behavior aligned with iOS E2E build in this monorepo.
+          # Without this, Gradle bundle tasks can resolve --entry-file from repo root
+          # instead of app/index.js and produce a bad JS bundle in the APK.
+          EXPO_NO_METRO_WORKSPACE_ROOT: 1
         run: |
           echo "Building Android APK..."
           echo "DIDIT_E2E_BYPASS=${DIDIT_E2E_BYPASS}"
+          echo "EXPO_NO_METRO_WORKSPACE_ROOT=${EXPO_NO_METRO_WORKSPACE_ROOT}"
           chmod +x app/android/gradlew
 
           # Resource monitor so we have memory data if the build is killed

@@ -232,8 +232,16 @@ PODS:
     - GTMSessionFetcher/Core (< 4.0, >= 3.3)
   - GTMSessionFetcher/Core (3.5.0)
   - hermes-engine (0.14.1):
-    - hermes-engine/Pre-built (= 0.14.1)
-  - hermes-engine/Pre-built (0.14.1)
+    - hermes-engine/cdp (= 0.14.1)
+    - hermes-engine/Hermes (= 0.14.1)
+    - hermes-engine/inspector (= 0.14.1)
+    - hermes-engine/inspector_chrome (= 0.14.1)
+    - hermes-engine/Public (= 0.14.1)
+  - hermes-engine/cdp (0.14.1)
+  - hermes-engine/Hermes (0.14.1)
+  - hermes-engine/inspector (0.14.1)
+  - hermes-engine/inspector_chrome (0.14.1)
+  - hermes-engine/Public (0.14.1)
   - lottie-ios (4.6.0)
   - lottie-react-native (7.3.6):
     - boost
@@ -3959,7 +3967,7 @@ SPEC CHECKSUMS:
   GoogleUtilities: 00c88b9a86066ef77f0da2fab05f65d7768ed8e1
   GTMAppAuth: 217a876b249c3c585a54fd6f73e6b58c4f5c4238
   GTMSessionFetcher: 5aea5ba6bd522a239e236100971f10cb71b96ab6
-  hermes-engine: 951dfcf9a874cb01a7ba77967628509a774ff16a
+  hermes-engine: 85d1dfac6a09d00a2ebe76179c258c1215f2cde9
   lottie-ios: 8f959969761e9c45d70353667d00af0e5b9cadb3
   lottie-react-native: e542fe4b6e8eddcf893d5a8cef9f8b5c6d2f7331
   Mixpanel-swift: e9bef28a9648faff384d5ba6f48ecc2787eb24c0
@@ -4079,6 +4087,6 @@ SPEC CHECKSUMS:
   SwiftyTesseract: 1f3d96668ae92dc2208d9842c8a59bea9fad2cbb
   Yoga: e9fea23bf9b2766818ce9a8df72f584bf5ad36cd
 
-PODFILE CHECKSUM: ded06f411c13516d51a97838c92095beafb1fc25
+PODFILE CHECKSUM: e542ad69981268a9f47e929007651ff825a8c7ad
 
 COCOAPODS: 1.16.2
