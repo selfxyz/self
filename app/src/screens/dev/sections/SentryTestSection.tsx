@@ -3,30 +3,153 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
-import { Alert } from 'react-native';
+import { Alert, Platform } from 'react-native';
 import { Button, Text, XStack, YStack } from 'tamagui';
+import { v4 as uuidv4 } from 'uuid';
 
 import { slate200, slate500 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import BugIcon from '@/assets/icons/bug_icon.svg';
-import { captureException } from '@/config/sentry';
+import {
+  captureException,
+  logAuthEvent,
+  logNFCEvent,
+  logProofEvent,
+} from '@/config/sentry';
+import {
+  clearOnboardingTags,
+  setOnboardingTags,
+} from '@/observability/onboardingContext';
 import { ParameterSection } from '@/screens/dev/components/ParameterSection';
 
+const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+const buildSyntheticCohort = () => ({
+  attempt_id: `ana13-smoke-${uuidv4()}`,
+  initial_branch: 'biometric_passport',
+  current_branch: 'biometric_passport',
+  document_country: 'DEU',
+  document_type: 'passport',
+  signature_algorithm: 'ECDSA-SHA256',
+  csca_hash_algorithm: 'SHA-384',
+});
+
+const buildBaseContext = (sessionId: string) => ({
+  sessionId,
+  platform: Platform.OS as 'ios' | 'android',
+  stage: 'ana13_smoke',
+});
+
+const emitSyntheticBreadcrumbTrail = async (sessionId: string) => {
+  const proofCtx = {
+    ...buildBaseContext(sessionId),
+    circuitType: 'register' as const,
+    currentState: 'init',
+  };
+  const nfcCtx = {
+    ...buildBaseContext(sessionId),
+    scanType: 'mrz' as const,
+  };
+  const authCtx = buildBaseContext(sessionId);
+
+  logAuthEvent('info', 'biometric_login_attempt', authCtx);
+  await wait(120);
+  logAuthEvent('info', 'mnemonic_loaded', authCtx);
+  await wait(120);
+  logProofEvent('info', 'attempt_started', proofCtx);
+  await wait(120);
+  logNFCEvent('info', 'screen_mount', { ...nfcCtx, stage: 'mount' });
+  await wait(120);
+  logNFCEvent('info', 'nfc_handshake_started', {
+    ...nfcCtx,
+    stage: 'handshake',
+  });
+  await wait(120);
+  logNFCEvent('info', 'nfc_chip_read_complete', {
+    ...nfcCtx,
+    stage: 'read_complete',
+  });
+  await wait(120);
+  logProofEvent('info', 'document_parsed', {
+    ...proofCtx,
+    currentState: 'validating_document',
+  });
+  await wait(120);
+  logProofEvent('info', 'proof_generation_started', {
+    ...proofCtx,
+    currentState: 'proving',
+  });
+};
+
 export const SentryTestSection: React.FC = () => {
+  const handleFailureSmoke = () => {
+    Alert.alert(
+      'ANA-13: simulate onboarding failure',
+      'Stamps a synthetic cohort, emits an 8-step breadcrumb trail (auth / proof / nfc), then captures an exception. Tags stay set so you can verify they survive to the Sentry event.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Run',
+          onPress: async () => {
+            const sessionId = uuidv4();
+            const cohort = buildSyntheticCohort();
+            setOnboardingTags(cohort);
+            await emitSyntheticBreadcrumbTrail(sessionId);
+            captureException(
+              new Error(
+                `ANA-13 smoke failure (attempt ${cohort.attempt_id}) @ ${new Date().toISOString()}`,
+              ),
+              {
+                source: 'dev_settings_sentry_smoke',
+                attempt_id: cohort.attempt_id,
+                session_id: sessionId,
+              },
+            );
+          },
+        },
+      ],
+    );
+  };
+
+  const handleHappyPathSmoke = () => {
+    Alert.alert(
+      'ANA-13: simulate happy path',
+      'Stamps a synthetic cohort, emits the breadcrumb trail, then clears the cohort tags (no error captured). Use to verify the terminal-event clear path.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Run',
+          onPress: async () => {
+            const sessionId = uuidv4();
+            setOnboardingTags(buildSyntheticCohort());
+            await emitSyntheticBreadcrumbTrail(sessionId);
+            clearOnboardingTags();
+            Alert.alert(
+              'ANA-13 happy path complete',
+              'Cohort tags cleared. Any captured exception now would carry no onboarding tags.',
+            );
+          },
+        },
+      ],
+    );
+  };
+
   const handleCapture = () => {
     Alert.alert(
-      'Send test error to Sentry',
-      'Fires a captured Error with the current cohort tags and breadcrumb trail attached. Use this to verify the ANA-13 wiring against the dev Sentry project.',
+      'Send bare test error',
+      'Fires captureException with no preceding breadcrumbs or cohort tags. Useful for "does Sentry receive anything?" not for verifying ANA-13 wiring.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Send',
           onPress: () => {
-            const err = new Error(
-              `ANA-13 dev test error @ ${new Date().toISOString()}`,
+            captureException(
+              new Error(
+                `ANA-13 bare test error @ ${new Date().toISOString()}`,
+              ),
+              { source: 'dev_settings_sentry_test' },
             );
-            captureException(err, { source: 'dev_settings_sentry_test' });
           },
         },
       ],
@@ -64,7 +187,15 @@ export const SentryTestSection: React.FC = () => {
     >
       <YStack gap="$2">
         <SentryTestRow
-          label="Send test error (captured)"
+          label="Simulate onboarding failure (with trail)"
+          onPress={handleFailureSmoke}
+        />
+        <SentryTestRow
+          label="Simulate happy path (clears cohort)"
+          onPress={handleHappyPathSmoke}
+        />
+        <SentryTestRow
+          label="Send bare test error"
           onPress={handleCapture}
         />
         <SentryTestRow
