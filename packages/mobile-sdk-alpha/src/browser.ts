@@ -48,7 +48,12 @@ export type { SelfApp, SelfAppDisclosureConfig } from '@selfxyz/common';
 export type { SelfAppState } from './stores/selfAppStore';
 
 export type { WebAnalyticsOptions } from './adapters/browser';
-export { GOOGLE_USAT_FAUCET_VERIFIERS } from './constants/googleUsat';
+export {
+  GOOGLE_USAT_FAUCET_APP_NAME,
+  GOOGLE_USAT_FAUCET_ENDPOINT,
+  GOOGLE_USAT_FAUCET_SCOPE,
+} from './constants/googleUsat';
+export { GOOGLE_USAT_FAUCET_POLICY } from './constants/restrictedApps';
 export {
   InitError,
   LivenessError,
@@ -81,13 +86,15 @@ export {
   createWebNetworkAdapter,
 } from './adapters/browser';
 export { createListenersMap, createSelfClient } from './client';
+
 export { defaultConfig } from './config/defaults';
 /** @deprecated Use createSelfClient().extractMRZInfo or import from './mrz' */
 export { extractMRZInfo, extractNameFromMRZ, formatDateToYYMMDD } from './mrz';
 export { finalizeRecoveredDocumentRegistration, validateRecoverySecretForDocument } from './proving/recoveryValidation';
-export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
 
+export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
 export { getPostVerificationRoute, useProvingStore } from './proving/provingMachine';
+export { hasEligibleAlternativeDocumentForPolicy, isDocumentEligibleForPolicy } from './utils/restrictedApps';
 export { isGoogleUsatProofRequest } from './utils/googleUsat';
 export { isPassportDataValid } from './validation/document';
 export { mergeConfig } from './config/merge';

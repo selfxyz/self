@@ -89,12 +89,12 @@ export const useKycLauncher = (options: UseKycLauncherOptions) => {
   const launchKycVerification = useCallback(async () => {
     setIsLoading(true);
     try {
-      trackOnboardingStep(selfClient, OnboardingEvents.SCAN_STARTED, {
-        branch: 'kyc',
-      });
       const session = await createKycSession({
         country: countryCode,
         nationality: countryCode,
+      });
+      trackOnboardingStep(selfClient, OnboardingEvents.SCAN_STARTED, {
+        branch: 'kyc',
       });
       const result = await startKycVerification(session.sessionToken);
 

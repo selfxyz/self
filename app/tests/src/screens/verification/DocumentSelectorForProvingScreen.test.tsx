@@ -18,6 +18,8 @@ import {
 
 import { usePassport } from '@/providers/passportDataProvider';
 import { DocumentSelectorForProvingScreen } from '@/screens/verification/DocumentSelectorForProvingScreen';
+import { useVerificationGateStore } from '@/stores/verificationGateStore';
+import { evaluateGoogleUsatGateForDocument } from '@/utils/googleUsatGate';
 
 // Mock useFocusEffect to behave like useEffect in tests
 // Note: We use a closure-based approach to avoid requiring React (prevents OOM per test-memory-optimization rules)
@@ -61,6 +63,16 @@ jest.mock('@/providers/passportDataProvider', () => ({
   usePassport: jest.fn(),
 }));
 
+jest.mock('@/utils/googleUsatGate', () => ({
+  evaluateGoogleUsatGateForDocument: jest.fn(),
+}));
+
+jest.mock('@/stores/verificationGateStore', () => ({
+  useVerificationGateStore: {
+    getState: jest.fn(),
+  },
+}));
+
 const mockUseNavigation = useNavigation as jest.MockedFunction<
   typeof useNavigation
 >;
@@ -75,6 +87,13 @@ const mockIsDocumentValidForProving =
     typeof isDocumentValidForProving
   >;
 const mockUsePassport = usePassport as jest.MockedFunction<typeof usePassport>;
+const mockEvaluateGoogleUsatGateForDocument =
+  evaluateGoogleUsatGateForDocument as jest.MockedFunction<
+    typeof evaluateGoogleUsatGateForDocument
+  >;
+const mockUseVerificationGateStore = useVerificationGateStore as unknown as {
+  getState: jest.Mock;
+};
 
 type MockDocumentEntry = {
   metadata: DocumentMetadata;
@@ -136,6 +155,8 @@ const mockNavigate = jest.fn();
 const mockLoadDocumentCatalog = jest.fn();
 const mockGetAllDocuments = jest.fn();
 const mockSetSelectedDocument = jest.fn();
+const mockTrackEvent = jest.fn();
+const mockGateOpen = jest.fn();
 
 // Stable passport context to prevent infinite re-renders
 const stablePassportContext = {
@@ -157,6 +178,7 @@ const stableSelfAppSelector = (
 // Stable self client object
 const stableSelfClient = {
   useSelfAppStore: stableSelfAppSelector,
+  trackEvent: mockTrackEvent,
 };
 
 describe('DocumentSelectorForProvingScreen', () => {
@@ -168,6 +190,10 @@ describe('DocumentSelectorForProvingScreen', () => {
     mockUseSelfClient.mockReturnValue(stableSelfClient as any);
 
     mockUsePassport.mockReturnValue(stablePassportContext as any);
+    mockEvaluateGoogleUsatGateForDocument.mockResolvedValue('allow');
+    mockUseVerificationGateStore.getState.mockReturnValue({
+      open: mockGateOpen,
+    });
 
     mockIsDocumentValidForProving.mockImplementation(
       (_metadata, documentData) =>
@@ -389,6 +415,67 @@ describe('DocumentSelectorForProvingScreen', () => {
         expect(mockSetSelectedDocument).toHaveBeenCalledWith('doc-1');
         expect(mockNavigate).toHaveBeenCalledWith('Prove', expect.any(Object));
       });
+    });
+
+    it('blocks approval when selected document is not USAT-eligible', async () => {
+      const passport = createMetadata({
+        id: 'doc-1',
+        documentType: 'us',
+        documentCategory: 'passport',
+        isRegistered: true,
+      });
+      const kyc = createMetadata({
+        id: 'doc-2',
+        documentType: 'drivers_licence',
+        documentCategory: 'kyc',
+        isRegistered: true,
+      });
+      const catalog: DocumentCatalog = {
+        documents: [passport, kyc],
+        selectedDocumentId: 'doc-2',
+      };
+
+      mockLoadDocumentCatalog.mockResolvedValue(catalog);
+      mockGetAllDocuments.mockResolvedValue(
+        createAllDocuments([
+          createDocumentEntry(passport),
+          createDocumentEntry(kyc),
+        ]),
+      );
+      mockEvaluateGoogleUsatGateForDocument.mockResolvedValue('block');
+
+      const { getByTestId } = render(<DocumentSelectorForProvingScreen />);
+
+      await waitFor(() => {
+        expect(
+          getByTestId('document-selector-action-bar-approve').props.disabled,
+        ).toBe(false);
+      });
+
+      fireEvent.press(getByTestId('document-selector-action-bar-approve'));
+
+      await waitFor(() => {
+        expect(mockEvaluateGoogleUsatGateForDocument).toHaveBeenCalled();
+      });
+      expect(mockSetSelectedDocument).not.toHaveBeenCalled();
+      expect(mockNavigate).not.toHaveBeenCalledWith(
+        'Prove',
+        expect.any(Object),
+      );
+      expect(mockTrackEvent).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          entry_point: 'qr_scan',
+          reason: 'no_high_security_doc',
+        }),
+      );
+      expect(mockGateOpen).toHaveBeenCalledWith(
+        expect.objectContaining({
+          reason: 'google_usat_high_security_required',
+          entryPoint: 'qr_scan',
+          requesterName: 'Example App',
+        }),
+      );
     });
   });
 

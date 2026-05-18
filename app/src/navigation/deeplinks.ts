@@ -100,9 +100,15 @@ const validateAndSanitizeParam = (
 const createDeeplinkNavigationState = (
   targetScreen: string,
   parentScreen: string = 'Home',
+  targetParams?: Record<string, unknown>,
 ) => ({
   index: 1, // Current screen index (targetScreen)
-  routes: [{ name: parentScreen }, { name: targetScreen }],
+  routes: [
+    { name: parentScreen },
+    targetParams
+      ? { name: targetScreen, params: targetParams }
+      : { name: targetScreen },
+  ],
 });
 
 // Store the correct parent screen determined by splash screen
@@ -139,6 +145,15 @@ export const handleUrl = async (selfClient: SelfClient, uri: string) => {
           entryPoint: 'deeplink',
           requesterName: selfAppJson.appName,
         });
+        // On cold launch, handleUrl runs from Splash and never advances the
+        // stack on its own; without this nav, dismissing the gate modal
+        // strands the user on Splash. On warm launch the user is mid-flow,
+        // so leave them in place.
+        if (navigationRef.getCurrentRoute()?.name === 'Splash') {
+          safeNavigate(
+            createDeeplinkNavigationState('Home', correctParentScreen),
+          );
+        }
         return;
       }
       selfClient.getSelfAppState().setSelfApp(selfAppJson);
@@ -148,6 +163,7 @@ export const handleUrl = async (selfClient: SelfClient, uri: string) => {
         createDeeplinkNavigationState(
           'ProvingScreenRouter',
           correctParentScreen,
+          { entryPoint: 'deeplink' },
         ),
       );
 
@@ -171,6 +187,13 @@ export const handleUrl = async (selfClient: SelfClient, uri: string) => {
         entryPoint: 'deeplink',
         requesterName: 'Google USAT Faucet',
       });
+      // Cold-launch only: advance off Splash so dismissing the gate modal
+      // doesn't strand the user. Warm launch leaves the user in place.
+      if (navigationRef.getCurrentRoute()?.name === 'Splash') {
+        safeNavigate(
+          createDeeplinkNavigationState('Home', correctParentScreen),
+        );
+      }
       return;
     }
 
@@ -178,7 +201,13 @@ export const handleUrl = async (selfClient: SelfClient, uri: string) => {
     selfClient.getSelfAppState().startAppListener(sessionId);
 
     safeNavigate(
-      createDeeplinkNavigationState('ProvingScreenRouter', correctParentScreen),
+      createDeeplinkNavigationState(
+        'ProvingScreenRouter',
+        correctParentScreen,
+        {
+          entryPoint: 'deeplink',
+        },
+      ),
     );
   } else if (mock_passport) {
     try {
@@ -261,11 +290,11 @@ const safeNavigate = (
   const isColdLaunch = currentRoute?.name === 'Splash';
 
   if (!isColdLaunch && targetScreen) {
+    const targetParams = navigationState.routes[1]?.params;
     // Use object syntax to satisfy TypeScript's strict typing for navigate
-    // The params will be undefined for screens that don't require them
     navigationRef.navigate({
       name: targetScreen,
-      params: undefined,
+      params: targetParams,
     } as Parameters<typeof navigationRef.navigate>[0]);
   } else {
     navigationRef.reset(navigationState);
