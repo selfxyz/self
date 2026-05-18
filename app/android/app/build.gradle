@@ -50,6 +50,48 @@ react {
     //   See https://github.com/react-native-community/cli/blob/main/docs/commands.md#bundle
     // extraPackagerArgs = []
 
+    /* Hermes Commands */
+    // Explicitly resolve the hermesc binary from the local node_modules.
+    // Without this, the RN Gradle plugin's default lookup can miss our monorepo
+    // layout on CI Linux runners and produce a non-Hermes bundle, which then
+    // fails to mount on a Hermes-enabled APK (app launches, JS never reaches
+    // home screen). Last green Android E2E on this branch had this block.
+    hermesCommand = {
+        def hermesPath = file("${rootProject.projectDir}/../../node_modules/react-native/sdks/hermesc").absolutePath
+        def osName = System.getProperty('os.name').toLowerCase()
+        def platformDir
+        def executableName = "hermesc"
+
+        if (osName.contains('mac')) {
+            platformDir = "osx-bin"
+        } else if (osName.contains('linux')) {
+            platformDir = "linux64-bin"
+        } else if (osName.contains('windows')) {
+            platformDir = "win64-bin"
+            executableName = "hermesc.exe"
+        } else {
+            platformDir = "linux64-bin"
+        }
+
+        def dynamicPath = "${hermesPath}/${platformDir}/${executableName}"
+        def isCi = System.env.CI == "true" || System.env.GITHUB_ACTIONS == "true"
+
+        if (new File(dynamicPath).exists()) {
+            println "[hermesCommand] Using bundled hermesc: ${dynamicPath}"
+            return dynamicPath
+        } else if (isCi) {
+            // In CI we want deterministic resolution. Falling back to PATH
+            // silently shipped a non-Hermes bundle and broke Android E2E.
+            throw new GradleException(
+                "[hermesCommand] Bundled hermesc not found at ${dynamicPath} (platform=${platformDir}). " +
+                "Refusing to fall back to PATH in CI — install react-native fully before invoking gradle."
+            )
+        } else {
+            println "[hermesCommand] WARN: ${dynamicPath} missing; falling back to PATH 'hermesc' (local dev only)"
+            return "hermesc"
+        }
+    }()
+
     // The list of flags to pass to the Hermes compiler. By default is "-O", "-output-source-map"
     hermesFlags = ["-O", "-output-source-map"]
 

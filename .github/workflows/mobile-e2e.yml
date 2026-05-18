@@ -437,6 +437,36 @@ jobs:
           APK_SIZE=$(stat -f%z "$APK_PATH" 2>/dev/null || stat -c%s "$APK_PATH" 2>/dev/null || echo "unknown")
           echo "📱 APK size: $APK_SIZE bytes"
 
+          # Verify the JS bundle inside the APK is Hermes bytecode, not plain JS.
+          # A Hermes-enabled APK that ships a non-Hermes bundle will launch but
+          # fail to mount JS — exactly the failure mode where Maestro never sees
+          # `home-screen-root`. The Hermes bundle starts with the magic bytes
+          # c61fbc03c103191898... (Hermes magic), so a hexdump is sufficient.
+          echo "🔍 Inspecting JS bundle format in APK..."
+          BUNDLE_TMP=$(mktemp)
+          if unzip -p "$APK_PATH" assets/index.android.bundle > "$BUNDLE_TMP" 2>/dev/null && [ -s "$BUNDLE_TMP" ]; then
+            BUNDLE_SIZE=$(stat -f%z "$BUNDLE_TMP" 2>/dev/null || stat -c%s "$BUNDLE_TMP" 2>/dev/null || echo "unknown")
+            MAGIC=$(xxd -p -l 8 "$BUNDLE_TMP" | tr -d '\n')
+            echo "📦 index.android.bundle size: $BUNDLE_SIZE bytes; magic: $MAGIC"
+            if [ "$MAGIC" = "c61fbc03c1031918" ]; then
+              echo "✅ Bundle is Hermes bytecode"
+            else
+              FIRST_LINE=$(head -c 200 "$BUNDLE_TMP" | tr -d '\0' | head -1)
+              echo "❌ Bundle is NOT Hermes bytecode — first 200 chars:"
+              echo "    $FIRST_LINE"
+              echo "This will cause JS to fail to mount on a Hermes-enabled APK."
+              rm -f "$BUNDLE_TMP"
+              exit 1
+            fi
+          else
+            echo "❌ No assets/index.android.bundle in APK."
+            echo "This job builds with E2E_BUILD=true and -PbundleInDebug=true,"
+            echo "so a missing bundle means the bundling task was skipped or failed."
+            rm -f "$BUNDLE_TMP"
+            exit 1
+          fi
+          rm -f "$BUNDLE_TMP"
+
           # Verify private modules were properly integrated (skip for forks)
           if [ -z "${SELFXYZ_APP_TOKEN:-}" ]; then
             echo "🔕 No SELFXYZ_APP_TOKEN available — skipping private module verification"
