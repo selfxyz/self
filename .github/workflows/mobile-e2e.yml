@@ -440,23 +440,43 @@ jobs:
           # Verify the JS bundle inside the APK is Hermes bytecode, not plain JS.
           # A Hermes-enabled APK that ships a non-Hermes bundle will launch but
           # fail to mount JS — exactly the failure mode where Maestro never sees
-          # `home-screen-root`. The Hermes bundle starts with the magic bytes
-          # c61fbc03; the following bytecode version changes across Hermes
-          # releases, so only the stable magic prefix is checked.
+          # `home-screen-root`. Use the installed Hermes compiler to parse the
+          # bundle instead of hard-coding bytecode header bytes; the bytecode
+          # version changes across Hermes releases.
           echo "🔍 Inspecting JS bundle format in APK..."
           BUNDLE_TMP=$(mktemp)
           if unzip -p "$APK_PATH" assets/index.android.bundle > "$BUNDLE_TMP" 2>/dev/null && [ -s "$BUNDLE_TMP" ]; then
             BUNDLE_SIZE=$(stat -f%z "$BUNDLE_TMP" 2>/dev/null || stat -c%s "$BUNDLE_TMP" 2>/dev/null || echo "unknown")
-            MAGIC=$(od -An -N8 -tx1 "$BUNDLE_TMP" | tr -d ' \n')
-            echo "📦 index.android.bundle size: $BUNDLE_SIZE bytes; magic: $MAGIC"
-            if [ "${MAGIC#c61fbc03}" != "$MAGIC" ]; then
-              echo "✅ Bundle is Hermes bytecode"
+            HERMESC_ROOT="app/node_modules/hermes-compiler/hermesc"
+            case "$(uname -s)" in
+              Darwin*) HERMESC="$HERMESC_ROOT/osx-bin/hermesc" ;;
+              MINGW*|MSYS*|CYGWIN*) HERMESC="$HERMESC_ROOT/win64-bin/hermesc.exe" ;;
+              *) HERMESC="$HERMESC_ROOT/linux64-bin/hermesc" ;;
+            esac
+            HERMES_DUMP_TMP=$(mktemp)
+            HERMES_ERROR_TMP=$(mktemp)
+            echo "📦 index.android.bundle size: $BUNDLE_SIZE bytes"
+            [ -x "$HERMESC" ] || {
+              echo "❌ Hermes compiler not found or not executable at $HERMESC"
+              echo "Cannot verify Android bundle bytecode format."
+              rm -f "$BUNDLE_TMP" "$HERMES_DUMP_TMP" "$HERMES_ERROR_TMP"
+              exit 1
+            }
+
+            if "$HERMESC" -b -dump-bytecode "$BUNDLE_TMP" > "$HERMES_DUMP_TMP" 2> "$HERMES_ERROR_TMP"; then
+              BYTECODE_VERSION=$(sed -n 's/^  Bytecode version number: //p' "$HERMES_DUMP_TMP" | head -1)
+              echo "✅ Bundle is Hermes bytecode${BYTECODE_VERSION:+ (version $BYTECODE_VERSION)}"
             else
+              MAGIC=$(od -An -N8 -tx1 "$BUNDLE_TMP" | tr -d ' \n')
               FIRST_LINE=$(head -c 200 "$BUNDLE_TMP" | tr -d '\0' | head -1)
-              echo "❌ Bundle is NOT Hermes bytecode — first 200 chars:"
+              echo "❌ Bundle is NOT valid Hermes bytecode for the installed compiler."
+              echo "Hermes parser output:"
+              sed 's/^/    /' "$HERMES_ERROR_TMP"
+              echo "First 8 bytes: $MAGIC"
+              echo "First 200 chars:"
               echo "    $FIRST_LINE"
               echo "This will cause JS to fail to mount on a Hermes-enabled APK."
-              rm -f "$BUNDLE_TMP"
+              rm -f "$BUNDLE_TMP" "$HERMES_DUMP_TMP" "$HERMES_ERROR_TMP"
               exit 1
             fi
           else
@@ -466,7 +486,7 @@ jobs:
             rm -f "$BUNDLE_TMP"
             exit 1
           fi
-          rm -f "$BUNDLE_TMP"
+          rm -f "$BUNDLE_TMP" "$HERMES_DUMP_TMP" "$HERMES_ERROR_TMP"
 
           # Verify private modules were properly integrated (skip for forks)
           if [ -z "${SELFXYZ_APP_TOKEN:-}" ]; then
