@@ -1,6 +1,6 @@
 # ANA-13: Observability Migration — Mixpanel Diet, Sentry Breadcrumbs, Session Replay
 
-> Last updated: 2026-05-06
+> Last updated: 2026-05-18
 > Status: Ready
 > Priority: High
 > Depends on: ANA-01, ANA-11, ANA-12
@@ -79,14 +79,14 @@ Add the following Sentry tags via the existing whitelist (`app/src/config/sentry
 
 | Tag                   | Set when                                       | Cleared when            | Source                                     |
 | --------------------- | ---------------------------------------------- | ----------------------- | ------------------------------------------ |
-| `attempt_id`          | Onboarding attempt starts (in `ensureAttempt`) | Attempt completes/fails | `currentAttempt.id`                        |
-| `initial_branch`      | Locked at `DOCUMENT_TYPE_SELECTED`             | Attempt ends            | `currentAttempt.initialBranch`             |
-| `current_branch`      | Updated on every branch change                 | Attempt ends            | `currentAttempt.currentBranch`             |
-| `document_country`    | After country-picker confirm                   | Attempt ends            | `country_code`                             |
-| `document_type`       | After ID-selection confirm                     | Attempt ends            | Already whitelisted                        |
-| `signature_algorithm` | After `passport_parsed` (biometric only)       | Attempt ends            | From `passportData.dg1_hash_function` etc. |
-| `csca_hash_algorithm` | Same                                           | Attempt ends            | From `passportData.csca_hash_function`     |
-| `kyc_provider`        | At KYC session start                           | Attempt ends            | configured provider id                     |
+| `attempt_id`          | Onboarding attempt starts (in `ensureAttempt`) | Attempt completes / fails / recovers | `currentAttempt.id`                        |
+| `initial_branch`      | Locked at `DOCUMENT_TYPE_SELECTED`             | Attempt ends (completes / fails / recovers)            | `currentAttempt.initialBranch`             |
+| `current_branch`      | Updated on every branch change                 | Attempt ends (completes / fails / recovers)            | `currentAttempt.currentBranch`             |
+| `document_country`    | After country-picker confirm                   | Attempt ends (completes / fails / recovers)            | `country_code`                             |
+| `document_type`       | After ID-selection confirm                     | Attempt ends (completes / fails / recovers)            | Already whitelisted                        |
+| `signature_algorithm` | After `passport_parsed` (biometric only)       | Attempt ends (completes / fails / recovers)            | From `passportData.dg1_hash_function` etc. |
+| `csca_hash_algorithm` | Same                                           | Attempt ends (completes / fails / recovers)            | From `passportData.csca_hash_function`     |
+| `kyc_provider`        | At KYC session start                           | Attempt ends (completes / fails / recovers)            | configured provider id                     |
 | `app_build_channel`   | App startup                                    | Never (super-tag)       | Out of scope here — flagged for ANA-02     |
 
 All tags are session-scoped via `Sentry.setTag` inside a scope. Tag setting is centralized in a new `app/src/observability/onboardingContext.ts` module (or extension to `app/src/config/sentry.ts`); call sites do not call `Sentry.setTag` directly.
@@ -99,7 +99,7 @@ Sanitization: all tag values pass through the existing `sanitizeTagValue` (alpha
 flowchart TD
     A[Call site: selfClient.trackEvent eventName, properties] --> B[app/src/services/analytics.ts _track]
     B --> C[Mixpanel / Segment send]
-    B --> D{eventName matches<br/>Onboarding: COMPLETED<br/>or FAILED?}
+    B --> D{eventName is a terminal<br/>Onboarding event?<br/>COMPLETED / FAILED / RECOVERED}
     D -- yes --> E[clearOnboardingTags<br/>setTag null for each<br/>cohort key]
     D -- no --> F[tagsFromAnalyticsEvent<br/>eventName, properties]
     F --> G{isOnboardingEvent?<br/>Onboarding: / Biometric: /<br/>KYC: / Aadhaar: / Passport:}

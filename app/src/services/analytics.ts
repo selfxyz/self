@@ -190,7 +190,8 @@ function _track(
   if (type === 'event') {
     if (
       eventName === OnboardingEvents.COMPLETED ||
-      eventName === OnboardingEvents.FAILED
+      eventName === OnboardingEvents.FAILED ||
+      eventName === OnboardingEvents.RECOVERED
     ) {
       clearOnboardingTags();
     } else {
