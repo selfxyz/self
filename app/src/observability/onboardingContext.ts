@@ -66,7 +66,7 @@ export function tagsFromAnalyticsEvent(
   setString('document_type', properties.document_type);
   setString('signature_algorithm', properties.signature_algorithm);
   setString('csca_hash_algorithm', properties.csca_hash_function);
-  if (eventName.startsWith('Kyc:')) {
+  if (eventName.startsWith('KYC:')) {
     setString('kyc_provider', properties.provider);
   }
 
@@ -77,7 +77,7 @@ function isOnboardingEvent(eventName: string): boolean {
   return (
     eventName.startsWith('Onboarding:') ||
     eventName.startsWith('Biometric:') ||
-    eventName.startsWith('Kyc:') ||
+    eventName.startsWith('KYC:') ||
     eventName.startsWith('Aadhaar:') ||
     eventName.startsWith('Passport:')
   );

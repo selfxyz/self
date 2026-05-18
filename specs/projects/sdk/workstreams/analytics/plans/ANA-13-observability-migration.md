@@ -102,9 +102,9 @@ flowchart TD
     B --> D{eventName matches<br/>Onboarding: COMPLETED<br/>or FAILED?}
     D -- yes --> E[clearOnboardingTags<br/>setTag null for each<br/>cohort key]
     D -- no --> F[tagsFromAnalyticsEvent<br/>eventName, properties]
-    F --> G{isOnboardingEvent?<br/>Onboarding: / Biometric: /<br/>Kyc: / Aadhaar: / Passport:}
+    F --> G{isOnboardingEvent?<br/>Onboarding: / Biometric: /<br/>KYC: / Aadhaar: / Passport:}
     G -- no --> H[empty snapshot,<br/>no tags written]
-    G -- yes --> I[Map payload keys onto<br/>OnboardingTagSnapshot<br/>country_code → document_country<br/>csca_hash_function → csca_hash_algorithm<br/>provider → kyc_provider only on Kyc:]
+    G -- yes --> I[Map payload keys onto<br/>OnboardingTagSnapshot<br/>country_code → document_country<br/>csca_hash_function → csca_hash_algorithm<br/>provider → kyc_provider only on KYC:]
     I --> J[setOnboardingTags<br/>sanitizeTagValue each<br/>then Sentry.setTag]
     E --> K[Sentry session scope]
     J --> K

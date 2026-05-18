@@ -147,9 +147,9 @@ describe('tagsFromAnalyticsEvent', () => {
     });
   });
 
-  it('only maps `provider` to kyc_provider on Kyc: events', () => {
+  it('only maps `provider` to kyc_provider on KYC: events', () => {
     expect(
-      tagsFromAnalyticsEvent('Kyc: Session Created', {
+      tagsFromAnalyticsEvent('KYC: Session Created', {
         attempt_id: 'a',
         provider: 'didit',
       }),
