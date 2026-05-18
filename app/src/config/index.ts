@@ -27,6 +27,7 @@ export {
   captureMessage,
   initSentry,
   isSentryDisabled,
+  logAuthEvent,
   logEvent,
   logNFCEvent,
   logProofEvent,

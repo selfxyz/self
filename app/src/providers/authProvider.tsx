@@ -11,13 +11,15 @@ import React, {
   useMemo,
   useState,
 } from 'react';
+import { Platform } from 'react-native';
 import ReactNativeBiometrics from 'react-native-biometrics';
 import type { GetOptions, SetOptions } from 'react-native-keychain';
 import Keychain from 'react-native-keychain';
+import { v4 as uuidv4 } from 'uuid';
 
 import { AuthEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
-import { captureException } from '@/config/sentry';
+import { captureException, logAuthEvent } from '@/config/sentry';
 import type { GetSecureOptions } from '@/integrations/keychain';
 import {
   createKeychainOptions,
@@ -34,6 +36,13 @@ import {
 
 const SERVICE_NAME = 'secret';
 
+const authSessionId = uuidv4();
+const authBaseContext = {
+  sessionId: authSessionId,
+  platform: Platform.OS as 'ios' | 'android',
+  stage: 'auth',
+};
+
 type SignedPayload<T> = { signature: string; data: T };
 type KeychainOptions = {
   getOptions: GetOptions;
@@ -44,20 +53,34 @@ const _getSecurely = async function <T>(
   formatter: (dataString: string) => T,
   options: GetSecureOptions,
 ): Promise<SignedPayload<T> | null> {
-  const capabilities = await detectSecurityCapabilities();
-  const { getOptions, setOptions } = await createKeychainOptions(
-    options,
-    capabilities,
-  );
-  const dataString = await fn({ getOptions, setOptions });
-  if (dataString === false) {
-    return null;
-  }
+  try {
+    const capabilities = await detectSecurityCapabilities();
+    const { getOptions, setOptions } = await createKeychainOptions(
+      options,
+      capabilities,
+    );
+    const dataString = await fn({ getOptions, setOptions });
+    if (dataString === false) {
+      return null;
+    }
 
-  return {
-    signature: 'authenticated',
-    data: formatter(dataString),
-  };
+    logAuthEvent('info', 'biometric_auth_success', {
+      ...authBaseContext,
+      stage: 'get_securely',
+    });
+    return {
+      signature: 'authenticated',
+      data: formatter(dataString),
+    };
+  } catch (error: unknown) {
+    logAuthEvent(
+      'warn',
+      'biometric_auth_failed',
+      { ...authBaseContext, stage: 'get_securely' },
+      { reason: 'unknown_error' },
+    );
+    throw error;
+  }
 };
 
 const _getWithBiometrics = async function <T>(
@@ -65,31 +88,58 @@ const _getWithBiometrics = async function <T>(
   formatter: (dataString: string) => T,
   _options: GetSecureOptions,
 ): Promise<SignedPayload<T> | null> {
-  const simpleCheck = await biometrics.simplePrompt({
-    promptMessage: 'Allow access to identity',
-  });
+  try {
+    const simpleCheck = await biometrics.simplePrompt({
+      promptMessage: 'Allow access to identity',
+    });
 
-  if (!simpleCheck.success) {
-    throw new Error('Authentication failed');
+    if (!simpleCheck.success) {
+      logAuthEvent(
+        'warn',
+        'biometric_auth_failed',
+        { ...authBaseContext, stage: 'simple_prompt' },
+        { reason: 'prompt_unsuccessful' },
+      );
+      throw new Error('Authentication failed');
+    }
+
+    const dataString = await fn();
+    if (dataString === false) {
+      return null;
+    }
+
+    return {
+      signature: 'authenticated',
+      data: formatter(dataString),
+    };
+  } catch (error: unknown) {
+    logAuthEvent(
+      'warn',
+      'biometric_auth_failed',
+      { ...authBaseContext, stage: 'with_biometrics' },
+      { reason: 'unknown_error' },
+    );
+    throw error;
   }
-
-  const dataString = await fn();
-  if (dataString === false) {
-    return null;
-  }
-
-  return {
-    signature: 'authenticated',
-    data: formatter(dataString),
-  };
 };
 
 async function checkBiometricsAvailable(): Promise<boolean> {
   try {
     const { available } = await biometrics.isSensorAvailable();
+    logAuthEvent('info', 'biometric_sensor_checked', {
+      ...authBaseContext,
+      stage: 'sensor_check',
+      available,
+    });
     return available;
   } catch (error: unknown) {
     console.error('Error checking biometric availability:', error);
+    logAuthEvent(
+      'warn',
+      'biometric_sensor_check_failed',
+      { ...authBaseContext, stage: 'sensor_check' },
+      { reason: 'unknown_error' },
+    );
     return false;
   }
 }
@@ -99,6 +149,12 @@ async function restoreFromMnemonic(
   options: KeychainOptions,
 ): Promise<string | false> {
   if (!mnemonic || !ethers.Mnemonic.isValidMnemonic(mnemonic)) {
+    logAuthEvent(
+      'warn',
+      'mnemonic_restore_failed',
+      { ...authBaseContext, stage: 'restore_from_mnemonic' },
+      { reason: 'invalid_mnemonic' },
+    );
     return false;
   }
 
@@ -110,8 +166,18 @@ async function restoreFromMnemonic(
       service: SERVICE_NAME,
     });
     generateAndStorePointsAddress(mnemonic);
+    logAuthEvent('info', 'mnemonic_restored', {
+      ...authBaseContext,
+      stage: 'restore_from_mnemonic',
+    });
     return data;
   } catch {
+    logAuthEvent(
+      'warn',
+      'mnemonic_restore_failed',
+      { ...authBaseContext, stage: 'restore_from_mnemonic' },
+      { reason: 'keychain_write_failed' },
+    );
     return false;
   }
 }
@@ -134,11 +200,21 @@ async function loadOrCreateMnemonic(
     if (storedMnemonic) {
       try {
         JSON.parse(storedMnemonic.password);
+        logAuthEvent('info', 'mnemonic_loaded', {
+          ...authBaseContext,
+          stage: 'load_or_create',
+        });
         return storedMnemonic.password;
       } catch (e: unknown) {
         console.error(
           'Error parsing stored mnemonic, old secret format was used',
           e,
+        );
+        logAuthEvent(
+          'warn',
+          'mnemonic_parse_failed',
+          { ...authBaseContext, stage: 'load_or_create' },
+          { reason: 'legacy_format' },
         );
       }
     }
@@ -195,8 +271,18 @@ async function loadOrCreateMnemonic(
       ...setOptions,
       service: SERVICE_NAME,
     });
+    logAuthEvent('info', 'mnemonic_created', {
+      ...authBaseContext,
+      stage: 'load_or_create',
+    });
     return data;
   } catch {
+    logAuthEvent(
+      'warn',
+      'mnemonic_create_failed',
+      { ...authBaseContext, stage: 'load_or_create' },
+      { reason: 'keychain_write_failed' },
+    );
     return false;
   }
 }
@@ -246,6 +332,10 @@ export const AuthProvider = ({
       return;
     }
 
+    logAuthEvent('info', 'biometric_login_attempt', {
+      ...authBaseContext,
+      stage: 'login',
+    });
     const promise = biometrics.simplePrompt({
       promptMessage: 'Confirm your identity to access the stored secret',
     });
@@ -271,6 +361,10 @@ export const AuthProvider = ({
       }
       return setTimeout(() => {
         setIsAuthenticated(false);
+        logAuthEvent('info', 'authentication_timeout', {
+          ...authBaseContext,
+          stage: 'session_expired',
+        });
       }, authenticationTimeoutinMs);
     });
   }, [authenticationTimeoutinMs, isAuthenticatingPromise]);
@@ -417,6 +511,10 @@ export async function migrateToSecureKeychain(): Promise<boolean> {
       service: SERVICE_NAME,
     });
 
+    logAuthEvent('info', 'mnemonic_migrated', {
+      ...authBaseContext,
+      stage: 'keychain_migration',
+    });
     setKeychainMigrationCompleted();
 
     return true;
@@ -428,6 +526,12 @@ export async function migrateToSecureKeychain(): Promise<boolean> {
         source: 'keychain-migration',
       });
     }
+    logAuthEvent(
+      'warn',
+      'mnemonic_migration_failed',
+      { ...authBaseContext, stage: 'keychain_migration' },
+      { reason: 'migration_failed' },
+    );
 
     return false;
   }
