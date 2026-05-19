@@ -150,34 +150,33 @@ export const initSentry = () => {
     replaysOnErrorSampleRate,
     replaysSessionSampleRate,
   } = getSentryRuntimeFlags();
-  const integrations = [
-    feedbackIntegration({
-      buttonOptions: {
-        styles: {
-          triggerButton: {
-            position: 'absolute',
-            top: 20,
-            right: 20,
-            bottom: undefined,
-            marginTop: 100,
-          },
+  const feedback = feedbackIntegration({
+    buttonOptions: {
+      styles: {
+        triggerButton: {
+          position: 'absolute',
+          top: 20,
+          right: 20,
+          bottom: undefined,
+          marginTop: 100,
         },
       },
-      enableTakeScreenshot: enableFeedbackScreenshots,
-      namePlaceholder: 'Fullname',
-      emailPlaceholder: 'Email',
-    }),
-  ];
+    },
+    enableTakeScreenshot: enableFeedbackScreenshots,
+    namePlaceholder: 'Fullname',
+    emailPlaceholder: 'Email',
+  });
 
-  if (!disableSimulatorHeavyIntegrations) {
-    integrations.unshift(
-      mobileReplayIntegration({
-        maskAllText: true,
-        maskAllImages: true,
-        maskAllVectors: true,
-      }),
-    );
-  }
+  const integrations = disableSimulatorHeavyIntegrations
+    ? [feedback]
+    : [
+        mobileReplayIntegration({
+          maskAllText: true,
+          maskAllImages: true,
+          maskAllVectors: true,
+        }),
+        feedback,
+      ];
 
   sentryInit({
     dsn: SENTRY_DSN,
