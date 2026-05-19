@@ -21,7 +21,6 @@ import {
   PrimaryButton,
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
-import { MockDataEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import {
   black,
   borderColor,
@@ -196,10 +195,7 @@ const CreateMockScreenDeepLink: React.FC = () => {
 
       <YStack paddingHorizontal="$4" paddingBottom="$4">
         <ButtonsContainer>
-          <PrimaryButton
-            trackEvent={MockDataEvents.CREATE_DEEP_LINK}
-            disabled={true}
-          >
+          <PrimaryButton disabled={true}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <ActivityIndicator color={black} style={{ marginRight: 8 }} />
               <Description style={{ color: black, fontWeight: 'bold' }}>

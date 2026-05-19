@@ -24,18 +24,9 @@ export const AppEvents = {
 };
 
 export const AuthEvents = {
-  AUTHENTICATION_TIMEOUT: 'Auth: Authentication Timeout',
-  BIOMETRIC_AUTH_FAILED: 'Auth: Biometric Auth Failed',
-  BIOMETRIC_AUTH_SUCCESS: 'Auth: Biometric Auth Success',
-  BIOMETRIC_CHECK: 'Auth: Biometrics Check',
-  BIOMETRIC_LOGIN_ATTEMPT: 'Auth: Biometric Login Attempt',
   BIOMETRIC_LOGIN_CANCELLED: 'Auth: Biometric Login Cancelled',
   BIOMETRIC_LOGIN_FAILED: 'Auth: Biometric Login Failed',
   BIOMETRIC_LOGIN_SUCCESS: 'Auth: Biometric Login Success',
-  MNEMONIC_CREATED: 'Auth: Mnemonic Created',
-  MNEMONIC_LOADED: 'Auth: Mnemonic Loaded',
-  MNEMONIC_RESTORE_FAILED: 'Auth: Mnemonic Restore Failed',
-  MNEMONIC_RESTORE_SUCCESS: 'Auth: Mnemonic Restore Success',
 };
 
 export const BackupEvents = {
@@ -65,6 +56,9 @@ export const BiometricEvents = {
   MRZ_STARTED: 'Biometric: MRZ Started',
   NFC_STARTED: 'Biometric: NFC Started',
   NFC_SUCCEEDED: 'Biometric: NFC Succeeded',
+
+  NFC_RESPONSE_PARSE_FAILED: 'Passport: Parsing NFC Response Unsuccessful',
+  NFC_SCAN_FAILED: 'Passport: NFC Scan Failed',
 };
 
 export const DocumentEvents = {
@@ -217,9 +211,6 @@ export const ProofEvents = {
   WS_HELLO_SENT: 'Proof: WS Hello Sent',
 };
 
-// Diagnostic events for the registration ID-type picker (SELF-2860). Names are
-// the literal Mixpanel event strings from the ticket — they intentionally use
-// snake_case rather than the 'Group: Event' convention used elsewhere.
 export const RegistrationPickerEvents = {
   VIEWED: 'registration_id_picker_viewed',
   SELECTED: 'registration_id_picker_selected',

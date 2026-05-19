@@ -294,10 +294,6 @@ describe('ProofRequestStatusScreen', () => {
 
     expect(mockCleanSelfApp).toHaveBeenCalledTimes(1);
     expect(notificationSuccess).toHaveBeenCalledTimes(1);
-    expect(mockTrackEvent).toHaveBeenCalledWith('PROOF_COMPLETED', {
-      sessionId: 'session-1',
-      appName: 'Verifier',
-    });
   });
 
   it('keeps the button disabled on completed while whitelist fetch is pending', async () => {
@@ -596,13 +592,6 @@ describe('ProofRequestStatusScreen', () => {
     });
 
     expect(mockUpdateProofStatus).not.toHaveBeenCalled();
-    expect(mockTrackEvent).toHaveBeenCalledWith('PROOF_FAILED', {
-      sessionId: null,
-      appName: 'Verifier',
-      errorCode: 'proof_timeout',
-      reason: 'timed_out_after_90s',
-      state: 'timeout',
-    });
   });
 
   it('does not write proof history for early completion without a session id', async () => {
@@ -610,13 +599,6 @@ describe('ProofRequestStatusScreen', () => {
     provingState.uuid = null as any;
 
     render(<ProofRequestStatusScreen />);
-
-    await waitFor(() => {
-      expect(mockTrackEvent).toHaveBeenCalledWith('PROOF_COMPLETED', {
-        sessionId: null,
-        appName: 'Verifier',
-      });
-    });
 
     expect(mockUpdateProofStatus).not.toHaveBeenCalled();
   });
@@ -628,16 +610,6 @@ describe('ProofRequestStatusScreen', () => {
     provingState.reason = 'failed before tee';
 
     render(<ProofRequestStatusScreen />);
-
-    await waitFor(() => {
-      expect(mockTrackEvent).toHaveBeenCalledWith('PROOF_FAILED', {
-        sessionId: null,
-        appName: 'Verifier',
-        errorCode: 'early_error',
-        reason: 'failed before tee',
-        state: 'error',
-      });
-    });
 
     expect(mockUpdateProofStatus).not.toHaveBeenCalled();
   });

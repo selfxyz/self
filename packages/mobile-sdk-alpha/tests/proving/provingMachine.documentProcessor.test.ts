@@ -17,7 +17,6 @@ import * as commonUtils from '@selfxyz/common/utils';
 import { generateCommitmentInAppAadhaar } from '@selfxyz/common/utils/passports/validate';
 import { AttestationIdHex } from '@selfxyz/common/utils/types';
 
-import { ProofEvents } from '../../src/constants/analytics';
 import * as documentUtils from '../../src/documents/utils';
 import { useProvingStore } from '../../src/proving/provingMachine';
 import { fetchAllTreesAndCircuits } from '../../src/stores';
@@ -397,7 +396,6 @@ describe('startFetchingData', () => {
 
     expect(fetchAllTreesMock).toHaveBeenCalledWith(selfClient, 'passport', 'prod', 'KEY123');
     expect(actorMock.send).toHaveBeenCalledWith({ type: 'FETCH_SUCCESS' });
-    expect(selfClient.trackEvent).toHaveBeenCalledWith(ProofEvents.FETCH_DATA_SUCCESS);
   });
 
   it('fetches trees and circuits for id cards', async () => {
@@ -488,9 +486,6 @@ describe('startFetchingData', () => {
     await useProvingStore.getState().startFetchingData(selfClient);
 
     expect(actorMock.send).toHaveBeenCalledWith({ type: 'FETCH_ERROR' });
-    expect(selfClient.trackEvent).toHaveBeenCalledWith(ProofEvents.FETCH_DATA_FAILED, {
-      message: 'PassportData is not available',
-    });
   });
 
   it('emits FETCH_ERROR when DSC data is missing for passports', async () => {
@@ -523,9 +518,6 @@ describe('startFetchingData', () => {
     await useProvingStore.getState().startFetchingData(selfClient);
 
     expect(actorMock.send).toHaveBeenCalledWith({ type: 'FETCH_ERROR' });
-    expect(selfClient.trackEvent).toHaveBeenCalledWith(ProofEvents.FETCH_DATA_FAILED, {
-      message: 'Missing parsed DSC in passport data',
-    });
   });
 
   it('emits FETCH_ERROR when protocol fetch fails', async () => {
@@ -559,9 +551,6 @@ describe('startFetchingData', () => {
     await useProvingStore.getState().startFetchingData(selfClient);
 
     expect(actorMock.send).toHaveBeenCalledWith({ type: 'FETCH_ERROR' });
-    expect(selfClient.trackEvent).toHaveBeenCalledWith(ProofEvents.FETCH_DATA_FAILED, {
-      message: 'network down',
-    });
   });
 });
 
@@ -640,7 +629,6 @@ describe('validatingDocument', () => {
     await useProvingStore.getState().validatingDocument(selfClient);
 
     expect(actorMock.send).toHaveBeenCalledWith({ type: 'VALIDATION_SUCCESS' });
-    expect(selfClient.trackEvent).toHaveBeenCalledWith(ProofEvents.VALIDATION_SUCCESS);
   });
 
   it('emits PASSPORT_DATA_NOT_FOUND when disclose document is not registered', async () => {
@@ -1073,8 +1061,5 @@ describe('validatingDocument', () => {
     await useProvingStore.getState().validatingDocument(selfClient);
 
     expect(actorMock.send).toHaveBeenCalledWith({ type: 'VALIDATION_ERROR' });
-    expect(selfClient.trackEvent).toHaveBeenCalledWith(ProofEvents.VALIDATION_FAILED, {
-      message: 'PassportData is not available',
-    });
   });
 });

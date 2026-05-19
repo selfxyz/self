@@ -49,7 +49,7 @@ import {
   trackBranchEvent,
   trackOnboardingStep,
 } from '../analytics/onboardingFunnel';
-import { BiometricEvents, OnboardingEvents, ProofEvents } from '../constants/analytics';
+import { BiometricEvents, OnboardingEvents } from '../constants/analytics';
 import {
   clearPassportData,
   hasAnyValidRegisteredDocument,
@@ -405,20 +405,6 @@ export const getPostVerificationRoute = () => {
   // return cloudBackupEnabled ? 'AccountVerifiedSuccess' : 'SaveRecoveryPhrase';
 };
 
-function trackEventIfNotMock(
-  selfClient: SelfClient,
-  isMock: boolean,
-  eventName: string,
-  properties?: Record<string, unknown>,
-): void {
-  if (isMock) return;
-  if (properties === undefined) {
-    selfClient.trackEvent(eventName);
-  } else {
-    selfClient.trackEvent(eventName, properties);
-  }
-}
-
 export const useProvingStore = create<ProvingState>((set, get) => {
   let actor: AnyActorRef | null = null;
 
@@ -481,9 +467,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         },
       });
       lastTransition = now;
-      trackEventIfNotMock(selfClient, get().isMock, ProofEvents.PROVING_STATE_CHANGE, {
-        state: state.value,
-      });
       set({ currentState: state.value as ProvingStateType });
 
       if (state.value === 'parsing_id_document') {
@@ -520,10 +503,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       }
 
       if (state.value === 'completed') {
-        trackEventIfNotMock(selfClient, get().isMock, ProofEvents.PROOF_COMPLETED, {
-          circuitType: get().circuitType,
-        });
-
         // Mark document as registered onChain
         if (get().circuitType === 'register') {
           (async () => {
@@ -672,7 +651,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         const result = JSON.parse(event.data);
         selfClient.logProofEvent('info', 'WebSocket message received', context);
         if (result.result?.attestation) {
-          selfClient?.trackEvent(ProofEvents.ATTESTATION_RECEIVED);
           selfClient.logProofEvent('info', 'Attestation received', context);
 
           const attestationData = result.result.attestation;
@@ -708,7 +686,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             return;
           }
 
-          selfClient?.trackEvent(ProofEvents.ATTESTATION_VERIFIED);
           selfClient.logProofEvent('info', 'Attestation verified', context);
 
           const serverKey = ec.keyFromPublic(serverPubkey, 'hex');
@@ -718,12 +695,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             serverPublicKey: serverKey.getPublic(true, 'hex'),
             sharedKey: Buffer.from(derivedKey.toArray('be', 32)),
           });
-          selfClient?.trackEvent(ProofEvents.SHARED_KEY_DERIVED);
           selfClient.logProofEvent('info', 'Shared key derived', context);
 
           actor!.send({ type: 'CONNECT_SUCCESS' });
         } else if (result.id === 2 && typeof result.result === 'string' && !result.error) {
-          selfClient?.trackEvent(ProofEvents.WS_HELLO_ACK);
           selfClient.logProofEvent('info', 'Hello ACK received', context);
 
           // Received status from TEE
@@ -743,10 +718,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
               duration_ms: Date.now() - startTime,
             });
             console.error('Cannot start Socket.IO listener: endpointType not set.');
-            selfClient?.trackEvent(ProofEvents.PROOF_FAILED, {
-              circuitType: get().circuitType,
-              error: get().error_code ?? 'unknown',
-            });
             actor!.send({ type: 'PROVE_ERROR' });
             return;
           }
@@ -758,13 +729,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             duration_ms: Date.now() - startTime,
           });
           console.error('Received error from TEE:', result.error);
-          selfClient?.trackEvent(ProofEvents.TEE_WS_ERROR, {
-            error: result.error,
-          });
-          selfClient?.trackEvent(ProofEvents.PROOF_FAILED, {
-            circuitType: get().circuitType,
-            error: get().error_code ?? 'unknown',
-          });
           actor!.send({ type: 'PROVE_ERROR' });
         } else {
           selfClient.logProofEvent('warn', 'Unknown message format', context);
@@ -779,18 +743,8 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         });
         console.error('Error processing WebSocket message:', error);
         if (get().currentState === 'init_tee_connexion') {
-          selfClient?.trackEvent(ProofEvents.TEE_CONN_FAILED, {
-            message: error instanceof Error ? error.message : String(error),
-          });
           actor!.send({ type: 'CONNECT_ERROR' });
         } else {
-          selfClient?.trackEvent(ProofEvents.TEE_WS_ERROR, {
-            error: error instanceof Error ? error.message : String(error),
-          });
-          selfClient?.trackEvent(ProofEvents.PROOF_FAILED, {
-            circuitType: get().circuitType,
-            error: get().error_code ?? 'unknown',
-          });
           actor!.send({ type: 'PROVE_ERROR' });
         }
       }
@@ -820,7 +774,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         transports: ['websocket'],
       });
       set({ socketConnection: socket });
-      trackEventIfNotMock(selfClient, get().isMock, ProofEvents.SOCKETIO_CONN_STARTED);
       const context = createProofContext(selfClient, '_startSocketIOStatusListener');
       selfClient.logProofEvent('info', 'Socket.IO listener started', context, { url });
 
@@ -830,15 +783,11 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
       socket.on('connect', () => {
         socket?.emit('subscribe', receivedUuid);
-        trackEventIfNotMock(selfClient, get().isMock, ProofEvents.SOCKETIO_SUBSCRIBED);
         selfClient.logProofEvent('info', 'Socket.IO connected', context);
       });
 
       socket.on('connect_error', error => {
         console.error('SocketIO connection error:', error);
-        trackEventIfNotMock(selfClient, get().isMock, ProofEvents.SOCKETIO_CONNECT_ERROR, {
-          message: error instanceof Error ? error.message : String(error),
-        });
         selfClient.logProofEvent('error', 'Socket.IO connection error', context, {
           failure: 'PROOF_FAILED_CONNECTION',
           error: error instanceof Error ? error.message : String(error),
@@ -857,7 +806,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         }
         if (currentActor && (currentState === 'ready_to_prove' || currentState === 'listening_for_status')) {
           console.error(`SocketIO disconnected unexpectedly during ${currentState}.`);
-          trackEventIfNotMock(selfClient, get().isMock, ProofEvents.SOCKETIO_DISCONNECT_UNEXPECTED);
           selfClient.logProofEvent('error', 'Socket.IO disconnected unexpectedly', context, {
             failure: 'PROOF_FAILED_CONNECTION',
             state: currentState,
@@ -871,9 +819,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         try {
           const data = parseStatusMessage(message);
 
-          trackEventIfNotMock(selfClient, get().isMock, ProofEvents.SOCKETIO_STATUS_RECEIVED, {
-            status: data.status,
-          });
           selfClient.logProofEvent('info', 'Status message received', context, {
             status: data.status,
           });
@@ -896,7 +841,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             } else if (event === 'SOCKETIO_PROOF_SUCCESS') {
               selfClient.logProofEvent('info', 'TEE processing succeeded', context);
             }
-            trackEventIfNotMock(selfClient, get().isMock, event as unknown as keyof typeof ProofEvents, eventData);
           });
 
           // Handle actor events
@@ -934,9 +878,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       }
       const connectionUuid = v4();
 
-      trackEventIfNotMock(selfClient, get().isMock, ProofEvents.CONNECTION_UUID_GENERATED, {
-        connection_uuid: connectionUuid,
-      });
       const context = createProofContext(selfClient, '_handleWsOpen', {
         sessionId: connectionUuid,
       });
@@ -951,7 +892,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           uuid: connectionUuid,
         },
       };
-      trackEventIfNotMock(selfClient, get().isMock, ProofEvents.WS_HELLO_SENT);
       ws.send(JSON.stringify(helloBody));
       selfClient.logProofEvent('info', 'WS hello sent', context);
     },
@@ -975,10 +915,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     },
 
     _handleWsClose: (event: CloseEvent, selfClient: SelfClient) => {
-      trackEventIfNotMock(selfClient, get().isMock, ProofEvents.TEE_WS_CLOSED, {
-        code: event.code,
-        reason: event.reason,
-      });
       if (!actor) {
         return;
       }
@@ -1110,6 +1046,9 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       userConfirmed: boolean = false,
     ) => {
       get()._closeConnections(selfClient);
+
+      selfClient.navigation?.enableKeychainErrorModal?.();
+
       if (actor) {
         try {
           actor.stop();
@@ -1118,28 +1057,16 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         }
         actor = null;
       }
-
-      selfClient.navigation?.enableKeychainErrorModal?.();
-
-      const selectedDocument = await loadSelectedDocument(selfClient);
-      const isMock = selectedDocument?.data.mock === true;
-
       resetProvingState({
         userConfirmed,
         circuitType,
-        isMock,
       });
 
       actor = createActor(provingMachine);
       setupActorSubscriptions(actor, selfClient);
       actor.start();
 
-      if (isMock) {
-        markCurrentAttemptAsMock(selfClient);
-      }
-
-      trackEventIfNotMock(selfClient, isMock, ProofEvents.PROVING_INIT);
-      trackEventIfNotMock(selfClient, isMock, ProofEvents.DOCUMENT_LOAD_STARTED);
+      const selectedDocument = await loadSelectedDocument(selfClient);
       if (!selectedDocument) {
         console.error('No document found for proving');
         console.error('No document found for proving in init');
@@ -1151,15 +1078,17 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       const secret = await selfClient.getPrivateKey();
       if (!secret) {
         console.error('Could not load secret');
-        trackEventIfNotMock(selfClient, get().isMock, ProofEvents.LOAD_SECRET_FAILED);
         actor!.send({ type: 'ERROR' });
         return;
       }
 
-      // Set environment based on mock property
       const env = passportData.mock ? 'stg' : 'prod';
+      const isMock = passportData.mock === true;
+      if (isMock) {
+        markCurrentAttemptAsMock(selfClient);
+      }
 
-      set({ passportData, secret, env });
+      set({ passportData, secret, env, isMock });
       set({ circuitType });
       // Only skip parsing when the document has already been parsed for non-DSC circuits.
       // Re-parsing would overwrite the alternative CSCA used during registration and is unnecessary
@@ -1171,9 +1100,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
       if (circuitType === 'dsc' && !needsDscParsing) {
         console.error(`DSC circuit is not supported for ${passportData.documentCategory} documents`);
-        trackEventIfNotMock(selfClient, get().isMock, ProofEvents.PROOF_FAILED, {
-          message: `DSC circuit not supported for ${passportData.documentCategory}`,
-        });
         actor.send({ type: 'ERROR' });
         return;
       }
@@ -1182,7 +1108,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
       if (shouldParseDocument) {
         actor.send({ type: 'PARSE_ID_DOCUMENT' });
-        trackEventIfNotMock(selfClient, get().isMock, ProofEvents.PARSE_ID_DOCUMENT_STARTED);
       } else {
         actor.send({ type: 'FETCH_DATA' });
       }
@@ -1239,7 +1164,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
     startFetchingData: async (selfClient: SelfClient) => {
       _checkActorInitialized(actor);
-      trackEventIfNotMock(selfClient, get().isMock, ProofEvents.FETCH_DATA_STARTED);
       const startTime = Date.now();
       const context = createProofContext(selfClient, 'startFetchingData');
       // passport and id card
@@ -1261,9 +1185,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
                 duration_ms: Date.now() - startTime,
               });
               console.error(`Missing parsed DSC in ${docType} data`);
-              trackEventIfNotMock(selfClient, get().isMock, ProofEvents.FETCH_DATA_FAILED, {
-                message: `Missing parsed DSC in ${docType} data`,
-              });
               actor!.send({ type: 'FETCH_ERROR' });
               return;
             }
@@ -1291,7 +1212,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         selfClient.logProofEvent('info', 'Data fetch succeeded', context, {
           duration_ms: Date.now() - startTime,
         });
-        trackEventIfNotMock(selfClient, get().isMock, ProofEvents.FETCH_DATA_SUCCESS);
         actor!.send({ type: 'FETCH_SUCCESS' });
       } catch (error) {
         selfClient.logProofEvent('error', 'Data fetch failed', context, {
@@ -1300,9 +1220,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           duration_ms: Date.now() - startTime,
         });
         console.error('Error fetching data:', error);
-        trackEventIfNotMock(selfClient, get().isMock, ProofEvents.FETCH_DATA_FAILED, {
-          message: error instanceof Error ? error.message : String(error),
-        });
         actor!.send({ type: 'FETCH_ERROR' });
       }
     },
@@ -1310,7 +1227,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     validatingDocument: async (selfClient: SelfClient) => {
       _checkActorInitialized(actor);
       // TODO: for the disclosure, we could check that the selfApp is a valid one.
-      trackEventIfNotMock(selfClient, get().isMock, ProofEvents.VALIDATION_STARTED);
       const startTime = Date.now();
       const context = createProofContext(selfClient, 'validatingDocument');
       selfClient.logProofEvent('info', 'Validating document started', context);
@@ -1370,7 +1286,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             selfClient.logProofEvent('info', 'Validation succeeded', context, {
               duration_ms: Date.now() - startTime,
             });
-            trackEventIfNotMock(selfClient, get().isMock, ProofEvents.VALIDATION_SUCCESS);
             actor!.send({ type: 'VALIDATION_SUCCESS' });
             return;
           } else {
@@ -1422,7 +1337,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             })();
             set({ circuitType: 'register' }); // Update circuit type to 'register' to reflect full registration completion
 
-            trackEventIfNotMock(selfClient, get().isMock, ProofEvents.ALREADY_REGISTERED);
             selfClient.logProofEvent('info', 'Document already registered', context, {
               duration_ms: Date.now() - startTime,
             });
@@ -1441,7 +1355,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             console.warn(
               'Passport is nullified, but not registered with this secret. Navigating to AccountRecoveryChoice',
             );
-            trackEventIfNotMock(selfClient, get().isMock, ProofEvents.PASSPORT_NULLIFIER_ONCHAIN);
             actor!.send({ type: 'ACCOUNT_RECOVERY_CHOICE' });
             return;
           }
@@ -1461,14 +1374,12 @@ export const useProvingStore = create<ProvingState>((set, get) => {
               dsc_registered: isDscRegistered,
             });
             if (isDscRegistered) {
-              trackEventIfNotMock(selfClient, get().isMock, ProofEvents.DSC_IN_TREE);
               set({ circuitType: 'register' });
             }
           }
           selfClient.logProofEvent('info', 'Validation succeeded', context, {
             duration_ms: Date.now() - startTime,
           });
-          trackEventIfNotMock(selfClient, get().isMock, ProofEvents.VALIDATION_SUCCESS);
           actor!.send({ type: 'VALIDATION_SUCCESS' });
         }
       } catch (error) {
@@ -1478,9 +1389,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           duration_ms: Date.now() - startTime,
         });
         console.error('Error validating passport:', error);
-        trackEventIfNotMock(selfClient, get().isMock, ProofEvents.VALIDATION_FAILED, {
-          message: error instanceof Error ? error.message : String(error),
-        });
         actor!.send({ type: 'VALIDATION_ERROR' });
       }
     },
@@ -1534,7 +1442,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       }
 
       get()._closeConnections(selfClient);
-      trackEventIfNotMock(selfClient, get().isMock, ProofEvents.TEE_CONN_STARTED);
       selfClient.logProofEvent('info', 'TEE connection attempt', baseContext);
 
       return new Promise(resolve => {
@@ -1544,7 +1451,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           selfClient.logProofEvent('info', 'TEE connection succeeded', baseContext, {
             duration_ms: Date.now() - startTime,
           });
-          trackEventIfNotMock(selfClient, get().isMock, ProofEvents.TEE_CONN_SUCCESS);
           resolve(true);
         };
         const handleConnectError = (msg: string = 'connect_error') => {
@@ -1553,7 +1459,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             error: msg,
             duration_ms: Date.now() - startTime,
           });
-          trackEventIfNotMock(selfClient, get().isMock, ProofEvents.TEE_CONN_FAILED, { message: msg });
           resolve(false);
         };
 
@@ -1648,7 +1553,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           context,
         });
 
-        trackEventIfNotMock(selfClient, get().isMock, ProofEvents.PAYLOAD_GEN_STARTED);
         selfClient.logProofEvent('info', 'Payload generation started', context);
         const submitBody = await get()._generatePayload(selfClient);
 
@@ -1658,8 +1562,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         }
         activeWsConnection.send(JSON.stringify(submitBody));
         selfClient.logProofEvent('info', 'Payload sent over WebSocket', context);
-        trackEventIfNotMock(selfClient, get().isMock, ProofEvents.PAYLOAD_SENT);
-        trackEventIfNotMock(selfClient, get().isMock, ProofEvents.PROVING_PROCESS_STARTED);
         actor!.send({ type: 'START_PROVING' });
         selfClient.logProofEvent('info', 'Proving started', context, {
           duration_ms: Date.now() - startTime,
@@ -1677,7 +1579,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
     setUserConfirmed: (selfClient: SelfClient) => {
       set({ userConfirmed: true });
-      trackEventIfNotMock(selfClient, get().isMock, ProofEvents.USER_CONFIRMED);
       if (get().currentState === 'ready_to_prove') {
         get().startProving(selfClient);
       }
@@ -1686,20 +1587,13 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     postProving: (selfClient: SelfClient) => {
       _checkActorInitialized(actor);
       const { circuitType } = get();
-      trackEventIfNotMock(selfClient, get().isMock, ProofEvents.POST_PROVING_STARTED);
       if (circuitType === 'dsc') {
         setTimeout(() => {
-          trackEventIfNotMock(selfClient, get().isMock, ProofEvents.POST_PROVING_CHAIN_STEP, {
-            from: 'dsc',
-            to: 'register',
-          });
           get().init(selfClient, 'register', true);
         }, 1500);
       } else if (circuitType === 'register') {
-        trackEventIfNotMock(selfClient, get().isMock, ProofEvents.POST_PROVING_COMPLETED);
         actor!.send({ type: 'COMPLETED' });
       } else if (circuitType === 'disclose') {
-        trackEventIfNotMock(selfClient, get().isMock, ProofEvents.POST_PROVING_COMPLETED);
         actor!.send({ type: 'COMPLETED' });
       }
     },
@@ -1796,9 +1690,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         selfClient.logProofEvent('info', 'Payload encrypted', context, {
           payload_size: payloadSize,
         });
-
-        trackEventIfNotMock(selfClient, get().isMock, ProofEvents.PAYLOAD_GEN_COMPLETED);
-        trackEventIfNotMock(selfClient, get().isMock, ProofEvents.PAYLOAD_ENCRYPTED);
 
         set({ endpointType: endpointType as EndpointType });
 

@@ -114,12 +114,13 @@ export const useKycLauncher = (options: UseKycLauncherOptions) => {
         ),
       });
       providerOpenedAt = Date.now();
+      const openedAt = providerOpenedAt;
       trackBranchEvent(selfClient, KycEvents.PROVIDER_OPENED, {
         provider: KYC_PROVIDER,
       });
       const result = await startKycVerification(session.sessionToken);
       const providerDurationSeconds = parseFloat(
-        ((Date.now() - providerOpenedAt) / 1000).toFixed(2),
+        ((Date.now() - openedAt) / 1000).toFixed(2),
       );
 
       // Handle user cancellation

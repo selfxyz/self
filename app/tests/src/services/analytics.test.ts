@@ -23,6 +23,12 @@ jest.mock('@/config/segment', () => {
   };
 });
 
+jest.mock('@/observability/onboardingContext', () => ({
+  clearOnboardingTags: jest.fn(),
+  setOnboardingTags: jest.fn(),
+  tagsFromAnalyticsEvent: jest.fn(() => ({})),
+}));
+
 const mockSegmentClient = (
   segmentConfig as unknown as {
     __client: {
@@ -179,6 +185,31 @@ describe('analytics', () => {
       );
 
       consoleSpy.mockRestore();
+    });
+  });
+
+  describe('cohort tag clearing on terminal onboarding events', () => {
+    const onboardingContext = jest.requireMock(
+      '@/observability/onboardingContext',
+    ) as {
+      clearOnboardingTags: jest.Mock;
+      setOnboardingTags: jest.Mock;
+    };
+
+    it.each([
+      ['Onboarding: Completed'],
+      ['Onboarding: Failed'],
+      ['Onboarding: Recovered'],
+    ])('clears cohort tags on %s', eventName => {
+      trackEvent(eventName);
+      expect(onboardingContext.clearOnboardingTags).toHaveBeenCalledTimes(1);
+      expect(onboardingContext.setOnboardingTags).not.toHaveBeenCalled();
+    });
+
+    it('updates (does not clear) cohort tags on non-terminal events', () => {
+      trackEvent('Onboarding: Country Selected', { attempt_id: 'a' });
+      expect(onboardingContext.setOnboardingTags).toHaveBeenCalledTimes(1);
+      expect(onboardingContext.clearOnboardingTags).not.toHaveBeenCalled();
     });
   });
 
