@@ -11,14 +11,13 @@ import type { StaticScreenProps } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { DelayedLottieView, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { DelayedLottieView } from '@selfxyz/mobile-sdk-alpha';
 import loadingAnimation from '@selfxyz/mobile-sdk-alpha/animations/loading/misc.json';
 import {
   AbstractButton,
   Description,
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
-import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import { useKycWebSocket } from '@/hooks/useKycWebSocket';
@@ -47,8 +46,6 @@ const KycSuccessScreen: React.FC<KycSuccessRouteParams> = ({
   const sessionId = params?.sessionId;
   const insets = useSafeAreaInsets();
   const setFcmToken = useSettingStore(state => state.setFcmToken);
-  const selfClient = useSelfClient();
-  const { trackEvent } = selfClient;
 
   const hasSubscribedRef = useRef<boolean>(false);
 
@@ -92,7 +89,6 @@ const KycSuccessScreen: React.FC<KycSuccessRouteParams> = ({
       const token = await getFCMToken();
       if (token) {
         setFcmToken(token);
-        trackEvent(ProofEvents.FCM_TOKEN_STORED);
 
         const notificationId = uuidv5(sessionId, SELF_UUID_NAMESPACE);
         await registerDeviceToken(notificationId, token);
@@ -101,7 +97,7 @@ const KycSuccessScreen: React.FC<KycSuccessRouteParams> = ({
 
     // Navigate to Home regardless of permission result
     navigation.navigate('Home', {});
-  }, [navigation, setFcmToken, trackEvent, sessionId]);
+  }, [navigation, setFcmToken, sessionId]);
 
   const handleCheckLater = () => {
     buttonTap();

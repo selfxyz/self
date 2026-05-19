@@ -6,6 +6,7 @@ import type React from 'react';
 import type { GestureResponderEvent, LayoutChangeEvent, PressableProps, ViewStyle } from 'react-native';
 import { Platform, Pressable, StyleSheet, Text } from 'react-native';
 
+import type { KnownEventName } from '../../constants/analytics';
 import { dinot } from '../../constants/fonts';
 import { useSelfClient } from '../../context';
 import { pressedStyle } from './pressedStyle';
@@ -13,11 +14,7 @@ import { pressedStyle } from './pressedStyle';
 export interface ButtonProps extends PressableProps {
   children: React.ReactNode;
   animatedComponent?: React.ReactNode;
-  trackEvent?: string;
-  // Emit the event name verbatim (no "Click: " prefix, no category stripping).
-  // Used by canonical funnel events; `trackEvent` remains for the diagnostic
-  // layer so existing dashboards keep working.
-  trackEventRaw?: string;
+  trackEvent?: KnownEventName;
   trackEventProperties?: Record<string, unknown>;
   borderWidth?: number;
   borderColor?: string;
@@ -70,7 +67,6 @@ export default function AbstractButton({
   style,
   animatedComponent,
   trackEvent,
-  trackEventRaw,
   trackEventProperties,
   onPress,
   ...props
@@ -87,15 +83,8 @@ export default function AbstractButton({
   const hasBorder = borderColor != null;
 
   const handlePress = (e: GestureResponderEvent) => {
-    if (trackEventRaw) {
-      selfClient.trackEvent(trackEventRaw, trackEventProperties);
-    } else if (trackEvent) {
-      // attempt to remove event category from click event
-      const parsedEvent = trackEvent?.split(':')?.[1]?.trim();
-      if (parsedEvent) {
-        trackEvent = parsedEvent;
-      }
-      selfClient.trackEvent(`Click: ${trackEvent}`);
+    if (trackEvent) {
+      selfClient.trackEvent(trackEvent, trackEventProperties);
     }
     if (onPress) {
       onPress(e);

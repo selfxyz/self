@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import type { KnownEventName } from '../constants/analytics';
 import { OnboardingEvents } from '../constants/analytics';
 import type { SelfClient } from '../types/public';
 
@@ -193,7 +194,7 @@ export function setOnboardingBranch(branch: OnboardingBranch): void {
 
 export function trackBranchEvent(
   selfClient: Pick<SelfClient, 'trackEvent'>,
-  event: string,
+  event: KnownEventName,
   properties?: Record<string, unknown>,
 ): void {
   if (!currentAttempt) return;
@@ -229,7 +230,7 @@ export function trackOnboardingRetry(
 
 export function trackOnboardingStep(
   selfClient: Pick<SelfClient, 'trackEvent'>,
-  event: string,
+  event: KnownEventName,
   properties?: Record<string, unknown>,
 ): void {
   const attempt = ensureAttempt(selfClient);
