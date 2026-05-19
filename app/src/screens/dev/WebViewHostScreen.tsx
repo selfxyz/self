@@ -8,10 +8,10 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import {
-  SelfVerification,
   type AnalyticsSink,
   type NavigationCallbacks,
   type SelfSdkError,
+  SelfVerification,
   type VerificationResult,
 } from '@selfxyz/rn-sdk';
 
@@ -47,9 +47,11 @@ const WebViewHostScreen: React.FC = () => {
 
   const handleSuccess = useCallback(
     (result: VerificationResult) => {
-      Alert.alert('WebView host', `Verification finished: ${JSON.stringify(result)}`, [
-        { text: 'Close', onPress: () => navigation.goBack() },
-      ]);
+      Alert.alert(
+        'WebView host',
+        `Verification finished: ${JSON.stringify(result)}`,
+        [{ text: 'Close', onPress: () => navigation.goBack() }],
+      );
     },
     [navigation],
   );
