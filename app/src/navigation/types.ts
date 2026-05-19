@@ -75,6 +75,7 @@ export type DevRoutesParamList = {
   CreateMock: undefined;
   MockDataDeepLink: undefined;
   SocialLoginDemo: undefined;
+  WebViewHost: undefined;
 };
 
 // =============================================================================

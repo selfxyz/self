@@ -11202,6 +11202,7 @@ __metadata:
     "@selfxyz/common": "workspace:^"
     "@selfxyz/euclid": "npm:^0.6.1"
     "@selfxyz/mobile-sdk-alpha": "workspace:^"
+    "@selfxyz/rn-sdk": "workspace:^"
     "@sentry/react": "npm:^9.32.0"
     "@sentry/react-native": "npm:8.11.1"
     "@stablelib/cbor": "npm:^2.0.4"
@@ -11540,7 +11541,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@selfxyz/rn-sdk@workspace:*, @selfxyz/rn-sdk@workspace:packages/rn-sdk":
+"@selfxyz/rn-sdk@workspace:*, @selfxyz/rn-sdk@workspace:^, @selfxyz/rn-sdk@workspace:packages/rn-sdk":
   version: 0.0.0-use.local
   resolution: "@selfxyz/rn-sdk@workspace:packages/rn-sdk"
   dependencies:
