@@ -224,22 +224,21 @@ export const SettingsEvents = {
   CONNECTION_SETTINGS_OPENED: 'Settings: Connection Settings Opened',
 } as const;
 
-const _AllEvents = {
-  ...AadhaarEvents,
-  ...AppEvents,
-  ...AuthEvents,
-  ...BackupEvents,
-  ...BiometricEvents,
-  ...DocumentEvents,
-  ...KycEvents,
-  ...IDDataEvents,
-  ...MockDataEvents,
-  ...NotificationEvents,
-  ...OnboardingEvents,
-  ...PointEvents,
-  ...ProofEvents,
-  ...RegistrationPickerEvents,
-  ...SettingsEvents,
-} as const;
-
-export type KnownEventName = (typeof _AllEvents)[keyof typeof _AllEvents];
+// Union per-group so collisions on shared keys (e.g. STARTED, FAILED) across
+// groups can't silently drop event names from the cap.
+export type KnownEventName =
+  | (typeof AadhaarEvents)[keyof typeof AadhaarEvents]
+  | (typeof AppEvents)[keyof typeof AppEvents]
+  | (typeof AuthEvents)[keyof typeof AuthEvents]
+  | (typeof BackupEvents)[keyof typeof BackupEvents]
+  | (typeof BiometricEvents)[keyof typeof BiometricEvents]
+  | (typeof DocumentEvents)[keyof typeof DocumentEvents]
+  | (typeof IDDataEvents)[keyof typeof IDDataEvents]
+  | (typeof KycEvents)[keyof typeof KycEvents]
+  | (typeof MockDataEvents)[keyof typeof MockDataEvents]
+  | (typeof NotificationEvents)[keyof typeof NotificationEvents]
+  | (typeof OnboardingEvents)[keyof typeof OnboardingEvents]
+  | (typeof PointEvents)[keyof typeof PointEvents]
+  | (typeof ProofEvents)[keyof typeof ProofEvents]
+  | (typeof RegistrationPickerEvents)[keyof typeof RegistrationPickerEvents]
+  | (typeof SettingsEvents)[keyof typeof SettingsEvents];
