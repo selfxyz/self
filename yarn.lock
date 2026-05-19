@@ -26630,13 +26630,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"hermes-compiler@npm:250829098.0.7":
-  version: 250829098.0.7
-  resolution: "hermes-compiler@npm:250829098.0.7"
-  checksum: 10c0/97404947b1d5df05139553ac66d803499b7897867745c52d6f1b89a533c0a1b1088e65e3a349a1a837c4a2a079dd65c7009b88f56ed9ffbc6ab5ad47ee53f529
-  languageName: node
-  linkType: hard
-
 "hermes-eslint@npm:^0.33.3":
   version: 0.33.3
   resolution: "hermes-eslint@npm:0.33.3"
