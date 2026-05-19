@@ -7,6 +7,7 @@ import DeviceInfo from 'react-native-device-info';
 import { SENTRY_DSN } from '@env';
 import {
   addBreadcrumb,
+  breadcrumbsIntegration,
   captureException as sentryCaptureException,
   captureFeedback as sentryCaptureFeedback,
   captureMessage as sentryCaptureMessage,
@@ -167,9 +168,19 @@ export const initSentry = () => {
     emailPlaceholder: 'Email',
   });
 
+  const breadcrumbs = breadcrumbsIntegration({
+    console: false,
+    fetch: false,
+    xhr: true,
+    sentry: true,
+    dom: false,
+    history: false,
+  });
+
   const integrations = disableSimulatorHeavyIntegrations
-    ? [feedback]
+    ? [breadcrumbs, feedback]
     : [
+        breadcrumbs,
         mobileReplayIntegration({
           maskAllText: true,
           maskAllImages: true,
@@ -187,7 +198,6 @@ export const initSentry = () => {
     // Replay and screenshots are disabled on iOS simulator to reduce cold-start pressure.
     replaysSessionSampleRate,
     replaysOnErrorSampleRate,
-    beforeBreadcrumb,
     beforeSend(event) {
       if (event.user) {
         delete event.user.ip_address;
@@ -203,47 +213,6 @@ export const isIosSimulator = () =>
   Platform.OS === 'ios' && DeviceInfo.isEmulatorSync();
 
 export const isSentryDisabled = !SENTRY_DSN;
-
-const BREADCRUMB_DEDUPE_WINDOW_MS = 150;
-const recentBreadcrumbs: Array<{ key: string; ts: number }> = [];
-
-const NOISY_CONSOLE_PREFIXES = [
-  '[DEV: Analytics ',
-  '[PendingKycRecovery]',
-  'Screen View:',
-  'other props not handled',
-];
-
-const beforeBreadcrumb = (
-  breadcrumb: {
-    category?: string;
-    message?: string;
-    level?: string;
-    data?: Record<string, unknown>;
-  },
-): typeof breadcrumb | null => {
-  if (breadcrumb.category === 'console') {
-    if (breadcrumb.level === 'debug') return null;
-    const msg = breadcrumb.message ?? '';
-    if (NOISY_CONSOLE_PREFIXES.some(p => msg.startsWith(p) || msg.includes(p))) {
-      return null;
-    }
-  }
-
-  const now = Date.now();
-  while (
-    recentBreadcrumbs.length &&
-    now - recentBreadcrumbs[0].ts > BREADCRUMB_DEDUPE_WINDOW_MS
-  ) {
-    recentBreadcrumbs.shift();
-  }
-  const key = `${breadcrumb.category ?? ''}::${breadcrumb.message ?? ''}::${breadcrumb.level ?? ''}`;
-  if (recentBreadcrumbs.some(b => b.key === key)) {
-    return null;
-  }
-  recentBreadcrumbs.push({ key, ts: now });
-  return breadcrumb;
-};
 
 type LogLevel = 'info' | 'warn' | 'error';
 type LogCategory = 'proof' | 'nfc' | 'auth';
