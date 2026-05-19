@@ -3891,9 +3891,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@didit-protocol/sdk-react-native@npm:^3.2.11":
-  version: 3.2.11
-  resolution: "@didit-protocol/sdk-react-native@npm:3.2.11"
+"@didit-protocol/sdk-react-native@npm:^3.3.2":
+  version: 3.3.2
+  resolution: "@didit-protocol/sdk-react-native@npm:3.3.2"
   peerDependencies:
     "@expo/config-plugins": ">=7.0.0"
     react: "*"
@@ -3901,7 +3901,7 @@ __metadata:
   peerDependenciesMeta:
     "@expo/config-plugins":
       optional: true
-  checksum: 10c0/b30443422254c7e0e06746050c3f165e9e4f522676cba02915f24bd7977d7d7c1781055d6356cf923a27ea49d7368ad22bdffff120a4999b7815089372ae29a9
+  checksum: 10c0/73d100e5fad2137a36c301f5d06e02b46e2637c74ad5fd747c8c023e006df9d69644054d2602cbe670ce7bd38f08834857f1368cc79a6065c74b95d827af59e5
   languageName: node
   linkType: hard
 
@@ -11173,7 +11173,7 @@ __metadata:
     "@babel/preset-env": "npm:^7.29.2"
     "@babel/preset-react": "npm:^7.28.5"
     "@babel/runtime": "npm:^7.29.2"
-    "@didit-protocol/sdk-react-native": "npm:^3.2.11"
+    "@didit-protocol/sdk-react-native": "npm:^3.3.2"
     "@ethersproject/shims": "npm:^5.8.0"
     "@invertase/react-native-apple-authentication": "npm:^2.5.1"
     "@noble/hashes": "npm:^1.5.0"
