@@ -3,18 +3,13 @@ appId: com.proofofpassportapp
 - clearState
 - clearKeychain
 - launchApp
-- repeat:
-    times: 24
-    while:
-      notVisible:
-        id: "home-screen-root"
-    commands:
-      - tapOn:
-          id: "disclaimer-dismiss-button"
-          optional: true
-      - waitForAnimationToEnd:
-          timeout: 1000
+- extendedWaitUntil:
+    visible:
+      id: "disclaimer-dismiss-button"
+    timeout: ${LAUNCH_WAIT_MS:120000}
+- tapOn:
+    id: "disclaimer-dismiss-button"
 - extendedWaitUntil:
     visible:
       id: "home-screen-root"
-    timeout: ${LAUNCH_WAIT_MS:120000}
+    timeout: 30000
