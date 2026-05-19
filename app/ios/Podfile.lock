@@ -2160,7 +2160,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNSentry (7.0.0):
+  - RNSentry (8.11.1):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2181,7 +2181,7 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - Sentry/HybridSDK (= 8.53.2)
+    - Sentry (= 9.13.0)
     - Yoga
   - RNSVG (15.14.0):
     - DoubleConversion
@@ -2254,7 +2254,9 @@ PODS:
   - SelfNFCPassportReader (2.1.1):
     - Mixpanel-swift (~> 5.0.0)
     - OpenSSL-Universal (= 1.1.1900)
-  - Sentry/HybridSDK (8.53.2)
+  - Sentry (9.13.0):
+    - Sentry/Core (= 9.13.0)
+  - Sentry/Core (9.13.0)
   - SocketRocket (0.7.1)
   - sovran-react-native (1.1.3):
     - React-Core
@@ -2799,12 +2801,12 @@ SPEC CHECKSUMS:
   RNPermissions: c32bbfa8a665692acb9681c47abca019b97c9f1e
   RNReactNativeHapticFeedback: 7c895b81434f045ddc330972816f844e3c0c2f35
   RNScreens: b0811b109e1a0b8b579f3348018e177bee374840
-  RNSentry: 98ab9f6a16c9596e36565ccf1a5871323f334766
+  RNSentry: baed6a867cf43a81c941cf35a98bca33d6bf62c6
   RNSVG: d926926b169d8b81eb06aeb69734076e1dd566a3
   SdkReactNative: e71894c28a6ab0c8a46dfead4b4b811907b8135b
   segment-analytics-react-native: 8ab9c49df1859bbd6be93cf90a91ade17f20a0aa
   SelfNFCPassportReader: 8b53f9d483e0dd1f1a275953e3dc6dfc733694c5
-  Sentry: 59993bffde4a1ac297ba6d268dc4bbce068d7c1b
+  Sentry: 5c3f67235d4c16fcfab43158a8c1502a18fece9a
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   sovran-react-native: a3ad3f8ff90c2002b2aa9790001a78b0b0a38594
   SwiftQRScanner: e85a25f9b843e9231dab89a96e441472fe54a724
