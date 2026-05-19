@@ -558,6 +558,7 @@ jobs:
           adb install -r "$APK_PATH" || { echo "❌ App installation failed"; exit 1; }
           adb shell pm clear "$APP_ID" >/dev/null 2>&1 || true
           echo "✅ App installed successfully"
+          adb logcat -c || true
           echo "⏰ Giving the emulator a moment to settle..."
           sleep 5
           echo "🎭 Running Maestro tests..."
@@ -566,7 +567,9 @@ jobs:
           if ! maestro test app/tests/e2e/launch.android.flow.yaml --format junit --output app/maestro-results.xml; then
             echo "❌ Maestro failed - dumping Android diagnostics"
             adb shell dumpsys activity activities | sed -n '1,240p' || true
-            adb logcat -d | tail -n 400 || true
+            adb logcat -d > app/maestro-android-logcat.log || true
+            grep -En "FATAL EXCEPTION|AndroidRuntime|ReactNativeJS|com.proofofpassportapp" app/maestro-android-logcat.log | tail -n 300 || true
+            adb exec-out screencap -p > app/maestro-android-failure.png || true
             exit 1
           fi
           EOF
@@ -591,7 +594,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: maestro-results-android
-          path: app/maestro-results.xml
+          path: |
+            app/maestro-results.xml
+            app/maestro-android-logcat.log
+            app/maestro-android-failure.png
           if-no-files-found: warn
 
   e2e-ios:

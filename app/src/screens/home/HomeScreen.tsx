@@ -252,6 +252,8 @@ const HomeScreen: React.FC = () => {
       backgroundColor={'#F8FAFC'}
       flex={1}
       alignItems="center"
+      accessibilityLabel="home-screen-root"
+      collapsable={false}
       testID="home-screen-root"
     >
       <ScrollView
