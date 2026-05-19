@@ -9,9 +9,43 @@ import NetInfo from '@react-native-community/netinfo';
 import type { JsonMap, JsonValue } from '@segment/analytics-react-native';
 
 import type { TrackEventParams } from '@selfxyz/mobile-sdk-alpha';
+import {
+  AadhaarEvents,
+  AppEvents,
+  AuthEvents,
+  BackupEvents,
+  BiometricEvents,
+  DocumentEvents,
+  KycEvents,
+  NotificationEvents,
+  OnboardingEvents,
+  PointEvents,
+} from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import { createSegmentClient } from '@/config/segment';
 import { PassportReader } from '@/integrations/nfc/passportReader';
+import {
+  clearOnboardingTags,
+  setOnboardingTags,
+  tagsFromAnalyticsEvent,
+} from '@/observability/onboardingContext';
+
+const KNOWN_EVENT_NAMES: ReadonlySet<string> = new Set(
+  [
+    AadhaarEvents,
+    AppEvents,
+    AuthEvents,
+    BackupEvents,
+    BiometricEvents,
+    DocumentEvents,
+    KycEvents,
+    NotificationEvents,
+    OnboardingEvents,
+    PointEvents,
+  ].flatMap(group => Object.values(group)),
+);
+
+const warnedUnknownEvents = new Set<string>();
 
 // ============================================================================
 // Constants
@@ -139,6 +173,32 @@ function _track(
 ) {
   // Transform screen events for Mixpanel compatibility
   const finalEventName = type === 'screen' ? `Viewed ${eventName}` : eventName;
+
+  if (
+    type === 'event' &&
+    !KNOWN_EVENT_NAMES.has(eventName) &&
+    !warnedUnknownEvents.has(eventName)
+  ) {
+    warnedUnknownEvents.add(eventName);
+    console.warn(
+      `[analytics] Unrecognized event "${eventName}". Add it to the keep-list ` +
+        'in packages/mobile-sdk-alpha/src/constants/analytics.ts or migrate ' +
+        'the diagnostic to Sentry breadcrumbs (logProofEvent / logNFCEvent).',
+    );
+  }
+
+  if (type === 'event') {
+    if (
+      eventName === OnboardingEvents.COMPLETED ||
+      eventName === OnboardingEvents.FAILED ||
+      eventName === OnboardingEvents.RECOVERED
+    ) {
+      clearOnboardingTags();
+    } else {
+      const tagSnapshot = tagsFromAnalyticsEvent(eventName, properties);
+      setOnboardingTags(tagSnapshot);
+    }
+  }
 
   // Validate and clean properties
   const validatedProps = validateParams(withSupportUuid(properties));

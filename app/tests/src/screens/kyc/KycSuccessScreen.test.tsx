@@ -220,11 +220,6 @@ describe('KycSuccessScreen', () => {
     });
 
     await waitFor(() => {
-      // Verify tracking event was sent
-      expect(mockTrackEvent).toHaveBeenCalledWith('FCM_TOKEN_STORED');
-    });
-
-    await waitFor(() => {
       // Verify device token was registered with deterministic session ID
       expect(notificationService.registerDeviceToken).toHaveBeenCalledWith(
         uuidv5(mockSessionId, notificationService.SELF_UUID_NAMESPACE),

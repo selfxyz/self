@@ -24,6 +24,7 @@ import {
   DebugShortcutsSection,
   DevTogglesSection,
   PushNotificationsSection,
+  SentryTestSection,
 } from '@/screens/dev/sections';
 import { useSettingStore } from '@/stores/settingStore';
 import { IS_DEV_MODE } from '@/utils/devUtils';
@@ -92,6 +93,8 @@ const DevSettingsScreen: React.FC = () => {
               <ErrorInjectionSelector />
             </ParameterSection>
           )}
+
+          <SentryTestSection />
 
           <Button
             style={{ backgroundColor: red500 }}

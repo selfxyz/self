@@ -51,7 +51,6 @@ const SelfQRcode = ({
   showStatusText = true,
   variant = 'hybrid',
 }: SelfQRcodeProps) => {
-  // Force light mode regardless of the caller-provided flag.
   const effectiveDarkMode = false;
   const [proofStep, setProofStep] = useState(QRcodeSteps.WAITING_FOR_MOBILE);
   const [sessionId, setSessionId] = useState('');

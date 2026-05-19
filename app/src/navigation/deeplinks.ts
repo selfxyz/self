@@ -145,6 +145,15 @@ export const handleUrl = async (selfClient: SelfClient, uri: string) => {
           entryPoint: 'deeplink',
           requesterName: selfAppJson.appName,
         });
+        // On cold launch, handleUrl runs from Splash and never advances the
+        // stack on its own; without this nav, dismissing the gate modal
+        // strands the user on Splash. On warm launch the user is mid-flow,
+        // so leave them in place.
+        if (navigationRef.getCurrentRoute()?.name === 'Splash') {
+          safeNavigate(
+            createDeeplinkNavigationState('Home', correctParentScreen),
+          );
+        }
         return;
       }
       selfClient.getSelfAppState().setSelfApp(selfAppJson);
@@ -178,6 +187,13 @@ export const handleUrl = async (selfClient: SelfClient, uri: string) => {
         entryPoint: 'deeplink',
         requesterName: 'Google USAT Faucet',
       });
+      // Cold-launch only: advance off Splash so dismissing the gate modal
+      // doesn't strand the user. Warm launch leaves the user in place.
+      if (navigationRef.getCurrentRoute()?.name === 'Splash') {
+        safeNavigate(
+          createDeeplinkNavigationState('Home', correctParentScreen),
+        );
+      }
       return;
     }
 

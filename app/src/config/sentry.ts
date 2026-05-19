@@ -7,10 +7,10 @@ import DeviceInfo from 'react-native-device-info';
 import { SENTRY_DSN } from '@env';
 import {
   addBreadcrumb,
+  breadcrumbsIntegration,
   captureException as sentryCaptureException,
   captureFeedback as sentryCaptureFeedback,
   captureMessage as sentryCaptureMessage,
-  consoleLoggingIntegration,
   feedbackIntegration,
   init as sentryInit,
   mobileReplayIntegration,
@@ -37,59 +37,14 @@ const ALLOWED_TAG_KEYS = new Set([
   'scan_result',
   'verification_status',
   'document_type',
+  'attempt_id',
+  'initial_branch',
+  'current_branch',
+  'document_country',
+  'signature_algorithm',
+  'csca_hash_algorithm',
+  'kyc_provider',
 ]);
-
-// Security: Sanitize tag values to prevent XSS
-const sanitizeTagValue = (value: unknown): string => {
-  if (value == null) return '';
-
-  const stringValue = String(value);
-
-  // Truncate to safe length
-  const MAX_TAG_LENGTH = 200;
-  const truncated =
-    stringValue.length > MAX_TAG_LENGTH
-      ? stringValue.substring(0, MAX_TAG_LENGTH) + '...'
-      : stringValue;
-
-  // Escape HTML characters and remove potentially dangerous characters
-  return (
-    truncated
-      .replace(/[<>&"']/g, char => {
-        switch (char) {
-          case '<':
-            return '&lt;';
-          case '>':
-            return '&gt;';
-          case '&':
-            return '&amp;';
-          case '"':
-            return '&quot;';
-          case "'":
-            return '&#x27;';
-          default:
-            return char;
-        }
-      })
-      // Remove control characters and non-printable characters
-      .replace(/[^\x20-\x7E]/g, '')
-  );
-};
-
-// Security: Sanitize tag key to prevent XSS
-const sanitizeTagKey = (key: string): string | null => {
-  // Only allow whitelisted keys
-  if (!ALLOWED_TAG_KEYS.has(key)) {
-    return null;
-  }
-
-  // Additional validation: alphanumeric and underscores only
-  if (!/^[a-zA-Z0-9_]+$/.test(key)) {
-    return null;
-  }
-
-  return key;
-};
 
 export const captureException = (
   error: Error,
@@ -101,6 +56,24 @@ export const captureException = (
   sentryCaptureException(error, {
     extra: context,
   });
+};
+
+const SENSITIVE_KEY_PATTERN =
+  /passport|mrz|dg\d|chip|aadhaar|(?:first|last|full|given|family|holder|sur)_?name|name_?(?:first|last|of_?holder|holder)|date_?of_?birth|dob|birth|photo/i;
+const REDACTED = '[REDACTED]';
+
+const redactObjectInPlace = <T extends Record<string, unknown>>(obj: T): T => {
+  for (const key of Object.keys(obj)) {
+    if (SENSITIVE_KEY_PATTERN.test(key)) {
+      obj[key as keyof T] = REDACTED as T[keyof T];
+      continue;
+    }
+    const value = obj[key];
+    if (value && typeof value === 'object') {
+      redactObjectInPlace(value as Record<string, unknown>);
+    }
+  }
+  return obj;
 };
 
 export const captureFeedback = (
@@ -130,6 +103,18 @@ export const captureFeedback = (
       },
     },
   );
+};
+
+const sanitizeTagKey = (key: string): string | null => {
+  if (!ALLOWED_TAG_KEYS.has(key)) {
+    return null;
+  }
+
+  if (!/^[a-zA-Z0-9_]+$/.test(key)) {
+    return null;
+  }
+
+  return key;
 };
 
 export const captureMessage = (
@@ -166,37 +151,43 @@ export const initSentry = () => {
     replaysOnErrorSampleRate,
     replaysSessionSampleRate,
   } = getSentryRuntimeFlags();
-  const integrations = [
-    consoleLoggingIntegration({
-      levels: ['log', 'error', 'warn', 'info', 'debug'],
-    }),
-    feedbackIntegration({
-      buttonOptions: {
-        styles: {
-          triggerButton: {
-            position: 'absolute',
-            top: 20,
-            right: 20,
-            bottom: undefined,
-            marginTop: 100,
-          },
+  const feedback = feedbackIntegration({
+    buttonOptions: {
+      styles: {
+        triggerButton: {
+          position: 'absolute',
+          top: 20,
+          right: 20,
+          bottom: undefined,
+          marginTop: 100,
         },
       },
-      enableTakeScreenshot: enableFeedbackScreenshots,
-      namePlaceholder: 'Fullname',
-      emailPlaceholder: 'Email',
-    }),
-  ];
+    },
+    enableTakeScreenshot: enableFeedbackScreenshots,
+    namePlaceholder: 'Fullname',
+    emailPlaceholder: 'Email',
+  });
 
-  if (!disableSimulatorHeavyIntegrations) {
-    integrations.unshift(
-      mobileReplayIntegration({
-        maskAllText: true,
-        maskAllImages: false,
-        maskAllVectors: false,
-      }),
-    );
-  }
+  const breadcrumbs = breadcrumbsIntegration({
+    console: false,
+    fetch: false,
+    xhr: true,
+    sentry: true,
+    dom: false,
+    history: false,
+  });
+
+  const integrations = disableSimulatorHeavyIntegrations
+    ? [breadcrumbs, feedback]
+    : [
+        breadcrumbs,
+        mobileReplayIntegration({
+          maskAllText: true,
+          maskAllImages: true,
+          maskAllVectors: true,
+        }),
+        feedback,
+      ];
 
   sentryInit({
     dsn: SENTRY_DSN,
@@ -207,19 +198,14 @@ export const initSentry = () => {
     // Replay and screenshots are disabled on iOS simulator to reduce cold-start pressure.
     replaysSessionSampleRate,
     replaysOnErrorSampleRate,
-    // Disable collection of PII data
     beforeSend(event) {
-      // Remove PII data
       if (event.user) {
         delete event.user.ip_address;
         delete event.user.id;
       }
-      return event;
+      return redactSensitiveFields(event);
     },
     integrations,
-    _experiments: {
-      enableLogs: true,
-    },
   });
 };
 
@@ -227,6 +213,9 @@ export const isIosSimulator = () =>
   Platform.OS === 'ios' && DeviceInfo.isEmulatorSync();
 
 export const isSentryDisabled = !SENTRY_DSN;
+
+type LogLevel = 'info' | 'warn' | 'error';
+type LogCategory = 'proof' | 'nfc' | 'auth';
 
 export const logEvent = (
   level: LogLevel,
@@ -283,9 +272,6 @@ export const logEvent = (
   }
 };
 
-type LogLevel = 'info' | 'warn' | 'error';
-type LogCategory = 'proof' | 'nfc';
-
 export const logNFCEvent = (
   level: LogLevel,
   message: string,
@@ -299,6 +285,67 @@ export const logProofEvent = (
   context: ProofContext,
   extra?: Record<string, unknown>,
 ) => logEvent(level, 'proof', message, context, extra);
+
+export const logAuthEvent = (
+  level: LogLevel,
+  message: string,
+  context: BaseContext & Record<string, unknown>,
+  extra?: Record<string, unknown>,
+) => logEvent(level, 'auth', message, context, extra);
+
+export const redactSensitiveFields = <
+  T extends {
+    breadcrumbs?: Array<{ data?: Record<string, unknown> | undefined }>;
+    contexts?: Record<string, unknown>;
+    extra?: Record<string, unknown>;
+  },
+>(
+  event: T,
+): T => {
+  if (event.breadcrumbs) {
+    for (const crumb of event.breadcrumbs) {
+      if (crumb.data) redactObjectInPlace(crumb.data);
+    }
+  }
+  if (event.contexts) {
+    redactObjectInPlace(event.contexts);
+  }
+  if (event.extra) {
+    redactObjectInPlace(event.extra);
+  }
+  return event;
+};
+
+export const sanitizeTagValue = (value: unknown): string => {
+  if (value == null) return '';
+
+  const stringValue = String(value);
+
+  const MAX_TAG_LENGTH = 200;
+  const truncated =
+    stringValue.length > MAX_TAG_LENGTH
+      ? stringValue.substring(0, MAX_TAG_LENGTH) + '...'
+      : stringValue;
+
+  return truncated
+    .replace(/[<>&"']/g, char => {
+      switch (char) {
+        case '<':
+          return '&lt;';
+        case '>':
+          return '&gt;';
+        case '&':
+          return '&amp;';
+        case '"':
+          return '&quot;';
+        case "'":
+          return '&#x27;';
+        default:
+          return char;
+      }
+    })
+    .replace(/[^\x20-\x7E]/g, '');
+};
 
 export const setSupportUuidInSentry = (
   supportUuid: string | null,

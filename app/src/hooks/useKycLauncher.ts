@@ -8,10 +8,14 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import {
   sanitizeErrorMessage,
+  trackBranchEvent,
   trackOnboardingStep,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
-import { OnboardingEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import {
+  KycEvents,
+  OnboardingEvents,
+} from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import {
   createKycSession,
@@ -20,6 +24,8 @@ import {
 import type { KycVerificationResult } from '@/integrations/kyc/types';
 import type { RootStackParamList } from '@/navigation';
 import { useFeedback } from '@/providers/feedbackProvider';
+
+const KYC_PROVIDER = 'didit';
 
 export interface UseKycLauncherOptions {
   /**
@@ -88,18 +94,42 @@ export const useKycLauncher = (options: UseKycLauncherOptions) => {
 
   const launchKycVerification = useCallback(async () => {
     setIsLoading(true);
+    const sessionRequestedAt = Date.now();
+    let providerOpenedAt: number | null = null;
     try {
       trackOnboardingStep(selfClient, OnboardingEvents.SCAN_STARTED, {
         branch: 'kyc',
+      });
+      trackBranchEvent(selfClient, KycEvents.SESSION_REQUESTED, {
+        provider: KYC_PROVIDER,
       });
       const session = await createKycSession({
         country: countryCode,
         nationality: countryCode,
       });
+      trackBranchEvent(selfClient, KycEvents.SESSION_CREATED, {
+        provider: KYC_PROVIDER,
+        duration_seconds: parseFloat(
+          ((Date.now() - sessionRequestedAt) / 1000).toFixed(2),
+        ),
+      });
+      providerOpenedAt = Date.now();
+      const openedAt = providerOpenedAt;
+      trackBranchEvent(selfClient, KycEvents.PROVIDER_OPENED, {
+        provider: KYC_PROVIDER,
+      });
       const result = await startKycVerification(session.sessionToken);
+      const providerDurationSeconds = parseFloat(
+        ((Date.now() - openedAt) / 1000).toFixed(2),
+      );
 
       // Handle user cancellation
       if (result.type === 'cancelled') {
+        trackBranchEvent(selfClient, KycEvents.PROVIDER_CLOSED, {
+          provider: KYC_PROVIDER,
+          outcome: 'cancelled',
+          duration_seconds: providerDurationSeconds,
+        });
         await onCancel?.();
         return;
       }
@@ -110,6 +140,12 @@ export const useKycLauncher = (options: UseKycLauncherOptions) => {
           result.error?.message || result.error?.type || 'Unknown error';
         const safeError = sanitizeErrorMessage(error);
         console.error('KYC verification failed:', safeError);
+        trackBranchEvent(selfClient, KycEvents.PROVIDER_CLOSED, {
+          provider: KYC_PROVIDER,
+          outcome: 'failed',
+          error_code: result.error?.type,
+          duration_seconds: providerDurationSeconds,
+        });
 
         // Call custom error handler if provided, otherwise navigate to fallback screen
         if (onError) {
@@ -124,6 +160,11 @@ export const useKycLauncher = (options: UseKycLauncherOptions) => {
       }
 
       // Handle success - navigate to KycSuccess by default
+      trackBranchEvent(selfClient, KycEvents.PROVIDER_CLOSED, {
+        provider: KYC_PROVIDER,
+        outcome: 'completed',
+        duration_seconds: providerDurationSeconds,
+      });
       if (onSuccess) {
         await onSuccess(result, session.sessionId);
       } else {
@@ -134,6 +175,17 @@ export const useKycLauncher = (options: UseKycLauncherOptions) => {
         error instanceof Error ? error.message : String(error);
       const safeError = sanitizeErrorMessage(errorMessage);
       console.error('Error launching alternative verification:', safeError);
+
+      if (providerOpenedAt !== null) {
+        trackBranchEvent(selfClient, KycEvents.PROVIDER_CLOSED, {
+          provider: KYC_PROVIDER,
+          outcome: 'failed',
+          error_code: 'launch_error',
+          duration_seconds: parseFloat(
+            ((Date.now() - providerOpenedAt) / 1000).toFixed(2),
+          ),
+        });
+      }
 
       // Call custom error handler if provided, otherwise navigate to fallback screen
       if (onError) {

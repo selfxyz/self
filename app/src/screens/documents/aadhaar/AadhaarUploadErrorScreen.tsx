@@ -10,9 +10,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Image } from '@tamagui/lucide-icons';
 
-import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { BodyText } from '@selfxyz/mobile-sdk-alpha/components';
-import { AadhaarEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import {
   black,
   cyan300,
@@ -66,7 +64,6 @@ const AadhaarUploadErrorScreen: React.FC = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<AadhaarUploadErrorRoute>();
-  const { trackEvent } = useSelfClient();
 
   const errorType = route.params?.errorType || 'general';
   const { title, description } = getErrorMessages(errorType);
@@ -87,14 +84,12 @@ const AadhaarUploadErrorScreen: React.FC = () => {
   }, [navigation]);
 
   const handleTryAgain = useCallback(() => {
-    trackEvent(AadhaarEvents.RETRY_BUTTON_PRESSED, { errorType });
     navigation.goBack();
-  }, [errorType, navigation, trackEvent]);
+  }, [navigation]);
 
   const handleTryAlternative = useCallback(async () => {
-    trackEvent(AadhaarEvents.HELP_BUTTON_PRESSED, { errorType });
     await launchKycVerification();
-  }, [errorType, launchKycVerification, trackEvent]);
+  }, [launchKycVerification]);
 
   return (
     <YStack flex={1} backgroundColor={slate100}>

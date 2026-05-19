@@ -5,6 +5,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import type { CryptoAdapter, DocumentsAdapter, NetworkAdapter, NFCScannerAdapter } from '../src';
+import { AppEvents, BackupEvents } from '../src/constants/analytics';
 import { createListenersMap, createSelfClient, SdkEvents } from '../src/index';
 import type { AuthAdapter, NavigationAdapter } from '../src/types/public';
 
@@ -160,11 +161,11 @@ describe('createSelfClient', () => {
         listeners: new Map(),
       });
 
-      client.trackEvent('test_event');
+      client.trackEvent(AppEvents.GET_STARTED);
       expect(trackEvent).toHaveBeenCalledOnce();
-      expect(trackEvent).toHaveBeenCalledWith('test_event', undefined);
-      client.trackEvent('another_event', { foo: 'bar' });
-      expect(trackEvent).toHaveBeenCalledWith('another_event', { foo: 'bar' });
+      expect(trackEvent).toHaveBeenCalledWith(AppEvents.GET_STARTED, undefined);
+      client.trackEvent(BackupEvents.CLOUD_BACKUP_STARTED, { foo: 'bar' });
+      expect(trackEvent).toHaveBeenCalledWith(BackupEvents.CLOUD_BACKUP_STARTED, { foo: 'bar' });
     });
   });
   describe('when auth adapter is given', () => {
