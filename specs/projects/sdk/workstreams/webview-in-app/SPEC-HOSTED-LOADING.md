@@ -1,4 +1,4 @@
-# SPEC — Hosted URL Loading & Versioning
+# SPEC — Bundle Loading & Versioning
 
 > Last updated: 2026-05-19
 > Owner: Release / Build engineer
@@ -7,12 +7,20 @@
 
 ## Scope
 
-The RN host loads the WebView from a hosted HTTPS URL, matching what
-`packages/native-shell-android/` and `packages/native-shell-ios/` do
-under the `sdk-distribution/` workstream (SD-01). This spec defines
-which URL the host loads, how versioning is pinned across the RN
-binary and the WebView schema, how dev overrides are gated, and what
-the host does when the load fails.
+The RN host loads the WebView from an **embedded bundle** at app
+install time. The build-pipeline (BP-01, done) copies the latest
+`@selfxyz/webview-app` dist into `packages/rn-sdk/assets/self-wallet/`,
+which gets bundled into the host's iOS .ipa / Android .apk. This
+matches what `packages/native-shell-android/` and
+`packages/native-shell-ios/` currently do, and is consistent with the
+existing rn-sdk-test-app integration.
+
+Hosted HTTPS URL loading from `verify.self.xyz` is a future
+evolution under the `sdk-distribution/` workstream; it is not the v1
+mechanism for Self Wallet because (a) embedded bundles avoid
+offline-first-launch friction, (b) HTTPS introduces a single point of
+failure if the CDN goes down, and (c) WebView caches across hosted
+deploys are out of our control.
 
 This spec covers `WIA-09`.
 
@@ -40,42 +48,37 @@ This spec covers `WIA-09`.
 
 ## Decisions
 
-1. **Production URL: `https://verify.self.xyz/v1/`.** Identical to
-   what the native shells load. The RN host is one more consumer of
-   the same hosted target.
-2. **Major version in the URL path is a breaking-schema bump.** A
-   change to the bridge protocol or to the host-contract surface that
-   would crash a v1 host moves the WebView to `/v2/`. The hosting team
-   keeps `/v1/` alive long enough for old RN binaries to upgrade.
-3. **The RN host pins its supported schema version as a build
-   constant.** Set in a `webviewSchemaVersion` constant at app build
-   time, included in the URL the host loads. The constant is bumped
-   by the engineer cutting a release, never at runtime.
-4. **Dev override via `WEBVIEW_DEV_URL` env var, gated on `__DEV__`
-   only.** Release builds ignore the variable entirely. The host
-   asserts at startup that any non-production URL is rejected outside
-   `__DEV__` and fails closed (recoverable error screen).
-5. **No embedded fallback bundle in v1.** Offline first-launch shows
-   a recoverable error with a retry button and a "check your
-   connection" message. Subsequent launches rely on the WebView's
-   standard browser cache. Embedded fallback is a follow-up if
-   retention metrics show offline-first-launch friction.
-6. **Loading UX is splash + spinner up to 3 seconds.** Past 3s the
-   splash transitions to a "still loading" state with a manual retry
-   button. Past 10s without `lifecycle.ready`, the host captures a
-   Sentry exception (`webview_load_timeout`) and shows the error
-   screen. The 3s / 10s thresholds match the bridge host's invariant
-   on `lifecycle.ready` timing in
-   [SPEC-BRIDGE-HOST.md](./SPEC-BRIDGE-HOST.md).
-7. **No OTA / cohort-routing mechanism in v1.** Updates to the
-   WebView are deployed by the hosting team to `verify.self.xyz/v1/`.
-   Cache-busting on deploy is the hosting team's problem (hashed
-   asset URLs at the index level).
-8. **Version mismatch fails closed.** If the host loads a WebView
-   whose handshake advertises a protocol version the host does not
+1. **The WebView loads from an embedded bundle.** Android:
+   `file:///android_asset/self-wallet/index.html`. iOS:
+   `${RNFS.MainBundlePath}/self-wallet/index.html` (or relative path
+   fallback). The bundle is produced by `@selfxyz/webview-app` build
+   and copied into `packages/rn-sdk/assets/self-wallet/` by the
+   build-pipeline (BP-01, done).
+2. **Each Self Wallet release is paired with a webview-app build.** The
+   bundle is frozen at app build time. Updating the WebView requires
+   shipping a new RN binary release — no OTA. The app-version
+   constant in the RN host's release notes carries the
+   webview-app commit it was built against.
+3. **`devServerUrl` is the only override, and it is `__DEV__`-gated.**
+   Production builds compile the dev path out entirely. Engineers
+   working locally pass `devServerUrl="http://localhost:5173"` (or
+   their dev box's IP); release binaries ignore the prop.
+4. **Loading UX is splash + spinner up to 3 seconds.** Past 3s the
+   splash transitions to a "still loading" state. Past 10s without
+   `lifecycle.ready`, the host shows a recoverable error with a
+   retry button. The 3s / 10s thresholds match the bridge host's
+   invariant in [SPEC-BRIDGE-HOST.md](./SPEC-BRIDGE-HOST.md).
+5. **Version mismatch fails closed.** If the bundled WebView's
+   handshake advertises a protocol version the host does not
    support, the host shows a "Please update Self Wallet" error and
    captures a Sentry exception. The host does not attempt a
    best-effort downgrade.
+6. **Hosted URL loading is a future evolution, not v1.** When and if
+   we want OTA-style updates without app store cycles, the
+   `sdk-distribution/` workstream wires `verify.self.xyz/v1/` as an
+   alternative source. The bridge protocol and the host shell stay
+   identical; only the `source` prop on the WebView changes. This
+   spec does not block on that evolution.
 
 ## Loading Sequence
 
@@ -83,11 +86,11 @@ This spec covers `WIA-09`.
 sequenceDiagram
   participant App as RN Host (Splash)
   participant Shell as WebView Shell
-  participant WV as WebView (verify.self.xyz/v1/)
+  participant WV as WebView (embedded bundle)
   participant Sentry as Sentry
 
-  App->>Shell: mount, set URL = production | __DEV__ override
-  Shell->>WV: HTTPS GET
+  App->>Shell: mount, set source = bundle | __DEV__ override
+  Shell->>WV: load index.html from app bundle
   alt success within 3s
     WV-->>Shell: load complete
     WV->>Shell: bridge.lifecycle.ready({ protocolVersion })
@@ -105,73 +108,73 @@ sequenceDiagram
 
 ## Invariants
 
-1. Production builds load only `https://verify.self.xyz/<version>/`.
-   The allowlist is enforced at build time, not runtime — release
-   binaries do not contain the code path that reads
-   `WEBVIEW_DEV_URL`.
+1. Production builds load only the embedded bundle. The
+   `devServerUrl` prop is gated on `__DEV__` and compiled out of
+   release builds entirely — a malicious or accidental prop in
+   production has no effect.
 2. The host emits a Sentry breadcrumb at every state transition in
-   the loading sequence (load start, load complete, ready, timeout,
+   the loading sequence (mount, load complete, ready, timeout,
    mismatch). These breadcrumbs are present on every captured
    exception, regardless of which state surfaced it.
 3. The host has no logic that depends on the WebView's internal
-   route table. The URL pointed at the host is an opaque entry point.
-4. Network failures during initial load are user-actionable (visible
-   retry), not silently retried in the background.
+   route table. The bundle is an opaque entry point.
+4. First-launch failures (corrupt bundle, asset-bundling
+   misconfiguration) surface as user-actionable errors with a retry,
+   not silent crashes.
 5. The Sentry exception captured on timeout / mismatch carries the
-   `runtime: rn-host` tag and a `webview_target_url` tag with the
-   sanitized URL (host + path; no query string).
+   `runtime: rn-host` tag and a `webview_source` tag identifying
+   bundle vs dev-server source.
 
 ## Known Gaps
 
-- **Offline subsequent launches.** Standard WebView cache covers most
-  users, but the cache is not under our control. If a follow-up
-  uncovers offline-first-launch friction in retention metrics, revive
-  BP-02 (build-pipeline) and ship an embedded fallback at next-RN-
-  release cadence.
-- **Cohort-targeted WebView builds.** If A/B testing the WebView is
-  required (e.g., a redesigned settings flow rolled out to 10% of
-  users), a manifest layer routing different cohorts to different
-  WebView URLs is the eventual answer. Not part of v1; flag if the
-  webview team needs it.
-- **CDN/origin outage.** If `verify.self.xyz` goes hard down, every
-  Self Wallet install is bricked. Mitigation lives in
-  `sdk-distribution/` (multi-region hosting, status page).
+- **WebView updates require app-store cycles.** With the embedded
+  bundle model, a UI-only WebView change ships only when a new RN
+  binary is released. If iteration speed becomes a constraint, the
+  hosted-URL evolution (Decision 6) is the answer.
+- **Cohort-targeted WebView builds.** A/B testing the WebView in v1
+  requires shipping multiple RN binaries (per-cohort builds), which
+  is impractical. Defer to the hosted-URL evolution when this becomes
+  a real need.
+- **Bundle size.** The embedded WebView bundle adds to the app's
+  install size. If install-size pressure becomes a concern, the
+  hosted-URL evolution shrinks the binary at the cost of a network
+  dependency on first launch.
 
 ## Backlog (this topic)
 
 | ID     | Title                                  | Status  |
 | ------ | -------------------------------------- | ------- |
-| WIA-09 | Hosted URL loading + version pinning   | Pending |
+| WIA-09 | Bundle loading + version pinning       | Pending |
 
-`WIA-09`'s PR adds the schema-version build constant, the
-`WEBVIEW_DEV_URL` env wiring (gated on `__DEV__`), the loading-state
-machine in the WebView shell, the Sentry breadcrumb hooks, and the
-two error screens (timeout, version mismatch).
+`WIA-09`'s PR adds the loading-state machine in the WebView shell,
+the `__DEV__`-gated `devServerUrl` prop, the Sentry breadcrumb hooks,
+and the two error screens (timeout, version mismatch). The
+embedded-asset paths and the build-pipeline copy step already exist
+from BP-01 and the rn-sdk-test-app integration.
 
 ## Cross-Workstream Coordination
 
-- **`sdk-distribution/`** owns `verify.self.xyz` hosting; coordinate
-  any URL change or deprecation timeline with that workstream's
-  owner before the RN host pins to a new version.
-- **`build-pipeline/`** owns the artifact behind the URL. BP-02
-  (embedded bundle) stays deferred unless an offline-fallback gap
-  surfaces.
+- **`build-pipeline/`** owns the bundle artifact under
+  `packages/rn-sdk/assets/self-wallet/` (BP-01, done). Any change
+  to the bundle layout requires coordinated updates in this spec.
+- **`sdk-distribution/`** owns the future hosted-URL evolution
+  (Decision 6). Not active in v1.
 - **`webview/`** workstream owns the WebView's protocol-version
   declaration on `lifecycle.ready`. Coordinate version bumps so the
-  host and the WebView do not deploy mismatched majors.
+  host and the bundle do not ship mismatched majors.
 
 ## Validation
 
-- Production build, no internet on first launch → error screen with
+- Production build, airplane mode → bundle loads fine (no network
+  dependency); splash hides within 3s on a regression test device.
+- Production build with a corrupted asset folder → error screen with
   retry; no crash; Sentry breadcrumb chain present on the captured
   exception.
-- Production build, normal launch → splash hides within 3 seconds on
-  a typical 4G connection from a regression test device.
-- Dev build with `WEBVIEW_DEV_URL=http://localhost:5173` → loads
-  localhost; banner indicates dev mode.
-- Production build with `WEBVIEW_DEV_URL=http://anything` → variable
-  is ignored, production URL loads, no error (because the dev code
-  path is compiled out).
+- Dev build with `devServerUrl="http://localhost:5173"` → loads
+  localhost. Stop the dev server → "still loading" state at 3s,
+  error at 10s, retry restores load.
+- Synthetic `devServerUrl` in a release build → prop ignored, embedded
+  bundle loads (because the dev code path is compiled out).
 - Synthetic version mismatch (host pinned to v1, WebView handshake
   declares v2) → "Please update Self Wallet" screen, Sentry exception
   captured.

@@ -16,7 +16,11 @@
   "types": "./dist/index.d.ts",
   "files": [
     "dist",
-    "assets"
+    "assets",
+    "android",
+    "ios",
+    "selfxyz-rn-sdk.podspec",
+    "react-native.config.cjs"
   ],
   "scripts": {
     "build": "yarn copy-assets && tsup",
