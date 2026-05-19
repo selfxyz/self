@@ -6,7 +6,6 @@ import React, { useCallback } from 'react';
 import type { StaticScreenProps } from '@react-navigation/native';
 import { usePreventRemove } from '@react-navigation/native';
 
-import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import { ConfirmIdentificationScreen } from '@selfxyz/mobile-sdk-alpha/onboarding/confirm-identification';
 
@@ -25,22 +24,16 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
   usePreventRemove(true, () => {});
   const setFcmToken = useSettingStore(state => state.setFcmToken);
 
-  const selfClient = useSelfClient();
-  const { trackEvent } = selfClient;
-
   const grantNotificationsPermission = useCallback(async () => {
-    trackEvent(ProofEvents.NOTIFICATION_PERMISSION_REQUESTED);
-
     // Request notification permission
     const permissionGranted = await requestNotificationPermission();
     if (permissionGranted) {
       const token = await getFCMToken();
       if (token) {
         setFcmToken(token);
-        trackEvent(ProofEvents.FCM_TOKEN_STORED);
       }
     }
-  }, [trackEvent, setFcmToken]);
+  }, [setFcmToken]);
 
   const onOkPress = useCallback(async () => {
     try {
@@ -48,16 +41,13 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = () => {
     } catch (error: unknown) {
       console.error('Error navigating:', error);
       const message = error instanceof Error ? error.message : 'Unknown error';
-      trackEvent(ProofEvents.PROVING_PROCESS_ERROR, {
-        error: message,
-      });
       trackNfcEvent(ProofEvents.PROVING_PROCESS_ERROR, {
         error: message,
       });
 
       flushAllAnalytics();
     }
-  }, [grantNotificationsPermission, trackEvent]);
+  }, [grantNotificationsPermission]);
   return <ConfirmIdentificationScreen onBeforeConfirm={onOkPress} />;
 };
 

@@ -14,6 +14,7 @@ extensions.configure(com.facebook.react.ReactSettingsExtension){ ex ->
 }
 rootProject.name = 'OpenPassport'
 
+expoAutolinking.exclude = ['@sentry/react-native']
 expoAutolinking.useExpoModules()
 
 include ':app'
