@@ -3,6 +3,7 @@
   "version": "2.9.23",
   "private": true,
   "type": "module",
+  "main": "index.js",
   "scripts": {
     "analyze:bundle:android": "yarn build:deps && node ./scripts/bundle-analyze-ci.cjs android",
     "analyze:bundle:ios": "yarn build:deps && node ./scripts/bundle-analyze-ci.cjs ios",
