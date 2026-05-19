@@ -8,6 +8,7 @@ import { Platform } from 'react-native';
 import { describe, expect, it, vi } from 'vitest';
 
 import AbstractButton from '../../../src/components/buttons/AbstractButton';
+import { AppEvents } from '../../../src/constants/analytics';
 import { SelfClientProvider } from '../../../src/index';
 import { mockAdapters } from '../../utils/testHelpers';
 
@@ -162,25 +163,9 @@ describe('AbstractButton', () => {
 
   describe('event tracking', () => {
     it('should call trackEvent when trackEvent prop is provided', () => {
-      // This test verifies the trackEvent functionality exists
-      // The actual implementation is tested through the SelfClient
       const { container } = render(
         <TestWrapper>
-          <AbstractButton bgColor="black" color="white" trackEvent="Test Button Click">
-            Test Button
-          </AbstractButton>
-        </TestWrapper>,
-      );
-
-      const button = container.querySelector('button');
-      expect(button).toBeTruthy();
-    });
-
-    it('should parse event category from trackEvent string', () => {
-      // Tests that "Category: Event" format gets parsed to "Event"
-      const { container } = render(
-        <TestWrapper>
-          <AbstractButton bgColor="black" color="white" trackEvent="Category: Button Click">
+          <AbstractButton bgColor="black" color="white" trackEvent={AppEvents.GET_STARTED}>
             Test Button
           </AbstractButton>
         </TestWrapper>,

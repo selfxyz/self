@@ -5,6 +5,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createWebAnalyticsAdapter } from '../../../src/adapters/browser/analytics';
+import { AppEvents, OnboardingEvents } from '../../../src/constants/analytics';
 
 describe('createWebAnalyticsAdapter', () => {
   beforeEach(() => {
@@ -14,7 +15,7 @@ describe('createWebAnalyticsAdapter', () => {
   it('should call trackEvent without throwing', () => {
     const adapter = createWebAnalyticsAdapter();
     // Should not throw — fire-and-forget
-    expect(() => adapter.trackEvent!('page_view', { reason: 'test' })).not.toThrow();
+    expect(() => adapter.trackEvent!(OnboardingEvents.STARTED, { reason: 'test' })).not.toThrow();
   });
 
   it('should call trackNfcEvent without throwing', () => {
@@ -31,15 +32,18 @@ describe('createWebAnalyticsAdapter', () => {
     const spy = vi.spyOn(console, 'log').mockImplementation(() => {});
     const adapter = createWebAnalyticsAdapter({ debug: true });
 
-    adapter.trackEvent!('test_event');
-    expect(spy).toHaveBeenCalledWith('[Analytics]', expect.objectContaining({ type: 'event', event: 'test_event' }));
+    adapter.trackEvent!(AppEvents.GET_STARTED);
+    expect(spy).toHaveBeenCalledWith(
+      '[Analytics]',
+      expect.objectContaining({ type: 'event', event: AppEvents.GET_STARTED }),
+    );
   });
 
   it('should POST to endpoint when configured', async () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response());
     const adapter = createWebAnalyticsAdapter({ endpoint: 'https://analytics.example.com/events' });
 
-    adapter.trackEvent!('test_event', { reason: 'test' });
+    adapter.trackEvent!(AppEvents.GET_STARTED, { reason: 'test' });
 
     // fetch is called async, give it a tick
     await new Promise(resolve => setTimeout(resolve, 0));
@@ -58,7 +62,7 @@ describe('createWebAnalyticsAdapter', () => {
     const adapter = createWebAnalyticsAdapter({ endpoint: 'https://analytics.example.com/events' });
 
     // Should not throw
-    expect(() => adapter.trackEvent!('test_event')).not.toThrow();
+    expect(() => adapter.trackEvent!(AppEvents.GET_STARTED)).not.toThrow();
 
     // Give the rejected promise time to settle
     await new Promise(resolve => setTimeout(resolve, 0));

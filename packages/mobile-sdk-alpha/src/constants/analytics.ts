@@ -10,24 +10,25 @@ export const AadhaarEvents = {
   QR_SELECTED: 'Aadhaar: QR Selected',
   TIMESTAMP_EXPIRED: 'Aadhaar: Timestamp Expired',
   UPLOAD_STARTED: 'Aadhaar: Upload Started',
-};
+} as const;
 
 export const AppEvents = {
   DISMISS_PRIVACY_DISCLAIMER: 'App: Dismiss Privacy Disclaimer',
   GET_STARTED: 'App: Get Started',
   GET_STARTED_AADHAAR: 'App: Get Started - Aadhaar',
   GET_STARTED_BIOMETRIC: 'App: Get Started - Biometric ID',
+  LOGO_CONFIRMATION_ANSWERED: 'App: Logo Confirmation Answered',
   SUPPORTED_BIOMETRIC_IDS: 'App: Supported Biometric IDs',
   UPDATE_MODAL_CLOSED: 'App: Update Modal Closed',
   UPDATE_MODAL_OPENED: 'App: Update Modal Opened',
   UPDATE_STARTED: 'App: Update Started',
-};
+} as const;
 
 export const AuthEvents = {
   BIOMETRIC_LOGIN_CANCELLED: 'Auth: Biometric Login Cancelled',
   BIOMETRIC_LOGIN_FAILED: 'Auth: Biometric Login Failed',
   BIOMETRIC_LOGIN_SUCCESS: 'Auth: Biometric Login Success',
-};
+} as const;
 
 export const BackupEvents = {
   ACCOUNT_RECOVERY_COMPLETED: 'Backup: Account Recovery Completed',
@@ -47,7 +48,7 @@ export const BackupEvents = {
   TURNKEY_RESTORE_FAILED: 'Backup: Turnkey Restore Failed',
   CREATE_NEW_ACCOUNT: 'Backup: Create New Account',
   MANUAL_RECOVERY_SELECTED: 'Backup: Manual Recovery Selected',
-};
+} as const;
 
 export const BiometricEvents = {
   DOCUMENT_PARSED: 'Biometric: Document Parsed',
@@ -59,7 +60,7 @@ export const BiometricEvents = {
 
   NFC_RESPONSE_PARSE_FAILED: 'Passport: Parsing NFC Response Unsuccessful',
   NFC_SCAN_FAILED: 'Passport: NFC Scan Failed',
-};
+} as const;
 
 export const DocumentEvents = {
   COUNTRY_HELP_TAPPED: 'Document: Country Help Tapped',
@@ -75,7 +76,7 @@ export const DocumentEvents = {
   PASSPORT_INFO_OPENED: 'Document: Passport Info Screen Opened',
   PASSPORT_METADATA_LOADED: 'Document: Passport Metadata Loaded',
   VALIDATE_DOCUMENT_FAILED: 'Document: Validate Document Failed',
-};
+} as const;
 
 export const KycEvents = {
   PROVIDER_CLOSED: 'KYC: Provider Closed',
@@ -83,13 +84,13 @@ export const KycEvents = {
   RETRY_TRIGGERED: 'KYC: Retry Triggered',
   SESSION_CREATED: 'KYC: Session Created',
   SESSION_REQUESTED: 'KYC: Session Requested',
-};
+} as const;
 
 export const IDDataEvents = {
   PERKS_VIEWED: 'ID Data: Perks Viewed',
   PERK_TAPPED: 'ID Data: Perk Tapped',
   PERK_OUTLINK_OPEN_FAILED: 'ID Data: Perk Outlink Open Failed',
-};
+} as const;
 
 export const MockDataEvents = {
   CANCEL_GENERATION: 'Mock Data: Cancel Generation',
@@ -106,12 +107,12 @@ export const MockDataEvents = {
   SELECT_COUNTRY: 'Mock Data: Select Country',
   SELECT_DOCUMENT_TYPE: 'Mock Data: Select Document Type',
   TOGGLE_OFAC_LIST: 'Mock Data: Toggle OFAC List',
-};
+} as const;
 
 export const NotificationEvents = {
   BACKGROUND_NOTIFICATION_OPENED: 'Notification: Background Notification Opened',
   COLD_START_NOTIFICATION_OPENED: 'Notification: Cold Start Notification Opened',
-};
+} as const;
 
 export const OnboardingEvents = {
   STARTED: 'Onboarding: Started',
@@ -125,7 +126,7 @@ export const OnboardingEvents = {
   RECOVERED: 'Onboarding: Recovered',
   FAILED: 'Onboarding: Failed',
   STEP_RETRIED: 'Onboarding: Step Retried',
-};
+} as const;
 
 export const PointEvents = {
   HOME_POINT_EARN_POINTS_OPENED: 'Points: Home Earn Points Opened',
@@ -142,7 +143,7 @@ export const PointEvents = {
   EARN_NOTIFICATION_FAILED: 'Points: Earn with Notification Failed',
   EARN_NOTIFICATION_SUCCESS: 'Points: Earn with Notification Success',
   REFRESH_HISTORY: 'Points: Refresh History',
-};
+} as const;
 
 export const ProofEvents = {
   ALREADY_REGISTERED: 'Proof: Already Registered',
@@ -209,16 +210,35 @@ export const ProofEvents = {
   VALIDATION_SUCCESS: 'Proof: Validation Succeeded',
   WS_HELLO_ACK: 'Proof: WS Hello Acknowledged',
   WS_HELLO_SENT: 'Proof: WS Hello Sent',
-};
+} as const;
 
 export const RegistrationPickerEvents = {
   VIEWED: 'registration_id_picker_viewed',
   SELECTED: 'registration_id_picker_selected',
   UNSUPPORTED_TAPPED: 'registration_id_picker_unsupported_tapped',
-};
+} as const;
 
 export const SettingsEvents = {
   CONNECTION_MODAL_CLOSED: 'Settings: Connection Modal Closed',
   CONNECTION_MODAL_OPENED: 'Settings: Connection Modal Opened',
   CONNECTION_SETTINGS_OPENED: 'Settings: Connection Settings Opened',
-};
+} as const;
+
+// Union per-group so collisions on shared keys (e.g. STARTED, FAILED) across
+// groups can't silently drop event names from the cap.
+export type KnownEventName =
+  | (typeof AadhaarEvents)[keyof typeof AadhaarEvents]
+  | (typeof AppEvents)[keyof typeof AppEvents]
+  | (typeof AuthEvents)[keyof typeof AuthEvents]
+  | (typeof BackupEvents)[keyof typeof BackupEvents]
+  | (typeof BiometricEvents)[keyof typeof BiometricEvents]
+  | (typeof DocumentEvents)[keyof typeof DocumentEvents]
+  | (typeof IDDataEvents)[keyof typeof IDDataEvents]
+  | (typeof KycEvents)[keyof typeof KycEvents]
+  | (typeof MockDataEvents)[keyof typeof MockDataEvents]
+  | (typeof NotificationEvents)[keyof typeof NotificationEvents]
+  | (typeof OnboardingEvents)[keyof typeof OnboardingEvents]
+  | (typeof PointEvents)[keyof typeof PointEvents]
+  | (typeof ProofEvents)[keyof typeof ProofEvents]
+  | (typeof RegistrationPickerEvents)[keyof typeof RegistrationPickerEvents]
+  | (typeof SettingsEvents)[keyof typeof SettingsEvents];

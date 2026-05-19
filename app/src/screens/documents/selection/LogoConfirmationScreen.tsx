@@ -22,6 +22,7 @@ import {
   SecondaryButton,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import {
+  AppEvents,
   KycEvents,
   OnboardingEvents,
 } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
@@ -61,13 +62,13 @@ const LogoConfirmationScreen: React.FC = () => {
 
   const handleConfirm = useCallback(() => {
     buttonTap();
-    trackEvent('App: Logo Confirmation Answered', { answer: 'yes' });
+    trackEvent(AppEvents.LOGO_CONFIRMATION_ANSWERED, { answer: 'yes' });
     navigateToOnboarding();
   }, [navigateToOnboarding, trackEvent]);
 
   const handleNotFound = useCallback(() => {
     buttonTap();
-    trackEvent('App: Logo Confirmation Answered', { answer: 'no' });
+    trackEvent(AppEvents.LOGO_CONFIRMATION_ANSWERED, { answer: 'no' });
     // "No" on the chip-symbol check routes through the KYC provider —
     // update the canonical funnel branch accordingly.
     setOnboardingBranch('kyc');

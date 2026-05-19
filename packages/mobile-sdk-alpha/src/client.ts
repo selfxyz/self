@@ -4,6 +4,7 @@
 
 import { defaultConfig } from './config/defaults';
 import { mergeConfig } from './config/merge';
+import type { KnownEventName } from './constants/analytics';
 import { notImplemented } from './errors';
 import { extractMRZInfo as parseMRZInfo } from './processing/mrz';
 import type { NFCScanContext, ProofContext } from './proving/internal/logging';
@@ -120,7 +121,7 @@ export function createSelfClient({
     return _adapters.scanner.scan(opts);
   }
 
-  function trackEvent(event: string, payload?: TrackEventParams): void {
+  function trackEvent(event: KnownEventName, payload?: TrackEventParams): void {
     if (!_adapters.analytics) {
       return;
     }

@@ -6,6 +6,7 @@ import type { create } from 'zustand';
 
 import type { DocumentCatalog, IDDocument, PassportData } from '@selfxyz/common';
 
+import type { KnownEventName } from '../constants/analytics';
 import type { NFCScanContext, ProofContext } from '../proving/internal/logging';
 import type { ProvingState } from '../proving/provingMachine';
 import type { MRZState } from '../stores/mrzStore';
@@ -185,7 +186,7 @@ export interface AnalyticsAdapter {
    * completion. Implementations should debounce repeated calls triggered by
    * retries.
    */
-  trackEvent?(event: string, payload?: TrackEventParams): void;
+  trackEvent?(event: KnownEventName, payload?: TrackEventParams): void;
   /**
    * Structured metrics specific to NFC scanning. Consumers can enrich the
    * payload to correlate with hardware models or OS versions.
@@ -396,7 +397,7 @@ export interface SelfClient {
    * Convenience wrapper around {@link AnalyticsAdapter.trackEvent}. Calls are
    * no-ops when an analytics adapter was not provided.
    */
-  trackEvent(event: string, payload?: TrackEventParams): void;
+  trackEvent(event: KnownEventName, payload?: TrackEventParams): void;
   /** Mirrors {@link AnalyticsAdapter.trackNfcEvent}. */
   trackNfcEvent(name: string, properties?: Record<string, unknown>): void;
   /** Mirrors {@link AnalyticsAdapter.logNFCEvent}. */

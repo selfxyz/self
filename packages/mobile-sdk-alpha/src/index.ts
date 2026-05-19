@@ -50,6 +50,8 @@ export type { DocumentData, DocumentMetadata, PassportCameraProps, ScreenProps }
 
 export type { HapticOptions, HapticType } from './haptic/shared';
 
+export type { KnownEventName } from './constants/analytics';
+
 export type { MRZScanOptions } from './mrz';
 
 export type { OnboardingBranch, OnboardingFailureStage, OnboardingStage } from './analytics/onboardingFunnel';
