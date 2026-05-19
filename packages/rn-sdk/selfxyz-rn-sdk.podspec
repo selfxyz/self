@@ -10,7 +10,7 @@ Pod::Spec.new do |s|
   s.version      = package["version"]
   s.summary      = package["description"]
   s.homepage     = "https://self.xyz"
-  s.license      = { :type => "BUSL-1.1", :file => "../../LICENSE" }
+  s.license      = { :type => "BUSL-1.1" }
   s.authors      = { "Self Protocol" => "engineering@self.xyz" }
   s.platforms    = { :ios => "13.0" }
   s.source       = { :git => "https://github.com/selfxyz/self.git", :tag => "rn-sdk-#{s.version}" }
