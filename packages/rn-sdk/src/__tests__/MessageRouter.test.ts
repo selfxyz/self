@@ -74,6 +74,43 @@ describe('MessageRouter', () => {
     );
   });
 
+  it('should return UNSUPPORTED_VERSION when the inbound version mismatches', async () => {
+    router.onMessageReceived(makeRequest({ version: 99 }));
+    await vi.waitFor(() => expect(sendToWebView).toHaveBeenCalled());
+
+    const response = parseLastSentResponse();
+    expect(response.success).toBe(false);
+    expect(response.error).toEqual(
+      expect.objectContaining({
+        code: 'UNSUPPORTED_VERSION',
+      }),
+    );
+  });
+
+  it('should accept inbound messages that omit the version field', async () => {
+    // Older WebView builds that do not stamp `version` should still route
+    // — the host falls back to its own protocol version.
+    const handler: BridgeHandler = {
+      domain: 'lifecycle',
+      handle: vi.fn().mockResolvedValue(null),
+    };
+    router.register(handler);
+
+    const payload = JSON.stringify({
+      type: 'request',
+      id: 'req-no-version',
+      domain: 'lifecycle',
+      method: 'ready',
+      params: {},
+      timestamp: Date.now(),
+    });
+    router.onMessageReceived(payload);
+    await vi.waitFor(() => expect(sendToWebView).toHaveBeenCalled());
+
+    const response = parseLastSentResponse();
+    expect(response.success).toBe(true);
+  });
+
   it('should handle BridgeHandlerError from handler', async () => {
     const handler: BridgeHandler = {
       domain: 'lifecycle',

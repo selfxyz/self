@@ -10,6 +10,11 @@ import { BiometricHandler } from './BiometricHandler';
 import { KeychainHandler } from './KeychainHandler';
 import { NfcHandler } from './NfcHandler';
 import { CameraHandler } from './CameraHandler';
+import { AnalyticsHandler, type AnalyticsSink } from './AnalyticsHandler';
+import { HapticHandler } from './HapticHandler';
+import { NavigationHandler, type NavigationCallbacks } from './NavigationHandler';
+import { DocumentsHandler, type DocumentsStore } from './DocumentsHandler';
+import { CryptoHandler, type SelfCryptoModule } from './CryptoHandler';
 
 export interface HandlersConfig {
   request: VerificationRequest;
@@ -18,6 +23,10 @@ export interface HandlersConfig {
   onCancelled: () => void;
   debug: boolean;
   router: MessageRouter;
+  analytics?: AnalyticsSink;
+  navigation?: NavigationCallbacks;
+  documents?: DocumentsStore;
+  crypto?: SelfCryptoModule;
 }
 
 export function createHandlers(config: HandlersConfig): BridgeHandler[] {
@@ -33,5 +42,20 @@ export function createHandlers(config: HandlersConfig): BridgeHandler[] {
     new KeychainHandler(),
     new NfcHandler(config.router),
     new CameraHandler(),
+    new AnalyticsHandler(config.analytics),
+    new HapticHandler(),
+    new NavigationHandler(config.navigation),
+    new DocumentsHandler(config.documents),
+    new CryptoHandler(config.crypto),
   ];
 }
+
+export { AnalyticsHandler } from './AnalyticsHandler';
+export type { AnalyticsSink } from './AnalyticsHandler';
+export { HapticHandler } from './HapticHandler';
+export { NavigationHandler } from './NavigationHandler';
+export type { NavigationCallbacks } from './NavigationHandler';
+export { DocumentsHandler } from './DocumentsHandler';
+export type { DocumentsStore } from './DocumentsHandler';
+export { CryptoHandler } from './CryptoHandler';
+export type { SelfCryptoModule } from './CryptoHandler';

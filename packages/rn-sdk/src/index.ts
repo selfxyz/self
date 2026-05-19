@@ -13,3 +13,17 @@ export {
 export { MessageRouter } from './bridge/MessageRouter';
 
 export { type BridgeHandler, BridgeHandlerError } from './bridge/types';
+
+export {
+  AnalyticsHandler,
+  type AnalyticsSink,
+  HapticHandler,
+  NavigationHandler,
+  type NavigationCallbacks,
+  DocumentsHandler,
+  type DocumentsStore,
+  CryptoHandler,
+  type SelfCryptoModule,
+  createHandlers,
+  type HandlersConfig,
+} from './handlers';
