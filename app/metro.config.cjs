@@ -27,15 +27,6 @@ const workspaceRoot =
 const config = {
   projectRoot,
 
-  // Expo's getDefaultConfig sets server.unstable_serverRoot to the yarn
-  // workspace root for monorepo support, which makes Metro resolve the entry
-  // file (./index) against the workspace root instead of app/. This is a
-  // react-native CLI app, not an Expo app — pin serverRoot back to projectRoot
-  // so /index.bundle resolves to app/index.js.
-  server: {
-    unstable_serverRoot: projectRoot,
-  },
-
   watchFolders: [
     workspaceRoot, // Watch entire workspace root for changes
     path.resolve(workspaceRoot, 'common'),
