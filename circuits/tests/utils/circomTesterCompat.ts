@@ -19,6 +19,7 @@ import * as circomTester from 'circom_tester';
  */
 type Circuit = Record<string, unknown> & {
   getOutput?: (witness: unknown[], signals: string[]) => Promise<Record<string, unknown>>;
+  loadSymbols?: () => Promise<void>;
 };
 
 const ARRAY_SELECTOR = /^(.*)\[(\d+)\]$/;
@@ -82,6 +83,9 @@ const installGetOutputShim = (circuit: Circuit): Circuit => {
   }
 
   circuit.getOutput = async function getOutputShim(witness: unknown[], requestedSignals: string[]) {
+    if (typeof circuit.loadSymbols === 'function') {
+      await circuit.loadSymbols();
+    }
     const symbols = getSymbols(circuit);
     const expandedSignals = expandRequestedSignals(requestedSignals);
     const output: Record<string, unknown> = {};
