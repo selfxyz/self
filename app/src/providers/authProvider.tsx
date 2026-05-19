@@ -64,7 +64,7 @@ const _getSecurely = async function <T>(
       return null;
     }
 
-    logAuthEvent('info', 'biometric_auth_success', {
+    logAuthEvent('info', 'biometric_login_success', {
       ...authBaseContext,
       stage: 'get_securely',
     });
@@ -75,7 +75,7 @@ const _getSecurely = async function <T>(
   } catch (error: unknown) {
     logAuthEvent(
       'warn',
-      'biometric_auth_failed',
+      'biometric_login_failure',
       { ...authBaseContext, stage: 'get_securely' },
       { reason: 'unknown_error' },
     );
@@ -96,7 +96,7 @@ const _getWithBiometrics = async function <T>(
     if (!simpleCheck.success) {
       logAuthEvent(
         'warn',
-        'biometric_auth_failed',
+        'biometric_login_failure',
         { ...authBaseContext, stage: 'simple_prompt' },
         { reason: 'prompt_unsuccessful' },
       );
@@ -115,7 +115,7 @@ const _getWithBiometrics = async function <T>(
   } catch (error: unknown) {
     logAuthEvent(
       'warn',
-      'biometric_auth_failed',
+      'biometric_login_failure',
       { ...authBaseContext, stage: 'with_biometrics' },
       { reason: 'unknown_error' },
     );
@@ -361,7 +361,7 @@ export const AuthProvider = ({
       }
       return setTimeout(() => {
         setIsAuthenticated(false);
-        logAuthEvent('info', 'authentication_timeout', {
+        logAuthEvent('info', 'session_timeout', {
           ...authBaseContext,
           stage: 'session_expired',
         });

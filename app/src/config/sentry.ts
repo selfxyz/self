@@ -10,7 +10,6 @@ import {
   captureException as sentryCaptureException,
   captureFeedback as sentryCaptureFeedback,
   captureMessage as sentryCaptureMessage,
-  consoleLoggingIntegration,
   feedbackIntegration,
   init as sentryInit,
   mobileReplayIntegration,
@@ -152,9 +151,6 @@ export const initSentry = () => {
     replaysSessionSampleRate,
   } = getSentryRuntimeFlags();
   const integrations = [
-    consoleLoggingIntegration({
-      levels: ['log', 'error', 'warn', 'info', 'debug'],
-    }),
     feedbackIntegration({
       buttonOptions: {
         styles: {
@@ -200,9 +196,6 @@ export const initSentry = () => {
       return redactSensitiveFields(event);
     },
     integrations,
-    _experiments: {
-      enableLogs: true,
-    },
   });
 };
 
