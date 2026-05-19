@@ -12,8 +12,7 @@ PODS:
   - boost (1.84.0)
   - BVLinearGradient (2.8.3):
     - React-Core
-  - DiditSDK (3.3.4):
-    - OpenSSL-Universal (~> 1.1.1900)
+  - DiditSDK/Core (3.5.1)
   - DoubleConversion (1.1.6)
   - EXApplication (6.0.2):
     - ExpoModulesCore
@@ -2227,8 +2226,8 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - SdkReactNative (3.2.11):
-    - DiditSDK (~> 3.3)
+  - SdkReactNative (3.3.2):
+    - DiditSDK/Core (~> 3.5)
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2271,7 +2270,7 @@ PODS:
 DEPENDENCIES:
   - boost (from `../node_modules/react-native/third-party-podspecs/boost.podspec`)
   - BVLinearGradient (from `../node_modules/react-native-linear-gradient`)
-  - DiditSDK (from `./local-pods/DiditSDK/DiditSDK.podspec`)
+  - DiditSDK/Core (from `https://raw.githubusercontent.com/didit-protocol/sdk-ios/3.5.1/DiditSDK.podspec`)
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
   - EXApplication (from `../node_modules/expo-application/ios`)
   - EXConstants (from `../node_modules/expo-constants/ios`)
@@ -2430,7 +2429,7 @@ EXTERNAL SOURCES:
   BVLinearGradient:
     :path: "../node_modules/react-native-linear-gradient"
   DiditSDK:
-    :podspec: "./local-pods/DiditSDK/DiditSDK.podspec"
+    :podspec: https://raw.githubusercontent.com/didit-protocol/sdk-ios/3.5.1/DiditSDK.podspec
   DoubleConversion:
     :podspec: "../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec"
   EXApplication:
@@ -2671,7 +2670,7 @@ SPEC CHECKSUMS:
   AppCheckCore: cc8fd0a3a230ddd401f326489c99990b013f0c4f
   boost: 7e761d76ca2ce687f7cc98e698152abd03a18f90
   BVLinearGradient: cb006ba232a1f3e4f341bb62c42d1098c284da70
-  DiditSDK: 4c9a97ad313696d21b8acb7b86be90c9175cd6b3
+  DiditSDK: 27173cbfc13db575640538a978d3ecf983b047ba
   DoubleConversion: cb417026b2400c8f53ae97020b2be961b59470cb
   EXApplication: 4c72f6017a14a65e338c5e74fca418f35141e819
   EXConstants: fcfc75800824ac2d5c592b5bc74130bad17b146b
@@ -2802,7 +2801,7 @@ SPEC CHECKSUMS:
   RNScreens: b0811b109e1a0b8b579f3348018e177bee374840
   RNSentry: 98ab9f6a16c9596e36565ccf1a5871323f334766
   RNSVG: d926926b169d8b81eb06aeb69734076e1dd566a3
-  SdkReactNative: 934d61cc86b2308f8e2a836bd91daaa6502c2520
+  SdkReactNative: e71894c28a6ab0c8a46dfead4b4b811907b8135b
   segment-analytics-react-native: 8ab9c49df1859bbd6be93cf90a91ade17f20a0aa
   SelfNFCPassportReader: 8b53f9d483e0dd1f1a275953e3dc6dfc733694c5
   Sentry: 59993bffde4a1ac297ba6d268dc4bbce068d7c1b
@@ -2813,6 +2812,6 @@ SPEC CHECKSUMS:
   Yoga: c34725819ab0a5962e85455b9e56679b306910ee
   ZXingObjC: 8898711ab495761b2dbbdec76d90164a6d7e14c5
 
-PODFILE CHECKSUM: ded06f411c13516d51a97838c92095beafb1fc25
+PODFILE CHECKSUM: 06a65199caea495907e7edff97af54c8c141a355
 
 COCOAPODS: 1.16.2

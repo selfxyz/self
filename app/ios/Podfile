@@ -166,6 +166,10 @@ target "Self" do
 
   pod "QKMRZScanner"
   pod "lottie-ios"
+  # DiditSDK is not on CocoaPods trunk — reference the upstream podspec by tag.
+  # The wrapper (SdkReactNative.podspec) depends on DiditSDK/Core when
+  # DIDIT_SDK_IOS_NFC_ENABLED=false (set above).
+  pod 'DiditSDK/Core', :podspec => 'https://raw.githubusercontent.com/didit-protocol/sdk-ios/3.5.1/DiditSDK.podspec'
   pod 'OpenSSL-Universal', '~> 1.1.1900'
   pod "SwiftQRScanner", :git => "https://github.com/vinodiOS/SwiftQRScanner"
   # RNReactNativeHapticFeedback is handled by autolinking
