@@ -1,7 +1,7 @@
 # SDK Project
 
-Last updated: March 25, 2026
-Status: Active (WebView-first, current pass is mock-first UI migration)
+Last updated: May 19, 2026
+Status: Active (WebView-first; Self Wallet adopts WebView as host via `webview-in-app`)
 
 ## Start Here
 
@@ -15,8 +15,9 @@ Status: Active (WebView-first, current pass is mock-first UI migration)
 | Workstream           | Entry                                                               | Focus                                                   |
 | -------------------- | ------------------------------------------------------------------- | ------------------------------------------------------- |
 | WebView UI           | [WebView Index](./workstreams/webview/INDEX.md)                     | Euclid screen migration, mocked flows, route coverage   |
+| WebView-in-App       | [WebView-in-App Spec](./workstreams/webview-in-app/SPEC.md)         | Self Wallet RN app adopts WebView as its host           |
 | SDK Core             | [SDK Core Spec](./workstreams/sdk-core/SPEC.md)                     | Browser-portable engine                                 |
-| Native Shells (Lite) | [Native Shells Lite Spec](./workstreams/native-shells-lite/SPEC.md) | Future Kotlin + Swift shell follow-up                   |
+| Native Shells (Lite) | [Native Shells Lite Spec](./workstreams/native-shells-lite/SPEC.md) | Kotlin + Swift shells for external SDK consumers        |
 | Build Pipeline       | [Build Pipeline Spec](./workstreams/build-pipeline/SPEC.md)         | Bundle webview-app into native shells                   |
 | SDK Distribution     | [SDK Distribution Spec](./workstreams/sdk-distribution/SPEC.md)     | Hosted URL loading + native shell publishing            |
 | Analytics            | [Analytics Spec](./workstreams/analytics/SPEC.md)                   | Canonical onboarding funnel events + Mixpanel dashboard |
@@ -27,7 +28,6 @@ Status: Active (WebView-first, current pass is mock-first UI migration)
 | ----------------------------- | ------------------------------------------------------------------ |
 | Native Shells                 | [Native Shells Spec](./paused/native-shells/SPEC.md)               |
 | Native Consolidation          | [Native Consolidation Spec](./paused/native-consolidation/SPEC.md) |
-| RN SDK                        | [RN SDK Spec](./paused/rn-sdk/SPEC.md)                             |
 | Integrations / MiniPay Sample | [MiniPay Sample Spec](./paused/integrations/SPEC.md)               |
 
 ## Related

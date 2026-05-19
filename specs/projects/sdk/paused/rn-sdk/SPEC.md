@@ -3,9 +3,11 @@
 > Last updated: 2026-03-05
 > Owner: Person 5 (RN SDK)
 > Project: [SDK Overview](../../OVERVIEW.md)
-> Status: Paused
+> Status: Superseded — see [webview-in-app](../../workstreams/webview-in-app/SPEC.md)
 
-> Pause note: As of 2026-03-11, the active SDK delivery scope is WebView-only with no custom native modules. This RN shell is retained for future reuse and should not drive current delivery.
+> **Revived 2026-05-19** under the `webview-in-app` workstream. The current canonical RN-host spec is [webview-in-app/SPEC.md](../../workstreams/webview-in-app/SPEC.md) plus its sub-specs ([SPEC-BRIDGE-HOST.md](../../workstreams/webview-in-app/SPEC-BRIDGE-HOST.md), [SPEC-NATIVE-ADAPTERS.md](../../workstreams/webview-in-app/SPEC-NATIVE-ADAPTERS.md), [SPEC-HOSTED-LOADING.md](../../workstreams/webview-in-app/SPEC-HOSTED-LOADING.md), [SPEC-OBSERVABILITY.md](../../workstreams/webview-in-app/SPEC-OBSERVABILITY.md)). The content below is retained as historical context for the original RN shell scope.
+
+> Original pause note: As of 2026-03-11, the active SDK delivery scope is WebView-only with no custom native modules. This RN shell is retained for future reuse and should not drive current delivery.
 
 ## North Star
 

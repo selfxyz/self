@@ -27,7 +27,7 @@ The workstream crosses the SDK/app boundary:
 
 ### Out of scope (workstream-wide)
 
-- WebView observability — WebView (`packages/webview-app/`) has no Sentry integration today; out of scope for this workstream.
+- WebView observability — WebView (`packages/webview-app/`) has no Sentry integration in this workstream's scope. Observability for the WebView is owned by `webview-in-app/` (see [SPEC-OBSERVABILITY.md](../webview-in-app/SPEC-OBSERVABILITY.md)), which extends the ANA-13 surface into the WebView using the same cohort tag taxonomy, redact list, and terminal-event clear semantics.
 - Native NFC analytics channel cleanup — see ANA-04 investigation.
 - KYC provider interior steps (selfie / liveness / doc capture) — black-box; requires provider contract work.
 - Mixpanel ID-merge / cross-session funnel windows — dashboard configuration, not instrumentation.

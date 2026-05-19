@@ -34,6 +34,7 @@
 - Keychain/keystore is always native-managed. No web fallbacks for secure storage.
 - `secureStorage` handler ignores the `requireBiometric` flag. Device lock provides sufficient security.
 - Response JSON shapes must match what `webview-bridge/src/adapters/crypto.ts` and `storage.ts` expect.
+- **Bridge parity with `webview-in-app`.** Handler signatures, response shapes, and error vocabulary must stay identical to what the `webview-in-app/` RN host implements. The WebView must not be able to distinguish which shell it runs inside. Any handler change in [WebView-in-App Native Adapters](../webview-in-app/SPEC-NATIVE-ADAPTERS.md) must be mirrored here in the same release cycle.
 
 ## Dependencies
 
