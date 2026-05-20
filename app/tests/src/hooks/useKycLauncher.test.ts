@@ -18,7 +18,6 @@ import {
 } from '@/integrations/kyc';
 import { useFeedback } from '@/providers/feedbackProvider';
 import { getKycDocumentCount } from '@/providers/passportDataProvider';
-import { usePendingKycStore } from '@/stores/pendingKycStore';
 
 const mockNavigate = jest.fn();
 
@@ -84,7 +83,6 @@ const mockUseFeedback = useFeedback as jest.MockedFunction<typeof useFeedback>;
 const mockGetKycDocumentCount = getKycDocumentCount as jest.MockedFunction<
   typeof getKycDocumentCount
 >;
-void usePendingKycStore;
 
 describe('useKycLauncher', () => {
   const selfClientStub = { trackEvent: jest.fn() };
