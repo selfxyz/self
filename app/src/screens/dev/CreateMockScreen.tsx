@@ -29,14 +29,12 @@ import {
   generateMockDocument,
   plexMono,
   signatureAlgorithmToStrictSignatureAlgorithm,
-  useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
 import {
   ButtonsContainer,
   Caption,
   PrimaryButton,
 } from '@selfxyz/mobile-sdk-alpha/components';
-import { MockDataEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import {
   black,
   borderColor,
@@ -163,7 +161,6 @@ const FormSection: React.FC<FormSectionProps> = ({
 };
 
 const CreateMockScreen: React.FC = () => {
-  const { trackEvent } = useSelfClient();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const {
@@ -218,12 +215,7 @@ const CreateMockScreen: React.FC = () => {
     selectedDocumentType,
   ]);
 
-  const devModeTap = Gesture.Tap()
-    .numberOfTaps(5)
-    .onStart(() => {
-      buttonTap();
-      trackEvent(MockDataEvents.ENABLE_ADVANCED_MODE);
-    });
+  const devModeTap = Gesture.Tap().numberOfTaps(5).onStart(buttonTap);
 
   const { bottom } = useSafeAreaInsets();
   return (
@@ -309,7 +301,6 @@ const CreateMockScreen: React.FC = () => {
                   onPress={() => {
                     buttonTap();
                     setCountrySheetOpen(true);
-                    trackEvent(MockDataEvents.OPEN_COUNTRY_SELECTION);
                   }}
                   paddingVertical="$5"
                   paddingHorizontal="$3"
@@ -355,7 +346,6 @@ const CreateMockScreen: React.FC = () => {
                   onPress={() => {
                     buttonTap();
                     setAge(age - 1);
-                    trackEvent(MockDataEvents.DECREASE_AGE);
                   }}
                   disabled={age <= 1}
                 >
@@ -381,7 +371,6 @@ const CreateMockScreen: React.FC = () => {
                   onPress={() => {
                     buttonTap();
                     setAge(age + 1);
-                    trackEvent(MockDataEvents.INCREASE_AGE);
                   }}
                 >
                   <Plus color={slate500} />
@@ -406,7 +395,6 @@ const CreateMockScreen: React.FC = () => {
                     onPress={() => {
                       buttonTap();
                       setExpiryYears(expiryYears - 1);
-                      trackEvent(MockDataEvents.DECREASE_EXPIRY_YEARS);
                     }}
                     disabled={age <= 0}
                   >
@@ -432,7 +420,6 @@ const CreateMockScreen: React.FC = () => {
                     onPress={() => {
                       buttonTap();
                       setExpiryYears(expiryYears + 1);
-                      trackEvent(MockDataEvents.INCREASE_EXPIRY_YEARS);
                     }}
                   >
                     <Plus color={slate500} />
@@ -462,7 +449,6 @@ const CreateMockScreen: React.FC = () => {
                     onCheckedChange={() => {
                       buttonTap();
                       setIsInOfacList(!isInOfacList);
-                      trackEvent(MockDataEvents.TOGGLE_OFAC_LIST);
                     }}
                     backgroundColor="$gray12"
                     borderRadius={10}
@@ -526,11 +512,7 @@ const CreateMockScreen: React.FC = () => {
 
         <YStack paddingHorizontal="$4" paddingBottom="$4">
           <ButtonsContainer>
-            <PrimaryButton
-              trackEvent={MockDataEvents.GENERATE_DATA}
-              onPress={handleGenerate}
-              disabled={isGenerating}
-            >
+            <PrimaryButton onPress={handleGenerate} disabled={isGenerating}>
               {isGenerating ? (
                 <Spinner color="gray" size="small" />
               ) : (
@@ -586,7 +568,6 @@ const CreateMockScreen: React.FC = () => {
                         | 'mock_aadhaar',
                     );
                     setDocumentTypeSheetOpen(false);
-                    trackEvent(MockDataEvents.SELECT_DOCUMENT_TYPE);
                   }}
                 >
                   <XStack paddingVertical="$3" paddingHorizontal="$2">
@@ -639,7 +620,6 @@ const CreateMockScreen: React.FC = () => {
                     buttonTap();
                     handleCountrySelect(countryCode);
                     setCountrySheetOpen(false);
-                    trackEvent(MockDataEvents.SELECT_COUNTRY);
                   }}
                 >
                   <XStack paddingVertical="$3" paddingHorizontal="$2">
@@ -697,7 +677,6 @@ const CreateMockScreen: React.FC = () => {
                         buttonTap();
                         handleAlgorithmSelect(algorithm);
                         setAlgorithmSheetOpen(false);
-                        trackEvent(MockDataEvents.SELECT_ALGORITHM);
                       }}
                     >
                       <XStack paddingVertical="$3" paddingHorizontal="$2">

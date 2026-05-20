@@ -35,6 +35,7 @@ import type { PassportData } from '@selfxyz/common/types';
 import {
   resolveOnboardingBranch,
   sanitizeErrorMessage,
+  trackBranchEvent,
   trackOnboardingStep,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
@@ -47,8 +48,8 @@ import {
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import {
+  BiometricEvents,
   OnboardingEvents,
-  PassportEvents,
 } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import {
   black,
@@ -76,6 +77,7 @@ import {
 import { parseScanResponse, scan } from '@/integrations/nfc/nfcScanner';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
+import { PrivacyMask } from '@/observability/PrivacyMask';
 import { storePassportData } from '@/providers/passportDataProvider';
 import {
   configureNfcAnalytics,
@@ -110,7 +112,7 @@ type DocumentNFCScanRoute = RouteProp<
 
 const DocumentNFCScanScreen: React.FC = () => {
   const selfClient = useSelfClient();
-  const { trackEvent, useMRZStore } = selfClient;
+  const { useMRZStore } = selfClient;
   const openSupportForm = useOpenSupportForm();
 
   const navigation =
@@ -292,15 +294,19 @@ const DocumentNFCScanScreen: React.FC = () => {
       // Add timestamp when scan starts
       scanCancelledRef.current = false;
       const scanStartTime = Date.now();
+      trackBranchEvent(selfClient, BiometricEvents.NFC_STARTED, {
+        document_type:
+          resolveOnboardingBranch(documentType ?? 'p') === 'biometric_id'
+            ? 'id_card'
+            : 'passport',
+        nfc_method: isPacePolling ? 'PACE' : 'BAC',
+      });
       if (scanTimeoutRef.current) {
         clearTimeout(scanTimeoutRef.current);
         scanTimeoutRef.current = null;
       }
       scanTimeoutRef.current = setTimeout(() => {
         scanCancelledRef.current = true;
-        trackEvent(PassportEvents.NFC_SCAN_FAILED, {
-          error: 'timeout',
-        });
         logNFCEvent('warn', 'scan_timeout', {
           ...baseContext,
           stage: 'timeout',
@@ -322,11 +328,8 @@ const DocumentNFCScanScreen: React.FC = () => {
       }
       scanTimeoutRef.current = setTimeout(() => {
         scanCancelledRef.current = true;
-        setNfcScanningActive(false); // Clear scanning state on timeout
-        trackEvent(PassportEvents.NFC_SCAN_FAILED, {
-          error: 'timeout',
-        });
-        trackNfcEvent(PassportEvents.NFC_SCAN_FAILED, {
+        setNfcScanningActive(false);
+        trackNfcEvent(BiometricEvents.NFC_SCAN_FAILED, {
           error: 'timeout',
         });
         logNFCEvent('warn', 'scan_timeout', {
@@ -392,7 +395,11 @@ const DocumentNFCScanScreen: React.FC = () => {
           scanDurationSeconds,
           'seconds',
         );
-        trackEvent(PassportEvents.NFC_SCAN_SUCCESS, {
+        trackBranchEvent(selfClient, BiometricEvents.NFC_SUCCEEDED, {
+          document_type:
+            resolveOnboardingBranch(documentType ?? 'p') === 'biometric_id'
+              ? 'id_card'
+              : 'passport',
           duration_seconds: parseFloat(scanDurationSeconds),
         });
         trackOnboardingStep(selfClient, OnboardingEvents.SCAN_SUCCEEDED, {
@@ -422,10 +429,13 @@ const DocumentNFCScanScreen: React.FC = () => {
           const errMsg = sanitizeErrorMessage(
             e instanceof Error ? e.message : String(e),
           );
-          trackEvent(PassportEvents.NFC_RESPONSE_PARSE_FAILED, {
-            error: errMsg,
-          });
-          trackNfcEvent(PassportEvents.NFC_RESPONSE_PARSE_FAILED, {
+          logNFCEvent(
+            'error',
+            'nfc_response_parse_failed',
+            { ...baseContext, stage: 'parse' },
+            { error: errMsg },
+          );
+          trackNfcEvent(BiometricEvents.NFC_RESPONSE_PARSE_FAILED, {
             error: errMsg,
           });
           return;
@@ -446,20 +456,24 @@ const DocumentNFCScanScreen: React.FC = () => {
         if (scanCancelledRef.current) {
           return;
         }
-        const scanDurationSeconds = (
-          (Date.now() - scanStartTime) /
-          1000
-        ).toFixed(2);
         console.error('NFC Scan Unsuccessful:', e);
         const message = e instanceof Error ? e.message : String(e);
         const sanitized = sanitizeErrorMessage(message);
-        trackEvent(PassportEvents.NFC_SCAN_FAILED, {
+        const failureDurationSeconds = parseFloat(
+          ((Date.now() - scanStartTime) / 1000).toFixed(2),
+        );
+        logNFCEvent(
+          'error',
+          'nfc_scan_failed',
+          { ...baseContext, stage: 'scan_failed' },
+          {
+            error: sanitized,
+            duration_seconds: failureDurationSeconds,
+          },
+        );
+        trackNfcEvent(BiometricEvents.NFC_SCAN_FAILED, {
           error: sanitized,
-          duration_seconds: parseFloat(scanDurationSeconds),
-        });
-        trackNfcEvent(PassportEvents.NFC_SCAN_FAILED, {
-          error: sanitized,
-          duration_seconds: parseFloat(scanDurationSeconds),
+          duration_seconds: failureDurationSeconds,
         });
         openErrorModal(message);
         // We deliberately avoid opening any external feedback widgets here;
@@ -493,7 +507,6 @@ const DocumentNFCScanScreen: React.FC = () => {
     navigation,
     openErrorModal,
     selfClient,
-    trackEvent,
     shouldInjectError,
   ]);
 
@@ -572,130 +585,129 @@ const DocumentNFCScanScreen: React.FC = () => {
   );
 
   return (
-    <ExpandableBottomLayout.Layout backgroundColor={black}>
-      <ExpandableBottomLayout.TopSection roundTop backgroundColor={slate100}>
-        <LottieView
-          ref={animationRef}
-          autoPlay={false}
-          loop={false}
-          onAnimationFinish={() => {
-            setTimeout(() => {
-              animationRef.current?.play();
-            }, 5000); // Pause 5 seconds before playing again
-          }}
-          source={passportVerifyAnimation}
-          style={styles.animation}
-          cacheComposition={true}
-          renderMode="HARDWARE"
-        />
-      </ExpandableBottomLayout.TopSection>
-      <ExpandableBottomLayout.BottomSection backgroundColor={white}>
-        {isNfcSheetOpen ? (
-          <>
-            <TextsContainer>
-              <Title children="Ready to scan" />
-              <BodyText style={{ textAlign: 'center' }}>
-                {nfcMessage && nfcMessage.trim().length > 0 ? (
-                  nfcMessage
+    <PrivacyMask>
+      <ExpandableBottomLayout.Layout backgroundColor={black}>
+        <ExpandableBottomLayout.TopSection roundTop backgroundColor={slate100}>
+          <LottieView
+            ref={animationRef}
+            autoPlay={false}
+            loop={false}
+            onAnimationFinish={() => {
+              setTimeout(() => {
+                animationRef.current?.play();
+              }, 5000); // Pause 5 seconds before playing again
+            }}
+            source={passportVerifyAnimation}
+            style={styles.animation}
+            cacheComposition={true}
+            renderMode="HARDWARE"
+          />
+        </ExpandableBottomLayout.TopSection>
+        <ExpandableBottomLayout.BottomSection backgroundColor={white}>
+          {isNfcSheetOpen ? (
+            <>
+              <TextsContainer>
+                <Title children="Ready to scan" />
+                <BodyText style={{ textAlign: 'center' }}>
+                  {nfcMessage && nfcMessage.trim().length > 0 ? (
+                    nfcMessage
+                  ) : (
+                    <>
+                      Hold your device near the NFC tag and stop moving when it
+                      vibrates.
+                    </>
+                  )}
+                </BodyText>
+              </TextsContainer>
+              <Image
+                height="$8"
+                width="$8"
+                alignSelf="center"
+                borderRadius={1000}
+                source={NFC_IMAGE}
+                margin={20}
+              />
+            </>
+          ) : (
+            <>
+              <TextsContainer>
+                <GestureDetector gesture={devModeTap}>
+                  <View collapsable={false}>
+                    <XStack
+                      justifyContent="space-between"
+                      alignItems="center"
+                      gap="$1.5"
+                    >
+                      <Title>Verify your ID</Title>
+                      <Button
+                        unstyled
+                        onPress={goToNFCTrouble}
+                        icon={<CircleHelp size={28} color={slate500} />}
+                        aria-label="Help"
+                      />
+                    </XStack>
+                  </View>
+                </GestureDetector>
+                {isNfcEnabled ? (
+                  <>
+                    <Title style={[styles.title, { marginTop: 8 }]}>
+                      Find the RFID chip in your ID
+                    </Title>
+                    <BodyText
+                      style={[
+                        styles.bodyText,
+                        { marginTop: 8, marginBottom: 8 },
+                      ]}
+                    >
+                      Place your phone against the chip and keep it still until
+                      the sensor reads it.
+                    </BodyText>
+                    <BodyText style={[styles.disclaimer, { marginTop: 16 }]}>
+                      SELF DOES NOT STORE THIS INFORMATION.
+                    </BodyText>
+                  </>
                 ) : (
                   <>
-                    Hold your device near the NFC tag and stop moving when it
-                    vibrates.
+                    <BodyText style={[styles.disclaimer, { marginTop: 16 }]}>
+                      {dialogMessage}
+                    </BodyText>
                   </>
                 )}
-              </BodyText>
-            </TextsContainer>
-            <Image
-              height="$8"
-              width="$8"
-              alignSelf="center"
-              borderRadius={1000}
-              source={NFC_IMAGE}
-              margin={20}
-            />
-          </>
-        ) : (
-          <>
-            <TextsContainer>
-              <GestureDetector gesture={devModeTap}>
-                <View collapsable={false}>
-                  <XStack
-                    justifyContent="space-between"
-                    alignItems="center"
-                    gap="$1.5"
-                  >
-                    <Title>Verify your ID</Title>
-                    <Button
-                      unstyled
-                      onPress={goToNFCTrouble}
-                      icon={<CircleHelp size={28} color={slate500} />}
-                      aria-label="Help"
-                    />
-                  </XStack>
-                </View>
-              </GestureDetector>
-              {isNfcEnabled ? (
-                <>
-                  <Title style={[styles.title, { marginTop: 8 }]}>
-                    Find the RFID chip in your ID
-                  </Title>
-                  <BodyText
-                    style={[styles.bodyText, { marginTop: 8, marginBottom: 8 }]}
-                  >
-                    Place your phone against the chip and keep it still until
-                    the sensor reads it.
-                  </BodyText>
-                  <BodyText style={[styles.disclaimer, { marginTop: 16 }]}>
-                    SELF DOES NOT STORE THIS INFORMATION.
-                  </BodyText>
-                </>
-              ) : (
-                <>
-                  <BodyText style={[styles.disclaimer, { marginTop: 16 }]}>
-                    {dialogMessage}
-                  </BodyText>
-                </>
-              )}
-              <BodyText style={[styles.disclaimer, { marginTop: 12 }]}>
-                {SUPPORT_FORM_MESSAGE}
-              </BodyText>
-            </TextsContainer>
-            <ButtonsContainer>
-              <PrimaryButton
-                trackEvent={
-                  isNfcEnabled || !isNfcSupported
-                    ? PassportEvents.START_PASSPORT_NFC
-                    : PassportEvents.OPEN_NFC_SETTINGS
-                }
-                onPress={onVerifyPress}
-                disabled={!isNfcSupported}
-              >
-                {isNfcEnabled || !isNfcSupported
-                  ? 'Start Scan'
-                  : 'Open settings'}
-              </PrimaryButton>
-              <SecondaryButton
-                trackEvent={PassportEvents.CANCEL_PASSPORT_NFC}
-                onPress={onCancelPress}
-              >
-                Cancel
-              </SecondaryButton>
-              <SecondaryButton onPress={onReportIssue}>
-                {SUPPORT_FORM_BUTTON_TEXT}
-              </SecondaryButton>
-              {(!isNfcSupported || !isNfcEnabled) && (
-                <SecondaryButton
-                  onPress={launchKycVerification}
-                  disabled={isKycLoading}
+                <BodyText style={[styles.disclaimer, { marginTop: 12 }]}>
+                  {SUPPORT_FORM_MESSAGE}
+                </BodyText>
+              </TextsContainer>
+              <ButtonsContainer>
+                <PrimaryButton
+                  onPress={onVerifyPress}
+                  disabled={!isNfcSupported}
                 >
-                  {isKycLoading ? 'Loading...' : 'Try Alternative Verification'}
+                  {isNfcEnabled || !isNfcSupported
+                    ? 'Start Scan'
+                    : 'Open settings'}
+                </PrimaryButton>
+                <SecondaryButton onPress={onCancelPress}>
+                  Cancel
                 </SecondaryButton>
-              )}
-            </ButtonsContainer>
-          </>
-        )}
-      </ExpandableBottomLayout.BottomSection>
-    </ExpandableBottomLayout.Layout>
+                <SecondaryButton onPress={onReportIssue}>
+                  {SUPPORT_FORM_BUTTON_TEXT}
+                </SecondaryButton>
+                {(!isNfcSupported || !isNfcEnabled) && (
+                  <SecondaryButton
+                    onPress={launchKycVerification}
+                    disabled={isKycLoading}
+                  >
+                    {isKycLoading
+                      ? 'Loading...'
+                      : 'Try Alternative Verification'}
+                  </SecondaryButton>
+                )}
+              </ButtonsContainer>
+            </>
+          )}
+        </ExpandableBottomLayout.BottomSection>
+      </ExpandableBottomLayout.Layout>
+    </PrivacyMask>
   );
 };
 

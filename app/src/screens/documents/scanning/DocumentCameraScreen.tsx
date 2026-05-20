@@ -13,6 +13,7 @@ import {
   DelayedLottieView,
   dinot,
   resolveOnboardingBranch,
+  trackBranchEvent,
   trackOnboardingStep,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
@@ -23,8 +24,8 @@ import {
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import {
+  BiometricEvents,
   OnboardingEvents,
-  PassportEvents,
 } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import {
   black,
@@ -45,6 +46,7 @@ import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { useKycLauncher } from '@/hooks/useKycLauncher';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
+import { PrivacyMask } from '@/observability/PrivacyMask';
 import { getDocumentScanPrompt } from '@/utils/documentAttributes';
 
 const DocumentCameraScreen: React.FC = () => {
@@ -68,8 +70,9 @@ const DocumentCameraScreen: React.FC = () => {
   useEffect(() => {
     const branch = resolveOnboardingBranch(selectedDocumentType ?? 'p');
     trackOnboardingStep(selfClient, OnboardingEvents.SCAN_STARTED, { branch });
-    // Fire once on mount for this attempt. `trackOnboardingStep` dedupes,
-    // so re-mounts from back-nav are no-ops.
+    trackBranchEvent(selfClient, BiometricEvents.MRZ_STARTED, {
+      document_type: branch === 'biometric_id' ? 'id_card' : 'passport',
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -139,55 +142,52 @@ const DocumentCameraScreen: React.FC = () => {
   };
 
   return (
-    <ExpandableBottomLayout.Layout backgroundColor={white}>
-      <ExpandableBottomLayout.TopSection roundTop backgroundColor={black}>
-        {cameraReady === true && (
-          <PassportCamera
-            onPassportRead={onPassportRead}
-            isMounted={isFocused}
+    <PrivacyMask>
+      <ExpandableBottomLayout.Layout backgroundColor={white}>
+        <ExpandableBottomLayout.TopSection roundTop backgroundColor={black}>
+          {cameraReady === true && (
+            <PassportCamera
+              onPassportRead={onPassportRead}
+              isMounted={isFocused}
+            />
+          )}
+          <DelayedLottieView
+            autoPlay
+            loop
+            source={passportScanAnimation}
+            style={styles.animation}
+            cacheComposition={true}
+            renderMode="HARDWARE"
           />
-        )}
-        <DelayedLottieView
-          autoPlay
-          loop
-          source={passportScanAnimation}
-          style={styles.animation}
-          cacheComposition={true}
-          renderMode="HARDWARE"
-        />
-      </ExpandableBottomLayout.TopSection>
-      <ExpandableBottomLayout.BottomSection backgroundColor={white}>
-        <YStack alignItems="center" gap="$2.5">
-          <YStack alignItems="center" gap="$6" paddingBottom="$2.5">
-            <Title>{scanPrompt}</Title>
-            <XStack gap="$6" alignSelf="flex-start" alignItems="flex-start">
-              <View paddingTop="$2">
-                <Scan height={40} width={40} color={slate800} />
-              </View>
-              <View maxWidth="75%">
-                <Description style={styles.subheader}>
-                  Open to the photograph page
-                </Description>
-                <Additional style={styles.description}>
-                  {mrzReadInstructions()}
-                </Additional>
-              </View>
-            </XStack>
+        </ExpandableBottomLayout.TopSection>
+        <ExpandableBottomLayout.BottomSection backgroundColor={white}>
+          <YStack alignItems="center" gap="$2.5">
+            <YStack alignItems="center" gap="$6" paddingBottom="$2.5">
+              <Title>{scanPrompt}</Title>
+              <XStack gap="$6" alignSelf="flex-start" alignItems="flex-start">
+                <View paddingTop="$2">
+                  <Scan height={40} width={40} color={slate800} />
+                </View>
+                <View maxWidth="75%">
+                  <Description style={styles.subheader}>
+                    Open to the photograph page
+                  </Description>
+                  <Additional style={styles.description}>
+                    {mrzReadInstructions()}
+                  </Additional>
+                </View>
+              </XStack>
+            </YStack>
+
+            <Additional style={styles.disclaimer}>
+              Self will not capture an image of your ID.
+            </Additional>
+
+            <SecondaryButton onPress={onCancelPress}>Cancel</SecondaryButton>
           </YStack>
-
-          <Additional style={styles.disclaimer}>
-            Self will not capture an image of your ID.
-          </Additional>
-
-          <SecondaryButton
-            trackEvent={PassportEvents.CAMERA_SCREEN_CLOSED}
-            onPress={onCancelPress}
-          >
-            Cancel
-          </SecondaryButton>
-        </YStack>
-      </ExpandableBottomLayout.BottomSection>
-    </ExpandableBottomLayout.Layout>
+        </ExpandableBottomLayout.BottomSection>
+      </ExpandableBottomLayout.Layout>
+    </PrivacyMask>
   );
 };
 

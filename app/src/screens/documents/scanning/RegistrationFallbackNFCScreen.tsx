@@ -65,7 +65,7 @@ const RegistrationFallbackNFCScreen: React.FC = () => {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<RegistrationFallbackNFCRoute>();
   const selfClient = useSelfClient();
-  const { trackEvent, useMRZStore } = selfClient;
+  const { useMRZStore } = selfClient;
   const storeCountryCode = useMRZStore(state => state.countryCode);
   const documentType = useMRZStore(state => state.documentType);
 
@@ -105,22 +105,16 @@ const RegistrationFallbackNFCScreen: React.FC = () => {
   }, [navigation]);
 
   const handleTryAlternative = useCallback(async () => {
-    trackEvent('REGISTRATION_FALLBACK_TRY_ALTERNATIVE', {
-      errorSource: 'nfc_scan_failed',
-    });
     // User is switching from biometric to the KYC provider fallback —
     // update the funnel's branch so subsequent canonical events reflect it.
     setOnboardingBranch('kyc');
     await launchKycVerification();
-  }, [launchKycVerification, trackEvent]);
+  }, [launchKycVerification]);
 
   const handleRetryOriginal = useCallback(() => {
-    trackEvent('REGISTRATION_FALLBACK_RETRY_ORIGINAL', {
-      errorSource: 'nfc_scan_failed',
-    });
     trackOnboardingRetry(selfClient, 'scan_started', 'nfc_scan_failed');
     navigation.navigate('DocumentNFCScan', {});
-  }, [navigation, selfClient, trackEvent]);
+  }, [navigation, selfClient]);
 
   return (
     <YStack flex={1} backgroundColor={slate100}>

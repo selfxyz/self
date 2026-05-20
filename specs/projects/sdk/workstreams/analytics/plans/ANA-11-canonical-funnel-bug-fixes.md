@@ -20,20 +20,20 @@ A 7-day analysis of the canonical events identified **two real bugs in the imple
 
 ### Bug A — Pure-KYC users never fire `Onboarding: Document Scan Started`
 
-ANA-01's Implementation Table specifies that for the KYC branch, `SCAN_STARTED` fires from `LogoConfirmationScreen.tsx:77`'s "No" button handler. That screen is shown only to users who selected a *biometric* document type (passport / id_card) and is the gate that diverts them into the KYC fallback.
+ANA-01's Implementation Table specifies that for the KYC branch, `SCAN_STARTED` fires from `LogoConfirmationScreen.tsx:77`'s "No" button handler. That screen is shown only to users who selected a _biometric_ document type (passport / id_card) and is the gate that diverts them into the KYC fallback.
 
-A user who selects a non-biometric document type at `IDSelectionScreen` (the "pure-KYC" path — driving licenses, residency cards, etc.) skips `LogoConfirmationScreen` entirely. Their flow goes straight from `DOCUMENT_TYPE_SELECTED` into `useKycLauncher` → Didit modal. There is no `SCAN_STARTED` emission anywhere on this path.
+A user who selects a non-biometric document type at `IDSelectionScreen` (the "pure-KYC" path — driving licenses, residency cards, etc.) skips `LogoConfirmationScreen` entirely. Their flow goes straight from `DOCUMENT_TYPE_SELECTED` into `useKycLauncher` → KYC provider modal. There is no `SCAN_STARTED` emission anywhere on this path.
 
 Funnel evidence (7-day window, breakdown by `initial_branch`):
 
-| Step | kyc cohort count |
-| --- | --- |
-| 1. Started | 333 |
-| 2. Country Selected | 333 |
-| 3. Document Type Selected | 333 |
-| 4. Document Scan Started | **48** |
-| 5. Document Scan Succeeded | 3 |
-| 6. Proof Generation Started | 0 |
+| Step                        | kyc cohort count |
+| --------------------------- | ---------------- |
+| 1. Started                  | 333              |
+| 2. Country Selected         | 333              |
+| 3. Document Type Selected   | 333              |
+| 4. Document Scan Started    | **48**           |
+| 5. Document Scan Succeeded  | 3                |
+| 6. Proof Generation Started | 0                |
 
 The 333 → 48 step is implausible — the screen sequence for pure-KYC is doc-type → KYC-modal, with no real abandonment surface in between. The 48 are an artifact (probably users who took the biometric path, hit LogoConfirmation "No", and got reclassified into the kyc cohort by Mixpanel's funnel breakdown propagation). The vast majority of pure-KYC users drop out of the funnel at the missing event, not at a real abandonment point.
 
@@ -44,7 +44,7 @@ ANA-01's terminal-event invariant correctly gates `PROOF_SUCCEEDED` and `COMPLET
 1. **Disclosure flows** (`circuitType === 'disclose'`) of already-registered users, which reuse the same proving machine but are not part of the onboarding funnel.
 2. **DSC sub-step** (`circuitType === 'dsc'`) for users whose DSC is not yet in the tree. The proving machine enters `proving` first with `circuitType === 'dsc'`, runs the DSC proof, then `postProving` re-inits with `circuitType === 'register'` (provingMachine.ts:1695) and enters `proving` again — but the fire-once guard suppresses the second emission, so `PROOF_STARTED` ends up firing on the DSC step instead of the actual register proof.
 
-For the disclose case, the blast radius is larger than just `PROOF_STARTED`. The emission goes through `trackOnboardingStep`, which calls `ensureAttempt` at `onboardingFunnel.ts:254`. `ensureAttempt` sees no active attempt and **bootstraps a fake one — which itself emits `Onboarding: Started`** as the attempt's first event (`onboardingFunnel.ts:75`). So a single disclosure flow fires *both* `STARTED` and `PROOF_STARTED` against the canonical funnel, neither of which represents an onboarding attempt.
+For the disclose case, the blast radius is larger than just `PROOF_STARTED`. The emission goes through `trackOnboardingStep`, which calls `ensureAttempt` at `onboardingFunnel.ts:254`. `ensureAttempt` sees no active attempt and **bootstraps a fake one — which itself emits `Onboarding: Started`** as the attempt's first event (`onboardingFunnel.ts:75`). So a single disclosure flow fires _both_ `STARTED` and `PROOF_STARTED` against the canonical funnel, neither of which represents an onboarding attempt.
 
 `DISCLOSURE_COMPLETED` is emitted via raw `trackEvent` and does not clear `currentAttempt`. The fake attempt then lingers in module-level state until the next real onboarding either re-uses its `attempt_id` or gets silently no-op'd by the fire-once guard.
 
@@ -52,10 +52,10 @@ For the DSC case, the issue is semantic: `PROOF_STARTED` is meant to mark "the u
 
 Raw event evidence (7-day window):
 
-| Event | Total events | with `initial_branch=pending` |
-| --- | --- | --- |
-| `Onboarding: Started` | 1867 | **1867 (100%)** |
-| `Onboarding: Proof Generation Started` | 838 | 622 |
+| Event                                  | Total events | with `initial_branch=pending` |
+| -------------------------------------- | ------------ | ----------------------------- |
+| `Onboarding: Started`                  | 1867         | **1867 (100%)**               |
+| `Onboarding: Proof Generation Started` | 838          | 622                           |
 
 Every `STARTED` event has `initial_branch=pending` — confirming the implementation correctly emits `'pending'` at attempt creation. But the volume (1867 in 7 days) is substantially higher than the 1577 unique-user starts the funnel reports. The excess and the 622 `pending` PROOF_STARTED events are dominated by disclosure-triggered fake attempts.
 
@@ -63,7 +63,7 @@ Every `STARTED` event has `initial_branch=pending` — confirming the implementa
 
 A third hypothesis ("`initial_branch` leaks across onboarding attempts") was raised during investigation and turned out to be a misreading of Mixpanel's behavior, not a code bug.
 
-Mixpanel funnel breakdowns by `initial_branch` *propagate* the property value across all steps a user completed in the funnel. So a user whose `initial_branch` becomes `kyc` at step 3 (`DOCUMENT_TYPE_SELECTED`) is counted as "kyc cohort" at steps 1 and 2 retroactively, even though those events physically carry `initial_branch=pending`. This is by design — it lets the dashboard ask "of users who chose KYC, how many reached country selection" — and is not a defect of either the events or the dashboard.
+Mixpanel funnel breakdowns by `initial_branch` _propagate_ the property value across all steps a user completed in the funnel. So a user whose `initial_branch` becomes `kyc` at step 3 (`DOCUMENT_TYPE_SELECTED`) is counted as "kyc cohort" at steps 1 and 2 retroactively, even though those events physically carry `initial_branch=pending`. This is by design — it lets the dashboard ask "of users who chose KYC, how many reached country selection" — and is not a defect of either the events or the dashboard.
 
 The 1867 / 1867 result above (every `STARTED` event has `initial_branch=pending`) confirms the implementation is correct on this axis. **Do not** add code to "fix" branch state across attempts — there is nothing to fix.
 
@@ -73,35 +73,35 @@ The 1867 / 1867 result above (every `STARTED` event has `initial_branch=pending`
 flowchart TD
     A[App launch / dismiss disclaimer]
     A --> B[CountryPickerScreen]
-    B -->|COUNTRY_SELECTED| C[IDSelectionScreen]
-    C -->|"DOCUMENT_TYPE_SELECTED<br/>locks initial_branch"| D{Document type}
+    B -->|"Onboarding: Country Selected"| C[IDSelectionScreen]
+    C -->|"Onboarding: Document Type Selected<br/>locks initial_branch"| D{Document type}
 
     D -->|passport / id_card| E[LogoConfirmationScreen]
-    D -->|"non-biometric<br/>(pure-KYC)"| K1["useKycLauncher<br/>→ Didit modal"]
+    D -->|"non-biometric<br/>(pure-KYC)"| K1["useKycLauncher<br/>→ KYC provider modal"]
     D -->|aadhaar| AA[AadhaarUploadScreen]
 
     E -->|"Yes"| F[DocumentCameraScreen]
-    E -->|"No, fires SCAN_STARTED branch=kyc"| K2["useKycLauncher<br/>→ Didit modal"]
+    E -->|"No, fires Onboarding: Document Scan Started branch=kyc"| K2["useKycLauncher<br/>→ KYC provider modal"]
 
-    F -->|"SCAN_STARTED branch=biometric_*"| G[NFC method + scan]
-    G -->|"SCAN_SUCCEEDED branch=biometric_*"| H[DataConfirmationScreen]
+    F -->|"Onboarding: Document Scan Started branch=biometric_*"| G[NFC method + scan]
+    G -->|"Onboarding: Document Scan Succeeded branch=biometric_*"| H[DataConfirmationScreen]
 
-    K1 -.->|"Bug A: NO SCAN_STARTED fires"| KR[KYC result handler]
+    K1 -.->|"Bug A: NO Onboarding: Document Scan Started fires"| KR[KYC result handler]
     K2 --> KR
-    KR -->|"SCAN_SUCCEEDED branch=kyc"| KV[KYCVerifiedScreen]
+    KR -->|"Onboarding: Document Scan Succeeded branch=kyc"| KV[KYCVerifiedScreen]
 
-    AA -->|"SCAN_STARTED branch=aadhaar"| AP[QR processing]
-    AP -->|"SCAN_SUCCEEDED branch=aadhaar"| AS[AadhaarUploadedSuccessScreen]
+    AA -->|"Onboarding: Document Scan Started branch=aadhaar"| AP[QR processing]
+    AP -->|"Onboarding: Document Scan Succeeded branch=aadhaar"| AS[AadhaarUploadedSuccessScreen]
 
     H --> P["provingMachine.ts:488<br/>state = 'proving'"]
     KV --> P
     AS --> P
     DX([Existing user opens disclosure]) -.-> P
 
-    P -->|"Bug B: trackOnboardingStep(PROOF_STARTED)<br/>fires unconditionally for register AND disclose<br/>bootstraps fake attempt → emits STARTED too"| T{Terminal}
-    T -->|"register: PROOF_SUCCEEDED, COMPLETED<br/>(correctly gated by didNewRegistrationProof)"| Z[Done]
-    T -->|"disclose: DISCLOSURE_COMPLETED leaks here<br/>(misnamed Onboarding: * event)"| Z
-    T -->|"failure: FAILED"| Z
+    P -->|"Bug B: Onboarding: Proof Generation Started fires unconditionally<br/>for register AND disclose; bootstraps fake attempt → emits<br/>Onboarding: Started too"| T{Terminal}
+    T -->|"register: Onboarding: Proof Generation Succeeded, Onboarding: Completed<br/>(correctly gated by didNewRegistrationProof)"| Z[Done]
+    T -->|"disclose: Onboarding: Completed leaks here<br/>(misnamed in disclose path)"| Z
+    T -->|"failure: Onboarding: Failed"| Z
 
     A:::start
     K1:::bug
@@ -117,8 +117,8 @@ flowchart TD
 flowchart TD
     A[App launch / dismiss disclaimer]
     A --> B[CountryPickerScreen]
-    B -->|COUNTRY_SELECTED| C[IDSelectionScreen]
-    C -->|"DOCUMENT_TYPE_SELECTED<br/>locks initial_branch"| D{Document type}
+    B -->|"Onboarding: Country Selected"| C[IDSelectionScreen]
+    C -->|"Onboarding: Document Type Selected<br/>locks initial_branch"| D{Document type}
 
     D -->|passport / id_card| E[LogoConfirmationScreen]
     D -->|non-biometric| KH[useKycLauncher]
@@ -127,25 +127,25 @@ flowchart TD
     E -->|Yes| F[DocumentCameraScreen]
     E -->|"No → setOnboardingBranch('kyc')"| KH
 
-    F -->|"SCAN_STARTED branch=biometric_*"| G[NFC method + scan]
-    G -->|"SCAN_SUCCEEDED branch=biometric_*"| H[DataConfirmationScreen]
+    F -->|"Onboarding: Document Scan Started branch=biometric_*"| G[NFC method + scan]
+    G -->|"Onboarding: Document Scan Succeeded branch=biometric_*"| H[DataConfirmationScreen]
 
-    KH -->|"Fix A: SCAN_STARTED branch=kyc<br/>(single firing point covers both pure-KYC<br/>and biometric→KYC fallback)"| KM[Didit modal]
+    KH -->|"Fix A: Onboarding: Document Scan Started branch=kyc<br/>(single firing point covers both pure-KYC<br/>and biometric→KYC fallback)"| KM[KYC provider modal]
     KM --> KR[KYC result handler]
-    KR -->|"SCAN_SUCCEEDED branch=kyc"| KV[KYCVerifiedScreen]
+    KR -->|"Onboarding: Document Scan Succeeded branch=kyc"| KV[KYCVerifiedScreen]
 
-    AA -->|"SCAN_STARTED branch=aadhaar"| AP[QR processing]
-    AP -->|"SCAN_SUCCEEDED branch=aadhaar"| AS[AadhaarUploadedSuccessScreen]
+    AA -->|"Onboarding: Document Scan Started branch=aadhaar"| AP[QR processing]
+    AP -->|"Onboarding: Document Scan Succeeded branch=aadhaar"| AS[AadhaarUploadedSuccessScreen]
 
     H --> P["provingMachine.ts<br/>state = 'proving'"]
     KV --> P
     AS --> P
     DX([Existing user opens disclosure]) -.-> P
 
-    P -->|"Fix B: emit PROOF_STARTED only when<br/>circuitType === 'register'<br/>(skips DSC sub-step and disclose)"| T{Terminal}
-    T -->|"register: PROOF_STARTED, PROOF_SUCCEEDED, COMPLETED"| Z[Done]
+    P -->|"Fix B: emit Onboarding: Proof Generation Started only when<br/>circuitType === 'register'<br/>(skips DSC sub-step and disclose)"| T{Terminal}
+    T -->|"register: Onboarding: Proof Generation Started → Succeeded → Completed"| Z[Done]
     T -.->|"disclose: no canonical event<br/>(diagnostic only)"| Z
-    T -->|"register/dsc fail: FAILED with proof_type"| Z
+    T -->|"register/dsc fail: Onboarding: Failed with proof_type"| Z
 
     KH:::fixed
     P:::fixed
@@ -200,7 +200,7 @@ What this enforces:
 
 ### In scope
 
-1. **Fix A** — emit `OnboardingEvents.SCAN_STARTED` with `branch: 'kyc'` from `app/src/hooks/useKycLauncher.ts` at the moment the Didit modal is launched. Remove the existing `SCAN_STARTED` emission from `app/src/screens/documents/selection/LogoConfirmationScreen.tsx:77` so the launcher is the single source of truth. The fire-once guard already protects against double emission for biometric → KYC fallback users.
+1. **Fix A** — emit `OnboardingEvents.SCAN_STARTED` with `branch: 'kyc'` from `app/src/hooks/useKycLauncher.ts` at the moment the KYC provider modal is launched. Remove the existing `SCAN_STARTED` emission from `app/src/screens/documents/selection/LogoConfirmationScreen.tsx:77` so the launcher is the single source of truth. The fire-once guard already protects against double emission for biometric → KYC fallback users.
 
 2. **Fix B** — gate the `PROOF_STARTED` emission at `packages/mobile-sdk-alpha/src/proving/provingMachine.ts:488` on `circuitType === 'register'`. This excludes both disclosure flows (no fake `Onboarding: Started` via `ensureAttempt`) and the DSC sub-step (so `PROOF_STARTED` always marks the actual register proof, regardless of whether the user's DSC was already in the tree).
 
@@ -209,7 +209,7 @@ What this enforces:
    Also remove `OnboardingEvents.DISCLOSURE_COMPLETED` entirely: delete the constant from `packages/mobile-sdk-alpha/src/constants/analytics.ts` and the emission site in `provingMachine.ts`'s `completed` state handler. Disclosure is not part of onboarding and should not occupy the `Onboarding: *` namespace. Diagnostic completion is already covered by `ProofEvents.PROOF_COMPLETED` (which carries `circuitType` and fires for all three circuit types).
 
 3. **Update ANA-01 spec** to:
-   - Change the `SCAN_STARTED` row's "Fire location" cell in §"Canonical Events — Implementation Table": for KYC, replace `LogoConfirmationScreen.tsx "No" fallback path` with `app/src/hooks/useKycLauncher.ts on Didit modal launch (covers pure-KYC entry and biometric→KYC fallback)`.
+   - Change the `SCAN_STARTED` row's "Fire location" cell in §"Canonical Events — Implementation Table": for KYC, replace `LogoConfirmationScreen.tsx "No" fallback path` with `app/src/hooks/useKycLauncher.ts on KYC provider modal launch (covers pure-KYC entry and biometric→KYC fallback)`.
    - Update the `PROOF_STARTED` row's "Fire location" cell to note the gate is `circuitType === 'register'` (skips DSC sub-step and disclose).
    - Update the `FAILED` row to add `proof_type` (`'register' | 'dsc'`) to its additional properties list, present on proving-stage failures.
    - Remove the `DISCLOSURE_COMPLETED` row from the table; replace the disclosure-completion code snippet with a note that disclose flows fire no canonical event.
@@ -237,7 +237,9 @@ import { OnboardingEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics'
 import { trackOnboardingStep } from '@selfxyz/mobile-sdk-alpha/analytics/onboardingFunnel';
 
 // Inside launchKycVerification, before startVerification(...):
-trackOnboardingStep(selfClient, OnboardingEvents.SCAN_STARTED, { branch: 'kyc' });
+trackOnboardingStep(selfClient, OnboardingEvents.SCAN_STARTED, {
+  branch: 'kyc',
+});
 ```
 
 (Adjust import paths to whatever the file already uses for SDK imports.)
@@ -317,6 +319,7 @@ Run the mobile app against the **dev Mixpanel project** (not prod). Run the foll
 ### Re-validation in Mixpanel (post-merge)
 
 Run the `Funnel by initial_branch` report (id 89777075) on the same 7-day window 7 days after merge. Acceptance:
+
 - KYC cohort step 4 (Document Scan Started) conversion is non-trivially > 14% (the buggy baseline). Realistic post-fix: 80–95% (single-button screen).
 - KYC cohort step 6 (Proof Generation Started) is non-zero.
 - Total `Onboarding: Started` event volume drops measurably (disclosure-triggered fake attempts no longer fire).

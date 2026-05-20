@@ -15,9 +15,10 @@ import { DotsIcon } from './icons.js';
 interface DesktopHeaderProps {
   appName: string;
   appLogo: string;
+  darkMode?: boolean;
 }
 
-const DesktopHeader = memo(({ appName, appLogo }: DesktopHeaderProps) => (
+const DesktopHeader = memo(({ appName, appLogo, darkMode = false }: DesktopHeaderProps) => (
   <div style={desktopHeaderStyle()}>
     <div style={desktopLogoRowStyle()}>
       <img src={appLogo} alt={`${appName} logo`} style={desktopAppLogoStyle()} />
@@ -26,7 +27,7 @@ const DesktopHeader = memo(({ appName, appLogo }: DesktopHeaderProps) => (
         <img src={selfLogo} alt="Self logo" style={desktopSelfLogoImgStyle()} />
       </div>
     </div>
-    <p style={desktopDescriptionStyle()}>{getDesktopDescription(appName)}</p>
+    <p style={desktopDescriptionStyle(darkMode)}>{getDesktopDescription(appName)}</p>
   </div>
 ));
 

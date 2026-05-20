@@ -4,11 +4,17 @@
 
 import type { SelfClient } from '@selfxyz/mobile-sdk-alpha';
 
+import { navigationRef as MockNavigationRef } from '@/navigation';
 import {
   handleUrl,
   parseAndValidateUrlParams,
   setupUniversalLinkListenerInNavigation,
 } from '@/navigation/deeplinks';
+import { useVerificationGateStore } from '@/stores/verificationGateStore';
+import {
+  evaluateGoogleUsatGate,
+  isGoogleUsatForceEnabledForTesting,
+} from '@/utils/googleUsatGate';
 
 jest.mock('react-native', () => {
   const mockLinking = {
@@ -49,11 +55,29 @@ jest.mock('@/stores/userStore', () => {
   };
 });
 
+jest.mock('@/utils/googleUsatGate', () => ({
+  evaluateGoogleUsatGate: jest.fn(),
+  isGoogleUsatForceEnabledForTesting: jest.fn(() => false),
+}));
+
+jest.mock('@/stores/verificationGateStore', () => ({
+  useVerificationGateStore: { getState: jest.fn() },
+}));
+
 const mockUserStore = jest.requireMock('@/stores/userStore') as {
   default: { getState: jest.Mock };
 };
 
 let setDeepLinkUserDetails: jest.Mock;
+const mockEvaluateGoogleUsatGate =
+  evaluateGoogleUsatGate as jest.MockedFunction<typeof evaluateGoogleUsatGate>;
+const mockIsGoogleUsatForceEnabledForTesting =
+  isGoogleUsatForceEnabledForTesting as jest.MockedFunction<
+    typeof isGoogleUsatForceEnabledForTesting
+  >;
+const mockGateStoreGetState = (
+  useVerificationGateStore as unknown as { getState: jest.Mock }
+).getState;
 
 describe('deeplinks', () => {
   beforeEach(() => {
@@ -67,6 +91,9 @@ describe('deeplinks', () => {
       setDeepLinkUserDetails,
     });
     mockPlatform.OS = 'ios';
+    mockEvaluateGoogleUsatGate.mockResolvedValue('allow');
+    mockIsGoogleUsatForceEnabledForTesting.mockReturnValue(false);
+    mockGateStoreGetState.mockReturnValue({ open: jest.fn() });
 
     // Setup default getCurrentRoute mock to return Splash (cold launch scenario)
     const { navigationRef } = require('@/navigation');
@@ -74,14 +101,14 @@ describe('deeplinks', () => {
   });
 
   describe('handleUrl', () => {
-    it('handles selfApp parameter', () => {
+    it('handles selfApp parameter', async () => {
       const selfApp = { sessionId: 'abc' };
       const url = `scheme://open?selfApp=${encodeURIComponent(JSON.stringify(selfApp))}`;
 
       const mockSetSelfApp = jest.fn();
       const mockStartAppListener = jest.fn();
 
-      handleUrl(
+      await handleUrl(
         {
           getSelfAppState: () => ({
             setSelfApp: mockSetSelfApp,
@@ -97,16 +124,148 @@ describe('deeplinks', () => {
       const { navigationRef } = require('@/navigation');
       expect(navigationRef.reset).toHaveBeenCalledWith({
         index: 1,
-        routes: [{ name: 'Home' }, { name: 'ProvingScreenRouter' }],
+        routes: [
+          { name: 'Home' },
+          { name: 'ProvingScreenRouter', params: { entryPoint: 'deeplink' } },
+        ],
       });
     });
 
-    it('handles sessionId parameter', () => {
+    it('opens gate and resets off Splash when selfApp is blocked on cold launch', async () => {
+      const open = jest.fn();
+      mockGateStoreGetState.mockReturnValue({ open });
+      mockEvaluateGoogleUsatGate.mockResolvedValue('block');
+
+      const selfApp = { sessionId: 'abc', appName: 'TestApp' };
+      const url = `scheme://open?selfApp=${encodeURIComponent(JSON.stringify(selfApp))}`;
+
+      const trackEvent = jest.fn();
+      const mockSetSelfApp = jest.fn();
+      const mockStartAppListener = jest.fn();
+      await handleUrl(
+        {
+          trackEvent,
+          getSelfAppState: () => ({
+            setSelfApp: mockSetSelfApp,
+            startAppListener: mockStartAppListener,
+          }),
+        } as unknown as SelfClient,
+        url,
+      );
+
+      expect(open).toHaveBeenCalledWith({
+        reason: 'google_usat_high_security_required',
+        entryPoint: 'deeplink',
+        requesterName: 'TestApp',
+      });
+      // Blocked path must not start the proving flow.
+      expect(mockSetSelfApp).not.toHaveBeenCalled();
+      expect(mockStartAppListener).not.toHaveBeenCalled();
+
+      // Cold launch → reset stack so dismissing the gate modal lands on Home.
+      expect(MockNavigationRef.reset).toHaveBeenCalledWith({
+        index: 1,
+        routes: [{ name: 'Home' }, { name: 'Home' }],
+      });
+    });
+
+    it('does not navigate on warm launch when selfApp is blocked', async () => {
+      const open = jest.fn();
+      mockGateStoreGetState.mockReturnValue({ open });
+      mockEvaluateGoogleUsatGate.mockResolvedValue('block');
+      (MockNavigationRef.getCurrentRoute as jest.Mock).mockReturnValue({
+        name: 'SettingsScreen',
+      });
+
+      const selfApp = { sessionId: 'abc', appName: 'TestApp' };
+      const url = `scheme://open?selfApp=${encodeURIComponent(JSON.stringify(selfApp))}`;
+
+      await handleUrl(
+        {
+          trackEvent: jest.fn(),
+          getSelfAppState: () => ({
+            setSelfApp: jest.fn(),
+            startAppListener: jest.fn(),
+          }),
+        } as unknown as SelfClient,
+        url,
+      );
+
+      expect(open).toHaveBeenCalled();
+      // Warm launch: leave the user where they were.
+      expect(MockNavigationRef.reset).not.toHaveBeenCalled();
+      expect(MockNavigationRef.navigate).not.toHaveBeenCalled();
+    });
+
+    it('opens gate and resets off Splash when sessionId force-flag is enabled on cold launch', async () => {
+      const open = jest.fn();
+      mockGateStoreGetState.mockReturnValue({ open });
+      mockIsGoogleUsatForceEnabledForTesting.mockReturnValue(true);
+
+      const url = 'scheme://open?sessionId=abc123';
+      const mockCleanSelfApp = jest.fn();
+      const mockStartAppListener = jest.fn();
+      const trackEvent = jest.fn();
+
+      await handleUrl(
+        {
+          trackEvent,
+          getSelfAppState: () => ({
+            setSelfApp: jest.fn(),
+            startAppListener: mockStartAppListener,
+            cleanSelfApp: mockCleanSelfApp,
+          }),
+        } as unknown as SelfClient,
+        url,
+      );
+
+      expect(open).toHaveBeenCalledWith({
+        reason: 'google_usat_high_security_required',
+        entryPoint: 'deeplink',
+        requesterName: 'Google USAT Faucet',
+      });
+      // Blocked path must not advance the proving flow.
+      expect(mockCleanSelfApp).not.toHaveBeenCalled();
+      expect(mockStartAppListener).not.toHaveBeenCalled();
+
+      expect(MockNavigationRef.reset).toHaveBeenCalledWith({
+        index: 1,
+        routes: [{ name: 'Home' }, { name: 'Home' }],
+      });
+    });
+
+    it('does not navigate on warm launch when sessionId force-flag is enabled', async () => {
+      const open = jest.fn();
+      mockGateStoreGetState.mockReturnValue({ open });
+      mockIsGoogleUsatForceEnabledForTesting.mockReturnValue(true);
+      (MockNavigationRef.getCurrentRoute as jest.Mock).mockReturnValue({
+        name: 'SettingsScreen',
+      });
+
+      const url = 'scheme://open?sessionId=abc123';
+      await handleUrl(
+        {
+          trackEvent: jest.fn(),
+          getSelfAppState: () => ({
+            setSelfApp: jest.fn(),
+            startAppListener: jest.fn(),
+            cleanSelfApp: jest.fn(),
+          }),
+        } as unknown as SelfClient,
+        url,
+      );
+
+      expect(open).toHaveBeenCalled();
+      expect(MockNavigationRef.reset).not.toHaveBeenCalled();
+      expect(MockNavigationRef.navigate).not.toHaveBeenCalled();
+    });
+
+    it('handles sessionId parameter', async () => {
       const url = 'scheme://open?sessionId=123';
       const mockCleanSelfApp = jest.fn();
       const mockStartAppListener = jest.fn();
 
-      handleUrl(
+      await handleUrl(
         {
           getSelfAppState: () => ({
             setSelfApp: jest.fn(),
@@ -123,14 +282,44 @@ describe('deeplinks', () => {
       const { navigationRef } = require('@/navigation');
       expect(navigationRef.reset).toHaveBeenCalledWith({
         index: 1,
-        routes: [{ name: 'Home' }, { name: 'ProvingScreenRouter' }],
+        routes: [
+          { name: 'Home' },
+          { name: 'ProvingScreenRouter', params: { entryPoint: 'deeplink' } },
+        ],
       });
     });
 
-    it('handles mock_passport parameter', () => {
+    it('preserves ProvingScreenRouter params on warm launch navigation', async () => {
+      const url = 'scheme://open?sessionId=123';
+      const mockCleanSelfApp = jest.fn();
+      const mockStartAppListener = jest.fn();
+      const { navigationRef } = require('@/navigation');
+      navigationRef.getCurrentRoute.mockReturnValue({ name: 'Home' });
+
+      await handleUrl(
+        {
+          getSelfAppState: () => ({
+            setSelfApp: jest.fn(),
+            startAppListener: mockStartAppListener,
+            cleanSelfApp: mockCleanSelfApp,
+          }),
+        } as unknown as SelfClient,
+        url,
+      );
+
+      expect(mockCleanSelfApp).toHaveBeenCalledWith();
+      expect(mockStartAppListener).toHaveBeenCalledWith('123');
+      expect(navigationRef.navigate).toHaveBeenCalledWith({
+        name: 'ProvingScreenRouter',
+        params: { entryPoint: 'deeplink' },
+      });
+      expect(navigationRef.reset).not.toHaveBeenCalled();
+    });
+
+    it('handles mock_passport parameter', async () => {
       const mockData = { name: 'John', surname: 'Doe' };
       const url = `scheme://open?mock_passport=${encodeURIComponent(JSON.stringify(mockData))}`;
-      handleUrl({} as SelfClient, url);
+      await handleUrl({} as SelfClient, url);
 
       expect(setDeepLinkUserDetails).toHaveBeenCalledWith({
         name: 'John',
@@ -146,7 +335,7 @@ describe('deeplinks', () => {
       });
     });
 
-    it('handles referrer parameter and navigates to HomeScreen for confirmation', () => {
+    it('handles referrer parameter and navigates to HomeScreen for confirmation', async () => {
       const referrer = '0x1234567890123456789012345678901234567890';
       const url = `scheme://open?referrer=${referrer}`;
 
@@ -155,7 +344,7 @@ describe('deeplinks', () => {
         setDeepLinkReferrer: mockSetDeepLinkReferrer,
       });
 
-      handleUrl({} as SelfClient, url);
+      await handleUrl({} as SelfClient, url);
 
       expect(mockSetDeepLinkReferrer).toHaveBeenCalledWith(referrer);
 
@@ -168,13 +357,13 @@ describe('deeplinks', () => {
       });
     });
 
-    it('navigates to QRCodeTrouble for invalid data', () => {
+    it('navigates to QRCodeTrouble for invalid data', async () => {
       const consoleErrorSpy = jest
         .spyOn(console, 'error')
         .mockImplementation(() => {});
 
       const url = 'scheme://open?selfApp=%7Binvalid';
-      handleUrl({} as SelfClient, url);
+      await handleUrl({} as SelfClient, url);
 
       const { navigationRef } = require('@/navigation');
       expect(navigationRef.reset).toHaveBeenCalledWith({
@@ -189,7 +378,7 @@ describe('deeplinks', () => {
       consoleErrorSpy.mockRestore();
     });
 
-    it('handles sessionId with invalid characters', () => {
+    it('handles sessionId with invalid characters', async () => {
       const consoleWarnSpy = jest
         .spyOn(console, 'warn')
         .mockImplementation(() => {});
@@ -198,7 +387,7 @@ describe('deeplinks', () => {
         .mockImplementation(() => {});
 
       const url = 'scheme://open?sessionId=abc<script>alert("xss")</script>';
-      handleUrl({} as SelfClient, url);
+      await handleUrl({} as SelfClient, url);
 
       const { navigationRef } = require('@/navigation');
       expect(navigationRef.reset).toHaveBeenCalledWith({
@@ -217,13 +406,13 @@ describe('deeplinks', () => {
       consoleErrorSpy.mockRestore();
     });
 
-    it('rejects URLs with malformed parameters', () => {
+    it('rejects URLs with malformed parameters', async () => {
       const consoleErrorSpy = jest
         .spyOn(console, 'error')
         .mockImplementation(() => {});
 
       const url = 'scheme://open?sessionId=%ZZ'; // Invalid URL encoding
-      handleUrl({} as SelfClient, url);
+      await handleUrl({} as SelfClient, url);
 
       const { navigationRef } = require('@/navigation');
       expect(navigationRef.reset).toHaveBeenCalledWith({
@@ -234,14 +423,14 @@ describe('deeplinks', () => {
       consoleErrorSpy.mockRestore();
     });
 
-    it('handles valid Turnkey OAuth redirect with code and state', () => {
+    it('handles valid Turnkey OAuth redirect with code and state', async () => {
       const consoleLogSpy = jest
         .spyOn(console, 'log')
         .mockImplementation(() => {});
 
       const url =
         'https://redirect.self.xyz?scheme=https#code=4/0Ab32j93MfuUU-vJKJth_t0fnnPkg1O7&id_token=eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIxMDQwMTAwODA2NDc2NTA5MzU5MzgiLCJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20ifQ.signature'; // gitleaks:allow
-      handleUrl({} as SelfClient, url);
+      await handleUrl({} as SelfClient, url);
 
       const { navigationRef } = require('@/navigation');
       // Turnkey OAuth should return silently without navigation
@@ -254,14 +443,14 @@ describe('deeplinks', () => {
       consoleLogSpy.mockRestore();
     });
 
-    it('navigates to QRCodeTrouble when only code is present (missing id_token)', () => {
+    it('navigates to QRCodeTrouble when only code is present (missing id_token)', async () => {
       const consoleErrorSpy = jest
         .spyOn(console, 'error')
         .mockImplementation(() => {});
 
       const url =
         'https://redirect.self.xyz?scheme=https#code=4/0Ab32j93MfuUU-vJKJth_t0fnnPkg1O7';
-      handleUrl({} as SelfClient, url);
+      await handleUrl({} as SelfClient, url);
 
       const { navigationRef } = require('@/navigation');
       // With just code and id_token validation removed, this should be accepted as valid OAuth
@@ -271,14 +460,14 @@ describe('deeplinks', () => {
       consoleErrorSpy.mockRestore();
     });
 
-    it('handles valid Turnkey OAuth with only id_token (implicit flow)', () => {
+    it('handles valid Turnkey OAuth with only id_token (implicit flow)', async () => {
       const consoleLogSpy = jest
         .spyOn(console, 'log')
         .mockImplementation(() => {});
 
       const url =
         'https://redirect.self.xyz?scheme=https#id_token=eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIxMDQwMTAwODA2NDc2NTA5MzU5MzgiLCJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20ifQ.signature&scope=email%20profile'; // gitleaks:allow
-      handleUrl({} as SelfClient, url);
+      await handleUrl({} as SelfClient, url);
 
       const { navigationRef } = require('@/navigation');
       expect(navigationRef.navigate).not.toHaveBeenCalled();
@@ -290,14 +479,14 @@ describe('deeplinks', () => {
       consoleLogSpy.mockRestore();
     });
 
-    it('navigates to QRCodeTrouble when neither code nor id_token is present', () => {
+    it('navigates to QRCodeTrouble when neither code nor id_token is present', async () => {
       const consoleErrorSpy = jest
         .spyOn(console, 'error')
         .mockImplementation(() => {});
 
       const url =
         'https://redirect.self.xyz?scheme=https#scope=email%20profile';
-      handleUrl({} as SelfClient, url);
+      await handleUrl({} as SelfClient, url);
 
       const { navigationRef } = require('@/navigation');
       expect(navigationRef.reset).toHaveBeenCalledWith({
@@ -308,7 +497,7 @@ describe('deeplinks', () => {
       consoleErrorSpy.mockRestore();
     });
 
-    it('rejects Turnkey OAuth with invalid id_token format', () => {
+    it('rejects Turnkey OAuth with invalid id_token format', async () => {
       const consoleErrorSpy = jest
         .spyOn(console, 'error')
         .mockImplementation(() => {});
@@ -317,7 +506,7 @@ describe('deeplinks', () => {
       // code is valid, but since id_token is invalid and rejected, code alone shouldn't trigger OAuth
       const url =
         'https://redirect.self.xyz?scheme=https#code=4/0Ab32j93&id_token=<script>alert("xss")</script>';
-      handleUrl({} as SelfClient, url);
+      await handleUrl({} as SelfClient, url);
 
       const { navigationRef } = require('@/navigation');
       // Code without valid id_token should still be accepted as valid OAuth (authorization code flow)

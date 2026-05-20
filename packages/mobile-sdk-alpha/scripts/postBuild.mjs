@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -10,6 +10,8 @@ import { shimConfigs } from './shimConfigs.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DIST = path.resolve(__dirname, '..', 'dist');
+const CHUNK_SVG_IMPORT = '../../../svgs/';
+const SHARED_SVG_IMPORT = '../svgs/';
 
 // Read version from package.json
 const packageJsonPath = path.resolve(__dirname, '..', 'package.json');
@@ -80,3 +82,19 @@ function createShim(shimPath, targetPath, name) {
 shimConfigs.forEach(({ shimPath, targetPath, name }) => {
   createShim(shimPath, targetPath, name);
 });
+
+function rewriteChunkAssetImports(dir) {
+  for (const file of readdirSync(dir)) {
+    if (!/^chunk-.*\.(js|cjs)$/.test(file)) continue;
+
+    const filePath = path.join(dir, file);
+    const source = readFileSync(filePath, 'utf8');
+
+    if (!source.includes(CHUNK_SVG_IMPORT)) continue;
+
+    writeFileSync(filePath, source.replaceAll(CHUNK_SVG_IMPORT, SHARED_SVG_IMPORT));
+  }
+}
+
+rewriteChunkAssetImports(path.join(DIST, 'esm'));
+rewriteChunkAssetImports(path.join(DIST, 'cjs'));

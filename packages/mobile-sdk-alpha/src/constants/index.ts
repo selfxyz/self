@@ -7,13 +7,15 @@ export {
   AppEvents,
   AuthEvents,
   BackupEvents,
+  BiometricEvents,
   DocumentEvents,
+  KycEvents,
   MockDataEvents,
   NotificationEvents,
-  PassportEvents,
   PointEvents,
   ProofEvents,
 } from './analytics';
+export type { KnownEventName } from './analytics';
 
 export { NFC_IMAGE } from './images';
 

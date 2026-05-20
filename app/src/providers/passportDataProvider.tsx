@@ -405,6 +405,12 @@ export async function getAvailableDocumentTypes(): Promise<string[]> {
 }
 
 export async function getKycDocumentCount(): Promise<number> {
+  const nativeReady = await initializeNativeModules();
+  if (!nativeReady) {
+    throw new Error(
+      'Unable to verify KYC document count: native modules not ready',
+    );
+  }
   const catalog = await loadDocumentCatalogDirectlyFromKeychain();
   return catalog.documents.filter(doc => doc.documentCategory === 'kyc').length;
 }
