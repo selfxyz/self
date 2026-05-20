@@ -42,6 +42,29 @@ On **March 11, 2026**, the active SDK scope changed to **WebView only, with no c
 - PR-sized execution lives under [`plans/`](./plans/).
 - If work touches native-module delivery, stop and check [SDK Paused Work](../../paused/INDEX.md).
 
+## Operating Modes
+
+As of 2026-05-19, the WebView ships two operating modes from a single
+bundle:
+
+- **Tunnel mode** — one-shot verification invoked by a host (3rd-party
+  RN app, future Kotlin/Swift consumers). Terminates with
+  `lifecycle.setResult` + `lifecycle.dismiss`. Boots at `/tunnel/tour/1`.
+- **Wallet mode** — persistent UI for the Self Wallet. Boots at `/`
+  HomeScreen. Long-lived, multi-entry, includes settings / proof
+  history / document management.
+
+The host signals which mode via the `lifecycle.getConfig` response
+(see [WebView-in-App SPEC-MODES.md](../webview-in-app/SPEC-MODES.md)
+for the full contract). webview-app's job is to consume that signal
+at boot and route accordingly. The existing `/tunnel/*` namespace
+and root wallet routes already exist physically; what's missing is
+the centralized mode-aware initial routing + the `OperatingMode`
+context that shared registration/proving screens consume for
+terminal navigation.
+
+Downstream items below tagged `WV-MD-*` cover that work.
+
 ## Current Execution Note
 
 The active screen-migration pass is intentionally narrower than the long-term
@@ -87,6 +110,11 @@ webview backlog.
 | WV-16          | Settings follow-through and support routes                                                      | Done        | Low      | WV-14               | —                                                                                                | Delivered: haptic wiring on all menu items, dev-mode mock generation fixed, Manage Documents description fixed, DevRouteMenu Settings + Tunnel groups added, settings screen tests. Deferred: notification toggle and backup-enabled persistence (requires storage design decision, not blocking UI completeness) |
 | WV-17          | Recovery phrase restore flow for WebView and tunnel account recovery                            | In Progress | High     | WV-07, WV-08        | [plans/WV-17-recovery-phrase-restore-flow.md](./plans/WV-17-recovery-phrase-restore-flow.md)     | Existing recovery screens are UI-only in webview today. This spec wires phrase-based restore, selected-document validation, and tunnel resume without importing app-only providers.                                                                                                                               |
 | WV-EUCLID-TODO | Shared UI to build in Euclid before adopting in WebView + RN app                                | In Progress | Medium   | -                   | [plans/WV-EUCLID-TODO.md](./plans/WV-EUCLID-TODO.md)                                             | Running backlog of components that belong in `@selfxyz/euclid` so WebView and the RN app share one implementation. Current items: Eligible Perks card (reverted on `codex/add-eligible-perks-card-to-id-data-view`).                                                                                              |
+| WV-MD-01       | Mode-aware initial routing in webview-app entry                                                 | Pending     | High     | WIA-16              | —                                                                                                | Consume `mode` from `lifecycle.getConfig` response; route to `/tunnel/tour/1` or `/` accordingly. Default to wallet on missing field. Browser host always wallet. See [WebView-in-App SPEC-MODES.md](../webview-in-app/SPEC-MODES.md).                                                                            |
+| WV-MD-02       | `OperatingMode` React context for shared registration/proving/recovery                          | Pending     | High     | WV-MD-01            | —                                                                                                | Provider sets mode once at boot. Shared screens read it for terminal navigation (tunnel: setResult + dismiss; wallet: navigate `/`). Per-screen mode props forbidden.                                                                                                                                             |
+| WV-MD-03       | Tunnel-mode guard: validate `verificationRequest` shape, fail closed on missing/malformed       | Pending     | High     | WV-MD-01            | —                                                                                                | Tunnel boot without valid `verificationRequest` emits `setResult({ success: false, errorCode: 'INVALID_REQUEST' })` and dismisses.                                                                                                                                                                                |
+| WV-MD-04       | Router 404s for cross-mode navigation attempts                                                  | Pending     | Medium   | WV-MD-01            | —                                                                                                | Tunnel flows cannot navigate to `/settings/*`; wallet-only routes return 404-equivalent and the flow stays put.                                                                                                                                                                                                   |
+| WV-MD-05       | Tag existing parity backlog (WV-13/14/15/etc) as wallet-mode and align scope                    | Pending     | Medium   | WV-MD-01            | —                                                                                                | Settings, deep-link router, proof history, document management are wallet-only. Backlog rows updated to reflect that explicitly post-WV-MD-01.                                                                                                                                                                    |
 
 Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 

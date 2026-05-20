@@ -73,11 +73,15 @@ per platform target, each publishable.
 | Native adapters | [SPEC-NATIVE-ADAPTERS.md](./SPEC-NATIVE-ADAPTERS.md)| iOS + Android native engineers     |
 | Hosted loading  | [SPEC-HOSTED-LOADING.md](./SPEC-HOSTED-LOADING.md)  | Release / build engineer           |
 | Observability   | [SPEC-OBSERVABILITY.md](./SPEC-OBSERVABILITY.md)    | Analytics / product-observability  |
+| Operating modes | [SPEC-MODES.md](./SPEC-MODES.md)                    | SDK / WebView UI (cross-cuts webview/) |
 
 These run in parallel after `WIA-01`. Bridge host blocks native adapters
 (adapters need the message router to exist before they can be registered).
 Hosted loading is independent of native adapters; observability depends on
-bridge host (the `analytics.trackEvent` routing is settled there).
+bridge host (the `analytics.trackEvent` routing is settled there). Modes
+depends on bridge host (the `lifecycle.getConfig` response shape is settled
+there) and cross-cuts into the `webview/` workstream for the actual
+webview-app routing implementation.
 
 ## Backlog
 
@@ -99,6 +103,7 @@ bridge host (the `analytics.trackEvent` routing is settled there).
 | WIA-13 | WebView Session Replay with PII masking            | Observability  | Pending  |
 | WIA-14 | Re-home ANA-15 attempt_id footer to webview-app    | Observability  | Pending  |
 | WIA-15 | Documents handler (delegate to databaseProvider)   | Native adapters| Pending  |
+| WIA-16 | `mode` + `verificationRequest` in lifecycle.getConfig | Operating modes | Pending  |
 
 ## Cross-Workstream Dependencies
 
