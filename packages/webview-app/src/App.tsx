@@ -25,7 +25,14 @@ import { ConflictDetectedScreen } from './screens/onboarding/ConflictDetectedScr
 import { CountryPickerScreen } from './screens/onboarding/CountryPickerScreen';
 import { IDSelectionScreen } from './screens/onboarding/IDSelectionScreen';
 import { KycFailureScreen } from './screens/onboarding/KycFailureScreen';
-import { PassportScanScreen } from './screens/onboarding/PassportScanScreen';
+import {
+  PassportCodeScanInstructionsRoute,
+  PassportCodeScanViewfinderRoute,
+  PassportInstructionsRoute,
+  PassportNfcErrorRoute,
+  PassportNfcRoute,
+  PassportNfcSuccessRoute,
+} from './screens/onboarding/passport';
 import { ProviderLaunchScreen } from './screens/onboarding/ProviderLaunchScreen';
 import { ProviderResultScreen } from './screens/onboarding/ProviderResultScreen';
 import { PushNotificationPromptScreen } from './screens/onboarding/PushNotificationPromptScreen';
@@ -81,7 +88,12 @@ export const App: React.FC = () => (
             <Route path="/onboarding/provider" element={<ProviderLaunchScreen />} />
             <Route path="/onboarding/provider-result" element={<ProviderResultScreen />} />
             <Route path="/onboarding/confirm" element={<ConfirmIdentificationScreen />} />
-            <Route path="/onboarding/passport/scan" element={<PassportScanScreen />} />
+            <Route path="/onboarding/passport/instructions" element={<PassportInstructionsRoute />} />
+            <Route path="/onboarding/passport/code-scan-instructions" element={<PassportCodeScanInstructionsRoute />} />
+            <Route path="/onboarding/passport/code-scan-viewfinder" element={<PassportCodeScanViewfinderRoute />} />
+            <Route path="/onboarding/passport/nfc" element={<PassportNfcRoute />} />
+            <Route path="/onboarding/passport/nfc-success" element={<PassportNfcSuccessRoute />} />
+            <Route path="/onboarding/passport/nfc-error" element={<PassportNfcErrorRoute />} />
             <Route path="/onboarding/success" element={<ScanSuccessScreen />} />
             <Route path="/onboarding/recovery-phrase" element={<OnboardingRecoveryPhraseScreen />} />
             <Route path="/onboarding/failure" element={<RegistrationFailureScreen />} />

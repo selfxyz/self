@@ -70,12 +70,16 @@ export const IDSelectionScreen: React.FC = () => {
           state: { countryCode, documentType: idType.id },
         });
       } else if (idType.id === 'p') {
-        navigate('/onboarding/passport/scan', {
+        navigate('/onboarding/passport/instructions', {
           state: { countryCode, documentType: 'passport' },
         });
       } else if (idType.id === 'i') {
-        navigate('/onboarding/passport/scan', {
+        navigate('/onboarding/eu-id/instructions', {
           state: { countryCode, documentType: 'id_card' },
+        });
+      } else if (idType.id === 'a') {
+        navigate('/onboarding/aadhaar/instructions', {
+          state: { countryCode, documentType: 'aadhaar' },
         });
       } else {
         navigate('/coming-soon', {
