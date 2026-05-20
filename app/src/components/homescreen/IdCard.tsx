@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { type FC, useCallback } from 'react';
-import { Image, Pressable, StyleSheet } from 'react-native';
+import React, { type FC, useCallback, useEffect, useMemo, useRef } from 'react';
+import { Image, Linking, Pressable, StyleSheet } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { Text, XStack, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
@@ -17,10 +17,17 @@ import {
   isMRZDocument,
 } from '@selfxyz/common/utils/types';
 import { WarningTriangleIcon } from '@selfxyz/euclid/dist/components/icons/WarningTriangleIcon';
-import { RoundFlag } from '@selfxyz/mobile-sdk-alpha/components';
+import {
+  getPerkRailContent,
+  getPerkRecordsForIdType,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
+import { PerkRail, RoundFlag } from '@selfxyz/mobile-sdk-alpha/components';
+import { HomescreenEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import {
   black,
   red600,
+  slate100,
   white,
   yellow500,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
@@ -46,6 +53,7 @@ import { useCardDimensions } from '@/hooks/useCardDimensions';
 import { getBackgroundIndex } from '@/utils/cardBackgroundSelector';
 import { getCountryDemonym } from '@/utils/countryDemonyms';
 import { getDocumentAttributes } from '@/utils/documentAttributes';
+import { idTypeForDocumentCategory } from '@/utils/documentUtils';
 import { registerModalCallbacks } from '@/utils/modalCallbackRegistry';
 
 const CARD_BACKGROUNDS = [
@@ -66,6 +74,7 @@ interface IdCardLayoutAttributes {
   selected: boolean;
   hidden: boolean;
   isInactive?: boolean;
+  showPerks?: boolean;
 }
 
 /**
@@ -81,8 +90,10 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
   selected,
   hidden,
   isInactive = false,
+  showPerks = true,
 }) => {
   const navigation = useNavigation();
+  const { trackEvent } = useSelfClient();
   const navigateToDocumentOnboarding = useCallback(() => {
     switch (idDocument?.documentCategory) {
       case 'passport':
@@ -125,6 +136,86 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
     fontSize,
   } = useCardDimensions(selected);
 
+  const isMockDocument = Boolean(idDocument?.mock);
+  const idType = useMemo(
+    () =>
+      idDocument && !isMockDocument
+        ? idTypeForDocumentCategory(idDocument.documentCategory)
+        : null,
+    [idDocument, isMockDocument],
+  );
+  const perkRecords = useMemo(
+    () => (idType ? getPerkRecordsForIdType(idType) : []),
+    [idType],
+  );
+  const perkRailContent = useMemo(
+    () => (idType ? getPerkRailContent(idType) : null),
+    [idType],
+  );
+  const primaryPerk = perkRecords[0] ?? null;
+  const documentViewKey = useMemo(() => {
+    if (!idDocument || !idType) {
+      return null;
+    }
+    if (isMRZDocument(idDocument)) {
+      return `${idType}:${idDocument.mrz}`;
+    }
+    if (isAadhaarDocument(idDocument)) {
+      return `${idType}:${idDocument.qrData}`;
+    }
+    return `${idType}:${idDocument.documentCategory}`;
+  }, [idDocument, idType]);
+
+  const perksVisible =
+    showPerks &&
+    selected &&
+    hidden &&
+    !isInactive &&
+    !isMockDocument &&
+    perkRecords.length > 0 &&
+    idDocument != null &&
+    !isKycDocument(idDocument);
+
+  const viewedDocumentKeyRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (
+      !perksVisible ||
+      !idType ||
+      !documentViewKey ||
+      viewedDocumentKeyRef.current === documentViewKey
+    ) {
+      return;
+    }
+    viewedDocumentKeyRef.current = documentViewKey;
+    trackEvent(HomescreenEvents.ID_CARD_VIEWED, {
+      id_type: idType,
+      has_perks: true,
+      perk_count: perkRecords.length,
+    });
+  }, [perksVisible, idType, documentViewKey, perkRecords.length, trackEvent]);
+
+  const handlePerkPress = useCallback(async () => {
+    if (!primaryPerk || !idType) {
+      return;
+    }
+    trackEvent(HomescreenEvents.ID_CARD_PERK_TAPPED, {
+      id_type: idType,
+      perk_id: primaryPerk.id,
+      has_outlink: Boolean(primaryPerk.outlinkUrl),
+    });
+    if (!primaryPerk.outlinkUrl) {
+      return;
+    }
+    try {
+      await Linking.openURL(primaryPerk.outlinkUrl);
+    } catch {
+      trackEvent(HomescreenEvents.ID_CARD_PERK_OUTLINK_OPEN_FAILED, {
+        id_type: idType,
+        perk_id: primaryPerk.id,
+      });
+    }
+  }, [primaryPerk, idType, trackEvent]);
+
   if (!idDocument) {
     return null;
   }
@@ -157,9 +248,6 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
   // Get deterministic background based on document data
   const backgroundIndex = getBackgroundIndex(idDocument);
   const cardBackground = CARD_BACKGROUNDS[backgroundIndex - 1];
-
-  // Check if this is a mock/dev document
-  const isMockDocument = Boolean(idDocument.mock);
 
   // Determine document type label
   const getDocumentTypeLabel = (): string => {
@@ -266,130 +354,143 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
       )}
       <YStack
         width={cardWidth}
-        height={cardHeight}
         borderRadius={borderRadius}
         overflow="hidden"
-        backgroundColor={black}
         shadowColor={black}
-        shadowOffset={{ width: 0, height: 4 }}
+        shadowOffset={{ width: 0, height: 24 }}
         shadowOpacity={0.25}
-        shadowRadius={14}
-        elevation={8}
+        shadowRadius={34}
+        elevation={16}
         marginBottom={8}
-        alignItems="stretch"
       >
-        {/* Header Section - Dark gradient */}
-        <CardHeader
-          variant="gradient"
-          title={headerTitle}
-          subtitle={subtitleText}
-          headerHeight={headerHeight}
-          figmaPadding={figmaPadding}
-          headerGap={headerGap}
-          fontSize={fontSize}
-          logo={
-            isMockDocument ? (
+        <YStack
+          height={cardHeight}
+          backgroundColor={black}
+          alignItems="stretch"
+        >
+          {/* Header Section - Dark gradient */}
+          <CardHeader
+            variant="gradient"
+            title={headerTitle}
+            subtitle={subtitleText}
+            headerHeight={headerHeight}
+            figmaPadding={figmaPadding}
+            headerGap={headerGap}
+            fontSize={fontSize}
+            logo={
+              isMockDocument ? (
+                <YStack
+                  width={logoSize}
+                  height={logoSize}
+                  borderRadius={logoSize / 2}
+                  backgroundColor={DEV_LOGO_BG}
+                  alignItems="center"
+                  justifyContent="center"
+                  overflow="hidden"
+                >
+                  <DevCardLogo width={logoSize} height={logoSize} />
+                </YStack>
+              ) : (
+                <RoundFlag countryCode={nationalityCode} size={logoSize} />
+              )
+            }
+            rightElement={
+              isMockDocument ? (
+                <YStack width={85 * scale} height={19 * scale} />
+              ) : (
+                <SelfLogoPending width={logoSize} height={logoSize} />
+              )
+            }
+          />
+
+          {/* Gradient divider line for dev cards - dark edges, light middle */}
+          {isMockDocument && selected && (
+            <LinearGradient
+              colors={['#3a3a3a', '#747474', '#3a3a3a']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={{ height: 2, width: '100%' }}
+            />
+          )}
+
+          {/* Body Section - Dark gradient with wave pattern */}
+          {selected &&
+            (isMockDocument ? (
+              // Dev card body - solid indigo background with wave pattern (exact Figma)
               <YStack
-                width={logoSize}
-                height={logoSize}
-                borderRadius={logoSize / 2}
-                backgroundColor={DEV_LOGO_BG}
-                alignItems="center"
-                justifyContent="center"
-                overflow="hidden"
+                style={[
+                  cardStyles.body,
+                  { backgroundColor: DEV_BODY_COLOR, height: bodyHeight },
+                ]}
               >
-                <DevCardLogo width={logoSize} height={logoSize} />
+                {/* Wave pattern - exact Figma asset with exact positioning */}
+                {/* Figma insets: top -10.53%, right 5.62%, bottom -57.11%, left -44.43% */}
+                <YStack
+                  position="absolute"
+                  top={`${-10.53}%`}
+                  right={`${5.62}%`}
+                  bottom={`${-57.11}%`}
+                  left={`${-44.43}%`}
+                >
+                  <DevCardWave
+                    width="100%"
+                    height="100%"
+                    preserveAspectRatio="none"
+                  />
+                </YStack>
               </YStack>
             ) : (
-              <RoundFlag countryCode={nationalityCode} size={logoSize} />
-            )
-          }
-          rightElement={
-            isMockDocument ? (
-              <YStack width={85 * scale} height={19 * scale} />
-            ) : (
-              <SelfLogoPending width={logoSize} height={logoSize} />
-            )
-          }
-        />
+              // Real document body - gradient background with wave overlay
+              <YStack style={cardStyles.body}>
+                {/* Gradient background */}
+                <Image
+                  source={cardBackground}
+                  style={cardStyles.backgroundImage}
+                  resizeMode="cover"
+                />
+                {/* Wave pattern overlay */}
+                <Image
+                  source={WaveOverlay}
+                  style={styles.waveOverlay}
+                  resizeMode="contain"
+                />
 
-        {/* Gradient divider line for dev cards - dark edges, light middle */}
-        {isMockDocument && selected && (
-          <LinearGradient
-            colors={['#3a3a3a', '#747474', '#3a3a3a']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={{ height: 2, width: '100%' }}
-          />
-        )}
-
-        {/* Body Section - Dark gradient with wave pattern */}
-        {selected &&
-          (isMockDocument ? (
-            // Dev card body - solid indigo background with wave pattern (exact Figma)
-            <YStack
-              style={[
-                cardStyles.body,
-                { backgroundColor: DEV_BODY_COLOR, height: bodyHeight },
-              ]}
-            >
-              {/* Wave pattern - exact Figma asset with exact positioning */}
-              {/* Figma insets: top -10.53%, right 5.62%, bottom -57.11%, left -44.43% */}
-              <YStack
-                position="absolute"
-                top={`${-10.53}%`}
-                right={`${5.62}%`}
-                bottom={`${-57.11}%`}
-                left={`${-44.43}%`}
-              >
-                <DevCardWave
-                  width="100%"
-                  height="100%"
-                  preserveAspectRatio="none"
+                {/* Bottom content: Left text + Right badge (real documents only) */}
+                <CardBottomContent
+                  truncatedId={truncatedId}
+                  bottomLabel={bottomLabel}
+                  badges={[
+                    ...(isInactive
+                      ? [
+                          {
+                            text: 'INACTIVE',
+                            backgroundColor: red600,
+                            textColor: white,
+                          },
+                        ]
+                      : []),
+                    {
+                      text: securityBadgeLabel,
+                      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                      textColor: white,
+                    },
+                  ]}
+                  padding={padding}
+                  fontSize={fontSize}
                 />
               </YStack>
-            </YStack>
-          ) : (
-            // Real document body - gradient background with wave overlay
-            <YStack style={cardStyles.body}>
-              {/* Gradient background */}
-              <Image
-                source={cardBackground}
-                style={cardStyles.backgroundImage}
-                resizeMode="cover"
-              />
-              {/* Wave pattern overlay */}
-              <Image
-                source={WaveOverlay}
-                style={styles.waveOverlay}
-                resizeMode="contain"
-              />
-
-              {/* Bottom content: Left text + Right badge (real documents only) */}
-              <CardBottomContent
-                truncatedId={truncatedId}
-                bottomLabel={bottomLabel}
-                badges={[
-                  ...(isInactive
-                    ? [
-                        {
-                          text: 'INACTIVE',
-                          backgroundColor: red600,
-                          textColor: white,
-                        },
-                      ]
-                    : []),
-                  {
-                    text: securityBadgeLabel,
-                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                    textColor: white,
-                  },
-                ]}
-                padding={padding}
-                fontSize={fontSize}
-              />
-            </YStack>
-          ))}
+            ))}
+        </YStack>
+        {perksVisible && primaryPerk && perkRailContent && (
+          <YStack backgroundColor={slate100}>
+            <PerkRail
+              variant="dense"
+              logos={perkRailContent.logos}
+              label={perkRailContent.label.toUpperCase()}
+              onPress={handlePerkPress}
+            />
+          </YStack>
+        )}
       </YStack>
     </YStack>
   );

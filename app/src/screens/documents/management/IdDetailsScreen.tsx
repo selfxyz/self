@@ -150,7 +150,12 @@ const IdDetailsScreen: React.FC = () => {
 
   const ListHeader = (
     <YStack padding={20} paddingBottom={0}>
-      <IdCardLayout idDocument={document} selected={true} hidden={isHidden} />
+      <IdCardLayout
+        idDocument={document}
+        selected={true}
+        hidden={isHidden}
+        showPerks={false}
+      />
       <XStack marginTop={'$3'} justifyContent="flex-start" gap={'$4'}>
         <Button
           onPress={() => setIsHidden(!isHidden)}
