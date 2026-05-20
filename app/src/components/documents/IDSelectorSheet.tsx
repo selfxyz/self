@@ -64,18 +64,15 @@ export const IDSelectorSheet: React.FC<IDSelectorSheetProps> = ({
   const selfClient = useSelfClient();
   const viewedFiredRef = useRef(false);
 
-  // Coerce documents into their final picker state — an ineligible map entry
-  // overrides the per-row state coming from the parent.
-  const decoratedDocuments = documents.map(doc => {
-    if (ineligibleReasonByDocumentId?.[doc.id]) {
-      return { ...doc, state: 'ineligible' as IDSelectorState };
-    }
-    return doc;
-  });
+  const isIneligible = (id: string) => !!ineligibleReasonByDocumentId?.[id];
 
-  // Check if the selected document is valid (not expired, not ineligible)
-  const selectedDoc = decoratedDocuments.find(d => d.id === selectedId);
-  const canApprove = selectedDoc && !isDisabledState(selectedDoc.state);
+  // Selection is valid when the underlying state is not disabled and the
+  // document is not flagged ineligible by the active perk gate.
+  const selectedDoc = documents.find(d => d.id === selectedId);
+  const canApprove =
+    selectedDoc &&
+    !isDisabledState(selectedDoc.state) &&
+    !isIneligible(selectedDoc.id);
 
   useEffect(() => {
     if (!open) {
@@ -184,11 +181,14 @@ export const IDSelectorSheet: React.FC<IDSelectorSheetProps> = ({
               showsVerticalScrollIndicator={false}
               testID={`${testID}-list`}
             >
-              {decoratedDocuments.map((doc, index) => {
+              {documents.map((doc, index) => {
+                const ineligible = isIneligible(doc.id);
                 const isSelected = doc.id === selectedId;
-                // Don't override to 'active' if the document is in a disabled state
+                // Don't override to 'active' if the document is disabled or
+                // ineligible — keep the underlying state so the subtitle and
+                // colors stay correct (e.g. mock docs read "Testing document").
                 const itemState: IDSelectorState =
-                  isSelected && !isDisabledState(doc.state)
+                  isSelected && !isDisabledState(doc.state) && !ineligible
                     ? 'active'
                     : doc.state;
 
@@ -210,9 +210,10 @@ export const IDSelectorSheet: React.FC<IDSelectorSheetProps> = ({
                     key={doc.id}
                     documentName={doc.name}
                     state={itemState}
+                    ineligible={ineligible}
                     onPress={() => handleSelect(doc.id)}
                     onIneligiblePress={() => handleIneligiblePress(doc.id)}
-                    isLastItem={index === decoratedDocuments.length - 1}
+                    isLastItem={index === documents.length - 1}
                     perkSlot={perkSlot}
                     testID={`${testID}-item-${doc.id}`}
                   />

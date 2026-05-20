@@ -244,96 +244,80 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
     return undefined;
   }, [selfApp]);
 
-  const documents = useMemo(() => {
-    return documentCatalog.documents
-      .filter(metadata => metadata.isRegistered)
-      .map(metadata => {
-        const docData = allDocuments[metadata.id];
-        const baseState = determineDocumentState(metadata, docData?.data);
-        const ineligibilityReason =
-          activePerkId && selfApp && docData
-            ? evaluateGoogleUsatEligibilityForDocument(selfApp, docData)
-            : { eligible: true };
-        const effectiveState: IDSelectorState =
-          ineligibilityReason.eligible || baseState === 'expired'
-            ? baseState
-            : 'ineligible';
-        const isSelected = metadata.id === selectedDocumentId;
-        const itemState =
-          isSelected && !isDisabledState(effectiveState)
-            ? 'active'
-            : effectiveState;
+  const { documents, perksByDocumentId, ineligibleReasonByDocumentId } =
+    useMemo(() => {
+      const perksMap: Record<string, Perk[]> = {};
+      const ineligibleMap: Record<string, IneligibleReason> = {};
+      const rows = documentCatalog.documents
+        .filter(metadata => metadata.isRegistered)
+        .map(metadata => {
+          const docData = allDocuments[metadata.id];
+          const baseState = determineDocumentState(metadata, docData?.data);
 
-        return {
-          id: metadata.id,
-          name: getDocumentDisplayName(metadata, docData?.data),
-          state: itemState,
-          idType: metadata.documentCategory,
-        };
-      })
-      .sort((a, b) => {
-        // Get metadata for both documents
-        const metaA = documentCatalog.documents.find(d => d.id === a.id);
-        const metaB = documentCatalog.documents.find(d => d.id === b.id);
-
-        // Sort real documents before mock documents
-        if (metaA && metaB) {
-          if (metaA.mock !== metaB.mock) {
-            return metaA.mock ? 1 : -1; // Real first
+          // Evaluate the active-perk gate once per doc and feed both the
+          // ineligibility map (rendered by the sheet) and the perks map
+          // (rendered when the doc is eligible) from the same result.
+          if (activePerkId && selfApp && docData) {
+            const eligibility = evaluateGoogleUsatEligibilityForDocument(
+              selfApp,
+              docData,
+            );
+            if (eligibility.eligible) {
+              const idTypeCode = metadata.mock
+                ? null
+                : idTypeForDocumentCategory(metadata.documentCategory);
+              const perks = idTypeCode ? getPerksForIdType(idTypeCode) : [];
+              if (perks.length > 0) {
+                perksMap[metadata.id] = perks;
+              }
+            } else {
+              ineligibleMap[metadata.id] =
+                eligibility.reason ?? 'unsupported_id_type';
+            }
           }
-        }
 
-        // Within same type (real/mock), sort alphabetically by name
-        return a.name.localeCompare(b.name);
-      });
-  }, [
-    allDocuments,
-    documentCatalog.documents,
-    selectedDocumentId,
-    selfApp,
-    activePerkId,
-  ]);
+          const isSelected = metadata.id === selectedDocumentId;
+          const isIneligible = !!ineligibleMap[metadata.id];
+          const itemState: IDSelectorState =
+            isSelected && !isDisabledState(baseState) && !isIneligible
+              ? 'active'
+              : baseState;
 
-  const { perksByDocumentId, ineligibleReasonByDocumentId } = useMemo<{
-    perksByDocumentId?: Record<string, Perk[]>;
-    ineligibleReasonByDocumentId?: Record<string, IneligibleReason>;
-  }>(() => {
-    if (!activePerkId || !selfApp) {
-      return {};
-    }
-    const perksMap: Record<string, Perk[]> = {};
-    const ineligibleMap: Record<string, IneligibleReason> = {};
-    for (const metadata of documentCatalog.documents) {
-      if (!metadata.isRegistered) {
-        continue;
-      }
-      const docData = allDocuments[metadata.id];
-      if (!docData) {
-        continue;
-      }
-      const eligibility = evaluateGoogleUsatEligibilityForDocument(
-        selfApp,
-        docData,
-      );
-      if (eligibility.eligible) {
-        const idTypeCode = metadata.mock
-          ? null
-          : idTypeForDocumentCategory(metadata.documentCategory);
-        const perks = idTypeCode ? getPerksForIdType(idTypeCode) : [];
-        if (perks.length > 0) {
-          perksMap[metadata.id] = perks;
-        }
-      } else if (eligibility.reason) {
-        ineligibleMap[metadata.id] = eligibility.reason;
-      } else {
-        ineligibleMap[metadata.id] = 'unsupported_id_type';
-      }
-    }
-    return {
-      perksByDocumentId: perksMap,
-      ineligibleReasonByDocumentId: ineligibleMap,
-    };
-  }, [activePerkId, selfApp, documentCatalog.documents, allDocuments]);
+          return {
+            id: metadata.id,
+            name: getDocumentDisplayName(metadata, docData?.data),
+            state: itemState,
+            idType: metadata.documentCategory,
+          };
+        })
+        .sort((a, b) => {
+          // Get metadata for both documents
+          const metaA = documentCatalog.documents.find(d => d.id === a.id);
+          const metaB = documentCatalog.documents.find(d => d.id === b.id);
+
+          // Sort real documents before mock documents
+          if (metaA && metaB) {
+            if (metaA.mock !== metaB.mock) {
+              return metaA.mock ? 1 : -1; // Real first
+            }
+          }
+
+          // Within same type (real/mock), sort alphabetically by name
+          return a.name.localeCompare(b.name);
+        });
+
+      return {
+        documents: rows,
+        perksByDocumentId: activePerkId ? perksMap : undefined,
+        ineligibleReasonByDocumentId: activePerkId ? ineligibleMap : undefined,
+      };
+    }, [
+      allDocuments,
+      documentCatalog.documents,
+      selectedDocumentId,
+      selfApp,
+      activePerkId,
+    ]);
 
   const activeDocumentPerks =
     selectedDocumentId && perksByDocumentId
@@ -342,7 +326,9 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
 
   const selectedDocument = documents.find(doc => doc.id === selectedDocumentId);
   const canContinue =
-    !!selectedDocument && !isDisabledState(selectedDocument.state);
+    !!selectedDocument &&
+    !isDisabledState(selectedDocument.state) &&
+    !ineligibleReasonByDocumentId?.[selectedDocument.id];
 
   // Get document type for the proof request message
   const selectedDocumentType = useMemo(() => {

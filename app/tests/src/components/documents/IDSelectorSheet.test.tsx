@@ -122,6 +122,56 @@ describe('IDSelectorItem', () => {
     );
     expect(getByTestId('test-item')).toBeTruthy();
   });
+
+  it('preserves the underlying state subtitle when flagged ineligible', () => {
+    const onIneligiblePress = jest.fn();
+
+    // A mock doc that fails the active perk gate must still read
+    // "Testing document" rather than the generic "Verified ID".
+    const mockTree = render(
+      <IDSelectorItem
+        documentName="Dev USA Passport"
+        state="mock"
+        ineligible
+        onPress={mockOnPress}
+        onIneligiblePress={onIneligiblePress}
+        testID="test-item"
+      />,
+    ).toJSON();
+    const mockJson = JSON.stringify(mockTree);
+    expect(mockJson).toContain('Testing document');
+    expect(mockJson).not.toContain('Verified ID');
+
+    // A verified doc that fails the gate still reads "Verified ID".
+    const verifiedTree = render(
+      <IDSelectorItem
+        documentName="US Passport"
+        state="verified"
+        ineligible
+        onPress={mockOnPress}
+        onIneligiblePress={onIneligiblePress}
+        testID="test-item"
+      />,
+    ).toJSON();
+    expect(JSON.stringify(verifiedTree)).toContain('Verified ID');
+  });
+
+  it('routes presses to onIneligiblePress (and not onPress) when ineligible', () => {
+    const onIneligiblePress = jest.fn();
+    const { getByTestId } = render(
+      <IDSelectorItem
+        documentName="Aadhaar"
+        state="verified"
+        ineligible
+        onPress={mockOnPress}
+        onIneligiblePress={onIneligiblePress}
+        testID="test-item"
+      />,
+    );
+    fireEvent.press(getByTestId('test-item'));
+    expect(onIneligiblePress).toHaveBeenCalledTimes(1);
+    expect(mockOnPress).not.toHaveBeenCalled();
+  });
 });
 
 describe('IDSelectorSheet', () => {
@@ -388,7 +438,7 @@ describe('IDSelectorSheet — perk eligibility', () => {
     });
   });
 
-  it('decorates a row coming through with verified state as ineligible when the eligibility map flags it', () => {
+  it('treats a row flagged by the eligibility map as ineligible and routes presses to the ineligible handler', () => {
     const docsAll: IDSelectorDocument[] = [
       {
         id: 'doc1',
