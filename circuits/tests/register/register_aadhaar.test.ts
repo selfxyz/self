@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { wasm as wasmTester } from 'tests/utils/circomTesterCompat.js';
+import { wasm as wasmTester } from 'circom_tester';
 import path from 'path';
 import { sha256Pad } from '@zk-email/helpers/dist/sha-utils.js';
 import { Uint8ArrayToCharArray } from '@zk-email/helpers/dist/binary-format.js';

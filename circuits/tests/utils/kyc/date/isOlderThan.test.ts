@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { wasm as wasmTester } from 'tests/utils/circomTesterCompat.js';
+import { wasm as wasmTester } from 'circom_tester';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 

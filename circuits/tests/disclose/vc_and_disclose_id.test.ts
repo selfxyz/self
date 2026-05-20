@@ -1,7 +1,7 @@
 import { describe } from 'mocha';
 import { assert, expect } from 'chai';
 import path from 'path';
-import { wasm as wasm_tester } from 'tests/utils/circomTesterCompat.js';
+import { wasm as wasm_tester } from 'circom_tester';
 import { attributeToPosition_ID } from '@selfxyz/new-common/src/foundation/constants/index.js';
 import { poseidon2 } from 'poseidon-lite';
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';

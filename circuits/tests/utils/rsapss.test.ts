@@ -1,4 +1,4 @@
-import { wasm as wasmTester } from 'tests/utils/circomTesterCompat.js';
+import { wasm as wasmTester } from 'circom_tester';
 import { describe, it } from 'mocha';
 import path from 'path';
 import {

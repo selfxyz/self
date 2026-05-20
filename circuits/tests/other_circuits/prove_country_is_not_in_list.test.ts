@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { wasm as wasm_tester } from 'tests/utils/circomTesterCompat.js';
+import { wasm as wasm_tester } from 'circom_tester';
 import path from 'path';
 import {
   formatCountriesList,

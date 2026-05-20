@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import path from 'path';
-import { wasm as wasm_tester } from 'tests/utils/circomTesterCompat.js';
+import { wasm as wasm_tester } from 'circom_tester';
 import { testDefaultQRData } from '@selfxyz/new-common/src/testing/genMockAadhaarData.js';
 import { sha256Pad } from '@zk-email/helpers/dist/sha-utils.js';
 import { Uint8ArrayToCharArray } from '@zk-email/helpers/dist/binary-format.js';

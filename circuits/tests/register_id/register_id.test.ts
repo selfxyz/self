@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 import { describe } from 'mocha';
 import { expect } from 'chai';
 import path from 'path';
-import { wasm as wasm_tester } from 'tests/utils/circomTesterCompat.js';
+import { wasm as wasm_tester } from 'circom_tester';
 import { createCircuitInputGenerator } from '@selfxyz/new-common/src/circuits/generator.js';
 import type { SignatureAlgorithm } from '@selfxyz/new-common/src/foundation/types/document.js';
 import type { hashAlgosTypes } from '@selfxyz/new-common/src/foundation/constants/crypto.js';

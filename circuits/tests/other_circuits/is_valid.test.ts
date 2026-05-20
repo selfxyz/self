@@ -1,6 +1,6 @@
 import chai, { expect, assert } from 'chai';
 import path from 'path';
-import { wasm as wasm_tester } from 'tests/utils/circomTesterCompat.js';
+import { wasm as wasm_tester } from 'circom_tester';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
