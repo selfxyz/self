@@ -24,6 +24,8 @@ export {
   type DocumentsStore,
   CryptoHandler,
   type SelfCryptoModule,
+  LifecycleHandler,
+  type OperatingMode,
   createHandlers,
   type HandlersConfig,
 } from './handlers';

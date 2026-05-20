@@ -32,20 +32,28 @@ describe('LifecycleHandler', () => {
   });
 
   describe('getConfig', () => {
-    it('returns verification request, debug flag, and platform', async () => {
-      const { handler } = createHandler({ debug: true });
+    it('returns mode, verification request, debug flag, and platform', async () => {
+      const { handler } = createHandler({ debug: true, mode: 'tunnel' });
       const result = await handler.handle('getConfig', {});
       expect(result).toEqual({
+        mode: 'tunnel',
         verificationRequest: { userId: 'user-1', scope: 'test', disclosures: ['nationality'] },
         debug: true,
         platform: 'react-native',
       });
     });
 
+    it('defaults mode to "wallet" when not specified', async () => {
+      const { handler } = createHandler();
+      const result = await handler.handle('getConfig', {}) as Record<string, unknown>;
+      expect(result.mode).toBe('wallet');
+    });
+
     it('returns empty request when none provided', async () => {
       const { handler } = createHandler({ request: {} });
       const result = await handler.handle('getConfig', {}) as Record<string, unknown>;
       expect(result).toEqual({
+        mode: 'wallet',
         verificationRequest: {},
         debug: false,
         platform: 'react-native',

@@ -26,6 +26,7 @@ import type { AnalyticsSink } from './handlers/AnalyticsHandler';
 import type { NavigationCallbacks } from './handlers/NavigationHandler';
 import type { DocumentsStore } from './handlers/DocumentsHandler';
 import type { SelfCryptoModule } from './handlers/CryptoHandler';
+import type { OperatingMode } from './handlers/LifecycleHandler';
 
 // Resolve iOS main bundle path via react-native-fs (optional peerDep).
 // Falls back to a relative path when RNFS is not installed.
@@ -62,6 +63,13 @@ export interface SelfVerificationProps {
   onFailure: (error: SelfSdkError) => void;
   onCancelled: () => void;
   debug?: boolean;
+  /**
+   * Operating mode signaled to the WebView at boot via lifecycle.getConfig.
+   * 'wallet' = persistent UI (Self Wallet). 'tunnel' = one-shot
+   * verification (3rd-party SDK embedders). Default: 'wallet'.
+   * See specs/projects/sdk/workstreams/webview-in-app/SPEC-MODES.md.
+   */
+  mode?: OperatingMode;
   /**
    * When set (and __DEV__ is true), load this URL instead of the bundled
    * asset. Release builds compile the dev path out entirely so this is
@@ -102,6 +110,7 @@ export const SelfVerification: React.FC<SelfVerificationProps> = ({
   onFailure,
   onCancelled,
   debug = false,
+  mode,
   devServerUrl,
   analytics,
   navigation,
@@ -159,6 +168,7 @@ export const SelfVerification: React.FC<SelfVerificationProps> = ({
       navigation: navigationWithBack,
       documents,
       crypto,
+      mode,
     });
     // Wrap the lifecycle ready handler to mark the splash dismissed.
     const lifecycle = handlers.find(h => h.domain === 'lifecycle');
@@ -183,6 +193,7 @@ export const SelfVerification: React.FC<SelfVerificationProps> = ({
     navigationWithBack,
     documents,
     crypto,
+    mode,
     handleReady,
   ]);
 

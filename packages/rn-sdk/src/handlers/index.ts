@@ -5,7 +5,7 @@
 import type { BridgeHandler } from '../bridge/types';
 import type { MessageRouter } from '../bridge/MessageRouter';
 import type { VerificationRequest, VerificationResult, SelfSdkError } from '../SelfVerification';
-import { LifecycleHandler } from './LifecycleHandler';
+import { LifecycleHandler, type OperatingMode } from './LifecycleHandler';
 import { BiometricHandler } from './BiometricHandler';
 import { KeychainHandler } from './KeychainHandler';
 import { NfcHandler } from './NfcHandler';
@@ -27,6 +27,7 @@ export interface HandlersConfig {
   navigation?: NavigationCallbacks;
   documents?: DocumentsStore;
   crypto?: SelfCryptoModule;
+  mode?: OperatingMode;
 }
 
 export function createHandlers(config: HandlersConfig): BridgeHandler[] {
@@ -37,6 +38,7 @@ export function createHandlers(config: HandlersConfig): BridgeHandler[] {
       onFailure: config.onFailure,
       onCancelled: config.onCancelled,
       debug: config.debug,
+      mode: config.mode,
     }),
     new BiometricHandler(),
     new KeychainHandler(),
@@ -59,3 +61,5 @@ export { DocumentsHandler } from './DocumentsHandler';
 export type { DocumentsStore } from './DocumentsHandler';
 export { CryptoHandler } from './CryptoHandler';
 export type { SelfCryptoModule } from './CryptoHandler';
+export { LifecycleHandler } from './LifecycleHandler';
+export type { OperatingMode } from './LifecycleHandler';

@@ -6,7 +6,9 @@ import type React from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 
 import { DevRouteMenu } from './components/DevRouteMenu';
+import { ModeBoot } from './components/ModeBoot';
 import { PasswordGate } from './components/PasswordGate';
+import { OperatingModeProvider } from './providers/OperatingModeProvider';
 import { SelfClientProvider } from './providers/SelfClientProvider';
 import { VerificationRequestProvider } from './providers/VerificationRequestProvider';
 import { DevModeScreen } from './screens/account/DevModeScreen';
@@ -66,9 +68,11 @@ import { TunnelResultScreen } from './screens/tunnel/TunnelResultScreen';
 export const App: React.FC = () => (
   <PasswordGate>
     <BrowserRouter>
-      <VerificationRequestProvider>
-        <SelfClientProvider>
-          <Routes>
+      <OperatingModeProvider>
+        <VerificationRequestProvider>
+          <SelfClientProvider>
+            <ModeBoot />
+            <Routes>
             <Route path="/" element={<HomeScreen />} />
             <Route path="/onboarding/tour/:step" element={<TourScreen />} />
             <Route path="/onboarding/country" element={<CountryPickerScreen />} />
@@ -127,7 +131,8 @@ export const App: React.FC = () => (
           </Routes>
           {import.meta.env.DEV && <DevRouteMenu />}
         </SelfClientProvider>
-      </VerificationRequestProvider>
+        </VerificationRequestProvider>
+      </OperatingModeProvider>
     </BrowserRouter>
   </PasswordGate>
 );
