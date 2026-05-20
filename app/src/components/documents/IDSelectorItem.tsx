@@ -22,7 +22,6 @@ export interface IDSelectorItemProps {
   onIneligiblePress?: () => void;
   ineligible?: boolean;
   disabled?: boolean;
-  isLastItem?: boolean;
   perkSlot?: React.ReactNode;
   /** ISO 3166-1 alpha-3 nationality code used to render the flag icon. */
   nationalityCode?: string;
@@ -30,6 +29,8 @@ export interface IDSelectorItemProps {
   isMock?: boolean;
   /** Right-aligned security label, e.g. "HI-SECURITY". */
   securityLabel?: string;
+  /** Whether to render the 0.5 px separator under the row. */
+  showSeparator?: boolean;
   testID?: string;
 }
 
@@ -68,15 +69,14 @@ export const IDSelectorItem: React.FC<IDSelectorItemProps> = ({
   onIneligiblePress,
   ineligible = false,
   disabled,
-  isLastItem,
   perkSlot,
   nationalityCode,
   isMock,
   securityLabel,
+  showSeparator = false,
   testID,
 }) => {
   const isDisabled = disabled || isDisabledState(state) || ineligible;
-  const isActive = state === 'active' && !ineligible;
   const subtitleText = getSubtitleText(state);
   const subtitleColor = getSubtitleColor(state);
   const textColor = isDisabled ? slate400 : black;
@@ -102,8 +102,10 @@ export const IDSelectorItem: React.FC<IDSelectorItemProps> = ({
         alignItems="center"
         gap={13}
         opacity={isDisabled ? 0.6 : 1}
-        borderBottomWidth={!isActive && !isLastItem ? 0.5 : 0}
-        borderBottomColor="rgba(60,60,67,0.36)"
+        borderBottomWidth={0.5}
+        borderBottomColor={
+          showSeparator ? 'rgba(60,60,67,0.36)' : 'transparent'
+        }
       >
         {/* Document icon — mock logo, flag, or a neutral fallback */}
         <DocumentIdentityIcon

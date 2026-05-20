@@ -182,7 +182,7 @@ export const IDSelectorSheet: React.FC<IDSelectorSheetProps> = ({
               testID={`${testID}-list`}
             >
               <YStack gap={8}>
-                {documents.map((doc, index) => {
+                {documents.map(doc => {
                   const ineligible = isIneligible(doc.id);
                   const isSelected = doc.id === selectedId;
                   // Don't override to 'active' if the document is disabled or
@@ -213,49 +213,40 @@ export const IDSelectorSheet: React.FC<IDSelectorSheetProps> = ({
                       ineligible={ineligible}
                       onPress={() => handleSelect(doc.id)}
                       onIneligiblePress={() => handleIneligiblePress(doc.id)}
-                      isLastItem={index === documents.length - 1}
                       nationalityCode={doc.nationalityCode}
                       isMock={doc.isMock}
                       securityLabel={doc.securityLabel}
+                      showSeparator={!isActive}
                       testID={`${testID}-item-${doc.id}`}
                     />
                   );
 
-                  if (isActive) {
-                    const hasPerks = !!perkSlot;
-                    return (
-                      <View
-                        key={doc.id}
-                        backgroundColor={hasPerks ? slate100 : 'transparent'}
-                        borderRadius={10}
-                        borderWidth={hasPerks ? 2 : 0}
-                        borderColor={slate200}
-                        padding={0}
-                        overflow="hidden"
-                        testID={`${testID}-active-wrapper-${doc.id}`}
-                      >
-                        <View
-                          backgroundColor={white}
-                          borderRadius={10}
-                          borderWidth={2}
-                          borderColor={blue600}
-                          overflow="hidden"
-                          style={styles.activeCardShadow}
-                        >
-                          {item}
-                        </View>
-                        {hasPerks ? perkSlot : null}
-                      </View>
-                    );
-                  }
-
+                  const hasPerks = isActive && !!perkSlot;
                   return (
                     <View
                       key={doc.id}
-                      backgroundColor={white}
+                      backgroundColor={isActive ? slate100 : 'transparent'}
+                      borderRadius={10}
+                      borderWidth={1}
+                      borderColor={isActive ? slate200 : 'transparent'}
                       overflow="hidden"
+                      testID={
+                        isActive
+                          ? `${testID}-active-wrapper-${doc.id}`
+                          : undefined
+                      }
                     >
-                      {item}
+                      <View
+                        backgroundColor={white}
+                        borderRadius={10}
+                        borderWidth={2}
+                        borderColor={isActive ? blue600 : 'transparent'}
+                        overflow="hidden"
+                        style={isActive ? styles.activeCardShadow : undefined}
+                      >
+                        {item}
+                      </View>
+                      {hasPerks ? perkSlot : null}
                     </View>
                   );
                 })}
