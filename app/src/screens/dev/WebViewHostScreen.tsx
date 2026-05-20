@@ -9,6 +9,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import {
   type AnalyticsSink,
+  type DocumentsStore,
   type NavigationCallbacks,
   type SelfSdkError,
   SelfVerification,
@@ -16,6 +17,7 @@ import {
 } from '@selfxyz/rn-sdk';
 
 import type { RootStackParamList } from '@/navigation';
+import { selfClientDocumentsAdapter } from '@/providers/passportDataProvider';
 import { trackEvent, trackNfcEvent } from '@/services/analytics';
 
 const WEBVIEW_DEV_URL_ENV = process.env.WEBVIEW_DEV_URL;
@@ -43,6 +45,19 @@ const WebViewHostScreen: React.FC = () => {
       },
     }),
     [navigation],
+  );
+
+  const documents = useMemo<DocumentsStore>(
+    () => ({
+      loadCatalog: () => selfClientDocumentsAdapter.loadDocumentCatalog(),
+      saveCatalog: catalog =>
+        selfClientDocumentsAdapter.saveDocumentCatalog(catalog as never),
+      loadById: id => selfClientDocumentsAdapter.loadDocumentById(id),
+      save: (id, data) =>
+        selfClientDocumentsAdapter.saveDocument(id, data as never),
+      delete: id => selfClientDocumentsAdapter.deleteDocument(id),
+    }),
+    [],
   );
 
   const handleSuccess = useCallback(
@@ -81,6 +96,7 @@ const WebViewHostScreen: React.FC = () => {
         devServerUrl={__DEV__ ? WEBVIEW_DEV_URL_ENV : undefined}
         analytics={analytics}
         navigation={navigationCallbacks}
+        documents={documents}
       />
     </View>
   );
