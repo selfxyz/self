@@ -438,6 +438,7 @@ const DocumentNFCScanScreen: React.FC = () => {
           trackNfcEvent(BiometricEvents.NFC_RESPONSE_PARSE_FAILED, {
             error: errMsg,
           });
+          openErrorModal(errMsg);
           return;
         }
         if (passportData) {
