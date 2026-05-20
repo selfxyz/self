@@ -57,12 +57,12 @@ export type { MRZScanOptions } from './mrz';
 export type { OnboardingBranch, OnboardingFailureStage, OnboardingStage } from './analytics/onboardingFunnel';
 
 export type { PassportValidationCallbacks } from './validation/document';
+export type { Perk, PerkRailContent } from './flows/onboarding/perks';
 export type { PerkId, PerkRecord } from './data/perks';
+
 export type { ProvingStateType } from './proving/provingMachine';
 
 export type { RecoveryValidationResult } from './proving/recoveryValidation';
-
-export type { Perk, PerkRailContent } from './flows/onboarding/perks';
 
 export type { SDKEvent, SDKEventMap } from './types/events';
 export type { SdkErrorCategory } from './errors';
@@ -92,6 +92,13 @@ export {
 } from './errors';
 export { default as LogoConfirmationScreen } from './flows/onboarding/logo-confirmation-screen';
 export { NFCScannerScreen } from './components/screens/NFCScannerScreen';
+export {
+  PERKS,
+  getEligiblePerksForIdType,
+  getPerkRailContent,
+  getPerkRailLabel,
+  getPerksForIdType,
+} from './flows/onboarding/perks';
 export { QRCodeScreen } from './components/screens/QRCodeScreen';
 export { PERKS as SHARED_PERKS, getPerkRecordsForIdType } from './data/perks';
 export { SdkEvents } from './types/events';
