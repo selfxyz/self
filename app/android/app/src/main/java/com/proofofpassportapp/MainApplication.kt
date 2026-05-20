@@ -29,6 +29,7 @@ class MainApplication : Application(), ReactApplication {
               add(CameraActivityPackage())
               add(QRCodeScannerPackage())
               add(BackupPackage())
+              add(SelfMRZScannerPackage())
               // add(RNSelfPassportReaderPackage())
             }
 
