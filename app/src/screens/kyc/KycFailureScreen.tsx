@@ -30,6 +30,7 @@ import {
 import ShieldErrorIcon from '@/assets/icons/shield_error.svg';
 import SupportUuidRow from '@/components/support/SupportUuidRow';
 import { buttonTap } from '@/integrations/haptics';
+import { KYC_PROVIDER } from '@/integrations/kyc';
 import type { RootStackParamList } from '@/navigation';
 
 type KycFailureRouteParams = {
@@ -57,7 +58,7 @@ const KycFailureScreen: React.FC = () => {
     buttonTap();
     const attemptCount = incrementAttemptRetryCount('kyc');
     trackBranchEvent(selfClient, KycEvents.RETRY_TRIGGERED, {
-      provider: 'didit',
+      provider: KYC_PROVIDER,
       attempt_count: attemptCount,
     });
     navigation.navigate('CountryPicker');
