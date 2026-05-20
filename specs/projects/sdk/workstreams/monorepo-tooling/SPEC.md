@@ -153,15 +153,27 @@ the new Euclid version (and against MT-2 directly):
   `blockExoticSubdeps: true`.
 - Every `allowBuilds` entry has a one-line justification comment.
 
-**Circom tester compatibility (MT-21):**
+**Circom tester compatibility (MT-21, MT-22):**
 
-- `pnpm --filter @selfxyz/circuits test` passes in CI with
-  `circom_tester` pinned to the current upstream Git ref (no forced downgrade
-  to older npm-only versions).
-- `circuits/tests/utils/circomTesterCompat.ts` is the single compatibility
-  boundary. No ad-hoc `getOutput` shims duplicated across tests.
-- A follow-up can remove the compat import only after proving direct imports
-  from `circom_tester` pass consistently in Circuits CI.
+- `pnpm --filter @selfxyz/circuits test` passes in CI with `circom_tester`
+  pinned via `pnpm.overrides` to commit
+  `81e963cea5fb91ca31126058c8fdc9aafc9d695d` of the remicolin fork. That commit
+  exposes the `getOutput(witness, string[])` API used by current tests; without
+  the override, pnpm hoisting resolves to `circom-dl`'s transitive npm
+  `circom_tester@0.0.20`, which lacks that API.
+- `pnpm why circom_tester` reports one resolved version, and
+  `pnpm-lock.yaml` maps both the direct circuits dependency and `circom-dl`'s
+  transitive dependency to the remicolin Git tarball at
+  `81e963cea5fb91ca31126058c8fdc9aafc9d695d`, not the npm registry
+  `circom_tester@0.0.20` package.
+- Circuits test files import `circom_tester` directly. The interim
+  `circuits/tests/utils/circomTesterCompat.ts` shim that previously masked the
+  hoist mismatch has been deleted and is not reintroduced.
+- MT-22 owns the API migration to upstream `circom_tester@0.0.24`: convert the
+  fork-only string-list `getOutput` calls to upstream's output-schema API,
+  normalize witness value comparisons, remove the `pnpm.overrides` pin, and add
+  a `pretest` guard that fails fast if `circom_tester` resolves to anything
+  other than `0.0.24`. MT-21's override stays in place until MT-22 ships.
 
 **Linker change (MT-12):**
 
@@ -221,7 +233,8 @@ docs or `turbo.json` `outputs` declarations are exempt.
 | MT-18 | Verify dedupe of duplicate transitive versions               | Open   | Run `pnpm dedupe` and audit the diff. Lockfile is currently huge — pin where safe to shrink it.                                                                                                                                                                                                                                                          |
 | MT-19 | Keep WebView bundle script outside Turbo in this workstream  | Open   | Decision: do not wire `scripts/build-webview-bundle.sh` into `turbo.json` here. Track integration under `build-pipeline` as a separate follow-up after owner sign-off.                                                                                                                                                                                   |
 | MT-20 | Declare Turbo cache contract for build outputs + inputs      | Open   | Decision: define explicit `outputs` for build tasks and set `globalDependencies` for shared config files (at minimum root tsconfig + lockfile + env templates) in `turbo.json`.                                                                                                                                                                          |
-| MT-21 | Normalize `circom_tester` compat boundary for circuits tests | Open   | Keep current upstream `circom_tester` and route test imports through `circomTesterCompat` until upstream `getOutput` behavior is stable. Remove shim only with CI proof.                                                                                                                                                                                 |
+| MT-21 | Pin `circom_tester` for circuits tests                       | Open   | Force all pnpm resolutions, including `circom-dl`'s transitive dependency, to remicolin commit `81e963cea5fb91ca31126058c8fdc9aafc9d695d` so hoisting cannot select the npm registry `circom_tester@0.0.20` package. Verify via `pnpm why circom_tester` (one resolved version) plus lockfile entries pointing at the Git tarball, then Circuits CI green on this branch with all tests passing.                      |
+| MT-22 | Migrate circuits to upstream `circom_tester@0.0.24`          | Open   | Blocks removal of the MT-21 override. Replace the fork-only string-list `getOutput(witness, ['signal'])` usage (~81 call sites) with upstream's output-schema API, normalize witness value comparisons (bigint → string where tests assert against strings), remove the `pnpm.overrides.circom_tester` pin, add a `pretest` guard that fails fast if `circom_tester` resolves to anything other than `0.0.24`, and prove `pnpm --filter @selfxyz/circuits test` passes in CI. |
 
 ## Decisions Captured
 

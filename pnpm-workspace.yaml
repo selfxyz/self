@@ -43,6 +43,10 @@ blockExoticSubdeps: false
 # turns CSSStyleDeclaration into a strict Proxy that rejects react-dom v18's
 # numeric-index style writes (TypeError: 'set' on proxy: trap returned falsish).
 overrides:
+  # circom-dl depends on npm circom_tester@0.0.20, but circuits tests rely on
+  # the pinned remicolin fork's getOutput(witness, string[]) API. Force every
+  # hoisted copy to the same implementation until MT-22 migrates to upstream.
+  circom_tester: github:remicolin/circom_tester#81e963cea5fb91ca31126058c8fdc9aafc9d695d
   jsdom: ^25.0.1
   # Pin @types/minimatch to v5; v6 is a deprecated stub with no .d.ts files,
   # which makes TS error "TS2688: Cannot find type definition file for 'minimatch'"
