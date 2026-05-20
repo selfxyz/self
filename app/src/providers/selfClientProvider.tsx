@@ -29,6 +29,7 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import { logNFCEvent, logProofEvent } from '@/config/sentry';
+import { KYC_PROVIDER } from '@/hooks/useKycLauncher';
 import { createKycSession, launchKycVerification } from '@/integrations/kyc';
 import type { RootStackParamList } from '@/navigation';
 import { navigationRef } from '@/navigation';
@@ -346,7 +347,6 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
               break;
             case 'kyc':
               (async () => {
-                const KYC_PROVIDER = 'didit';
                 const sessionRequestedAt = Date.now();
                 let providerOpenedAt = 0;
                 const trackEventClient = { trackEvent };
