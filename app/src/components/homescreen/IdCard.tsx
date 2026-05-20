@@ -18,6 +18,7 @@ import {
 } from '@selfxyz/common/utils/types';
 import { WarningTriangleIcon } from '@selfxyz/euclid/dist/components/icons/WarningTriangleIcon';
 import {
+  getPerkRailContent,
   getPerkRecordsForIdType,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
@@ -26,11 +27,11 @@ import { HomescreenEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics'
 import {
   black,
   red600,
+  slate100,
   white,
   yellow500,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
-import GoogleLogo from '@selfxyz/mobile-sdk-alpha/svgs/icons/google.svg';
 
 import CardBackgroundId1 from '@/assets/images/card_background_id1.png';
 import CardBackgroundId2 from '@/assets/images/card_background_id2.png';
@@ -54,10 +55,6 @@ import { getCountryDemonym } from '@/utils/countryDemonyms';
 import { getDocumentAttributes } from '@/utils/documentAttributes';
 import { idTypeForDocumentCategory } from '@/utils/idType';
 import { registerModalCallbacks } from '@/utils/modalCallbackRegistry';
-
-const PERK_LOGO_BY_ID: Record<string, () => React.ReactNode> = {
-  google_cloud_faucet: () => <GoogleLogo width={20} height={20} />,
-};
 
 const CARD_BACKGROUNDS = [
   CardBackgroundId1,
@@ -149,6 +146,10 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
   );
   const perkRecords = useMemo(
     () => (idType ? getPerkRecordsForIdType(idType) : []),
+    [idType],
+  );
+  const perkRailContent = useMemo(
+    () => (idType ? getPerkRailContent(idType) : null),
     [idType],
   );
   const primaryPerk = perkRecords[0] ?? null;
@@ -356,10 +357,10 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
         borderRadius={borderRadius}
         overflow="hidden"
         shadowColor={black}
-        shadowOffset={{ width: 0, height: 4 }}
+        shadowOffset={{ width: 0, height: 24 }}
         shadowOpacity={0.25}
-        shadowRadius={14}
-        elevation={8}
+        shadowRadius={34}
+        elevation={16}
         marginBottom={8}
       >
         <YStack
@@ -480,11 +481,12 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
               </YStack>
             ))}
         </YStack>
-        {perksVisible && primaryPerk && (
-          <YStack backgroundColor={white}>
+        {perksVisible && primaryPerk && perkRailContent && (
+          <YStack backgroundColor={slate100}>
             <PerkRail
               variant="dense"
-              logos={[(PERK_LOGO_BY_ID[primaryPerk.id] ?? (() => null))()]}
+              logos={perkRailContent.logos}
+              label={perkRailContent.label.toUpperCase()}
               onPress={handlePerkPress}
             />
           </YStack>

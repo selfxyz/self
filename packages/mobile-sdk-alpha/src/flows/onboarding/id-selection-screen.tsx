@@ -19,9 +19,9 @@ import { OnboardingEvents, RegistrationPickerEvents } from '../../constants/anal
 import { useSelfClient } from '../../context';
 import { buttonTap } from '../../haptic';
 import { SdkEvents } from '../../types/events';
-import { getDocumentBadgeLabel, getDocumentPerkLabel } from './badges';
+import { getDocumentBadgeLabel } from './badges';
 import { getDocumentDisplaySubtitle, getDocumentDisplayTitle } from './documentCardCopy';
-import { getPerksForIdType } from './perks';
+import { getPerkRailContent, getPerksForIdType } from './perks';
 
 const KYC_DOC_TYPE = 'kyc';
 
@@ -63,11 +63,8 @@ type DocumentCardProps = {
 
 const DocumentCard: React.FC<DocumentCardProps> = ({ docType, countryCode, onPress }) => {
   const subtitle = getDocumentDisplaySubtitle(docType, countryCode);
-  const perks = getPerksForIdType(docType);
-  const perkLabel = getDocumentPerkLabel(docType);
-  const hasPerks = perkLabel !== null;
+  const perkRailContent = getPerkRailContent(docType);
   const useFlag = docType !== KYC_DOC_TYPE;
-  const perkLogos = perks.flatMap(p => p.renderLogos?.() ?? []);
 
   return (
     <View style={styles.cardOuter}>
@@ -87,11 +84,11 @@ const DocumentCard: React.FC<DocumentCardProps> = ({ docType, countryCode, onPre
           </RNView>
         </Pressable>
       </RNView>
-      {hasPerks && (
+      {perkRailContent && (
         <PerkRail
-          variant={perkLogos.length > 1 ? 'dense' : 'minimal'}
-          logos={perkLogos}
-          label={perkLabel ?? undefined}
+          variant={perkRailContent.logos.length > 1 ? 'dense' : 'minimal'}
+          logos={perkRailContent.logos}
+          label={perkRailContent.label}
           onPress={onPress}
         />
       )}

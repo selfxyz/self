@@ -21,10 +21,27 @@ const MockGetPerkRecordsForIdType = jest.fn((idType: string) =>
         },
       ],
 );
+const MockGetPerkRailContent = jest.fn((idType: string) =>
+  idType === 'none'
+    ? null
+    : {
+        perks: [
+          {
+            id: 'google_cloud_faucet',
+            label: 'Google Cloud Faucet',
+            isNew: true,
+            renderLogos: () => ['google-logo', 'usat-logo'],
+          },
+        ],
+        logos: ['google-logo', 'usat-logo'],
+        label: 'Eligible for 1 perk',
+      },
+);
 let MockPerkRailProps: {
   onPress?: () => void;
   logos?: unknown[];
   variant?: string;
+  label?: string;
 } = {};
 
 function perkRailRendered(): boolean {
@@ -81,6 +98,7 @@ jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
   useSelfClient: () => ({ trackEvent: MockTrackEvent }),
   getPerkRecordsForIdType: (idType: string) =>
     MockGetPerkRecordsForIdType(idType),
+  getPerkRailContent: (idType: string) => MockGetPerkRailContent(idType),
 }));
 
 jest.mock('@selfxyz/mobile-sdk-alpha/components', () => ({
@@ -114,11 +132,6 @@ jest.mock('@selfxyz/mobile-sdk-alpha/constants/fonts', () => ({
   __esModule: true,
   dinot: 'DINOT',
 }));
-
-jest.mock(
-  '@selfxyz/mobile-sdk-alpha/svgs/icons/google.svg',
-  () => 'GoogleLogo',
-);
 
 jest.mock('@selfxyz/common/utils/types', () => ({
   __esModule: true,
@@ -248,6 +261,23 @@ describe('IdCardLayout perks footer', () => {
             },
           ],
     );
+    MockGetPerkRailContent.mockClear();
+    MockGetPerkRailContent.mockImplementation((idType: string) =>
+      idType === 'none'
+        ? null
+        : {
+            perks: [
+              {
+                id: 'google_cloud_faucet',
+                label: 'Google Cloud Faucet',
+                isNew: true,
+                renderLogos: () => ['google-logo', 'usat-logo'],
+              },
+            ],
+            logos: ['google-logo', 'usat-logo'],
+            label: 'Eligible for 1 perk',
+          },
+    );
     MockPerkRailProps = {};
   });
 
@@ -257,8 +287,8 @@ describe('IdCardLayout perks footer', () => {
     );
     expect(perkRailRendered()).toBe(true);
     expect(MockPerkRailProps.variant).toBe('dense');
-    expect(MockPerkRailProps.logos).toHaveLength(1);
-    expect(MockPerkRailProps.logos?.[0]).not.toBeNull();
+    expect(MockPerkRailProps.logos).toHaveLength(2);
+    expect(MockPerkRailProps.label).toBe('ELIGIBLE FOR 1 PERK');
   });
 
   it('fires ID_CARD_VIEWED exactly once on mount', () => {
@@ -359,6 +389,7 @@ describe('IdCardLayout perks footer', () => {
 
   it('suppresses footer when the perks catalog is empty', () => {
     MockGetPerkRecordsForIdType.mockReturnValueOnce([]);
+    MockGetPerkRailContent.mockReturnValueOnce(null);
     render(
       <IdCardLayout idDocument={passportDoc} selected={true} hidden={true} />,
     );
@@ -418,7 +449,7 @@ describe('IdCardLayout perks footer', () => {
     render(
       <IdCardLayout idDocument={passportDoc} selected={true} hidden={true} />,
     );
-    expect(MockPerkRailProps.logos).toHaveLength(1);
+    expect(MockPerkRailProps.logos).toHaveLength(2);
     await act(async () => {
       await MockPerkRailProps.onPress?.();
     });
