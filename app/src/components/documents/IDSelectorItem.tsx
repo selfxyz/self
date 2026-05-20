@@ -5,7 +5,6 @@
 import { Pressable } from 'react-native';
 import { Text, View, XStack, YStack } from 'tamagui';
 
-import { RoundFlag } from '@selfxyz/mobile-sdk-alpha/components';
 import {
   black,
   green600,
@@ -14,7 +13,7 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
-import DevCardLogo from '@/assets/images/dev_card_logo.svg';
+import { DocumentIdentityIcon } from '@/components/shared/DocumentIdentityIcon';
 
 export interface IDSelectorItemProps {
   documentName: string;
@@ -36,7 +35,6 @@ export interface IDSelectorItemProps {
 
 export type IDSelectorState = 'active' | 'verified' | 'expired' | 'mock';
 
-const DEV_LOGO_BG = '#1A1A2E';
 const ICON_SIZE = 32;
 
 function getSubtitleText(state: IDSelectorState): string {
@@ -107,29 +105,12 @@ export const IDSelectorItem: React.FC<IDSelectorItemProps> = ({
         borderBottomWidth={!isActive && !isLastItem ? 0.5 : 0}
         borderBottomColor="rgba(60,60,67,0.36)"
       >
-        {/* Document icon — flag for real docs, DevCardLogo for mocks */}
-        <View
-          width={ICON_SIZE}
-          height={ICON_SIZE}
-          alignItems="center"
-          justifyContent="center"
-        >
-          {isMock ? (
-            <View
-              width={ICON_SIZE}
-              height={ICON_SIZE}
-              borderRadius={ICON_SIZE / 2}
-              backgroundColor={DEV_LOGO_BG}
-              alignItems="center"
-              justifyContent="center"
-              overflow="hidden"
-            >
-              <DevCardLogo width={ICON_SIZE} height={ICON_SIZE} />
-            </View>
-          ) : (
-            <RoundFlag countryCode={nationalityCode ?? ''} size={ICON_SIZE} />
-          )}
-        </View>
+        {/* Document icon — mock logo, flag, or a neutral fallback */}
+        <DocumentIdentityIcon
+          nationalityCode={nationalityCode}
+          isMock={isMock}
+          size={ICON_SIZE}
+        />
 
         {/* Document info */}
         <YStack flex={1} gap={2} paddingVertical={8} paddingBottom={9}>

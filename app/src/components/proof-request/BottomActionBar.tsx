@@ -11,16 +11,15 @@ import {
 } from 'react-native';
 import { Text, View, XStack, YStack } from 'tamagui';
 
-import { RoundFlag } from '@selfxyz/mobile-sdk-alpha/components';
 import { slate500 as trueSlate500 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 import type { Perk } from '@selfxyz/mobile-sdk-alpha/onboarding/perks';
 
-import DevCardLogo from '@/assets/images/dev_card_logo.svg';
 import { proofRequestColors } from '@/components/proof-request/designTokens';
 import { ChevronUpDownIcon } from '@/components/proof-request/icons';
 import { PerkEligibilityRow } from '@/components/proof-request/PerkEligibilityRow';
+import { DocumentIdentityIcon } from '@/components/shared/DocumentIdentityIcon';
 
 export interface BottomActionBarProps {
   selectedDocumentName: string;
@@ -36,7 +35,6 @@ export interface BottomActionBarProps {
 }
 
 const ICON_SIZE = 32;
-const DEV_LOGO_BG = '#1A1A2E';
 
 /**
  * Bottom action bar with stacked pill-shaped document selector and approve
@@ -104,32 +102,11 @@ export const BottomActionBar: React.FC<BottomActionBarProps> = ({
               paddingRight={14}
               paddingVertical={8}
             >
-              {/* Flag / dev icon */}
-              <View
-                width={ICON_SIZE}
-                height={ICON_SIZE}
-                alignItems="center"
-                justifyContent="center"
-              >
-                {selectedDocumentIsMock ? (
-                  <View
-                    width={ICON_SIZE}
-                    height={ICON_SIZE}
-                    borderRadius={ICON_SIZE / 2}
-                    backgroundColor={DEV_LOGO_BG}
-                    alignItems="center"
-                    justifyContent="center"
-                    overflow="hidden"
-                  >
-                    <DevCardLogo width={ICON_SIZE} height={ICON_SIZE} />
-                  </View>
-                ) : (
-                  <RoundFlag
-                    countryCode={selectedDocumentNationalityCode ?? ''}
-                    size={ICON_SIZE}
-                  />
-                )}
-              </View>
+              <DocumentIdentityIcon
+                nationalityCode={selectedDocumentNationalityCode}
+                isMock={selectedDocumentIsMock}
+                size={ICON_SIZE}
+              />
 
               {/* Name + HI-SECURITY label */}
               <YStack flex={1}>

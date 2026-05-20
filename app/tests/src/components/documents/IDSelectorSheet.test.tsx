@@ -173,6 +173,19 @@ describe('IDSelectorItem', () => {
     expect(renderedText(tree)).toContain('FRA');
   });
 
+  it('renders a neutral fallback icon when nationality code is missing', () => {
+    const tree = render(
+      <IDSelectorItem
+        documentName="Unknown Passport"
+        state="verified"
+        onPress={mockOnPress}
+        testID="test-item"
+      />,
+    );
+    expect(renderedText(tree)).toContain('icon-circle-help');
+    expect(renderedText(tree)).not.toContain('mock-round-flag');
+  });
+
   it('preserves the underlying state subtitle when flagged ineligible', () => {
     const onIneligiblePress = jest.fn();
 
