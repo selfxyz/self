@@ -4,7 +4,7 @@
 
 import React, { useCallback } from 'react';
 import type { NativeSyntheticEvent, ViewProps } from 'react-native';
-import { PixelRatio, Platform, requireNativeComponent } from 'react-native';
+import { Platform, requireNativeComponent } from 'react-native';
 
 import type { SelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
@@ -137,8 +137,8 @@ export const PassportCamera: React.FC<PassportCameraProps> = ({
       onPassportRead={_onPassportRead}
       onError={_onError}
       style={{
-        height: PixelRatio.getPixelSizeForLayoutSize(800),
-        width: PixelRatio.getPixelSizeForLayoutSize(400),
+        width: '130%',
+        height: '130%',
       }}
     />
   );

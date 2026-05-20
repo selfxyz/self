@@ -154,7 +154,12 @@ internal class PassportCameraView(context: Context) : FrameLayout(context) {
               }
               isDecoding = true
 
-              val processor = frameProcessor ?: return
+              val processor =
+                  frameProcessor
+                      ?: run {
+                        isDecoding = false
+                        return
+                      }
               val subscribe =
                   Single.fromCallable {
                         processor.process(
@@ -204,6 +209,7 @@ internal class PassportCameraView(context: Context) : FrameLayout(context) {
         }
 
         override fun onCanceled(timeRequired: Long) {
+          isDecoding = false
           if (!mounted || !isAttachedToWindow) {
             return
           }
@@ -217,6 +223,7 @@ internal class PassportCameraView(context: Context) : FrameLayout(context) {
         }
 
         override fun onCompleted(timeRequired: Long) {
+          isDecoding = false
           if (!mounted || !isAttachedToWindow) {
             return
           }
