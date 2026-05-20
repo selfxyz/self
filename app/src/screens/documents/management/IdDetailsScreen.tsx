@@ -30,6 +30,7 @@ import IdCardLayout from '@/components/homescreen/IdCard';
 import { usePassport } from '@/providers/passportDataProvider';
 import { ProofHistoryList } from '@/screens/home/ProofHistoryList';
 import useUserStore from '@/stores/userStore';
+import { idTypeForDocumentCategory } from '@/utils/idType';
 
 const IdDetailsScreen: React.FC = () => {
   const { idDetailsDocumentId } = useUserStore();
@@ -149,7 +150,12 @@ const IdDetailsScreen: React.FC = () => {
 
   const ListHeader = (
     <YStack padding={20} paddingBottom={0}>
-      <IdCardLayout idDocument={document} selected={true} hidden={isHidden} />
+      <IdCardLayout
+        idDocument={document}
+        selected={true}
+        hidden={isHidden}
+        showPerks={false}
+      />
       <XStack marginTop={'$3'} justifyContent="flex-start" gap={'$4'}>
         <Button
           onPress={() => setIsHidden(!isHidden)}
@@ -235,20 +241,5 @@ const IdDetailsScreen: React.FC = () => {
     </YStack>
   );
 };
-
-function idTypeForDocumentCategory(
-  category: IDDocument['documentCategory'],
-): string | null {
-  switch (category) {
-    case 'passport':
-      return 'p';
-    case 'id_card':
-      return 'i';
-    case 'aadhaar':
-      return 'a';
-    default:
-      return null;
-  }
-}
 
 export default IdDetailsScreen;
