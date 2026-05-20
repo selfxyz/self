@@ -262,8 +262,9 @@ export const SelfVerification: React.FC<SelfVerificationProps> = ({
         onMessage={onMessage}
         javaScriptEnabled
         domStorageEnabled
-        allowFileAccess={false}
-        allowUniversalAccessFromFileURLs={false}
+        allowFileAccess
+        allowFileAccessFromFileURLs
+        allowUniversalAccessFromFileURLs
         mediaPlaybackRequiresUserAction={false}
         originWhitelist={['*']}
         style={{ flex: 1, opacity: loadStage === 'ready' ? 1 : 0 }}
