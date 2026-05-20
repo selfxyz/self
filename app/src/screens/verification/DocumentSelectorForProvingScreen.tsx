@@ -25,6 +25,7 @@ import type {
   DocumentMetadata,
   IDDocument,
 } from '@selfxyz/common/utils/types';
+import { isAadhaarDocument, isMRZDocument } from '@selfxyz/common/utils/types';
 import {
   getDocumentAttributes,
   isDocumentValidForProving,
@@ -42,6 +43,10 @@ import {
 
 import type { IDSelectorState } from '@/components/documents';
 import { IDSelectorSheet, isDisabledState } from '@/components/documents';
+import {
+  getSecurityLevel,
+  type SecurityLevel,
+} from '@/components/homescreen/cardSecurityBadge';
 import {
   BottomActionBar,
   ConnectedWalletBadge,
@@ -103,6 +108,33 @@ function getDocumentDisplayName(
   }
 
   return isMock ? `Dev ${metadata.documentType}` : metadata.documentType;
+}
+
+function getSecurityLabelForDocument(
+  documentData: IDDocument | undefined,
+): string | undefined {
+  if (!documentData) {
+    return undefined;
+  }
+  if (!isMRZDocument(documentData) && !isAadhaarDocument(documentData)) {
+    return undefined;
+  }
+  const level: SecurityLevel = getSecurityLevel(documentData);
+  return level;
+}
+
+function getNationalityCodeForDocument(
+  documentData: IDDocument | undefined,
+): string | undefined {
+  if (!documentData) {
+    return undefined;
+  }
+  try {
+    const attributes = getDocumentAttributes(documentData);
+    return attributes.nationalitySlice || undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 function determineDocumentState(
@@ -254,25 +286,26 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
           const docData = allDocuments[metadata.id];
           const baseState = determineDocumentState(metadata, docData?.data);
 
-          // Evaluate the active-perk gate once per doc and feed both the
-          // ineligibility map (rendered by the sheet) and the perks map
-          // (rendered when the doc is eligible) from the same result.
+          // Perks rail is USAT-only for this slice. We only populate
+          // perksByDocumentId when the active proof request is gated by
+          // a known perk policy AND the document passes that gate.
+          // Ineligible map is built only in that same scope.
           if (activePerkId && selfApp && docData) {
             const eligibility = evaluateGoogleUsatEligibilityForDocument(
               selfApp,
               docData,
             );
-            if (eligibility.eligible) {
-              const idTypeCode = metadata.mock
-                ? null
-                : idTypeForDocumentCategory(metadata.documentCategory);
+            if (!eligibility.eligible) {
+              ineligibleMap[metadata.id] =
+                eligibility.reason ?? 'unsupported_id_type';
+            } else if (!metadata.mock) {
+              const idTypeCode = idTypeForDocumentCategory(
+                metadata.documentCategory,
+              );
               const perks = idTypeCode ? getPerksForIdType(idTypeCode) : [];
               if (perks.length > 0) {
                 perksMap[metadata.id] = perks;
               }
-            } else {
-              ineligibleMap[metadata.id] =
-                eligibility.reason ?? 'unsupported_id_type';
             }
           }
 
@@ -288,6 +321,9 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
             name: getDocumentDisplayName(metadata, docData?.data),
             state: itemState,
             idType: metadata.documentCategory,
+            nationalityCode: getNationalityCodeForDocument(docData?.data),
+            isMock: !!metadata.mock,
+            securityLabel: getSecurityLabelForDocument(docData?.data),
           };
         })
         .sort((a, b) => {
@@ -308,7 +344,7 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
 
       return {
         documents: rows,
-        perksByDocumentId: activePerkId ? perksMap : undefined,
+        perksByDocumentId: perksMap,
         ineligibleReasonByDocumentId: activePerkId ? ineligibleMap : undefined,
       };
     }, [
@@ -320,7 +356,7 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
     ]);
 
   const activeDocumentPerks =
-    selectedDocumentId && perksByDocumentId
+    selectedDocumentId && activePerkId
       ? perksByDocumentId[selectedDocumentId]
       : undefined;
 
@@ -567,6 +603,9 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
       {/* Bottom Action Bar */}
       <BottomActionBar
         selectedDocumentName={selectedDocument?.name || 'Select ID'}
+        selectedDocumentNationalityCode={selectedDocument?.nationalityCode}
+        selectedDocumentIsMock={selectedDocument?.isMock}
+        selectedDocumentSecurityLabel={selectedDocument?.securityLabel}
         onDocumentSelectorPress={() => setSheetOpen(true)}
         onApprovePress={handleApprove}
         approveDisabled={!canContinue}
