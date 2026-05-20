@@ -10,6 +10,7 @@ import UsatLogo from '@selfxyz/mobile-sdk-alpha/svgs/icons/usat.svg';
 import type { EligiblePerksItem } from '../../components/data-display/EligiblePerksCard';
 import { getPerkRecordsForIdType, type PerkId, PERKS as SHARED_PERKS } from '../../data/perks';
 
+export type { PerkId } from '../../data/perks';
 export type Perk = EligiblePerksItem;
 
 const PERK_LOGOS: Partial<Record<PerkId, () => React.ReactNode[]>> = {

@@ -3,30 +3,40 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { Pressable } from 'react-native';
-import { Separator, Text, View, XStack, YStack } from 'tamagui';
-import { Check } from '@tamagui/lucide-icons';
+import { Text, View, XStack, YStack } from 'tamagui';
 
 import {
   black,
-  green500,
   green600,
-  iosSeparator,
-  slate200,
-  slate300,
   slate400,
+  white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
+
+import { DocumentIdentityIcon } from '@/components/shared/DocumentIdentityIcon';
 
 export interface IDSelectorItemProps {
   documentName: string;
   state: IDSelectorState;
   onPress?: () => void;
+  onIneligiblePress?: () => void;
+  ineligible?: boolean;
   disabled?: boolean;
-  isLastItem?: boolean;
+  perkSlot?: React.ReactNode;
+  /** ISO 3166-1 alpha-3 nationality code used to render the flag icon. */
+  nationalityCode?: string;
+  /** Renders the dev placeholder logo instead of a country flag. */
+  isMock?: boolean;
+  /** Right-aligned security label, e.g. "HI-SECURITY". */
+  securityLabel?: string;
+  /** Whether to render the 0.5 px separator under the row. */
+  showSeparator?: boolean;
   testID?: string;
 }
 
 export type IDSelectorState = 'active' | 'verified' | 'expired' | 'mock';
+
+const ICON_SIZE = 32;
 
 function getSubtitleText(state: IDSelectorState): string {
   switch (state) {
@@ -46,9 +56,7 @@ function getSubtitleColor(state: IDSelectorState): string {
     case 'active':
       return green600;
     case 'verified':
-      return slate400;
     case 'expired':
-      return slate400;
     case 'mock':
       return slate400;
   }
@@ -58,78 +66,104 @@ export const IDSelectorItem: React.FC<IDSelectorItemProps> = ({
   documentName,
   state,
   onPress,
+  onIneligiblePress,
+  ineligible = false,
   disabled,
-  isLastItem,
+  perkSlot,
+  nationalityCode,
+  isMock,
+  securityLabel,
+  showSeparator = false,
   testID,
 }) => {
-  const isDisabled = disabled || isDisabledState(state);
-  const isActive = state === 'active';
+  const isDisabled = disabled || isDisabledState(state) || ineligible;
   const subtitleText = getSubtitleText(state);
   const subtitleColor = getSubtitleColor(state);
   const textColor = isDisabled ? slate400 : black;
 
-  // Determine circle color based on state
-  const circleColor = isDisabled ? slate200 : slate300;
+  // Ineligible rows must still receive presses so we can fire analytics.
+  // Other disabled states (`expired`) stay un-pressable.
+  const handlePress = ineligible
+    ? onIneligiblePress
+    : isDisabled
+      ? undefined
+      : onPress;
+  const pressableDisabled = ineligible ? false : isDisabled;
 
   return (
-    <>
-      <Pressable
-        onPress={isDisabled ? undefined : onPress}
-        disabled={isDisabled}
-        testID={testID}
+    <Pressable
+      onPress={handlePress}
+      disabled={pressableDisabled}
+      testID={testID}
+    >
+      <XStack
+        paddingHorizontal={10}
+        paddingVertical={6}
+        alignItems="center"
+        gap={13}
+        opacity={isDisabled ? 0.6 : 1}
+        borderBottomWidth={0.5}
+        borderBottomColor={
+          showSeparator ? 'rgba(60,60,67,0.36)' : 'transparent'
+        }
       >
-        <XStack
-          paddingVertical={6}
-          paddingHorizontal={0}
-          alignItems="center"
-          gap={13}
-          opacity={isDisabled ? 0.6 : 1}
-        >
-          {/* Radio button indicator */}
+        {/* Document icon — mock logo, flag, or a neutral fallback */}
+        <DocumentIdentityIcon
+          nationalityCode={nationalityCode}
+          isMock={isMock}
+          size={ICON_SIZE}
+        />
+
+        {/* Document info */}
+        <YStack flex={1} gap={2} paddingVertical={8} paddingBottom={9}>
+          <Text
+            fontFamily={dinot}
+            fontSize={18}
+            fontWeight="500"
+            color={textColor}
+            allowFontScaling={false}
+            numberOfLines={1}
+            testID={testID ? `${testID}-name` : undefined}
+          >
+            {documentName}
+          </Text>
+          <Text
+            fontFamily={dinot}
+            fontSize={14}
+            color={subtitleColor}
+            allowFontScaling={false}
+          >
+            {subtitleText}
+          </Text>
+          {perkSlot ? <View marginTop={6}>{perkSlot}</View> : null}
+        </YStack>
+
+        {/* Security pill */}
+        {securityLabel ? (
           <View
-            width={29}
-            height={24}
+            backgroundColor="rgba(0,0,0,0.5)"
+            paddingHorizontal={8}
+            paddingVertical={4}
+            borderRadius={30}
             alignItems="center"
             justifyContent="center"
           >
-            <View
-              width={24}
-              height={24}
-              borderRadius={12}
-              borderWidth={isActive ? 0 : 2}
-              borderColor={circleColor}
-              backgroundColor={isActive ? green500 : 'transparent'}
-              alignItems="center"
-              justifyContent="center"
-            >
-              {isActive && <Check size={16} color="white" strokeWidth={3} />}
-            </View>
-          </View>
-
-          {/* Document info */}
-          <YStack flex={1} gap={2} paddingVertical={8} paddingBottom={9}>
             <Text
               fontFamily={dinot}
-              fontSize={18}
+              fontSize={10}
               fontWeight="500"
-              color={textColor}
+              color={white}
+              letterSpacing={0.6}
+              textTransform="uppercase"
               allowFontScaling={false}
+              testID={testID ? `${testID}-security-label` : undefined}
             >
-              {documentName}
+              {securityLabel}
             </Text>
-            <Text
-              fontFamily={dinot}
-              fontSize={14}
-              color={subtitleColor}
-              allowFontScaling={false}
-            >
-              {subtitleText}
-            </Text>
-          </YStack>
-        </XStack>
-      </Pressable>
-      {!isLastItem && <Separator borderColor={iosSeparator} />}
-    </>
+          </View>
+        ) : null}
+      </XStack>
+    </Pressable>
   );
 };
 

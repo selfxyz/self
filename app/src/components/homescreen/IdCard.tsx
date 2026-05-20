@@ -53,7 +53,7 @@ import { useCardDimensions } from '@/hooks/useCardDimensions';
 import { getBackgroundIndex } from '@/utils/cardBackgroundSelector';
 import { getCountryDemonym } from '@/utils/countryDemonyms';
 import { getDocumentAttributes } from '@/utils/documentAttributes';
-import { idTypeForDocumentCategory } from '@/utils/idType';
+import { idTypeForDocumentCategory } from '@/utils/documentUtils';
 import { registerModalCallbacks } from '@/utils/modalCallbackRegistry';
 
 const CARD_BACKGROUNDS = [
@@ -263,7 +263,9 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
   };
 
   // Get security level for badge (only for real documents)
-  const securityBadgeLabel = getSecurityBadgeLabel(idDocument);
+  const securityBadgeLabel = getSecurityBadgeLabel(idDocument, {
+    mock: isMockDocument,
+  });
 
   // Header title - add "DEV" prefix for mock documents
   const headerTitle = isMockDocument
