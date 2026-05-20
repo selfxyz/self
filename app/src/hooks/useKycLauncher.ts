@@ -19,6 +19,7 @@ import {
 
 import {
   createKycSession,
+  KYC_PROVIDER,
   launchKycVerification as startKycVerification,
 } from '@/integrations/kyc';
 import type { KycVerificationResult } from '@/integrations/kyc/types';
@@ -26,8 +27,6 @@ import type { RootStackParamList } from '@/navigation';
 import { useFeedback } from '@/providers/feedbackProvider';
 import { getKycDocumentCount } from '@/providers/passportDataProvider';
 import { usePendingKycStore } from '@/stores/pendingKycStore';
-
-const KYC_PROVIDER = 'didit';
 
 export interface UseKycLauncherOptions {
   /**
