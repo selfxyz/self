@@ -13,9 +13,11 @@ import { Text, View, XStack } from 'tamagui';
 
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
+import type { Perk } from '@selfxyz/mobile-sdk-alpha/onboarding/perks';
 
 import { proofRequestColors } from '@/components/proof-request/designTokens';
 import { ChevronUpDownIcon } from '@/components/proof-request/icons';
+import { PerkEligibilityRow } from '@/components/proof-request/PerkEligibilityRow';
 
 export interface BottomActionBarProps {
   selectedDocumentName: string;
@@ -23,6 +25,7 @@ export interface BottomActionBarProps {
   onApprovePress: () => void;
   approveDisabled?: boolean;
   approving?: boolean;
+  perks?: Perk[];
   testID?: string;
 }
 
@@ -36,8 +39,10 @@ export const BottomActionBar: React.FC<BottomActionBarProps> = ({
   onApprovePress,
   approveDisabled = false,
   approving = false,
+  perks,
   testID = 'bottom-action-bar',
 }) => {
+  const hasPerks = !!perks && perks.length > 0;
   // Reduce top padding to balance with safe area bottom padding
   // The safe area hook adds significant padding on small screens for system UI
   const topPadding = 8;
@@ -71,39 +76,55 @@ export const BottomActionBar: React.FC<BottomActionBarProps> = ({
       paddingBottom={bottomPadding}
       testID={testID}
     >
-      <XStack gap={12}>
-        {/* Document Selector Button */}
-        <Pressable
-          onPress={onDocumentSelectorPress}
-          style={({ pressed }) => [
-            styles.documentButton,
-            pressed && styles.documentButtonPressed,
-          ]}
-          testID={`${testID}-document-selector`}
+      <XStack gap={12} alignItems="flex-start">
+        {/* Document Selector + (optional) Perk Eligibility row */}
+        <View
+          flex={1}
+          borderWidth={1}
+          borderColor={proofRequestColors.slate200}
+          borderRadius={hasPerks ? 16 : 4}
+          overflow="hidden"
+          backgroundColor={proofRequestColors.white}
         >
-          <XStack
-            alignItems="center"
-            justifyContent="space-between"
-            paddingHorizontal={12}
-            paddingVertical={12}
+          <Pressable
+            onPress={onDocumentSelectorPress}
+            style={({ pressed }) => [
+              styles.documentButtonInner,
+              pressed && styles.documentButtonPressed,
+            ]}
+            testID={`${testID}-document-selector`}
           >
-            <Text
-              fontFamily={dinot}
-              fontSize={18}
-              color={proofRequestColors.slate900}
-              numberOfLines={1}
-              allowFontScaling={false}
+            <XStack
+              alignItems="center"
+              justifyContent="space-between"
+              paddingHorizontal={12}
+              paddingVertical={12}
             >
-              {selectedDocumentName}
-            </Text>
-            <View marginLeft={8}>
-              <ChevronUpDownIcon
-                size={20}
-                color={proofRequestColors.slate400}
-              />
-            </View>
-          </XStack>
-        </Pressable>
+              <Text
+                fontFamily={dinot}
+                fontSize={18}
+                color={proofRequestColors.slate900}
+                numberOfLines={1}
+                allowFontScaling={false}
+              >
+                {selectedDocumentName}
+              </Text>
+              <View marginLeft={8}>
+                <ChevronUpDownIcon
+                  size={20}
+                  color={proofRequestColors.slate400}
+                />
+              </View>
+            </XStack>
+          </Pressable>
+          {hasPerks ? (
+            <PerkEligibilityRow
+              perks={perks ?? []}
+              variant="attached"
+              testID={`${testID}-perks`}
+            />
+          ) : null}
+        </View>
 
         {/* Select Button */}
         <Pressable
@@ -149,11 +170,8 @@ export const BottomActionBar: React.FC<BottomActionBarProps> = ({
 };
 
 const styles = StyleSheet.create({
-  documentButton: {
+  documentButtonInner: {
     backgroundColor: proofRequestColors.white,
-    borderWidth: 1,
-    borderColor: proofRequestColors.slate200,
-    borderRadius: 4,
   },
   documentButtonPressed: {
     backgroundColor: proofRequestColors.slate100,

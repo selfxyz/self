@@ -2,8 +2,11 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import { useEffect, useRef } from 'react';
 import { Button, ScrollView, Sheet, Text, View, XStack, YStack } from 'tamagui';
 
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { ProofRequestPickerEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import {
   black,
   blue600,
@@ -12,17 +15,22 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
+import type { Perk, PerkId } from '@selfxyz/mobile-sdk-alpha/onboarding/perks';
 
 import type { IDSelectorState } from '@/components/documents/IDSelectorItem';
 import {
   IDSelectorItem,
   isDisabledState,
 } from '@/components/documents/IDSelectorItem';
+import { PerkEligibilityRow } from '@/components/proof-request/PerkEligibilityRow';
+import type { IneligibleReason } from '@/utils/googleUsatGate';
 
 export interface IDSelectorDocument {
   id: string;
   name: string;
   state: IDSelectorState;
+  /** Document type slug for analytics (e.g. 'passport', 'aadhaar'). */
+  idType?: string;
 }
 
 export interface IDSelectorSheetProps {
@@ -33,6 +41,9 @@ export interface IDSelectorSheetProps {
   onSelect: (documentId: string) => void;
   onDismiss: () => void;
   onApprove: () => void;
+  activePerkId?: PerkId;
+  perksByDocumentId?: Record<string, Perk[]>;
+  ineligibleReasonByDocumentId?: Record<string, IneligibleReason>;
   testID?: string;
 }
 
@@ -44,13 +55,87 @@ export const IDSelectorSheet: React.FC<IDSelectorSheetProps> = ({
   onSelect,
   onDismiss,
   onApprove,
+  activePerkId,
+  perksByDocumentId,
+  ineligibleReasonByDocumentId,
   testID = 'id-selector-sheet',
 }) => {
   const bottomPadding = useSafeBottomPadding(16);
+  const selfClient = useSelfClient();
+  const viewedFiredRef = useRef(false);
 
-  // Check if the selected document is valid (not expired or unregistered)
-  const selectedDoc = documents.find(d => d.id === selectedId);
+  // Coerce documents into their final picker state — an ineligible map entry
+  // overrides the per-row state coming from the parent.
+  const decoratedDocuments = documents.map(doc => {
+    if (ineligibleReasonByDocumentId?.[doc.id]) {
+      return { ...doc, state: 'ineligible' as IDSelectorState };
+    }
+    return doc;
+  });
+
+  // Check if the selected document is valid (not expired, not ineligible)
+  const selectedDoc = decoratedDocuments.find(d => d.id === selectedId);
   const canApprove = selectedDoc && !isDisabledState(selectedDoc.state);
+
+  useEffect(() => {
+    if (!open) {
+      viewedFiredRef.current = false;
+      return;
+    }
+    if (viewedFiredRef.current) {
+      return;
+    }
+    if (!activePerkId) {
+      return;
+    }
+    viewedFiredRef.current = true;
+
+    let eligibleCount = 0;
+    let ineligibleCount = 0;
+    for (const doc of documents) {
+      if (ineligibleReasonByDocumentId?.[doc.id]) {
+        ineligibleCount += 1;
+      } else {
+        eligibleCount += 1;
+      }
+    }
+    selfClient.trackEvent(ProofRequestPickerEvents.VIEWED, {
+      perk_id: activePerkId,
+      eligible_count: eligibleCount,
+      ineligible_count: ineligibleCount,
+    });
+  }, [open, activePerkId, documents, ineligibleReasonByDocumentId, selfClient]);
+
+  const handleSelect = (documentId: string) => {
+    if (activePerkId) {
+      const wasEligible = !ineligibleReasonByDocumentId?.[documentId];
+      const idType =
+        documents.find(d => d.id === documentId)?.idType ?? 'unknown';
+      selfClient.trackEvent(ProofRequestPickerEvents.ID_SELECTED, {
+        id_type: idType,
+        perk_id: activePerkId,
+        was_eligible: wasEligible,
+      });
+    }
+    onSelect(documentId);
+  };
+
+  const handleIneligiblePress = (documentId: string) => {
+    if (!activePerkId) {
+      return;
+    }
+    const reason = ineligibleReasonByDocumentId?.[documentId];
+    if (!reason) {
+      return;
+    }
+    const idType =
+      documents.find(d => d.id === documentId)?.idType ?? 'unknown';
+    selfClient.trackEvent(ProofRequestPickerEvents.INELIGIBLE_ID_TAPPED, {
+      id_type: idType,
+      perk_id: activePerkId,
+      reason,
+    });
+  };
 
   return (
     <Sheet
@@ -99,7 +184,7 @@ export const IDSelectorSheet: React.FC<IDSelectorSheetProps> = ({
               showsVerticalScrollIndicator={false}
               testID={`${testID}-list`}
             >
-              {documents.map((doc, index) => {
+              {decoratedDocuments.map((doc, index) => {
                 const isSelected = doc.id === selectedId;
                 // Don't override to 'active' if the document is in a disabled state
                 const itemState: IDSelectorState =
@@ -107,13 +192,28 @@ export const IDSelectorSheet: React.FC<IDSelectorSheetProps> = ({
                     ? 'active'
                     : doc.state;
 
+                const activePerks =
+                  itemState === 'active'
+                    ? perksByDocumentId?.[doc.id]
+                    : undefined;
+                const perkSlot =
+                  activePerks && activePerks.length > 0 ? (
+                    <PerkEligibilityRow
+                      perks={activePerks}
+                      variant="inline"
+                      testID={`${testID}-item-${doc.id}-perks`}
+                    />
+                  ) : undefined;
+
                 return (
                   <IDSelectorItem
                     key={doc.id}
                     documentName={doc.name}
                     state={itemState}
-                    onPress={() => onSelect(doc.id)}
-                    isLastItem={index === documents.length - 1}
+                    onPress={() => handleSelect(doc.id)}
+                    onIneligiblePress={() => handleIneligiblePress(doc.id)}
+                    isLastItem={index === decoratedDocuments.length - 1}
+                    perkSlot={perkSlot}
                     testID={`${testID}-item-${doc.id}`}
                   />
                 );

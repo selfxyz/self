@@ -21,13 +21,22 @@ export interface IDSelectorItemProps {
   documentName: string;
   state: IDSelectorState;
   onPress?: () => void;
+  onIneligiblePress?: () => void;
   disabled?: boolean;
   isLastItem?: boolean;
+  perkSlot?: React.ReactNode;
   testID?: string;
 }
 
-export type IDSelectorState = 'active' | 'verified' | 'expired' | 'mock';
+export type IDSelectorState =
+  | 'active'
+  | 'verified'
+  | 'expired'
+  | 'mock'
+  | 'ineligible';
 
+// TODO(SELF-2855): designer review whether ineligible rows need their own
+// subtitle. For now we keep the underlying doc's subtitle and rely on dimming.
 function getSubtitleText(state: IDSelectorState): string {
   switch (state) {
     case 'active':
@@ -38,6 +47,8 @@ function getSubtitleText(state: IDSelectorState): string {
       return 'Expired';
     case 'mock':
       return 'Testing document';
+    case 'ineligible':
+      return 'Verified ID';
   }
 }
 
@@ -51,6 +62,8 @@ function getSubtitleColor(state: IDSelectorState): string {
       return slate400;
     case 'mock':
       return slate400;
+    case 'ineligible':
+      return slate400;
   }
 }
 
@@ -58,10 +71,13 @@ export const IDSelectorItem: React.FC<IDSelectorItemProps> = ({
   documentName,
   state,
   onPress,
+  onIneligiblePress,
   disabled,
   isLastItem,
+  perkSlot,
   testID,
 }) => {
+  const isIneligible = state === 'ineligible';
   const isDisabled = disabled || isDisabledState(state);
   const isActive = state === 'active';
   const subtitleText = getSubtitleText(state);
@@ -71,11 +87,20 @@ export const IDSelectorItem: React.FC<IDSelectorItemProps> = ({
   // Determine circle color based on state
   const circleColor = isDisabled ? slate200 : slate300;
 
+  // Ineligible rows must still receive presses so we can fire analytics.
+  // Other disabled states (`expired`) stay un-pressable.
+  const handlePress = isIneligible
+    ? onIneligiblePress
+    : isDisabled
+      ? undefined
+      : onPress;
+  const pressableDisabled = isIneligible ? false : isDisabled;
+
   return (
     <>
       <Pressable
-        onPress={isDisabled ? undefined : onPress}
-        disabled={isDisabled}
+        onPress={handlePress}
+        disabled={pressableDisabled}
         testID={testID}
       >
         <XStack
@@ -125,6 +150,7 @@ export const IDSelectorItem: React.FC<IDSelectorItemProps> = ({
             >
               {subtitleText}
             </Text>
+            {perkSlot ? <View marginTop={6}>{perkSlot}</View> : null}
           </YStack>
         </XStack>
       </Pressable>
@@ -134,5 +160,5 @@ export const IDSelectorItem: React.FC<IDSelectorItemProps> = ({
 };
 
 export function isDisabledState(state: IDSelectorState): boolean {
-  return state === 'expired';
+  return state === 'expired' || state === 'ineligible';
 }

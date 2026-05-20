@@ -30,6 +30,7 @@ import IdCardLayout from '@/components/homescreen/IdCard';
 import { usePassport } from '@/providers/passportDataProvider';
 import { ProofHistoryList } from '@/screens/home/ProofHistoryList';
 import useUserStore from '@/stores/userStore';
+import { idTypeForDocumentCategory } from '@/utils/documentUtils';
 
 const IdDetailsScreen: React.FC = () => {
   const { idDetailsDocumentId } = useUserStore();
@@ -235,20 +236,5 @@ const IdDetailsScreen: React.FC = () => {
     </YStack>
   );
 };
-
-function idTypeForDocumentCategory(
-  category: IDDocument['documentCategory'],
-): string | null {
-  switch (category) {
-    case 'passport':
-      return 'p';
-    case 'id_card':
-      return 'i';
-    case 'aadhaar':
-      return 'a';
-    default:
-      return null;
-  }
-}
 
 export default IdDetailsScreen;

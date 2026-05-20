@@ -28,11 +28,17 @@ import type {
 import {
   getDocumentAttributes,
   isDocumentValidForProving,
+  isGoogleUsatProofRequest,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
 import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
+import {
+  getPerksForIdType,
+  type Perk,
+  type PerkId,
+} from '@selfxyz/mobile-sdk-alpha/onboarding/perks';
 
 import type { IDSelectorState } from '@/components/documents';
 import { IDSelectorSheet, isDisabledState } from '@/components/documents';
@@ -49,8 +55,15 @@ import { useSelfAppData } from '@/hooks/useSelfAppData';
 import type { RootStackParamList } from '@/navigation';
 import { usePassport } from '@/providers/passportDataProvider';
 import { useVerificationGateStore } from '@/stores/verificationGateStore';
-import { getDocumentTypeName } from '@/utils/documentUtils';
-import { evaluateGoogleUsatGateForDocument } from '@/utils/googleUsatGate';
+import {
+  getDocumentTypeName,
+  idTypeForDocumentCategory,
+} from '@/utils/documentUtils';
+import {
+  evaluateGoogleUsatEligibilityForDocument,
+  evaluateGoogleUsatGateForDocument,
+  type IneligibleReason,
+} from '@/utils/googleUsatGate';
 
 function getDocumentDisplayName(
   metadata: DocumentMetadata,
@@ -224,20 +237,38 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
     };
   }, []);
 
+  const activePerkId: PerkId | undefined = useMemo(() => {
+    if (selfApp && isGoogleUsatProofRequest(selfApp)) {
+      return 'google_cloud_faucet';
+    }
+    return undefined;
+  }, [selfApp]);
+
   const documents = useMemo(() => {
     return documentCatalog.documents
       .filter(metadata => metadata.isRegistered)
       .map(metadata => {
         const docData = allDocuments[metadata.id];
         const baseState = determineDocumentState(metadata, docData?.data);
+        const ineligibilityReason =
+          activePerkId && selfApp && docData
+            ? evaluateGoogleUsatEligibilityForDocument(selfApp, docData)
+            : { eligible: true };
+        const effectiveState: IDSelectorState =
+          ineligibilityReason.eligible || baseState === 'expired'
+            ? baseState
+            : 'ineligible';
         const isSelected = metadata.id === selectedDocumentId;
         const itemState =
-          isSelected && !isDisabledState(baseState) ? 'active' : baseState;
+          isSelected && !isDisabledState(effectiveState)
+            ? 'active'
+            : effectiveState;
 
         return {
           id: metadata.id,
           name: getDocumentDisplayName(metadata, docData?.data),
           state: itemState,
+          idType: metadata.documentCategory,
         };
       })
       .sort((a, b) => {
@@ -255,7 +286,59 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
         // Within same type (real/mock), sort alphabetically by name
         return a.name.localeCompare(b.name);
       });
-  }, [allDocuments, documentCatalog.documents, selectedDocumentId]);
+  }, [
+    allDocuments,
+    documentCatalog.documents,
+    selectedDocumentId,
+    selfApp,
+    activePerkId,
+  ]);
+
+  const { perksByDocumentId, ineligibleReasonByDocumentId } = useMemo<{
+    perksByDocumentId?: Record<string, Perk[]>;
+    ineligibleReasonByDocumentId?: Record<string, IneligibleReason>;
+  }>(() => {
+    if (!activePerkId || !selfApp) {
+      return {};
+    }
+    const perksMap: Record<string, Perk[]> = {};
+    const ineligibleMap: Record<string, IneligibleReason> = {};
+    for (const metadata of documentCatalog.documents) {
+      if (!metadata.isRegistered) {
+        continue;
+      }
+      const docData = allDocuments[metadata.id];
+      if (!docData) {
+        continue;
+      }
+      const eligibility = evaluateGoogleUsatEligibilityForDocument(
+        selfApp,
+        docData,
+      );
+      if (eligibility.eligible) {
+        const idTypeCode = metadata.mock
+          ? null
+          : idTypeForDocumentCategory(metadata.documentCategory);
+        const perks = idTypeCode ? getPerksForIdType(idTypeCode) : [];
+        if (perks.length > 0) {
+          perksMap[metadata.id] = perks;
+        }
+      } else if (eligibility.reason) {
+        ineligibleMap[metadata.id] = eligibility.reason;
+      } else {
+        ineligibleMap[metadata.id] = 'unsupported_id_type';
+      }
+    }
+    return {
+      perksByDocumentId: perksMap,
+      ineligibleReasonByDocumentId: ineligibleMap,
+    };
+  }, [activePerkId, selfApp, documentCatalog.documents, allDocuments]);
+
+  const activeDocumentPerks =
+    selectedDocumentId && perksByDocumentId
+      ? perksByDocumentId[selectedDocumentId]
+      : undefined;
 
   const selectedDocument = documents.find(doc => doc.id === selectedDocumentId);
   const canContinue =
@@ -502,6 +585,7 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
         onApprovePress={handleApprove}
         approveDisabled={!canContinue}
         approving={submitting}
+        perks={activeDocumentPerks}
         testID="document-selector-action-bar"
       />
 
@@ -514,6 +598,9 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
         onSelect={handleSelect}
         onDismiss={() => setSheetOpen(false)}
         onApprove={handleSheetSelect}
+        activePerkId={activePerkId}
+        perksByDocumentId={perksByDocumentId}
+        ineligibleReasonByDocumentId={ineligibleReasonByDocumentId}
         testID="document-selector-sheet"
       />
 

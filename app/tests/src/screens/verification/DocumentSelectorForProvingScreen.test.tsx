@@ -13,13 +13,17 @@ import type {
 import {
   getDocumentAttributes,
   isDocumentValidForProving,
+  isGoogleUsatProofRequest,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
 
 import { usePassport } from '@/providers/passportDataProvider';
 import { DocumentSelectorForProvingScreen } from '@/screens/verification/DocumentSelectorForProvingScreen';
 import { useVerificationGateStore } from '@/stores/verificationGateStore';
-import { evaluateGoogleUsatGateForDocument } from '@/utils/googleUsatGate';
+import {
+  evaluateGoogleUsatEligibilityForDocument,
+  evaluateGoogleUsatGateForDocument,
+} from '@/utils/googleUsatGate';
 
 // Mock useFocusEffect to behave like useEffect in tests
 // Note: We use a closure-based approach to avoid requiring React (prevents OOM per test-memory-optimization rules)
@@ -57,6 +61,7 @@ jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
   useSelfClient: jest.fn(),
   getDocumentAttributes: jest.fn(),
   isDocumentValidForProving: jest.fn(),
+  isGoogleUsatProofRequest: jest.fn(),
 }));
 
 jest.mock('@/providers/passportDataProvider', () => ({
@@ -65,6 +70,7 @@ jest.mock('@/providers/passportDataProvider', () => ({
 
 jest.mock('@/utils/googleUsatGate', () => ({
   evaluateGoogleUsatGateForDocument: jest.fn(),
+  evaluateGoogleUsatEligibilityForDocument: jest.fn(),
 }));
 
 jest.mock('@/stores/verificationGateStore', () => ({
@@ -90,6 +96,14 @@ const mockUsePassport = usePassport as jest.MockedFunction<typeof usePassport>;
 const mockEvaluateGoogleUsatGateForDocument =
   evaluateGoogleUsatGateForDocument as jest.MockedFunction<
     typeof evaluateGoogleUsatGateForDocument
+  >;
+const mockEvaluateGoogleUsatEligibilityForDocument =
+  evaluateGoogleUsatEligibilityForDocument as jest.MockedFunction<
+    typeof evaluateGoogleUsatEligibilityForDocument
+  >;
+const mockIsGoogleUsatProofRequest =
+  isGoogleUsatProofRequest as jest.MockedFunction<
+    typeof isGoogleUsatProofRequest
   >;
 const mockUseVerificationGateStore = useVerificationGateStore as unknown as {
   getState: jest.Mock;
@@ -191,6 +205,10 @@ describe('DocumentSelectorForProvingScreen', () => {
 
     mockUsePassport.mockReturnValue(stablePassportContext as any);
     mockEvaluateGoogleUsatGateForDocument.mockResolvedValue('allow');
+    mockEvaluateGoogleUsatEligibilityForDocument.mockReturnValue({
+      eligible: true,
+    });
+    mockIsGoogleUsatProofRequest.mockReturnValue(false);
     mockUseVerificationGateStore.getState.mockReturnValue({
       open: mockGateOpen,
     });
@@ -550,6 +568,69 @@ describe('DocumentSelectorForProvingScreen', () => {
       );
 
       consoleErrorSpy.mockRestore();
+    });
+  });
+
+  describe('Google USAT perk eligibility', () => {
+    it('disables Approve when the active doc is ineligible for the active perk', async () => {
+      const aadhaar = createMetadata({
+        id: 'doc-1',
+        documentType: 'aadhaar',
+        documentCategory: 'aadhaar',
+        isRegistered: true,
+      });
+      const catalog: DocumentCatalog = {
+        documents: [aadhaar],
+        selectedDocumentId: 'doc-1',
+      };
+
+      mockLoadDocumentCatalog.mockResolvedValue(catalog);
+      mockGetAllDocuments.mockResolvedValue(
+        createAllDocuments([createDocumentEntry(aadhaar)]),
+      );
+      mockIsGoogleUsatProofRequest.mockReturnValue(true);
+      mockEvaluateGoogleUsatEligibilityForDocument.mockReturnValue({
+        eligible: false,
+        reason: 'needs_nfc',
+      });
+
+      const { getByTestId } = render(<DocumentSelectorForProvingScreen />);
+
+      await waitFor(() => {
+        expect(
+          getByTestId('document-selector-action-bar-approve').props.disabled,
+        ).toBe(true);
+      });
+    });
+
+    it('keeps Approve enabled when the active doc passes the perk gate', async () => {
+      const passport = createMetadata({
+        id: 'doc-1',
+        documentType: 'us',
+        documentCategory: 'passport',
+        isRegistered: true,
+      });
+      const catalog: DocumentCatalog = {
+        documents: [passport],
+        selectedDocumentId: 'doc-1',
+      };
+
+      mockLoadDocumentCatalog.mockResolvedValue(catalog);
+      mockGetAllDocuments.mockResolvedValue(
+        createAllDocuments([createDocumentEntry(passport)]),
+      );
+      mockIsGoogleUsatProofRequest.mockReturnValue(true);
+      mockEvaluateGoogleUsatEligibilityForDocument.mockReturnValue({
+        eligible: true,
+      });
+
+      const { getByTestId } = render(<DocumentSelectorForProvingScreen />);
+
+      await waitFor(() => {
+        expect(
+          getByTestId('document-selector-action-bar-approve').props.disabled,
+        ).toBe(false);
+      });
     });
   });
 });
