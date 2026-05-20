@@ -118,11 +118,12 @@ The temporary fork pin is allowed only until the upstream API migration lands.
 
 ## Dependencies
 
-| Depends On                                        | Type     | Status  | Notes                                                                                  |
-| ------------------------------------------------- | -------- | ------- | -------------------------------------------------------------------------------------- |
-| pnpm conversion (PR #2069)                        | Upstream | Landing | `packageManager: pnpm@11.1.1` already pinned; this work starts after merge.            |
-| `@selfxyz/euclid`                                 | Upstream | Active  | Owns the `BlurView` implementation used by app consumers.                              |
-| `@zk-email/relayer-utils` / `node-pre-gyp-github` | Upstream | Open    | Blocks `blockExoticSubdeps` until the exotic git subdependency is removed or replaced. |
+| Depends On                                        | Type     | Status  | Notes                                                                                                         |
+| ------------------------------------------------- | -------- | ------- | ------------------------------------------------------------------------------------------------------------- |
+| pnpm conversion (PR #2069)                        | Upstream | Landing | `packageManager: pnpm@11.1.1` already pinned; this work starts after merge.                                   |
+| `@selfxyz/euclid`                                 | Upstream | Active  | Owns the `BlurView` implementation used by app consumers.                                                     |
+| `@zk-email/relayer-utils` / `node-pre-gyp-github` | Override | Open    | Replaced by registry `node-pre-gyp-github@1.4.4` via `pnpm.overrides` in MT-6; no upstream wait required.     |
+| `circom_tester` (remicolin fork)                  | Override | Open    | Last remaining `blockExoticSubdeps` blocker. Resolved by MT-22 upstream migration, or interim patch in MT-21. |
 
 ## Backlog Tracks
 

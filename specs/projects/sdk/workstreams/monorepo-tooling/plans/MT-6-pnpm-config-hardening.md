@@ -18,6 +18,12 @@ the acceptance criteria all depend on a clean `pnpm install` and lockfile diff.
 ### Scope
 
 - Move root `package.json` `resolutions` pins to `pnpm.overrides`.
+- Add `pnpm.overrides` entry `node-pre-gyp-github: 1.4.4` so the
+  `@zk-email/relayer-utils` transitive resolves from the npm registry instead
+  of the `ultamatt/node-pre-gyp-github` git tarball. Verify by running
+  `relayer-utils`'s postinstall against the registry version locally before
+  landing. This removes one of two blockers MT-9 currently waits on; the
+  other (`circom_tester`) is owned by MT-21/MT-22.
 - Replace root `postinstall` `patch-package` behavior with
   `pnpm.patchedDependencies`.
 - Remove `patch-package` when no longer needed.
@@ -67,3 +73,5 @@ Additional checks:
 - [ ] Install-script allowlist is trimmed and justified.
 - [ ] Updated pnpm pin works in CI.
 - [ ] Mobile app tests and repo typecheck pass.
+- [ ] `pnpm why node-pre-gyp-github` reports a single registry resolution; the
+      `codeload.github.com/ultamatt/...` tarball entry is absent from the lockfile.
