@@ -56,8 +56,16 @@ const screenGroups: DevScreenGroup[] = [
     ],
   },
   {
+    title: 'Points',
+    links: [
+      { href: '/points', label: 'Points' },
+      { href: '/points/invite', label: 'Invite Friends' },
+    ],
+  },
+  {
     title: 'Proving',
     links: [
+      { href: '/proving/qr-scan', label: 'QR Viewfinder' },
       { href: '/proving/receipt', label: 'Proof Receipt' },
       { href: '/proving/history', label: 'Proof History' },
       { href: '/proving/dialogue', label: 'Simple Dialogue' },
