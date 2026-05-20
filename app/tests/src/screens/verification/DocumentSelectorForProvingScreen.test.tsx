@@ -94,7 +94,9 @@ jest.mock('@selfxyz/mobile-sdk-alpha/components', () => ({
 
 jest.mock('@/components/homescreen/cardSecurityBadge', () => ({
   __esModule: true,
-  getSecurityLevel: jest.fn(() => 'HI-SECURITY'),
+  getSecurityLevel: jest.fn((_doc: unknown, options?: { mock?: boolean }) =>
+    options?.mock ? 'LOW-SECURITY' : 'HI-SECURITY',
+  ),
 }));
 
 jest.mock('@/assets/images/dev_card_logo.svg', () => 'DevLogo');
@@ -418,6 +420,63 @@ describe('DocumentSelectorForProvingScreen', () => {
           getByTestId('document-selector-action-bar-approve').props.disabled,
         ).toBe(true);
       });
+    });
+
+    it('shows LOW-SECURITY for mock documents even when NFC data is present', async () => {
+      const mockPassport = createMetadata({
+        id: 'doc-1',
+        documentType: 'us',
+        isRegistered: true,
+        mock: true,
+      });
+      const catalog: DocumentCatalog = {
+        documents: [mockPassport],
+        selectedDocumentId: 'doc-1',
+      };
+
+      mockLoadDocumentCatalog.mockResolvedValue(catalog);
+      mockGetAllDocuments.mockResolvedValue(
+        createAllDocuments([createDocumentEntry(mockPassport)]),
+      );
+
+      const tree = render(<DocumentSelectorForProvingScreen />);
+
+      await waitFor(() => {
+        expect(
+          tree.getByTestId('document-selector-action-bar-document-selector'),
+        ).toBeTruthy();
+      });
+
+      const rendered = JSON.stringify(tree.toJSON());
+      expect(rendered).toContain('LOW-SECURITY');
+      expect(rendered).not.toContain('HI-SECURITY');
+    });
+
+    it('shows HI-SECURITY for real NFC-read documents', async () => {
+      const passport = createMetadata({
+        id: 'doc-1',
+        documentType: 'us',
+        isRegistered: true,
+      });
+      const catalog: DocumentCatalog = {
+        documents: [passport],
+        selectedDocumentId: 'doc-1',
+      };
+
+      mockLoadDocumentCatalog.mockResolvedValue(catalog);
+      mockGetAllDocuments.mockResolvedValue(
+        createAllDocuments([createDocumentEntry(passport)]),
+      );
+
+      const tree = render(<DocumentSelectorForProvingScreen />);
+
+      await waitFor(() => {
+        expect(
+          tree.getByTestId('document-selector-action-bar-document-selector'),
+        ).toBeTruthy();
+      });
+
+      expect(JSON.stringify(tree.toJSON())).toContain('HI-SECURITY');
     });
   });
 

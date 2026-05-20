@@ -112,6 +112,7 @@ function getDocumentDisplayName(
 
 function getSecurityLabelForDocument(
   documentData: IDDocument | undefined,
+  isMock: boolean,
 ): string | undefined {
   if (!documentData) {
     return undefined;
@@ -119,7 +120,7 @@ function getSecurityLabelForDocument(
   if (!isMRZDocument(documentData) && !isAadhaarDocument(documentData)) {
     return undefined;
   }
-  const level: SecurityLevel = getSecurityLevel(documentData);
+  const level: SecurityLevel = getSecurityLevel(documentData, { mock: isMock });
   return level;
 }
 
@@ -323,7 +324,10 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
             idType: metadata.documentCategory,
             nationalityCode: getNationalityCodeForDocument(docData?.data),
             isMock: !!metadata.mock,
-            securityLabel: getSecurityLabelForDocument(docData?.data),
+            securityLabel: getSecurityLabelForDocument(
+              docData?.data,
+              !!metadata.mock,
+            ),
           };
         })
         .sort((a, b) => {

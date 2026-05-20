@@ -263,7 +263,9 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
   };
 
   // Get security level for badge (only for real documents)
-  const securityBadgeLabel = getSecurityBadgeLabel(idDocument);
+  const securityBadgeLabel = getSecurityBadgeLabel(idDocument, {
+    mock: isMockDocument,
+  });
 
   // Header title - add "DEV" prefix for mock documents
   const headerTitle = isMockDocument

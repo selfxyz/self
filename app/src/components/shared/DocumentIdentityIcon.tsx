@@ -29,6 +29,7 @@ export const DocumentIdentityIcon: React.FC<DocumentIdentityIconProps> = ({
   size = 32,
 }) => {
   if (isMock) {
+    const logoSize = Math.round(size * 0.6);
     return (
       <View
         width={size}
@@ -39,7 +40,7 @@ export const DocumentIdentityIcon: React.FC<DocumentIdentityIconProps> = ({
         justifyContent="center"
         overflow="hidden"
       >
-        <DevCardLogo width={size} height={size} />
+        <DevCardLogo width={logoSize} height={logoSize} />
       </View>
     );
   }
