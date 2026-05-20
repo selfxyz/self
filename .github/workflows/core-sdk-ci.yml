@@ -84,9 +84,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Setup Corepack
-        run: |
-          corepack enable
-          corepack prepare pnpm@11.1.1 --activate
+        run: corepack enable
       - name: Restore build artifacts
         id: build-cache
         uses: ./.github/actions/cache-core-sdk-build
@@ -113,9 +111,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Setup Corepack
-        run: |
-          corepack enable
-          corepack prepare pnpm@11.1.1 --activate
+        run: corepack enable
       - name: Restore build artifacts
         id: build-cache
         uses: ./.github/actions/cache-core-sdk-build
@@ -142,9 +138,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Setup Corepack
-        run: |
-          corepack enable
-          corepack prepare pnpm@11.1.1 --activate
+        run: corepack enable
       - name: Restore build artifacts
         id: build-cache
         uses: ./.github/actions/cache-core-sdk-build

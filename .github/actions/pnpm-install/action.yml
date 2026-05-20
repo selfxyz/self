@@ -20,7 +20,6 @@ runs:
       shell: bash
       run: |
         corepack enable
-        corepack prepare pnpm@11.1.1 --activate
         pnpm --version
 
     - name: Install dependencies

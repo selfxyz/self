@@ -59,7 +59,6 @@ runs:
 
         # Configure pnpm
         corepack enable
-        corepack prepare pnpm@11.1.1 --activate
 
         echo "📦 Installing JavaScript dependencies with strict lock file..."
         # Force full dependency installation even when workflows export NODE_ENV=production.

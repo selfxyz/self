@@ -59,8 +59,6 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - name: Enable Corepack
         run: corepack enable
-      - name: Activate pnpm 11.1.1
-        run: corepack prepare pnpm@11.1.1 --activate
       - name: Cache pnpm store
         uses: ./.github/actions/cache-pnpm
         with:
@@ -113,8 +111,6 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - name: Enable Corepack
         run: corepack enable
-      - name: Activate pnpm 11.1.1
-        run: corepack prepare pnpm@11.1.1 --activate
       - name: Cache pnpm store
         uses: ./.github/actions/cache-pnpm
         with:

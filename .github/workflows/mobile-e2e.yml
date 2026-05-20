@@ -74,7 +74,6 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - run: corepack enable
-      - run: corepack prepare pnpm@11.1.1 --activate
       - name: Cache pnpm store
         uses: ./.github/actions/cache-pnpm
         with:
@@ -304,9 +303,7 @@ jobs:
       - name: Build dependencies (outside emulator)
         run: |
           echo "Building dependencies..."
-          # Ensure pnpm 11.1.1 is active
           corepack enable
-          corepack prepare pnpm@11.1.1 --activate
           pnpm --filter @selfxyz/mobile-app run build:deps || { echo "❌ Dependency build failed"; exit 1; }
           echo "✅ Dependencies built successfully"
       - name: Setup Android private modules
@@ -551,7 +548,6 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - run: corepack enable
-      - run: corepack prepare pnpm@11.1.1 --activate
       - name: Cache pnpm store
         uses: ./.github/actions/cache-pnpm
         with:
