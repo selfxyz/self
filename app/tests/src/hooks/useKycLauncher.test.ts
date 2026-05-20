@@ -81,8 +81,9 @@ const mockUseSelfClient = useSelfClient as jest.MockedFunction<
   typeof useSelfClient
 >;
 const mockUseFeedback = useFeedback as jest.MockedFunction<typeof useFeedback>;
-const mockGetKycDocumentCount =
-  getKycDocumentCount as jest.MockedFunction<typeof getKycDocumentCount>;
+const mockGetKycDocumentCount = getKycDocumentCount as jest.MockedFunction<
+  typeof getKycDocumentCount
+>;
 void usePendingKycStore;
 
 describe('useKycLauncher', () => {
@@ -281,6 +282,25 @@ describe('useKycLauncher', () => {
     );
   });
 
+  it('blocks launch when more than 3 KYC IDs exist', async () => {
+    mockGetKycDocumentCount.mockResolvedValue(4);
+    const { result } = renderHook(() => useKycLauncher({ countryCode: 'US' }));
+
+    await act(async () => {
+      await result.current.launchKycVerification();
+    });
+
+    expect(mockTrackOnboardingStep).not.toHaveBeenCalled();
+    expect(mockTrackBranchEvent).not.toHaveBeenCalled();
+    expect(mockCreateKycSession).not.toHaveBeenCalled();
+    expect(mockStartKycVerification).not.toHaveBeenCalled();
+    expect(mockShowModal).toHaveBeenCalledWith(
+      expect.objectContaining({
+        titleText: 'Maximum verifications reached',
+      }),
+    );
+  });
+
   it('calls createKycSession when 2 KYC IDs exist and no pending', async () => {
     mockGetKycDocumentCount.mockResolvedValue(2);
     const { result } = renderHook(() => useKycLauncher({ countryCode: 'US' }));
@@ -322,5 +342,28 @@ describe('useKycLauncher', () => {
       }),
     );
     expect(mockGetKycDocumentCount).not.toHaveBeenCalled();
+  });
+
+  it('shows a dedicated modal when the KYC document count cannot be verified', async () => {
+    mockGetKycDocumentCount.mockRejectedValue(
+      new Error('keychain read failed'),
+    );
+    const { result } = renderHook(() => useKycLauncher({ countryCode: 'US' }));
+
+    await act(async () => {
+      await result.current.launchKycVerification();
+    });
+
+    expect(mockTrackOnboardingStep).not.toHaveBeenCalled();
+    expect(mockTrackBranchEvent).not.toHaveBeenCalled();
+    expect(mockCreateKycSession).not.toHaveBeenCalled();
+    expect(mockStartKycVerification).not.toHaveBeenCalled();
+    expect(mockShowModal).toHaveBeenCalledWith(
+      expect.objectContaining({
+        titleText: 'Unable to verify verification limit',
+        bodyText:
+          "We couldn't confirm how many verified IDs are stored. Please try again.",
+      }),
+    );
   });
 });

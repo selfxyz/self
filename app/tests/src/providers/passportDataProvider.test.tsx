@@ -12,7 +12,9 @@ import { captureException } from '@/config/sentry';
 // Import after mocking
 import {
   __resetPassportProviderTestState,
+  getKycDocumentCount,
   initializeNativeModules,
+  KycPreflightError,
   loadDocumentByIdDirectlyFromKeychain,
   loadDocumentCatalogDirectlyFromKeychain,
   migrateFromLegacyStorage,
@@ -690,6 +692,57 @@ describe('PassportDataProvider', () => {
       );
 
       consoleLogSpy.mockRestore();
+    });
+  });
+
+  describe('getKycDocumentCount', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+      __resetPassportProviderTestState();
+    });
+
+    it('counts only KYC documents in the catalog', async () => {
+      mockKeychain.getGenericPassword = jest
+        .fn()
+        .mockResolvedValueOnce({ password: 'test' }) // For initializeNativeModules
+        .mockResolvedValueOnce({
+          password: JSON.stringify({
+            documents: [
+              { id: 'kyc-1', documentCategory: 'kyc' },
+              { id: 'passport-1', documentCategory: 'passport' },
+              { id: 'kyc-2', documentCategory: 'kyc' },
+              { id: 'id-1', documentCategory: 'id_card' },
+            ],
+          }),
+        });
+
+      await initializeNativeModules();
+
+      await expect(getKycDocumentCount()).resolves.toBe(2);
+    });
+
+    it('throws when the KYC document catalog cannot be read', async () => {
+      mockKeychain.getGenericPassword = jest
+        .fn()
+        .mockResolvedValueOnce({ password: 'test' }) // For initializeNativeModules
+        .mockRejectedValueOnce(new Error('Keychain error'));
+
+      await initializeNativeModules();
+
+      await expect(getKycDocumentCount()).rejects.toBeInstanceOf(
+        KycPreflightError,
+      );
+    });
+
+    it('returns 0 when the catalog has not been created yet', async () => {
+      mockKeychain.getGenericPassword = jest
+        .fn()
+        .mockResolvedValueOnce({ password: 'test' }) // For initializeNativeModules
+        .mockResolvedValueOnce(false); // No catalog stored
+
+      await initializeNativeModules();
+
+      await expect(getKycDocumentCount()).resolves.toBe(0);
     });
   });
 

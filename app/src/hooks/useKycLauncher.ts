@@ -122,7 +122,24 @@ export const useKycLauncher = (options: UseKycLauncherOptions) => {
         return;
       }
 
-      const kycDocumentCount = await getKycDocumentCount();
+      let kycDocumentCount: number;
+      try {
+        kycDocumentCount = await getKycDocumentCount();
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+        const safeError = sanitizeErrorMessage(errorMessage);
+        console.error('Unable to verify KYC document count:', safeError);
+        showModal({
+          titleText: 'Unable to verify verification limit',
+          bodyText:
+            "We couldn't confirm how many verified IDs are stored. Please try again.",
+          buttonText: 'Dismiss',
+          onButtonPress: () => {},
+        });
+        return;
+      }
+
       if (kycDocumentCount >= 3) {
         showModal({
           titleText: 'Maximum verifications reached',
