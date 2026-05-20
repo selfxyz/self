@@ -49,7 +49,7 @@
     "native-shell:test": "cd packages/native-shell-android && ./gradlew testDebugUnitTest",
     "prepare": "husky",
     "reinstall-app": "pnpm install && (cd app && pnpm clean:watchman && pnpm clean:build && pnpm clean:ios && pnpm clean:xcode && pnpm clean:pod-cache && pnpm clean:android-deps && pnpm clean:ruby && pnpm clean:node) && pnpm install && pnpm --filter @selfxyz/mobile-app run install-app",
-    "sort-package-jsons": "find . -name 'package.json' -not -path './node_modules/*' -not -path './*/node_modules/*' | xargs npx sort-package-json",
+    "sort-package-jsons": "find . -name 'package.json' -not -path './node_modules/*' -not -path './*/node_modules/*' | xargs pnpm dlx sort-package-json",
     "test": "pnpm -r --if-present run test",
     "test:license-headers": "cd scripts/tests && node check-license-headers.test.mjs",
     "types": "pnpm -r --if-present --filter \"!@selfxyz/contracts\" --filter \"!@selfxyz/common\" --filter \"!@selfxyz/mobile-app\" run types"

@@ -40,7 +40,7 @@
     "format": "prettier --write .",
     "install-sdk": "pnpm install --filter @selfxyz/core...",
     "lint": "prettier --check .",
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "pnpm build",
     "test": "node --loader ts-node/esm --test tests/*.test.ts",
     "types": "pnpm build"
   },

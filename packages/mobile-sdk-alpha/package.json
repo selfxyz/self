@@ -150,7 +150,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "nice": "pnpm lint:fix",
-    "prepublishOnly": "npm run build && npm run typecheck && npm run validate:exports && npm run validate:pkg",
+    "prepublishOnly": "pnpm build && pnpm typecheck && pnpm validate:exports && pnpm validate:pkg",
     "report:exports": "node ./scripts/report-exports.mjs",
     "test": "vitest run",
     "test:build": "pnpm build && pnpm test && pnpm types && pnpm lint",
