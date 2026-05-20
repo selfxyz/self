@@ -82,8 +82,8 @@ importers:
         specifier: ^7.28.6
         version: 7.29.2
       '@didit-protocol/sdk-react-native':
-        specifier: ^3.2.11
-        version: 3.2.11(@expo/config-plugins@9.0.17)(react-native@0.76.9(@babel/core@7.29.0)(@babel/preset-env@7.29.5(@babel/core@7.29.0))(@react-native-community/cli@16.0.3(typescript@5.9.3))(@types/react@18.3.28)(react@18.3.1))(react@18.3.1)
+        specifier: ^3.3.2
+        version: 3.3.2(@expo/config-plugins@9.0.17)(react-native@0.76.9(@babel/core@7.29.0)(@babel/preset-env@7.29.5(@babel/core@7.29.0))(@react-native-community/cli@16.0.3(typescript@5.9.3))(@types/react@18.3.28)(react@18.3.1))(react@18.3.1)
       '@ethersproject/shims':
         specifier: ^5.8.0
         version: 5.8.0
@@ -3283,8 +3283,8 @@ packages:
     resolution: {integrity: sha512-Vd/9EVDiu6PPJt9yAh6roZP6El1xHrdvIVGjyBsHR0RYwNHgL7FJPyIIW4fANJNG6FtyZfvlRPpFI4ZM/lubvw==}
     engines: {node: '>=18'}
 
-  '@didit-protocol/sdk-react-native@3.2.11':
-    resolution: {integrity: sha512-NdQqTPeoSIV79XrDYlibVJTLK6MTbnmxCjfo2NxbBB1AUZItswXDj+A+xjNJvNvMQfUDrFjS12+v2ikU/uUeVg==}
+  '@didit-protocol/sdk-react-native@3.3.2':
+    resolution: {integrity: sha512-UdvRRJzSWTbuleviIddhfY5qxKwtt+xvFqF6p8Rzm+FmWt6l6yEQvhIX2H66m8pKvHJG+3Vz7Wj726cf3qEXVg==}
     peerDependencies:
       '@expo/config-plugins': '>=7.0.0'
       react: ^18.3.1
@@ -19612,7 +19612,7 @@ snapshots:
 
   '@csstools/css-tokenizer@3.0.4': {}
 
-  '@didit-protocol/sdk-react-native@3.2.11(@expo/config-plugins@9.0.17)(react-native@0.76.9(@babel/core@7.29.0)(@babel/preset-env@7.29.5(@babel/core@7.29.0))(@react-native-community/cli@16.0.3(typescript@5.9.3))(@types/react@18.3.28)(react@18.3.1))(react@18.3.1)':
+  '@didit-protocol/sdk-react-native@3.3.2(@expo/config-plugins@9.0.17)(react-native@0.76.9(@babel/core@7.29.0)(@babel/preset-env@7.29.5(@babel/core@7.29.0))(@react-native-community/cli@16.0.3(typescript@5.9.3))(@types/react@18.3.28)(react@18.3.1))(react@18.3.1)':
     dependencies:
       react: 18.3.1
       react-native: 0.76.9(@babel/core@7.29.0)(@babel/preset-env@7.29.5(@babel/core@7.29.0))(@react-native-community/cli@16.0.3(typescript@5.9.3))(@types/react@18.3.28)(react@18.3.1)
