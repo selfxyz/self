@@ -148,6 +148,12 @@ The temporary fork pin is allowed only until the upstream API migration lands.
   sign-off.
 - **MT-20:** Turbo cache correctness is required. Build tasks declare explicit
   `outputs`, and the pipeline declares `globalDependencies` for shared inputs.
+- **MT-23:** Closed without a backlog row. The original concern (root +
+  `new-common/` `.prettierrc` forced `parser: "typescript"` globally, breaking
+  non-TS file formatting) was fixed directly: parser line removed in both
+  configs, and the now-redundant `--parser` flags in `scripts/format-root.cjs`
+  and the `format:github` script dropped. `pnpm format` produces a clean diff;
+  no repo-wide sweep is needed.
 
 ## Workstream Validation
 

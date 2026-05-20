@@ -28,7 +28,7 @@
     "docstrings:app": "pnpm tsx scripts/docstring-report.ts \"app/src/**/*.{ts,tsx}\" --label \"Mobile App\" --write-report docs/coverage/app.json",
     "docstrings:sdk": "pnpm tsx scripts/docstring-report.ts \"packages/mobile-sdk-alpha/src/**/*.{ts,tsx}\" --label \"Mobile SDK Alpha\" --write-report docs/coverage/sdk.json",
     "format": "node scripts/format-monorepo.cjs",
-    "format:github": "node ./node_modules/prettier/bin/prettier.cjs --parser yaml --write .github/**/*.yml --single-quote false",
+    "format:github": "node ./node_modules/prettier/bin/prettier.cjs --write .github/**/*.yml --single-quote false",
     "format:root": "node scripts/format-root.cjs",
     "gitleaks": "gitleaks protect --staged --redact --config=gitleaks-override.toml",
     "postinstall": "node scripts/run-patch-package.cjs",

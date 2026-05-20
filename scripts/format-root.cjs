@@ -22,10 +22,10 @@ function runNode(args) {
 }
 
 console.log('format markdown');
-runNode([prettierBin, '--parser', 'markdown', '--write', '*.md', 'docs/**/*.md', 'specs/**/*.md']);
+runNode([prettierBin, '--write', '*.md', 'docs/**/*.md', 'specs/**/*.md']);
 
 console.log('format yaml');
-runNode([prettierBin, '--parser', 'yaml', '--write', '.*.yml', '.*.yaml', '--single-quote', 'false']);
+runNode([prettierBin, '--write', '.*.yml', '.*.yaml', '--single-quote', 'false']);
 
 runNode([prettierBin, '--write', '--no-error-on-unmatched-pattern', 'scripts/**/*.{js,mjs,ts}']);
-runNode([prettierBin, '--parser', 'json', '--write', '--no-error-on-unmatched-pattern', 'scripts/**/*.json']);
+runNode([prettierBin, '--write', '--no-error-on-unmatched-pattern', 'scripts/**/*.json']);
