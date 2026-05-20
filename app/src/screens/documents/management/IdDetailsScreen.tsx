@@ -30,7 +30,7 @@ import IdCardLayout from '@/components/homescreen/IdCard';
 import { usePassport } from '@/providers/passportDataProvider';
 import { ProofHistoryList } from '@/screens/home/ProofHistoryList';
 import useUserStore from '@/stores/userStore';
-import { idTypeForDocumentCategory } from '@/utils/idType';
+import { idTypeForDocumentCategory } from '@/utils/documentUtils';
 
 const IdDetailsScreen: React.FC = () => {
   const { idDetailsDocumentId } = useUserStore();
