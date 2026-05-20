@@ -399,6 +399,41 @@ describe('IdCardLayout perks footer', () => {
     expect(MockTrackEvent).not.toHaveBeenCalled();
   });
 
+  it('renders a single-CTA rail and targets the first perk even if multiple are returned', async () => {
+    MockGetPerkRecordsForIdType.mockReturnValueOnce([
+      {
+        id: 'google_cloud_faucet',
+        label: 'Google Cloud Faucet',
+        isNew: true,
+        outlinkUrl: 'https://example.test/perk',
+      },
+      {
+        id: 'second_perk',
+        label: 'Second',
+        isNew: false,
+        outlinkUrl: 'https://example.test/second',
+      },
+    ]);
+    MockOpenURL.mockResolvedValueOnce(undefined);
+    render(
+      <IdCardLayout idDocument={passportDoc} selected={true} hidden={true} />,
+    );
+    expect(MockPerkRailProps.logos).toHaveLength(1);
+    await act(async () => {
+      await MockPerkRailProps.onPress?.();
+    });
+    expect(MockTrackEvent).toHaveBeenCalledWith(
+      'Homescreen: ID Card Perk Tapped',
+      {
+        id_type: 'p',
+        perk_id: 'google_cloud_faucet',
+        has_outlink: true,
+      },
+    );
+    expect(MockOpenURL).toHaveBeenCalledWith('https://example.test/perk');
+    expect(MockOpenURL).toHaveBeenCalledTimes(1);
+  });
+
   it('suppresses footer when selected=false (collapsed)', () => {
     render(
       <IdCardLayout idDocument={passportDoc} selected={false} hidden={true} />,

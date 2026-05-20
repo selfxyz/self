@@ -151,6 +151,7 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
     () => (idType ? getPerkRecordsForIdType(idType) : []),
     [idType],
   );
+  const primaryPerk = perkRecords[0] ?? null;
   const documentViewKey = useMemo(() => {
     if (!idDocument || !idType) {
       return null;
@@ -193,27 +194,26 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
   }, [perksVisible, idType, documentViewKey, perkRecords.length, trackEvent]);
 
   const handlePerkPress = useCallback(async () => {
-    const first = perkRecords[0];
-    if (!first) {
+    if (!primaryPerk || !idType) {
       return;
     }
     trackEvent(HomescreenEvents.ID_CARD_PERK_TAPPED, {
       id_type: idType,
-      perk_id: first.id,
-      has_outlink: Boolean(first.outlinkUrl),
+      perk_id: primaryPerk.id,
+      has_outlink: Boolean(primaryPerk.outlinkUrl),
     });
-    if (!first.outlinkUrl) {
+    if (!primaryPerk.outlinkUrl) {
       return;
     }
     try {
-      await Linking.openURL(first.outlinkUrl);
+      await Linking.openURL(primaryPerk.outlinkUrl);
     } catch {
       trackEvent(HomescreenEvents.ID_CARD_PERK_OUTLINK_OPEN_FAILED, {
         id_type: idType,
-        perk_id: first.id,
+        perk_id: primaryPerk.id,
       });
     }
-  }, [perkRecords, idType, trackEvent]);
+  }, [primaryPerk, idType, trackEvent]);
 
   if (!idDocument) {
     return null;
@@ -480,14 +480,11 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
               </YStack>
             ))}
         </YStack>
-        {perksVisible && (
+        {perksVisible && primaryPerk && (
           <YStack backgroundColor={white}>
             <PerkRail
               variant="dense"
-              logos={perkRecords.map(record => {
-                const factory = PERK_LOGO_BY_ID[record.id];
-                return factory ? factory() : null;
-              })}
+              logos={[(PERK_LOGO_BY_ID[primaryPerk.id] ?? (() => null))()]}
               onPress={handlePerkPress}
             />
           </YStack>
