@@ -7,15 +7,10 @@ import { Text, TouchableOpacity, View } from 'react-native';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 
 import DataConfirmationScreen from '@/screens/documents/scanning/DataConfirmationScreen';
-import * as analytics from '@/services/analytics';
 
 const mockView = View;
 const mockText = Text;
 const mockTouchableOpacity = TouchableOpacity;
-
-jest.mock('@/services/analytics', () => ({
-  trackEvent: jest.fn(),
-}));
 
 const mockSetMRZForNFC = jest.fn();
 
@@ -88,14 +83,6 @@ jest.mock('@selfxyz/mobile-sdk-alpha/components', () => ({
       { onPress, disabled },
       mockReact.createElement(mockText, null, children),
     ),
-}));
-
-jest.mock('@selfxyz/mobile-sdk-alpha/constants/analytics', () => ({
-  PassportEvents: {
-    DATA_CONFIRMATION_CONTINUE: 'Passport: Data Confirmation Continue',
-    DATA_CONFIRMATION_CANCEL: 'Passport: Data Confirmation Cancel',
-    DATA_CONFIRMATION_COMPLETED: 'Passport: Data Confirmation Completed',
-  },
 }));
 
 const mockNavigate = jest.fn();
@@ -171,17 +158,6 @@ describe('DataConfirmationScreen', () => {
 
       expect(mockSetMRZForNFC).not.toHaveBeenCalled();
     });
-
-    it('tracks confirmation with had_changes false', () => {
-      render(<DataConfirmationScreen />);
-
-      fireEvent.press(screen.getByText('Continue'));
-
-      expect(analytics.trackEvent).toHaveBeenCalledWith(
-        'Passport: Data Confirmation Completed',
-        { had_changes: false },
-      );
-    });
   });
 
   describe('MRZ data on confirm with document number change', () => {
@@ -207,18 +183,6 @@ describe('DataConfirmationScreen', () => {
       fireEvent.press(screen.getByText('Continue'));
 
       expect(mockSetMRZForNFC).not.toHaveBeenCalled();
-    });
-
-    it('tracks confirmation with had_changes true', () => {
-      render(<DataConfirmationScreen />);
-
-      changeDocumentNumber('XY987654Z');
-      fireEvent.press(screen.getByText('Continue'));
-
-      expect(analytics.trackEvent).toHaveBeenCalledWith(
-        'Passport: Data Confirmation Completed',
-        { had_changes: true },
-      );
     });
   });
 });

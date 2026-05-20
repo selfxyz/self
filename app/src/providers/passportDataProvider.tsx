@@ -404,6 +404,48 @@ export async function getAvailableDocumentTypes(): Promise<string[]> {
   return [...new Set(catalog.documents.map(d => d.documentType))];
 }
 
+export class KycPreflightError extends Error {
+  constructor(message: string, options?: { cause?: unknown }) {
+    super(message);
+    this.name = 'KycPreflightError';
+    if (options?.cause !== undefined) {
+      (this as Error & { cause?: unknown }).cause = options.cause;
+    }
+  }
+}
+
+export async function getKycDocumentCount(): Promise<number> {
+  let nativeReady: boolean;
+  try {
+    nativeReady = await initializeNativeModules();
+  } catch (error) {
+    throw new KycPreflightError(
+      'Unable to verify KYC document count: native module init failed',
+      { cause: error },
+    );
+  }
+  if (!nativeReady) {
+    throw new KycPreflightError(
+      'Unable to verify KYC document count: native modules not ready',
+    );
+  }
+  let catalog: DocumentCatalog;
+  try {
+    catalog = await loadDocumentCatalogDirectlyFromKeychainForKycCount();
+  } catch (error) {
+    throw new KycPreflightError(
+      'Unable to verify KYC document count: catalog read failed',
+      { cause: error },
+    );
+  }
+  if (!Array.isArray(catalog.documents)) {
+    throw new KycPreflightError(
+      'Unable to verify KYC document count: catalog malformed',
+    );
+  }
+  return catalog.documents.filter(doc => doc.documentCategory === 'kyc').length;
+}
+
 // Helper function to get current document type from catalog
 export async function getCurrentDocumentType(): Promise<string | null> {
   const catalog = await loadDocumentCatalogDirectlyFromKeychain();
@@ -569,6 +611,30 @@ export async function loadDocumentCatalogDirectlyFromKeychain(): Promise<Documen
   }
 
   // Return empty catalog if none exists
+  return { documents: [] };
+}
+
+async function loadDocumentCatalogDirectlyFromKeychainForKycCount(): Promise<DocumentCatalog> {
+  if (typeof Keychain === 'undefined' || !Keychain) {
+    throw new Error('Keychain module not yet initialized');
+  }
+
+  if (!nativeModulesReady) {
+    throw new Error('Native modules not ready');
+  }
+
+  const catalogCreds = await Keychain.getGenericPassword({
+    service: 'documentCatalog',
+  });
+  if (catalogCreds !== false) {
+    const parsed = JSON.parse(catalogCreds.password);
+    if (parsed === null) {
+      throw new TypeError('Cannot parse null password');
+    }
+
+    return parsed;
+  }
+
   return { documents: [] };
 }
 

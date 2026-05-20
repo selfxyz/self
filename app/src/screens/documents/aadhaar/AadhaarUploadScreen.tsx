@@ -9,7 +9,11 @@ import { Image, XStack, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { trackOnboardingStep, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import {
+  trackBranchEvent,
+  trackOnboardingStep,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
 import { BodyText, PrimaryButton } from '@selfxyz/mobile-sdk-alpha/components';
 import {
   AadhaarEvents,
@@ -32,6 +36,7 @@ import {
   scanQRCodeFromPhotoLibrary,
 } from '@/integrations/qrScanner';
 import type { RootStackParamList } from '@/navigation';
+import { PrivacyMask } from '@/observability/PrivacyMask';
 import { extraYPadding } from '@/utils/styleUtils';
 
 const AadhaarUploadScreen: React.FC = () => {
@@ -40,7 +45,6 @@ const AadhaarUploadScreen: React.FC = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const selfClient = useSelfClient();
-  const { trackEvent } = selfClient;
   const [isProcessing, setIsProcessing] = useState(false);
   const aadhaarImageSource: ImageSourcePropType = AadhaarImage;
 
@@ -51,29 +55,18 @@ const AadhaarUploadScreen: React.FC = () => {
     buttonText: 'Open Settings',
     secondaryButtonText: 'Cancel',
     onButtonPress: () => {
-      trackEvent(AadhaarEvents.PERMISSION_SETTINGS_OPENED);
       Linking.openSettings();
     },
-    onModalDismiss: () => {
-      trackEvent(AadhaarEvents.PERMISSION_MODAL_DISMISSED);
-    },
+    onModalDismiss: () => {},
   });
 
-  // Track screen entry
+  // Fire SCAN_STARTED on canonical funnel only — branch funnel's UPLOAD_STARTED
+  // fires on actual photo-library tap, not screen mount.
   useEffect(() => {
-    trackEvent(AadhaarEvents.UPLOAD_SCREEN_OPENED);
     trackOnboardingStep(selfClient, OnboardingEvents.SCAN_STARTED, {
       branch: 'aadhaar',
     });
-
-    // Track button state based on photo library availability
-    if (isQRScannerPhotoLibraryAvailable()) {
-      trackEvent(AadhaarEvents.UPLOAD_BUTTON_ENABLED);
-    } else {
-      trackEvent(AadhaarEvents.UPLOAD_BUTTON_DISABLED);
-      trackEvent(AadhaarEvents.PHOTO_LIBRARY_UNAVAILABLE);
-    }
-  }, [selfClient, trackEvent]);
+  }, [selfClient]);
 
   const { processAadhaarQRCode } = useAadhaar();
 
@@ -84,24 +77,17 @@ const AadhaarUploadScreen: React.FC = () => {
 
     try {
       setIsProcessing(true);
-      trackEvent(AadhaarEvents.PROCESSING_STARTED);
+      trackBranchEvent(selfClient, AadhaarEvents.UPLOAD_STARTED);
 
       const qrCodeData = await scanQRCodeFromPhotoLibrary();
+      trackBranchEvent(selfClient, AadhaarEvents.QR_SELECTED);
       await processAadhaarQRCode(qrCodeData);
       trackOnboardingStep(selfClient, OnboardingEvents.SCAN_SUCCEEDED, {
         branch: 'aadhaar',
       });
     } catch (error) {
-      trackEvent(AadhaarEvents.QR_UPLOAD_FAILED, {
-        error:
-          error instanceof Error
-            ? error.message
-            : error?.toString() || 'Unknown error',
-      });
-
       // Don't show error for user cancellation
       if (error instanceof Error && error.message.includes('cancelled')) {
-        trackEvent(AadhaarEvents.USER_CANCELLED_SELECTION);
         return;
       }
 
@@ -110,7 +96,7 @@ const AadhaarUploadScreen: React.FC = () => {
         error instanceof Error ? error.message : String(error);
 
       if (errorMessage.includes('Photo library access is required')) {
-        trackEvent(AadhaarEvents.PERMISSION_MODAL_OPENED);
+        trackBranchEvent(selfClient, AadhaarEvents.PHOTO_PERMISSION_DENIED);
         showPermissionModal();
         return;
       }
@@ -122,7 +108,7 @@ const AadhaarUploadScreen: React.FC = () => {
         errorMessage.includes('Settings') ||
         errorMessage.includes('enable access')
       ) {
-        trackEvent(AadhaarEvents.PERMISSION_MODAL_OPENED);
+        trackBranchEvent(selfClient, AadhaarEvents.PHOTO_PERMISSION_DENIED);
         showPermissionModal();
         return;
       }
@@ -150,93 +136,74 @@ const AadhaarUploadScreen: React.FC = () => {
   }, [
     isProcessing,
     selfClient,
-    trackEvent,
     processAadhaarQRCode,
     navigation,
     showPermissionModal,
   ]);
 
   return (
-    <YStack flex={1} backgroundColor={slate100} paddingBottom={paddingBottom}>
-      <YStack flex={1} paddingHorizontal={20} paddingTop={20}>
-        <YStack
-          flex={1}
-          justifyContent="center"
-          alignItems="center"
-          paddingVertical={20}
-        >
-          <Image
-            source={aadhaarImageSource}
-            width="100%"
-            height="100%"
-            objectFit="contain"
-          />
-        </YStack>
-      </YStack>
-
-      <YStack
-        paddingHorizontal={20}
-        paddingTop={20}
-        alignItems="center"
-        paddingVertical={25}
-        borderBlockWidth={1}
-        borderBlockColor={slate200}
-      >
-        <BodyText
-          style={{ fontWeight: 'bold', fontSize: 18, textAlign: 'center' }}
-        >
-          Generate a QR code from the Aadhaar app
-        </BodyText>
-        <BodyText
-          style={{ fontSize: 16, textAlign: 'center', color: slate500 }}
-        >
-          Save the QR code to your photo library and upload it here.
-        </BodyText>
-        <BodyText
-          style={{
-            fontSize: 12,
-            textAlign: 'center',
-            color: slate400,
-            marginTop: 20,
-          }}
-        >
-          SELF DOES NOT STORE THIS INFORMATION.
-        </BodyText>
-      </YStack>
-
-      <YStack paddingHorizontal={25} backgroundColor={white} paddingTop={25}>
-        <XStack gap="$3" alignItems="stretch">
-          <YStack flex={1}>
-            <PrimaryButton
-              disabled={!isQRScannerPhotoLibraryAvailable() || isProcessing}
-              trackEvent={AadhaarEvents.QR_UPLOAD_REQUESTED}
-              onPress={onPhotoLibraryPress}
-            >
-              {isProcessing ? 'Processing...' : 'Upload QR code'}
-            </PrimaryButton>
-          </YStack>
-          {/* TODO: Implement camera-based QR scanning for Aadhaar */}
-          {/* <Button
-            aspectRatio={1}
-            backgroundColor={slate200}
-            borderRadius="$2"
+    <PrivacyMask>
+      <YStack flex={1} backgroundColor={slate100} paddingBottom={paddingBottom}>
+        <YStack flex={1} paddingHorizontal={20} paddingTop={20}>
+          <YStack
+            flex={1}
             justifyContent="center"
             alignItems="center"
-            pressStyle={{
-              backgroundColor: slate50,
-              scale: 0.98,
-            }}
-            hoverStyle={{
-              backgroundColor: slate300,
-            }}
-            onPress={onCameraScanPress}
-            disabled={isProcessing}
+            paddingVertical={20}
           >
-            <ScanIcon width={28} height={28} color={black} />
-          </Button> */}
-        </XStack>
+            <Image
+              source={aadhaarImageSource}
+              width="100%"
+              height="100%"
+              objectFit="contain"
+            />
+          </YStack>
+        </YStack>
+
+        <YStack
+          paddingHorizontal={20}
+          paddingTop={20}
+          alignItems="center"
+          paddingVertical={25}
+          borderBlockWidth={1}
+          borderBlockColor={slate200}
+        >
+          <BodyText
+            style={{ fontWeight: 'bold', fontSize: 18, textAlign: 'center' }}
+          >
+            Generate a QR code from the Aadhaar app
+          </BodyText>
+          <BodyText
+            style={{ fontSize: 16, textAlign: 'center', color: slate500 }}
+          >
+            Save the QR code to your photo library and upload it here.
+          </BodyText>
+          <BodyText
+            style={{
+              fontSize: 12,
+              textAlign: 'center',
+              color: slate400,
+              marginTop: 20,
+            }}
+          >
+            SELF DOES NOT STORE THIS INFORMATION.
+          </BodyText>
+        </YStack>
+
+        <YStack paddingHorizontal={25} backgroundColor={white} paddingTop={25}>
+          <XStack gap="$3" alignItems="stretch">
+            <YStack flex={1}>
+              <PrimaryButton
+                disabled={!isQRScannerPhotoLibraryAvailable() || isProcessing}
+                onPress={onPhotoLibraryPress}
+              >
+                {isProcessing ? 'Processing...' : 'Upload QR code'}
+              </PrimaryButton>
+            </YStack>
+          </XStack>
+        </YStack>
       </YStack>
-    </YStack>
+    </PrivacyMask>
   );
 };
 

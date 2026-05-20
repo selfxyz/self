@@ -88,6 +88,7 @@ jest.mock('react-native', () => ({
 const mockLinking = jest.requireMock('react-native').Linking as jest.Mocked<{
   openURL: jest.Mock;
 }>;
+let mockIdCardProps: any = null;
 
 jest.mock('@selfxyz/mobile-sdk-alpha/constants/colors', () => ({
   black: '#000',
@@ -100,7 +101,10 @@ jest.mock('@selfxyz/mobile-sdk-alpha/constants/colors', () => ({
 
 jest.mock('@/components/homescreen/IdCard', () => ({
   __esModule: true,
-  default: () => <mock-stack testID="id-card" />,
+  default: (props: any) => {
+    mockIdCardProps = props;
+    return <mock-stack testID="id-card" />;
+  },
 }));
 
 jest.mock('@/screens/home/ProofHistoryList', () => ({
@@ -160,6 +164,7 @@ describe('IdDetailsScreen', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockIdCardProps = null;
 
     useNavigation.mockReturnValue({ navigate: jest.fn() });
     useSelfClient.mockReturnValue({ trackEvent });
@@ -198,6 +203,17 @@ describe('IdDetailsScreen', () => {
       perk_count: 1,
       perk_ids: ['google_cloud_faucet'],
     });
+  });
+
+  it('disables the ID card footer perks while keeping the details perks card', async () => {
+    const { UNSAFE_root } = render(<IdDetailsScreen />);
+
+    await waitFor(() => UNSAFE_root.findByType('mock-perks-card' as never));
+
+    expect(mockIdCardProps?.showPerks).toBe(false);
+    expect(UNSAFE_root.findAllByType('mock-perks-card' as never)).toHaveLength(
+      1,
+    );
   });
 
   it('opens the perk outlink URL and fires the perk-tapped analytics event', async () => {

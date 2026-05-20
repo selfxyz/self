@@ -14,7 +14,6 @@ import {
   SecondaryButton,
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
-import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import {
   black,
   slate500,
@@ -159,18 +158,10 @@ const ComingSoonScreen: React.FC<ComingSoonScreenProps> = ({ route }) => {
         paddingBottom={20}
       >
         <SupportUuidRow />
-        <PrimaryButton
-          onPress={onNotifyMe}
-          trackEvent={PassportEvents.NOTIFY_COMING_SOON}
-        >
+        <PrimaryButton onPress={onNotifyMe}>
           {SUPPORT_FORM_COMING_SOON_BUTTON_TEXT}
         </PrimaryButton>
-        <SecondaryButton
-          trackEvent={PassportEvents.DISMISS_COMING_SOON}
-          onPress={onDismiss}
-        >
-          Dismiss
-        </SecondaryButton>
+        <SecondaryButton onPress={onDismiss}>Dismiss</SecondaryButton>
       </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>
   );

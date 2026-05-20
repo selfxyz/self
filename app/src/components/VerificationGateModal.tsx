@@ -5,6 +5,7 @@
 import React, { useMemo } from 'react';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import type { KnownEventName } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import AlertModal, { type AlertModalParams } from '@/components/AlertModal';
@@ -18,8 +19,8 @@ interface ReasonCopy {
   titleText: string;
   bodyText: (appName: string) => string;
   buttonText: string;
-  recoverEvent: string;
-  dismissEvent: string;
+  recoverEvent: KnownEventName;
+  dismissEvent: KnownEventName;
 }
 
 const REASON_COPY: Record<VerificationGateReason, ReasonCopy> = {

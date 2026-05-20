@@ -252,7 +252,7 @@ export const logEvent = (
 };
 
 type LogLevel = 'info' | 'warn' | 'error';
-type LogCategory = 'proof' | 'nfc';
+type LogCategory = 'proof' | 'nfc' | 'auth';
 
 export const logNFCEvent = (
   level: LogLevel,
@@ -267,6 +267,13 @@ export const logProofEvent = (
   context: ProofContext,
   extra?: Record<string, unknown>,
 ) => logEvent(level, 'proof', message, context, extra);
+
+export const logAuthEvent = (
+  level: LogLevel,
+  message: string,
+  context: BaseContext & Record<string, unknown>,
+  extra?: Record<string, unknown>,
+) => logEvent(level, 'auth', message, context, extra);
 
 export const setSupportUuidInSentry = (
   supportUuid: string | null,

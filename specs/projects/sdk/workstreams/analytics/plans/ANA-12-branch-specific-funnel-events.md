@@ -1,16 +1,16 @@
 # ANA-12: Branch-Specific Funnel Events (Biometric / KYC / Aadhaar)
 
-> Last updated: 2026-05-06
-> Status: Ready
+> Last updated: 2026-05-15
+> Status: In Review
 > Priority: High
 > Depends on: ANA-01, ANA-11
 
 - Workstream: analytics
 - Backlog ID: ANA-12
-- Linear: TBD
-- Owner: TBD
-- Branch: TBD
-- PR: TBD
+- Linear: [SELF-2870](https://linear.app/selfprotocol/issue/SELF-2870/ana-12-branch-specific-funnel-events-biometric-kyc-aadhaar)
+- Owner: Remi Colin
+- Branch: `feat/ana-12-branch-events`
+- PR: [#2054](https://github.com/selfxyz/self/pull/2054)
 
 ## Why
 
@@ -23,6 +23,77 @@ The canonical onboarding funnel from ANA-01 collapses each branch's "scan" step 
 Today's drop-off between `SCAN_STARTED` and `SCAN_SUCCEEDED` for biometric users is 84% (production data, 7-day window). We have no way to tell whether they couldn't get the camera up, couldn't read the MRZ, couldn't NFC, or hit an unsupported document. The CTO question for unsupported-document prioritization (which DSC algos to add next) needs a property-tagged failure event we don't currently emit.
 
 The naming layer is also broken: `PassportEvents.*` is used for both passport AND biometric ID (same code path), there's no `KycEvents` group at all, and `AadhaarEvents.*` has 25 events most of which are operational noise.
+
+## Flow
+
+The canonical funnel collapses scanning into a single `SCAN_STARTED → SCAN_SUCCEEDED` step. ANA-12 layers a branch-specific funnel underneath each canonical step, joined back via `attempt_id`.
+
+```mermaid
+flowchart TD
+    Start([Onboarding: Started]) --> Country[Onboarding: Country Selected]
+    Country --> DocType[Onboarding: Document Type Selected<br/>locks initial_branch]
+
+    DocType --> ScanStart[Onboarding: Document Scan Started]
+
+    ScanStart --> Branch{initial_branch}
+    Branch -->|biometric_passport<br/>biometric_id| BIO[Biometric drilldown]
+    Branch -->|kyc| KYC[KYC drilldown]
+    Branch -->|aadhaar| AAD[Aadhaar drilldown]
+
+    subgraph BiometricFunnel[Biometric branch events]
+        BIO --> B1[Biometric: MRZ Started<br/>camera mount]
+        B1 --> B2[Biometric: MRZ Captured<br/>fires when MRZ parses; payload is duration only]
+        B2 --> B3[Biometric: NFC Started<br/>nfc_method: BAC or PACE]
+        B3 --> B4[Biometric: NFC Succeeded<br/>chip read + duration]
+        B4 --> B5[Biometric: Document Parsed<br/>country_code + signature_algorithm]
+        B5 -.->|unsupported branch| B6[Biometric: Document Unsupported<br/>unsupported_reason]
+    end
+
+    subgraph KycFunnel[KYC branch events]
+        KYC --> K1[KYC: Session Requested<br/>before createKycSession]
+        K1 --> K2[KYC: Session Created<br/>provider + duration]
+        K2 --> K3[KYC: Provider Opened<br/>before startKycVerification]
+        K3 --> K4[KYC: Provider Closed<br/>outcome: completed/cancelled/failed]
+        K4 -.->|on retry| K5[KYC: Retry Triggered<br/>attempt_count]
+    end
+
+    subgraph AadhaarFunnel[Aadhaar branch events - curated 25 to 7]
+        AAD --> A1[Aadhaar: Upload Started<br/>photo library tap]
+        A1 -.->|denied| A1F[Aadhaar: Photo Permission Denied]
+        A1 --> A2[Aadhaar: QR Selected]
+        A2 -.->|fail| A2F[Aadhaar: QR Parse Failed<br/>reason]
+        A2 -.->|expired| A2T[Aadhaar: Timestamp Expired<br/>qr_age_days]
+        A2 --> A3[Aadhaar: Data Stored<br/>duration]
+        A3 --> A4[Aadhaar: Continue Pressed]
+    end
+
+    B5 --> ScanOk
+    B6 --> ScanFail
+    K4 --> ScanOk
+    A4 --> ScanOk
+
+    ScanOk[Onboarding: Document Scan Succeeded] --> Validate{validating_document}
+    Validate -->|new document| ProofStart[Onboarding: Proof Generation Started<br/>circuitType = register]
+    Validate -->|already on-chain| Recovered([Onboarding: Recovered<br/>account recovery, no new proof])
+    ProofStart --> ProofOk[Onboarding: Proof Generation Succeeded]
+    ProofOk --> Done([Onboarding: Completed<br/>used_fallback])
+
+    ScanFail([Onboarding: Failed<br/>stage + reason])
+
+    classDef canonical fill:#fef3c7,stroke:#b45309
+    classDef bio fill:#dbeafe,stroke:#1d4ed8
+    classDef kyc fill:#dcfce7,stroke:#15803d
+    classDef aad fill:#fce7f3,stroke:#be185d
+    classDef terminal fill:#f3f4f6,stroke:#374151
+
+    class Start,Country,DocType,ScanStart,ScanOk,ProofStart,ProofOk,Done,Recovered canonical
+    class B1,B2,B3,B4,B5,B6 bio
+    class K1,K2,K3,K4,K5 kyc
+    class A1,A1F,A2,A2F,A2T,A3,A4 aad
+    class ScanFail terminal
+```
+
+Every branch event is stamped with `attempt_id` / `initial_branch` / `current_branch` by `trackBranchEvent`, which **no-ops if there is no active onboarding attempt** (avoids the disclosure-pollution class of bug ANA-11 fixed). Branch events do not dedupe — multiple OCR retries before a successful MRZ legitimately fire `MRZ_STARTED` more than once.
 
 ## Scope
 
@@ -44,11 +115,14 @@ The naming layer is also broken: `PassportEvents.*` is used for both passport AN
 
 ## Naming convention
 
-| Pattern              | Example                                          | Notes                                                                                            |
-| -------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
-| Constant group       | `BiometricEvents`, `KycEvents`, `AadhaarEvents`  | Mirror the canonical `OnboardingEvents` group format                                             |
-| Event name           | `'Biometric: MRZ Captured'`                      | `<Flow>: <Stage> <Outcome>` — outcomes: `Started` / `Succeeded` / `Failed` / `Cancelled`         |
-| Mandatory properties | `attempt_id`, `initial_branch`, `current_branch` | Same triple as canonical events. Stamp via a small shared helper, not hand-written per call site |
+Follows [Mixpanel's recommended convention](https://mixpanel.com/blog/community-tip-naming-conventions-to-stay-organized/): Title Case event names with past-tense verbs, snake_case properties, Object-Action structure, namespace prefix for lexicon clustering.
+
+| Pattern                  | Example                                          | Notes                                                                                                                                                                                                                                                                                                                                                                                                             |
+| ------------------------ | ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Constant group           | `BiometricEvents`, `KycEvents`, `AadhaarEvents`  | Mirror the canonical `OnboardingEvents` group format. TS identifier, not the wire string — Title Case is fine even for acronyms in the constant name.                                                                                                                                                                                                                                                             |
+| Event name (wire string) | `'Biometric: MRZ Captured'`                      | `<Namespace>: <Noun> <PastVerb>` — Title Case, past tense, one noun, one verb. Use the domain verb when it's natural (`Captured`, `Parsed`, `Stored`, `Created`); fall back to `Started` / `Succeeded` / `Failed` / `Cancelled` when no clean domain verb exists. **Never double up**: `MRZ Started` not `MRZ Capture Started`; `MRZ Restarted` not `MRZ Capture Restarted`. The noun already implies the action. |
+| Acronyms in event names  | `'KYC: Session Requested'`, `'API Called'`       | Acronyms are ALL CAPS in the wire string, not Title Case. `'KYC: ...'` not `'Kyc: ...'`. Applies to the namespace prefix and to any acronym inside the event body.                                                                                                                                                                                                                                                |
+| Mandatory properties     | `attempt_id`, `initial_branch`, `current_branch` | snake_case (Mixpanel property convention). Same triple as canonical events. Stamp via a small shared helper, not hand-written per call site.                                                                                                                                                                                                                                                                      |
 
 ### Event helper
 
@@ -58,30 +132,59 @@ Add `trackBranchEvent(selfClient, eventName, properties)` to `packages/mobile-sd
 - NOT bootstrap a fake attempt if `currentAttempt` is null (unlike `trackOnboardingStep`). Branch events fire only inside an active onboarding attempt; if there's no attempt, they no-op silently. This prevents the same disclosure-pollution class of bug ANA-11 fixed for `PROOF_STARTED`.
 - NOT dedupe (no fire-once guard). Branch events can legitimately fire multiple times per attempt (e.g. multiple OCR retries before a successful MRZ).
 
+### Payload invariant — no PII
+
+Branch event payloads carry **categorical, operational, and timing properties only**. Never fire raw document fields, raw user input, raw provider responses, or anything that identifies a person.
+
+- Allowed: enum-style categories (`document_type`, `outcome`, `unsupported_reason`, `nfc_method`), operational identifiers (`provider`, `signature_algorithm`, `csca_hash_algorithm`), aggregate metrics (`duration_seconds`, `qr_age_days`, `attempt_count`), error codes from typed error enums.
+- Allowed but treat as quasi-identifiers: `country_code`. Already present on the canonical funnel (`Onboarding: Country Selected`), so per-event stamping on `DOCUMENT_PARSED` / `DOCUMENT_UNSUPPORTED` is not new exposure and is needed for the (country × signature_algorithm) DSC-prioritization view.
+- Forbidden: MRZ contents, document number, name, DOB, expiry, nationality string, photo bytes, Aadhaar QR payload, KYC selfie/liveness frames, provider-returned PII, sanitized-but-readable error messages that include any of the above.
+
+If a new event would help product but requires a forbidden field, the answer is a Sentry breadcrumb (ANA-13), not a new Mixpanel event. Tests that snapshot event strings should also assert the property whitelist for that event.
+
 ## Branch event tables
 
 ### Biometric (passport + biometric ID)
 
-| Constant                               | Event name                        | Fire site                                                                     | Additional properties                                                                                                                         |
-| -------------------------------------- | --------------------------------- | ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| `BiometricEvents.MRZ_CAPTURE_STARTED`  | `Biometric: MRZ Capture Started`  | `app/src/screens/documents/scanning/DocumentCameraScreen.tsx` on camera mount | `document_type`                                                                                                                               |
-| `BiometricEvents.MRZ_CAPTURED`         | `Biometric: MRZ Captured`         | Same screen, when `useReadMRZ` returns a parseable MRZ                        | `document_type`, `duration_seconds`                                                                                                           |
-| `BiometricEvents.NFC_STARTED`          | `Biometric: NFC Started`          | `DocumentNFCScanScreen.tsx` on NFC begin                                      | `document_type`, `nfc_method` (`'BAC' \| 'PACE'`)                                                                                             |
-| `BiometricEvents.NFC_SUCCEEDED`        | `Biometric: NFC Succeeded`        | Same screen on chip read complete                                             | `document_type`, `duration_seconds`                                                                                                           |
-| `BiometricEvents.DOCUMENT_PARSED`      | `Biometric: Document Parsed`      | `provingMachine.ts` `validating_document` state on successful parse           | `document_type`, `country_code`, `signature_algorithm`, `csca_hash_algorithm`                                                                 |
-| `BiometricEvents.DOCUMENT_UNSUPPORTED` | `Biometric: Document Unsupported` | `provingMachine.ts` when `checkDocumentSupported` returns non-supported       | `document_type`, `country_code`, `signature_algorithm`, `unsupported_reason` (`'unknown_dsc' \| 'unsupported_algo' \| 'country_not_in_list'`) |
+| Constant                               | Event name                        | Fire site                                                                                                                                                                                                                | Additional properties                                                                                                                         |
+| -------------------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `BiometricEvents.MRZ_STARTED`          | `Biometric: MRZ Started`          | `app/src/screens/documents/scanning/DocumentCameraScreen.tsx` on camera mount                                                                                                                                            | `document_type`                                                                                                                               |
+| `BiometricEvents.MRZ_CAPTURED`         | `Biometric: MRZ Captured`         | `useReadMRZ` success callback, when the camera returns a parseable MRZ. The MRZ contents themselves are NEVER fired — `document_type` is the document category enum, `duration_seconds` is wall-clock from camera mount. | `document_type`, `duration_seconds`                                                                                                           |
+| `BiometricEvents.NFC_STARTED`          | `Biometric: NFC Started`          | `DocumentNFCScanScreen.tsx` on NFC begin                                                                                                                                                                                 | `document_type`, `nfc_method` (`'BAC' \| 'PACE'`)                                                                                             |
+| `BiometricEvents.NFC_SUCCEEDED`        | `Biometric: NFC Succeeded`        | Same screen on chip read complete                                                                                                                                                                                        | `document_type`, `duration_seconds`                                                                                                           |
+| `BiometricEvents.DOCUMENT_PARSED`      | `Biometric: Document Parsed`      | `provingMachine.ts` `validating_document` state on successful parse                                                                                                                                                      | `document_type`, `country_code`, `signature_algorithm`, `csca_hash_algorithm`                                                                 |
+| `BiometricEvents.DOCUMENT_UNSUPPORTED` | `Biometric: Document Unsupported` | `provingMachine.ts` when `checkDocumentSupported` returns non-supported                                                                                                                                                  | `document_type`, `country_code`, `signature_algorithm`, `unsupported_reason` (`'unknown_dsc' \| 'unsupported_algo' \| 'country_not_in_list'`) |
 
 The signature-algorithm and country properties on `DOCUMENT_PARSED` and `DOCUMENT_UNSUPPORTED` are the actual product-prioritization signal — the dashboard query "top 10 (country, sig_algo) combinations failing the support check" tells the team which DSCs to add next.
 
+#### `document_type` is intentionally sourced from three different places
+
+The `document_type` property name is the same on all six biometric events, but the underlying source differs by event — by design. Each source answers a different question, and collapsing them would erase information.
+
+| Event                                      | `document_type` source                                                         | Question it answers                                           |
+| ------------------------------------------ | ------------------------------------------------------------------------------ | ------------------------------------------------------------- |
+| `MRZ_STARTED`                              | User's IDPicker selection (`selectedDocumentType` → `resolveOnboardingBranch`) | **Intent** — what did the user say they had?                  |
+| `MRZ_CAPTURED`                             | First character of the OCR'd MRZ (line 1 of the document itself)               | **Ground truth** — what does the physical document say it is? |
+| `NFC_STARTED` / `NFC_SUCCEEDED`            | MRZ store, normalized after parse                                              | **Pipeline state at NFC time**                                |
+| `DOCUMENT_PARSED` / `DOCUMENT_UNSUPPORTED` | `passportData.documentCategory` from the proving machine after full parse      | **Confirmed state post-validation**                           |
+
+The disagreements across these sources are signal, not noise:
+
+- `MRZ_STARTED.document_type ≠ MRZ_CAPTURED.document_type` on the same `attempt_id` = user tapped the wrong document type in the picker and the camera caught the mismatch. UX-confusion signal.
+- `MRZ_CAPTURED.document_type ≠ DOCUMENT_PARSED.document_type` = OCR and proving-machine parse disagreed. Data-quality / parser-bug signal.
+- The three pipeline-state events (`NFC_STARTED`, `NFC_SUCCEEDED`, `DOCUMENT_PARSED`) should always agree within the same `attempt_id`; divergence is a bug in the MRZ-store-to-proving-machine handoff.
+
+Dashboards must be deliberate about which source they query. For "what types of documents do users try to scan?" use `MRZ_CAPTURED` (ground truth). For "what types do users intend to scan?" use `MRZ_STARTED` (intent). Do NOT average or coalesce across events — they're not measuring the same thing.
+
 ### KYC
 
-| Constant                      | Event name               | Fire site                                                               | Additional properties                                                                                                            |
-| ----------------------------- | ------------------------ | ----------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `KycEvents.SESSION_REQUESTED` | `Kyc: Session Requested` | `app/src/hooks/useKycLauncher.ts` immediately before `createKycSession` | `provider` (provider id string)                                                                                                  |
-| `KycEvents.SESSION_CREATED`   | `Kyc: Session Created`   | Same hook, after `createKycSession` resolves                            | `provider`, `duration_seconds`                                                                                                   |
-| `KycEvents.PROVIDER_OPENED`   | `Kyc: Provider Opened`   | Immediately before `startKycVerification`                               | `provider`                                                                                                                       |
-| `KycEvents.PROVIDER_CLOSED`   | `Kyc: Provider Closed`   | Same hook, single event for all three provider terminal `type`s         | `provider`, `outcome` (`'completed' \| 'cancelled' \| 'failed'`), `error_code` (when `outcome === 'failed'`), `duration_seconds` |
-| `KycEvents.RETRY_TRIGGERED`   | `Kyc: Retry Triggered`   | `KycFailureScreen.tsx` retry button                                     | `provider`, `attempt_count`                                                                                                      |
+| Constant                      | Event name               | Fire site                                                               | Additional properties                                                                                                                                                                       |
+| ----------------------------- | ------------------------ | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `KycEvents.SESSION_REQUESTED` | `KYC: Session Requested` | `app/src/hooks/useKycLauncher.ts` immediately before `createKycSession` | `provider` (provider id string)                                                                                                                                                             |
+| `KycEvents.SESSION_CREATED`   | `KYC: Session Created`   | Same hook, after `createKycSession` resolves                            | `provider`, `duration_seconds`                                                                                                                                                              |
+| `KycEvents.PROVIDER_OPENED`   | `KYC: Provider Opened`   | Immediately before `startKycVerification`                               | `provider`                                                                                                                                                                                  |
+| `KycEvents.PROVIDER_CLOSED`   | `KYC: Provider Closed`   | Same hook, single event for all three provider terminal `type`s         | `provider`, `outcome` (`'completed' \| 'cancelled' \| 'failed'`), `error_code` (when `outcome === 'failed'`), `duration_seconds`                                                            |
+| `KycEvents.RETRY_TRIGGERED`   | `KYC: Retry Triggered`   | `KycFailureScreen.tsx` retry button                                     | `provider`, `attempt_count` (sourced from `incrementAttemptRetryCount('kyc')` — counter lives on the funnel attempt, NOT a `useRef` on the screen, since the screen unmounts on navigation) |
 
 `provider` is stamped from day one with the configured KYC provider id so we can A/B different providers later without renaming events.
 
@@ -115,16 +218,69 @@ Update all call sites in `app/src/` and `packages/mobile-sdk-alpha/src/` to impo
 
 File: `packages/mobile-sdk-alpha/src/constants/analytics.ts` — add the `KycEvents` group.
 
-Wire emission sites in `app/src/hooks/useKycLauncher.ts`:
+KYC has **three** entry paths into the same provider call. All three must emit the full `SESSION_REQUESTED → SESSION_CREATED → PROVIDER_OPENED → PROVIDER_CLOSED` sequence — if any path is silent, the KYC dashboard under-counts that segment.
+
+```mermaid
+flowchart TD
+    Start[User in onboarding] --> Pick[IDPicker: user selects document type]
+
+    Pick -->|"selects 'kyc' directly"| Path3
+    Pick -->|"selects passport/ID"| Logo[LogoConfirmationScreen]
+    Logo -->|"taps 'No' on chip check"| Path2
+    Logo -->|"taps 'Yes'"| Bio[Biometric flow]
+    Bio -->|"NFC fails / unsupported device"| Path1
+    Bio -->|"MRZ fails repeatedly"| Path1
+
+    subgraph Path1 [Path A — useKycLauncher hook]
+        A1[useKycLauncher.launchKycVerification]
+        A1 --> A2[SCAN_STARTED + 5 KYC events inline in the hook]
+    end
+
+    subgraph Path2 [Path B — LogoConfirmationScreen inline]
+        B0[setOnboardingBranch kyc, then modal]
+        B0 --> B1[SCAN_STARTED + 5 KYC events inline in the screen]
+    end
+
+    subgraph Path3 [Path C — selfClientProvider DOCUMENT_TYPE_SELECTED listener]
+        C1[case 'kyc' inline IIFE]
+        C1 --> C2[SCAN_STARTED + 5 KYC events inline in the listener]
+    end
+
+    Path1 --> Provider[createKycSession + launchKycVerification]
+    Path2 --> Provider
+    Path3 --> Provider
+    Provider --> Outcome{result.type}
+    Outcome -->|completed| Success[KycSuccess screen]
+    Outcome -->|cancelled| Cancel[stay / navigate home]
+    Outcome -->|failed| Fail[KycFailureScreen → RETRY_TRIGGERED]
+
+    classDef path fill:#dcfce7,stroke:#15803d
+    classDef entry fill:#fef3c7,stroke:#b45309
+    class Path1,Path2,Path3 path
+    class Start,Pick,Logo,Bio entry
+```
+
+| Path | Trigger                                                  | File                                                                                         | Emits                         |
+| ---- | -------------------------------------------------------- | -------------------------------------------------------------------------------------------- | ----------------------------- |
+| A    | Biometric fallback (NFC/MRZ failure, unsupported device) | `app/src/hooks/useKycLauncher.ts`                                                            | `SCAN_STARTED` + 5 KYC events |
+| B    | User says "no chip" on `LogoConfirmation`                | `app/src/screens/documents/selection/LogoConfirmationScreen.tsx`                             | `SCAN_STARTED` + 5 KYC events |
+| C    | User picks `kyc` directly from IDPicker                  | `app/src/providers/selfClientProvider.tsx` (`DOCUMENT_TYPE_SELECTED` listener, `case 'kyc'`) | `SCAN_STARTED` + 5 KYC events |
+
+Wire the emissions in each:
 
 - Before `createKycSession` → `SESSION_REQUESTED`
 - After `createKycSession` resolves → `SESSION_CREATED` with `duration_seconds`
-- Before `startKycVerification` → `PROVIDER_OPENED`
-- After `startKycVerification` resolves (any of the three result types) → `PROVIDER_CLOSED` with `outcome`
+- Before `launchKycVerification` / `startKycVerification` → `PROVIDER_OPENED`
+- After the provider call resolves (all three result types) → `PROVIDER_CLOSED` with `outcome` + `error_code` (when failed) + `duration_seconds`
+- If an unhandled exception happens after the provider opened → also `PROVIDER_CLOSED` with `outcome: 'failed'`, `error_code: 'exception'`
 
-Wire `RETRY_TRIGGERED` in `KycFailureScreen.tsx` retry button handler.
+Wire `RETRY_TRIGGERED` in `KycFailureScreen.tsx` retry button handler. `attempt_count` MUST come from `incrementAttemptRetryCount('kyc')` on the funnel attempt — NOT a screen-local `useRef` — because the screen unmounts on `navigation.navigate('CountryPicker')` and a `useRef` would always emit `1`.
 
-`LogoConfirmationScreen.tsx` direct path (the one not using the hook) — add the same emissions inline. Migrating it to `useKycLauncher` is out of scope for ANA-12; track as a follow-up.
+**Path B invariant**: `setOnboardingBranch('kyc')` MUST fire before any KYC branch event so `current_branch` is already `'kyc'` when `SESSION_REQUESTED` / `SESSION_CREATED` are stamped — otherwise those two events ship with the stale biometric branch.
+
+**Path C invariant**: this path runs inside an `addListener(SdkEvents.DOCUMENT_TYPE_SELECTED, ...)` callback. The canonical `SCAN_STARTED` step bootstraps the funnel attempt via `ensureAttempt` — fire it before any `trackBranchEvent` call or the branch events no-op (helper returns early when `currentAttempt` is null).
+
+Consolidating these three paths onto a single helper is a separate follow-up. Until then, any change to KYC emission must be applied in all three places.
 
 ### Step 3 — curate `AadhaarEvents`
 
@@ -136,7 +292,7 @@ For `QR_PARSE_FAILED`, the existing parser already differentiates the three fail
 
 ### Step 4 — biometric event emissions
 
-Wire `MRZ_CAPTURE_STARTED` and `MRZ_CAPTURED` in `app/src/screens/documents/scanning/DocumentCameraScreen.tsx`.
+Wire `MRZ_STARTED` (on camera mount) and `MRZ_CAPTURED` (when `useReadMRZ` returns a parseable MRZ) in `app/src/screens/documents/scanning/DocumentCameraScreen.tsx` / `read-mrz.ts`.
 Wire `NFC_STARTED` and `NFC_SUCCEEDED` in `DocumentNFCScanScreen.tsx`.
 Wire `DOCUMENT_PARSED` in `provingMachine.ts` immediately after the existing `PassportEvents.PASSPORT_PARSED` emission, with the parsed metadata properties.
 Wire `DOCUMENT_UNSUPPORTED` in `provingMachine.ts:1343` (the `isSupported.status !== 'passport_supported'` branch). Map `isSupported.status` to the `unsupported_reason` enum. The existing `PassportEvents.COMING_SOON` emission stays as a temporary diagnostic — ANA-13 removes it.
@@ -167,9 +323,14 @@ All branch event emissions go through this helper, never raw `selfClient.trackEv
 
 After events are live in production for 24 hours and verified in the dev Mixpanel project, build three new dashboards in Mixpanel:
 
-- **Biometric Funnel**: canonical funnel filtered to `initial_branch in (biometric_passport, biometric_id)`, plus a sequential funnel of `MRZ_CAPTURE_STARTED → MRZ_CAPTURED → NFC_STARTED → NFC_SUCCEEDED → DOCUMENT_PARSED`. Side panel: top 10 `(country_code, signature_algorithm)` combinations from `DOCUMENT_UNSUPPORTED`.
-- **KYC Funnel**: canonical funnel filtered to `initial_branch = 'kyc'`, plus a sequential funnel of `SESSION_REQUESTED → SESSION_CREATED → PROVIDER_OPENED → PROVIDER_CLOSED (outcome=completed)`. Side panel: outcome breakdown of `PROVIDER_CLOSED`.
+- **Biometric Funnel**: canonical funnel filtered to `initial_branch in (biometric_passport, biometric_id)`, plus a sequential funnel of `Biometric: MRZ Started → Biometric: MRZ Captured → Biometric: NFC Started → Biometric: NFC Succeeded → Biometric: Document Parsed`. Side panel: top 10 `(country_code, signature_algorithm)` combinations from `Biometric: Document Unsupported`.
+- **KYC Funnel**: canonical funnel filtered to `initial_branch = 'kyc'`, plus a sequential funnel of `KYC: Session Requested → KYC: Session Created → KYC: Provider Opened → KYC: Provider Closed (outcome=completed)`. Side panel: outcome breakdown of `KYC: Provider Closed`. Note: query both `initial_branch = 'kyc'` AND `current_branch = 'kyc'` to capture all three KYC entry paths (pure-KYC + biometric→KYC fallback via either `LogoConfirmationScreen` or `useKycLauncher`).
 - **Aadhaar Funnel**: canonical funnel filtered to `initial_branch = 'aadhaar'`, plus the 7-step Aadhaar drilldown.
+- **Document Type Mismatch** (new signal): count of attempts where `MRZ_STARTED.document_type ≠ MRZ_CAPTURED.document_type` for the same `attempt_id`. Reflects users who tapped the wrong document type in the IDPicker — UX-confusion signal. Break down by `(intended, scanned)` pair (e.g. _"intended: passport, scanned: id_card: 142 attempts"_) to see which direction the confusion runs. If one direction dominates, the IDPicker copy or iconography likely needs work.
+- **Account Recovery** (new signal): users who re-scan a document already registered on-chain emit `Onboarding: Recovered` instead of `Onboarding: Completed`. Show three metrics:
+  - **Recovery rate**: `count(Recovered) / (count(Recovered) + count(Completed))` over time. Rising = either healthy returning-user re-engagement or a UX bug where users repeatedly try to "re-register." Segment by `initial_branch` to see if one path produces more recoveries than another.
+  - **Recovery latency**: `Onboarding: Recovered.duration_seconds`, P50/P95. If the median is the same as new-registration latency, the app is making recovering users do unnecessary work — the existing-identity check should run on launch, not after a full scan.
+  - **Conversion adjustment**: the top-line "Started → Completed" funnel currently undercounts success by treating recoveries as silent drop-off. The correct conversion metric is `(Completed + Recovered) / Started`. Surface both numbers side-by-side; the gap is the recovery cohort the old funnel was hiding.
 
 Dashboard build is _part_ of this PR (docs + screenshots). The dashboards themselves are constructed in the dev Mixpanel project and migrated to prod with the merge.
 
