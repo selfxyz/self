@@ -8,16 +8,9 @@ import {
 import { expect } from 'chai';
 import { fullAlgorithms, sigAlgs, AdditionalCases } from './testcase/rsapss.js';
 import { fileURLToPath } from 'url';
+import { CIRCOM_INCLUDE_PATHS } from './circomIncludePaths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const includePaths = [
-  'node_modules',
-  '../node_modules',
-  '../../node_modules',
-  'node_modules/@zk-kit/binary-merkle-root.circom/src',
-  '../node_modules/@zk-kit/binary-merkle-root.circom/src',
-  '../../node_modules/@zk-kit/binary-merkle-root.circom/src',
-];
 
 describe('VerifyRsapss Circuit Test', function () {
   this.timeout(0);
@@ -38,7 +31,7 @@ describe('VerifyRsapss Circuit Test', function () {
             `../../circuits/tests/utils/rsapss/test_${algorithm.algo}_${algorithm.saltLength}.circom`
           ),
           {
-            include: includePaths,
+            include: CIRCOM_INCLUDE_PATHS,
           }
         );
 
@@ -76,7 +69,7 @@ describe('VerifyRsapss Circuit Test', function () {
           `../../circuits/tests/utils/rsapss/test_${algorithm.algo}_${algorithm.saltLength}.circom`
         ),
         {
-          include: includePaths,
+          include: CIRCOM_INCLUDE_PATHS,
         }
       );
 
@@ -109,7 +102,7 @@ describe('VerifyRsapss Circuit Test', function () {
           `../../circuits/tests/utils/rsapss/test_${algorithm.algo}_${algorithm.saltLength}.circom`
         ),
         {
-          include: includePaths,
+          include: CIRCOM_INCLUDE_PATHS,
         }
       );
 
@@ -141,7 +134,7 @@ describe('VerifyRsapss Circuit Test', function () {
           `../../circuits/tests/utils/rsapss/test_${algorithm.algo}_${algorithm.saltLength}.circom`
         ),
         {
-          include: includePaths,
+          include: CIRCOM_INCLUDE_PATHS,
         }
       );
 
@@ -171,7 +164,7 @@ describe('VerifyRsapss Circuit Test', function () {
           `../../circuits/tests/utils/rsapss/test_${algorithm.algo}_${algorithm.saltLength}.circom`
         ),
         {
-          include: includePaths,
+          include: CIRCOM_INCLUDE_PATHS,
         }
       );
 
@@ -199,7 +192,7 @@ describe('VerifyRsapss Circuit Test', function () {
           `../../circuits/tests/utils/rsapss/test_${algorithm.algo}_${algorithm.saltLength}.circom`
         ),
         {
-          include: includePaths,
+          include: CIRCOM_INCLUDE_PATHS,
         }
       );
 
@@ -230,7 +223,7 @@ describe('VerifyRsapss Circuit Test', function () {
           `../../circuits/tests/utils/rsapss/test_${algorithm.algo}_${algorithm.saltLength}.circom`
         ),
         {
-          include: includePaths,
+          include: CIRCOM_INCLUDE_PATHS,
         }
       );
 

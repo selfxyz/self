@@ -13,6 +13,7 @@ import { poseidon6 } from 'poseidon-lite';
 import serialized_dsc_tree from '@selfxyz/new-common/src/data/serialized_dsc_tree.json' with { type: 'json' };
 import { genMockIdDocAndInitDataParsing } from '@selfxyz/new-common/src/testing/genMockIdDoc.js';
 import { fileURLToPath } from 'url';
+import { CIRCOM_INCLUDE_PATHS } from '../utils/circomIncludePaths.js';
 dotenv.config();
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -58,11 +59,7 @@ testSuite.forEach(
             `../../circuits/register_id/instances/${doc.getRegisterCircuitName()}.circom`
           ),
           {
-            include: [
-              'node_modules',
-              'node_modules/@zk-kit/binary-merkle-root.circom/src',
-              'node_modules/circomlib/circuits',
-            ],
+            include: CIRCOM_INCLUDE_PATHS,
           }
         );
       });

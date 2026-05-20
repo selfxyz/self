@@ -2,6 +2,7 @@ import { expect } from 'chai';
 import { wasm as wasmTester } from 'circom_tester';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
+import { CIRCOM_INCLUDE_PATHS } from '../../circomIncludePaths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 import {
@@ -49,11 +50,7 @@ describe('OFAC - Name and DOB match', async function () {
 
   before(async () => {
     circuit = await wasmTester(path.join(__dirname, 'ofac_name_dob_kyc.test.circom'), {
-      include: [
-        'node_modules',
-        './node_modules/@zk-kit/binary-merkle-root.circom/src',
-        './node_modules/circomlib/circuits',
-      ],
+      include: CIRCOM_INCLUDE_PATHS,
     });
 
     namedob_smt.import(nameAndDobjson as any);
@@ -140,11 +137,7 @@ describe('OFAC - Name and YOB match', async function () {
 
   before(async () => {
     circuit = await wasmTester(path.join(__dirname, 'ofac_name_yob_kyc.test.circom'), {
-      include: [
-        'node_modules',
-        './node_modules/@zk-kit/binary-merkle-root.circom/src',
-        './node_modules/circomlib/circuits',
-      ],
+      include: CIRCOM_INCLUDE_PATHS,
     });
 
     nameyob_smt.import(nameAndYobjson as any);

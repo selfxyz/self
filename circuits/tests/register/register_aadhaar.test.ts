@@ -26,6 +26,7 @@ import {
 import { createCircuitInputGenerator } from '@selfxyz/new-common/src/circuits/generator.js';
 import type { AadhaarData } from '@selfxyz/new-common/src/foundation/types/document.js';
 import { pubkeys } from './pubkeys.js';
+import { CIRCOM_INCLUDE_PATHS } from '../utils/circomIncludePaths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const generator = createCircuitInputGenerator();
@@ -86,7 +87,7 @@ describe('REGISTER AADHAAR Circuit Tests', function () {
       {
         verbose: true,
         logOutput: true,
-        include: ['node_modules', 'node_modules/circomlib/circuits'],
+        include: CIRCOM_INCLUDE_PATHS,
       }
     );
   });
