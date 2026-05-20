@@ -94,17 +94,14 @@ export const useKycLauncher = (options: UseKycLauncherOptions) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const launchKycVerification = useCallback(async () => {
-    const hasPendingOrProcessingKyc = () => {
-      const now = Date.now();
-      return usePendingKycStore
+    const hasPendingOrProcessingKyc = () =>
+      usePendingKycStore
         .getState()
         .pendingVerifications.some(
           verification =>
-            verification.timeoutAt > now &&
-            (verification.status === 'pending' ||
-              verification.status === 'processing'),
+            verification.status === 'pending' ||
+            verification.status === 'processing',
         );
-    };
 
     setIsLoading(true);
     const sessionRequestedAt = Date.now();

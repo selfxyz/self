@@ -240,7 +240,7 @@ describe('useKycLauncher', () => {
     );
   });
 
-  it('ignores expired pending verifications when gating launch', async () => {
+  it('blocks launch when an expired pending verification still exists in the store', async () => {
     mockGetState.mockReturnValue({
       pendingVerifications: [
         {
@@ -256,9 +256,41 @@ describe('useKycLauncher', () => {
       await result.current.launchKycVerification();
     });
 
-    expect(mockCreateKycSession).toHaveBeenCalledTimes(1);
-    expect(mockShowModal).not.toHaveBeenCalledWith(
-      expect.objectContaining({ titleText: 'Verification in progress' }),
+    expect(mockTrackOnboardingStep).not.toHaveBeenCalled();
+    expect(mockTrackBranchEvent).not.toHaveBeenCalled();
+    expect(mockCreateKycSession).not.toHaveBeenCalled();
+    expect(mockStartKycVerification).not.toHaveBeenCalled();
+    expect(mockShowModal).toHaveBeenCalledWith(
+      expect.objectContaining({
+        titleText: 'Verification in progress',
+      }),
+    );
+  });
+
+  it('blocks launch when an expired processing verification still exists in the store', async () => {
+    mockGetState.mockReturnValue({
+      pendingVerifications: [
+        {
+          sessionId: '1',
+          status: 'processing',
+          timeoutAt: Date.now() - 1_000,
+        },
+      ],
+    });
+    const { result } = renderHook(() => useKycLauncher({ countryCode: 'US' }));
+
+    await act(async () => {
+      await result.current.launchKycVerification();
+    });
+
+    expect(mockTrackOnboardingStep).not.toHaveBeenCalled();
+    expect(mockTrackBranchEvent).not.toHaveBeenCalled();
+    expect(mockCreateKycSession).not.toHaveBeenCalled();
+    expect(mockStartKycVerification).not.toHaveBeenCalled();
+    expect(mockShowModal).toHaveBeenCalledWith(
+      expect.objectContaining({
+        titleText: 'Verification in progress',
+      }),
     );
   });
 
