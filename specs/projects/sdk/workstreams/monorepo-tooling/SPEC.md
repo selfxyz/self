@@ -159,6 +159,13 @@ The temporary fork pin is allowed only until the upstream API migration lands.
   sign-off.
 - **MT-20:** Turbo cache correctness is required. Build tasks declare explicit
   `outputs`, and the pipeline declares `globalDependencies` for shared inputs.
+- **MT-25:** `packages/rn-sdk-test-app` is pinned to `jest@^29.7.0` (not `^30`)
+  because it uses `preset: react-native`, and RN 0.76's preset hard-requires
+  `jest-environment-node@29` via `node_modules/react-native/jest/react-native-env.js`.
+  Mixing jest-runtime@30 with the nested jest-mock@29 produces
+  `this._moduleMocker.clearMocksOnScope is not a function` at test boot. Revisit
+  when the RN upgrade lands (tracked in the separate RN upgrade branch); at that
+  point realign to jest@30 across `app/` and `rn-sdk-test-app/`.
 - **MT-23:** Closed without a backlog row. The original concern (root +
   `new-common/` `.prettierrc` forced `parser: "typescript"` globally, breaking
   non-TS file formatting) was fixed directly: parser line removed in both
