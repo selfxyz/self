@@ -26,6 +26,19 @@ import { CountryPickerScreen } from './screens/onboarding/CountryPickerScreen';
 import { IDSelectionScreen } from './screens/onboarding/IDSelectionScreen';
 import { KycFailureScreen } from './screens/onboarding/KycFailureScreen';
 import {
+  AadhaarAppInstructionsRoute,
+  AadhaarUploadErrorRoute,
+  AadhaarUploadSuccessRoute,
+} from './screens/onboarding/aadhaar';
+import {
+  EuIdBackInstructionsRoute,
+  EuIdCanInstructionsRoute,
+  EuIdInstructionsRoute,
+  EuIdNfcInstructionsRoute,
+  EuIdNfcSuccessRoute,
+  EuIdViewfinderRoute,
+} from './screens/onboarding/eu-id';
+import {
   PassportCodeScanInstructionsRoute,
   PassportCodeScanViewfinderRoute,
   PassportInstructionsRoute,
@@ -94,6 +107,15 @@ export const App: React.FC = () => (
             <Route path="/onboarding/passport/nfc" element={<PassportNfcRoute />} />
             <Route path="/onboarding/passport/nfc-success" element={<PassportNfcSuccessRoute />} />
             <Route path="/onboarding/passport/nfc-error" element={<PassportNfcErrorRoute />} />
+            <Route path="/onboarding/eu-id/instructions" element={<EuIdInstructionsRoute />} />
+            <Route path="/onboarding/eu-id/back-instructions" element={<EuIdBackInstructionsRoute />} />
+            <Route path="/onboarding/eu-id/can-instructions" element={<EuIdCanInstructionsRoute />} />
+            <Route path="/onboarding/eu-id/code-scan-viewfinder" element={<EuIdViewfinderRoute />} />
+            <Route path="/onboarding/eu-id/nfc-instructions" element={<EuIdNfcInstructionsRoute />} />
+            <Route path="/onboarding/eu-id/nfc-success" element={<EuIdNfcSuccessRoute />} />
+            <Route path="/onboarding/aadhaar/instructions" element={<AadhaarAppInstructionsRoute />} />
+            <Route path="/onboarding/aadhaar/upload-success" element={<AadhaarUploadSuccessRoute />} />
+            <Route path="/onboarding/aadhaar/upload-error" element={<AadhaarUploadErrorRoute />} />
             <Route path="/onboarding/success" element={<ScanSuccessScreen />} />
             <Route path="/onboarding/recovery-phrase" element={<OnboardingRecoveryPhraseScreen />} />
             <Route path="/onboarding/failure" element={<RegistrationFailureScreen />} />
