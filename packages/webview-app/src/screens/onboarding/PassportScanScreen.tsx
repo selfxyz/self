@@ -33,6 +33,15 @@ export const PassportScanScreen: React.FC = () => {
   const { countryCode, documentType = 'passport' } =
     (location.state as { countryCode?: string; documentType?: string } | null) ?? {};
 
+  const isIdCard = documentType === 'id_card';
+  const documentCategory: 'passport' | 'id_card' = isIdCard ? 'id_card' : 'passport';
+  const docNumberLabel = isIdCard ? 'ID card number' : 'Passport number';
+  const docNumberPlaceholder = isIdCard ? 'e.g. ID12345678' : 'e.g. AB1234567';
+  const screenTitle = isIdCard ? 'Scan your ID card' : 'Scan your passport';
+  const screenSubtitle = isIdCard
+    ? 'Enter the data from the MRZ on the back of your ID card, then tap it to your phone’s NFC reader.'
+    : 'Enter the data from the MRZ on the photo page, then tap the back of your passport to your phone’s NFC reader.';
+
   const [form, setForm] = useState<ScanFormState>({
     passportNumber: '',
     dateOfBirth: '',
@@ -70,14 +79,14 @@ export const PassportScanScreen: React.FC = () => {
       analytics.trackEvent('passport_scan_succeeded');
       haptic.trigger('success');
 
-      const docId = `passport-${form.passportNumber.trim().toUpperCase()}`;
+      const docId = `${documentCategory}-${form.passportNumber.trim().toUpperCase()}`;
       await documents.saveDocument(docId, result as never);
 
       const catalog = await documents.loadDocumentCatalog();
       const entry = {
         id: docId,
         documentType,
-        documentCategory: 'passport' as const,
+        documentCategory,
         data: '',
         mock: false,
         isRegistered: false,
@@ -142,20 +151,17 @@ export const PassportScanScreen: React.FC = () => {
         fontFamily: 'system-ui, sans-serif',
       }}
     >
-      <h2 style={{ margin: 0, fontSize: 24 }}>Scan your passport</h2>
-      <p style={{ margin: 0, color: '#555' }}>
-        Enter the data from the MRZ on the photo page, then tap the back of your
-        passport to your phone&apos;s NFC reader.
-      </p>
+      <h2 style={{ margin: 0, fontSize: 24 }}>{screenTitle}</h2>
+      <p style={{ margin: 0, color: '#555' }}>{screenSubtitle}</p>
 
       <label style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-        Passport number
+        {docNumberLabel}
         <input
           type="text"
           autoCapitalize="characters"
           value={form.passportNumber}
           onChange={e => setForm(f => ({ ...f, passportNumber: e.target.value }))}
-          placeholder="e.g. AB1234567"
+          placeholder={docNumberPlaceholder}
           disabled={phase === 'scanning'}
           style={inputStyle}
         />
