@@ -1,7 +1,7 @@
 {
   "name": "@selfxyz/rn-sdk",
   "version": "0.0.1-alpha.1",
-  "description": "Self Protocol React Native SDK \u2014 thin WebView wrapper for identity verification",
+  "description": "Self Protocol React Native SDK — thin WebView wrapper for identity verification",
   "sideEffects": false,
   "exports": {
     ".": {

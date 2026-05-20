@@ -24,6 +24,7 @@
   ],
   "scripts": {
     "build": "pnpm hardhat clean && pnpm hardhat compile",
+    "check:error-selectors": "npx tsx scripts/findErrorSelectors.ts --check",
     "deploy:all": "npm run deploy:verifiers:all && npm run deploy:registry && npm run deploy:registry:idcard && npm run deploy:hub:v2",
     "deploy:hub": "npx dotenv-cli -- bash -c 'pnpm hardhat ignition deploy ignition/modules/hub/deployHub.ts --network ${NETWORK:-localhost} ${VERIFY:+--verify}'",
     "deploy:hub:v2": "npx dotenv-cli -- bash -c 'pnpm hardhat ignition deploy ignition/modules/hub/deployHubV2.ts --network ${NETWORK:-localhost} ${VERIFY:+--verify}'",
@@ -34,7 +35,6 @@
     "deploy:verifier:idcard": "npx dotenv-cli -- bash -c 'pnpm hardhat ignition deploy ignition/modules/verifiers/deployIdCardVerifier.ts --network ${NETWORK:-localhost} ${VERIFY:+--verify}'",
     "deploy:verifiers:all": "npx dotenv-cli -- bash -c 'pnpm hardhat ignition deploy ignition/modules/verifiers/deployAllVerifiers.ts --network ${NETWORK:-localhost} ${VERIFY:+--verify}'",
     "export-prod": "bash ./scripts/prod.sh",
-    "check:error-selectors": "npx tsx scripts/findErrorSelectors.ts --check",
     "find:error": "npx tsx scripts/findErrorSelectors.ts",
     "format": "pnpm prettier:write",
     "generate:error-selectors": "npx tsx scripts/findErrorSelectors.ts",
