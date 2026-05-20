@@ -69,6 +69,10 @@ export const IDSelectionScreen: React.FC = () => {
         navigate('/onboarding/provider', {
           state: { countryCode, documentType: idType.id },
         });
+      } else if (idType.id === 'p') {
+        navigate('/onboarding/passport/scan', {
+          state: { countryCode, documentType: 'passport' },
+        });
       } else {
         navigate('/coming-soon', {
           state: { countryCode, documentType: idType.id },

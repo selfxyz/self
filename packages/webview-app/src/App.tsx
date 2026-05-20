@@ -25,6 +25,7 @@ import { ConflictDetectedScreen } from './screens/onboarding/ConflictDetectedScr
 import { CountryPickerScreen } from './screens/onboarding/CountryPickerScreen';
 import { IDSelectionScreen } from './screens/onboarding/IDSelectionScreen';
 import { KycFailureScreen } from './screens/onboarding/KycFailureScreen';
+import { PassportScanScreen } from './screens/onboarding/PassportScanScreen';
 import { ProviderLaunchScreen } from './screens/onboarding/ProviderLaunchScreen';
 import { ProviderResultScreen } from './screens/onboarding/ProviderResultScreen';
 import { PushNotificationPromptScreen } from './screens/onboarding/PushNotificationPromptScreen';
@@ -80,6 +81,7 @@ export const App: React.FC = () => (
             <Route path="/onboarding/provider" element={<ProviderLaunchScreen />} />
             <Route path="/onboarding/provider-result" element={<ProviderResultScreen />} />
             <Route path="/onboarding/confirm" element={<ConfirmIdentificationScreen />} />
+            <Route path="/onboarding/passport/scan" element={<PassportScanScreen />} />
             <Route path="/onboarding/success" element={<ScanSuccessScreen />} />
             <Route path="/onboarding/recovery-phrase" element={<OnboardingRecoveryPhraseScreen />} />
             <Route path="/onboarding/failure" element={<RegistrationFailureScreen />} />
