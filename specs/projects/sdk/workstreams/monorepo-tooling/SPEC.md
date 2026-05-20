@@ -141,6 +141,16 @@ The temporary fork pin is allowed only until the upstream API migration lands.
 | Circuits upstream migration | MT-22                           | Open   | [MT-22 Circom Tester Migration](./plans/MT-22-circom-tester-migration.md) | Removes the MT-21 pin by moving to upstream `0.0.24`.                                                |
 | Isolated linker             | MT-12                           | Open   | [MT-12 Isolated Linker](./plans/MT-12-isolated-linker.md)                 | High-risk RN tooling change; depends on patch migration and preferably peer strictness.              |
 
+- **MT-24:** `.github/CI_FORCE_RUN` sentinel and `scripts/ci/add-force-run-sentinel.py`
+  are retained for the duration of the pnpm conversion PR (#2069). Rationale:
+  the PR cannot necessarily be merged immediately and will be re-synced with
+  `dev` repeatedly; each re-sync must re-validate the full workflow matrix to
+  confirm the pnpm upgrade remains sound, but `check_changes` path gating
+  otherwise skips workflows whose touched paths are unchanged. Bumping the
+  sentinel forces every gated workflow to run. After #2069 merges, evaluate
+  whether to keep the sentinel as general infra or remove it; no other current
+  scenario requires it.
+
 ## Decisions Captured
 
 - **MT-19:** Keep `scripts/build-webview-bundle.sh` outside Turbo in this
