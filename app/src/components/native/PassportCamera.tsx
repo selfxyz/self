@@ -3,48 +3,42 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React, { useCallback } from 'react';
-import type { NativeSyntheticEvent, StyleProp, ViewStyle } from 'react-native';
+import type { NativeSyntheticEvent, ViewProps } from 'react-native';
 import { PixelRatio, Platform, requireNativeComponent } from 'react-native';
 
 import type { SelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
-import { RCTFragment } from '@/components/native/RCTFragment';
+import PassportOCRViewNativeComponent from '@/specs/PassportOCRViewNativeComponent';
 
-interface NativePassportOCRViewProps {
-  onPassportRead: (
-    event: NativeSyntheticEvent<{
-      data:
-        | string
-        | {
-            documentNumber: string;
-            expiryDate: string;
-            birthDate: string;
-            documentType: string;
-            countryCode: string;
-          };
-    }>,
+type IOSPassportReadPayload = {
+  data:
+    | string
+    | {
+        documentNumber: string;
+        expiryDate: string;
+        birthDate: string;
+        documentType: string;
+        countryCode: string;
+      };
+};
+
+type IOSPassportErrorPayload = {
+  error: string;
+  errorMessage: string;
+  stackTrace: string;
+};
+
+type IOSPassportOCRViewProps = ViewProps & {
+  isMounted?: boolean;
+  onPassportRead?: (
+    event: NativeSyntheticEvent<IOSPassportReadPayload>,
   ) => void;
-  onError: (
-    event: NativeSyntheticEvent<{
-      error: string;
-      errorMessage: string;
-      stackTrace: string;
-    }>,
-  ) => void;
-  style?: StyleProp<ViewStyle>;
-}
+  onError?: (event: NativeSyntheticEvent<IOSPassportErrorPayload>) => void;
+};
 
-const RCTPassportOCRViewNativeComponent = Platform.select({
-  ios: requireNativeComponent<NativePassportOCRViewProps>('PassportOCRView'),
-  android: requireNativeComponent<NativePassportOCRViewProps>(
-    'PassportOCRViewManager',
-  ),
-});
-
-if (!RCTPassportOCRViewNativeComponent) {
-  throw new Error('PassportOCRViewManager not registered for this platform');
-}
+const IOSPassportOCRViewNativeComponent =
+  requireNativeComponent<IOSPassportOCRViewProps>('PassportOCRView');
 
 export interface PassportCameraProps {
   isMounted: boolean;
@@ -126,7 +120,7 @@ export const PassportCamera: React.FC<PassportCameraProps> = ({
 
   if (Platform.OS === 'ios') {
     return (
-      <RCTPassportOCRViewNativeComponent
+      <IOSPassportOCRViewNativeComponent
         onPassportRead={_onPassportRead}
         onError={_onError}
         style={{
@@ -135,27 +129,17 @@ export const PassportCamera: React.FC<PassportCameraProps> = ({
         }}
       />
     );
-  } else {
-    // For Android, wrap the native component inside your RCTFragment to preserve existing functionality.
-    const Fragment = RCTFragment as React.FC<
-      React.ComponentProps<typeof RCTFragment> & NativePassportOCRViewProps
-    >;
-    return (
-      <Fragment
-        RCTFragmentViewManager={
-          RCTPassportOCRViewNativeComponent as ReturnType<
-            typeof requireNativeComponent
-          >
-        }
-        fragmentComponentName="PassportOCRViewManager"
-        isMounted={isMounted}
-        style={{
-          height: PixelRatio.getPixelSizeForLayoutSize(800),
-          width: PixelRatio.getPixelSizeForLayoutSize(400),
-        }}
-        onError={_onError}
-        onPassportRead={_onPassportRead}
-      />
-    );
   }
+
+  return (
+    <PassportOCRViewNativeComponent
+      isMounted={isMounted}
+      onPassportRead={_onPassportRead}
+      onError={_onError}
+      style={{
+        height: PixelRatio.getPixelSizeForLayoutSize(800),
+        width: PixelRatio.getPixelSizeForLayoutSize(400),
+      }}
+    />
+  );
 };

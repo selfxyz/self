@@ -15,8 +15,6 @@ import com.facebook.react.ReactNativeHost
 import com.facebook.react.ReactPackage
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint
 import com.facebook.react.defaults.DefaultReactNativeHost
-import com.facebook.react.internal.featureflags.ReactNativeFeatureFlags
-import com.facebook.react.internal.featureflags.ReactNativeFeatureFlagsDefaults
 import com.facebook.soloader.SoLoader
 import com.facebook.react.soloader.OpenSourceMergedSoMapping
 import expo.modules.ApplicationLifecycleDispatcher
@@ -47,15 +45,6 @@ class MainApplication : Application(), ReactApplication {
     get() = ExpoReactHostFactory.getDefaultReactHost(this, createPackages())
 
   override fun onCreate() {
-    // TODO(RN-NEW-ARCH-MIGRATION): Remove once PassportOCRViewManager and
-    // QRCodeScannerViewManager are migrated to Fabric. Enables the Paper-on-
-    // Fabric interop layer so legacy ViewGroupManagers continue to render
-    // under bridgeless mode.
-    ReactNativeFeatureFlags.override(object : ReactNativeFeatureFlagsDefaults() {
-      override fun useFabricInterop(): Boolean = true
-      override fun useNativeViewConfigsInBridgelessMode(): Boolean = true
-    })
-
     super.onCreate()
     // CRITICAL CHANGE: Use OpenSourceMergedSoMapping for RN 0.76+ Hermes support
     SoLoader.init(this, OpenSourceMergedSoMapping)

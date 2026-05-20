@@ -4,6 +4,14 @@
   "private": true,
   "type": "module",
   "main": "index.js",
+  "codegenConfig": {
+    "name": "SelfMobileAppComponents",
+    "type": "all",
+    "jsSrcsDir": "./src/specs",
+    "android": {
+      "javaPackageName": "com.proofofpassportapp.specs"
+    }
+  },
   "scripts": {
     "analyze:bundle:android": "yarn build:deps && node ./scripts/bundle-analyze-ci.cjs android",
     "analyze:bundle:ios": "yarn build:deps && node ./scripts/bundle-analyze-ci.cjs ios",
