@@ -65,4 +65,21 @@ describe('PerkEligibilityRow', () => {
     const b = tree.getByTestId('logo-b');
     expect(a.parent).not.toBe(b.parent);
   });
+
+  it('keeps the attached row rounded but removes the bottom radius for inline rows', () => {
+    const perks = [makePerk('google_cloud_faucet', 'A', 'a')];
+
+    const inline = render(<PerkEligibilityRow perks={perks} variant="inline" testID="inline-row" />);
+    const attached = render(
+      <PerkEligibilityRow perks={perks} variant="attached" testID="attached-row" />,
+    );
+
+    expect(inline.getByTestId('inline-row').props.style).toEqual(
+      expect.objectContaining({
+        borderBottomLeftRadius: 0,
+        borderBottomRightRadius: 0,
+      }),
+    );
+    expect(attached.getByTestId('attached-row').props.style).toBeUndefined();
+  });
 });

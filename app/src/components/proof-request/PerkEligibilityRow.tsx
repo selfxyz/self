@@ -20,6 +20,7 @@ export interface PerkEligibilityRowProps {
 
 export const PerkEligibilityRow: React.FC<PerkEligibilityRowProps> = ({
   perks,
+  variant = 'inline',
   testID = 'perk-eligibility-row',
 }) => {
   if (perks.length === 0) {
@@ -36,6 +37,14 @@ export const PerkEligibilityRow: React.FC<PerkEligibilityRowProps> = ({
       variant={logos.length > 1 ? 'dense' : 'minimal'}
       logos={logos}
       label={getPerkRailLabel(perks)}
+      style={
+        variant === 'inline'
+          ? {
+              borderBottomLeftRadius: 0,
+              borderBottomRightRadius: 0,
+            }
+          : undefined
+      }
       testID={testID}
     />
   );
