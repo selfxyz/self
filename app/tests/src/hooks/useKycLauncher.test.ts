@@ -17,6 +17,7 @@ import {
   launchKycVerification as startKycVerification,
 } from '@/integrations/kyc';
 import { useFeedback } from '@/providers/feedbackProvider';
+import { getKycDocumentCount } from '@/providers/passportDataProvider';
 
 const mockNavigate = jest.fn();
 
@@ -52,6 +53,17 @@ jest.mock('@/providers/feedbackProvider', () => ({
   useFeedback: jest.fn(),
 }));
 
+jest.mock('@/providers/passportDataProvider', () => ({
+  getKycDocumentCount: jest.fn(),
+}));
+
+const mockGetState = jest.fn();
+jest.mock('@/stores/pendingKycStore', () => ({
+  usePendingKycStore: {
+    getState: () => mockGetState(),
+  },
+}));
+
 const mockCreateKycSession = createKycSession as jest.MockedFunction<
   typeof createKycSession
 >;
@@ -68,9 +80,13 @@ const mockUseSelfClient = useSelfClient as jest.MockedFunction<
   typeof useSelfClient
 >;
 const mockUseFeedback = useFeedback as jest.MockedFunction<typeof useFeedback>;
+const mockGetKycDocumentCount = getKycDocumentCount as jest.MockedFunction<
+  typeof getKycDocumentCount
+>;
 
 describe('useKycLauncher', () => {
   const selfClientStub = { trackEvent: jest.fn() };
+  const mockShowModal = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -78,8 +94,17 @@ describe('useKycLauncher', () => {
       selfClientStub as unknown as ReturnType<typeof useSelfClient>,
     );
     mockUseFeedback.mockReturnValue({
-      showModal: jest.fn(),
+      showModal: mockShowModal,
     } as unknown as ReturnType<typeof useFeedback>);
+    mockGetState.mockReturnValue({ pendingVerifications: [] });
+    mockGetKycDocumentCount.mockResolvedValue(0);
+    mockCreateKycSession.mockResolvedValue({
+      sessionId: 'session-1',
+      sessionToken: 'token-1',
+    } as Awaited<ReturnType<typeof createKycSession>>);
+    mockStartKycVerification.mockResolvedValue({
+      type: 'cancelled',
+    } as Awaited<ReturnType<typeof startKycVerification>>);
   });
 
   it('emits SCAN_STARTED before createKycSession (intent-based, matches biometric and Aadhaar)', async () => {
@@ -151,5 +176,224 @@ describe('useKycLauncher', () => {
     );
 
     consoleErrorSpy.mockRestore();
+  });
+
+  it('calls createKycSession when no pending verification and 0 KYC IDs', async () => {
+    const { result } = renderHook(() => useKycLauncher({ countryCode: 'US' }));
+
+    await act(async () => {
+      await result.current.launchKycVerification();
+    });
+
+    expect(mockCreateKycSession).toHaveBeenCalledTimes(1);
+  });
+
+  it('blocks launch when pending verification exists', async () => {
+    mockGetState.mockReturnValue({
+      pendingVerifications: [
+        {
+          sessionId: '1',
+          status: 'pending',
+          timeoutAt: Date.now() + 60_000,
+        },
+      ],
+    });
+    const { result } = renderHook(() => useKycLauncher({ countryCode: 'US' }));
+
+    await act(async () => {
+      await result.current.launchKycVerification();
+    });
+
+    expect(mockCreateKycSession).not.toHaveBeenCalled();
+    expect(mockShowModal).toHaveBeenCalledWith(
+      expect.objectContaining({
+        titleText: 'Verification in progress',
+        bodyText:
+          "You already have a KYC verification being processed. We'll notify you when it's ready.",
+      }),
+    );
+  });
+
+  it('blocks launch when processing verification exists', async () => {
+    mockGetState.mockReturnValue({
+      pendingVerifications: [
+        {
+          sessionId: '1',
+          status: 'processing',
+          timeoutAt: Date.now() + 60_000,
+        },
+      ],
+    });
+    const { result } = renderHook(() => useKycLauncher({ countryCode: 'US' }));
+
+    await act(async () => {
+      await result.current.launchKycVerification();
+    });
+
+    expect(mockCreateKycSession).not.toHaveBeenCalled();
+    expect(mockShowModal).toHaveBeenCalledWith(
+      expect.objectContaining({
+        titleText: 'Verification in progress',
+        bodyText:
+          "You already have a KYC verification being processed. We'll notify you when it's ready.",
+      }),
+    );
+  });
+
+  it('blocks launch when an expired pending verification still exists in the store', async () => {
+    mockGetState.mockReturnValue({
+      pendingVerifications: [
+        {
+          sessionId: '1',
+          status: 'pending',
+          timeoutAt: Date.now() - 1_000,
+        },
+      ],
+    });
+    const { result } = renderHook(() => useKycLauncher({ countryCode: 'US' }));
+
+    await act(async () => {
+      await result.current.launchKycVerification();
+    });
+
+    expect(mockTrackOnboardingStep).not.toHaveBeenCalled();
+    expect(mockTrackBranchEvent).not.toHaveBeenCalled();
+    expect(mockCreateKycSession).not.toHaveBeenCalled();
+    expect(mockStartKycVerification).not.toHaveBeenCalled();
+    expect(mockShowModal).toHaveBeenCalledWith(
+      expect.objectContaining({
+        titleText: 'Verification in progress',
+      }),
+    );
+  });
+
+  it('blocks launch when an expired processing verification still exists in the store', async () => {
+    mockGetState.mockReturnValue({
+      pendingVerifications: [
+        {
+          sessionId: '1',
+          status: 'processing',
+          timeoutAt: Date.now() - 1_000,
+        },
+      ],
+    });
+    const { result } = renderHook(() => useKycLauncher({ countryCode: 'US' }));
+
+    await act(async () => {
+      await result.current.launchKycVerification();
+    });
+
+    expect(mockTrackOnboardingStep).not.toHaveBeenCalled();
+    expect(mockTrackBranchEvent).not.toHaveBeenCalled();
+    expect(mockCreateKycSession).not.toHaveBeenCalled();
+    expect(mockStartKycVerification).not.toHaveBeenCalled();
+    expect(mockShowModal).toHaveBeenCalledWith(
+      expect.objectContaining({
+        titleText: 'Verification in progress',
+      }),
+    );
+  });
+
+  it('blocks launch when 3 KYC IDs exist', async () => {
+    mockGetKycDocumentCount.mockResolvedValue(3);
+    const { result } = renderHook(() => useKycLauncher({ countryCode: 'US' }));
+
+    await act(async () => {
+      await result.current.launchKycVerification();
+    });
+
+    expect(mockCreateKycSession).not.toHaveBeenCalled();
+    expect(mockShowModal).toHaveBeenCalledWith(
+      expect.objectContaining({
+        titleText: 'Maximum verifications reached',
+        bodyText:
+          'You can have up to 3 verified IDs. Remove one before starting a new verification.',
+      }),
+    );
+  });
+
+  it('blocks launch when more than 3 KYC IDs exist', async () => {
+    mockGetKycDocumentCount.mockResolvedValue(4);
+    const { result } = renderHook(() => useKycLauncher({ countryCode: 'US' }));
+
+    await act(async () => {
+      await result.current.launchKycVerification();
+    });
+
+    expect(mockTrackOnboardingStep).not.toHaveBeenCalled();
+    expect(mockTrackBranchEvent).not.toHaveBeenCalled();
+    expect(mockCreateKycSession).not.toHaveBeenCalled();
+    expect(mockStartKycVerification).not.toHaveBeenCalled();
+    expect(mockShowModal).toHaveBeenCalledWith(
+      expect.objectContaining({
+        titleText: 'Maximum verifications reached',
+      }),
+    );
+  });
+
+  it('calls createKycSession when 2 KYC IDs exist and no pending', async () => {
+    mockGetKycDocumentCount.mockResolvedValue(2);
+    const { result } = renderHook(() => useKycLauncher({ countryCode: 'US' }));
+
+    await act(async () => {
+      await result.current.launchKycVerification();
+    });
+
+    expect(mockCreateKycSession).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows pending modal first when pending and max IDs both exist', async () => {
+    mockGetState.mockReturnValue({
+      pendingVerifications: [
+        {
+          sessionId: '1',
+          status: 'pending',
+          timeoutAt: Date.now() + 60_000,
+        },
+      ],
+    });
+    mockGetKycDocumentCount.mockResolvedValue(3);
+    const { result } = renderHook(() => useKycLauncher({ countryCode: 'US' }));
+
+    await act(async () => {
+      await result.current.launchKycVerification();
+    });
+
+    expect(mockCreateKycSession).not.toHaveBeenCalled();
+    expect(mockShowModal).toHaveBeenCalledTimes(1);
+    expect(mockShowModal).toHaveBeenCalledWith(
+      expect.objectContaining({
+        titleText: 'Verification in progress',
+      }),
+    );
+    expect(mockShowModal).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        titleText: 'Maximum verifications reached',
+      }),
+    );
+    expect(mockGetKycDocumentCount).not.toHaveBeenCalled();
+  });
+
+  it('shows a dedicated modal when the KYC document count cannot be verified', async () => {
+    mockGetKycDocumentCount.mockRejectedValue(
+      new Error('keychain read failed'),
+    );
+    const { result } = renderHook(() => useKycLauncher({ countryCode: 'US' }));
+
+    await act(async () => {
+      await result.current.launchKycVerification();
+    });
+
+    expect(mockTrackOnboardingStep).not.toHaveBeenCalled();
+    expect(mockTrackBranchEvent).not.toHaveBeenCalled();
+    expect(mockCreateKycSession).not.toHaveBeenCalled();
+    expect(mockStartKycVerification).not.toHaveBeenCalled();
+    expect(mockShowModal).toHaveBeenCalledWith(
+      expect.objectContaining({
+        titleText: 'Unable to verify verification limit',
+        bodyText:
+          "We couldn't confirm how many verified IDs are stored. Please try again.",
+      }),
+    );
   });
 });

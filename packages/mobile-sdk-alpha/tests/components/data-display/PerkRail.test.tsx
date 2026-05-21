@@ -55,6 +55,23 @@ describe('PerkRail', () => {
     expect(logos[1]!.getAttribute('data-testid')).toBe('logo-usat');
   });
 
+  it('dense variant places each logo in its own wrapper (fanned out, not stacked)', () => {
+    // Regression: PerkEligibilityRow used to render every perk logo inside a
+    // single 32x32 circle, visually stacking them. Each logo must own its
+    // wrapper so the dense rail can fan them out side-by-side.
+    const { container } = render(
+      <PerkRail
+        variant="dense"
+        logos={[<span key="google" data-testid="logo-google" />, <span key="usat" data-testid="logo-usat" />]}
+        label="Eligible perks"
+      />,
+    );
+
+    const logoEls = container.querySelectorAll('[data-testid^="logo-"]');
+    expect(logoEls.length).toBe(2);
+    expect(logoEls[0]!.parentElement).not.toBe(logoEls[1]!.parentElement);
+  });
+
   it('dense variant caps logos at the max (3) and drops overflow', () => {
     const { container } = render(
       <PerkRail

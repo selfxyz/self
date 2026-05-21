@@ -438,6 +438,7 @@ const config = {
         '@react-native-masked-view/masked-view',
         '@react-native-firebase/analytics',
         'react-native-b4a',
+        'expo-updates',
       ];
 
       if (optionalPeerDependencies.includes(moduleName)) {

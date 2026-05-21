@@ -9,6 +9,7 @@ import UsatLogo from '../../../svgs/icons/usat.svg';
 import type { EligiblePerksItem } from '../../components/data-display/EligiblePerksCard';
 import { getPerkRecordsForIdType, type PerkId, PERKS as SHARED_PERKS } from '../../data/perks';
 
+export type { PerkId } from '../../data/perks';
 export type Perk = EligiblePerksItem;
 
 const PERK_LOGOS: Partial<Record<PerkId, () => React.ReactNode[]>> = {
@@ -42,4 +43,24 @@ export function getPerksForIdType(idType: string): Perk[] {
   return getPerkRecordsForIdType(idType)
     .map(perk => PERKS[perk.id])
     .filter((perk): perk is Perk => Boolean(perk?.renderLogos));
+}
+
+export interface PerkRailContent {
+  perks: Perk[];
+  logos: React.ReactNode[];
+  label: string;
+}
+
+/**
+ * Shared resolver for PerkRail inputs. Returns null when the ID type has no
+ * renderable perks so callers can hide the rail. Counts *perks*, not logos —
+ * one perk with multiple brand marks (e.g. Google + USAT) is still one perk.
+ */
+export function getPerkRailContent(idType: string): PerkRailContent | null {
+  const perks = getPerksForIdType(idType);
+  if (perks.length === 0) {
+    return null;
+  }
+  const logos = perks.flatMap(perk => perk.renderLogos?.() ?? []);
+  return { perks, logos, label: getPerkRailLabel(perks) };
 }

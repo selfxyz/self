@@ -38,12 +38,14 @@ import EPassportLogo from '@/assets/icons/epassport_logo.svg';
 import { DocumentFlowNavBar } from '@/components/navbar/DocumentFlowNavBar';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { buttonTap } from '@/integrations/haptics';
-import { createKycSession, launchKycVerification } from '@/integrations/kyc';
+import {
+  createKycSession,
+  KYC_PROVIDER,
+  launchKycVerification,
+} from '@/integrations/kyc';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
 import { useFeedback } from '@/providers/feedbackProvider';
-
-const KYC_PROVIDER = 'didit';
 
 type LogoConfirmationScreenRouteProp = RouteProp<
   RootStackParamList,
