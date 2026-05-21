@@ -517,6 +517,48 @@ describe('IDSelectorSheet — perk eligibility', () => {
     expect(JSON.stringify(tree.toJSON())).toContain('Eligible for 1 perk');
   });
 
+  it('renders the perk row on an eligible doc even when it is not the active selection', () => {
+    const tree = render(
+      <IDSelectorSheet
+        open={true}
+        onOpenChange={mockOnOpenChange}
+        documents={documents}
+        selectedId="doc2"
+        onSelect={mockOnSelect}
+        onDismiss={mockOnDismiss}
+        onApprove={mockOnApprove}
+        activePerkId="google_cloud_faucet"
+        perksByDocumentId={{ doc1: [makeGooglePerk()] }}
+        ineligibleReasonByDocumentId={{ doc2: 'needs_nfc' }}
+        testID="sheet"
+      />,
+    );
+    expect(tree.getByTestId('sheet-item-doc1-perks')).toBeTruthy();
+  });
+
+  it('does not render the perk row on an ineligible doc even with perks defined', () => {
+    const tree = render(
+      <IDSelectorSheet
+        open={true}
+        onOpenChange={mockOnOpenChange}
+        documents={documents}
+        selectedId="doc1"
+        onSelect={mockOnSelect}
+        onDismiss={mockOnDismiss}
+        onApprove={mockOnApprove}
+        activePerkId="google_cloud_faucet"
+        perksByDocumentId={{
+          doc1: [makeGooglePerk()],
+          doc2: [makeGooglePerk()],
+        }}
+        ineligibleReasonByDocumentId={{ doc2: 'needs_nfc' }}
+        testID="sheet"
+      />,
+    );
+    expect(tree.queryByTestId('sheet-item-doc2-perks')).toBeNull();
+    expect(tree.getByTestId('sheet-item-doc1-perks')).toBeTruthy();
+  });
+
   it('does not render the perk row when ineligible-doc is the active selection', () => {
     const tree = render(
       <IDSelectorSheet

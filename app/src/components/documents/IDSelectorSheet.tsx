@@ -194,13 +194,15 @@ export const IDSelectorSheet: React.FC<IDSelectorSheetProps> = ({
                       : doc.state;
 
                   const isActive = itemState === 'active';
-                  const activePerks = isActive
+                  const eligibleForPerks =
+                    !isDisabledState(doc.state) && !ineligible;
+                  const docPerks = eligibleForPerks
                     ? perksByDocumentId?.[doc.id]
                     : undefined;
                   const perkSlot =
-                    activePerks && activePerks.length > 0 ? (
+                    docPerks && docPerks.length > 0 ? (
                       <PerkEligibilityRow
-                        perks={activePerks}
+                        perks={docPerks}
                         variant="inline"
                         testID={`${testID}-item-${doc.id}-perks`}
                       />
@@ -221,7 +223,7 @@ export const IDSelectorSheet: React.FC<IDSelectorSheetProps> = ({
                     />
                   );
 
-                  const hasPerks = isActive && !!perkSlot;
+                  const hasPerks = !!perkSlot;
                   return (
                     <View
                       key={doc.id}
