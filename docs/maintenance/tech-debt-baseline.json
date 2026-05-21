@@ -4,116 +4,118 @@
     "circuits",
     "common",
     "contracts",
+    "new-common",
     "packages/*",
     "prover/tests",
     "scripts/tests",
     "sdk/*"
   ],
-  "workspaceCount": 11,
+  "workspaceCount": 19,
   "workspaces": [
     {
       "name": "@selfxyz/mobile-app",
       "path": "app",
       "dependencies": {
-        "@babel/runtime": "^7.28.6",
+        "@babel/runtime": "^7.29.2",
+        "@didit-protocol/sdk-react-native": "^3.3.2",
         "@ethersproject/shims": "^5.8.0",
+        "@invertase/react-native-apple-authentication": "^2.5.1",
         "@noble/hashes": "^1.5.0",
-        "@openpassport/zk-kit-imt": "^0.0.5",
         "@openpassport/zk-kit-lean-imt": "^0.0.6",
-        "@openpassport/zk-kit-smt": "^0.0.1",
         "@peculiar/x509": "^1.14.3",
         "@react-native-async-storage/async-storage": "^2.2.0",
         "@react-native-clipboard/clipboard": "1.16.3",
         "@react-native-community/blur": "^4.4.1",
         "@react-native-community/netinfo": "^11.4.1",
-        "@react-native-firebase/app": "^19.0.1",
-        "@react-native-firebase/messaging": "^19.0.1",
-        "@react-native-firebase/remote-config": "^19.0.1",
-        "@react-navigation/native": "^7.0.14",
-        "@react-navigation/native-stack": "^7.2.0",
-        "@robinbobin/react-native-google-drive-api-wrapper": "^2.2.3",
-        "@segment/analytics-react-native": "^2.21.2",
+        "@react-native-firebase/analytics": "^21.14.0",
+        "@react-native-firebase/app": "^21.14.0",
+        "@react-native-firebase/messaging": "^21.14.0",
+        "@react-native-firebase/remote-config": "^21.14.0",
+        "@react-native-google-signin/google-signin": "^16.1.2",
+        "@react-navigation/native": "^7.2.2",
+        "@react-navigation/native-stack": "^7.14.10",
+        "@robinbobin/react-native-google-drive-api-wrapper": "^2.2.6",
+        "@segment/analytics-react-native": "^2.22.0",
         "@segment/sovran-react-native": "^1.1.3",
         "@selfxyz/common": "workspace:^",
         "@selfxyz/euclid": "^0.6.1",
         "@selfxyz/mobile-sdk-alpha": "workspace:^",
         "@sentry/react": "^9.32.0",
-        "@sentry/react-native": "7.0.0",
-        "@stablelib/cbor": "^2.0.1",
-        "@didit-protocol/sdk-react-native": "^3.2.8",
-        "@tamagui/animations-css": "1.126.14",
-        "@tamagui/animations-react-native": "1.126.14",
-        "@tamagui/config": "1.126.14",
-        "@tamagui/lucide-icons": "1.126.14",
-        "@tamagui/toast": "1.126.14",
+        "@sentry/react-native": "8.11.1",
+        "@stablelib/cbor": "^2.0.4",
+        "@tamagui/animations-css": "1.144.4",
+        "@tamagui/animations-react-native": "1.144.4",
+        "@tamagui/config": "1.144.4",
+        "@tamagui/lucide-icons": "1.144.4",
+        "@tamagui/toast": "1.144.4",
         "@turnkey/api-key-stamper": "^0.5.0",
         "@turnkey/core": "1.7.0",
         "@turnkey/encoding": "^0.6.0",
         "@turnkey/react-native-wallet-kit": "1.1.5",
-        "@walletconnect/react-native-compat": "^2.23.0",
+        "@walletconnect/react-native-compat": "^2.23.9",
         "@xstate/react": "^5.0.3",
         "asn1js": "^3.0.7",
-        "axios": "^1.13.2",
+        "axios": "^1.15.0",
         "buffer": "^6.0.3",
         "country-emoji": "^1.5.6",
         "elliptic": "^6.6.1",
-        "ethers": "^6.11.0",
-        "expo-application": "^7.0.7",
-        "expo-modules-core": "^2.2.1",
+        "ethers": "^6.16.0",
+        "expo": "~52.0.40",
+        "expo-application": "~6.0.2",
+        "expo-camera": "~16.0.18",
         "hash.js": "^1.1.7",
         "js-sha1": "^0.7.0",
         "js-sha256": "^0.11.1",
         "js-sha512": "^0.9.0",
         "lottie-react": "^2.4.1",
-        "lottie-react-native": "7.2.2",
-        "node-forge": "^1.3.3",
-        "pkijs": "^3.3.3",
+        "lottie-react-native": "7.3.6",
+        "node-forge": "^1.4.0",
+        "pkijs": "^3.4.0",
         "poseidon-lite": "^0.2.0",
         "react": "^18.3.1",
         "react-dom": "^18.3.1",
         "react-native": "0.76.9",
-        "react-native-app-auth": "^8.0.3",
+        "react-native-app-auth": "^8.1.0",
         "react-native-biometrics": "^3.0.1",
         "react-native-blur-effect": "^1.1.3",
-        "react-native-check-version": "^1.3.0",
+        "react-native-check-version": "^1.4.0",
         "react-native-cloud-storage": "^2.2.2",
-        "react-native-device-info": "^15.0.1",
+        "react-native-date-picker": "^5.0.13",
+        "react-native-device-info": "^15.0.2",
         "react-native-dotenv": "^3.4.11",
-        "react-native-edge-to-edge": "^1.7.0",
-        "react-native-gesture-handler": "2.19.0",
+        "react-native-edge-to-edge": "^1.8.1",
+        "react-native-gesture-handler": "~2.22.0",
         "react-native-get-random-values": "^1.11.0",
         "react-native-haptic-feedback": "^2.3.3",
-        "react-native-inappbrowser-reborn": "^3.7.0",
+        "react-native-inappbrowser-reborn": "^3.7.1",
         "react-native-keychain": "^10.0.0",
         "react-native-linear-gradient": "^2.8.3",
-        "react-native-localize": "^3.6.1",
-        "react-native-logs": "^5.5.0",
+        "react-native-localize": "^3.7.0",
+        "react-native-logs": "^5.6.0",
         "react-native-nfc-manager": "3.17.2",
-        "react-native-passkey": "^3.3.2",
+        "react-native-passkey": "^3.3.3",
         "react-native-passport-reader": "1.0.3",
-        "react-native-safe-area-context": "^5.6.2",
+        "react-native-permissions": "^4.1.5",
+        "react-native-safe-area-context": "^5.7.0",
         "react-native-screens": "4.15.3",
         "react-native-sqlite-storage": "^6.0.1",
-        "react-native-svg": "15.12.1",
-        "react-native-svg-web": "1.0.9",
+        "react-native-svg": "15.14.0",
         "react-native-url-polyfill": "^3.0.0",
-        "react-native-web": "^0.21.2",
-        "react-native-webview": "^13.16.0",
-        "react-qr-barcode-scanner": "^2.1.8",
+        "react-native-webview": "13.16.1",
         "socket.io-client": "^4.8.3",
-        "tamagui": "1.126.14",
+        "tamagui": "1.144.4",
         "uuid": "^11.1.0",
-        "xstate": "^5.20.2",
+        "xstate": "^5.30.0",
         "zustand": "^4.5.2"
       },
       "devDependencies": {
-        "@babel/core": "^7.28.6",
+        "@babel/core": "^7.29.0",
         "@babel/plugin-syntax-flow": "^7.28.6",
         "@babel/plugin-transform-classes": "^7.28.6",
         "@babel/plugin-transform-export-namespace-from": "^7.27.1",
         "@babel/plugin-transform-flow-strip-types": "^7.27.1",
         "@babel/plugin-transform-private-methods": "^7.28.6",
-        "@babel/preset-env": "^7.28.6",
+        "@babel/preset-env": "^7.29.2",
         "@babel/preset-react": "^7.28.5",
         "@react-native-community/cli": "^16.0.3",
         "@react-native/babel-preset": "0.76.9",
@@ -121,67 +123,55 @@
         "@react-native/gradle-plugin": "0.76.9",
         "@react-native/metro-config": "0.76.9",
         "@react-native/typescript-config": "0.76.9",
-        "@tamagui/types": "1.126.14",
-        "@tamagui/vite-plugin": "1.126.14",
+        "@tamagui/types": "1.144.4",
         "@testing-library/react-native": "^13.3.3",
-        "@tsconfig/react-native": "^3.0.6",
-        "@types/bn.js": "^5.2.0",
+        "@tsconfig/react-native": "^3.0.9",
         "@types/dompurify": "^3.2.0",
         "@types/elliptic": "^6.4.18",
         "@types/jest": "^30.0.0",
         "@types/node": "^22.18.3",
         "@types/node-forge": "^1.3.14",
-        "@types/path-browserify": "^1",
         "@types/react": "^18.3.4",
         "@types/react-dom": "^18.3.0",
-        "@types/react-native-dotenv": "^0.2.0",
+        "@types/react-native-dotenv": "^0.2.2",
         "@types/react-native-sqlite-storage": "^6.0.5",
-        "@types/react-native-web": "^0",
-        "@types/react-test-renderer": "^18",
-        "@typescript-eslint/eslint-plugin": "^8.39.0",
-        "@typescript-eslint/parser": "^8.39.0",
-        "@vitejs/plugin-react-swc": "^4.2.2",
-        "babel-plugin-module-resolver": "^5.0.2",
+        "@typescript-eslint/eslint-plugin": "^8.58.1",
+        "@typescript-eslint/parser": "^8.58.1",
+        "babel-plugin-module-resolver": "^5.0.3",
         "babel-plugin-transform-remove-console": "^6.9.4",
         "constants-browserify": "^1.0.0",
-        "dompurify": "^3.3.1",
+        "dompurify": "^3.3.3",
         "eslint": "^8.57.0",
         "eslint-config-prettier": "10.1.8",
         "eslint-import-resolver-typescript": "^3.7.0",
         "eslint-plugin-ft-flow": "^3.0.11",
         "eslint-plugin-header": "^3.1.1",
-        "eslint-plugin-import": "^2.31.0",
-        "eslint-plugin-jest": "^29.1.0",
-        "eslint-plugin-prettier": "^5.2.6",
+        "eslint-plugin-import": "^2.32.0",
+        "eslint-plugin-jest": "^29.15.1",
+        "eslint-plugin-prettier": "^5.5.5",
         "eslint-plugin-simple-import-sort": "^12.1.1",
         "eslint-plugin-sort-exports": "^0.9.1",
-        "hermes-eslint": "^0.19.1",
-        "jest": "^30.2.0",
-        "path-browserify": "^1.0.1",
-        "prettier": "^3.5.3",
+        "hermes-eslint": "^0.33.3",
+        "jest": "^30.3.0",
+        "prettier": "^3.8.1",
         "prop-types": "^15.8.1",
-        "react-native-svg-transformer": "^1.5.2",
+        "react-native-svg-transformer": "^1.5.3",
         "react-test-renderer": "^18.3.1",
-        "rollup-plugin-visualizer": "^6.0.5",
         "stream-browserify": "^3.0.0",
         "ts-morph": "^22.0.0",
-        "ts-node": "^10.9.2",
-        "typescript": "^5.9.3",
-        "vite": "^7.3.1",
-        "vite-plugin-svgr": "^4.5.0"
+        "typescript": "^5.9.3"
       },
       "peerDependencies": {},
       "dependencyCount": {
-        "dependencies": 90,
-        "devDependencies": 62,
+        "dependencies": 91,
+        "devDependencies": 51,
         "peerDependencies": 0,
-        "total": 152
+        "total": 142
       },
       "scripts": [
         "analyze:bundle:android",
         "analyze:bundle:ios",
         "analyze:tree-shaking",
-        "analyze:tree-shaking:web",
         "android",
         "android:ci",
         "build:deps",
@@ -194,6 +184,7 @@
         "clean:ios",
         "clean:node",
         "clean:pod-cache",
+        "clean:ruby",
         "clean:watchman",
         "clean:xcode",
         "clean:xcode-env-local",
@@ -219,7 +210,6 @@
         "mobile-local-deploy:android",
         "mobile-local-deploy:ios",
         "nice",
-        "postinstall",
         "reinstall",
         "release",
         "release:major",
@@ -246,17 +236,16 @@
       ],
       "sourceFiles": {
         "byExtension": {
-          ".cjs": 27,
-          ".css": 2,
-          ".js": 10,
+          ".cjs": 28,
+          ".js": 14,
           ".mjs": 1,
           ".py": 1,
           ".rb": 8,
           ".sh": 6,
-          ".ts": 189,
-          ".tsx": 157
+          ".ts": 210,
+          ".tsx": 187
         },
-        "total": 401
+        "total": 455
       }
     },
     {
@@ -269,7 +258,7 @@
         "@openpassport/zk-kit-imt": "^0.0.4",
         "@openpassport/zk-kit-lean-imt": "^0.0.4",
         "@openpassport/zk-kit-smt": "^0.0.1",
-        "@selfxyz/common": "workspace:^",
+        "@selfxyz/new-common": "workspace:^",
         "@zk-email/circuits": "^6.3.2",
         "@zk-email/helpers": "^6.1.1",
         "@zk-email/jwt-tx-builder-circuits": "0.1.0",
@@ -338,6 +327,7 @@
         "install-circuits",
         "lint",
         "nice",
+        "pretest",
         "test",
         "test-base",
         "test-custom-hasher",
@@ -363,10 +353,11 @@
       "sourceFiles": {
         "byExtension": {
           ".circom": 257,
+          ".cjs": 1,
           ".sh": 4,
-          ".ts": 33
+          ".ts": 34
         },
-        "total": 294
+        "total": 296
       }
     },
     {
@@ -475,7 +466,7 @@
         "@safe-global/api-kit": "^4.0.1",
         "@safe-global/protocol-kit": "^6.1.2",
         "@safe-global/safe-core-sdk-types": "^5.1.0",
-        "@selfxyz/common": "workspace:^",
+        "@selfxyz/new-common": "workspace:^",
         "@zk-kit/baby-jubjub": "^1.0.3",
         "@zk-kit/imt": "^2.0.0-beta.4",
         "@zk-kit/imt.sol": "^2.0.0-beta.12",
@@ -490,6 +481,7 @@
         "snarkjs": "^0.7.4"
       },
       "devDependencies": {
+        "@anon-aadhaar/core": "npm:@selfxyz/anon-aadhaar-core@^0.0.1",
         "@nomicfoundation/hardhat-chai-matchers": "^2.0.6",
         "@nomicfoundation/hardhat-ethers": "^3.0.5",
         "@nomicfoundation/hardhat-ignition": "^0.15.12",
@@ -525,12 +517,13 @@
       "peerDependencies": {},
       "dependencyCount": {
         "dependencies": 23,
-        "devDependencies": 31,
+        "devDependencies": 32,
         "peerDependencies": 0,
-        "total": 54
+        "total": 55
       },
       "scripts": [
         "build",
+        "check:error-selectors",
         "deploy:all",
         "deploy:hub",
         "deploy:hub:v2",
@@ -543,9 +536,9 @@
         "export-prod",
         "find:error",
         "format",
+        "generate:error-selectors",
         "prettier:check",
         "prettier:write",
-        "publish",
         "set:hub:v2",
         "set:registry",
         "set:registry:hub:v2",
@@ -553,12 +546,9 @@
         "set:verifiers:v2",
         "show:registry",
         "test",
-        "test:airdrop",
         "test:attribute",
         "test:coverage",
         "test:coverage:local",
-        "test:disclose",
-        "test:endtoend",
         "test:example",
         "test:formatter",
         "test:hub",
@@ -587,9 +577,128 @@
         "byExtension": {
           ".sh": 5,
           ".sol": 160,
-          ".ts": 77
+          ".ts": 79
         },
-        "total": 242
+        "total": 244
+      }
+    },
+    {
+      "name": "@selfxyz/new-common",
+      "path": "new-common",
+      "dependencies": {
+        "@anon-aadhaar/core": "npm:@selfxyz/anon-aadhaar-core@^0.0.1",
+        "@openpassport/zk-kit-imt": "^0.0.5",
+        "@openpassport/zk-kit-lean-imt": "^0.0.6",
+        "@openpassport/zk-kit-smt": "^0.0.1",
+        "@zk-kit/baby-jubjub": "^1.0.3",
+        "@zk-kit/eddsa-poseidon": "^1.1.0",
+        "asn1js": "^3.0.7",
+        "elliptic": "^6.5.5",
+        "ethers": "^6.13.4",
+        "hash.js": "^1.1.7",
+        "i18n-iso-countries": "^7.13.0",
+        "js-sha1": "^0.7.0",
+        "js-sha256": "^0.11.0",
+        "js-sha512": "^0.9.0",
+        "node-forge": "^1.3.1",
+        "pkijs": "^3.3.3",
+        "poseidon-lite": "^0.3.0",
+        "uuid": "^13.0.0"
+      },
+      "devDependencies": {
+        "@types/elliptic": "^6.4.18",
+        "@types/node-forge": "^1.3.11",
+        "@types/uuid": "^11.0.0",
+        "tsup": "^8.5.0",
+        "typescript": "^5.9.3",
+        "vitest": "^2.1.8"
+      },
+      "peerDependencies": {},
+      "dependencyCount": {
+        "dependencies": 18,
+        "devDependencies": 6,
+        "peerDependencies": 0,
+        "total": 24
+      },
+      "scripts": [
+        "build",
+        "build:types",
+        "format",
+        "format:check",
+        "test",
+        "types"
+      ],
+      "sourceFiles": {
+        "byExtension": {
+          ".ts": 111
+        },
+        "total": 111
+      }
+    },
+    {
+      "name": "@selfxyz/kmp-sdk",
+      "path": "packages/kmp-sdk",
+      "dependencies": {},
+      "devDependencies": {},
+      "peerDependencies": {},
+      "dependencyCount": {
+        "dependencies": 0,
+        "devDependencies": 0,
+        "peerDependencies": 0,
+        "total": 0
+      },
+      "scripts": [
+        "build",
+        "build:android",
+        "build:ios",
+        "build:ios:simulator",
+        "clean",
+        "format",
+        "lint",
+        "test"
+      ],
+      "sourceFiles": {
+        "byExtension": {
+          ".css": 2,
+          ".js": 13,
+          ".kt": 66,
+          ".kts": 3,
+          ".swift": 1
+        },
+        "total": 85
+      }
+    },
+    {
+      "name": "@selfxyz/kmp-sdk-test-app",
+      "path": "packages/kmp-sdk-test-app",
+      "dependencies": {},
+      "devDependencies": {},
+      "peerDependencies": {},
+      "dependencyCount": {
+        "dependencies": 0,
+        "devDependencies": 0,
+        "peerDependencies": 0,
+        "total": 0
+      },
+      "scripts": [
+        "android",
+        "android:build",
+        "clean",
+        "format",
+        "ios",
+        "ios:build",
+        "ios:open",
+        "lint",
+        "test"
+      ],
+      "sourceFiles": {
+        "byExtension": {
+          ".kt": 33,
+          ".kts": 3,
+          ".sh": 2,
+          ".swift": 2
+        },
+        "total": 40
       }
     },
     {
@@ -597,8 +706,10 @@
       "path": "packages/mobile-sdk-alpha",
       "dependencies": {
         "@babel/runtime": "^7.28.6",
+        "@noble/hashes": "^1.5.0",
         "@selfxyz/common": "workspace:^",
         "@selfxyz/euclid": "^0.6.1",
+        "@selfxyz/euclid-core": "^1.4.4",
         "@xstate/react": "^5.0.5",
         "node-forge": "^1.3.3",
         "react-native-nfc-manager": "^3.17.2",
@@ -610,6 +721,7 @@
       },
       "devDependencies": {
         "@openpassport/zk-kit-lean-imt": "^0.0.6",
+        "@react-native-async-storage/async-storage": "^2.1.2",
         "@testing-library/react": "^14.1.2",
         "@types/react": "^18.3.4",
         "@types/react-dom": "^18.3.0",
@@ -623,17 +735,19 @@
         "eslint-plugin-react": "^7.37.5",
         "eslint-plugin-simple-import-sort": "^12.1.1",
         "eslint-plugin-sort-exports": "^0.9.1",
+        "fake-indexeddb": "^6.2.5",
         "jsdom": "^25.0.1",
-        "lottie-react-native": "7.2.2",
+        "lottie-react-native": "7.3.6",
         "poseidon-lite": "^0.3.0",
         "prettier": "^3.5.3",
         "react": "^18.3.1",
         "react-dom": "^18.3.1",
         "react-native": "0.76.9",
-        "react-native-blur-effect": "^1.1.3",
+        "react-native-get-random-values": "^1.11.0",
         "react-native-haptic-feedback": "^2.3.3",
+        "react-native-keychain": "^9.2.3",
         "react-native-localize": "^3.6.1",
-        "react-native-svg": "15.12.1",
+        "react-native-svg": "15.14.0",
         "react-native-web": "^0.21.2",
         "react-native-webview": "13.16.0",
         "tsup": "^8.0.1",
@@ -641,20 +755,23 @@
         "vitest": "^2.1.8"
       },
       "peerDependencies": {
-        "lottie-react-native": "7.2.2",
+        "@react-native-async-storage/async-storage": ">=1.0.0",
+        "lottie-react-native": "^7.2.2",
         "react": "^18.3.1",
-        "react-native": "0.76.9",
+        "react-native": ">=0.76.0 <0.78.0",
         "react-native-blur-effect": "^1.1.3",
+        "react-native-get-random-values": ">=1.0.0",
         "react-native-haptic-feedback": "*",
+        "react-native-keychain": ">=8.0.0",
         "react-native-localize": "*",
         "react-native-svg": "*",
         "react-native-webview": "^13.16.0"
       },
       "dependencyCount": {
-        "dependencies": 11,
-        "devDependencies": 30,
-        "peerDependencies": 8,
-        "total": 49
+        "dependencies": 13,
+        "devDependencies": 33,
+        "peerDependencies": 11,
+        "total": 57
       },
       "scripts": [
         "build",
@@ -682,12 +799,13 @@
         "byExtension": {
           ".cjs": 3,
           ".js": 1,
+          ".kt": 14,
           ".mjs": 5,
           ".sh": 2,
-          ".ts": 91,
-          ".tsx": 43
+          ".ts": 126,
+          ".tsx": 48
         },
-        "total": 145
+        "total": 199
       }
     },
     {
@@ -708,13 +826,13 @@
         "lottie-react-native": "7.2.2",
         "react": "^18.3.1",
         "react-native": "0.76.9",
-        "react-native-blur-effect": "1.1.3",
+        "react-native-blur-effect": "^1.1.3",
         "react-native-get-random-values": "^1.11.0",
         "react-native-haptic-feedback": "^2.3.3",
         "react-native-keychain": "^10.0.0",
         "react-native-localize": "^3.6.1",
         "react-native-safe-area-context": "^5.6.2",
-        "react-native-svg": "15.12.1",
+        "react-native-svg": "15.14.0",
         "react-native-vector-icons": "^10.3.0",
         "react-native-webview": "13.16.0",
         "stream-browserify": "^3.0.0",
@@ -773,7 +891,6 @@
         "lint",
         "lint:fix",
         "nice",
-        "postinstall",
         "preandroid",
         "prebuild",
         "preios",
@@ -793,6 +910,266 @@
           ".tsx": 34
         },
         "total": 66
+      }
+    },
+    {
+      "name": "@selfxyz/rn-sdk",
+      "path": "packages/rn-sdk",
+      "dependencies": {
+        "@selfxyz/webview-bridge": "workspace:^"
+      },
+      "devDependencies": {
+        "@selfxyz/webview-app": "workspace:^",
+        "@types/react": "^18.3.4",
+        "react": "^18.3.1",
+        "react-native": "0.76.9",
+        "react-native-biometrics": "^3.0.1",
+        "react-native-fs": "^2.20.0",
+        "react-native-keychain": "^9.2.3",
+        "react-native-nfc-manager": "^3.17.2",
+        "react-native-webview": "13.16.0",
+        "tsup": "^8.0.1",
+        "typescript": "^5.9.3",
+        "vitest": "^2.1.8"
+      },
+      "peerDependencies": {
+        "react": "^18.0.0",
+        "react-native": ">=0.72.0",
+        "react-native-biometrics": "^3.0.1",
+        "react-native-fs": "^2.20.0",
+        "react-native-keychain": ">=8.2.0 <11",
+        "react-native-nfc-manager": "^3.14.0",
+        "react-native-webview": ">=13.0.0"
+      },
+      "dependencyCount": {
+        "dependencies": 1,
+        "devDependencies": 12,
+        "peerDependencies": 7,
+        "total": 20
+      },
+      "scripts": [
+        "build",
+        "copy-assets",
+        "prepublishOnly",
+        "test",
+        "typecheck",
+        "types"
+      ],
+      "sourceFiles": {
+        "byExtension": {
+          ".css": 1,
+          ".js": 7,
+          ".ts": 19,
+          ".tsx": 1
+        },
+        "total": 28
+      }
+    },
+    {
+      "name": "@selfxyz/rn-sdk-test-app",
+      "path": "packages/rn-sdk-test-app",
+      "dependencies": {
+        "@babel/runtime": "^7.28.6",
+        "@selfxyz/rn-sdk": "workspace:*",
+        "react": "^18.3.1",
+        "react-native": "0.76.9",
+        "react-native-biometrics": "^3.0.1",
+        "react-native-fs": "^2.20.0",
+        "react-native-keychain": "^9.2.3",
+        "react-native-nfc-manager": "^3.17.2",
+        "react-native-webview": "13.16.0"
+      },
+      "devDependencies": {
+        "@babel/core": "^7.28.6",
+        "@react-native-community/cli": "^16.0.3",
+        "@react-native/gradle-plugin": "0.76.9",
+        "@react-native/metro-config": "0.76.9",
+        "@tsconfig/react-native": "^3.0.6",
+        "@types/react": "^18.3.4",
+        "jest": "^29.7.0",
+        "typescript": "^5.9.3"
+      },
+      "peerDependencies": {},
+      "dependencyCount": {
+        "dependencies": 9,
+        "devDependencies": 8,
+        "peerDependencies": 0,
+        "total": 17
+      },
+      "scripts": [
+        "android",
+        "build",
+        "clean:xcode-env-local",
+        "install-app",
+        "install-app:setup",
+        "ios",
+        "lint",
+        "nice",
+        "postinstall",
+        "setup",
+        "start",
+        "test",
+        "types"
+      ],
+      "sourceFiles": {
+        "byExtension": {
+          ".cjs": 4,
+          ".js": 1,
+          ".ts": 1,
+          ".tsx": 1
+        },
+        "total": 7
+      }
+    },
+    {
+      "name": "@selfxyz/sdk-test-app",
+      "path": "packages/sdk-test-app",
+      "dependencies": {},
+      "devDependencies": {},
+      "peerDependencies": {},
+      "dependencyCount": {
+        "dependencies": 0,
+        "devDependencies": 0,
+        "peerDependencies": 0,
+        "total": 0
+      },
+      "scripts": [
+        "android:build",
+        "android:install",
+        "ios:build",
+        "ios:generate"
+      ],
+      "sourceFiles": {
+        "byExtension": {},
+        "total": 0
+      }
+    },
+    {
+      "name": "@selfxyz/webview-app",
+      "path": "packages/webview-app",
+      "dependencies": {
+        "@didit-protocol/sdk-web": "^0.2.0",
+        "@scure/bip32": "^2.0.1",
+        "@scure/bip39": "^1.6.0",
+        "@selfxyz/euclid": "1.4.2",
+        "@selfxyz/euclid-core": "1.4.4",
+        "@selfxyz/mobile-sdk-alpha": "workspace:^",
+        "@selfxyz/webview-bridge": "workspace:^",
+        "buffer": "^6.0.3",
+        "crypto-browserify": "^3.12.1",
+        "elliptic": "^6.5.4",
+        "lottie-react": "^2.4.0",
+        "node-forge": "^1.3.3",
+        "react": "^18.3.1",
+        "react-dom": "^18.3.1",
+        "react-router-dom": "^6.28.0",
+        "socket.io-client": "^4.8.3",
+        "uuid": "^11.1.0",
+        "xstate": "^5.20.2",
+        "zustand": "^4.5.2"
+      },
+      "devDependencies": {
+        "@testing-library/react": "^14.1.2",
+        "@types/react": "^18.3.4",
+        "@types/react-dom": "^18.3.0",
+        "@typescript-eslint/eslint-plugin": "^8.0.0",
+        "@typescript-eslint/parser": "^8.0.0",
+        "@vitejs/plugin-react": "^4.3.4",
+        "eslint": "^8.57.0",
+        "eslint-config-prettier": "^10.1.8",
+        "eslint-import-resolver-typescript": "^4.4.4",
+        "eslint-plugin-import": "^2.31.0",
+        "eslint-plugin-prettier": "^5.5.4",
+        "eslint-plugin-react": "^7.37.5",
+        "eslint-plugin-simple-import-sort": "^12.1.1",
+        "eslint-plugin-sort-exports": "^0.9.1",
+        "jsdom": "^29.0.1",
+        "prettier": "^3.5.3",
+        "typescript": "^5.9.3",
+        "vite": "^6.1.0",
+        "vitest": "^2.1.8"
+      },
+      "peerDependencies": {},
+      "dependencyCount": {
+        "dependencies": 19,
+        "devDependencies": 19,
+        "peerDependencies": 0,
+        "total": 38
+      },
+      "scripts": [
+        "build",
+        "dev",
+        "fmt",
+        "fmt:fix",
+        "format",
+        "lint",
+        "lint:fix",
+        "nice",
+        "preview",
+        "test",
+        "test:watch",
+        "typecheck",
+        "types"
+      ],
+      "sourceFiles": {
+        "byExtension": {
+          ".cjs": 3,
+          ".css": 3,
+          ".ts": 17,
+          ".tsx": 72
+        },
+        "total": 95
+      }
+    },
+    {
+      "name": "@selfxyz/webview-bridge",
+      "path": "packages/webview-bridge",
+      "dependencies": {
+        "@selfxyz/mobile-sdk-alpha": "workspace:^",
+        "uuid": "^11.1.0"
+      },
+      "devDependencies": {
+        "@types/node": "^22.18.3",
+        "@typescript-eslint/eslint-plugin": "^8.0.0",
+        "@typescript-eslint/parser": "^8.0.0",
+        "eslint": "^8.57.0",
+        "eslint-config-prettier": "^10.1.8",
+        "eslint-import-resolver-typescript": "^4.4.4",
+        "eslint-plugin-import": "^2.31.0",
+        "eslint-plugin-prettier": "^5.5.4",
+        "eslint-plugin-simple-import-sort": "^12.1.1",
+        "eslint-plugin-sort-exports": "^0.9.1",
+        "fake-indexeddb": "^6.2.5",
+        "prettier": "^3.5.3",
+        "tsup": "^8.0.1",
+        "typescript": "^5.9.3",
+        "vitest": "^2.1.8"
+      },
+      "peerDependencies": {},
+      "dependencyCount": {
+        "dependencies": 2,
+        "devDependencies": 15,
+        "peerDependencies": 0,
+        "total": 17
+      },
+      "scripts": [
+        "build",
+        "fmt",
+        "fmt:fix",
+        "format",
+        "lint",
+        "lint:fix",
+        "nice",
+        "test",
+        "typecheck",
+        "types"
+      ],
+      "sourceFiles": {
+        "byExtension": {
+          ".cjs": 1,
+          ".ts": 26
+        },
+        "total": 27
       }
     },
     {
@@ -866,7 +1243,6 @@
         "install-sdk",
         "lint",
         "prepublishOnly",
-        "publish",
         "test",
         "types"
       ],
@@ -947,7 +1323,6 @@
         "nice:check",
         "postbuild",
         "prepublishOnly",
-        "publish",
         "test",
         "types"
       ],
@@ -957,9 +1332,9 @@
           ".js": 1,
           ".mjs": 1,
           ".ts": 7,
-          ".tsx": 3
+          ".tsx": 9
         },
-        "total": 13
+        "total": 19
       }
     },
     {
@@ -1023,7 +1398,6 @@
         "lint:fix",
         "nice",
         "prepublishOnly",
-        "publish",
         "test"
       ],
       "sourceFiles": {

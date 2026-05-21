@@ -204,7 +204,6 @@
     "react-native-keychain": "^9.2.3",
     "react-native-localize": "^3.6.1",
     "react-native-svg": "15.14.0",
-    "react-native-web": "^0.21.2",
     "react-native-webview": "13.16.0",
     "tsup": "^8.0.1",
     "typescript": "^5.9.3",
