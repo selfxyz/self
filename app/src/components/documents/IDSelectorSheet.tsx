@@ -224,13 +224,14 @@ export const IDSelectorSheet: React.FC<IDSelectorSheetProps> = ({
                   );
 
                   const hasPerks = !!perkSlot;
+                  const framed = isActive || hasPerks;
                   return (
                     <View
                       key={doc.id}
                       backgroundColor={isActive ? slate100 : 'transparent'}
                       borderRadius={10}
                       borderWidth={1}
-                      borderColor={isActive ? slate200 : 'transparent'}
+                      borderColor={framed ? slate200 : 'transparent'}
                       overflow="hidden"
                       testID={
                         isActive
@@ -244,7 +245,7 @@ export const IDSelectorSheet: React.FC<IDSelectorSheetProps> = ({
                         borderWidth={2}
                         borderColor={isActive ? blue600 : 'transparent'}
                         overflow="hidden"
-                        style={isActive ? styles.activeCardShadow : undefined}
+                        style={framed ? styles.activeCardShadow : undefined}
                       >
                         {item}
                       </View>
