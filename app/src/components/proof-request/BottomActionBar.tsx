@@ -31,8 +31,18 @@ export interface BottomActionBarProps {
   approveDisabled?: boolean;
   approving?: boolean;
   perks?: Perk[];
+  /** When true, replaces the security label with an "INELIGIBLE" pill and
+   *  surfaces a "Change ID" helper row under the disabled Approve. */
+  ineligible?: boolean;
+  /** Short reason copy shown in the helper row (e.g. "Needs an NFC-enabled
+   *  passport"). Falls back to a generic message when omitted. */
+  ineligibleReasonLabel?: string;
   testID?: string;
 }
+
+const INELIGIBLE_BG = '#FEF3C7';
+const INELIGIBLE_BORDER = '#FDE68A';
+const INELIGIBLE_FG = '#92400E';
 
 const ICON_SIZE = 32;
 
@@ -50,6 +60,8 @@ export const BottomActionBar: React.FC<BottomActionBarProps> = ({
   approveDisabled = false,
   approving = false,
   perks,
+  ineligible = false,
+  ineligibleReasonLabel,
   testID = 'bottom-action-bar',
 }) => {
   const hasPerks = !!perks && perks.length > 0;
@@ -121,7 +133,31 @@ export const BottomActionBar: React.FC<BottomActionBarProps> = ({
                 >
                   {selectedDocumentName}
                 </Text>
-                {selectedDocumentSecurityLabel ? (
+                {ineligible ? (
+                  <View
+                    alignSelf="flex-start"
+                    backgroundColor={INELIGIBLE_BG}
+                    borderColor={INELIGIBLE_BORDER}
+                    borderWidth={1}
+                    borderRadius={4}
+                    paddingHorizontal={6}
+                    paddingVertical={1}
+                    marginTop={2}
+                    testID={`${testID}-document-selector-ineligible`}
+                  >
+                    <Text
+                      fontFamily={dinot}
+                      fontSize={10}
+                      fontWeight="500"
+                      color={INELIGIBLE_FG}
+                      letterSpacing={0.6}
+                      textTransform="uppercase"
+                      allowFontScaling={false}
+                    >
+                      Ineligible
+                    </Text>
+                  </View>
+                ) : selectedDocumentSecurityLabel ? (
                   <Text
                     fontFamily={dinot}
                     fontSize={10}
@@ -189,6 +225,38 @@ export const BottomActionBar: React.FC<BottomActionBarProps> = ({
             </Text>
           )}
         </Pressable>
+
+        {ineligible && !approving ? (
+          <Pressable
+            onPress={onDocumentSelectorPress}
+            style={({ pressed }) => [
+              styles.ineligibleHelper,
+              pressed && styles.ineligibleHelperPressed,
+            ]}
+            testID={`${testID}-ineligible-helper`}
+          >
+            <Text
+              fontFamily={dinot}
+              fontSize={13}
+              color={proofRequestColors.slate700}
+              textAlign="center"
+              allowFontScaling={false}
+            >
+              {ineligibleReasonLabel ?? "This ID isn't eligible for this perk."}{' '}
+              <Text
+                fontFamily={dinot}
+                fontSize={13}
+                fontWeight="600"
+                color={proofRequestColors.slate900}
+                textDecorationLine="underline"
+                allowFontScaling={false}
+                testID={`${testID}-ineligible-change-id`}
+              >
+                Change ID
+              </Text>
+            </Text>
+          </Pressable>
+        ) : null}
       </YStack>
     </View>
   );
@@ -223,5 +291,14 @@ const styles = StyleSheet.create({
   },
   approveButtonPressed: {
     opacity: 0.85,
+  },
+  ineligibleHelper: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ineligibleHelperPressed: {
+    opacity: 0.6,
   },
 });

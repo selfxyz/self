@@ -31,7 +31,8 @@ jest.mock('@selfxyz/mobile-sdk-alpha/components', () => ({
     variant?: string;
     testID?: string;
   }) => {
-    const visible = variant === 'minimal' ? logos.slice(0, 1) : logos.slice(0, 3);
+    const visible =
+      variant === 'minimal' ? logos.slice(0, 1) : logos.slice(0, 3);
     return (
       <mock-perk-rail testID={testID} variant={variant}>
         {visible.map((logo, i) => (

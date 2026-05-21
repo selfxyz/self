@@ -69,9 +69,15 @@ describe('PerkEligibilityRow', () => {
   it('keeps the attached row rounded but removes the bottom radius for inline rows', () => {
     const perks = [makePerk('google_cloud_faucet', 'A', 'a')];
 
-    const inline = render(<PerkEligibilityRow perks={perks} variant="inline" testID="inline-row" />);
+    const inline = render(
+      <PerkEligibilityRow perks={perks} variant="inline" testID="inline-row" />,
+    );
     const attached = render(
-      <PerkEligibilityRow perks={perks} variant="attached" testID="attached-row" />,
+      <PerkEligibilityRow
+        perks={perks}
+        variant="attached"
+        testID="attached-row"
+      />,
     );
 
     expect(inline.getByTestId('inline-row').props.style).toEqual(

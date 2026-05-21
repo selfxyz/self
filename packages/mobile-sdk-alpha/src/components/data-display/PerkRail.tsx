@@ -79,7 +79,11 @@ export const PerkRail: React.FC<PerkRailProps> = ({ variant = 'dense', logos, la
       </Pressable>
     );
   }
-  return <View style={containerStyle} testID={testID}>{content}</View>;
+  return (
+    <View style={containerStyle} testID={testID}>
+      {content}
+    </View>
+  );
 };
 
 const styles = StyleSheet.create({
