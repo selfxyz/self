@@ -2,13 +2,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useMemo } from 'react';
-import {
-  ActivityIndicator,
-  Dimensions,
-  Pressable,
-  StyleSheet,
-} from 'react-native';
+import React from 'react';
+import { ActivityIndicator, Pressable, StyleSheet } from 'react-native';
 import { Text, View, XStack, YStack } from 'tamagui';
 
 import { slate500 as trueSlate500 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
@@ -31,8 +26,18 @@ export interface BottomActionBarProps {
   approveDisabled?: boolean;
   approving?: boolean;
   perks?: Perk[];
+  /** When true, replaces the security label with an "INELIGIBLE" pill and
+   *  surfaces a "Change ID" helper row under the disabled Approve. */
+  ineligible?: boolean;
+  /** Short reason copy shown in the helper row (e.g. "Needs an NFC-enabled
+   *  passport"). Falls back to a generic message when omitted. */
+  ineligibleReasonLabel?: string;
   testID?: string;
 }
+
+const INELIGIBLE_BG = '#FEF3C7';
+const INELIGIBLE_BORDER = '#FDE68A';
+const INELIGIBLE_FG = '#92400E';
 
 const ICON_SIZE = 32;
 
@@ -50,24 +55,16 @@ export const BottomActionBar: React.FC<BottomActionBarProps> = ({
   approveDisabled = false,
   approving = false,
   perks,
+  ineligible = false,
+  ineligibleReasonLabel,
   testID = 'bottom-action-bar',
 }) => {
   const hasPerks = !!perks && perks.length > 0;
-  const topPadding = 8;
+  const topPadding = 4;
 
-  const { height: screenHeight } = Dimensions.get('window');
-  const basePadding = 12;
+  const basePadding = 4;
   const safeAreaPadding = useSafeBottomPadding(basePadding);
-
-  const dynamicPadding = useMemo(() => {
-    const heightMultiplier = Math.max(0, (screenHeight - 800) * 0.12);
-    return Math.round(safeAreaPadding + heightMultiplier);
-  }, [screenHeight, safeAreaPadding]);
-
-  // Selector chrome: pill (rounded-60) when no perks; rounded-16 card when a
-  // perk rail is attached underneath (so the joined element reads as one card).
-  const selectorRadius = hasPerks ? 16 : 60;
-  const wrapperRadius = selectorRadius;
+  const dynamicPadding = safeAreaPadding;
 
   return (
     <View
@@ -78,87 +75,130 @@ export const BottomActionBar: React.FC<BottomActionBarProps> = ({
       testID={testID}
     >
       <YStack gap={10}>
-        {/* Document selector + optional perk rail (one visual card) */}
-        <View
-          borderWidth={1}
-          borderColor={proofRequestColors.slate300}
-          borderRadius={wrapperRadius}
-          overflow="hidden"
-          backgroundColor={proofRequestColors.white}
-          style={styles.selectorShadow}
-        >
-          <Pressable
-            onPress={onDocumentSelectorPress}
-            style={({ pressed }) => [
-              styles.selectorPressable,
-              pressed && styles.selectorPressed,
-            ]}
-            testID={`${testID}-document-selector`}
+        <YStack>
+          {/* Document selector — always a rounded-60 pill per Figma 26164:20557 */}
+          <View
+            borderWidth={1}
+            borderColor={proofRequestColors.slate300}
+            borderRadius={60}
+            overflow="hidden"
+            backgroundColor={proofRequestColors.white}
+            zIndex={1}
+            style={styles.selectorShadow}
           >
-            <XStack
-              alignItems="center"
-              gap={10}
-              paddingLeft={8}
-              paddingRight={14}
-              paddingVertical={8}
+            <Pressable
+              onPress={onDocumentSelectorPress}
+              style={({ pressed }) => [
+                styles.selectorPressable,
+                pressed && styles.selectorPressed,
+              ]}
+              testID={`${testID}-document-selector`}
             >
-              <DocumentIdentityIcon
-                nationalityCode={selectedDocumentNationalityCode}
-                isMock={selectedDocumentIsMock}
-                size={ICON_SIZE}
-              />
+              <XStack
+                alignItems="center"
+                gap={10}
+                paddingLeft={8}
+                paddingRight={14}
+                paddingVertical={8}
+              >
+                <DocumentIdentityIcon
+                  nationalityCode={selectedDocumentNationalityCode}
+                  isMock={selectedDocumentIsMock}
+                  size={ICON_SIZE}
+                />
 
-              {/* Name + HI-SECURITY label */}
-              <YStack flex={1}>
-                <Text
-                  fontFamily={dinot}
-                  fontSize={14}
-                  fontWeight="500"
-                  color={proofRequestColors.slate900}
-                  numberOfLines={1}
-                  allowFontScaling={false}
-                  testID={`${testID}-document-selector-name`}
-                >
-                  {selectedDocumentName}
-                </Text>
-                {selectedDocumentSecurityLabel ? (
+                {/* Name + HI-SECURITY label */}
+                <YStack flex={1}>
                   <Text
                     fontFamily={dinot}
-                    fontSize={10}
+                    fontSize={14}
                     fontWeight="500"
-                    color={trueSlate500}
-                    letterSpacing={0.6}
-                    textTransform="uppercase"
+                    color={proofRequestColors.slate900}
+                    numberOfLines={1}
                     allowFontScaling={false}
-                    testID={`${testID}-document-selector-security`}
+                    testID={`${testID}-document-selector-name`}
                   >
-                    {selectedDocumentSecurityLabel}
+                    {selectedDocumentName}
                   </Text>
-                ) : null}
-              </YStack>
+                  {ineligible ? (
+                    <View
+                      alignSelf="flex-start"
+                      backgroundColor={INELIGIBLE_BG}
+                      borderColor={INELIGIBLE_BORDER}
+                      borderWidth={1}
+                      borderRadius={4}
+                      paddingHorizontal={6}
+                      paddingVertical={1}
+                      marginTop={2}
+                      testID={`${testID}-document-selector-ineligible`}
+                    >
+                      <Text
+                        fontFamily={dinot}
+                        fontSize={10}
+                        fontWeight="500"
+                        color={INELIGIBLE_FG}
+                        letterSpacing={0.6}
+                        textTransform="uppercase"
+                        allowFontScaling={false}
+                      >
+                        Ineligible
+                      </Text>
+                    </View>
+                  ) : selectedDocumentSecurityLabel ? (
+                    <Text
+                      fontFamily={dinot}
+                      fontSize={10}
+                      fontWeight="500"
+                      color={trueSlate500}
+                      letterSpacing={0.6}
+                      textTransform="uppercase"
+                      allowFontScaling={false}
+                      testID={`${testID}-document-selector-security`}
+                    >
+                      {selectedDocumentSecurityLabel}
+                    </Text>
+                  ) : null}
+                </YStack>
 
-              {/* Chevron */}
-              <View
-                width={29}
-                height={29}
-                alignItems="center"
-                justifyContent="center"
-              >
-                <ChevronUpDownIcon
-                  size={20}
-                  color={proofRequestColors.slate900}
-                />
-              </View>
-            </XStack>
-          </Pressable>
+                {/* Chevron */}
+                <View
+                  width={29}
+                  height={29}
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  <ChevronUpDownIcon
+                    size={20}
+                    color={proofRequestColors.slate900}
+                  />
+                </View>
+              </XStack>
+            </Pressable>
+          </View>
           {hasPerks ? (
-            <PerkEligibilityRow
-              perks={perks ?? []}
-              variant="attached"
-              testID={`${testID}-perks`}
-            />
+            <View
+              marginTop={-12}
+              paddingTop={8}
+              borderLeftWidth={1}
+              borderRightWidth={1}
+              borderBottomWidth={1}
+              borderTopWidth={0}
+              borderColor={proofRequestColors.slate200}
+              borderTopLeftRadius={0}
+              borderTopRightRadius={0}
+              borderBottomLeftRadius={16}
+              borderBottomRightRadius={16}
+              overflow="hidden"
+              backgroundColor={proofRequestColors.white}
+            >
+              <PerkEligibilityRow
+                perks={perks ?? []}
+                variant="attached"
+                testID={`${testID}-perks`}
+              />
+            </View>
           ) : null}
-        </View>
+        </YStack>
 
         {/* Approve button (full-width pill) */}
         <Pressable
@@ -189,6 +229,38 @@ export const BottomActionBar: React.FC<BottomActionBarProps> = ({
             </Text>
           )}
         </Pressable>
+
+        {ineligible && !approving ? (
+          <Pressable
+            onPress={onDocumentSelectorPress}
+            style={({ pressed }) => [
+              styles.ineligibleHelper,
+              pressed && styles.ineligibleHelperPressed,
+            ]}
+            testID={`${testID}-ineligible-helper`}
+          >
+            <Text
+              fontFamily={dinot}
+              fontSize={13}
+              color={proofRequestColors.slate700}
+              textAlign="center"
+              allowFontScaling={false}
+            >
+              {ineligibleReasonLabel ?? "This ID isn't eligible for this perk."}{' '}
+              <Text
+                fontFamily={dinot}
+                fontSize={13}
+                fontWeight="600"
+                color={proofRequestColors.slate900}
+                textDecorationLine="underline"
+                allowFontScaling={false}
+                testID={`${testID}-ineligible-change-id`}
+              >
+                Change ID
+              </Text>
+            </Text>
+          </Pressable>
+        ) : null}
       </YStack>
     </View>
   );
@@ -223,5 +295,14 @@ const styles = StyleSheet.create({
   },
   approveButtonPressed: {
     opacity: 0.85,
+  },
+  ineligibleHelper: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ineligibleHelperPressed: {
+    opacity: 0.6,
   },
 });

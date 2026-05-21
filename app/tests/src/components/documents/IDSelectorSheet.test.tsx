@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import React from 'react';
 import { Text } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 
@@ -19,6 +20,28 @@ jest.mock('@selfxyz/mobile-sdk-alpha/components', () => ({
   RoundFlag: ({ countryCode }: { countryCode: string }) => (
     <mock-round-flag data-country-code={countryCode || 'none'} />
   ),
+  PerkRail: ({
+    logos = [],
+    label,
+    variant,
+    testID,
+  }: {
+    logos?: React.ReactNode[];
+    label?: string;
+    variant?: string;
+    testID?: string;
+  }) => {
+    const visible =
+      variant === 'minimal' ? logos.slice(0, 1) : logos.slice(0, 3);
+    return (
+      <mock-perk-rail testID={testID} variant={variant}>
+        {visible.map((logo, i) => (
+          <mock-perk-rail-logo key={i}>{logo}</mock-perk-rail-logo>
+        ))}
+        <mock-perk-rail-label>{label}</mock-perk-rail-label>
+      </mock-perk-rail>
+    );
+  },
 }));
 
 jest.mock('@/assets/images/dev_card_logo.svg', () => 'DevLogo');
@@ -493,6 +516,69 @@ describe('IDSelectorSheet — perk eligibility', () => {
       />,
     );
     expect(JSON.stringify(tree.toJSON())).toContain('Eligible for 1 perk');
+  });
+
+  it('renders the perk row on an eligible doc even when it is not the active selection', () => {
+    const tree = render(
+      <IDSelectorSheet
+        open={true}
+        onOpenChange={mockOnOpenChange}
+        documents={documents}
+        selectedId="doc2"
+        onSelect={mockOnSelect}
+        onDismiss={mockOnDismiss}
+        onApprove={mockOnApprove}
+        activePerkId="google_cloud_faucet"
+        perksByDocumentId={{ doc1: [makeGooglePerk()] }}
+        ineligibleReasonByDocumentId={{ doc2: 'needs_nfc' }}
+        testID="sheet"
+      />,
+    );
+    expect(tree.getByTestId('sheet-item-doc1-perks')).toBeTruthy();
+  });
+
+  it('treats the perk row as part of the selectable tap target', () => {
+    const { getByTestId } = render(
+      <IDSelectorSheet
+        open={true}
+        onOpenChange={mockOnOpenChange}
+        documents={documents}
+        selectedId="doc2"
+        onSelect={mockOnSelect}
+        onDismiss={mockOnDismiss}
+        onApprove={mockOnApprove}
+        activePerkId="google_cloud_faucet"
+        perksByDocumentId={{ doc1: [makeGooglePerk()] }}
+        ineligibleReasonByDocumentId={{ doc2: 'needs_nfc' }}
+        testID="sheet"
+      />,
+    );
+
+    fireEvent.press(getByTestId('sheet-item-doc1-perks'));
+    expect(mockOnSelect).toHaveBeenCalledWith('doc1');
+  });
+
+  it('does not render the perk row on an ineligible doc even with perks defined', () => {
+    const tree = render(
+      <IDSelectorSheet
+        open={true}
+        onOpenChange={mockOnOpenChange}
+        documents={documents}
+        selectedId="doc1"
+        onSelect={mockOnSelect}
+        onDismiss={mockOnDismiss}
+        onApprove={mockOnApprove}
+        activePerkId="google_cloud_faucet"
+        perksByDocumentId={{
+          doc1: [makeGooglePerk()],
+          doc2: [makeGooglePerk()],
+        }}
+        ineligibleReasonByDocumentId={{ doc2: 'needs_nfc' }}
+        testID="sheet"
+      />,
+    );
+    expect(tree.queryByTestId('sheet-item-doc2-perks')).toBeNull();
+    expect(tree.getByTestId('sheet-item-doc1-perks')).toBeTruthy();
   });
 
   it('does not render the perk row when ineligible-doc is the active selection', () => {

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import React from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
@@ -24,6 +25,8 @@ import {
   evaluateGoogleUsatEligibilityForDocument,
   evaluateGoogleUsatGateForDocument,
 } from '@/utils/googleUsatGate';
+
+const MockReact = React;
 
 // Mock useFocusEffect to behave like useEffect in tests
 // Note: We use a closure-based approach to avoid requiring React (prevents OOM per test-memory-optimization rules)
@@ -90,6 +93,28 @@ jest.mock('@selfxyz/common/utils/types', () => ({
 jest.mock('@selfxyz/mobile-sdk-alpha/components', () => ({
   __esModule: true,
   RoundFlag: () => null,
+  PerkRail: ({
+    logos = [],
+    label,
+    variant,
+    testID,
+  }: {
+    logos?: React.ReactNode[];
+    label?: string;
+    variant?: string;
+    testID?: string;
+  }) => {
+    const visible =
+      variant === 'minimal' ? logos.slice(0, 1) : logos.slice(0, 3);
+    return MockReact.createElement(
+      'mock-perk-rail',
+      { testID, variant },
+      ...visible.map((logo: React.ReactNode, i: number) =>
+        MockReact.createElement('mock-perk-rail-logo', { key: i }, logo),
+      ),
+      MockReact.createElement('mock-perk-rail-label', null, label),
+    );
+  },
 }));
 
 jest.mock('@/components/homescreen/cardSecurityBadge', () => ({
@@ -831,6 +856,74 @@ describe('DocumentSelectorForProvingScreen', () => {
           getByTestId('document-selector-action-bar-approve').props.disabled,
         ).toBe(false);
       });
+    });
+
+    it('surfaces the needs_nfc helper copy on the action bar when the active doc is ineligible', async () => {
+      const aadhaar = createMetadata({
+        id: 'doc-1',
+        documentType: 'aadhaar',
+        documentCategory: 'aadhaar',
+        isRegistered: true,
+      });
+      const catalog: DocumentCatalog = {
+        documents: [aadhaar],
+        selectedDocumentId: 'doc-1',
+      };
+
+      mockLoadDocumentCatalog.mockResolvedValue(catalog);
+      mockGetAllDocuments.mockResolvedValue(
+        createAllDocuments([createDocumentEntry(aadhaar)]),
+      );
+      mockIsGoogleUsatProofRequest.mockReturnValue(true);
+      mockEvaluateGoogleUsatEligibilityForDocument.mockReturnValue({
+        eligible: false,
+        reason: 'needs_nfc',
+      });
+
+      const tree = render(<DocumentSelectorForProvingScreen />);
+
+      await waitFor(() => {
+        expect(
+          tree.getByTestId('document-selector-action-bar-ineligible-helper'),
+        ).toBeTruthy();
+      });
+      expect(JSON.stringify(tree.toJSON())).toContain(
+        'Needs an NFC-enabled passport.',
+      );
+    });
+
+    it('uses the unsupported_id_type helper copy for that reason', async () => {
+      const aadhaar = createMetadata({
+        id: 'doc-1',
+        documentType: 'aadhaar',
+        documentCategory: 'aadhaar',
+        isRegistered: true,
+      });
+      const catalog: DocumentCatalog = {
+        documents: [aadhaar],
+        selectedDocumentId: 'doc-1',
+      };
+
+      mockLoadDocumentCatalog.mockResolvedValue(catalog);
+      mockGetAllDocuments.mockResolvedValue(
+        createAllDocuments([createDocumentEntry(aadhaar)]),
+      );
+      mockIsGoogleUsatProofRequest.mockReturnValue(true);
+      mockEvaluateGoogleUsatEligibilityForDocument.mockReturnValue({
+        eligible: false,
+        reason: 'unsupported_id_type',
+      });
+
+      const tree = render(<DocumentSelectorForProvingScreen />);
+
+      await waitFor(() => {
+        expect(
+          tree.getByTestId('document-selector-action-bar-ineligible-helper'),
+        ).toBeTruthy();
+      });
+      expect(JSON.stringify(tree.toJSON())).toContain(
+        "This ID type isn't supported for this perk.",
+      );
     });
   });
 });
