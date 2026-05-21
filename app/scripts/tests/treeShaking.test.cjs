@@ -30,7 +30,6 @@ describe('Tree Shaking Infrastructure Tests', () => {
       assert(isExecutable, `${script} should be executable`);
     });
   });
-
 });
 
 describe('Package Configuration Validation', () => {

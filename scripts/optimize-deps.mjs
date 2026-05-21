@@ -14,7 +14,9 @@ async function main() {
   if (nodeModulesDirs.length === 0) {
     console.log('No node_modules directories found to remove.');
   } else {
-    console.log(`Removing ${nodeModulesDirs.length} node_modules directories...`);
+    console.log(
+      `Removing ${nodeModulesDirs.length} node_modules directories...`,
+    );
     for (const dir of nodeModulesDirs) {
       console.log(`- ${path.relative(repoRoot, dir) || '.'}`);
       await rm(dir, { recursive: true, force: true });
@@ -70,7 +72,9 @@ function run(command, args) {
         return;
       }
 
-      reject(new Error(`${command} ${args.join(' ')} exited with code ${code}`));
+      reject(
+        new Error(`${command} ${args.join(' ')} exited with code ${code}`),
+      );
     });
   });
 }

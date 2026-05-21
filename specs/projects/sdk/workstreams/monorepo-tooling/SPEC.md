@@ -127,20 +127,20 @@ The temporary fork pin is allowed only until the upstream API migration lands.
 
 ## Backlog Tracks
 
-| Track                       | IDs                             | Status | Plan                                                                      | Notes                                                                                                |
-| --------------------------- | ------------------------------- | ------ | ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| Blur swap                   | MT-1, MT-2                      | Open   | [MT-1 Blur Swap](./plans/MT-1-blur-swap.md)                               | MT-1 is upstream Euclid work; MT-2 is local mock cleanup after the consumer bump.                    |
-| Turbo foundation            | MT-3                            | Open   | [MT-3 Turbo Foundation](./plans/MT-3-turbo-foundation.md)                 | Add `turbo` and `turbo.json`; no root script or CI rewiring yet.                                     |
-| Root script migration       | MT-4                            | Open   | [MT-4 Root Script Migration](./plans/MT-4-root-script-migration.md)       | Depends on MT-3.                                                                                     |
-| CI Turbo migration          | MT-5                            | Open   | [MT-5 CI Turbo Migration](./plans/MT-5-ci-turbo-migration.md)             | Depends on MT-3 and MT-4.                                                                            |
+| Track                       | IDs                             | Status  | Plan                                                                      | Notes                                                                                                                              |
+| --------------------------- | ------------------------------- | ------- | ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Blur swap                   | MT-1, MT-2                      | Open    | [MT-1 Blur Swap](./plans/MT-1-blur-swap.md)                               | MT-1 is upstream Euclid work; MT-2 is local mock cleanup after the consumer bump.                                                  |
+| Turbo foundation            | MT-3                            | Open    | [MT-3 Turbo Foundation](./plans/MT-3-turbo-foundation.md)                 | Add `turbo` and `turbo.json`; no root script or CI rewiring yet.                                                                   |
+| Root script migration       | MT-4                            | Open    | [MT-4 Root Script Migration](./plans/MT-4-root-script-migration.md)       | Depends on MT-3.                                                                                                                   |
+| CI Turbo migration          | MT-5                            | Open    | [MT-5 CI Turbo Migration](./plans/MT-5-ci-turbo-migration.md)             | Depends on MT-3 and MT-4.                                                                                                          |
 | pnpm native config          | MT-6, MT-7, MT-10, MT-16, MT-17 | Partial | [MT-6 pnpm Config Hardening](./plans/MT-6-pnpm-config-hardening.md)       | Foundations landed in #2069 (see "Completed in PR #2069"). Remaining: consolidate `patchedDependencies`, install-script audit doc. |
-| Peer strictness             | MT-9, MT-11                     | Open   | [MT-9 Peer Strictness](./plans/MT-9-peer-strictness.md)                   | Re-enable `blockExoticSubdeps` and `strictPeerDependencies` together.                                |
-| Yarn residue/docs           | MT-8, MT-15                     | Partial | [MT-8 Yarn Residue Guardrail](./plans/MT-8-yarn-residue-guardrail.md)     | Artifacts and docs removed in #2069 (see below). Remaining: CI/lefthook guardrail against reintroducing yarn files. |
-| Dedupe audit                | MT-14, MT-18                    | Open   | [MT-14 Dedupe Audit](./plans/MT-14-dedupe-audit.md)                       | Inventory nested duplicates, run dedupe, and keep only intentional pins.                             |
-| pnpm cache audit            | MT-13                           | Partial | [MT-13 pnpm Cache Audit](./plans/MT-13-pnpm-cache-audit.md)               | `cache-pnpm` action and the `node_modules`-excluding build caches landed in #2069. Remaining: store-cache hit-rate tuning. |
-| Circuits fork pin           | MT-21                           | Open   | [MT-21 Circom Tester Pin](./plans/MT-21-circom-tester-pin.md)             | Temporary stabilization under pnpm hoisting.                                                         |
-| Circuits upstream migration | MT-22                           | Open   | [MT-22 Circom Tester Migration](./plans/MT-22-circom-tester-migration.md) | Removes the MT-21 pin by moving to upstream `0.0.24`.                                                |
-| Isolated linker             | MT-12                           | Open   | [MT-12 Isolated Linker](./plans/MT-12-isolated-linker.md)                 | High-risk RN tooling change; depends on patch migration and preferably peer strictness.              |
+| Peer strictness             | MT-9, MT-11                     | Open    | [MT-9 Peer Strictness](./plans/MT-9-peer-strictness.md)                   | Re-enable `blockExoticSubdeps` and `strictPeerDependencies` together.                                                              |
+| Yarn residue/docs           | MT-8, MT-15                     | Partial | [MT-8 Yarn Residue Guardrail](./plans/MT-8-yarn-residue-guardrail.md)     | Artifacts and docs removed in #2069 (see below). Remaining: CI/lefthook guardrail against reintroducing yarn files.                |
+| Dedupe audit                | MT-14, MT-18                    | Open    | [MT-14 Dedupe Audit](./plans/MT-14-dedupe-audit.md)                       | Inventory nested duplicates, run dedupe, and keep only intentional pins.                                                           |
+| pnpm cache audit            | MT-13                           | Partial | [MT-13 pnpm Cache Audit](./plans/MT-13-pnpm-cache-audit.md)               | `cache-pnpm` action and the `node_modules`-excluding build caches landed in #2069. Remaining: store-cache hit-rate tuning.         |
+| Circuits fork pin           | MT-21                           | Open    | [MT-21 Circom Tester Pin](./plans/MT-21-circom-tester-pin.md)             | Temporary stabilization under pnpm hoisting.                                                                                       |
+| Circuits upstream migration | MT-22                           | Open    | [MT-22 Circom Tester Migration](./plans/MT-22-circom-tester-migration.md) | Removes the MT-21 pin by moving to upstream `0.0.24`.                                                                              |
+| Isolated linker             | MT-12                           | Open    | [MT-12 Isolated Linker](./plans/MT-12-isolated-linker.md)                 | High-risk RN tooling change; depends on patch migration and preferably peer strictness.                                            |
 
 - **MT-24:** `.github/CI_FORCE_RUN` sentinel and `scripts/ci/add-force-run-sentinel.py`
   are retained for the duration of the pnpm conversion PR (#2069). Rationale:
@@ -200,7 +200,7 @@ follow-up tracks.
 
 - **MT-28:** `pnpm.overrides` pins `@types/minimatch@5.1.2`. Rationale: v6 is
   a deprecated stub shipping no `.d.ts` files, which causes `TS2688: Cannot
-  find type definition file for 'minimatch'` whenever the `@types` directory
+find type definition file for 'minimatch'` whenever the `@types` directory
   is auto-scanned (e.g. `ng-packagr` in `sdk/qrcode-angular`). Remove when no
   workspace depends on a transitive `@types/minimatch` consumer or when the
   upstream stub is retracted.
