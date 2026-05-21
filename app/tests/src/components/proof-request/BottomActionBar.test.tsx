@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import React from 'react';
 import { Text } from 'react-native';
 import { fireEvent, render } from '@testing-library/react-native';
 
@@ -14,6 +15,27 @@ jest.mock('@selfxyz/mobile-sdk-alpha/components', () => ({
   RoundFlag: ({ countryCode }: { countryCode: string }) => (
     <mock-round-flag data-country-code={countryCode || 'none'} />
   ),
+  PerkRail: ({
+    logos = [],
+    label,
+    variant,
+    testID,
+  }: {
+    logos?: React.ReactNode[];
+    label?: string;
+    variant?: string;
+    testID?: string;
+  }) => {
+    const visible = variant === 'minimal' ? logos.slice(0, 1) : logos.slice(0, 3);
+    return (
+      <mock-perk-rail testID={testID} variant={variant}>
+        {visible.map((logo, i) => (
+          <mock-perk-rail-logo key={i}>{logo}</mock-perk-rail-logo>
+        ))}
+        <mock-perk-rail-label>{label}</mock-perk-rail-label>
+      </mock-perk-rail>
+    );
+  },
 }));
 
 jest.mock('@/assets/images/dev_card_logo.svg', () => 'DevLogo');

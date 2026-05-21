@@ -17,6 +17,7 @@ export interface PerkRailProps {
   label?: string;
   onPress?: () => void;
   style?: ViewStyle;
+  testID?: string;
 }
 
 export type PerkRailVariant = 'dense' | 'minimal';
@@ -29,7 +30,7 @@ function defaultLabel(count: number): string {
   return count === 1 ? 'ELIGIBLE FOR 1 PERK' : `ELIGIBLE FOR ${count} PERKS`;
 }
 
-export const PerkRail: React.FC<PerkRailProps> = ({ variant = 'dense', logos, label, onPress, style }) => {
+export const PerkRail: React.FC<PerkRailProps> = ({ variant = 'dense', logos, label, onPress, style, testID }) => {
   const max = variant === 'dense' ? DENSE_MAX_LOGOS : MINIMAL_MAX_LOGOS;
   const visibleLogos = logos.slice(0, max);
   const labelText = label ?? defaultLabel(logos.length);
@@ -73,12 +74,12 @@ export const PerkRail: React.FC<PerkRailProps> = ({ variant = 'dense', logos, la
 
   if (onPress) {
     return (
-      <Pressable onPress={onPress} style={containerStyle}>
+      <Pressable onPress={onPress} style={containerStyle} testID={testID}>
         {content}
       </Pressable>
     );
   }
-  return <View style={containerStyle}>{content}</View>;
+  return <View style={containerStyle} testID={testID}>{content}</View>;
 };
 
 const styles = StyleSheet.create({

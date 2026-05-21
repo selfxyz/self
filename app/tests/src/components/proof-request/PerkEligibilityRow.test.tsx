@@ -51,4 +51,18 @@ describe('PerkEligibilityRow', () => {
     expect(tree.getByTestId('logo-a')).toBeTruthy();
     expect(tree.getByTestId('logo-b')).toBeTruthy();
   });
+
+  it('fans logos out side-by-side instead of stacking them in a single circle', () => {
+    // Regression: the old implementation rendered every logo inside one 32x32
+    // wrapper, so two perks visually overlapped. Each logo must own its
+    // parent wrapper so the dense rail can place them side-by-side.
+    const perks = [
+      makePerk('google_cloud_faucet', 'A', 'a'),
+      makePerk('google_cloud_faucet', 'B', 'b'),
+    ];
+    const tree = render(<PerkEligibilityRow perks={perks} />);
+    const a = tree.getByTestId('logo-a');
+    const b = tree.getByTestId('logo-b');
+    expect(a.parent).not.toBe(b.parent);
+  });
 });

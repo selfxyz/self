@@ -3,14 +3,8 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
-import { Text, View, XStack } from 'tamagui';
 
-import {
-  slate200,
-  slate800,
-  white,
-} from '@selfxyz/mobile-sdk-alpha/constants/colors';
-import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
+import { PerkRail } from '@selfxyz/mobile-sdk-alpha/components';
 import {
   getPerkRailLabel,
   type Perk,
@@ -26,7 +20,6 @@ export interface PerkEligibilityRowProps {
 
 export const PerkEligibilityRow: React.FC<PerkEligibilityRowProps> = ({
   perks,
-  variant = 'inline',
   testID = 'perk-eligibility-row',
 }) => {
   if (perks.length === 0) {
@@ -38,52 +31,12 @@ export const PerkEligibilityRow: React.FC<PerkEligibilityRowProps> = ({
     return null;
   }
 
-  const attached = variant === 'attached';
-
   return (
-    <XStack
-      paddingHorizontal={10}
-      paddingVertical={8}
-      alignItems="center"
-      justifyContent="space-between"
-      backgroundColor="transparent"
-      borderBottomLeftRadius={attached ? 16 : 0}
-      borderBottomRightRadius={attached ? 16 : 0}
+    <PerkRail
+      variant={logos.length > 1 ? 'dense' : 'minimal'}
+      logos={logos}
+      label={getPerkRailLabel(perks)}
       testID={testID}
-    >
-      <View
-        width={32}
-        height={32}
-        borderRadius={50}
-        borderWidth={1}
-        borderColor={slate200}
-        backgroundColor={white}
-        overflow="hidden"
-        alignItems="center"
-        justifyContent="center"
-      >
-        {logos}
-      </View>
-      <XStack
-        backgroundColor={slate200}
-        borderRadius={30}
-        paddingHorizontal={8}
-        paddingVertical={4}
-        alignItems="center"
-      >
-        <Text
-          fontFamily={dinot}
-          fontSize={10}
-          fontWeight="500"
-          color={slate800}
-          letterSpacing={0.6}
-          textTransform="uppercase"
-          allowFontScaling={false}
-          testID={`${testID}-label`}
-        >
-          {getPerkRailLabel(perks)}
-        </Text>
-      </XStack>
-    </XStack>
+    />
   );
 };
