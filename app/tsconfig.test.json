@@ -42,8 +42,6 @@
     "metro.config.cjs",
     "node_modules",
     "scripts/**/*",
-    "vendor/**/*",
-    "vite.config.ts",
-    "web/**/*"
+    "vendor/**/*"
   ]
 }

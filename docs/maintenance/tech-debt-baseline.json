@@ -241,12 +241,8 @@
         "test:e2e:ios",
         "test:fastlane",
         "test:tree-shaking",
-        "test:web-build",
         "types",
-        "watch:sdk",
-        "web",
-        "web:build",
-        "web:preview"
+        "watch:sdk"
       ],
       "sourceFiles": {
         "byExtension": {

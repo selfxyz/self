@@ -35,7 +35,6 @@ Use this file as the working state tracker for the React Native upgrade. The nar
 - [ ] Baseline `yarn workspace @selfxyz/mobile-app test` passes
 - [ ] Baseline `yarn workspace @selfxyz/mobile-app types` passes
 - [ ] Baseline `yarn workspace @selfxyz/mobile-app lint` passes
-- [ ] Baseline `yarn workspace @selfxyz/mobile-app web:build` passes
 - [ ] Rollback tag/commit recorded before `0.84.x` work starts
 - [ ] Rollback tag/commit recorded before `0.85.x` work starts
 

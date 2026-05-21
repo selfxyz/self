@@ -31,24 +31,6 @@ describe('Tree Shaking Infrastructure Tests', () => {
     });
   });
 
-  it('should have Vite config with bundle analyzer', () => {
-    const viteConfigPath = join(__dirname, '..', '..', 'vite.config.ts');
-    assert(existsSync(viteConfigPath), 'vite.config.ts should exist');
-
-    const viteConfig = readFileSync(viteConfigPath, 'utf8');
-    assert(
-      viteConfig.includes('rollup-plugin-visualizer'),
-      'Vite config should import visualizer',
-    );
-    assert(
-      viteConfig.includes('visualizer('),
-      'Vite config should use visualizer plugin',
-    );
-    assert(
-      viteConfig.includes('bundle-analysis.html'),
-      'Vite config should generate analysis HTML',
-    );
-  });
 });
 
 describe('Package Configuration Validation', () => {

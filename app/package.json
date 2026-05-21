@@ -7,7 +7,6 @@
     "analyze:bundle:android": "pnpm build:deps && node ./scripts/bundle-analyze-ci.cjs android",
     "analyze:bundle:ios": "pnpm build:deps && node ./scripts/bundle-analyze-ci.cjs ios",
     "analyze:tree-shaking": "node ./scripts/analyze-tree-shaking.cjs imports",
-    "analyze:tree-shaking:web": "pnpm web:build && node ./scripts/analyze-tree-shaking.cjs web",
     "android": "pnpm build:deps && pnpm setup:android-deps && react-native run-android",
     "android:ci": "./scripts/mobile-ci-build-android.sh",
     "build:deps": "pnpm -r --filter @selfxyz/mobile-app... run build",
@@ -67,12 +66,8 @@
     "test:e2e:ios": "./scripts/test-e2e-local.sh ios --ci-match",
     "test:fastlane": "bundle exec ruby -Itest fastlane/test/helpers_test.rb",
     "test:tree-shaking": "node ./scripts/test-tree-shaking.cjs",
-    "test:web-build": "pnpm jest:run tests/web-build-render.test.ts --testTimeout=180000",
     "types": "tsc --noEmit",
-    "watch:sdk": "pnpm --filter @selfxyz/mobile-sdk-alpha watch",
-    "web": "vite",
-    "web:build": "pnpm build:deps && vite build",
-    "web:preview": "vite preview"
+    "watch:sdk": "pnpm --filter @selfxyz/mobile-sdk-alpha watch"
   },
   "overrides": {
     "punycode": "npm:punycode.js@2.3.1",
@@ -164,11 +159,8 @@
     "react-native-screens": "4.15.3",
     "react-native-sqlite-storage": "^6.0.1",
     "react-native-svg": "15.14.0",
-    "react-native-svg-web": "1.0.9",
     "react-native-url-polyfill": "^3.0.0",
-    "react-native-web": "^0.21.2",
     "react-native-webview": "13.16.1",
-    "react-qr-barcode-scanner": "^2.1.25",
     "socket.io-client": "^4.8.3",
     "tamagui": "1.144.4",
     "uuid": "^11.1.0",
@@ -191,7 +183,6 @@
     "@react-native/metro-config": "0.76.9",
     "@react-native/typescript-config": "0.76.9",
     "@tamagui/types": "1.144.4",
-    "@tamagui/vite-plugin": "1.144.4",
     "@testing-library/react-native": "^13.3.3",
     "@tsconfig/react-native": "^3.0.9",
     "@types/dompurify": "^3.2.0",
@@ -203,10 +194,8 @@
     "@types/react-dom": "^18.3.0",
     "@types/react-native-dotenv": "^0.2.2",
     "@types/react-native-sqlite-storage": "^6.0.5",
-    "@types/react-native-web": "^0",
     "@typescript-eslint/eslint-plugin": "^8.58.1",
     "@typescript-eslint/parser": "^8.58.1",
-    "@vitejs/plugin-react-swc": "^4.3.0",
     "babel-plugin-module-resolver": "^5.0.3",
     "babel-plugin-transform-remove-console": "^6.9.4",
     "constants-browserify": "^1.0.0",
@@ -227,12 +216,9 @@
     "prop-types": "^15.8.1",
     "react-native-svg-transformer": "^1.5.3",
     "react-test-renderer": "^18.3.1",
-    "rollup-plugin-visualizer": "^6.0.5",
     "stream-browserify": "^3.0.0",
     "ts-morph": "^22.0.0",
-    "typescript": "^5.9.3",
-    "vite": "^7.3.1",
-    "vite-plugin-svgr": "^4.5.0"
+    "typescript": "^5.9.3"
   },
   "engines": {
     "node": ">=22 <23"

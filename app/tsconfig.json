@@ -57,8 +57,6 @@
     "node_modules",
     "scripts/**/*",
     "tests/**/*",
-    "vendor/**/*",
-    "vite.config.ts",
-    "web/**/*"
+    "vendor/**/*"
   ]
 }

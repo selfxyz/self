@@ -166,6 +166,20 @@ The temporary fork pin is allowed only until the upstream API migration lands.
   `this._moduleMocker.clearMocksOnScope is not a function` at test boot. Revisit
   when the RN upgrade lands (tracked in the separate RN upgrade branch); at that
   point realign to jest@30 across `app/` and `rn-sdk-test-app/`.
+- **MT-26:** Removed the `app/web` react-native-web devtools preview
+  (`.github/workflows/web.yml`, `app/web/`, `app/vite.config.ts`, all
+  `app/src/**/*.web.*` companions, and the `vite` / `@vitejs/plugin-react-swc` /
+  `@tamagui/vite-plugin` / `vite-plugin-svgr` / `rollup-plugin-visualizer` /
+  `react-native-web` / `react-native-svg-web` / `react-qr-barcode-scanner` /
+  `@types/react-native-web` deps plus the `web`, `web:build`, `web:preview`,
+  `analyze:tree-shaking:web`, and `test:web-build` scripts). The preview had
+  not actually run in CI for months — `Web CI` was path-gated and every recent
+  PR run was `skipped` — and exposed multiple layers of pre-existing parse
+  failures only because PR #2069's `CI_FORCE_RUN` sentinel forced it to
+  execute. The upcoming "wrap webview-app inside the RN app" work uses
+  `react-native-webview` to load `packages/webview-app`, so none of this
+  machinery is needed for that path.
+
 - **MT-23:** Closed without a backlog row. The original concern (root +
   `new-common/` `.prettierrc` forced `parser: "typescript"` globally, breaking
   non-TS file formatting) was fixed directly: parser line removed in both

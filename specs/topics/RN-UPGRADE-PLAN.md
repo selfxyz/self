@@ -19,7 +19,6 @@ Define a low-risk, staged upgrade path for `app/` from React Native `0.77.0` to 
   - `yarn workspace @selfxyz/mobile-app test`
   - `yarn workspace @selfxyz/mobile-app ios`
   - `yarn workspace @selfxyz/mobile-app android`
-  - `yarn workspace @selfxyz/mobile-app web:build`
 
 ## External Version Findings (as of April 28, 2026)
 
@@ -149,7 +148,6 @@ If a developer ends their day with a track in progress, they should leave the ch
 - `yarn workspace @selfxyz/mobile-app lint`
 - `yarn workspace @selfxyz/mobile-app types`
 - `yarn workspace @selfxyz/mobile-app test`
-- `yarn workspace @selfxyz/mobile-app web:build`
 - `yarn workspace @selfxyz/mobile-app ios`
 - `yarn workspace @selfxyz/mobile-app android`
 

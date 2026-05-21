@@ -23,9 +23,6 @@ const config: KnipConfig = {
     'app/android/**',
     'app/ios/**',
 
-    // Web build artifacts
-    'app/web/**',
-
     // Test setup files
     '**/__setup__/**',
     '**/__mocks__/**',
