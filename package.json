@@ -44,6 +44,7 @@
     "lint:headers": "node scripts/check-duplicate-headers.cjs . && node scripts/check-license-headers.mjs . --check",
     "lint:headers:fix": "node scripts/check-duplicate-headers.cjs . && node scripts/check-license-headers.mjs . --fix",
     "lint:pnpm-version": "node scripts/check-pnpm-version.mjs",
+    "optimize": "node scripts/optimize-deps.mjs",
     "native-shell:format": "cd packages/native-shell-android && ./gradlew ktlintFormat && cd ../../packages/native-shell-ios && swiftlint --fix",
     "native-shell:lint": "cd packages/native-shell-android && ./gradlew ktlintCheck && cd ../../packages/native-shell-ios && swiftlint lint --strict",
     "native-shell:test": "cd packages/native-shell-android && ./gradlew testDebugUnitTest",
