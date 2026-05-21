@@ -1,6 +1,6 @@
 # Monorepo Tooling - Workstream Spec
 
-> Last updated: 2026-05-20
+> Last updated: 2026-05-21
 > Owner: Platform
 > Parent: `../../OVERVIEW.md`
 > Status: Draft - follow-up to pnpm conversion (PR #2069)
@@ -133,11 +133,11 @@ The temporary fork pin is allowed only until the upstream API migration lands.
 | Turbo foundation            | MT-3                            | Open   | [MT-3 Turbo Foundation](./plans/MT-3-turbo-foundation.md)                 | Add `turbo` and `turbo.json`; no root script or CI rewiring yet.                                     |
 | Root script migration       | MT-4                            | Open   | [MT-4 Root Script Migration](./plans/MT-4-root-script-migration.md)       | Depends on MT-3.                                                                                     |
 | CI Turbo migration          | MT-5                            | Open   | [MT-5 CI Turbo Migration](./plans/MT-5-ci-turbo-migration.md)             | Depends on MT-3 and MT-4.                                                                            |
-| pnpm native config          | MT-6, MT-7, MT-10, MT-16, MT-17 | Open   | [MT-6 pnpm Config Hardening](./plans/MT-6-pnpm-config-hardening.md)       | One PR because overrides, patches, pnpm pin, and install-script allowlists share install validation. |
+| pnpm native config          | MT-6, MT-7, MT-10, MT-16, MT-17 | Partial | [MT-6 pnpm Config Hardening](./plans/MT-6-pnpm-config-hardening.md)       | Foundations landed in #2069 (see "Completed in PR #2069"). Remaining: consolidate `patchedDependencies`, install-script audit doc. |
 | Peer strictness             | MT-9, MT-11                     | Open   | [MT-9 Peer Strictness](./plans/MT-9-peer-strictness.md)                   | Re-enable `blockExoticSubdeps` and `strictPeerDependencies` together.                                |
-| Yarn residue/docs           | MT-8, MT-15                     | Open   | [MT-8 Yarn Residue Guardrail](./plans/MT-8-yarn-residue-guardrail.md)     | Docs sweep plus guardrail against reintroducing Yarn artifacts.                                      |
+| Yarn residue/docs           | MT-8, MT-15                     | Partial | [MT-8 Yarn Residue Guardrail](./plans/MT-8-yarn-residue-guardrail.md)     | Artifacts and docs removed in #2069 (see below). Remaining: CI/lefthook guardrail against reintroducing yarn files. |
 | Dedupe audit                | MT-14, MT-18                    | Open   | [MT-14 Dedupe Audit](./plans/MT-14-dedupe-audit.md)                       | Inventory nested duplicates, run dedupe, and keep only intentional pins.                             |
-| pnpm cache audit            | MT-13                           | Open   | [MT-13 pnpm Cache Audit](./plans/MT-13-pnpm-cache-audit.md)               | Tune `.github/actions/cache-pnpm`; do not cache `node_modules`.                                      |
+| pnpm cache audit            | MT-13                           | Partial | [MT-13 pnpm Cache Audit](./plans/MT-13-pnpm-cache-audit.md)               | `cache-pnpm` action and the `node_modules`-excluding build caches landed in #2069. Remaining: store-cache hit-rate tuning. |
 | Circuits fork pin           | MT-21                           | Open   | [MT-21 Circom Tester Pin](./plans/MT-21-circom-tester-pin.md)             | Temporary stabilization under pnpm hoisting.                                                         |
 | Circuits upstream migration | MT-22                           | Open   | [MT-22 Circom Tester Migration](./plans/MT-22-circom-tester-migration.md) | Removes the MT-21 pin by moving to upstream `0.0.24`.                                                |
 | Isolated linker             | MT-12                           | Open   | [MT-12 Isolated Linker](./plans/MT-12-isolated-linker.md)                 | High-risk RN tooling change; depends on patch migration and preferably peer strictness.              |
@@ -151,6 +151,29 @@ The temporary fork pin is allowed only until the upstream API migration lands.
   sentinel forces every gated workflow to run. After #2069 merges, evaluate
   whether to keep the sentinel as general infra or remove it; no other current
   scenario requires it.
+
+## Completed in PR #2069
+
+The pnpm conversion PR landed more than the lockfile swap. Treat these as
+done; the items below should not be re-implemented as part of the listed
+follow-up tracks.
+
+- **MT-6 foundations:** `packageManager: pnpm@11.2.2` pinned; pnpm-native
+  `allowBuilds` install-script allowlist in `pnpm-workspace.yaml`;
+  `scripts/check-pnpm-version.mjs` enforces the pin locally and in CI;
+  `pnpm.overrides` block established (`jsdom@^25.0.1`, `@types/minimatch@5.1.2`,
+  `circom_tester` fork pin). Remaining MT-6 scope is patch consolidation and
+  the install-script audit doc.
+- **MT-8 foundations:** `yarn.lock`, `.yarnrc.yml`, and
+  `.github/actions/yarnrc-hash` deleted; every workspace `package.json`,
+  `CLAUDE.md`, `AGENTS.md`, and root script migrated to pnpm; new
+  `.github/actions/pnpm-install` composite replaces `yarn-install`. Remaining
+  MT-8 scope is the lefthook/CI guardrail that fails if yarn artifacts return.
+- **MT-13 foundations:** `.github/actions/cache-pnpm` (pnpm store cache)
+  created and adopted across workflows; `cache-mobile-sdk-build` and
+  `cache-core-sdk-build` no longer cache `node_modules` (only `dist/`), which
+  resolved the 20-minute `pnpm exec` hang on lint. Remaining MT-13 scope is
+  hit-rate tuning and cache-key audit.
 
 ## Decisions Captured
 
@@ -166,6 +189,22 @@ The temporary fork pin is allowed only until the upstream API migration lands.
   `this._moduleMocker.clearMocksOnScope is not a function` at test boot. Revisit
   when the RN upgrade lands (tracked in the separate RN upgrade branch); at that
   point realign to jest@30 across `app/` and `rn-sdk-test-app/`.
+- **MT-27:** `pnpm.overrides` pins `jsdom@^25.0.1` workspace-wide. Rationale:
+  jsdom v26 swapped `cssstyle` to v5, whose strict `Proxy` rejects react-dom
+  v18's numeric-index style writes with
+  `TypeError: 'set' on proxy: trap returned falsish`. This blocks any test
+  using `@testing-library/react` or React 18 SSR against jsdom v26. The pin
+  must stay until the workspace lands on react-dom v19 (or jsdom v26 relaxes
+  the proxy trap). MT-9 (strict peers) should not treat this as a violation;
+  it is an intentional override with an external blocker.
+
+- **MT-28:** `pnpm.overrides` pins `@types/minimatch@5.1.2`. Rationale: v6 is
+  a deprecated stub shipping no `.d.ts` files, which causes `TS2688: Cannot
+  find type definition file for 'minimatch'` whenever the `@types` directory
+  is auto-scanned (e.g. `ng-packagr` in `sdk/qrcode-angular`). Remove when no
+  workspace depends on a transitive `@types/minimatch` consumer or when the
+  upstream stub is retracted.
+
 - **MT-26:** Removed the `app/web` react-native-web devtools preview
   (`.github/workflows/web.yml`, `app/web/`, `app/vite.config.ts`, all
   `app/src/**/*.web.*` companions, and the `vite` / `@vitejs/plugin-react-swc` /
