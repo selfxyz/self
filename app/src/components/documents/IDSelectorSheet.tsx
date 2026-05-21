@@ -194,13 +194,15 @@ export const IDSelectorSheet: React.FC<IDSelectorSheetProps> = ({
                       : doc.state;
 
                   const isActive = itemState === 'active';
-                  const activePerks = isActive
+                  const eligibleForPerks =
+                    !isDisabledState(doc.state) && !ineligible;
+                  const docPerks = eligibleForPerks
                     ? perksByDocumentId?.[doc.id]
                     : undefined;
                   const perkSlot =
-                    activePerks && activePerks.length > 0 ? (
+                    docPerks && docPerks.length > 0 ? (
                       <PerkEligibilityRow
-                        perks={activePerks}
+                        perks={docPerks}
                         variant="inline"
                         testID={`${testID}-item-${doc.id}-perks`}
                       />
@@ -213,6 +215,7 @@ export const IDSelectorSheet: React.FC<IDSelectorSheetProps> = ({
                       ineligible={ineligible}
                       onPress={() => handleSelect(doc.id)}
                       onIneligiblePress={() => handleIneligiblePress(doc.id)}
+                      perkSlot={perkSlot}
                       nationalityCode={doc.nationalityCode}
                       isMock={doc.isMock}
                       securityLabel={doc.securityLabel}
@@ -221,14 +224,15 @@ export const IDSelectorSheet: React.FC<IDSelectorSheetProps> = ({
                     />
                   );
 
-                  const hasPerks = isActive && !!perkSlot;
+                  const hasPerks = !!perkSlot;
+                  const framed = isActive || hasPerks;
                   return (
                     <View
                       key={doc.id}
                       backgroundColor={isActive ? slate100 : 'transparent'}
                       borderRadius={10}
                       borderWidth={1}
-                      borderColor={isActive ? slate200 : 'transparent'}
+                      borderColor={framed ? slate200 : 'transparent'}
                       overflow="hidden"
                       testID={
                         isActive
@@ -242,11 +246,10 @@ export const IDSelectorSheet: React.FC<IDSelectorSheetProps> = ({
                         borderWidth={2}
                         borderColor={isActive ? blue600 : 'transparent'}
                         overflow="hidden"
-                        style={isActive ? styles.activeCardShadow : undefined}
+                        style={framed ? styles.activeCardShadow : undefined}
                       >
                         {item}
                       </View>
-                      {hasPerks ? perkSlot : null}
                     </View>
                   );
                 })}

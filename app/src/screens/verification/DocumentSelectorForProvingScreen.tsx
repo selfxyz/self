@@ -70,6 +70,19 @@ import {
   type IneligibleReason,
 } from '@/utils/googleUsatGate';
 
+function getIneligibleReasonLabel(
+  reason: IneligibleReason | undefined,
+): string | undefined {
+  switch (reason) {
+    case 'needs_nfc':
+      return 'Needs an NFC-enabled passport.';
+    case 'unsupported_id_type':
+      return "This ID type isn't supported for this perk.";
+    default:
+      return undefined;
+  }
+}
+
 function getDocumentDisplayName(
   metadata: DocumentMetadata,
   documentData?: IDDocument,
@@ -365,10 +378,13 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
       : undefined;
 
   const selectedDocument = documents.find(doc => doc.id === selectedDocumentId);
+  const selectedIneligibleReason = selectedDocument
+    ? ineligibleReasonByDocumentId?.[selectedDocument.id]
+    : undefined;
   const canContinue =
     !!selectedDocument &&
     !isDisabledState(selectedDocument.state) &&
-    !ineligibleReasonByDocumentId?.[selectedDocument.id];
+    !selectedIneligibleReason;
 
   // Get document type for the proof request message
   const selectedDocumentType = useMemo(() => {
@@ -615,6 +631,10 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
         approveDisabled={!canContinue}
         approving={submitting}
         perks={activeDocumentPerks}
+        ineligible={!!selectedIneligibleReason}
+        ineligibleReasonLabel={getIneligibleReasonLabel(
+          selectedIneligibleReason,
+        )}
         testID="document-selector-action-bar"
       />
 
