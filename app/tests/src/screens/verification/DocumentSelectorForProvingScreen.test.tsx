@@ -922,7 +922,7 @@ describe('DocumentSelectorForProvingScreen', () => {
         ).toBeTruthy();
       });
       expect(JSON.stringify(tree.toJSON())).toContain(
-        'This ID type isn’t supported for this perk.',
+        "This ID type isn't supported for this perk.",
       );
     });
   });

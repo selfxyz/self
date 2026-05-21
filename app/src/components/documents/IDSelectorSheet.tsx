@@ -215,6 +215,7 @@ export const IDSelectorSheet: React.FC<IDSelectorSheetProps> = ({
                       ineligible={ineligible}
                       onPress={() => handleSelect(doc.id)}
                       onIneligiblePress={() => handleIneligiblePress(doc.id)}
+                      perkSlot={perkSlot}
                       nationalityCode={doc.nationalityCode}
                       isMock={doc.isMock}
                       securityLabel={doc.securityLabel}
@@ -249,7 +250,6 @@ export const IDSelectorSheet: React.FC<IDSelectorSheetProps> = ({
                       >
                         {item}
                       </View>
-                      {hasPerks ? perkSlot : null}
                     </View>
                   );
                 })}

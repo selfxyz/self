@@ -537,6 +537,27 @@ describe('IDSelectorSheet — perk eligibility', () => {
     expect(tree.getByTestId('sheet-item-doc1-perks')).toBeTruthy();
   });
 
+  it('treats the perk row as part of the selectable tap target', () => {
+    const { getByTestId } = render(
+      <IDSelectorSheet
+        open={true}
+        onOpenChange={mockOnOpenChange}
+        documents={documents}
+        selectedId="doc2"
+        onSelect={mockOnSelect}
+        onDismiss={mockOnDismiss}
+        onApprove={mockOnApprove}
+        activePerkId="google_cloud_faucet"
+        perksByDocumentId={{ doc1: [makeGooglePerk()] }}
+        ineligibleReasonByDocumentId={{ doc2: 'needs_nfc' }}
+        testID="sheet"
+      />,
+    );
+
+    fireEvent.press(getByTestId('sheet-item-doc1-perks'));
+    expect(mockOnSelect).toHaveBeenCalledWith('doc1');
+  });
+
   it('does not render the perk row on an ineligible doc even with perks defined', () => {
     const tree = render(
       <IDSelectorSheet
