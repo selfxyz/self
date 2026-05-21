@@ -282,13 +282,11 @@ jobs:
           pnpm --filter @selfxyz/qrcode build
 
       - name: Check for nested require() in tests
-        run: |
-          # Check SDK tests for nested require patterns that cause OOM
-          if grep -rE "require\(['\"]react(-native)?['\"])" sdk/qrcode/src/ sdk/qrcode/tests/ 2>/dev/null; then
-            echo "❌ Found nested require() patterns that cause OOM in CI"
-            exit 1
-          fi
-          echo "✅ No nested require() patterns found"
+        uses: ./.github/actions/check-nested-requires
+        with:
+          paths: |
+            sdk/qrcode/src/
+            sdk/qrcode/tests/
 
       - name: Run tests
         run: pnpm --filter @selfxyz/qrcode test

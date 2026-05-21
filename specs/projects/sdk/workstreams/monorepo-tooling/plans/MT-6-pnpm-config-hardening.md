@@ -27,6 +27,9 @@ the acceptance criteria all depend on a clean `pnpm install` and lockfile diff.
 - Replace root `postinstall` `patch-package` behavior with
   `pnpm.patchedDependencies`.
 - Remove `patch-package` when no longer needed.
+- If the patch conversion is noisy, keep the remaining patch-package
+  migration as a small MT-6 follow-up rather than leaving the postinstall hook
+  in place.
 - Audit `pnpm.onlyBuiltDependencies` / `allowBuilds` entries and keep only
   packages whose install scripts are required.
 - Add one-line justification comments for every retained install-script

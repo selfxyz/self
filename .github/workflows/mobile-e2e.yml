@@ -87,8 +87,10 @@ jobs:
           private-key: ${{ secrets.GH_WORKFLOWS_CROSS_ACCESS_KEY }}
           configure-netrc: "true"
       - name: Check for nested require() in tests
-        run: node scripts/check-test-requires.cjs
-        working-directory: ./app
+        uses: ./.github/actions/check-nested-requires
+        with:
+          paths: |
+            app/tests/
       - name: Install deps (internal PRs and protected branches)
         if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
         shell: bash
@@ -576,8 +578,10 @@ jobs:
           private-key: ${{ secrets.GH_WORKFLOWS_CROSS_ACCESS_KEY }}
           configure-netrc: "true"
       - name: Check for nested require() in tests
-        run: node scripts/check-test-requires.cjs
-        working-directory: ./app
+        uses: ./.github/actions/check-nested-requires
+        with:
+          paths: |
+            app/tests/
       - name: Install deps (internal PRs and protected branches)
         if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
         uses: nick-fields/retry@v3
