@@ -34,8 +34,7 @@ yarn workspace @selfxyz/rn-sdk-test-app android
 yarn workspace @selfxyz/rn-sdk-test-app ios
 ```
 
-On macOS, `yarn install` automatically runs Bundler + CocoaPods for this workspace.
-Set `SKIP_RN_SDK_TEST_APP_PODS=1` to skip that step.
+On macOS, run `pnpm --filter @selfxyz/rn-sdk-test-app install-app` to refresh Bundler + CocoaPods for this workspace. It is not run automatically on `pnpm install`.
 
 ## UI
 

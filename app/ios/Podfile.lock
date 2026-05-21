@@ -1505,7 +1505,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-app-auth (8.1.0):
+  - react-native-app-auth (8.3.0):
     - AppAuth (>= 1.7.6)
     - React-Core
   - react-native-biometrics (3.0.1):
@@ -1641,7 +1641,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-safe-area-context (5.7.0):
+  - react-native-safe-area-context (5.8.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1654,8 +1654,8 @@ PODS:
     - React-featureflags
     - React-graphics
     - React-ImageManager
-    - react-native-safe-area-context/common (= 5.7.0)
-    - react-native-safe-area-context/fabric (= 5.7.0)
+    - react-native-safe-area-context/common (= 5.8.0)
+    - react-native-safe-area-context/fabric (= 5.8.0)
     - React-NativeModulesApple
     - React-RCTFabric
     - React-rendererdebug
@@ -1664,7 +1664,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-safe-area-context/common (5.7.0):
+  - react-native-safe-area-context/common (5.8.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1685,7 +1685,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-safe-area-context/fabric (5.7.0):
+  - react-native-safe-area-context/fabric (5.8.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2817,7 +2817,7 @@ SPEC CHECKSUMS:
   React-logger: c4052eb941cca9a097ef01b59543a656dc088559
   React-Mapbuffer: 9343a5c14536d4463c80f09a960653d754daae21
   React-microtasksnativemodule: c7cafd8f4470cf8a4578ee605daa4c74d3278bf8
-  react-native-app-auth: e21c8ee920876b960e38c9381971bd189ebea06b
+  react-native-app-auth: 2f5a3155dec63b23bb19654c806cb649ba31dc14
   react-native-biometrics: 43ed5b828646a7862dbc7945556446be00798e7d
   react-native-blur: 6334d934a9b5e67718b8f5725c44cc0a12946009
   react-native-cloud-storage: 8d89f2bc574cf11068dfd90933905974087fb9e9
@@ -2827,7 +2827,7 @@ SPEC CHECKSUMS:
   react-native-netinfo: 20a33172af8c966864d09b0c7c5d8fc0af87e051
   react-native-nfc-manager: c8891e460b4943b695d63f7f4effc6345bbefc83
   react-native-passkey: e635dbb98510aa72aa464c3908196549db4270ea
-  react-native-safe-area-context: 9669d84fe85211f30453736b2f4bea4ade31b5be
+  react-native-safe-area-context: a019987d3354380d4de9a0161ca7fce73eaba987
   react-native-sqlite-storage: 0c84826214baaa498796c7e46a5ccc9a82e114ed
   react-native-webview: 3f45e19f0ffc3701168768a6c37695e0f252410e
   React-nativeconfig: 415626a63057638759bcc75e0a96e2e07771a479

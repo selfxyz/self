@@ -21,14 +21,8 @@ async function main() {
     }
   }
 
-  const env = {
-    ...process.env,
-    // Root-level dependency refresh should not rewrite native app files.
-    SKIP_RN_SDK_TEST_APP_PODS: '1',
-  };
-
-  await run('pnpm', ['install'], env);
-  await run('pnpm', ['dedupe'], env);
+  await run('pnpm', ['install']);
+  await run('pnpm', ['dedupe']);
 }
 
 async function collectNodeModules(dir, results) {
@@ -61,13 +55,12 @@ async function collectNodeModules(dir, results) {
   }
 }
 
-function run(command, args, env = process.env) {
+function run(command, args) {
   return new Promise((resolve, reject) => {
     const child = spawn(command, args, {
       cwd: repoRoot,
       stdio: 'inherit',
       shell: false,
-      env,
     });
 
     child.on('error', reject);
