@@ -42,7 +42,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 
-internal class PassportCameraView(context: Context) : FrameLayout(context) {
+class PassportCameraView(context: Context) : FrameLayout(context) {
   private val binding =
       FragmentCameraMrzBinding.inflate(LayoutInflater.from(context), this, true)
   private val mainHandler = Handler(Looper.getMainLooper())
@@ -335,7 +335,7 @@ internal class PassportCameraView(context: Context) : FrameLayout(context) {
     return kotlin.math.sqrt((x * x + y * y).toDouble()).toFloat()
   }
 
-  fun onTouchEvent(event: MotionEvent): Boolean {
+  override fun onTouchEvent(event: MotionEvent): Boolean {
     val action = event.action
     if (event.pointerCount > 1) {
       if (action == MotionEvent.ACTION_POINTER_DOWN) {
@@ -380,7 +380,7 @@ internal class PassportCameraView(context: Context) : FrameLayout(context) {
         PassportReadEvent(UIManagerHelper.getSurfaceId(this), id, mrzInfo.toString()))
   }
 
-  private fun dispatchError(e: Exception, message: String) {
+  private fun dispatchError(e: Throwable, message: String) {
     val reactContext = UIManagerHelper.getReactContext(this) as? ReactContext ?: return
     val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(reactContext, id) ?: return
     dispatcher.dispatchEvent(

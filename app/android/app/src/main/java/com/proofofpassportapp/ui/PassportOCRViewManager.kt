@@ -6,14 +6,15 @@ import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.uimanager.SimpleViewManager
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.ViewManagerDelegate
-import com.facebook.react.viewmanagers.PassportOCRViewManagerDelegate
-import com.facebook.react.viewmanagers.PassportOCRViewManagerInterface
+import com.facebook.react.viewmanagers.PassportOCRViewManagerManagerDelegate
+import com.facebook.react.viewmanagers.PassportOCRViewManagerManagerInterface
 
 @ReactModule(name = PassportOCRViewManager.REACT_CLASS)
 class PassportOCRViewManager :
     SimpleViewManager<PassportCameraView>(),
-    PassportOCRViewManagerInterface<PassportCameraView> {
-  private val delegate: ViewManagerDelegate<PassportCameraView> = PassportOCRViewManagerDelegate(this)
+    PassportOCRViewManagerManagerInterface<PassportCameraView> {
+  private val delegate: ViewManagerDelegate<PassportCameraView> =
+      PassportOCRViewManagerManagerDelegate(this)
 
   override fun getName(): String = REACT_CLASS
 
