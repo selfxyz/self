@@ -154,10 +154,38 @@ jest.mock('react-native', () => {
       MockNativeComponent.displayName = `Mock(${name})`;
       return MockNativeComponent;
     }),
+    codegenNativeComponent: jest.fn(() => {
+      const MockNativeComponent = jest.fn(props => props.children || null);
+      MockNativeComponent.displayName = 'Mock(CodegenNativeComponent)';
+      return MockNativeComponent;
+    }),
+    codegenNativeCommands: jest.fn(() => ({})),
   };
 });
 
 require('react-native-gesture-handler/jestSetup');
+
+jest.mock(
+  'react-native/Libraries/Utilities/codegenNativeComponent',
+  () => ({
+    __esModule: true,
+    default: jest.fn(() => {
+      const MockNativeComponent = jest.fn(props => props.children || null);
+      MockNativeComponent.displayName = 'Mock(CodegenNativeComponent)';
+      return MockNativeComponent;
+    }),
+  }),
+  { virtual: true },
+);
+
+jest.mock(
+  'react-native/Libraries/Utilities/codegenNativeCommands',
+  () => ({
+    __esModule: true,
+    default: jest.fn(() => ({})),
+  }),
+  { virtual: true },
+);
 
 // Mock NativeAnimatedHelper - using virtual mock during RN 0.76.9 prep phase
 jest.mock(
