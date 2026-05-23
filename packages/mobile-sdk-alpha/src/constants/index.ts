@@ -15,6 +15,7 @@ export {
   PointEvents,
   ProofEvents,
 } from './analytics';
+export type { KnownEventName } from './analytics';
 
 export { NFC_IMAGE } from './images';
 

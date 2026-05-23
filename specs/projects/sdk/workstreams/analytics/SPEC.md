@@ -117,18 +117,18 @@ The branch split tells you _what happened_ (initial intent vs final outcome) but
 
 ## Backlog
 
-| ID     | Title                                                                       | Status      | Priority | Depends on             | Plan                                                            |
-| ------ | --------------------------------------------------------------------------- | ----------- | -------- | ---------------------- | --------------------------------------------------------------- |
-| ANA-01 | Canonical onboarding funnel events + dead-zone fixes                        | **Done**    | —        | —                      | [plan](./plans/ANA-01-canonical-onboarding-funnel.md)           |
-| ANA-11 | Canonical funnel bug fixes (post-ANA-01 production findings)                | In Review   | High     | ANA-01                 | [plan](./plans/ANA-11-canonical-funnel-bug-fixes.md) — PR #2048 |
-| ANA-12 | Branch-specific funnel events (Biometric / KYC / Aadhaar)                   | Ready       | High     | ANA-01, ANA-11         | [plan](./plans/ANA-12-branch-specific-funnel-events.md)         |
-| ANA-13 | Observability migration — Mixpanel diet, Sentry breadcrumbs, Session Replay | Ready       | High     | ANA-01, ANA-11, ANA-12 | [plan](./plans/ANA-13-observability-migration.md)               |
-| ANA-14 | Suppress all analytics events from mock passport flow                       | In Progress | High     | ANA-01                 | [plan](./plans/ANA-14-suppress-mock-analytics.md)               |
+| ID     | Title                                                                         | Status      | Priority | Depends on             | Plan                                                            |
+| ------ | ----------------------------------------------------------------------------- | ----------- | -------- | ---------------------- | --------------------------------------------------------------- |
+| ANA-01 | Canonical onboarding funnel events + dead-zone fixes                          | **Done**    | —        | —                      | [plan](./plans/ANA-01-canonical-onboarding-funnel.md)           |
+| ANA-11 | Canonical funnel bug fixes (post-ANA-01 production findings)                  | In Review   | High     | ANA-01                 | [plan](./plans/ANA-11-canonical-funnel-bug-fixes.md) — PR #2048 |
+| ANA-12 | Branch-specific funnel events (Biometric / KYC / Aadhaar)                     | Ready       | High     | ANA-01, ANA-11         | [plan](./plans/ANA-12-branch-specific-funnel-events.md)         |
+| ANA-13 | Observability migration — Mixpanel diet, Sentry breadcrumbs, Session Replay   | Ready       | High     | ANA-01, ANA-11, ANA-12 | [plan](./plans/ANA-13-observability-migration.md)               |
+| ANA-14 | Suppress all analytics events from mock passport flow                         | In Progress | High     | ANA-01                 | [plan](./plans/ANA-14-suppress-mock-analytics.md)               |
 | ANA-15 | Per-attempt support reference (attempt_id footer) on onboarding error screens | Ready       | Medium   | ANA-01, ANA-13         | [plan](./plans/ANA-15-attempt-id-on-error-screens.md)           |
-| ANA-05 | Fallback decision events and fallback-offer mini-funnel                     | Ready       | Medium   | ANA-01, ANA-12         | —                                                               |
-| ANA-08 | Explicit abandonment events on app background                               | Ready       | Low      | ANA-01                 | —                                                               |
-| ANA-02 | Investigation: internal/TestFlight traffic filtering                        | Ready       | Medium   | —                      | —                                                               |
-| ANA-04 | Investigation: native NFC analytics channel                                 | Ready       | Low      | ANA-13                 | —                                                               |
+| ANA-05 | Fallback decision events and fallback-offer mini-funnel                       | Ready       | Medium   | ANA-01, ANA-12         | —                                                               |
+| ANA-08 | Explicit abandonment events on app background                                 | Ready       | Low      | ANA-01                 | —                                                               |
+| ANA-02 | Investigation: internal/TestFlight traffic filtering                          | Ready       | Medium   | —                      | —                                                               |
+| ANA-04 | Investigation: native NFC analytics channel                                   | Ready       | Low      | ANA-13                 | —                                                               |
 
 Allowed statuses: `Ready`, `In Progress`, `In Review`, `Blocked`, `Done`.
 

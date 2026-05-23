@@ -33,6 +33,7 @@ extract_conflicting_pods() {
 }
 
 run_recovery_for_conflicts() {
+  local attempt="${1:-1}"
   conflicting_pods=()
   while IFS= read -r line; do
     [ -n "$line" ] && conflicting_pods+=("$line")
@@ -44,6 +45,18 @@ run_recovery_for_conflicts() {
 
   echo "⚠️ Detected resolver conflicts for pods: ${conflicting_pods[*]}"
 
+  # Hermes drift can live in the global CocoaPods tarball cache, which neither
+  # the reset path nor `pod update` will refresh. Clean it first whenever
+  # hermes-engine appears in the conflict list, regardless of which recovery
+  # branch we take next.
+  for pod in "${conflicting_pods[@]}"; do
+    if [ "$pod" = "hermes-engine" ]; then
+      echo "🧹 Clearing hermes-engine cache before recovery..."
+      bundle exec pod cache clean hermes-engine --all >/dev/null 2>&1 || true
+      break
+    fi
+  done
+
   # Path-based React Native podspecs can drift from a cached lockfile snapshot.
   # When RN core pods conflict, force CocoaPods to rebuild local resolution
   # state instead of trying partial pod updates against stale local podspecs.
@@ -54,14 +67,16 @@ run_recovery_for_conflicts() {
     fi
   done
 
-  # Keep Hermes cache cleanup behavior for hermes-specific failures.
-  for pod in "${conflicting_pods[@]}"; do
-    if [ "$pod" = "hermes-engine" ]; then
-      echo "🧹 Clearing hermes-engine cache before update..."
-      bundle exec pod cache clean hermes-engine --all >/dev/null 2>&1 || true
-      break
-    fi
-  done
+  # On the first attempt, try the cheap targeted `pod update`. If a follow-up
+  # attempt is needed, escalate to a full reset — `pod update` won't refresh
+  # `Pods/Local Podspecs/` when the podspec's source URL itself changed (e.g.
+  # a pod moved from a local file to a remote URL), and re-running the same
+  # `pod update` would loop on the same failure.
+  if [ "$attempt" -ge 2 ]; then
+    echo "⤴️ Targeted pod update did not resolve conflicts; escalating to full reset."
+    reset_local_pod_resolution_state
+    return 0
+  fi
 
   echo "🔧 Running: bundle exec pod update ${conflicting_pods[*]} --no-repo-update --verbose"
   bundle exec pod update "${conflicting_pods[@]}" --no-repo-update --verbose
@@ -78,7 +93,7 @@ fi
 attempt=1
 while [ "$attempt" -le "$MAX_RECOVERY_ATTEMPTS" ]; do
   echo "♻️ Recovery attempt ${attempt}/${MAX_RECOVERY_ATTEMPTS}..."
-  if ! run_recovery_for_conflicts; then
+  if ! run_recovery_for_conflicts "$attempt"; then
     echo "❌ pod install failed with a non-resolver error; cannot auto-recover"
     rm -f "$LOG_FILE"
     exit 1

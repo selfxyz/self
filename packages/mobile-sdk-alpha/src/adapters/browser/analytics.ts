@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import type { KnownEventName } from '../../constants/analytics';
 import type { NFCScanContext } from '../../proving/internal/logging';
 import type { LogLevel } from '../../types/base';
 import type { AnalyticsAdapter, TrackEventParams } from '../../types/public';
@@ -39,7 +40,7 @@ export function createWebAnalyticsAdapter(options?: WebAnalyticsOptions): Analyt
   }
 
   return {
-    trackEvent(event: string, payload?: TrackEventParams): void {
+    trackEvent(event: KnownEventName, payload?: TrackEventParams): void {
       send({ type: 'event', event, ...payload, timestamp: Date.now() });
     },
 

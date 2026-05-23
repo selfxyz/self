@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type { SelfApp } from '@selfxyz/common/utils';
-import type { DocumentCatalog } from '@selfxyz/common/utils/types';
+import type { DocumentCatalog, IDDocument } from '@selfxyz/common/utils/types';
 import {
   getAllDocuments,
   GOOGLE_USAT_FAUCET_POLICY,
@@ -14,6 +14,48 @@ import {
 
 export type GoogleUsatGateResult = 'allow' | 'block';
 export const FORCE_GOOGLE_USAT_FOR_TESTING = false;
+
+// TODO: move to a shared `perkGate` module when a second perk policy lands.
+export type IneligibleReason = 'needs_nfc' | 'unsupported_id_type';
+
+export interface GoogleUsatEligibility {
+  eligible: boolean;
+  reason?: IneligibleReason;
+}
+
+/**
+ * Sync, pure variant of the gate used to build the picker eligibility map.
+ * Does not touch SelfClient or storage — the caller already holds the
+ * decrypted document in memory.
+ *
+ * Returns `{ eligible: true }` when the app is not Google USAT (the gate
+ * does not apply); callers skip the perk UI entirely via `activePerkId`
+ * before this matters.
+ */
+export function evaluateGoogleUsatEligibilityForDocument(
+  app: SelfApp,
+  doc: { data: Pick<IDDocument, 'documentCategory' | 'mock'> },
+): GoogleUsatEligibility {
+  if (!shouldTreatAsGoogleUsat(app)) {
+    return { eligible: true };
+  }
+
+  const eligible = isDocumentEligibleForPolicy(
+    GOOGLE_USAT_FAUCET_POLICY,
+    doc.data.documentCategory,
+    doc.data.mock,
+  );
+
+  if (eligible) {
+    return { eligible: true };
+  }
+
+  const reason: IneligibleReason =
+    doc.data.documentCategory === 'aadhaar'
+      ? 'needs_nfc'
+      : 'unsupported_id_type';
+  return { eligible: false, reason };
+}
 
 type DocumentMap = Awaited<ReturnType<typeof getAllDocuments>>;
 

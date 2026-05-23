@@ -4,7 +4,7 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { getPerkRailLabel, getPerksForIdType } from '../../../src/flows/onboarding/perks';
+import { getPerkRailContent, getPerkRailLabel, getPerksForIdType } from '../../../src/flows/onboarding/perks';
 
 describe('onboarding perks', () => {
   it('filters perks to entries that have renderLogos', () => {
@@ -19,5 +19,18 @@ describe('onboarding perks', () => {
     expect(getPerkRailLabel([{ id: 'google_cloud_faucet', label: 'Google Cloud Faucet', renderLogos: () => [] }])).toBe(
       'Eligible for 1 perk',
     );
+  });
+
+  it('returns null content when an id type has no renderable perks', () => {
+    expect(getPerkRailContent('unknown')).toBeNull();
+  });
+
+  it('counts perks (not logos) so multi-logo perks stay singular', () => {
+    const content = getPerkRailContent('p');
+
+    expect(content).not.toBeNull();
+    expect(content!.perks).toHaveLength(1);
+    expect(content!.logos.length).toBeGreaterThanOrEqual(2);
+    expect(content!.label).toBe('Eligible for 1 perk');
   });
 });

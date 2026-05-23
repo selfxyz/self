@@ -22,6 +22,7 @@ import {
   SecondaryButton,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import {
+  AppEvents,
   KycEvents,
   OnboardingEvents,
 } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
@@ -37,12 +38,14 @@ import EPassportLogo from '@/assets/icons/epassport_logo.svg';
 import { DocumentFlowNavBar } from '@/components/navbar/DocumentFlowNavBar';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { buttonTap } from '@/integrations/haptics';
-import { createKycSession, launchKycVerification } from '@/integrations/kyc';
+import {
+  createKycSession,
+  KYC_PROVIDER,
+  launchKycVerification,
+} from '@/integrations/kyc';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
 import { useFeedback } from '@/providers/feedbackProvider';
-
-const KYC_PROVIDER = 'didit';
 
 type LogoConfirmationScreenRouteProp = RouteProp<
   RootStackParamList,
@@ -61,13 +64,13 @@ const LogoConfirmationScreen: React.FC = () => {
 
   const handleConfirm = useCallback(() => {
     buttonTap();
-    trackEvent('App: Logo Confirmation Answered', { answer: 'yes' });
+    trackEvent(AppEvents.LOGO_CONFIRMATION_ANSWERED, { answer: 'yes' });
     navigateToOnboarding();
   }, [navigateToOnboarding, trackEvent]);
 
   const handleNotFound = useCallback(() => {
     buttonTap();
-    trackEvent('App: Logo Confirmation Answered', { answer: 'no' });
+    trackEvent(AppEvents.LOGO_CONFIRMATION_ANSWERED, { answer: 'no' });
     // "No" on the chip-symbol check routes through the KYC provider —
     // update the canonical funnel branch accordingly.
     setOnboardingBranch('kyc');

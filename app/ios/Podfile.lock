@@ -12,12 +12,11 @@ PODS:
   - boost (1.84.0)
   - BVLinearGradient (2.8.3):
     - React-Core
-  - DiditSDK (3.3.4):
-    - OpenSSL-Universal (~> 1.1.1900)
+  - DiditSDK/Core (3.5.1)
   - DoubleConversion (1.1.6)
   - EXApplication (55.0.14):
     - ExpoModulesCore
-  - EXConstants (55.0.15):
+  - EXConstants (55.0.16):
     - ExpoModulesCore
   - Expo (55.0.20):
     - boost
@@ -54,17 +53,17 @@ PODS:
     - ExpoModulesCore
     - GoogleSignIn (~> 9.0)
     - React-Core
-  - ExpoAsset (55.0.16):
+  - ExpoAsset (55.0.17):
     - ExpoModulesCore
   - ExpoCamera (55.0.17):
     - ExpoModulesCore
-  - ExpoDomWebView (55.0.5):
+  - ExpoDomWebView (55.0.6):
     - ExpoModulesCore
-  - ExpoFileSystem (55.0.17):
+  - ExpoFileSystem (55.0.22):
     - ExpoModulesCore
-  - ExpoFont (55.0.6):
+  - ExpoFont (55.0.8):
     - ExpoModulesCore
-  - ExpoKeepAwake (55.0.7):
+  - ExpoKeepAwake (55.0.8):
     - ExpoModulesCore
   - ExpoLogBox (55.0.11):
     - React-Core
@@ -3354,7 +3353,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - RNSentry (7.0.0):
+  - RNSentry (8.11.1):
     - boost
     - DoubleConversion
     - fast_float
@@ -3381,7 +3380,7 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - Sentry/HybridSDK (= 8.53.2)
+    - Sentry (= 9.13.0)
     - SocketRocket
     - Yoga
   - RNSVG (15.14.0):
@@ -3441,9 +3440,9 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - SdkReactNative (3.2.11):
+  - SdkReactNative (3.3.2):
     - boost
-    - DiditSDK (~> 3.3)
+    - DiditSDK/Core (~> 3.5)
     - DoubleConversion
     - fast_float
     - fmt
@@ -3476,7 +3475,9 @@ PODS:
   - SelfNFCPassportReader (2.1.1):
     - Mixpanel-swift (~> 5.0.0)
     - OpenSSL-Universal (= 1.1.1900)
-  - Sentry/HybridSDK (8.53.2)
+  - Sentry (9.13.0):
+    - Sentry/Core (= 9.13.0)
+  - Sentry/Core (9.13.0)
   - SocketRocket (0.7.1)
   - sovran-react-native (1.1.3):
     - React-Core
@@ -3487,7 +3488,7 @@ PODS:
 DEPENDENCIES:
   - boost (from `../node_modules/react-native/third-party-podspecs/boost.podspec`)
   - BVLinearGradient (from `../node_modules/react-native-linear-gradient`)
-  - DiditSDK (from `./local-pods/DiditSDK/DiditSDK.podspec`)
+  - DiditSDK/Core (from `https://raw.githubusercontent.com/didit-protocol/sdk-ios/3.5.1/DiditSDK.podspec`)
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
   - EXApplication (from `../node_modules/expo-application/ios`)
   - EXConstants (from `../node_modules/expo-constants/ios`)
@@ -3660,7 +3661,7 @@ EXTERNAL SOURCES:
   BVLinearGradient:
     :path: "../node_modules/react-native-linear-gradient"
   DiditSDK:
-    :podspec: "./local-pods/DiditSDK/DiditSDK.podspec"
+    :podspec: https://raw.githubusercontent.com/didit-protocol/sdk-ios/3.5.1/DiditSDK.podspec
   DoubleConversion:
     :podspec: "../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec"
   EXApplication:
@@ -3931,18 +3932,18 @@ SPEC CHECKSUMS:
   AppCheckCore: cc8fd0a3a230ddd401f326489c99990b013f0c4f
   boost: 7e761d76ca2ce687f7cc98e698152abd03a18f90
   BVLinearGradient: cb006ba232a1f3e4f341bb62c42d1098c284da70
-  DiditSDK: 4c9a97ad313696d21b8acb7b86be90c9175cd6b3
+  DiditSDK: 27173cbfc13db575640538a978d3ecf983b047ba
   DoubleConversion: cb417026b2400c8f53ae97020b2be961b59470cb
   EXApplication: ab5a9ca485adce8be81309a5172d1565e9d7467f
-  EXConstants: 5caf448ff399f60be9d1053e77aed32e39411900
+  EXConstants: dadbeba983acc30f855a919658a2b34fbd86615d
   Expo: 405a5b0aacf5d1954ea19a164b519f520bf68f43
   ExpoAdapterGoogleSignIn: ab4d9fc38cb91077a4138d178395525ec65d0c2e
-  ExpoAsset: f56ed740b6a127da2bfd90832cf688ae309d4410
+  ExpoAsset: 7721c5c4ae2a7c3c8147a046727ac6c020b05648
   ExpoCamera: 1f783af198ebb299f430758c86af8339cf7d63a9
-  ExpoDomWebView: 2b2fbd9a07de8790569257cbf9dfdaa31cf95c70
-  ExpoFileSystem: a0e4a5a09c9c4f84338289b273a172609452dec9
-  ExpoFont: cdd7a1d574a376fa003c713eff49e0a4df8672c7
-  ExpoKeepAwake: 861c66deb0f9f28f87882610195f26c4b88fba6f
+  ExpoDomWebView: b2e9d601f9cb77d3c97da73234e175b64be91928
+  ExpoFileSystem: 61e663d0bbd1a973d324530d1d6ee559a5e5192c
+  ExpoFont: a7e34a75bdfb703fa07a0e87807f836236608c76
+  ExpoKeepAwake: d0eb7a0719500d2a43fbf29b6f79e84d70c75ebf
   ExpoLogBox: 617da77cbc083627692b2ea050a3666808aef2cd
   ExpoModulesCore: 08e767f43da6e4f0a56cabb59d5b447a12134f98
   ExpoModulesJSI: bbd6d912b19ba7455d95b2c2fd3bc73459f8cba9
@@ -4075,18 +4076,18 @@ SPEC CHECKSUMS:
   RNPermissions: b469cd9fd82c7e45b04b8620da719c05b97f8ddb
   RNReactNativeHapticFeedback: b6a8971d44e0802c97a729c934f96c53c5cb1e97
   RNScreens: 0e35897693c6f1aa38627dc1b4c37c7450e4b902
-  RNSentry: d8f26f2fef8dbedb5848ecd0aa1335d34a788441
+  RNSentry: adbde98523a92f127f7ac2834cb25a71589f2763
   RNSVG: d9938e7f6ea1616124dd2d64b933322ac2059e05
-  SdkReactNative: 3ccbac15069eab353ef784b0e05d90a6bc4a6e85
+  SdkReactNative: 1bc6a7467202311b7ac795d84c9b1905c3c089c9
   segment-analytics-react-native: 8ab9c49df1859bbd6be93cf90a91ade17f20a0aa
   SelfNFCPassportReader: 8b53f9d483e0dd1f1a275953e3dc6dfc733694c5
-  Sentry: 59993bffde4a1ac297ba6d268dc4bbce068d7c1b
+  Sentry: 5c3f67235d4c16fcfab43158a8c1502a18fece9a
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   sovran-react-native: a3ad3f8ff90c2002b2aa9790001a78b0b0a38594
   SwiftQRScanner: e85a25f9b843e9231dab89a96e441472fe54a724
   SwiftyTesseract: 1f3d96668ae92dc2208d9842c8a59bea9fad2cbb
   Yoga: e9fea23bf9b2766818ce9a8df72f584bf5ad36cd
 
-PODFILE CHECKSUM: e542ad69981268a9f47e929007651ff825a8c7ad
+PODFILE CHECKSUM: bdee3995d30648e8e5e19197fe140d8a809fdbaf
 
 COCOAPODS: 1.16.2
