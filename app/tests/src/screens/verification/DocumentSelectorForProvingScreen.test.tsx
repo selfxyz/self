@@ -94,27 +94,19 @@ jest.mock('@selfxyz/mobile-sdk-alpha/components', () => ({
   __esModule: true,
   RoundFlag: () => null,
   PerkRail: ({
-    logos = [],
     label,
     variant,
     testID,
   }: {
-    logos?: React.ReactNode[];
     label?: string;
     variant?: string;
     testID?: string;
-  }) => {
-    const visible =
-      variant === 'minimal' ? logos.slice(0, 1) : logos.slice(0, 3);
-    return MockReact.createElement(
+  }) =>
+    MockReact.createElement(
       'mock-perk-rail',
       { testID, variant },
-      ...visible.map((logo: React.ReactNode, i: number) =>
-        MockReact.createElement('mock-perk-rail-logo', { key: i }, logo),
-      ),
       MockReact.createElement('mock-perk-rail-label', null, label),
-    );
-  },
+    ),
 }));
 
 jest.mock('@/components/homescreen/cardSecurityBadge', () => ({
