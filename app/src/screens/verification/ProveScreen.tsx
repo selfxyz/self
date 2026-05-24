@@ -28,7 +28,6 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { DocumentMetadata } from '@selfxyz/common';
 import { isMRZDocument } from '@selfxyz/common';
 import { loadSelectedDocument, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
-import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import {
   BottomVerifyBar,
@@ -64,7 +63,6 @@ import { getDocumentTypeName } from '@/utils/documentUtils';
 
 const ProveScreen: React.FC = () => {
   const selfClient = useSelfClient();
-  const { trackEvent } = selfClient;
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { navigate } = navigation;
@@ -383,12 +381,6 @@ const ProveScreen: React.FC = () => {
         const pointsAddress =
           selectedApp?.selfDefinedData || (await getPointsAddress());
 
-        trackEvent(ProofEvents.POINTS_NULLIFIER_ALREADY_USED, {
-          pointsAddress,
-          endpoint: selectedApp?.endpoint,
-          sessionId,
-        });
-
         captureMessage('Points disclosure already registered on-chain', {
           pointsAddress,
           endpoint: selectedApp?.endpoint,
@@ -400,17 +392,11 @@ const ProveScreen: React.FC = () => {
     };
 
     trackAlreadyDisclosed();
-  }, [currentState, reason, selectedApp, provingStore.uuid, trackEvent]);
+  }, [currentState, reason, selectedApp, provingStore.uuid]);
 
   function onVerify() {
     buttonTap();
     provingStore.setUserConfirmed(selfClient);
-    trackEvent(ProofEvents.PROOF_VERIFY_CONFIRMATION_ACCEPTED, {
-      appName: selectedApp?.appName,
-      sessionId: provingStore.uuid,
-      endpointType: selectedApp?.endpointType,
-      userIdType: selectedApp?.userIdType,
-    });
     setTimeout(() => {
       navigate('ProofRequestStatus');
     }, 100);
@@ -434,19 +420,9 @@ const ProveScreen: React.FC = () => {
       ) {
         setHasScrolledToBottom(true);
         buttonTap();
-        trackEvent(ProofEvents.PROOF_DISCLOSURES_SCROLLED, {
-          appName: selectedApp?.appName,
-          sessionId: provingStore.uuid,
-        });
       }
     },
-    [
-      hasScrolledToBottom,
-      isContentShorterThanScrollView,
-      selectedApp,
-      provingStore.uuid,
-      trackEvent,
-    ],
+    [hasScrolledToBottom, isContentShorterThanScrollView],
   );
 
   const handleContentSizeChange = useCallback(

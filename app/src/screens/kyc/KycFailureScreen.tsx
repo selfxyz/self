@@ -11,10 +11,16 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import {
+  incrementAttemptRetryCount,
+  trackBranchEvent,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
+import {
   AbstractButton,
   Description,
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
+import { KycEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import {
   black,
   slate600,
@@ -24,6 +30,7 @@ import {
 import ShieldErrorIcon from '@/assets/icons/shield_error.svg';
 import SupportUuidRow from '@/components/support/SupportUuidRow';
 import { buttonTap } from '@/integrations/haptics';
+import { KYC_PROVIDER } from '@/integrations/kyc';
 import type { RootStackParamList } from '@/navigation';
 
 type KycFailureRouteParams = {
@@ -38,6 +45,7 @@ const KycFailureScreen: React.FC = () => {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<KycFailureRoute>();
   const insets = useSafeAreaInsets();
+  const selfClient = useSelfClient();
 
   const canRetry = route.params?.canRetry ?? true;
 
@@ -48,8 +56,13 @@ const KycFailureScreen: React.FC = () => {
 
   const handleTryAgain = useCallback(() => {
     buttonTap();
+    const attemptCount = incrementAttemptRetryCount('kyc');
+    trackBranchEvent(selfClient, KycEvents.RETRY_TRIGGERED, {
+      provider: KYC_PROVIDER,
+      attempt_count: attemptCount,
+    });
     navigation.navigate('CountryPicker');
-  }, [navigation]);
+  }, [navigation, selfClient]);
 
   return (
     <View style={[styles.container, { paddingBottom: insets.bottom }]}>

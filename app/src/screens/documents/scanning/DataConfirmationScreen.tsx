@@ -16,7 +16,6 @@ import {
   PrimaryButton,
   SecondaryButton,
 } from '@selfxyz/mobile-sdk-alpha/components';
-import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import { advercase } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import { InputField } from '@/components/InputField';
@@ -24,7 +23,6 @@ import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { useKycLauncher } from '@/hooks/useKycLauncher';
 import type { RootStackParamList } from '@/navigation';
 import type { DocumentRoutesParamList } from '@/navigation/types';
-import { trackEvent } from '@/services/analytics';
 
 const EscapeIcon = ({ size, color }: { size: number; color: string }) => (
   <View testID="escape-button">
@@ -93,10 +91,6 @@ const DataConfirmationScreen: React.FC & {
         documentType: mrzData.documentType,
       });
     }
-
-    trackEvent(PassportEvents.DATA_CONFIRMATION_COMPLETED, {
-      had_changes: hasChanges,
-    });
 
     navigation.navigate('DocumentNFCScan');
   };

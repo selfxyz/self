@@ -63,7 +63,7 @@ const RegistrationFallbackMRZScreen: React.FC = () => {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<RegistrationFallbackMRZRoute>();
   const selfClient = useSelfClient();
-  const { trackEvent, useMRZStore } = selfClient;
+  const { useMRZStore } = selfClient;
   const storeCountryCode = useMRZStore(state => state.countryCode);
   const documentType = useMRZStore(state => state.documentType);
 
@@ -98,20 +98,14 @@ const RegistrationFallbackMRZScreen: React.FC = () => {
   }, [navigation]);
 
   const handleTryAlternative = useCallback(async () => {
-    trackEvent('REGISTRATION_FALLBACK_TRY_ALTERNATIVE', {
-      errorSource: 'mrz_scan_failed',
-    });
     setOnboardingBranch('kyc');
     await launchKycVerification();
-  }, [launchKycVerification, trackEvent]);
+  }, [launchKycVerification]);
 
   const handleRetryOriginal = useCallback(() => {
-    trackEvent('REGISTRATION_FALLBACK_RETRY_ORIGINAL', {
-      errorSource: 'mrz_scan_failed',
-    });
     trackOnboardingRetry(selfClient, 'scan_started', 'mrz_scan_failed');
     navigation.navigate('DocumentCamera');
-  }, [navigation, selfClient, trackEvent]);
+  }, [navigation, selfClient]);
 
   return (
     <YStack flex={1} backgroundColor={slate100}>

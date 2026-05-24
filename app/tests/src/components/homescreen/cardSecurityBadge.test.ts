@@ -5,7 +5,10 @@
 import type { AadhaarData } from '@selfxyz/common';
 import type { PassportData } from '@selfxyz/common/types/passport';
 
-import { getSecurityBadgeLabel } from '@/components/homescreen/cardSecurityBadge';
+import {
+  getSecurityBadgeLabel,
+  getSecurityLevel,
+} from '@/components/homescreen/cardSecurityBadge';
 
 describe('getSecurityBadgeLabel', () => {
   it('describes NFC-backed MRZ documents clearly', () => {
@@ -38,5 +41,19 @@ describe('getSecurityBadgeLabel', () => {
     } as AadhaarData;
 
     expect(getSecurityBadgeLabel(aadhaarDocument)).toBe('QR verified');
+  });
+
+  it('downgrades mock documents to LOW-SECURITY even when dg2Hash is populated', () => {
+    const mockPassport = {
+      documentType: 'passport',
+      documentCategory: 'passport',
+      mrz: 'P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<',
+      dg2Hash: [1, 2, 3],
+    } as PassportData;
+
+    expect(getSecurityLevel(mockPassport, { mock: true })).toBe('LOW-SECURITY');
+    expect(getSecurityBadgeLabel(mockPassport, { mock: true })).toBe(
+      'MRZ verified',
+    );
   });
 });

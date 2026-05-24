@@ -147,6 +147,7 @@ const ProvingScreenRouter: React.FC = () => {
           : false;
 
         let hasAlternativeEligibleValidDocument = false;
+        let alternativeEligibleDocumentType: string | null = null;
         if (hasAlternativeEligibleDocument && selectedDocumentId) {
           const alternativeValidDocuments = validDocuments.filter(
             doc => doc.id !== selectedDocumentId,
@@ -163,6 +164,10 @@ const ProvingScreenRouter: React.FC = () => {
             }
             if (alternativeDocGate === 'allow') {
               hasAlternativeEligibleValidDocument = true;
+              alternativeEligibleDocumentType = getDocumentTypeName(
+                doc.documentCategory,
+                doc.idType,
+              );
               break;
             }
           }
@@ -172,7 +177,7 @@ const ProvingScreenRouter: React.FC = () => {
           // Force selector regardless of skipDocumentSelector so the user can
           // pick the eligible alternative.
           hasRoutedRef.current = true;
-          openDocumentSelector(documentType);
+          openDocumentSelector(alternativeEligibleDocumentType ?? documentType);
           return;
         }
 

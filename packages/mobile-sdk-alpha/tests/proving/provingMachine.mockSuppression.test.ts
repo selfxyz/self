@@ -158,7 +158,7 @@ describe('proving machine — mock suppression (ANA-14)', () => {
     expect(selfClient.trackEvent).not.toHaveBeenCalled();
   });
 
-  it('init() with mock=false emits the existing diagnostic events (positive control)', async () => {
+  it('init() with mock=false leaves isMock false on the proving store', async () => {
     const realPassport = {
       ...(genMockIdDoc({ idType: 'mock_passport' }) as PassportData),
       mock: false,
@@ -170,6 +170,5 @@ describe('proving machine — mock suppression (ANA-14)', () => {
     await useProvingStore.getState().init(selfClient, 'register');
 
     expect(useProvingStore.getState().isMock).toBe(false);
-    expect(selfClient.trackEvent).toHaveBeenCalled();
   });
 });

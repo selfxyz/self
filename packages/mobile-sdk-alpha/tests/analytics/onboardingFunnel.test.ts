@@ -9,12 +9,15 @@ import {
   _resetOnboardingFunnelForTests,
   completeOnboardingAttempt,
   failOnboardingAttempt,
+  incrementAttemptRetryCount,
+  recoverOnboardingAttempt,
   resolveOnboardingBranch,
   setOnboardingBranch,
+  trackBranchEvent,
   trackOnboardingRetry,
   trackOnboardingStep,
 } from '../../src/analytics/onboardingFunnel';
-import { OnboardingEvents } from '../../src/constants/analytics';
+import { BiometricEvents, OnboardingEvents } from '../../src/constants/analytics';
 
 function makeClient() {
   return { trackEvent: vi.fn() };
@@ -194,6 +197,32 @@ describe('trackOnboardingRetry', () => {
   });
 });
 
+describe('incrementAttemptRetryCount', () => {
+  it('returns increasing counts across calls within the same attempt', () => {
+    const client = makeClient();
+    trackOnboardingStep(client, OnboardingEvents.DOCUMENT_TYPE_SELECTED, {
+      branch: 'biometric_passport',
+    });
+
+    expect(incrementAttemptRetryCount('kyc')).toBe(1);
+    expect(incrementAttemptRetryCount('kyc')).toBe(2);
+    expect(incrementAttemptRetryCount('kyc')).toBe(3);
+  });
+
+  it('tracks counters per key independently', () => {
+    const client = makeClient();
+    trackOnboardingStep(client, OnboardingEvents.COUNTRY_SELECTED, { country_code: 'FR' });
+
+    expect(incrementAttemptRetryCount('kyc')).toBe(1);
+    expect(incrementAttemptRetryCount('biometric')).toBe(1);
+    expect(incrementAttemptRetryCount('kyc')).toBe(2);
+  });
+
+  it('returns 0 when no attempt is active', () => {
+    expect(incrementAttemptRetryCount('kyc')).toBe(0);
+  });
+});
+
 describe('completeOnboardingAttempt', () => {
   it('fires COMPLETED with duration_seconds, used_fallback=false, and clears the attempt', () => {
     const client = makeClient();
@@ -241,6 +270,127 @@ describe('completeOnboardingAttempt', () => {
       ([name]: string[]) => name === OnboardingEvents.COMPLETED,
     );
     expect(completedCalls).toHaveLength(1);
+  });
+});
+
+describe('recoverOnboardingAttempt', () => {
+  it('fires RECOVERED with duration_seconds, used_fallback=false, and clears the attempt', () => {
+    const client = makeClient();
+    trackOnboardingStep(client, OnboardingEvents.DOCUMENT_TYPE_SELECTED, {
+      branch: 'biometric_passport',
+    });
+    recoverOnboardingAttempt(client);
+
+    const recoveredCall = client.trackEvent.mock.calls.find(([name]: string[]) => name === OnboardingEvents.RECOVERED);
+    expect(recoveredCall).toBeTruthy();
+    expect(typeof recoveredCall![1].duration_seconds).toBe('number');
+    expect(recoveredCall![1].used_fallback).toBe(false);
+    expect(recoveredCall![1].initial_branch).toBe('biometric_passport');
+    expect(recoveredCall![1].current_branch).toBe('biometric_passport');
+    expect(_getCurrentOnboardingAttempt()).toBeNull();
+  });
+
+  it('does NOT fire RECOVERED and does NOT fire COMPLETED on the same attempt', () => {
+    const client = makeClient();
+    trackOnboardingStep(client, OnboardingEvents.DOCUMENT_TYPE_SELECTED, {
+      branch: 'biometric_passport',
+    });
+    recoverOnboardingAttempt(client);
+
+    expect(client.trackEvent.mock.calls.find(([name]: string[]) => name === OnboardingEvents.RECOVERED)).toBeTruthy();
+    expect(
+      client.trackEvent.mock.calls.find(([name]: string[]) => name === OnboardingEvents.COMPLETED),
+    ).toBeUndefined();
+  });
+
+  it('is a no-op when no attempt is active', () => {
+    const client = makeClient();
+    recoverOnboardingAttempt(client);
+    expect(client.trackEvent).not.toHaveBeenCalled();
+  });
+
+  it('is idempotent — repeated calls fire RECOVERED only once', () => {
+    const client = makeClient();
+    trackOnboardingStep(client, OnboardingEvents.COUNTRY_SELECTED, { country_code: 'FR' });
+    recoverOnboardingAttempt(client);
+    recoverOnboardingAttempt(client);
+
+    const recoveredCalls = client.trackEvent.mock.calls.filter(
+      ([name]: string[]) => name === OnboardingEvents.RECOVERED,
+    );
+    expect(recoveredCalls).toHaveLength(1);
+  });
+});
+
+describe('trackBranchEvent', () => {
+  it('stamps attempt_id, initial_branch, current_branch on emitted properties', () => {
+    const client = makeClient();
+    trackOnboardingStep(client, OnboardingEvents.DOCUMENT_TYPE_SELECTED, {
+      branch: 'biometric_passport',
+    });
+    const attemptId = _getCurrentOnboardingAttempt()?.id;
+
+    trackBranchEvent(client, BiometricEvents.MRZ_CAPTURED, {
+      document_type: 'passport',
+      duration_seconds: 1.23,
+    });
+
+    const branchCall = client.trackEvent.mock.calls.find(([name]: string[]) => name === BiometricEvents.MRZ_CAPTURED);
+    expect(branchCall?.[1]).toMatchObject({
+      attempt_id: attemptId,
+      initial_branch: 'biometric_passport',
+      current_branch: 'biometric_passport',
+      document_type: 'passport',
+      duration_seconds: 1.23,
+    });
+  });
+
+  it('no-ops silently when no attempt is active (no disclosure pollution)', () => {
+    const client = makeClient();
+    trackBranchEvent(client, BiometricEvents.MRZ_CAPTURED, { document_type: 'passport' });
+
+    expect(client.trackEvent).not.toHaveBeenCalled();
+    expect(_getCurrentOnboardingAttempt()).toBeNull();
+  });
+
+  it('does NOT bootstrap a new attempt (unlike trackOnboardingStep)', () => {
+    const client = makeClient();
+    trackBranchEvent(client, BiometricEvents.NFC_STARTED, { document_type: 'passport' });
+
+    expect(client.trackEvent).not.toHaveBeenCalledWith(OnboardingEvents.STARTED, expect.anything());
+    expect(_getCurrentOnboardingAttempt()).toBeNull();
+  });
+
+  it('does NOT dedupe — repeated calls emit the event each time (e.g. OCR retries)', () => {
+    const client = makeClient();
+    trackOnboardingStep(client, OnboardingEvents.DOCUMENT_TYPE_SELECTED, {
+      branch: 'biometric_passport',
+    });
+    trackBranchEvent(client, BiometricEvents.MRZ_STARTED, { document_type: 'passport' });
+    trackBranchEvent(client, BiometricEvents.MRZ_STARTED, { document_type: 'passport' });
+    trackBranchEvent(client, BiometricEvents.MRZ_STARTED, { document_type: 'passport' });
+
+    const captureCalls = client.trackEvent.mock.calls.filter(
+      ([name]: string[]) => name === BiometricEvents.MRZ_STARTED,
+    );
+    expect(captureCalls).toHaveLength(3);
+  });
+
+  it('reflects current_branch after a fallback (initial preserved)', () => {
+    const client = makeClient();
+    trackOnboardingStep(client, OnboardingEvents.DOCUMENT_TYPE_SELECTED, {
+      branch: 'biometric_passport',
+    });
+    setOnboardingBranch('kyc');
+
+    trackBranchEvent(client, 'KYC: Session Requested', { provider: 'didit' });
+
+    const kycCall = client.trackEvent.mock.calls.find(([name]: string[]) => name === 'KYC: Session Requested');
+    expect(kycCall?.[1]).toMatchObject({
+      initial_branch: 'biometric_passport',
+      current_branch: 'kyc',
+      provider: 'didit',
+    });
   });
 });
 

@@ -98,37 +98,21 @@ const _getSecurely = async function <T>(
     return null;
   }
 
-  try {
-    // For web, we need to figure out exactly how this will interact with the
-    // Android bridge or any other secure storage mechanism.
-    trackEvent(AuthEvents.BIOMETRIC_AUTH_SUCCESS);
-    return {
-      signature: 'authenticated',
-      data: formatter(dataString),
-    };
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
-    trackEvent(AuthEvents.BIOMETRIC_AUTH_FAILED, {
-      reason: 'unknown_error',
-      error: message,
-    });
-    throw error;
-  }
+  return {
+    signature: 'authenticated',
+    data: formatter(dataString),
+  };
 };
 
 async function checkBiometricsAvailable(): Promise<boolean> {
   // On web, biometrics are not available in the same way as mobile
   // We'll return false to indicate biometrics are not available
-  trackEvent(AuthEvents.BIOMETRIC_CHECK, { available: false });
   return false;
 }
 
 async function restoreFromMnemonic(_mnemonic: string): Promise<string | false> {
   // No-op on web since we don't have access to mnemonics
   console.log('restoreFromMnemonic: No-op on web');
-  trackEvent(AuthEvents.MNEMONIC_RESTORE_FAILED, {
-    reason: 'not_supported_on_web',
-  });
   return false;
 }
 
@@ -180,8 +164,6 @@ export const AuthProvider = ({
       return;
     }
 
-    trackEvent(AuthEvents.BIOMETRIC_LOGIN_ATTEMPT);
-
     // On web, we'll simulate biometric authentication by checking if we can get the private key
     const promise = (async () => {
       try {
@@ -222,7 +204,6 @@ export const AuthProvider = ({
       }
       return setTimeout(() => {
         setIsAuthenticated(false);
-        trackEvent(AuthEvents.AUTHENTICATION_TIMEOUT);
       }, authenticationTimeoutinMs);
     });
   }, [isAuthenticatingPromise, authenticationTimeoutinMs]);
