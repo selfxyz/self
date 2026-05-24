@@ -1,0 +1,725 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Navigation Hygiene — Workstream Spec</title>
+<style>
+  :root {
+    --bg: #fafbfc;
+    --surface: #ffffff;
+    --surface-alt: #f6f8fa;
+    --border: #d1d9e0;
+    --border-soft: #e1e4e8;
+    --text: #1f2328;
+    --muted: #656d76;
+    --accent: #0969da;
+    --accent-soft: #ddf4ff;
+    --high: #cf222e;
+    --high-soft: #ffebe9;
+    --med: #9a6700;
+    --med-soft: #fff8c5;
+    --low: #0969da;
+    --low-soft: #ddf4ff;
+    --done: #1a7f37;
+    --done-soft: #dafbe1;
+    --draft: #6e7781;
+    --draft-soft: #eaeef2;
+    --self-app: #0969da;
+    --self-app-soft: #ddf4ff;
+    --embed: #8250df;
+    --embed-soft: #f5edff;
+    --shared: #1a7f37;
+    --shared-soft: #dafbe1;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font: 14px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    color: var(--text);
+    background: var(--bg);
+  }
+  code, pre, kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.9em; }
+  code { background: var(--surface-alt); padding: 1px 5px; border-radius: 4px; border: 1px solid var(--border-soft); }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  header.topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 12px 24px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  header h1 { margin: 0; font-size: 16px; font-weight: 600; }
+  header .meta-pill {
+    font-size: 11px; color: var(--muted);
+    padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border);
+    background: var(--surface-alt);
+  }
+  header .spacer { flex: 1; }
+  header .links a {
+    font-size: 12px; padding: 6px 12px; border-radius: 6px;
+    border: 1px solid var(--border); background: var(--surface);
+    color: var(--text);
+  }
+  header .links a:hover { background: var(--accent-soft); border-color: var(--accent); text-decoration: none; }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: 32px;
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 24px;
+  }
+  nav.toc {
+    position: sticky; top: 60px;
+    align-self: start;
+    max-height: calc(100vh - 80px); overflow-y: auto;
+    border-right: 1px solid var(--border-soft);
+    padding-right: 12px;
+    font-size: 13px;
+  }
+  nav.toc h4 { font-size: 11px; text-transform: uppercase; color: var(--muted); letter-spacing: 0.06em; margin: 0 0 8px; }
+  nav.toc a {
+    display: block; padding: 5px 8px; border-radius: 4px;
+    color: var(--muted); margin-bottom: 1px;
+  }
+  nav.toc a:hover { background: var(--surface-alt); color: var(--text); text-decoration: none; }
+  nav.toc a.active { background: var(--accent-soft); color: var(--accent); font-weight: 500; }
+
+  main { min-width: 0; }
+  section { margin-bottom: 36px; scroll-margin-top: 70px; }
+  h2 { font-size: 20px; margin: 0 0 12px; border-bottom: 1px solid var(--border-soft); padding-bottom: 6px; }
+  h3 { font-size: 15px; margin: 0 0 8px; }
+
+  .tldr {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+  }
+  .tldr h2 { border: none; padding: 0; margin: 0 0 8px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); }
+  .tldr p { margin: 4px 0; }
+
+  /* Mode legend */
+  .modes {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 10px; margin: 0 0 24px;
+  }
+  .mode-card {
+    background: var(--surface); border: 1px solid var(--border-soft);
+    border-radius: 8px; padding: 14px 16px;
+    border-top: 3px solid var(--accent);
+  }
+  .mode-card.embed { border-top-color: var(--embed); }
+  .mode-card.shared { border-top-color: var(--shared); }
+  .mode-card h3 { margin: 0 0 4px; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+  .mode-card .pill {
+    font-family: ui-monospace, monospace; font-size: 10px;
+    padding: 2px 6px; border-radius: 4px;
+    background: var(--self-app-soft); color: var(--self-app);
+  }
+  .mode-card.embed .pill { background: var(--embed-soft); color: var(--embed); }
+  .mode-card.shared .pill { background: var(--shared-soft); color: var(--shared); }
+  .mode-card p { margin: 4px 0; color: var(--muted); font-size: 13px; }
+
+  .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  @media (max-width: 980px) {
+    .layout { grid-template-columns: 1fr; }
+    nav.toc { position: static; max-height: none; border-right: none; border-bottom: 1px solid var(--border-soft); padding: 0 0 12px; margin-bottom: 12px; }
+    .grid-2 { grid-template-columns: 1fr; }
+  }
+
+  .invariants { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+  .inv-card {
+    background: var(--surface); border: 1px solid var(--border-soft);
+    border-radius: 8px; padding: 14px 16px;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .inv-card .inv-num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 24px; height: 24px; border-radius: 6px;
+    background: var(--accent-soft); color: var(--accent);
+    font-weight: 600; font-size: 12px;
+  }
+  .inv-card.keystone .inv-num { background: var(--high-soft); color: var(--high); }
+  .inv-card h3 { margin: 0; font-size: 14px; }
+  .inv-head { display: flex; align-items: center; gap: 10px; }
+  .inv-card p { margin: 0; color: var(--muted); font-size: 13px; }
+  .inv-card ul { margin: 4px 0 0; padding-left: 18px; font-size: 13px; color: var(--muted); }
+  .inv-card ul li { margin: 2px 0; }
+  .inv-card .keystone-tag {
+    font-size: 10px; padding: 1px 6px; border-radius: 4px;
+    background: var(--high-soft); color: var(--high); margin-left: auto;
+  }
+
+  /* Backlog */
+  .backlog-controls {
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+    margin-bottom: 12px;
+  }
+  .filter-group { display: inline-flex; gap: 4px; align-items: center; }
+  .filter-group .label { font-size: 12px; color: var(--muted); margin-right: 4px; }
+  .chip {
+    font-size: 11px; padding: 4px 10px; border-radius: 999px;
+    border: 1px solid var(--border); background: var(--surface);
+    cursor: pointer; user-select: none;
+  }
+  .chip:hover { background: var(--surface-alt); }
+  .chip.active { background: var(--text); color: var(--surface); border-color: var(--text); }
+  .chip[data-value="High"].active { background: var(--high); border-color: var(--high); }
+  .chip[data-value="Medium"].active { background: var(--med); border-color: var(--med); }
+  .chip[data-value="Low"].active { background: var(--low); border-color: var(--low); }
+
+  .backlog { display: grid; gap: 8px; }
+  .row {
+    background: var(--surface); border: 1px solid var(--border-soft);
+    border-radius: 8px; padding: 0;
+    transition: border-color 0.15s;
+  }
+  .row:hover { border-color: var(--border); }
+  .row.hidden { display: none; }
+  .row-head {
+    display: grid;
+    grid-template-columns: 70px 1fr 90px 100px 90px;
+    gap: 10px;
+    padding: 10px 14px;
+    align-items: center;
+    cursor: pointer;
+  }
+  .row-head .id { font-family: ui-monospace, monospace; font-weight: 600; font-size: 12px; color: var(--accent); }
+  .row-head .title { font-size: 13px; }
+  .row-body {
+    display: none;
+    padding: 10px 14px 14px 84px;
+    color: var(--muted);
+    font-size: 13px;
+    border-top: 1px dashed var(--border-soft);
+  }
+  .row.open .row-body { display: block; }
+  .row.open { border-color: var(--accent); }
+
+  .badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 11px; padding: 2px 8px; border-radius: 999px;
+    font-weight: 500;
+  }
+  .badge.status-Draft { background: var(--draft-soft); color: var(--draft); }
+  .badge.status-Ready { background: var(--accent-soft); color: var(--accent); }
+  .badge.status-InProgress { background: var(--med-soft); color: var(--med); }
+  .badge.status-Blocked { background: var(--high-soft); color: var(--high); }
+  .badge.status-Done { background: var(--done-soft); color: var(--done); }
+  .badge.prio-High { background: var(--high-soft); color: var(--high); }
+  .badge.prio-Medium { background: var(--med-soft); color: var(--med); }
+  .badge.prio-Low { background: var(--low-soft); color: var(--low); }
+
+  .deps {
+    display: inline-flex; gap: 4px; flex-wrap: wrap;
+  }
+  .dep-tag {
+    font-family: ui-monospace, monospace; font-size: 10px;
+    padding: 1px 6px; border-radius: 4px;
+    background: var(--surface-alt); color: var(--muted);
+    border: 1px solid var(--border-soft);
+  }
+
+  .row-actions { display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap; }
+  button.action {
+    font-size: 12px; padding: 5px 10px; border-radius: 6px;
+    border: 1px solid var(--border); background: var(--surface);
+    color: var(--text); cursor: pointer;
+  }
+  button.action:hover { background: var(--accent-soft); border-color: var(--accent); }
+  button.action.copied { background: var(--done-soft); border-color: var(--done); color: var(--done); }
+
+  .dep-graph {
+    background: var(--surface); border: 1px solid var(--border-soft);
+    border-radius: 8px; padding: 16px; overflow-x: auto;
+  }
+  .dep-graph svg { display: block; max-width: 100%; height: auto; }
+
+  .out-of-scope { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 8px; }
+  .oos-card { background: var(--surface); border: 1px solid var(--border-soft); border-radius: 6px; padding: 10px 12px; font-size: 13px; color: var(--muted); }
+
+  .meta-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .meta-table th, .meta-table td { padding: 8px 12px; border-bottom: 1px solid var(--border-soft); text-align: left; }
+  .meta-table th { background: var(--surface-alt); font-weight: 500; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
+
+  pre.codeblock { background: var(--surface-alt); padding: 12px 14px; border-radius: 6px; overflow-x: auto; border: 1px solid var(--border-soft); font-size: 12px; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <h1>Navigation Hygiene</h1>
+  <span class="meta-pill">Workstream Spec</span>
+  <span class="meta-pill">Status: Draft</span>
+  <span class="meta-pill">Updated 2026-05-24</span>
+  <span class="spacer"></span>
+  <div class="links">
+    <a href="./AUDIT.html">Current-State Audit →</a>
+    <a href="../../OVERVIEW.md">SDK Overview</a>
+  </div>
+</header>
+
+<div class="layout">
+
+<nav class="toc" id="toc">
+  <h4>On this page</h4>
+  <a href="#tldr">TL;DR</a>
+  <a href="#modes">Two modes</a>
+  <a href="#why">Why</a>
+  <a href="#north-star">North Star</a>
+  <a href="#invariants">Invariants</a>
+  <a href="#backlog">Backlog</a>
+  <a href="#dependencies">Dependencies</a>
+  <a href="#scope">Out of Scope</a>
+  <a href="#validation">Validation</a>
+  <a href="#related">Related Specs</a>
+</nav>
+
+<main>
+
+<section id="tldr" class="tldr">
+  <h2>TL;DR</h2>
+  <p>
+    The SDK runs in two modes — <strong>self-app</strong> (Self Wallet, full UX) and <strong>embed</strong> (third-party host like Acme, one-shot verification). Today the router doesn't know which mode a route belongs to. ~14 registered routes are pre-built self-app screens awaiting wiring (proof history, receipts, KYC pending/success, points, backup prompt); a smaller set (~5) is genuinely orphan and should be deleted or moved to <code>/dev/*</code>. This workstream defines the routing contract — mode declaration at registration, cluster-owned close, single boot decision, back/close terminology — and a classification backlog. Wiring of self-app pre-builds belongs to WV-13 / WV-14 downstream.
+  </p>
+  <p style="font-size:12px;color:var(--muted);margin-top:8px">
+    Triage every unwired route in the board in <a href="./AUDIT.html">AUDIT.html</a> — export pastes a disposition table into NAV-01's plan.
+  </p>
+</section>
+
+<section id="modes">
+  <h2>Two modes</h2>
+  <p style="margin-top:0;color:var(--muted);font-size:13px">
+    Same code base, two consumer surfaces. Most architecture decisions in this workstream hinge on whether a screen is reachable in self-app, in embed, or in both.
+  </p>
+  <div class="modes">
+    <div class="mode-card">
+      <h3>self-app <span class="pill">mode=self-app</span></h3>
+      <p>The Self Wallet app. Long-lived, multi-entry. Home, settings, document management, proof history, receipts, points, recovery, backup prompts, account state.</p>
+      <p style="margin-top:6px;font-size:12px"><strong>Lifecycle:</strong> persistent. User opens, navigates, leaves, returns.</p>
+    </div>
+    <div class="mode-card embed">
+      <h3>embed <span class="pill">mode=embed</span></h3>
+      <p>SDK invoked from a third-party host (Acme social app, etc.) for one verification. Short-lived. Always terminates via <code>bridge.setResult + bridge.dismiss</code> back to the host. No settings, no history, no home.</p>
+      <p style="margin-top:8px;font-size:12px"><strong>Two entry sub-paths, picked at the tour based on local registration state:</strong></p>
+      <ul style="margin:4px 0;padding-left:18px;font-size:12px;color:var(--muted)">
+        <li><strong>register + disclose</strong> — first-time user, no document registered locally. Full path: tour → KYC → provider → registration proof → disclose → result.</li>
+        <li><strong>disclose-only</strong> — returning user, document already registered. Skips KYC: tour → disclose (proof generated against existing registration) → result.</li>
+      </ul>
+      <p style="margin-top:6px;font-size:12px"><strong>Lifecycle:</strong> one-shot. Boots, picks sub-path, completes, dismisses.</p>
+    </div>
+    <div class="mode-card shared">
+      <h3>shared <span class="pill">scope=shared</span></h3>
+      <p>Screens used by both modes — onboarding flow, NFC capture, recovery phrase input. Mode-aware via <code>useOperatingMode()</code>: terminal behavior differs (self-app: <code>navigate('/')</code>; embed: <code>bridge.setResult + dismiss</code>).</p>
+      <p style="margin-top:6px;font-size:12px"><strong>Lifecycle:</strong> depends on caller.</p>
+    </div>
+  </div>
+  <p style="font-size:12px;color:var(--muted)">
+    The code currently uses <code>wallet</code> / <code>tunnel</code> for these two modes. This spec uses <code>self-app</code> / <code>embed</code> for clarity; the code rename is tracked as <strong>NAV-12</strong>. Both names refer to the same thing while the rename is in flight.
+  </p>
+</section>
+
+<section id="why">
+  <h2>Why</h2>
+  <p>A full audit of <code>packages/webview-app/src/App.tsx</code> and every screen's navigation calls shows the route graph has accumulated entropy:</p>
+  <div class="grid-2">
+    <div class="oos-card"><strong>No mode tag at registration.</strong> Routes don't declare which mode they belong to. Boot enforces it implicitly; the router can't.</div>
+    <div class="oos-card"><strong>Pre-built screens awaiting wiring.</strong> ~14 self-app routes (history, receipts, KYC overlays, points, backup) are reachable only via <code>DevRouteMenu</code>. WV-13 / WV-14 will wire them; this workstream classifies them.</div>
+    <div class="oos-card"><strong>True orphans.</strong> A small set (<code>/tunnel/registration/*</code> dev sub-flow + a few overlay-shaped routes) should be deleted or refactored into components.</div>
+    <div class="oos-card"><strong>"Back" vs "close".</strong> Used interchangeably with no documented difference in intent.</div>
+    <div class="oos-card"><strong>Two boot deciders.</strong> <code>ModeBoot</code> + <code>InitialRouteRedirect</code> overlap and can disagree.</div>
+    <div class="oos-card"><strong>Hard-coded close.</strong> Cluster terminals call <code>navigate('/')</code> directly — no single owner.</div>
+    <div class="oos-card"><strong>Coupled flows.</strong> EU-ID errors route to passport's error screen — accidental, not designed.</div>
+    <div class="oos-card"><strong>Asymmetric namespaces.</strong> <code>/tunnel/proof/*</code> vs <code>/proving/*</code> — same engine, different surface.</div>
+  </div>
+</section>
+
+<section id="north-star">
+  <h2>North Star</h2>
+  <p>A contributor reading any cluster's code can answer in under 30 seconds:</p>
+  <ol>
+    <li>Which mode does this route belong to — self-app, embed, or shared?</li>
+    <li>Where does this cluster start?</li>
+    <li>What does "back" do here?</li>
+    <li>What does "close" do here?</li>
+    <li>Where does this cluster end on success / cancel / error?</li>
+  </ol>
+  <p>A new route cannot be registered without declaring its mode, picking a namespace, and declaring its close target. Dev-only routes are visibly dev-only at the route level.</p>
+</section>
+
+<section id="invariants">
+  <h2>Invariants <span style="font-size:12px;color:var(--muted);font-weight:400">— the durable contract</span></h2>
+  <div class="invariants">
+
+    <div class="inv-card keystone">
+      <div class="inv-head"><span class="inv-num">1</span><h3>Mode declared at registration</h3><span class="keystone-tag">keystone</span></div>
+      <p>Every route declares one of: <code>self-app</code>, <code>embed</code>, <code>shared</code>, <code>dev</code>. Declaration lives next to the <code>&lt;Route&gt;</code>, not buried in the screen.</p>
+      <p style="margin-top:6px">Router fails closed on cross-mode navigation: a self-app boot cannot land on an embed-only route and vice versa.</p>
+    </div>
+
+    <div class="inv-card">
+      <div class="inv-head"><span class="inv-num">2</span><h3>Cluster boundaries</h3></div>
+      <p>Every route belongs to exactly one cluster (passport, eu-id, aadhaar, self-app-proving, embed-proving, recovery, settings, …). Each cluster declares:</p>
+      <ul>
+        <li>One documented entry</li>
+        <li>Ordered internal steps (back walks them)</li>
+        <li>A single close target</li>
+      </ul>
+      <p style="margin-top:6px"><em>Close is owned by the cluster, not the screen.</em></p>
+    </div>
+
+    <div class="inv-card">
+      <div class="inv-head"><span class="inv-num">3</span><h3>"Back" vs "close"</h3></div>
+      <ul>
+        <li><strong>Back</strong> — step within the cluster. Never exits.</li>
+        <li><strong>Close</strong> — exit the cluster via the cluster's close handler. Never <code>navigate(-1)</code>.</li>
+        <li>UI label must match the call. No mixing.</li>
+      </ul>
+    </div>
+
+    <div class="inv-card">
+      <div class="inv-head"><span class="inv-num">4</span><h3>Dev-only segregation</h3></div>
+      <p>Dev-only routes must satisfy all three:</p>
+      <ul>
+        <li>Live under <code>/dev/*</code></li>
+        <li>Registered behind <code>import.meta.env.DEV</code></li>
+        <li>Linked only from <code>DevRouteMenu</code></li>
+      </ul>
+    </div>
+
+    <div class="inv-card">
+      <div class="inv-head"><span class="inv-num">5</span><h3>One boot decision</h3></div>
+      <p>Exactly one initial-route function. Inputs:</p>
+      <ul>
+        <li><code>mode</code> from <code>lifecycle.getConfig</code></li>
+        <li><code>verificationRequest</code> shape</li>
+        <li>Currently-attempted path</li>
+      </ul>
+      <p style="margin-top:6px"><code>ModeBoot</code> + <code>InitialRouteRedirect</code> collapse into this.</p>
+    </div>
+
+    <div class="inv-card">
+      <div class="inv-head"><span class="inv-num">6</span><h3>Cross-document reuse</h3></div>
+      <p>Shared UI (NFC error, etc.) is reused via <strong>component composition</strong> parameterized by document type — never by routing one document's flow into another's route.</p>
+    </div>
+
+    <div class="inv-card">
+      <div class="inv-head"><span class="inv-num">7</span><h3>Namespace structure</h3></div>
+      <p style="margin:2px 0;font-size:12px"><strong>Verbs</strong> — operations the user is performing:</p>
+      <ul>
+        <li><code>/tour/:step</code> — welcome/education tour</li>
+        <li><code>/pick-country</code>, <code>/pick-id</code></li>
+        <li><code>/capture/{passport,eu-id,aadhaar,kyc}/*</code></li>
+        <li><code>/register/{confirm,generating,success,failure}</code></li>
+        <li><code>/backup-phrase</code> — first-time backup setup (distinct from <code>/settings/recovery-phrase</code>)</li>
+        <li><code>/notify</code> — first-time notification opt-in</li>
+        <li><code>/disclose/{request,review,generating,result,kyc-pending,kyc-success}</code></li>
+        <li><code>/recover/{launch,phrase,success,failure,required}</code></li>
+      </ul>
+      <p style="margin:6px 0 2px;font-size:12px"><strong>Places</strong> — destinations (self-app only):</p>
+      <ul>
+        <li><code>/</code>, <code>/settings/*</code>, <code>/docs</code>, <code>/docs/:id</code>, <code>/history</code>, <code>/receipts/:id</code>, <code>/points/*</code>, <code>/account/*</code></li>
+      </ul>
+      <p style="margin:6px 0 2px;font-size:12px"><strong>Dev:</strong> <code>/dev/*</code></p>
+      <p style="margin-top:6px;font-size:12px"><strong>No journey prefixes, no mode prefixes.</strong> No <code>/onboarding</code>, no <code>/tunnel</code>, no <code>/wallet</code>. Each URL describes one screen / operation. Journey context (am I onboarding? adding a doc? recovering?) lives in code (which <code>navigate()</code> calls happen in what order) and in events (Mixpanel funnels), not in URLs. Cluster-close (NAV-04) is where "after register-success, go to <code>/backup-phrase</code> if first-time, <code>/docs</code> if add-doc" is decided.</p>
+    </div>
+
+    <div class="inv-card">
+      <div class="inv-head"><span class="inv-num">8</span><h3>State-passing slots</h3></div>
+      <ul>
+        <li><code>nextPath</code> — where to go on success</li>
+        <li><code>backPath</code> — where back goes when history is unreliable</li>
+        <li><code>returnTo</code> — return after a sub-flow</li>
+      </ul>
+      <p style="margin-top:6px">Mixing slot meanings is not permitted.</p>
+    </div>
+
+    <div class="inv-card">
+      <div class="inv-head"><span class="inv-num">9</span><h3><code>replace: true</code></h3></div>
+      <p>Use it when the user must not be able to back into the screen just left:</p>
+      <ul>
+        <li>After terminal outcomes (success/failure)</li>
+        <li>After invalid-state redirects</li>
+        <li>After cluster-internal forward progressions</li>
+      </ul>
+    </div>
+
+  </div>
+</section>
+
+<section id="backlog">
+  <h2>Backlog</h2>
+  <div class="backlog-controls">
+    <span class="filter-group">
+      <span class="label">Status:</span>
+      <button class="chip active" data-filter="status" data-value="all">All</button>
+      <button class="chip" data-filter="status" data-value="Draft">Draft</button>
+      <button class="chip" data-filter="status" data-value="Ready">Ready</button>
+      <button class="chip" data-filter="status" data-value="In Progress">In Progress</button>
+      <button class="chip" data-filter="status" data-value="Done">Done</button>
+    </span>
+    <span class="filter-group">
+      <span class="label">Priority:</span>
+      <button class="chip active" data-filter="prio" data-value="all">All</button>
+      <button class="chip" data-filter="prio" data-value="High">High</button>
+      <button class="chip" data-filter="prio" data-value="Medium">Medium</button>
+      <button class="chip" data-filter="prio" data-value="Low">Low</button>
+    </span>
+    <span style="flex:1"></span>
+    <span style="font-size:12px;color:var(--muted)" id="backlog-count">13 items</span>
+  </div>
+
+  <div class="backlog" id="backlog-list"></div>
+</section>
+
+<section id="dependencies">
+  <h2>Dependencies</h2>
+  <p style="color:var(--muted);font-size:13px;margin-top:0">
+    NAV-01 (route classification) is the keystone — most downstream items consume the classification. NAV-04 (cluster-close hook) is independent and unblocks NAV-05. The <code>tunnel</code>→<code>embed</code> code rename (NAV-12) is the largest blast radius.
+  </p>
+  <div class="dep-graph">
+    <svg viewBox="0 0 740 460" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="NAV dependency graph">
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#656d76" />
+        </marker>
+        <style>
+          .node rect { rx: 6; ry: 6; stroke-width: 1.5; }
+          .node text { font: 600 12px ui-monospace, SFMono-Regular, Menlo, monospace; fill: #1f2328; }
+          .node .sub { font: 400 10px -apple-system, sans-serif; fill: #656d76; }
+          .high rect { fill: #ffebe9; stroke: #cf222e; }
+          .med rect { fill: #fff8c5; stroke: #9a6700; }
+          .low rect { fill: #ddf4ff; stroke: #0969da; }
+          .edge { stroke: #656d76; stroke-width: 1.2; fill: none; }
+        </style>
+      </defs>
+
+      <!-- Keystone -->
+      <g class="node high">
+        <rect x="290" y="20" width="160" height="50" />
+        <text x="370" y="40" text-anchor="middle">NAV-01</text>
+        <text x="370" y="56" text-anchor="middle" class="sub">Route classification</text>
+      </g>
+
+      <!-- Row 2: NAV-01 children -->
+      <g class="node high">
+        <rect x="20" y="120" width="140" height="50" />
+        <text x="90" y="140" text-anchor="middle">NAV-02</text>
+        <text x="90" y="156" text-anchor="middle" class="sub">Dev namespace</text>
+      </g>
+      <g class="node high">
+        <rect x="180" y="120" width="140" height="50" />
+        <text x="250" y="140" text-anchor="middle">NAV-13</text>
+        <text x="250" y="156" text-anchor="middle" class="sub">Mode at registration</text>
+      </g>
+      <g class="node low">
+        <rect x="340" y="120" width="140" height="50" />
+        <text x="410" y="140" text-anchor="middle">NAV-08</text>
+        <text x="410" y="156" text-anchor="middle" class="sub">Namespace symmetry</text>
+      </g>
+      <g class="node low">
+        <rect x="500" y="120" width="140" height="50" />
+        <text x="570" y="140" text-anchor="middle">NAV-10</text>
+        <text x="570" y="156" text-anchor="middle" class="sub">Delete dead flows</text>
+      </g>
+      <g class="node low">
+        <rect x="500" y="190" width="140" height="50" />
+        <text x="570" y="210" text-anchor="middle">NAV-11</text>
+        <text x="570" y="226" text-anchor="middle" class="sub">Social signon</text>
+      </g>
+
+      <path class="edge" d="M 340 70 Q 340 95 90 120" marker-end="url(#arrow)" />
+      <path class="edge" d="M 350 70 Q 350 95 250 120" marker-end="url(#arrow)" />
+      <path class="edge" d="M 390 70 Q 390 95 410 120" marker-end="url(#arrow)" />
+      <path class="edge" d="M 420 70 Q 420 95 570 120" marker-end="url(#arrow)" />
+      <path class="edge" d="M 430 70 Q 470 95 570 190" marker-end="url(#arrow)" />
+
+      <!-- NAV-04 -> NAV-05 chain -->
+      <g class="node high">
+        <rect x="20" y="220" width="140" height="50" />
+        <text x="90" y="240" text-anchor="middle">NAV-04</text>
+        <text x="90" y="256" text-anchor="middle" class="sub">Cluster close hook</text>
+      </g>
+      <g class="node med">
+        <rect x="180" y="220" width="140" height="50" />
+        <text x="250" y="240" text-anchor="middle">NAV-05</text>
+        <text x="250" y="256" text-anchor="middle" class="sub">Back/close sweep</text>
+      </g>
+      <path class="edge" d="M 160 245 L 180 245" marker-end="url(#arrow)" />
+
+      <!-- Row: independents -->
+      <g class="node high">
+        <rect x="20" y="310" width="140" height="50" />
+        <text x="90" y="330" text-anchor="middle">NAV-03</text>
+        <text x="90" y="346" text-anchor="middle" class="sub">Boot collapse</text>
+      </g>
+      <g class="node med">
+        <rect x="180" y="310" width="140" height="50" />
+        <text x="250" y="330" text-anchor="middle">NAV-06</text>
+        <text x="250" y="346" text-anchor="middle" class="sub">NFC reuse</text>
+      </g>
+      <g class="node med">
+        <rect x="340" y="310" width="140" height="50" />
+        <text x="410" y="330" text-anchor="middle">NAV-07</text>
+        <text x="410" y="346" text-anchor="middle" class="sub">replace: true rule</text>
+      </g>
+      <g class="node med">
+        <rect x="500" y="310" width="140" height="50" />
+        <text x="570" y="330" text-anchor="middle">NAV-09</text>
+        <text x="570" y="346" text-anchor="middle" class="sub">State-slot sweep</text>
+      </g>
+
+      <!-- Standalone large -->
+      <g class="node low">
+        <rect x="290" y="400" width="160" height="50" />
+        <text x="370" y="420" text-anchor="middle">NAV-12</text>
+        <text x="370" y="436" text-anchor="middle" class="sub">tunnel → embed rename</text>
+      </g>
+    </svg>
+    <div style="margin-top:8px;display:flex;gap:16px;font-size:11px;color:var(--muted)">
+      <span><span style="display:inline-block;width:10px;height:10px;background:#ffebe9;border:1px solid #cf222e;border-radius:2px;vertical-align:middle"></span> High</span>
+      <span><span style="display:inline-block;width:10px;height:10px;background:#fff8c5;border:1px solid #9a6700;border-radius:2px;vertical-align:middle"></span> Medium</span>
+      <span><span style="display:inline-block;width:10px;height:10px;background:#ddf4ff;border:1px solid #0969da;border-radius:2px;vertical-align:middle"></span> Low</span>
+    </div>
+  </div>
+</section>
+
+<section id="scope">
+  <h2>Out of Scope</h2>
+  <div class="out-of-scope">
+    <div class="oos-card"><strong>Wiring self-app pre-builds</strong> (proof history list, receipt detail, etc.). That's <a href="../webview/SPEC.md">WV-13 / WV-14</a>. This workstream <em>classifies</em> them so those plans can pick them up.</div>
+    <div class="oos-card"><strong>Screen content</strong> — copy, layout, visuals. Routing structure only.</div>
+    <div class="oos-card"><strong>New features.</strong> Existing flows are cleaned, classified, deleted, or moved — none added.</div>
+    <div class="oos-card"><strong>Engine changes.</strong> No proving-machine or store modifications.</div>
+    <div class="oos-card"><strong>Paused native shells.</strong> They keep their paused specs.</div>
+  </div>
+</section>
+
+<section id="validation">
+  <h2>Validation</h2>
+  <p>Each plan declares its own validation. Workstream-level sanity:</p>
+  <pre class="codeblock">yarn workspace @selfxyz/webview-app build
+yarn workspace @selfxyz/webview-app test</pre>
+  <p>After NAV-01 lands, regenerate <a href="./AUDIT.html">AUDIT.html</a> and diff; uncategorized count must reach zero.</p>
+</section>
+
+<section id="related">
+  <h2>Related Specs</h2>
+  <table class="meta-table">
+    <thead><tr><th>Spec</th><th>Relationship</th></tr></thead>
+    <tbody>
+      <tr><td><a href="../webview/SPEC.md">WebView UI (WV-13 / WV-14)</a></td><td>Wires the self-app pre-builds that NAV-01 classifies</td></tr>
+      <tr><td><a href="../webview-in-app/SPEC-MODES.md">WebView-in-App Modes</a></td><td>Source of the mode signal that NAV-03 / NAV-13 enforce</td></tr>
+      <tr><td><a href="../../OVERVIEW.md">SDK Overview</a></td><td>Architecture context</td></tr>
+    </tbody>
+  </table>
+</section>
+
+</main>
+</div>
+
+<script>
+const BACKLOG = [
+  { id: "NAV-01", title: "Route mode-classification audit", status: "Draft", prio: "High", deps: [], notes: "Walk every registered route in App.tsx. Classify as self-app / embed / shared / dev / component / delete. Capture decisions in AUDIT.html's triage board; export the disposition table into this plan. Output is consumed by NAV-02, NAV-13, NAV-10, NAV-11 and informs WV-13 / WV-14 wiring." },
+  { id: "NAV-02", title: "Dev-only route namespace + DEV gating", status: "Draft", prio: "High", deps: ["NAV-01"], notes: "Move every route classified 'dev' under /dev/*. Gate registration on import.meta.env.DEV at the App.tsx route registration site. Audit DevRouteMenu entries so they only reference /dev/* paths." },
+  { id: "NAV-03", title: "Collapse ModeBoot + InitialRouteRedirect into one boot decision function", status: "Draft", prio: "High", deps: [], notes: "Single documented decision tree, runs after OperatingModeProvider + VerificationRequestProvider resolve. Inputs: mode, verificationRequest shape, attempted path. Preserve fail-closed behavior on embed + invalid request." },
+  { id: "NAV-04", title: "useClusterClose() hook + per-cluster close target registry", status: "Draft", prio: "High", deps: [], notes: "Single source of truth for what 'close' means in each cluster. Mode-aware: self-app close lands on home (or entry point); embed close calls bridge.setResult + bridge.dismiss. Replaces ad-hoc navigate('/') across cluster terminal screens. Unblocks NAV-05." },
+  { id: "NAV-05", title: "'Back' vs 'close' terminology audit + UI label sweep", status: "Draft", prio: "Medium", deps: ["NAV-04"], notes: "Per-cluster: rename UI elements + handler names to match invariant #3. Close buttons call useClusterClose(); back buttons walk cluster history. Touch every screen header, including shared NFC clusters." },
+  { id: "NAV-06", title: "Cross-document NFC error/success consolidation", status: "Draft", prio: "Medium", deps: [], notes: "EU-ID currently routes its MRZ and NFC errors to /onboarding/passport/nfc-error. Decide: EU-ID owns its own routes that compose a shared <NfcErrorScreen documentType=... /> component, or keep route-reuse (and document as intentional). Recommended: split + compose." },
+  { id: "NAV-07", title: "replace: true audit + codify rule", status: "Draft", prio: "Medium", deps: [], notes: "Sweep every navigate() call in webview-app. Flag inconsistencies against invariant #9. Document the rule in CONTRIBUTING and consider a lint rule." },
+  { id: "NAV-08", title: "Namespace rewrite: verbs + places only, drop journey + mode prefixes", status: "Draft", prio: "High", deps: ["NAV-01"], notes: "Full namespace rewrite per invariant #7. Drops /tunnel/*, /proving/*, AND /onboarding/* entirely — including the orchestration shell. Every URL is either a verb (operation: /tour, /pick-*, /capture/*, /register/*, /backup-phrase, /notify, /disclose/*, /recover/*) or a place (destination: /, /settings/*, /docs, /history, /receipts/:id, /points/*, /account/*). No journey prefix, no mode prefix. Journey context lives in code and Mixpanel events; mode is metadata enforced by NAV-13. Specific consolidations: (a) /onboarding/tour and /tunnel/tour collapse to one shared /tour/:step with mode-aware copy via useOperatingMode(); (b) /proving/kyc-{pending,success} and /tunnel/kyc-{pending,success} collapse to /disclose/kyc-{pending,success}; (c) /onboarding/registering retires; the canonical register flow is /register/{confirm,generating,success,failure}; (d) duplicate register-success screens consolidate to /register/success rendering Euclid's ProofSuccessBackupScreen — ScanSuccessScreen and ProofGenerationSuccessScreen retire; (e) /tunnel/kyc (TunnelKycWrapper redirect) deletes entirely — embed boot navigates directly to /capture/kyc with embed-mode state; (f) /onboarding/recovery-phrase becomes /backup-phrase (top-level, distinct from /settings/recovery-phrase which manages an existing phrase); (g) /onboarding/notifications becomes /notify (top-level, first-time prompt). Blast radius: every route registration in App.tsx, every navigate() string, every state.nextPath / state.backPath / state.returnTo, host integration deeplinks, test fixtures, docs. Largest PR in the workstream — coordinate with NAV-13 so registrations land mode-tagged in one pass." },
+  { id: "NAV-09", title: "State-passing convention sweep (nextPath / backPath / returnTo)", status: "Draft", prio: "Medium", deps: [], notes: "Audit every state object passed to navigate(). Rename inconsistent slots (e.g. state.returnTo used as nextPath). Add JSDoc types for the three slots in a shared NavState type." },
+  { id: "NAV-10", title: "Delete /tunnel/registration/* dead sub-flow", status: "Draft", prio: "Low", deps: ["NAV-01"], notes: "Three-route mini-flow that bypasses KYC entirely. Only reachable via DevRouteMenu. Audit confirms no production entry. Likely delete; if any dev value, move to /dev/embed-registration." },
+  { id: "NAV-11", title: "Decision on social sign-on placeholders", status: "Draft", prio: "Low", deps: ["NAV-01"], notes: "/onboarding/backup, /onboarding/signin, /onboarding/conflict — currently TODO WV-12. Two options: land WV-12 wiring and bring them into the production graph, or delete until needed. Pick one." },
+  { id: "NAV-12", title: "Rename tunnel → embed across code (mode terminology)", status: "Draft", prio: "Low", deps: [], notes: "Large sweep: rename the 'tunnel' operating mode to 'embed' across mobile-sdk-alpha, webview-app, webview-bridge, kmp-sdk, app/. Route paths /tunnel/* → /embed/* part of this (or split into a follow-up). Backwards-compat shim for one release on the bridge protocol if hosts already depend on the 'tunnel' literal." },
+  { id: "NAV-13", title: "Declare mode at route registration (invariant #1)", status: "Draft", prio: "High", deps: ["NAV-01"], notes: "Wrap every <Route> with a mode declaration — e.g. <ModeRoute mode='self-app' path='/settings' ...>. The wrapper hides routes that don't match the current operating mode (404 / redirect to home / fail-closed for embed). Removes the implicit mode-coupling currently scattered in ModeBoot and per-screen guards. Should land in the same PR as NAV-08 so routes are tagged at the same moment their paths change." }
+];
+
+const list = document.getElementById('backlog-list');
+const filters = { status: 'all', prio: 'all' };
+
+function render() {
+  list.innerHTML = '';
+  let count = 0;
+  for (const item of BACKLOG) {
+    const matches = (filters.status === 'all' || item.status === filters.status)
+                 && (filters.prio === 'all' || item.prio === filters.prio);
+    if (!matches) continue;
+    count++;
+    const row = document.createElement('div');
+    row.className = 'row';
+    row.innerHTML = `
+      <div class="row-head">
+        <span class="id">${item.id}</span>
+        <span class="title">${item.title}</span>
+        <span class="badge prio-${item.prio}">${item.prio}</span>
+        <span class="badge status-${item.status.replace(' ', '')}">${item.status}</span>
+        <span class="deps">${item.deps.length ? item.deps.map(d => `<span class="dep-tag">${d}</span>`).join('') : '<span style="font-size:11px;color:var(--muted)">—</span>'}</span>
+      </div>
+      <div class="row-body">
+        <p>${item.notes}</p>
+        <div class="row-actions">
+          <button class="action" data-action="copy-prompt" data-id="${item.id}">Copy as spec prompt</button>
+          <button class="action" data-action="copy-md" data-id="${item.id}">Copy as markdown row</button>
+        </div>
+      </div>
+    `;
+    row.querySelector('.row-head').addEventListener('click', () => row.classList.toggle('open'));
+    list.appendChild(row);
+  }
+  document.getElementById('backlog-count').textContent = `${count} of ${BACKLOG.length} items`;
+}
+
+document.querySelectorAll('.chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    const group = chip.dataset.filter;
+    document.querySelectorAll(`.chip[data-filter="${group}"]`).forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    filters[group] = chip.dataset.value;
+    render();
+  });
+});
+
+list.addEventListener('click', e => {
+  const btn = e.target.closest('button.action');
+  if (!btn) return;
+  e.stopPropagation();
+  const item = BACKLOG.find(i => i.id === btn.dataset.id);
+  if (!item) return;
+  let text;
+  if (btn.dataset.action === 'copy-prompt') {
+    text = `You are implementing ${item.id}: ${item.title} from specs/projects/sdk/workstreams/nav-hygiene/SPEC.html.\n\nContext: ${item.notes}\n\nDependencies: ${item.deps.join(', ') || 'none'}\n\nFollow the invariants in SPEC.html. Read AUDIT.html for the current-state route graph + classification table. Produce a plan file at specs/projects/sdk/workstreams/nav-hygiene/plans/${item.id}-<slug>.md before writing code.`;
+  } else {
+    text = `| ${item.id} | ${item.title} | ${item.status} | ${item.prio} | ${item.deps.join(', ') || '-'} | — | ${item.notes} |`;
+  }
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = 'Copied';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 1400);
+  });
+});
+
+// Active TOC link on scroll
+const sections = document.querySelectorAll('main section[id]');
+const tocLinks = document.querySelectorAll('#toc a');
+const io = new IntersectionObserver(entries => {
+  for (const e of entries) {
+    if (e.isIntersecting) {
+      tocLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + e.target.id));
+    }
+  }
+}, { rootMargin: '-30% 0px -60% 0px' });
+sections.forEach(s => io.observe(s));
+
+render();
+</script>
+
+</body>
+</html>
