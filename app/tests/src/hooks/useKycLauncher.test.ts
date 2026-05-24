@@ -107,7 +107,7 @@ describe('useKycLauncher', () => {
     } as Awaited<ReturnType<typeof startKycVerification>>);
   });
 
-  it('emits SCAN_STARTED before createKycSession (intent-based, matches biometric and Aadhaar)', async () => {
+  it('emits SCAN_STARTED only after createKycSession succeeds', async () => {
     const callOrder: string[] = [];
     mockTrackOnboardingStep.mockImplementation(((..._args: unknown[]) => {
       callOrder.push('trackOnboardingStep');
@@ -134,8 +134,8 @@ describe('useKycLauncher', () => {
     });
 
     expect(callOrder).toEqual([
-      'trackOnboardingStep',
       'createKycSession',
+      'trackOnboardingStep',
       'launchKycVerification',
     ]);
     expect(mockTrackOnboardingStep).toHaveBeenCalledWith(
@@ -145,7 +145,7 @@ describe('useKycLauncher', () => {
     );
   });
 
-  it('still emits SCAN_STARTED when createKycSession fails (captures attempted-but-failed intent)', async () => {
+  it('does not emit SCAN_STARTED when createKycSession fails', async () => {
     const consoleErrorSpy = jest
       .spyOn(console, 'error')
       .mockImplementation(() => {});
@@ -163,11 +163,7 @@ describe('useKycLauncher', () => {
 
     await waitFor(() => expect(onError).toHaveBeenCalled());
 
-    expect(mockTrackOnboardingStep).toHaveBeenCalledWith(
-      selfClientStub,
-      OnboardingEvents.SCAN_STARTED,
-      { branch: 'kyc' },
-    );
+    expect(mockTrackOnboardingStep).not.toHaveBeenCalled();
     expect(mockStartKycVerification).not.toHaveBeenCalled();
     expect(mockTrackBranchEvent).not.toHaveBeenCalledWith(
       selfClientStub,

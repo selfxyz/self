@@ -365,11 +365,6 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
                     );
                   }
 
-                  trackOnboardingStep(
-                    trackEventClient,
-                    OnboardingEvents.SCAN_STARTED,
-                    { branch: 'kyc' },
-                  );
                   trackBranchEvent(
                     trackEventClient,
                     KycEvents.SESSION_REQUESTED,
@@ -379,6 +374,11 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
                     country: countryCode,
                     nationality: countryCode,
                   });
+                  trackOnboardingStep(
+                    trackEventClient,
+                    OnboardingEvents.SCAN_STARTED,
+                    { branch: 'kyc' },
+                  );
                   trackBranchEvent(
                     trackEventClient,
                     KycEvents.SESSION_CREATED,

@@ -29,9 +29,11 @@ class MainApplication : Application(), ReactApplication {
         add(BackupPackage())
       }
 
+  private val packages by lazy { createPackages() }
+
   override val reactNativeHost: ReactNativeHost =
       object : DefaultReactNativeHost(this) {
-        override fun getPackages(): MutableList<ReactPackage> = createPackages()
+        override fun getPackages(): MutableList<ReactPackage> = packages
 
         override fun getJSMainModuleName(): String = "index"
 
@@ -41,8 +43,9 @@ class MainApplication : Application(), ReactApplication {
         override val isHermesEnabled: Boolean = BuildConfig.IS_HERMES_ENABLED
       }
 
-  override val reactHost: ReactHost
-    get() = ExpoReactHostFactory.getDefaultReactHost(this, createPackages())
+  override val reactHost: ReactHost by lazy {
+    ExpoReactHostFactory.getDefaultReactHost(this, packages)
+  }
 
   override fun onCreate() {
     super.onCreate()

@@ -80,10 +80,14 @@ jest.mock('@selfxyz/mobile-sdk-alpha', () => {
     PROVING_REGISTER_ERROR_OR_FAILURE: 'PROVING_REGISTER_ERROR_OR_FAILURE',
     PROVING_ACCOUNT_VERIFIED_PENDING: 'PROVING_ACCOUNT_VERIFIED_PENDING',
     PROVING_ACCOUNT_VERIFIED_FAILURE: 'PROVING_ACCOUNT_VERIFIED_FAILURE',
+    DOCUMENT_TYPE_SELECTED: 'DOCUMENT_TYPE_SELECTED',
   };
 
   return {
     __esModule: true,
+    sanitizeErrorMessage: (msg: unknown) => String(msg),
+    trackBranchEvent: jest.fn(),
+    trackOnboardingStep: jest.fn(),
     useSelfClient: jest.fn(() => mockClient),
     SelfClientProvider: mockSdkProvider,
     createListenersMap,
@@ -94,18 +98,38 @@ jest.mock('@selfxyz/mobile-sdk-alpha', () => {
   };
 });
 
+jest.mock('@/integrations/kyc', () => ({
+  createKycSession: jest.fn(),
+  launchKycVerification: jest.fn(),
+  KYC_PROVIDER: 'didit',
+}));
+
 let useSelfClient: () => unknown;
 let SelfClientProvider: ({ children }: { children: ReactNode }) => JSX.Element;
+let SdkEvents: Record<string, string>;
+let trackBranchEvent: jest.Mock;
+let trackOnboardingStep: jest.Mock;
+let createKycSession: jest.Mock;
+let launchKycVerification: jest.Mock;
+let navigationRef: { isReady: jest.Mock; navigate: jest.Mock };
 
 beforeAll(() => {
-  ({ useSelfClient } = require('@selfxyz/mobile-sdk-alpha'));
+  ({
+    useSelfClient,
+    SdkEvents,
+    trackBranchEvent,
+    trackOnboardingStep,
+  } = require('@selfxyz/mobile-sdk-alpha'));
   ({ SelfClientProvider } = require('@/providers/selfClientProvider'));
+  ({ createKycSession, launchKycVerification } = require('@/integrations/kyc'));
+  ({ navigationRef } = require('@/navigation'));
 });
 
 describe('SelfClientProvider', () => {
   beforeEach(() => {
     mockSdkProviderProps = undefined;
     useSettingStore.setState(useSettingStore.getInitialState(), true);
+    navigationRef.isReady.mockReturnValue(false);
   });
 
   it('memoises the client instance', () => {
@@ -231,5 +255,61 @@ describe('SelfClientProvider', () => {
     expect(config?.devConfig?.shouldBypassDocumentRegistrationCheck?.()).toBe(
       true,
     );
+  });
+
+  it('emits SCAN_STARTED after the direct KYC session is created', async () => {
+    const callOrder: string[] = [];
+    navigationRef.isReady.mockReturnValue(true);
+
+    (trackBranchEvent as jest.Mock).mockImplementation((...args: unknown[]) => {
+      callOrder.push(`branch:${String(args[1])}`);
+    });
+    (trackOnboardingStep as jest.Mock).mockImplementation(
+      (...args: unknown[]) => {
+        callOrder.push(`onboarding:${String(args[1])}`);
+      },
+    );
+    (createKycSession as jest.Mock).mockImplementation(async () => {
+      callOrder.push('createKycSession');
+      return { sessionId: 'session-1', sessionToken: 'token-1' };
+    });
+    (launchKycVerification as jest.Mock).mockImplementation(async () => {
+      callOrder.push('launchKycVerification');
+      return { type: 'cancelled' };
+    });
+
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <SelfClientProvider>{children}</SelfClientProvider>
+    );
+    renderHook(() => useSelfClient(), { wrapper });
+
+    const providerListeners = mockSdkProviderProps?.listeners as Map<
+      string,
+      (payload: { documentType: string; countryCode?: string }) => void
+    >;
+    const onDocumentTypeSelected = providerListeners.get(
+      SdkEvents.DOCUMENT_TYPE_SELECTED,
+    );
+
+    expect(onDocumentTypeSelected).toBeDefined();
+
+    await act(async () => {
+      await onDocumentTypeSelected?.({
+        documentType: 'kyc',
+        countryCode: 'US',
+      });
+    });
+
+    expect(callOrder).toEqual([
+      `branch:KYC: Session Requested`,
+      'createKycSession',
+      'onboarding:Onboarding: Document Scan Started',
+      `branch:KYC: Session Created`,
+      `branch:KYC: Provider Opened`,
+      'launchKycVerification',
+      `branch:KYC: Provider Closed`,
+    ]);
+
+    navigationRef.isReady.mockReturnValue(false);
   });
 });

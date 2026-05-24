@@ -41,6 +41,7 @@ import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
+import java.util.concurrent.atomic.AtomicBoolean
 
 class PassportCameraView(context: Context) : FrameLayout(context) {
   private val binding =
@@ -53,7 +54,7 @@ class PassportCameraView(context: Context) : FrameLayout(context) {
   private var zoomProgress: Int = 0
   private var mounted = false
   private var cameraStarted = false
-  private var isDecoding = false
+  private val isDecoding = AtomicBoolean(false)
   private var rotation: Int = 0
   private var mDist: Float = 0f
 
@@ -110,18 +111,23 @@ class PassportCameraView(context: Context) : FrameLayout(context) {
     rotation = getRotation(context, LensPosition.Back)
 
     val preview = binding.cameraPreview
-    fotoapparat =
-        Fotoapparat.with(context.applicationContext)
-            .into(preview)
-            .frameProcessor(callbackFrameProcessor)
-            .lensPosition { LensPosition.Back }
-            .build()
-    fotoapparat?.updateConfiguration(configuration)
-    preview.setOnTouchListener { _, event -> onTouchEvent(event) }
+    try {
+      fotoapparat =
+          Fotoapparat.with(context.applicationContext)
+              .into(preview)
+              .frameProcessor(callbackFrameProcessor)
+              .lensPosition { LensPosition.Back }
+              .build()
+      fotoapparat?.updateConfiguration(configuration)
+      preview.setOnTouchListener { _, event -> onTouchEvent(event) }
 
-    fotoapparat?.start()
-    cameraStarted = true
-    configureZoom()
+      fotoapparat?.start()
+      cameraStarted = true
+      configureZoom()
+    } catch (e: Exception) {
+      releaseCamera()
+      dispatchError(e, "Failed to start camera")
+    }
   }
 
   private fun releaseCamera() {
@@ -134,7 +140,7 @@ class PassportCameraView(context: Context) : FrameLayout(context) {
     fotoapparat?.stop()
     fotoapparat = null
     cameraStarted = false
-    isDecoding = false
+    isDecoding.set(false)
   }
 
   private fun configureZoom() {
@@ -149,15 +155,17 @@ class PassportCameraView(context: Context) : FrameLayout(context) {
         object : FrameProcessor {
           override fun process(frame: Frame) {
             try {
-              if (!mounted || !isAttachedToWindow || isDecoding) {
+              if (!mounted || !isAttachedToWindow) {
                 return
               }
-              isDecoding = true
+              if (!isDecoding.compareAndSet(false, true)) {
+                return
+              }
 
               val processor =
                   frameProcessor
                       ?: run {
-                        isDecoding = false
+                        isDecoding.set(false)
                         return
                       }
               val subscribe =
@@ -177,13 +185,13 @@ class PassportCameraView(context: Context) : FrameLayout(context) {
                             // No-op.
                           },
                           { error ->
-                            isDecoding = false
+                            isDecoding.set(false)
                             dispatchError(error, "Error scanning MRZ with camera")
                           },
                       )
               disposable.add(subscribe)
             } catch (e: Exception) {
-              isDecoding = false
+              isDecoding.set(false)
               dispatchError(e, "Error scanning MRZ with camera")
             }
           }
@@ -209,13 +217,14 @@ class PassportCameraView(context: Context) : FrameLayout(context) {
         }
 
         override fun onCanceled(timeRequired: Long) {
-          isDecoding = false
+          isDecoding.set(false)
           if (!mounted || !isAttachedToWindow) {
             return
           }
         }
 
         override fun onFailure(e: Exception, timeRequired: Long) {
+          isDecoding.set(false)
           if (!mounted || !isAttachedToWindow) {
             return
           }
@@ -223,7 +232,7 @@ class PassportCameraView(context: Context) : FrameLayout(context) {
         }
 
         override fun onCompleted(timeRequired: Long) {
-          isDecoding = false
+          isDecoding.set(false)
           if (!mounted || !isAttachedToWindow) {
             return
           }
@@ -233,7 +242,7 @@ class PassportCameraView(context: Context) : FrameLayout(context) {
   private val mrzListener =
       object : OcrUtils.MRZCallback {
         override fun onMRZRead(mrzInfo: org.jmrtd.lds.icao.MRZInfo, timeRequired: Long) {
-          isDecoding = false
+          isDecoding.set(false)
           if (!mounted || !isAttachedToWindow) {
             return
           }
@@ -248,7 +257,7 @@ class PassportCameraView(context: Context) : FrameLayout(context) {
         }
 
         override fun onMRZReadFailure(timeRequired: Long) {
-          isDecoding = false
+          isDecoding.set(false)
           if (!mounted || !isAttachedToWindow) {
             return
           }
@@ -263,7 +272,7 @@ class PassportCameraView(context: Context) : FrameLayout(context) {
         }
 
         override fun onFailure(e: Exception, timeRequired: Long) {
-          isDecoding = false
+          isDecoding.set(false)
           if (!mounted || !isAttachedToWindow) {
             return
           }

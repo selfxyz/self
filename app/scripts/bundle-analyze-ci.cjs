@@ -71,9 +71,9 @@ try {
     `npx react-native bundle ` +
       `--platform ${platform} ` +
       `--dev false ` +
-      `--entry-file ${entryFile} ` +
-      `--bundle-output ${bundleFile} ` +
-      `--sourcemap-output ${sourcemapFile} ` +
+      `--entry-file "${entryFile}" ` +
+      `--bundle-output "${bundleFile}" ` +
+      `--sourcemap-output "${sourcemapFile}" ` +
       `--minify false ` +
       `--config metro.config.cjs ` +
       `--reset-cache`,

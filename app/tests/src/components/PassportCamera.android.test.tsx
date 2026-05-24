@@ -65,8 +65,8 @@ describe('PassportCamera Android component', () => {
       expect.objectContaining({
         isMounted: true,
         style: expect.objectContaining({
-          height: 800,
-          width: 400,
+          height: '130%',
+          width: '130%',
         }),
       }),
     );
