@@ -77,7 +77,6 @@
   },
   "devDependencies": {
     "@react-native-community/cli-server-api": "^20.0.0",
-    "@react-native/gradle-plugin": "0.83.9",
     "@types/node": "^22.18.3",
     "gitleaks": "1.0.0",
     "glob": "^10.4.5",

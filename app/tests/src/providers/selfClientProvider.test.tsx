@@ -257,7 +257,10 @@ describe('SelfClientProvider', () => {
     );
   });
 
-  it('emits SCAN_STARTED after the direct KYC session is created', async () => {
+  // Path C invariant (ANA-12): SCAN_STARTED MUST fire before any KYC branch
+  // event, otherwise trackBranchEvent no-ops because currentAttempt is null
+  // and SESSION_REQUESTED is silently dropped from the funnel.
+  it('emits SCAN_STARTED before the first KYC branch event on the direct KYC path', async () => {
     const callOrder: string[] = [];
     navigationRef.isReady.mockReturnValue(true);
 
@@ -301,14 +304,22 @@ describe('SelfClientProvider', () => {
     });
 
     expect(callOrder).toEqual([
+      'onboarding:Onboarding: Document Scan Started',
       `branch:KYC: Session Requested`,
       'createKycSession',
-      'onboarding:Onboarding: Document Scan Started',
       `branch:KYC: Session Created`,
       `branch:KYC: Provider Opened`,
       'launchKycVerification',
       `branch:KYC: Provider Closed`,
     ]);
+
+    const scanStartedIdx = callOrder.indexOf(
+      'onboarding:Onboarding: Document Scan Started',
+    );
+    const firstBranchIdx = callOrder.findIndex(entry =>
+      entry.startsWith('branch:'),
+    );
+    expect(scanStartedIdx).toBeLessThan(firstBranchIdx);
 
     navigationRef.isReady.mockReturnValue(false);
   });
