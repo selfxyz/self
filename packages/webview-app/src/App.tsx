@@ -3,9 +3,9 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type React from 'react';
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
-import { DevRouteMenu } from './components/DevRouteMenu';
+import { InitialRouteRedirect } from './components/InitialRouteRedirect';
 import { ModeBoot } from './components/ModeBoot';
 import { PasswordGate } from './components/PasswordGate';
 import { OperatingModeProvider } from './providers/OperatingModeProvider';
@@ -49,6 +49,7 @@ import {
 import { ProviderLaunchScreen } from './screens/onboarding/ProviderLaunchScreen';
 import { ProviderResultScreen } from './screens/onboarding/ProviderResultScreen';
 import { PushNotificationPromptScreen } from './screens/onboarding/PushNotificationPromptScreen';
+import { RegisteringScreen } from './screens/onboarding/RegisteringScreen';
 import { RegistrationFailureScreen } from './screens/onboarding/RegistrationFailureScreen';
 import { ScanSuccessScreen } from './screens/onboarding/ScanSuccessScreen';
 import { SocialSignOnMethodPickerScreen } from './screens/onboarding/SocialSignOnMethodPickerScreen';
@@ -119,6 +120,7 @@ export const App: React.FC = () => (
             <Route path="/onboarding/aadhaar/instructions" element={<AadhaarAppInstructionsRoute />} />
             <Route path="/onboarding/aadhaar/upload-success" element={<AadhaarUploadSuccessRoute />} />
             <Route path="/onboarding/aadhaar/upload-error" element={<AadhaarUploadErrorRoute />} />
+            <Route path="/onboarding/registering" element={<RegisteringScreen />} />
             <Route path="/onboarding/success" element={<ScanSuccessScreen />} />
             <Route path="/onboarding/recovery-phrase" element={<OnboardingRecoveryPhraseScreen />} />
             <Route path="/onboarding/failure" element={<RegistrationFailureScreen />} />
@@ -169,9 +171,8 @@ export const App: React.FC = () => (
             <Route path="/tunnel/recovery-required" element={<TunnelRecoveryRequiredScreen />} />
             <Route path="/tunnel/proof/disclose" element={<TunnelDiscloseScreen />} />
             <Route path="/tunnel/proof/result" element={<TunnelResultScreen />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
+            <Route path="*" element={<InitialRouteRedirect />} />
           </Routes>
-          <DevRouteMenu />
         </SelfClientProvider>
         </VerificationRequestProvider>
       </OperatingModeProvider>
