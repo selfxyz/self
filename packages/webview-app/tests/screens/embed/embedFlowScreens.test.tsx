@@ -9,14 +9,14 @@ import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { LaunchRecoveryScreen } from '../../../src/screens/recovery/LaunchRecoveryScreen';
-import { TourScreen as TunnelTourScreen } from '../../../src/screens/tunnel/TourScreen';
-import { TunnelDiscloseScreen } from '../../../src/screens/tunnel/TunnelDiscloseScreen';
-import { TunnelKycFailureScreen } from '../../../src/screens/tunnel/TunnelKycFailureScreen';
-import { TunnelKycSuccessScreen } from '../../../src/screens/tunnel/TunnelKycSuccessScreen';
-import { TunnelProofReceiptScreen } from '../../../src/screens/tunnel/TunnelProofReceiptScreen';
-import { TunnelProvingScreen } from '../../../src/screens/tunnel/TunnelProvingScreen';
-import { TunnelRecoveryRequiredScreen } from '../../../src/screens/tunnel/TunnelRecoveryRequiredScreen';
-import { TunnelResultScreen } from '../../../src/screens/tunnel/TunnelResultScreen';
+import { TourScreen as EmbedTourScreen } from '../../../src/screens/embed/TourScreen';
+import { EmbedDiscloseScreen } from '../../../src/screens/embed/EmbedDiscloseScreen';
+import { EmbedKycFailureScreen } from '../../../src/screens/embed/EmbedKycFailureScreen';
+import { EmbedKycSuccessScreen } from '../../../src/screens/embed/EmbedKycSuccessScreen';
+import { EmbedProofReceiptScreen } from '../../../src/screens/embed/EmbedProofReceiptScreen';
+import { EmbedProvingScreen } from '../../../src/screens/embed/EmbedProvingScreen';
+import { EmbedRecoveryRequiredScreen } from '../../../src/screens/embed/EmbedRecoveryRequiredScreen';
+import { EmbedResultScreen } from '../../../src/screens/embed/EmbedResultScreen';
 
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 
@@ -216,7 +216,7 @@ const renderResultRoute = (
   render(
     <MemoryRouter initialEntries={[initialEntry]}>
       <Routes>
-        <Route path="/tunnel/proof/result" element={<TunnelResultScreen />} />
+        <Route path="/tunnel/proof/result" element={<EmbedResultScreen />} />
         <Route path="/tunnel/tour/4" element={<LocationDisplay />} />
         <Route path="/tunnel/kyc" element={<LocationDisplay />} />
         <Route path="/tunnel/proof/generating" element={<LocationDisplay />} />
@@ -239,7 +239,7 @@ const renderReceiptRoute = (
   render(
     <MemoryRouter initialEntries={[initialEntry]}>
       <Routes>
-        <Route path="/tunnel/proof/receipt" element={<TunnelProofReceiptScreen />} />
+        <Route path="/tunnel/proof/receipt" element={<EmbedProofReceiptScreen />} />
         <Route path="/tunnel/kyc-success" element={<LocationDisplay />} />
         <Route path="/tunnel/proof/result" element={<LocationDisplay />} />
       </Routes>
@@ -251,7 +251,7 @@ const renderProvingRoute = () =>
   render(
     <MemoryRouter initialEntries={['/tunnel/proof/generating']}>
       <Routes>
-        <Route path="/tunnel/proof/generating" element={<TunnelProvingScreen />} />
+        <Route path="/tunnel/proof/generating" element={<EmbedProvingScreen />} />
         <Route path="/tunnel/recovery-required" element={<LocationDisplay />} />
         <Route path="/tunnel/proof/receipt" element={<LocationDisplay />} />
         <Route path="/tunnel/proof/result" element={<LocationDisplay />} />
@@ -264,7 +264,7 @@ const renderDiscloseRoute = () =>
   render(
     <MemoryRouter initialEntries={['/tunnel/proof/disclose']}>
       <Routes>
-        <Route path="/tunnel/proof/disclose" element={<TunnelDiscloseScreen />} />
+        <Route path="/tunnel/proof/disclose" element={<EmbedDiscloseScreen />} />
         <Route path="/tunnel/proof/result" element={<LocationDisplay />} />
       </Routes>
       <LocationDisplay />
@@ -282,7 +282,7 @@ const renderKycSuccessRoute = (
   render(
     <MemoryRouter initialEntries={[initialEntry]}>
       <Routes>
-        <Route path="/tunnel/kyc-success" element={<TunnelKycSuccessScreen />} />
+        <Route path="/tunnel/kyc-success" element={<EmbedKycSuccessScreen />} />
         <Route path="/tunnel/kyc" element={<LocationDisplay />} />
         <Route path="/tunnel/kyc-failure" element={<LocationDisplay />} />
         <Route path="/tunnel/tour/4" element={<LocationDisplay />} />
@@ -296,7 +296,7 @@ const renderKycFailureRoute = () =>
   render(
     <MemoryRouter initialEntries={['/tunnel/kyc-failure']}>
       <Routes>
-        <Route path="/tunnel/kyc-failure" element={<TunnelKycFailureScreen />} />
+        <Route path="/tunnel/kyc-failure" element={<EmbedKycFailureScreen />} />
         <Route path="/tunnel/kyc" element={<LocationDisplay />} />
         <Route path="/tunnel/tour/4" element={<LocationDisplay />} />
       </Routes>
@@ -308,7 +308,7 @@ const renderRecoveryRequiredRoute = () =>
   render(
     <MemoryRouter initialEntries={['/tunnel/recovery-required']}>
       <Routes>
-        <Route path="/tunnel/recovery-required" element={<TunnelRecoveryRequiredScreen />} />
+        <Route path="/tunnel/recovery-required" element={<EmbedRecoveryRequiredScreen />} />
         <Route path="/recovery/phrase-input" element={<LocationDisplay />} />
         <Route path="/tunnel/tour/4" element={<LocationDisplay />} />
       </Routes>
@@ -320,7 +320,7 @@ const renderTourRestoreRoute = () =>
   render(
     <MemoryRouter initialEntries={['/tunnel/tour/1']}>
       <Routes>
-        <Route path="/tunnel/tour/:step" element={<TunnelTourScreen />} />
+        <Route path="/tunnel/tour/:step" element={<EmbedTourScreen />} />
         <Route path="/recovery" element={<LaunchRecoveryScreen />} />
         <Route path="/recovery/phrase-input" element={<LocationDisplay />} />
         <Route path="/settings/security" element={<LocationDisplay />} />
@@ -491,7 +491,7 @@ describe('tunnel flow screens', () => {
         ]}
       >
         <Routes>
-          <Route path="/tunnel/proof/receipt" element={<TunnelProofReceiptScreen />} />
+          <Route path="/tunnel/proof/receipt" element={<EmbedProofReceiptScreen />} />
           <Route path="/tunnel/proof/result" element={<StateDisplay />} />
         </Routes>
       </MemoryRouter>,
@@ -633,7 +633,7 @@ describe('tunnel flow screens', () => {
         ]}
       >
         <Routes>
-          <Route path="/tunnel/proof/receipt" element={<TunnelProofReceiptScreen />} />
+          <Route path="/tunnel/proof/receipt" element={<EmbedProofReceiptScreen />} />
           <Route path="/tunnel/proof/result" element={<LocationDisplay />} />
         </Routes>
       </MemoryRouter>,
@@ -653,7 +653,7 @@ describe('tunnel flow screens', () => {
         ]}
       >
         <Routes>
-          <Route path="/tunnel/proof/receipt" element={<TunnelProofReceiptScreen />} />
+          <Route path="/tunnel/proof/receipt" element={<EmbedProofReceiptScreen />} />
           <Route path="/tunnel/proof/result" element={<LocationDisplay />} />
         </Routes>
       </MemoryRouter>,
@@ -674,7 +674,7 @@ describe('tunnel flow screens', () => {
         ]}
       >
         <Routes>
-          <Route path="/tunnel/proof/receipt" element={<TunnelProofReceiptScreen />} />
+          <Route path="/tunnel/proof/receipt" element={<EmbedProofReceiptScreen />} />
           <Route path="/tunnel/proof/result" element={<LocationDisplay />} />
         </Routes>
       </MemoryRouter>,

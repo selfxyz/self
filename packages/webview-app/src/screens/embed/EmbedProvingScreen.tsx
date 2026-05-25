@@ -20,7 +20,7 @@ import { initSelfAppFromRequest } from '../../utils/selfAppContext';
 
 const DEMO_PROVING_STEPS: ProofGenerationStep[] = ['readingRegistry', 'generatingProof'];
 
-const DemoTunnelProvingScreen: React.FC<{ search: string }> = ({ search }) => {
+const DemoEmbedProvingScreen: React.FC<{ search: string }> = ({ search }) => {
   const navigate = useNavigate();
   const [stepIndex, setStepIndex] = useState(0);
 
@@ -78,7 +78,7 @@ function mapProvingStateToStep(state: ProvingStateType | null, phase: Phase): Pr
   }
 }
 
-const StandardTunnelProvingScreen: React.FC = () => {
+const StandardEmbedProvingScreen: React.FC = () => {
   const navigate = useNavigate();
   const { client, analytics, haptic } = useSelfClient();
   const verificationCtx = useVerificationRequest();
@@ -158,12 +158,12 @@ const StandardTunnelProvingScreen: React.FC = () => {
   );
 };
 
-export const TunnelProvingScreen: React.FC = () => {
+export const EmbedProvingScreen: React.FC = () => {
   const location = useLocation();
 
   if (isDemoMode(location.search)) {
-    return <DemoTunnelProvingScreen search={location.search} />;
+    return <DemoEmbedProvingScreen search={location.search} />;
   }
 
-  return <StandardTunnelProvingScreen />;
+  return <StandardEmbedProvingScreen />;
 };

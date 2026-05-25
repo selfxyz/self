@@ -13,7 +13,7 @@ import type { KycProviderResult } from '../../types/kycProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
 import { isDemoMode } from '../../utils/mockOnboardingFlow';
 
-export const TunnelKycSuccessScreen: React.FC = () => {
+export const EmbedKycSuccessScreen: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { analytics, haptic } = useSelfClient();

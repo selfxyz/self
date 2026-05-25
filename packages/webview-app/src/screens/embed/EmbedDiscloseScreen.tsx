@@ -24,7 +24,7 @@ const DEMO_DISCLOSE_STEPS: ProofGenerationStep[] = [
   'finishingUp',
 ];
 
-const DemoTunnelDiscloseScreen: React.FC<{ search: string }> = ({ search }) => {
+const DemoEmbedDiscloseScreen: React.FC<{ search: string }> = ({ search }) => {
   const navigate = useNavigate();
   const { appName, displayAppEndpoint, timestamp } = useVerificationRequest();
   const [stepIndex, setStepIndex] = useState(0);
@@ -88,7 +88,7 @@ function mapDiscloseStateToStep(state: ProvingStateType | null): ProofGeneration
   }
 }
 
-const StandardTunnelDiscloseScreen: React.FC = () => {
+const StandardEmbedDiscloseScreen: React.FC = () => {
   const navigate = useNavigate();
   const { client, analytics, haptic } = useSelfClient();
   const verificationCtx = useVerificationRequest();
@@ -198,12 +198,12 @@ const StandardTunnelDiscloseScreen: React.FC = () => {
   );
 };
 
-export const TunnelDiscloseScreen: React.FC = () => {
+export const EmbedDiscloseScreen: React.FC = () => {
   const location = useLocation();
 
   if (isDemoMode(location.search)) {
-    return <DemoTunnelDiscloseScreen search={location.search} />;
+    return <DemoEmbedDiscloseScreen search={location.search} />;
   }
 
-  return <StandardTunnelDiscloseScreen />;
+  return <StandardEmbedDiscloseScreen />;
 };

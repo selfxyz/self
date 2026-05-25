@@ -13,7 +13,7 @@ import { useVerificationRequest } from '../../providers/VerificationRequestProvi
 import { WEB_SAFE_AREA } from '../../utils/insets';
 import { titleCaseDisclosure } from '../../utils/provingUtils';
 
-export const TunnelProofReceiptScreen: React.FC = () => {
+export const EmbedProofReceiptScreen: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { analytics, haptic } = useSelfClient();

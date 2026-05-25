@@ -14,7 +14,7 @@ import { createMockProviderResult, getMockOutcomeFromSearch, isDemoMode } from '
  * In dev mode, supports `?mock=kyc-failure|registration-failure|cancel|success`
  * to skip the real provider and jump straight to the result screen.
  */
-export const TunnelKycWrapper: React.FC = () => {
+export const EmbedKycWrapper: React.FC = () => {
   const location = useLocation();
   const incomingState = (location.state as Record<string, unknown>) ?? {};
   const mockOutcome = getMockOutcomeFromSearch(location.search);

@@ -78,8 +78,8 @@ export interface SelfVerificationProps {
   debug?: boolean;
   /**
    * Operating mode signaled to the WebView at boot via lifecycle.getConfig.
-   * 'wallet' = persistent UI (Self Wallet). 'tunnel' = one-shot
-   * verification (3rd-party SDK embedders). Default: 'wallet'.
+   * 'self-app' = persistent UI (Self Wallet). 'embed' = one-shot
+   * verification (3rd-party SDK embedders). Default: 'self-app'.
    * See specs/projects/sdk/workstreams/webview-in-app/SPEC-MODES.md.
    */
   mode?: OperatingMode;

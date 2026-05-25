@@ -74,16 +74,16 @@ import { RecoveryFailureScreen } from './screens/recovery/RecoveryFailureScreen'
 import { OnboardingRecoveryPhraseScreen, RecoveryPhraseScreen } from './screens/recovery/RecoveryPhraseScreen';
 import { RecoverySuccessScreen } from './screens/recovery/RecoverySuccessScreen';
 import { SecretPhraseInputScreen } from './screens/recovery/SecretPhraseInputScreen';
-import { TourScreen as TunnelTourScreen } from './screens/tunnel/TourScreen';
-import { TunnelDiscloseScreen } from './screens/tunnel/TunnelDiscloseScreen';
-import { TunnelKycFailureScreen } from './screens/tunnel/TunnelKycFailureScreen';
-import { TunnelKycPendingScreen } from './screens/tunnel/TunnelKycPendingScreen';
-import { TunnelKycSuccessScreen } from './screens/tunnel/TunnelKycSuccessScreen';
-import { TunnelKycWrapper } from './screens/tunnel/TunnelKycWrapper';
-import { TunnelProofReceiptScreen } from './screens/tunnel/TunnelProofReceiptScreen';
-import { TunnelProvingScreen } from './screens/tunnel/TunnelProvingScreen';
-import { TunnelRecoveryRequiredScreen } from './screens/tunnel/TunnelRecoveryRequiredScreen';
-import { TunnelResultScreen } from './screens/tunnel/TunnelResultScreen';
+import { TourScreen as EmbedTourScreen } from './screens/embed/TourScreen';
+import { EmbedDiscloseScreen } from './screens/embed/EmbedDiscloseScreen';
+import { EmbedKycFailureScreen } from './screens/embed/EmbedKycFailureScreen';
+import { EmbedKycPendingScreen } from './screens/embed/EmbedKycPendingScreen';
+import { EmbedKycSuccessScreen } from './screens/embed/EmbedKycSuccessScreen';
+import { EmbedKycWrapper } from './screens/embed/EmbedKycWrapper';
+import { EmbedProofReceiptScreen } from './screens/embed/EmbedProofReceiptScreen';
+import { EmbedProvingScreen } from './screens/embed/EmbedProvingScreen';
+import { EmbedRecoveryRequiredScreen } from './screens/embed/EmbedRecoveryRequiredScreen';
+import { EmbedResultScreen } from './screens/embed/EmbedResultScreen';
 
 export const App: React.FC = () => (
   <PasswordGate>
@@ -151,16 +151,16 @@ export const App: React.FC = () => (
             <Route path="/id-data" element={<IDDataScreen />} />
             <Route path="/manage-documents" element={<ManageDocumentsScreen />} />
             <Route path="/coming-soon" element={<ComingSoonScreen />} />
-            <Route path="/tunnel/tour/:step" element={<TunnelTourScreen />} />
-            <Route path="/tunnel/kyc" element={<TunnelKycWrapper />} />
-            {import.meta.env.DEV && <Route path="/tunnel/kyc-pending" element={<TunnelKycPendingScreen />} />}
-            <Route path="/tunnel/kyc-failure" element={<TunnelKycFailureScreen />} />
-            <Route path="/tunnel/kyc-success" element={<TunnelKycSuccessScreen />} />
-            <Route path="/tunnel/proof/receipt" element={<TunnelProofReceiptScreen />} />
-            <Route path="/tunnel/proof/generating" element={<TunnelProvingScreen />} />
-            <Route path="/tunnel/recovery-required" element={<TunnelRecoveryRequiredScreen />} />
-            <Route path="/tunnel/proof/disclose" element={<TunnelDiscloseScreen />} />
-            <Route path="/tunnel/proof/result" element={<TunnelResultScreen />} />
+            <Route path="/tunnel/tour/:step" element={<EmbedTourScreen />} />
+            <Route path="/tunnel/kyc" element={<EmbedKycWrapper />} />
+            {import.meta.env.DEV && <Route path="/tunnel/kyc-pending" element={<EmbedKycPendingScreen />} />}
+            <Route path="/tunnel/kyc-failure" element={<EmbedKycFailureScreen />} />
+            <Route path="/tunnel/kyc-success" element={<EmbedKycSuccessScreen />} />
+            <Route path="/tunnel/proof/receipt" element={<EmbedProofReceiptScreen />} />
+            <Route path="/tunnel/proof/generating" element={<EmbedProvingScreen />} />
+            <Route path="/tunnel/recovery-required" element={<EmbedRecoveryRequiredScreen />} />
+            <Route path="/tunnel/proof/disclose" element={<EmbedDiscloseScreen />} />
+            <Route path="/tunnel/proof/result" element={<EmbedResultScreen />} />
             <Route path="*" element={<InitialRouteRedirect />} />
           </Routes>
         </SelfClientProvider>

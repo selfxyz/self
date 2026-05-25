@@ -11,7 +11,7 @@ import { KycPendingScreen } from '@selfxyz/euclid';
 import { WEB_SAFE_AREA } from '../../utils/insets';
 import { createMockProviderResult, isDemoMode } from '../../utils/mockOnboardingFlow';
 
-export const TunnelKycPendingScreen: React.FC = () => {
+export const EmbedKycPendingScreen: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 

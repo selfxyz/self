@@ -32,7 +32,7 @@ const getTunnelBackPath = (source: TunnelResultState['source']): string => {
   }
 };
 
-export const TunnelResultScreen: React.FC = () => {
+export const EmbedResultScreen: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { analytics, lifecycle } = useSelfClient();

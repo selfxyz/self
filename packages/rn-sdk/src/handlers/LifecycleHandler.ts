@@ -7,7 +7,7 @@ import type { BridgeHandler } from '../bridge/types';
 import { BridgeHandlerError } from '../bridge/types';
 import type { VerificationRequest, VerificationResult, SelfSdkError } from '../SelfVerification';
 
-export type OperatingMode = 'wallet' | 'tunnel';
+export type OperatingMode = 'self-app' | 'embed';
 
 interface LifecycleConfig {
   request: VerificationRequest;
@@ -32,7 +32,7 @@ export class LifecycleHandler implements BridgeHandler {
         return null;
       case 'getConfig':
         return {
-          mode: this.config.mode ?? 'wallet',
+          mode: this.config.mode ?? 'self-app',
           verificationRequest: this.config.request,
           debug: this.config.debug,
           platform: 'react-native',

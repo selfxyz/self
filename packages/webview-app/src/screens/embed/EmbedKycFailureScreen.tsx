@@ -11,7 +11,7 @@ import { KycFailureScreen as EuclidKycFailureScreen } from '@selfxyz/euclid';
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
 
-export const TunnelKycFailureScreen: React.FC = () => {
+export const EmbedKycFailureScreen: React.FC = () => {
   const navigate = useNavigate();
   const { analytics, haptic } = useSelfClient();
 

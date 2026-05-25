@@ -98,7 +98,7 @@ const screenGroups: DevScreenGroup[] = [
     ],
   },
   {
-    title: 'Tunnel — Screens',
+    title: 'Embed — Screens',
     links: [
       { href: '/tunnel/tour/1', label: 'Tour' },
       { href: '/tunnel/kyc-failure', label: 'KYC Failure' },
@@ -109,7 +109,7 @@ const screenGroups: DevScreenGroup[] = [
     ],
   },
   {
-    title: 'Tunnel — Mock KYC',
+    title: 'Embed — Mock KYC',
     description: 'Mocks diverge after /tunnel/kyc; some outcomes intentionally share the same final route.',
     links: [
       { href: '/tunnel/tour/1?mock=success', label: 'Flow → KYC Success, Then Proof Failure' },
