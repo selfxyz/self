@@ -86,3 +86,9 @@ After wiring the screen, visually verify in the browser dev server (`yarn dev`):
 
 - **Dev-only routes register under `/dev/*`** and are gated on `import.meta.env.DEV` at the registration site. Production builds never include them. `DevRouteMenu` is the only allowed entry point.
 - The nav-hygiene workstream owns the routing contract — see [specs/projects/sdk/workstreams/nav-hygiene/SPEC.html](../../specs/projects/sdk/workstreams/nav-hygiene/SPEC.html).
+
+## Navigation state
+
+- Every `navigate(path, { state })` call passes a value typed as `Partial<NavState>` (see `src/types/navState.ts`). Do not invent one-off local interfaces for `location.state` — extend `NavState` if you need a new well-typed slot.
+- Forward target is `state.nextPath`. The legacy `returnTo` slot was renamed in NAV-09; the `?returnTo=` URL query param was dropped (state-only).
+- Back target is `state.backPath` when overriding `navigate(-1)`'s default.

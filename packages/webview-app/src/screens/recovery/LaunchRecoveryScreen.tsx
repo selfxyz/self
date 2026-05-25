@@ -9,13 +9,14 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { LaunchRecoveryScreen as EuclidLaunchRecoveryScreen, LeftArrowIcon } from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
+import type { NavState } from '../../types/navState';
 import { WEB_SAFE_AREA } from '../../utils/insets';
 
 export const LaunchRecoveryScreen: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { analytics, haptic } = useSelfClient();
-  const backPath = (location.state as { backPath?: string } | null)?.backPath ?? '/settings/security';
+  const backPath = (location.state as Partial<NavState> | null)?.backPath ?? '/settings/security';
 
   const onClose = useCallback(() => {
     haptic.trigger('selection');
@@ -27,10 +28,12 @@ export const LaunchRecoveryScreen: React.FC = () => {
   const onEnterRecoveryPhrase = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('recovery_enter_phrase_pressed');
-    const target = isTunnelFlow
-      ? `/recovery/phrase-input?returnTo=${encodeURIComponent(backPath)}`
-      : '/recovery/phrase-input';
-    navigate(target);
+    navigate(
+      '/recovery/phrase-input',
+      isTunnelFlow
+        ? { state: { nextPath: backPath } satisfies Partial<NavState> }
+        : undefined,
+    );
   }, [backPath, isTunnelFlow, navigate, haptic, analytics]);
 
   return (

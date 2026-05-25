@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { ConflictDetectedScreen as EuclidConflictDetectedScreen } from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
+import type { NavState } from '../../types/navState';
 import { WEB_SAFE_AREA } from '../../utils/insets';
 
 const TUNNEL_RECOVERY_RETURN_PATH = '/tunnel/proof/generating';
@@ -21,7 +22,9 @@ export const EmbedRecoveryRequiredScreen: React.FC = () => {
   const onRecoverWithPhrase = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('tunnel_recovery_phrase_selected');
-    navigate(`/recovery/phrase-input?returnTo=${encodeURIComponent(TUNNEL_RECOVERY_RETURN_PATH)}`);
+    navigate('/recovery/phrase-input', {
+      state: { nextPath: TUNNEL_RECOVERY_RETURN_PATH } satisfies Partial<NavState>,
+    });
   }, [navigate, haptic, analytics]);
 
   const onCancel = useCallback(() => {
