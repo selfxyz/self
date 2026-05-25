@@ -104,3 +104,9 @@ Use `{ replace: true }` when the user must not be able to back into the screen t
 Default `replace: false` is correct for ordinary forward navigation inside a multi-step wizard where back-tracking IS expected.
 
 NAV-07 swept every terminal `navigate('/')` and the 5 named violations; future PRs are responsible for matching the convention in new code.
+
+## Cluster close
+
+- Terminal screens close their cluster via `useClusterClose()` (see `src/utils/clusterClose.ts`), never by hardcoding `navigate('/')` or inlining `lifecycle.setResult + dismiss`.
+- The hook is mode-aware: self-app users land on the cluster's entry path (with `state.nextPath` override); embed users get a `setResult({success:false, error:'user_cancelled'})` (when the cluster is mid-flow) then `dismiss({reason:'user_cancel'})`.
+- Cluster is inferred from `useLocation().pathname`'s first segment. To add a new cluster, extend the `Cluster` union + `CLUSTER_CLOSE` registry in `src/utils/clusterCloseRegistry.ts`.
