@@ -8,16 +8,12 @@ import type React from 'react';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { DevRouteMenu } from '../../../src/components/DevRouteMenu';
-import { DialogueWithCtaScreen } from '../../../src/screens/proving/DialogueWithCtaScreen';
 import { KycPendingScreen } from '../../../src/screens/proving/KycPendingScreen';
 import { KycSuccessScreen } from '../../../src/screens/proving/KycSuccessScreen';
-import { ProofGenerationDialogueScreen } from '../../../src/screens/proving/ProofGenerationDialogueScreen';
 import { ProofGenerationSuccessScreen } from '../../../src/screens/proving/ProofGenerationSuccessScreen';
 import { ProofHistoryScreen } from '../../../src/screens/proving/ProofHistoryScreen';
 import { ProofRequestReceiptScreen } from '../../../src/screens/proving/ProofRequestReceiptScreen';
 import { ProofSuccessBackupScreen } from '../../../src/screens/proving/ProofSuccessBackupScreen';
-import { SimpleDialogueScreen } from '../../../src/screens/proving/SimpleDialogueScreen';
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 
@@ -69,7 +65,6 @@ vi.mock('@selfxyz/euclid', () => ({
       Generate proof
     </button>
   ),
-  ProofGenerationScreen: () => <div>Proof generation mock</div>,
   ProofGenerationSuccessScreen: ({ onShieldIdentity }: { onShieldIdentity: () => void }) => (
     <button onClick={onShieldIdentity} type="button">
       Shield my identity
@@ -109,27 +104,6 @@ vi.mock('@selfxyz/euclid', () => ({
       </button>
     </div>
   ),
-  SimpleDialogueScreen: ({ onClose }: { onClose: () => void }) => (
-    <button onClick={onClose} type="button">
-      Close simple dialogue
-    </button>
-  ),
-  DialogueWithCtaScreen: ({
-    onPrimaryButtonPress,
-    onSecondaryButtonPress,
-  }: {
-    onPrimaryButtonPress: () => void;
-    onSecondaryButtonPress: () => void;
-  }) => (
-    <div>
-      <button onClick={onPrimaryButtonPress} type="button">
-        Begin liveliness check
-      </button>
-      <button onClick={onSecondaryButtonPress} type="button">
-        Skip for now
-      </button>
-    </div>
-  ),
 }));
 
 const LocationDisplay: React.FC = () => {
@@ -153,8 +127,6 @@ const renderWithRoutes = (
         <Route path="/settings/recovery-phrase" element={<LocationDisplay />} />
         <Route path="/proving" element={<LocationDisplay />} />
         <Route path="/proving/receipt" element={<LocationDisplay />} />
-        <Route path="/proving/dialogue" element={<LocationDisplay />} />
-        <Route path="/proving/dialogue-cta" element={<LocationDisplay />} />
         <Route path="/" element={<LocationDisplay />} />
       </Routes>
     </MemoryRouter>,
@@ -205,16 +177,6 @@ describe('proving support screens', () => {
     expectLocation('/proving');
   });
 
-  it('renders the proof generation dialogue mock route', () => {
-    renderWithRoutes(
-      ['/proving/generation-dialogue'],
-      '/proving/generation-dialogue',
-      <ProofGenerationDialogueScreen />,
-    );
-
-    expect(screen.getByText(/proof generation mock/i)).toBeTruthy();
-  });
-
   it('routes proof generation success CTA home', () => {
     renderWithRoutes(['/proving/generation-success'], '/proving/generation-success', <ProofGenerationSuccessScreen />);
 
@@ -239,37 +201,4 @@ describe('proving support screens', () => {
     expectLocation('/');
   });
 
-  it('routes simple dialogue close back to the previous entry', () => {
-    renderWithRoutes(['/', '/proving/dialogue'], '/proving/dialogue', <SimpleDialogueScreen />);
-
-    fireEvent.click(screen.getByRole('button', { name: /close simple dialogue/i }));
-
-    expectLocation('/');
-  });
-
-  it('routes dialogue CTA primary action home', () => {
-    renderWithRoutes(['/proving/dialogue-cta'], '/proving/dialogue-cta', <DialogueWithCtaScreen />);
-
-    fireEvent.click(screen.getByRole('button', { name: /begin liveliness check/i }));
-
-    expectLocation('/');
-  });
-
-  it('routes dialogue CTA secondary action back to the previous entry', () => {
-    renderWithRoutes(['/', '/proving/dialogue-cta'], '/proving/dialogue-cta', <DialogueWithCtaScreen />);
-
-    fireEvent.click(screen.getByRole('button', { name: /skip for now/i }));
-
-    expectLocation('/');
-  });
-
-  it('keeps the dev route menu available on the generation dialogue route', () => {
-    render(
-      <MemoryRouter initialEntries={['/proving/generation-dialogue']}>
-        <DevRouteMenu />
-      </MemoryRouter>,
-    );
-
-    expect(screen.getByRole('button', { name: /generation dialogue/i })).toBeTruthy();
-  });
 });

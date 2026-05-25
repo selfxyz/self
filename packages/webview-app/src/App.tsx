@@ -57,11 +57,9 @@ import { SocialSignOnPickerScreen } from './screens/onboarding/SocialSignOnPicke
 import { TourScreen } from './screens/onboarding/TourScreen';
 import { InviteScreen } from './screens/points/InviteScreen';
 import { PointsScreen } from './screens/points/PointsScreen';
-import { DialogueWithCtaScreen } from './screens/proving/DialogueWithCtaScreen';
 import { DiscloseResultScreen } from './screens/proving/DiscloseResultScreen';
 import { KycPendingScreen } from './screens/proving/KycPendingScreen';
 import { KycSuccessScreen } from './screens/proving/KycSuccessScreen';
-import { ProofGenerationDialogueScreen } from './screens/proving/ProofGenerationDialogueScreen';
 import { ProofGenerationRouteScreen } from './screens/proving/ProofGenerationRouteScreen';
 import { ProofGenerationSuccessScreen } from './screens/proving/ProofGenerationSuccessScreen';
 import { ProofHistoryScreen } from './screens/proving/ProofHistoryScreen';
@@ -69,7 +67,6 @@ import { ProofRequestReceiptScreen } from './screens/proving/ProofRequestReceipt
 import { ProofSuccessBackupScreen } from './screens/proving/ProofSuccessBackupScreen';
 import { ProvingScreen } from './screens/proving/ProvingScreen';
 import { QRViewfinderScreen } from './screens/proving/QRViewfinderScreen';
-import { SimpleDialogueScreen } from './screens/proving/SimpleDialogueScreen';
 import { VerificationResultScreen } from './screens/proving/VerificationResultScreen';
 import { BackupMethodPickerScreen } from './screens/recovery/BackupMethodPickerScreen';
 import { LaunchRecoveryScreen } from './screens/recovery/LaunchRecoveryScreen';
@@ -133,7 +130,7 @@ export const App: React.FC = () => (
             <Route path="/settings/security" element={<SecurityScreen />} />
             <Route path="/settings/notifications" element={<NotificationPreferencesScreen />} />
             <Route path="/settings/dev-mode" element={<DevModeScreen />} />
-            {import.meta.env.DEV && <Route path="/debug/keychain" element={<KeychainDebugScreen />} />}
+            {import.meta.env.DEV && <Route path="/dev/keychain" element={<KeychainDebugScreen />} />}
             <Route path="/settings/backup" element={<BackupMethodPickerScreen />} />
             <Route path="/settings/recovery-phrase" element={<RecoveryPhraseScreen />} />
             <Route path="/recovery" element={<LaunchRecoveryScreen />} />
@@ -146,9 +143,6 @@ export const App: React.FC = () => (
             <Route path="/onboarding/notifications" element={<PushNotificationPromptScreen />} />
             <Route path="/proving/receipt" element={<ProofRequestReceiptScreen />} />
             <Route path="/proving/history" element={<ProofHistoryScreen />} />
-            <Route path="/proving/dialogue" element={<SimpleDialogueScreen />} />
-            <Route path="/proving/dialogue-cta" element={<DialogueWithCtaScreen />} />
-            <Route path="/proving/generation-dialogue" element={<ProofGenerationDialogueScreen />} />
             <Route path="/proving/generation-success" element={<ProofGenerationSuccessScreen />} />
             <Route path="/proving/backup-prompt" element={<ProofSuccessBackupScreen />} />
             <Route path="/proving/kyc-pending" element={<KycPendingScreen />} />

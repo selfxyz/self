@@ -81,3 +81,8 @@ After wiring the screen, visually verify in the browser dev server (`yarn dev`):
 - **`@selfxyz/euclid`** — external design system package providing screen components, icons, and tokens
 - **`@selfxyz/webview-bridge`** — communication layer to native shells; in standalone browser mode (no native shell), bridge requests reject immediately since there is no transport
 - **`@selfxyz/mobile-sdk-alpha`** — shared SDK logic consumed via the `/browser` entry point
+
+## Routes
+
+- **Dev-only routes register under `/dev/*`** and are gated on `import.meta.env.DEV` at the registration site. Production builds never include them. `DevRouteMenu` is the only allowed entry point.
+- The nav-hygiene workstream owns the routing contract — see [specs/projects/sdk/workstreams/nav-hygiene/SPEC.html](../../specs/projects/sdk/workstreams/nav-hygiene/SPEC.html).

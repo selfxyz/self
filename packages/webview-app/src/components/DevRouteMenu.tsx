@@ -72,9 +72,6 @@ const screenGroups: DevScreenGroup[] = [
       },
       { href: '/proving/receipt', label: 'Proof Receipt' },
       { href: '/proving/history', label: 'Proof History' },
-      { href: '/proving/dialogue', label: 'Simple Dialogue' },
-      { href: '/proving/dialogue-cta', label: 'Dialogue With CTA' },
-      { href: '/proving/generation-dialogue', label: 'Generation Dialogue' },
       { href: '/proving/generation-success', label: 'Generation Success' },
       { href: '/proving/backup-prompt', label: 'Backup Prompt' },
       { href: '/proving/kyc-pending', label: 'KYC Pending' },
@@ -123,7 +120,7 @@ const screenGroups: DevScreenGroup[] = [
   },
   {
     title: 'Debug',
-    links: [{ href: '/debug/keychain', label: 'Keychain Debug' }],
+    links: [{ href: '/dev/keychain', label: 'Keychain Debug' }],
   },
 ];
 
