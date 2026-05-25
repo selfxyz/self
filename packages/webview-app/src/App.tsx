@@ -5,8 +5,8 @@
 import type React from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
+import { BootDecision } from './components/BootDecision';
 import { InitialRouteRedirect } from './components/InitialRouteRedirect';
-import { ModeBoot } from './components/ModeBoot';
 import { PasswordGate } from './components/PasswordGate';
 import { OperatingModeProvider } from './providers/OperatingModeProvider';
 import { SelfClientProvider } from './providers/SelfClientProvider';
@@ -77,6 +77,7 @@ import { RecoverySuccessScreen } from './screens/recovery/RecoverySuccessScreen'
 import { SecretPhraseInputScreen } from './screens/recovery/SecretPhraseInputScreen';
 import { TourScreen as EmbedTourScreen } from './screens/embed/TourScreen';
 import { EmbedDiscloseScreen } from './screens/embed/EmbedDiscloseScreen';
+import { EmbedErrorScreen } from './screens/embed/EmbedErrorScreen';
 import { EmbedKycFailureScreen } from './screens/embed/EmbedKycFailureScreen';
 import { EmbedKycPendingScreen } from './screens/embed/EmbedKycPendingScreen';
 import { EmbedKycSuccessScreen } from './screens/embed/EmbedKycSuccessScreen';
@@ -92,7 +93,7 @@ export const App: React.FC = () => (
       <OperatingModeProvider>
         <VerificationRequestProvider>
           <SelfClientProvider>
-            <ModeBoot />
+            <BootDecision />
             <Routes>
             <Route path="/" element={<HomeScreen />} />
             <Route path="/onboarding/tour/:step" element={<TourScreen />} />
@@ -163,6 +164,7 @@ export const App: React.FC = () => (
             <Route path="/tunnel/recovery-required" element={<EmbedRecoveryRequiredScreen />} />
             <Route path="/tunnel/proof/disclose" element={<EmbedDiscloseScreen />} />
             <Route path="/tunnel/proof/result" element={<EmbedResultScreen />} />
+            <Route path="/embed/error" element={<EmbedErrorScreen />} />
             <Route path="*" element={<InitialRouteRedirect />} />
           </Routes>
         </SelfClientProvider>
