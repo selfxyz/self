@@ -57,6 +57,7 @@ android {
 }
 
 repositories {
+  mavenLocal()
   mavenCentral()
   google()
 }
@@ -64,4 +65,10 @@ repositories {
 dependencies {
   implementation "com.facebook.react:react-native:+"
   implementation "org.jetbrains.kotlin:kotlin-stdlib:${getExtOrDefault('kotlinVersion') ?: '1.9.24'}"
+  // KMP shared module — consumed via mavenLocal() during prototype.
+  // Replace with hosted Maven coordinate once SD-06 (SELF-2534) lands.
+  implementation "xyz.self.sdk:shared-android:0.1.0"
+  implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3"
+  implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0"
+  implementation "androidx.security:security-crypto:1.1.0-alpha06"
 }

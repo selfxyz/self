@@ -11,6 +11,7 @@ export {
 } from './SelfVerification';
 
 export { MessageRouter } from './bridge/MessageRouter';
+export { KmpBridgeTransport, type KmpBridgeTransportConfig } from './bridge/KmpBridgeTransport';
 
 export { type BridgeHandler, BridgeHandlerError } from './bridge/types';
 

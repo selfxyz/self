@@ -11,7 +11,10 @@ import com.facebook.react.uimanager.ViewManager
 
 class SelfCryptoPackage : ReactPackage {
     override fun createNativeModules(reactContext: ReactApplicationContext): List<NativeModule> =
-        listOf(SelfCryptoModule(reactContext))
+        listOf(
+            SelfCryptoModule(reactContext),
+            SelfBridgeModule(reactContext),
+        )
 
     override fun createViewManagers(reactContext: ReactApplicationContext): List<ViewManager<*, *>> =
         emptyList()
