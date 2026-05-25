@@ -3,26 +3,29 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type React from 'react';
-import { useEffect, useMemo, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useRef } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
-import { ProofGenerationScreen as EuclidProofGenerationScreen } from '@selfxyz/euclid';
+import { ProofProgressScreen, SelfLogo } from '@selfxyz/euclid';
 import { useProvingStore } from '@selfxyz/mobile-sdk-alpha/browser';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { useVerificationRequest } from '../../providers/VerificationRequestProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
-import { getFailureState, getGenerationStep, getIdCardProps } from '../../utils/provingUtils';
+import { getDiscloseStep, getFailureState } from '../../utils/provingUtils';
+import { initSelfAppFromRequest } from '../../utils/selfAppContext';
 import { hasDiscloseRequestContext } from '../../utils/verificationRequest';
 
 export const ProofGenerationRouteScreen: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { client, analytics } = useSelfClient();
-  const { request, displayLabels } = useVerificationRequest();
+  const verificationCtx = useVerificationRequest();
+  const { request, displayLabels, appName, displayAppEndpoint, timestamp } = verificationCtx;
   const init = useProvingStore(state => state.init);
   const setUserConfirmed = useProvingStore(state => state.setUserConfirmed);
   const currentState = useProvingStore(state => state.currentState);
-  const passportData = useProvingStore(state => state.passportData);
+  const circuitType = useProvingStore(state => state.circuitType);
   const errorCode = useProvingStore(state => state.error_code);
   const reason = useProvingStore(state => state.reason);
 
@@ -42,6 +45,7 @@ export const ProofGenerationRouteScreen: React.FC = () => {
     }
 
     hasInitializedRef.current = true;
+    initSelfAppFromRequest(client, verificationCtx);
     void init(client, 'disclose').catch(error => {
       if (hasNavigatedRef.current) {
         return;
@@ -50,7 +54,7 @@ export const ProofGenerationRouteScreen: React.FC = () => {
       hasNavigatedRef.current = true;
       const message = error instanceof Error ? error.message : 'The proof request could not be completed.';
       analytics.trackEvent('prove_generation_init_failed', { error: message });
-      navigate('/proving/result', {
+      navigate({ pathname: '/proving/result', search: location.search }, {
         replace: true,
         state: {
           success: false,
@@ -61,16 +65,20 @@ export const ProofGenerationRouteScreen: React.FC = () => {
         },
       });
     });
-  }, [analytics, client, hasValidRequestContext, init, navigate]);
+  }, [analytics, client, hasValidRequestContext, init, location.search, navigate, verificationCtx]);
 
   useEffect(() => {
     if (hasNavigatedRef.current) {
       return;
     }
 
+    if (circuitType !== 'disclose') {
+      return;
+    }
+
     if (currentState === 'passport_data_not_found') {
       hasNavigatedRef.current = true;
-      navigate('/proving/result', {
+      navigate({ pathname: '/proving/result', search: location.search }, {
         replace: true,
         state: {
           success: false,
@@ -91,7 +99,7 @@ export const ProofGenerationRouteScreen: React.FC = () => {
 
     if (currentState === 'completed') {
       hasNavigatedRef.current = true;
-      navigate('/proving/result', {
+      navigate({ pathname: '/proving/result', search: location.search }, {
         replace: true,
         state: { success: true },
       });
@@ -100,7 +108,7 @@ export const ProofGenerationRouteScreen: React.FC = () => {
 
     if (currentState === 'error' || currentState === 'failure' || currentState === 'passport_not_supported') {
       hasNavigatedRef.current = true;
-      navigate('/proving/result', {
+      navigate({ pathname: '/proving/result', search: location.search }, {
         replace: true,
         state: {
           success: false,
@@ -108,19 +116,21 @@ export const ProofGenerationRouteScreen: React.FC = () => {
         },
       });
     }
-  }, [client, currentState, errorCode, navigate, reason, setUserConfirmed]);
-
-  const idCardProps = useMemo(() => getIdCardProps(passportData?.documentCategory), [passportData?.documentCategory]);
+  }, [circuitType, client, currentState, errorCode, location.search, navigate, reason, setUserConfirmed]);
 
   if (!hasValidRequestContext) {
     return null;
   }
 
   return (
-    <EuclidProofGenerationScreen
+    <ProofProgressScreen
       {...WEB_SAFE_AREA}
-      step={getGenerationStep(currentState ?? 'idle')}
-      idCardProps={idCardProps}
+      appIcon={<SelfLogo size={40} />}
+      appName={appName}
+      appEndpoint={displayAppEndpoint}
+      documentType="passport"
+      timestamp={timestamp}
+      step={getDiscloseStep(currentState ?? null)}
     />
   );
 };

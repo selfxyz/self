@@ -43,7 +43,11 @@ const DemoTunnelProvingScreen: React.FC<{ search: string }> = ({ search }) => {
         overflow: 'hidden',
       }}
     >
-      <ProofGenerationScreen {...WEB_SAFE_AREA} step={DEMO_PROVING_STEPS[stepIndex]} />
+      <ProofGenerationScreen
+        {...WEB_SAFE_AREA}
+        step={DEMO_PROVING_STEPS[stepIndex]}
+        lottieSource="/animations/proof-progress.json"
+      />
       <div onClick={advance} style={{ position: 'absolute', inset: 0, zIndex: 1, cursor: 'pointer' }} />
     </div>
   );
@@ -148,7 +152,8 @@ const StandardTunnelProvingScreen: React.FC = () => {
     <ProofGenerationScreen
       {...WEB_SAFE_AREA}
       step={mapProvingStateToStep(currentState, phase)}
-      idCardProps={getIdCardProps(passportData?.documentCategory)}
+      idCardProps={getIdCardProps(passportData?.documentCategory, passportData?.mock === true)}
+      lottieSource="/animations/proof-progress.json"
     />
   );
 };
