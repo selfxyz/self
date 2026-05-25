@@ -30,7 +30,7 @@ export const ProofRequestReceiptScreen: React.FC = () => {
   const onClose = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('proof_receipt_closed');
-    navigate('/');
+    navigate('/', { replace: true });
   }, [navigate, haptic, analytics]);
 
   return (

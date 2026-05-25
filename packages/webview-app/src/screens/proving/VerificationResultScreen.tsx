@@ -43,7 +43,7 @@ export const VerificationResultScreen: React.FC = () => {
     } else if (!resultSent) {
       lifecycle.dismiss();
     }
-    navigate('/');
+    navigate('/', { replace: true });
   }, [analytics, haptic, lifecycle, navigate, result, resultSent]);
 
   return (

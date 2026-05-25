@@ -28,13 +28,13 @@ export const ComingSoonScreen: React.FC = () => {
   const onDismiss = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('coming_soon_dismissed');
-    navigate('/');
+    navigate('/', { replace: true });
   }, [navigate, haptic, analytics]);
 
   const onNotifyMe = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('coming_soon_notify_me');
-    navigate('/');
+    navigate('/', { replace: true });
   }, [navigate, haptic, analytics]);
 
   return (

@@ -27,7 +27,7 @@ export const ConflictDetectedScreen: React.FC = () => {
   const onSecondaryAction = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('conflict_create_new_pressed');
-    navigate('/');
+    navigate('/', { replace: true });
   }, [navigate, haptic, analytics]);
 
   const onClose = useCallback(() => {

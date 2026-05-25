@@ -24,7 +24,7 @@ export const RecoveryFailureScreen: React.FC = () => {
   const onDismiss = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('recovery_failure_dismissed');
-    navigate('/');
+    navigate('/', { replace: true });
   }, [analytics, haptic, navigate]);
 
   const onTryAgain = useCallback(() => {

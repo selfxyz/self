@@ -18,7 +18,7 @@ export const ProofGenerationSuccessScreen: React.FC = () => {
   const onShieldIdentity = useCallback(() => {
     haptic.trigger('success');
     analytics.trackEvent('proof_generation_success_shield_pressed');
-    navigate('/');
+    navigate('/', { replace: true });
   }, [navigate, haptic, analytics]);
 
   return <EuclidProofGenerationSuccessScreen insets={WEB_SAFE_AREA.insets} onShieldIdentity={onShieldIdentity} />;

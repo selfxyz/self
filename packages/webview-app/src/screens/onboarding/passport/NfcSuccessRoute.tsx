@@ -20,7 +20,7 @@ export const PassportNfcSuccessRoute: React.FC = () => {
 
   const onClose = useCallback(() => {
     haptic.trigger('selection');
-    navigate('/');
+    navigate('/', { replace: true });
   }, [haptic, navigate]);
 
   const onFinishRegistration = useCallback(() => {

@@ -27,7 +27,7 @@ export const SettingsScreen: React.FC = () => {
 
   const onBack = useCallback(() => {
     haptic.trigger('selection');
-    navigate('/');
+    navigate('/', { replace: true });
   }, [navigate, haptic]);
 
   const onDismiss = useCallback(async () => {

@@ -92,3 +92,15 @@ After wiring the screen, visually verify in the browser dev server (`yarn dev`):
 - Every `navigate(path, { state })` call passes a value typed as `Partial<NavState>` (see `src/types/navState.ts`). Do not invent one-off local interfaces for `location.state` — extend `NavState` if you need a new well-typed slot.
 - Forward target is `state.nextPath`. The legacy `returnTo` slot was renamed in NAV-09; the `?returnTo=` URL query param was dropped (state-only).
 - Back target is `state.backPath` when overriding `navigate(-1)`'s default.
+
+## Replace semantics (`navigate(path, { replace: true })`)
+
+Use `{ replace: true }` when the user must not be able to back into the screen they just left:
+
+1. **Terminal outcomes** — success, failure, kyc-pending, register-success. Pressing back from `/` should not return the user to a success/failure screen they already dismissed.
+2. **Invalid-state redirects** — e.g. `HomeScreen` sending no-document users to onboarding, or `BootDecision` redirecting cross-mode access.
+3. **Cluster-internal forward progressions** where the prior step is no longer meaningful (e.g. KYC success → proof generation).
+
+Default `replace: false` is correct for ordinary forward navigation inside a multi-step wizard where back-tracking IS expected.
+
+NAV-07 swept every terminal `navigate('/')` and the 5 named violations; future PRs are responsible for matching the convention in new code.

@@ -46,7 +46,7 @@ export const ProofHistoryScreen: React.FC = () => {
 
   const onClose = useCallback(() => {
     haptic.trigger('selection');
-    navigate('/');
+    navigate('/', { replace: true });
   }, [navigate, haptic]);
 
   const onInfoPress = useCallback(() => {

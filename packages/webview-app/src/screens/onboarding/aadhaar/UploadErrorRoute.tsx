@@ -20,7 +20,7 @@ export const AadhaarUploadErrorRoute: React.FC = () => {
 
   const onClose = useCallback(() => {
     haptic.trigger('selection');
-    navigate('/');
+    navigate('/', { replace: true });
   }, [haptic, navigate]);
 
   const onTryDifferentMethod = useCallback(() => {

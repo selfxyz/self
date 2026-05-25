@@ -21,13 +21,13 @@ export const PushNotificationPromptScreen: React.FC = () => {
   const onEnableNotifications = useCallback(() => {
     haptic.trigger('success');
     analytics.trackEvent('push_notification_enabled', { mock });
-    navigate('/');
+    navigate('/', { replace: true });
   }, [mock, navigate, haptic, analytics]);
 
   const onDismiss = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('push_notification_dismissed', { mock });
-    navigate('/');
+    navigate('/', { replace: true });
   }, [mock, navigate, haptic, analytics]);
 
   const onClose = useCallback(() => {

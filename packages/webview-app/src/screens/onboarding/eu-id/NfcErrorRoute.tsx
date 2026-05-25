@@ -28,7 +28,7 @@ export const EuIdNfcErrorRoute: React.FC = () => {
 
   const onClose = useCallback(() => {
     haptic.trigger('selection');
-    navigate('/');
+    navigate('/', { replace: true });
   }, [haptic, navigate]);
 
   const onStartOver = useCallback(() => {

@@ -18,7 +18,7 @@ export const KycSuccessScreen: React.FC = () => {
   const onGenerateProof = useCallback(() => {
     haptic.trigger('success');
     analytics.trackEvent('kyc_verification_success_generate_proof');
-    navigate('/proving');
+    navigate('/proving', { replace: true });
   }, [navigate, haptic, analytics]);
 
   return <EuclidKycVerificationSuccessScreen insets={WEB_SAFE_AREA.insets} onGenerateProof={onGenerateProof} />;
