@@ -36,7 +36,7 @@ export const TunnelResultScreen: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { analytics, lifecycle } = useSelfClient();
-  const { verificationId, request, appName, appEndpoint, timestamp } = useVerificationRequest();
+  const { verificationId, request, appName, displayAppEndpoint, timestamp } = useVerificationRequest();
 
   const { success = false, error, source = 'proving' } = (location.state as TunnelResultState) ?? {};
 
@@ -116,7 +116,7 @@ export const TunnelResultScreen: React.FC = () => {
         {...WEB_SAFE_AREA}
         appIcon={<SelfLogo size={40} />}
         appName={appName}
-        appEndpoint={appEndpoint}
+        appEndpoint={displayAppEndpoint}
         documentType="passport"
         timestamp={timestamp}
         successTitle="Identity Verified"
@@ -132,7 +132,7 @@ export const TunnelResultScreen: React.FC = () => {
       {...WEB_SAFE_AREA}
       appIcon={<SelfLogo size={40} />}
       appName={appName}
-      appEndpoint={appEndpoint}
+      appEndpoint={displayAppEndpoint}
       documentType="passport"
       timestamp={timestamp}
       failureTitle="Verification Failed"

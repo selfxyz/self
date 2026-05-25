@@ -17,7 +17,7 @@ export const TunnelProofReceiptScreen: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { analytics, haptic } = useSelfClient();
-  const { displayLabels, request, appName, appEndpoint, timestamp } = useVerificationRequest();
+  const { displayLabels, request, appName, displayAppEndpoint, timestamp } = useVerificationRequest();
   const { backPath = '/tunnel/proof/result', backState } =
     (location.state as { backPath?: string; backState?: Record<string, unknown> } | null) ?? {};
 
@@ -43,7 +43,7 @@ export const TunnelProofReceiptScreen: React.FC = () => {
       onClose={onClose}
       appIcon={<SelfLogo size={40} />}
       appName={appName}
-      appEndpoint={appEndpoint}
+      appEndpoint={displayAppEndpoint}
       documentType="passport"
       timestamp={timestamp}
       items={proofItems}

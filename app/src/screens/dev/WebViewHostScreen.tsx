@@ -4,8 +4,9 @@
 
 import React, { useCallback, useMemo } from 'react';
 import { Alert, View } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type { RouteProp } from '@react-navigation/native';
 
 import {
   type AnalyticsSink,
@@ -13,6 +14,7 @@ import {
   type NavigationCallbacks,
   type SelfSdkError,
   SelfVerification,
+  type VerificationRequest,
   type VerificationResult,
 } from '@selfxyz/rn-sdk';
 
@@ -25,6 +27,11 @@ const WEBVIEW_DEV_URL_ENV = process.env.WEBVIEW_DEV_URL;
 const WebViewHostScreen: React.FC = () => {
   const navigation =
     useNavigation() as NativeStackScreenProps<RootStackParamList>['navigation'];
+  const route = useRoute<RouteProp<RootStackParamList, 'WebViewHost'>>();
+  const request = useMemo<VerificationRequest>(
+    () => (route.params?.request ?? {}) as VerificationRequest,
+    [route.params?.request],
+  );
 
   const analytics = useMemo<AnalyticsSink>(
     () => ({
@@ -87,7 +94,7 @@ const WebViewHostScreen: React.FC = () => {
   return (
     <View style={{ flex: 1, backgroundColor: '#000' }}>
       <SelfVerification
-        request={{}}
+        request={request}
         mode="wallet"
         onSuccess={handleSuccess}
         onFailure={handleFailure}

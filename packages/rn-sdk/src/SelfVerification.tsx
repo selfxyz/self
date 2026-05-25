@@ -42,6 +42,19 @@ export interface VerificationRequest {
   userId?: string;
   scope?: string;
   disclosures?: string[];
+  appName?: string;
+  appEndpoint?: string;
+  environment?: 'prod' | 'stg';
+  endpointType?: 'https' | 'celo' | 'staging_https' | 'staging_celo';
+  version?: number;
+  chainID?: number;
+  verificationId?: string;
+  userDefinedData?: string;
+  selfDefinedData?: string;
+  excludedCountries?: string[];
+  proofItems?: string[];
+  userIdType?: 'hex' | 'uuid';
+  timestamp?: number;
 }
 
 export interface VerificationResult {
@@ -103,6 +116,39 @@ type LoadStage = 'loading' | 'slow' | 'failed' | 'ready';
 
 const DEFAULT_SPINNER_TIMEOUT_MS = 3000;
 const DEFAULT_LOAD_TIMEOUT_MS = 10_000;
+
+function buildRequestSearch(request: VerificationRequest): string {
+  const params = new URLSearchParams();
+  const set = (key: string, value: string | number | undefined) => {
+    if (value === undefined || value === null) return;
+    const str = String(value);
+    if (!str) return;
+    params.set(key, str);
+  };
+  set('userId', request.userId);
+  set('scope', request.scope);
+  if (request.disclosures && request.disclosures.length > 0) {
+    params.set('disclosures', request.disclosures.join(','));
+  }
+  if (request.excludedCountries && request.excludedCountries.length > 0) {
+    params.set('excludedCountries', request.excludedCountries.join(','));
+  }
+  if (request.proofItems && request.proofItems.length > 0) {
+    params.set('proofItems', request.proofItems.join(','));
+  }
+  set('appName', request.appName);
+  set('appEndpoint', request.appEndpoint);
+  set('environment', request.environment);
+  set('endpointType', request.endpointType);
+  set('version', request.version);
+  set('chainID', request.chainID);
+  set('verificationId', request.verificationId);
+  set('userDefinedData', request.userDefinedData);
+  set('selfDefinedData', request.selfDefinedData);
+  set('userIdType', request.userIdType);
+  set('timestamp', request.timestamp);
+  return params.toString();
+}
 
 export const SelfVerification: React.FC<SelfVerificationProps> = ({
   request,
@@ -233,19 +279,27 @@ export const SelfVerification: React.FC<SelfVerificationProps> = ({
     [router],
   );
 
+  const requestSearch = useMemo(() => buildRequestSearch(request), [request]);
+
   const source = useMemo(() => {
     if (__DEV__ && devServerUrl) {
-      return { uri: devServerUrl };
+      const sep = devServerUrl.includes('?') ? '&' : '?';
+      const uri = requestSearch ? `${devServerUrl}${sep}${requestSearch}` : devServerUrl;
+      return { uri };
     }
+    const appendSearch = (uri: string) =>
+      requestSearch ? `${uri}?${requestSearch}` : uri;
     return Platform.select({
-      android: { uri: 'file:///android_asset/self-wallet/index.html' },
+      android: { uri: appendSearch('file:///android_asset/self-wallet/index.html') },
       ios: {
-        uri: mainBundlePath
-          ? `${mainBundlePath}/self-wallet/index.html`
-          : 'self-wallet/index.html',
+        uri: appendSearch(
+          mainBundlePath
+            ? `${mainBundlePath}/self-wallet/index.html`
+            : 'self-wallet/index.html',
+        ),
       },
     });
-  }, [devServerUrl]);
+  }, [devServerUrl, requestSearch]);
 
   const retry = useCallback(() => {
     setLoadStage('loading');

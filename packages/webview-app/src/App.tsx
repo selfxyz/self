@@ -3,9 +3,9 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type React from 'react';
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
-import { DevRouteMenu } from './components/DevRouteMenu';
+import { InitialRouteRedirect } from './components/InitialRouteRedirect';
 import { ModeBoot } from './components/ModeBoot';
 import { PasswordGate } from './components/PasswordGate';
 import { OperatingModeProvider } from './providers/OperatingModeProvider';
@@ -49,11 +49,14 @@ import {
 import { ProviderLaunchScreen } from './screens/onboarding/ProviderLaunchScreen';
 import { ProviderResultScreen } from './screens/onboarding/ProviderResultScreen';
 import { PushNotificationPromptScreen } from './screens/onboarding/PushNotificationPromptScreen';
+import { RegisteringScreen } from './screens/onboarding/RegisteringScreen';
 import { RegistrationFailureScreen } from './screens/onboarding/RegistrationFailureScreen';
 import { ScanSuccessScreen } from './screens/onboarding/ScanSuccessScreen';
 import { SocialSignOnMethodPickerScreen } from './screens/onboarding/SocialSignOnMethodPickerScreen';
 import { SocialSignOnPickerScreen } from './screens/onboarding/SocialSignOnPickerScreen';
 import { TourScreen } from './screens/onboarding/TourScreen';
+import { InviteScreen } from './screens/points/InviteScreen';
+import { PointsScreen } from './screens/points/PointsScreen';
 import { DialogueWithCtaScreen } from './screens/proving/DialogueWithCtaScreen';
 import { DiscloseResultScreen } from './screens/proving/DiscloseResultScreen';
 import { KycPendingScreen } from './screens/proving/KycPendingScreen';
@@ -65,6 +68,7 @@ import { ProofHistoryScreen } from './screens/proving/ProofHistoryScreen';
 import { ProofRequestReceiptScreen } from './screens/proving/ProofRequestReceiptScreen';
 import { ProofSuccessBackupScreen } from './screens/proving/ProofSuccessBackupScreen';
 import { ProvingScreen } from './screens/proving/ProvingScreen';
+import { QRViewfinderScreen } from './screens/proving/QRViewfinderScreen';
 import { SimpleDialogueScreen } from './screens/proving/SimpleDialogueScreen';
 import { VerificationResultScreen } from './screens/proving/VerificationResultScreen';
 import { BackupMethodPickerScreen } from './screens/recovery/BackupMethodPickerScreen';
@@ -116,11 +120,15 @@ export const App: React.FC = () => (
             <Route path="/onboarding/aadhaar/instructions" element={<AadhaarAppInstructionsRoute />} />
             <Route path="/onboarding/aadhaar/upload-success" element={<AadhaarUploadSuccessRoute />} />
             <Route path="/onboarding/aadhaar/upload-error" element={<AadhaarUploadErrorRoute />} />
+            <Route path="/onboarding/registering" element={<RegisteringScreen />} />
             <Route path="/onboarding/success" element={<ScanSuccessScreen />} />
             <Route path="/onboarding/recovery-phrase" element={<OnboardingRecoveryPhraseScreen />} />
             <Route path="/onboarding/failure" element={<RegistrationFailureScreen />} />
             <Route path="/onboarding/kyc-failure" element={<KycFailureScreen />} />
             <Route path="/proving" element={<ProvingScreen />} />
+            <Route path="/proving/qr-scan" element={<QRViewfinderScreen />} />
+            <Route path="/points" element={<PointsScreen />} />
+            <Route path="/points/invite" element={<InviteScreen />} />
             <Route path="/proving/generating" element={<ProofGenerationRouteScreen />} />
             <Route path="/proving/result" element={<DiscloseResultScreen />} />
             <Route path="/settings" element={<SettingsScreen />} />
@@ -163,9 +171,8 @@ export const App: React.FC = () => (
             <Route path="/tunnel/recovery-required" element={<TunnelRecoveryRequiredScreen />} />
             <Route path="/tunnel/proof/disclose" element={<TunnelDiscloseScreen />} />
             <Route path="/tunnel/proof/result" element={<TunnelResultScreen />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
+            <Route path="*" element={<InitialRouteRedirect />} />
           </Routes>
-          {import.meta.env.DEV && <DevRouteMenu />}
         </SelfClientProvider>
         </VerificationRequestProvider>
       </OperatingModeProvider>

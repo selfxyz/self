@@ -56,8 +56,20 @@ const screenGroups: DevScreenGroup[] = [
     ],
   },
   {
+    title: 'Points',
+    links: [
+      { href: '/points', label: 'Points' },
+      { href: '/points/invite', label: 'Invite Friends' },
+    ],
+  },
+  {
     title: 'Proving',
     links: [
+      { href: '/proving/qr-scan', label: 'QR Viewfinder' },
+      {
+        href: '/proving?disclosures=name,nationality,age_above_18,date_of_birth&appName=Playground&appEndpoint=https%3A%2F%2Fplayground.staging.self.xyz%2Fapi%2Fverify&environment=stg&endpointType=staging_https&userIdType=hex&userId=0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
+        label: 'Disclosure Demo (Mock Request)',
+      },
       { href: '/proving/receipt', label: 'Proof Receipt' },
       { href: '/proving/history', label: 'Proof History' },
       { href: '/proving/dialogue', label: 'Simple Dialogue' },

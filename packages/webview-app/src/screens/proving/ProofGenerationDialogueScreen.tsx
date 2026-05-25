@@ -14,6 +14,7 @@ export const ProofGenerationDialogueScreen: React.FC = () => {
       {...WEB_SAFE_AREA}
       step="readingRegistry"
       idCardProps={{ variant: 'unverified', cardMoire: 'moire' }}
+      lottieSource="/animations/proof-progress.json"
     />
   );
 };

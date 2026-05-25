@@ -26,7 +26,7 @@ const DEMO_DISCLOSE_STEPS: ProofGenerationStep[] = [
 
 const DemoTunnelDiscloseScreen: React.FC<{ search: string }> = ({ search }) => {
   const navigate = useNavigate();
-  const { appName, appEndpoint, timestamp } = useVerificationRequest();
+  const { appName, displayAppEndpoint, timestamp } = useVerificationRequest();
   const [stepIndex, setStepIndex] = useState(0);
 
   const advance = useCallback(() => {
@@ -52,7 +52,7 @@ const DemoTunnelDiscloseScreen: React.FC<{ search: string }> = ({ search }) => {
         {...WEB_SAFE_AREA}
         appIcon={<SelfLogo size={40} />}
         appName={appName}
-        appEndpoint={appEndpoint}
+        appEndpoint={displayAppEndpoint}
         documentType="passport"
         timestamp={timestamp}
         step={DEMO_DISCLOSE_STEPS[stepIndex]}
@@ -92,7 +92,7 @@ const StandardTunnelDiscloseScreen: React.FC = () => {
   const navigate = useNavigate();
   const { client, analytics, haptic } = useSelfClient();
   const verificationCtx = useVerificationRequest();
-  const { appName, appEndpoint, timestamp } = verificationCtx;
+  const { appName, displayAppEndpoint, timestamp } = verificationCtx;
   const currentState = useProvingStore(s => s.currentState);
   const init = useProvingStore(s => s.init);
   const errorCode = useProvingStore(s => s.error_code);
@@ -190,7 +190,7 @@ const StandardTunnelDiscloseScreen: React.FC = () => {
       {...WEB_SAFE_AREA}
       appIcon={<SelfLogo size={40} />}
       appName={appName}
-      appEndpoint={appEndpoint}
+      appEndpoint={displayAppEndpoint}
       documentType="passport"
       timestamp={timestamp}
       step={mapDiscloseStateToStep(currentState)}
