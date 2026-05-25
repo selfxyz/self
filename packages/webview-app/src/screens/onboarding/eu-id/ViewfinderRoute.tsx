@@ -54,7 +54,7 @@ export const EuIdViewfinderRoute: React.FC = () => {
           err instanceof Error ? err.message : 'MRZ scan failed';
         analytics.trackEvent('eu_id_mrz_scan_failed', { error: message });
         haptic.trigger('warning');
-        navigate('/onboarding/passport/nfc-error', {
+        navigate('/onboarding/eu-id/nfc-error', {
           state: { ...state, errorMessage: message, stage: 'mrz' },
           replace: true,
         });

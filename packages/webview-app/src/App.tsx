@@ -34,6 +34,7 @@ import {
   EuIdBackInstructionsRoute,
   EuIdCanInstructionsRoute,
   EuIdInstructionsRoute,
+  EuIdNfcErrorRoute,
   EuIdNfcInstructionsRoute,
   EuIdNfcSuccessRoute,
   EuIdViewfinderRoute,
@@ -112,6 +113,7 @@ export const App: React.FC = () => (
             <Route path="/onboarding/eu-id/code-scan-viewfinder" element={<EuIdViewfinderRoute />} />
             <Route path="/onboarding/eu-id/nfc-instructions" element={<EuIdNfcInstructionsRoute />} />
             <Route path="/onboarding/eu-id/nfc-success" element={<EuIdNfcSuccessRoute />} />
+            <Route path="/onboarding/eu-id/nfc-error" element={<EuIdNfcErrorRoute />} />
             <Route path="/onboarding/aadhaar/instructions" element={<AadhaarAppInstructionsRoute />} />
             <Route path="/onboarding/aadhaar/upload-success" element={<AadhaarUploadSuccessRoute />} />
             <Route path="/onboarding/aadhaar/upload-error" element={<AadhaarUploadErrorRoute />} />

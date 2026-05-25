@@ -112,7 +112,7 @@ export const EuIdNfcInstructionsRoute: React.FC = () => {
           err instanceof Error ? err.message : 'NFC scan failed';
         analytics.trackEvent('eu_id_nfc_scan_failed', { error: message });
         haptic.trigger('warning');
-        navigate('/onboarding/passport/nfc-error', {
+        navigate('/onboarding/eu-id/nfc-error', {
           state: {
             countryCode: state.countryCode,
             errorMessage: message,

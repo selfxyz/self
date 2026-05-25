@@ -43,6 +43,7 @@ const screenGroups: DevScreenGroup[] = [
       { href: '/onboarding/eu-id/code-scan-viewfinder', label: 'EU ID — Code Scan Viewfinder' },
       { href: '/onboarding/eu-id/nfc-instructions', label: 'EU ID — NFC Instructions' },
       { href: '/onboarding/eu-id/nfc-success', label: 'EU ID — NFC Success' },
+      { href: '/onboarding/eu-id/nfc-error', label: 'EU ID — NFC Error' },
       { href: '/onboarding/aadhaar/instructions', label: 'Aadhaar — App Instructions' },
       { href: '/onboarding/aadhaar/upload-success', label: 'Aadhaar — Upload Success' },
       { href: '/onboarding/aadhaar/upload-error', label: 'Aadhaar — Upload Error' },

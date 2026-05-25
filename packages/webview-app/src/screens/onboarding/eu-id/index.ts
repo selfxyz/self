@@ -8,3 +8,4 @@ export { EuIdCanInstructionsRoute } from './CanInstructionsRoute';
 export { EuIdViewfinderRoute } from './ViewfinderRoute';
 export { EuIdNfcInstructionsRoute } from './NfcInstructionsRoute';
 export { EuIdNfcSuccessRoute } from './NfcSuccessRoute';
+export { EuIdNfcErrorRoute } from './NfcErrorRoute';
