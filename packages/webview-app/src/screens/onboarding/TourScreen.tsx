@@ -50,7 +50,7 @@ export const TourScreen: React.FC = () => {
       return (
         <div className="tour4-lottie-scale">
           <MockRegistrationFailureButton />
-          <LaunchTour4Screen {...WEB_SAFE_AREA} onNext={onNext} onSkip={onNext} onRestore={onRestore} />
+          <LaunchTour4Screen {...WEB_SAFE_AREA} onNext={onNext} onSkip={onRestore} onRestore={onRestore} />
         </div>
       );
     default:

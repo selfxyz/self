@@ -8,11 +8,7 @@ import { useNavigate } from 'react-router-dom';
 
 import type { IDCardProps } from '@selfxyz/euclid';
 import { DevModeScreen as EuclidDevModeScreen, LeftArrowIcon } from '@selfxyz/euclid';
-import {
-  generateMockDocument,
-  markCurrentDocumentAsRegistered,
-  storePassportData,
-} from '@selfxyz/mobile-sdk-alpha';
+import { generateMockDocument, storePassportData } from '@selfxyz/mobile-sdk-alpha';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
@@ -80,8 +76,7 @@ export const DevModeScreen: React.FC = () => {
         selectedDocumentType,
       });
       await storePassportData(client, mockDoc);
-      await markCurrentDocumentAsRegistered(client);
-      haptic.trigger('success');
+      haptic.trigger('selection');
       analytics.trackEvent('dev_mode_generate_mock', {
         documentType: selectedDocumentType,
         country: selectedCountry,
@@ -89,7 +84,13 @@ export const DevModeScreen: React.FC = () => {
         expiryYears: expiryYearsOptions[expiryIndex],
         isInOfacList: !ofacCheck,
       });
-      navigate('/', { state: { skipOnboardingRedirect: true } });
+      // Pass the document identity through state so RegisteringScreen renders
+      // the correct IDCard variant on first paint (avoids a passport →
+      // dev-passport flicker while loadSelectedDocument resolves async).
+      navigate('/onboarding/registering', {
+        replace: true,
+        state: { documentCategory: mockDoc.documentCategory, mock: true },
+      });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'mock generation failed';
       console.error('[DevMode] generateMockDocument failed:', err);
