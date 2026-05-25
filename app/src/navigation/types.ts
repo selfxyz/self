@@ -71,11 +71,30 @@ export type AppRoutesParamList = {
 // Dev Screens
 // =============================================================================
 
+export type WebViewHostRequest = {
+  userId?: string;
+  scope?: string;
+  disclosures?: string[];
+  appName?: string;
+  appEndpoint?: string;
+  environment?: 'prod' | 'stg';
+  endpointType?: 'https' | 'celo' | 'staging_https' | 'staging_celo';
+  version?: number;
+  chainID?: number;
+  verificationId?: string;
+  userDefinedData?: string;
+  selfDefinedData?: string;
+  excludedCountries?: string[];
+  proofItems?: string[];
+  userIdType?: 'hex' | 'uuid';
+  timestamp?: number;
+};
+
 export type DevRoutesParamList = {
   CreateMock: undefined;
   MockDataDeepLink: undefined;
   SocialLoginDemo: undefined;
-  WebViewHost: undefined;
+  WebViewHost: { request?: WebViewHostRequest } | undefined;
 };
 
 // =============================================================================

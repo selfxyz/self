@@ -109,8 +109,7 @@ const devScreens = {
   WebViewHost: {
     screen: WebViewHostScreen,
     options: {
-      ...devHeaderOptions,
-      title: 'WebView Host (rn-sdk)',
+      headerShown: false,
     } as NativeStackNavigationOptions,
   },
 };

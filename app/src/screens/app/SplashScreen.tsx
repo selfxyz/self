@@ -154,7 +154,7 @@ const SplashScreen: React.FC = ({}) => {
             }
             setQueuedDeepLink(queuedUrl);
           } else {
-            setNextScreen(parentScreen);
+            setNextScreen('WebViewHost' as keyof RootStackParamList);
           }
         } catch (error) {
           if (settledRef.current) return;
@@ -169,7 +169,7 @@ const SplashScreen: React.FC = ({}) => {
             ? 'Home'
             : 'Disclaimer';
           setDeeplinkParentScreen(fallbackScreen);
-          setNextScreen(fallbackScreen);
+          setNextScreen('WebViewHost' as keyof RootStackParamList);
         }
       };
 

@@ -12,9 +12,45 @@ import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import type { RootStackParamList } from '@/navigation';
 import { navigationRef } from '@/navigation';
+import type { WebViewHostRequest } from '@/navigation/types';
 import useUserStore from '@/stores/userStore';
 import { useVerificationGateStore } from '@/stores/verificationGateStore';
 import { IS_DEV_MODE } from '@/utils/devUtils';
+
+function selfAppToWebViewRequest(selfApp: Record<string, unknown>): WebViewHostRequest {
+  const disclosuresRecord = (selfApp.disclosures ?? {}) as Record<string, unknown>;
+  const disclosures: string[] = [];
+  for (const [key, value] of Object.entries(disclosuresRecord)) {
+    if (key === 'minimumAge' && typeof value === 'number') {
+      disclosures.push(`minimumAge:${value}`);
+    } else if (key === 'excludedCountries') {
+      continue;
+    } else if (value === true) {
+      disclosures.push(key);
+    }
+  }
+  return {
+    userId: typeof selfApp.userId === 'string' ? selfApp.userId : undefined,
+    scope: typeof selfApp.scope === 'string' ? selfApp.scope : undefined,
+    disclosures: disclosures.length > 0 ? disclosures : undefined,
+    appName: typeof selfApp.appName === 'string' ? selfApp.appName : undefined,
+    appEndpoint: typeof selfApp.endpoint === 'string' ? selfApp.endpoint : undefined,
+    environment: selfApp.devMode === true ? 'stg' : 'prod',
+    endpointType: typeof selfApp.endpointType === 'string'
+      ? (selfApp.endpointType as WebViewHostRequest['endpointType'])
+      : undefined,
+    version: typeof selfApp.version === 'number' ? selfApp.version : undefined,
+    chainID: typeof selfApp.chainID === 'number' ? selfApp.chainID : undefined,
+    verificationId: typeof selfApp.sessionId === 'string' ? selfApp.sessionId : undefined,
+    userDefinedData: typeof selfApp.userDefinedData === 'string' ? selfApp.userDefinedData : undefined,
+    selfDefinedData: typeof selfApp.selfDefinedData === 'string' ? selfApp.selfDefinedData : undefined,
+    excludedCountries: Array.isArray(disclosuresRecord.excludedCountries)
+      ? (disclosuresRecord.excludedCountries as string[])
+      : undefined,
+    userIdType: selfApp.userIdType === 'hex' ? 'hex' : 'uuid',
+    timestamp: Date.now(),
+  };
+}
 import {
   evaluateGoogleUsatGate,
   isGoogleUsatForceEnabledForTesting,
@@ -161,9 +197,9 @@ export const handleUrl = async (selfClient: SelfClient, uri: string) => {
 
       safeNavigate(
         createDeeplinkNavigationState(
-          'ProvingScreenRouter',
+          'WebViewHost',
           correctParentScreen,
-          { entryPoint: 'deeplink' },
+          { request: selfAppToWebViewRequest(selfAppJson) },
         ),
       );
 
