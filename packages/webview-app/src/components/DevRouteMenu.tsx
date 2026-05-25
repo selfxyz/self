@@ -104,8 +104,6 @@ const screenGroups: DevScreenGroup[] = [
     title: 'Tunnel — Screens',
     links: [
       { href: '/tunnel/tour/1', label: 'Tour' },
-      { href: '/tunnel/registration/country', label: 'Country Picker' },
-      { href: '/tunnel/registration/id-type', label: 'ID Type' },
       { href: '/tunnel/kyc-failure', label: 'KYC Failure' },
       { href: '/tunnel/recovery-required', label: 'Recovery Required' },
       { href: '/tunnel/proof/generating', label: 'Proving' },
