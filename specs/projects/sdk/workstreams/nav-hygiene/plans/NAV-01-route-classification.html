@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>NAV-01 Plan — Route Mode-Classification Audit</title>
+<style>
+  :root {
+    --bg: #fafbfc;
+    --surface: #ffffff;
+    --surface-alt: #f6f8fa;
+    --border: #d1d9e0;
+    --border-soft: #e1e4e8;
+    --text: #1f2328;
+    --muted: #656d76;
+    --accent: #0969da;
+    --accent-soft: #ddf4ff;
+    --high: #cf222e;
+    --high-soft: #ffebe9;
+    --med: #9a6700;
+    --med-soft: #fff8c5;
+    --low: #0969da;
+    --low-soft: #ddf4ff;
+    --done: #1a7f37;
+    --done-soft: #dafbe1;
+    --draft: #6e7781;
+    --draft-soft: #eaeef2;
+    --deferred: #8a6b1c;
+    --deferred-soft: #fff1c8;
+    --self-app: #0969da;
+    --self-app-soft: #ddf4ff;
+    --embed: #8250df;
+    --embed-soft: #f5edff;
+    --shared: #1a7f37;
+    --shared-soft: #dafbe1;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font: 14px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    color: var(--text);
+    background: var(--bg);
+  }
+  code, pre, kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.9em; }
+  code { background: var(--surface-alt); padding: 1px 5px; border-radius: 4px; border: 1px solid var(--border-soft); }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  header.topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 12px 24px;
+    display: flex; align-items: center; gap: 16px;
+    flex-wrap: wrap;
+  }
+  header h1 { margin: 0; font-size: 16px; font-weight: 600; }
+  header .meta-pill {
+    font-size: 11px; color: var(--muted);
+    padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border);
+    background: var(--surface-alt);
+  }
+  header .meta-pill.status { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+  header .spacer { flex: 1; }
+  header .links { display: flex; gap: 8px; flex-wrap: wrap; }
+  header .links a {
+    font-size: 12px; padding: 6px 12px; border-radius: 6px;
+    border: 1px solid var(--border); background: var(--surface);
+    color: var(--text);
+  }
+  header .links a:hover { background: var(--accent-soft); border-color: var(--accent); text-decoration: none; }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: 32px;
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 24px;
+  }
+  nav.toc {
+    position: sticky; top: 60px;
+    align-self: start;
+    max-height: calc(100vh - 80px); overflow-y: auto;
+    border-right: 1px solid var(--border-soft);
+    padding-right: 12px;
+    font-size: 13px;
+  }
+  nav.toc h4 { font-size: 11px; text-transform: uppercase; color: var(--muted); letter-spacing: 0.06em; margin: 12px 0 8px; }
+  nav.toc h4:first-child { margin-top: 0; }
+  nav.toc a {
+    display: block; padding: 5px 8px; border-radius: 4px;
+    color: var(--muted); margin-bottom: 1px;
+  }
+  nav.toc a:hover { background: var(--surface-alt); color: var(--text); text-decoration: none; }
+  nav.toc a.active { background: var(--accent-soft); color: var(--accent); font-weight: 500; }
+
+  main { min-width: 0; }
+  section { margin-bottom: 36px; scroll-margin-top: 70px; }
+  h2 { font-size: 20px; margin: 0 0 12px; border-bottom: 1px solid var(--border-soft); padding-bottom: 6px; }
+  h3 { font-size: 15px; margin: 16px 0 8px; }
+
+  .tldr {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+  }
+  .tldr h2 { border: none; padding: 0; margin: 0 0 8px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); }
+  .tldr p { margin: 4px 0; }
+
+  @media (max-width: 980px) {
+    .layout { grid-template-columns: 1fr; }
+    nav.toc { position: static; max-height: none; border-right: none; border-bottom: 1px solid var(--border-soft); padding: 0 0 12px; margin-bottom: 12px; }
+  }
+
+  .meta-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 8px; margin-bottom: 16px;
+    background: var(--surface); border: 1px solid var(--border-soft); border-radius: 8px;
+    padding: 12px 16px;
+  }
+  .meta-grid .item { font-size: 12px; }
+  .meta-grid .item .label { color: var(--muted); text-transform: uppercase; font-size: 10px; letter-spacing: 0.06em; margin-bottom: 2px; }
+  .meta-grid .item .value { color: var(--text); font-weight: 500; }
+
+  ul.scope { margin: 0; padding-left: 20px; }
+  ul.scope li { margin: 6px 0; }
+  ul.scope li ul { margin-top: 4px; }
+
+  .note {
+    background: var(--surface-alt); border-left: 3px solid var(--med);
+    padding: 10px 14px; border-radius: 4px;
+    margin: 12px 0; font-size: 13px;
+  }
+  .note strong { color: var(--med); }
+
+  /* Disposition table */
+  .disp-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: 8px;
+    overflow: hidden;
+    font-size: 13px;
+  }
+  .disp-table th, .disp-table td {
+    padding: 8px 10px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-soft);
+    vertical-align: top;
+  }
+  .disp-table th {
+    background: var(--surface-alt);
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    border-bottom: 2px solid var(--border);
+  }
+  .disp-table tr:last-child td { border-bottom: none; }
+  .disp-table tr:hover td { background: var(--surface-alt); }
+  .disp-table code { font-size: 12px; }
+  .disp-table td.note-cell { color: var(--muted); font-size: 12px; max-width: 320px; }
+
+  .disp-pill {
+    display: inline-block; padding: 2px 8px; border-radius: 999px;
+    font-size: 11px; font-weight: 500; white-space: nowrap;
+  }
+  .disp-pill.self-app { background: var(--self-app-soft); color: var(--self-app); }
+  .disp-pill.embed { background: var(--embed-soft); color: var(--embed); }
+  .disp-pill.shared { background: var(--shared-soft); color: var(--shared); }
+  .disp-pill.dev { background: var(--draft-soft); color: var(--draft); }
+  .disp-pill.component { background: var(--med-soft); color: var(--med); }
+  .disp-pill.delete { background: var(--high-soft); color: var(--high); }
+  .disp-pill.defer { background: var(--deferred-soft); color: var(--deferred); }
+
+  .nav-link {
+    display: inline-block;
+    font-family: ui-monospace, monospace;
+    font-size: 11px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    margin-right: 4px;
+    white-space: nowrap;
+  }
+
+  .filter-bar {
+    display: flex; gap: 6px; flex-wrap: wrap;
+    margin-bottom: 8px;
+    align-items: center;
+  }
+  .filter-bar .label { font-size: 12px; color: var(--muted); margin-right: 4px; }
+  .filter-bar .chip {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    cursor: pointer;
+  }
+  .filter-bar .chip:hover { border-color: var(--accent); color: var(--accent); }
+  .filter-bar .chip.active { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); }
+  .filter-bar .count { font-size: 12px; color: var(--muted); margin-left: auto; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <h1>NAV-01 · Route Mode-Classification Audit</h1>
+  <span class="meta-pill status">Ready</span>
+  <span class="meta-pill">Priority: High</span>
+  <span class="meta-pill">Updated 2026-05-24</span>
+  <span class="spacer"></span>
+  <div class="links">
+    <a href="../SPEC.html">← Spec</a>
+    <a href="../AUDIT.html">Audit</a>
+  </div>
+</header>
+
+<div class="layout">
+
+<nav class="toc" id="toc">
+  <h4>On this page</h4>
+  <a href="#why">Why</a>
+  <a href="#meta">Meta</a>
+  <a href="#scope">Scope</a>
+  <a href="#out-of-scope">Out of Scope</a>
+  <a href="#required-files">Required Files</a>
+  <a href="#disposition">Disposition Table</a>
+  <a href="#validation">Validation</a>
+  <a href="#hand-off">Hand-off</a>
+  <h4>Workstream</h4>
+  <a href="../SPEC.html">SPEC ↗</a>
+  <a href="../AUDIT.html">AUDIT ↗</a>
+</nav>
+
+<main>
+
+<section id="why" class="tldr">
+  <h2>Why</h2>
+  <p>
+    The router does not know which operating mode (self-app, embed, shared) any given route belongs to. Mode coupling is implicit and scattered across <code>ModeBoot</code>, <code>InitialRouteRedirect</code>, and per-screen guards. Before we can add a <code>ModeRoute</code> wrapper (NAV-13), rename the namespace (NAV-08), delete dead sub-flows (NAV-10), or gate dev-only routes (NAV-02), every currently registered path needs an explicit disposition.
+  </p>
+  <p>
+    NAV-01 produces that disposition table — the canonical reference downstream items consume. This PR is documentation-only. No code in <code>App.tsx</code>, <code>DevRouteMenu.tsx</code>, or any screen file changes. Code changes live in the downstream items that act on the dispositions captured here.
+  </p>
+</section>
+
+<section id="meta">
+  <h2>Meta</h2>
+  <div class="meta-grid">
+    <div class="item"><div class="label">Workstream</div><div class="value">nav-hygiene</div></div>
+    <div class="item"><div class="label">Linear</div><div class="value">TBD</div></div>
+    <div class="item"><div class="label">Owner</div><div class="value">TBD</div></div>
+    <div class="item"><div class="label">Branch</div><div class="value"><code>chore/nav-hygiene</code></div></div>
+    <div class="item"><div class="label">PR</div><div class="value">TBD</div></div>
+    <div class="item"><div class="label">Depends on</div><div class="value">—</div></div>
+  </div>
+</section>
+
+<section id="scope">
+  <h2>Scope</h2>
+  <ul class="scope">
+    <li>Capture the canonical disposition table for every route registered in <code>packages/webview-app/src/App.tsx</code> (see <a href="#disposition">Disposition Table</a> below).</li>
+    <li>Reconcile two findings discovered during triage:
+      <ul>
+        <li><strong>Phantom row</strong>: <code>/proving/qr-scan</code> does not exist in <code>webview-app/src</code>. Removed from <code>AUDIT.html</code> triage data and from the "True orphans" finding. The only matches in the repo are iOS-native <code>QRScanner*</code> files unrelated to the webview router.</li>
+        <li><strong>NAV-11 deferred</strong>: the social sign-on trio (<code>/onboarding/backup</code>, <code>/onboarding/signin</code>, <code>/onboarding/conflict</code>) wraps Euclid screens that are not built yet. Status set to <code>Deferred</code> in <code>SPEC.html</code>; triage <code>suggested</code> for those three rows changed from <code>shared</code> to <code>defer</code>; new low-severity finding <code>f-deferred</code> added to <code>AUDIT.html</code>.</li>
+      </ul>
+    </li>
+    <li>Add a small <code>Deferred</code> status to <code>SPEC.html</code> (new color vars, badge CSS, filter chip) so the deferred state renders correctly in the backlog UI.</li>
+  </ul>
+</section>
+
+<section id="out-of-scope">
+  <h2>Out of Scope</h2>
+  <ul class="scope">
+    <li><strong>No route registrations are added, removed, or moved.</strong> All such code changes belong to the items the dispositions feed:
+      <ul>
+        <li><span class="disp-pill dev">dev</span> rows → <span class="nav-link">NAV-02</span> (move under <code>/dev/*</code>, gate on <code>import.meta.env.DEV</code>)</li>
+        <li><span class="disp-pill delete">delete</span> rows under <code>/tunnel/registration/*</code> → <span class="nav-link">NAV-10</span></li>
+        <li><span class="disp-pill component">component</span> rows (the three <code>/proving/dialogue*</code> routes) → <span class="nav-link">NAV-02</span> or a follow-up item; not NAV-01</li>
+        <li><span class="disp-pill self-app">self-app</span> and <span class="disp-pill shared">shared</span> rows whose paths change → <span class="nav-link">NAV-08</span> (namespace rewrite), paired with <span class="nav-link">NAV-13</span> (<code>ModeRoute</code> wrapper)</li>
+        <li><span class="disp-pill defer">defer</span> rows → <span class="nav-link">NAV-11</span> (reopens post-v1 when WV-12 lands)</li>
+      </ul>
+    </li>
+    <li><strong>No new abstractions.</strong> <code>useClusterClose</code> is NAV-04; mode-tagged routes are NAV-13; the consolidated boot decision is NAV-03.</li>
+    <li><strong>No spec rewrites.</strong> <code>SPEC.html</code> invariants and backlog wording stay as-is except for the NAV-11 row update and the <code>Deferred</code> status plumbing.</li>
+  </ul>
+</section>
+
+<section id="required-files">
+  <h2>Required Files</h2>
+  <ul class="scope">
+    <li><code>specs/projects/sdk/workstreams/nav-hygiene/SPEC.html</code></li>
+    <li><code>specs/projects/sdk/workstreams/nav-hygiene/AUDIT.html</code></li>
+    <li><code>specs/projects/sdk/workstreams/nav-hygiene/plans/NAV-01-route-classification.html</code> (this file)</li>
+  </ul>
+</section>
+
+<section id="disposition">
+  <h2>Disposition Table</h2>
+  <p style="margin-top:0;color:var(--muted)">Proposed paths follow the new namespace defined in <a href="../SPEC.html#invariants">SPEC invariant #7</a> (executed by NAV-08). Dispositions correspond to the triage classes in <a href="../AUDIT.html#triage">AUDIT triage board</a>.</p>
+
+  <div class="filter-bar">
+    <span class="label">Filter:</span>
+    <button class="chip active" data-disp="all">All</button>
+    <button class="chip" data-disp="self-app">self-app</button>
+    <button class="chip" data-disp="shared">shared</button>
+    <button class="chip" data-disp="dev">dev</button>
+    <button class="chip" data-disp="component">component</button>
+    <button class="chip" data-disp="delete">delete</button>
+    <button class="chip" data-disp="defer">defer</button>
+    <span class="count" id="disp-count">18 of 18 rows</span>
+  </div>
+
+  <table class="disp-table" id="disp-table">
+    <thead>
+      <tr>
+        <th>Current route</th>
+        <th>Proposed</th>
+        <th>Cluster</th>
+        <th>Disposition</th>
+        <th>Downstream</th>
+        <th>Note</th>
+      </tr>
+    </thead>
+    <tbody id="disp-tbody"></tbody>
+  </table>
+
+  <div class="note" style="margin-top:16px">
+    <strong>Removed during triage:</strong> <code>/proving/qr-scan</code> was listed in the original triage but does not exist in <code>webview-app/src</code>. The only <code>qr-scan</code> / <code>QRScan*</code> matches in the repo are iOS-native files (<code>QRScannerViewController.swift</code>, <code>QRScannerBridge.m</code>) tied to the RN app's camera bridge, not the webview router. No action needed; the row was removed from <code>AUDIT.html</code>.
+  </div>
+</section>
+
+<section id="validation">
+  <h2>Validation</h2>
+  <ul class="scope">
+    <li>Open <a href="../SPEC.html">SPEC.html</a> in a browser. Verify the NAV-11 row renders with a yellow <code>Deferred</code> badge and that the <code>Deferred</code> filter chip narrows the list to NAV-11.</li>
+    <li>Open <a href="../AUDIT.html">AUDIT.html</a> in a browser. Verify:
+      <ul>
+        <li>The triage status reads "0 of 18 decided" (was 19; phantom row removed).</li>
+        <li>The three social sign-on rows show a dashed <code>defer</code> suggestion button.</li>
+        <li>Clicking <em>Apply suggestions</em> then <em>Export disposition table</em> produces a markdown table consistent with the one rendered above.</li>
+        <li>The <code>f-deferred</code> finding article renders with a low-severity badge.</li>
+      </ul>
+    </li>
+    <li><code>git diff --stat</code> shows only four files changed: <code>SPEC.html</code>, <code>AUDIT.html</code>, this plan, and the markdown plan that this file replaces (deletion).</li>
+  </ul>
+</section>
+
+<section id="hand-off">
+  <h2>Hand-off</h2>
+  <p>Once NAV-01 lands, the following items become ready:</p>
+  <ul class="scope">
+    <li><span class="nav-link">NAV-02</span> consumes the <span class="disp-pill dev">dev</span> row + <span class="disp-pill component">component</span> rows (deal with <code>/dev/keychain</code> + the three dialogue routes).</li>
+    <li><span class="nav-link">NAV-08</span> + <span class="nav-link">NAV-13</span> consume the <span class="disp-pill self-app">self-app</span> and <span class="disp-pill shared">shared</span> rows (the namespace rewrite + <code>ModeRoute</code> wrapper land in the same PR).</li>
+    <li><span class="nav-link">NAV-10</span> consumes the two <code>/tunnel/registration/*</code> <span class="disp-pill delete">delete</span> rows.</li>
+    <li><span class="nav-link">NAV-11</span> stays <code>Deferred</code> until <span class="nav-link">WV-12</span> (Euclid social sign-on screens) lands.</li>
+  </ul>
+  <p>Each of those items gets its own plan file in this directory before implementation starts.</p>
+</section>
+
+</main>
+</div>
+
+<script>
+const ROWS = [
+  { route: "/proving/history",            proposed: "/history",                 cluster: "history",     disp: "self-app",  downstream: ["NAV-08", "WV-13"], note: "Pre-built; awaits Home wiring. Place-noun under new namespace." },
+  { route: "/proving/receipt",            proposed: "/receipts/:id",            cluster: "receipts",    disp: "self-app",  downstream: ["NAV-08", "WV-13"], note: "Proof detail. Reachable from /disclose/result and from history list." },
+  { route: "/proving/generation-success", proposed: "(retire)",                 cluster: "register",    disp: "delete",    downstream: ["NAV-08"],          note: "Duplicate of /proving/backup-prompt. Retire in favor of /register/success rendering ProofSuccessBackupScreen." },
+  { route: "/proving/backup-prompt",      proposed: "/register/success",        cluster: "register",    disp: "self-app",  downstream: ["NAV-08"],          note: "Canonical 'you're all set' screen — winner of the 3-way register-success duplication." },
+  { route: "/proving/kyc-pending",        proposed: "/disclose/kyc-pending",    cluster: "disclose",    disp: "shared",    downstream: ["NAV-08"],          note: "Disclose held up by async KYC review. Mode-aware close." },
+  { route: "/proving/kyc-success",        proposed: "/disclose/kyc-success",    cluster: "disclose",    disp: "shared",    downstream: ["NAV-08"],          note: "KYC just cleared; resume disclose. Symmetric with /tunnel/kyc-success." },
+  { route: "/account/verified",           proposed: "/account/verified",        cluster: "account",     disp: "self-app",  downstream: [],                  note: "Already correctly named — stays put." },
+  { route: "/points",                     proposed: "/points",                  cluster: "points",      disp: "self-app",  downstream: [],                  note: "Stays put." },
+  { route: "/points/invite",              proposed: "/points/invite",           cluster: "points",      disp: "self-app",  downstream: [],                  note: "Stays put." },
+  { route: "/onboarding/backup",          proposed: "/link-social/backup",      cluster: "signin",      disp: "defer",     downstream: ["NAV-11"],          note: "Euclid screen not built (TODO WV-12). Excluded from v1 production graph." },
+  { route: "/onboarding/signin",          proposed: "/link-social",             cluster: "signin",      disp: "defer",     downstream: ["NAV-11"],          note: "Euclid screen not built (TODO WV-12). Excluded from v1 production graph." },
+  { route: "/onboarding/conflict",        proposed: "/link-social/conflict",    cluster: "signin",      disp: "defer",     downstream: ["NAV-11"],          note: "Euclid screen not built (TODO WV-12). Excluded from v1 production graph." },
+  { route: "/proving/dialogue",           proposed: "(component, not route)",   cluster: "overlay",     disp: "component", downstream: ["NAV-02"],          note: "No outgoing nav; only reachable via DevRouteMenu." },
+  { route: "/proving/dialogue-cta",       proposed: "(component, not route)",   cluster: "overlay",     disp: "component", downstream: ["NAV-02"],          note: "CTA variant. Same shape as above." },
+  { route: "/proving/generation-dialogue",proposed: "(component, not route)",   cluster: "overlay",     disp: "component", downstream: ["NAV-02"],          note: "Generation-time overlay. No outgoing nav." },
+  { route: "/tunnel/registration/country",proposed: "(delete)",                 cluster: "embed-dead",  disp: "delete",    downstream: ["NAV-10"],          note: "Dev bypass-KYC sub-flow. Only DevRouteMenu reaches it." },
+  { route: "/tunnel/registration/id-type",proposed: "(delete)",                 cluster: "embed-dead",  disp: "delete",    downstream: ["NAV-10"],          note: "Dev bypass-KYC. Delete with sibling." },
+  { route: "/debug/keychain",             proposed: "/dev/keychain",            cluster: "dev",         disp: "dev",       downstream: ["NAV-02"],          note: "Already DEV-guarded at registration — reference pattern for NAV-02." }
+];
+
+const tbody = document.getElementById('disp-tbody');
+const countEl = document.getElementById('disp-count');
+let activeFilter = 'all';
+
+function render() {
+  tbody.innerHTML = '';
+  let shown = 0;
+  for (const r of ROWS) {
+    if (activeFilter !== 'all' && r.disp !== activeFilter) continue;
+    shown++;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><code>${r.route}</code></td>
+      <td><code>${r.proposed}</code></td>
+      <td>${r.cluster}</td>
+      <td><span class="disp-pill ${r.disp}">${r.disp}</span></td>
+      <td>${r.downstream.map(d => `<span class="nav-link">${d}</span>`).join('') || '<span style="color:var(--muted);font-size:11px">—</span>'}</td>
+      <td class="note-cell">${r.note}</td>
+    `;
+    tbody.appendChild(tr);
+  }
+  countEl.textContent = `${shown} of ${ROWS.length} rows`;
+}
+
+document.querySelectorAll('.filter-bar .chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('.filter-bar .chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    activeFilter = chip.dataset.disp;
+    render();
+  });
+});
+
+render();
+
+// Highlight active TOC entry on scroll
+const sections = document.querySelectorAll('section[id]');
+const tocLinks = document.querySelectorAll('nav.toc a[href^="#"]');
+const obs = new IntersectionObserver((entries) => {
+  for (const entry of entries) {
+    if (entry.isIntersecting) {
+      tocLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === `#${entry.target.id}`));
+    }
+  }
+}, { rootMargin: '-50% 0px -45% 0px' });
+sections.forEach(s => obs.observe(s));
+</script>
+
+</body>
+</html>

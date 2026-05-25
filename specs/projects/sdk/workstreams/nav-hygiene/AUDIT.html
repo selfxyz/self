@@ -265,6 +265,8 @@
   <span class="spacer"></span>
   <div class="links">
     <a href="./SPEC.html">← Workstream Spec</a>
+    <a href="./plans/NAV-01-route-classification.html">NAV-01 Plan →</a>
+    <a href="../../FUTURE-BACKLOG.html">Future Backlog ↗</a>
   </div>
 </header>
 
@@ -288,6 +290,23 @@
   <h4>Process</h4>
   <a href="#methodology">Methodology</a>
   <a href="#regen">Regeneration</a>
+  <h4>Plans</h4>
+  <a href="./plans/NAV-01-route-classification.html">NAV-01 · classification</a>
+  <a href="./plans/NAV-02-dev-route-namespace.html">NAV-02 · /dev/*</a>
+  <a href="./plans/NAV-03-boot-decision.html">NAV-03 · boot decision</a>
+  <a href="./plans/NAV-04-cluster-close.html">NAV-04 · close hook</a>
+  <a href="./plans/NAV-05-back-close-labels.html">NAV-05 · back/close</a>
+  <a href="./plans/NAV-06-nfc-error-consolidation.html">NAV-06 · NFC errors</a>
+  <a href="./plans/NAV-07-replace-true-audit.html">NAV-07 · replace:true</a>
+  <a href="./plans/NAV-08-namespace-rewrite.html">NAV-08 · namespace</a>
+  <a href="./plans/NAV-09-nav-state-slots.html">NAV-09 · NavState</a>
+  <a href="./plans/NAV-10-delete-tunnel-registration.html">NAV-10 · delete dead</a>
+  <a href="./plans/NAV-12-tunnel-to-embed.html">NAV-12 · tunnel rename</a>
+  <a href="./plans/NAV-13-mode-route-wrapper.html">NAV-13 · ModeRoute</a>
+  <h4>Sibling docs</h4>
+  <a href="./SPEC.html">SPEC ↗</a>
+  <a href="./SPEC.html#open-questions">Open Questions ↗</a>
+  <a href="../../FUTURE-BACKLOG.html">Future Backlog ↗</a>
 </nav>
 
 <main>
@@ -536,7 +555,7 @@ flowchart TD
     <button class="bulk-btn" data-bulk="reset">Clear decisions</button>
     <button class="bulk-btn primary" data-bulk="export">Export disposition table</button>
     <span class="spacer"></span>
-    <span class="triage-status" id="triage-status">0 of 19 decided</span>
+    <span class="triage-status" id="triage-status">0 of 18 decided</span>
   </div>
 
   <div class="triage-board" id="triage-board"></div>
@@ -567,7 +586,7 @@ flowchart TD
 
   <article class="finding sev-med" id="f-prebuilt">
     <div class="finding-head">
-      <h3>Self-app pre-builds awaiting wiring (~14)</h3>
+      <h3>Self-app pre-builds awaiting wiring (~9)</h3>
       <span class="sev-badge sev-med">Medium severity</span>
     </div>
     <p>Pre-built self-app screens reachable only via <code>DevRouteMenu</code> — Self Wallet pieces that haven't been hooked into production navigation yet:</p>
@@ -575,21 +594,28 @@ flowchart TD
       <li>Proof artifacts: <code>/proving/history</code>, <code>/proving/receipt</code>, <code>/proving/generation-success</code>, <code>/proving/backup-prompt</code>, <code>/proving/kyc-pending</code>, <code>/proving/kyc-success</code></li>
       <li>Account: <code>/account/verified</code></li>
       <li>Points: <code>/points</code>, <code>/points/invite</code></li>
-      <li>Social signon: <code>/onboarding/backup</code>, <code>/onboarding/signin</code>, <code>/onboarding/conflict</code> (these may be shared; triage confirms)</li>
     </ul>
     <p>These are <strong>not orphans</strong>. Classification (NAV-01) feeds <a href="../webview/SPEC.md">WV-13</a> (proof overlays + history) and <a href="../webview/SPEC.md">WV-14</a> (home + document management) which do the actual wiring.</p>
     <p><span class="nav-link">NAV-01</span> <span class="nav-link">WV-13</span> <span class="nav-link">WV-14</span></p>
   </article>
 
+  <article class="finding sev-low" id="f-deferred">
+    <div class="finding-head">
+      <h3>Deferred for v1: social sign-on placeholders (3)</h3>
+      <span class="sev-badge sev-low">Low severity</span>
+    </div>
+    <p><code>/onboarding/backup</code>, <code>/onboarding/signin</code>, <code>/onboarding/conflict</code> — Euclid screens are not built yet (TODO WV-12), so wiring is deferred for v1. Routes stay registered with placeholder content, reachable only via <code>DevRouteMenu</code>, and are excluded from the v1 production graph. Triage classifies all three as <code>defer</code>. Reopen when WV-12 lands.</p>
+    <p><span class="nav-link">NAV-11</span> <span class="nav-link">WV-12</span></p>
+  </article>
+
   <article class="finding sev-med" id="f-true-orphans">
     <div class="finding-head">
-      <h3>True orphans (~5)</h3>
+      <h3>True orphans (~4)</h3>
       <span class="sev-badge sev-med">Medium severity</span>
     </div>
     <p>Routes with no plausible production purpose:</p>
     <ul>
       <li><code>/tunnel/registration/country</code> + <code>/tunnel/registration/id-type</code> — dev sub-flow that bypasses KYC entirely. Delete or move to <code>/dev/*</code>.</li>
-      <li><code>/proving/qr-scan</code> — QR viewfinder; unclear purpose, no production entry.</li>
       <li><code>/proving/dialogue</code>, <code>/dialogue-cta</code>, <code>/generation-dialogue</code> — overlay-shaped. Likely belong as components, not routes.</li>
       <li><code>/debug/keychain</code> — already correctly DEV-gated (the pattern NAV-02 standardizes).</li>
     </ul>
@@ -731,10 +757,9 @@ const ROUTES = [
   { route: "/account/verified",           proposed: "/account/verified",         cluster: "account",     suggested: "self-app",  note: "Account-verified state screen. Already correctly named — stays put." },
   { route: "/points",                     proposed: "/points",                   cluster: "points",      suggested: "self-app",  note: "Points / rewards screen. Place-noun, stays put." },
   { route: "/points/invite",              proposed: "/points/invite",            cluster: "points",      suggested: "self-app",  note: "Referral invite screen. Stays put." },
-  { route: "/onboarding/backup",          proposed: "/link-social/backup",       cluster: "signin",      suggested: "shared",    note: "Social sign-on backup picker. TODO WV-12. Top-level /link-social/* namespace since it's an operation (link an external account for backup), not first-time-only." },
-  { route: "/onboarding/signin",          proposed: "/link-social",              cluster: "signin",      suggested: "shared",    note: "Social sign-on provider picker. TODO WV-12. Top-level operation, mode-aware close." },
-  { route: "/onboarding/conflict",        proposed: "/link-social/conflict",     cluster: "signin",      suggested: "shared",    note: "Account conflict resolution surfaced when linking a social account already bound to a different identity. TODO WV-12." },
-  { route: "/proving/qr-scan",            proposed: "(delete)",                  cluster: "orphan",      suggested: "delete",    note: "QR viewfinder. Purpose unclear — show your own QR? scan someone else's? No production caller; delete unless flagged for a specific upcoming feature." },
+  { route: "/onboarding/backup",          proposed: "/link-social/backup",       cluster: "signin",      suggested: "defer",     note: "Social sign-on backup picker. DEFERRED for v1 (NAV-11): Euclid screen not built. Stays registered with TODO-WV-12 placeholder, reachable only via DevRouteMenu, excluded from production graph. Proposed /link-social/backup namespace applies when WV-12 lands as a follow-up PR." },
+  { route: "/onboarding/signin",          proposed: "/link-social",              cluster: "signin",      suggested: "defer",     note: "Social sign-on provider picker. DEFERRED for v1 (NAV-11): Euclid screen not built. Stays registered with TODO-WV-12 placeholder, reachable only via DevRouteMenu, excluded from production graph." },
+  { route: "/onboarding/conflict",        proposed: "/link-social/conflict",     cluster: "signin",      suggested: "defer",     note: "Account conflict surfaced when linking a social account already bound to a different identity. DEFERRED for v1 (NAV-11): Euclid screen not built. Stays registered with TODO-WV-12 placeholder, reachable only via DevRouteMenu, excluded from production graph." },
   { route: "/proving/dialogue",           proposed: "(component, not route)",    cluster: "overlay",     suggested: "component", note: "Generic dialogue overlay. No outgoing nav. Refactor to a component imported where needed; remove the route." },
   { route: "/proving/dialogue-cta",       proposed: "(component, not route)",    cluster: "overlay",     suggested: "component", note: "CTA dialogue variant. Component, not route." },
   { route: "/proving/generation-dialogue",proposed: "(component, not route)",    cluster: "overlay",     suggested: "component", note: "Generation-time overlay. No outgoing nav. Component, not route." },
