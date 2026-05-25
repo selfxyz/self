@@ -31,23 +31,30 @@ import QRScan from '@/assets/icons/qr_code.svg';
 import type { QRCodeScannerViewProps } from '@/components/native/QRCodeScanner';
 import { QRCodeScannerView } from '@/components/native/QRCodeScanner';
 import { NavBar } from '@/components/navbar/BaseNavBar';
-import useConnectionModal from '@/hooks/useConnectionModal';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { buttonTap } from '@/integrations/haptics';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
 import { parseAndValidateUrlParams } from '@/navigation/deeplinks';
+import { useVerificationGateStore } from '@/stores/verificationGateStore';
+import {
+  evaluateGoogleUsatGate,
+  isGoogleUsatForceEnabledForTesting,
+} from '@/utils/googleUsatGate';
 
 const QRCodeViewFinderScreen: React.FC = () => {
   const selfClient = useSelfClient();
-  const { trackEvent } = selfClient;
-  const { visible: connectionModalVisible } = useConnectionModal();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const isFocused = useIsFocused();
   const [doneScanningQR, setDoneScanningQR] = useState(false);
   const { top: safeAreaTop } = useSafeAreaInsets();
-  const navigateToDocumentSelector = useHapticNavigation('ProvingScreenRouter');
+  const navigateToDocumentSelector = useHapticNavigation(
+    'ProvingScreenRouter',
+    {
+      params: { entryPoint: 'qr_scan' },
+    },
+  );
 
   // This resets to the default state when we navigate back to this screen
   useFocusEffect(
@@ -67,10 +74,6 @@ const QRCodeViewFinderScreen: React.FC = () => {
         return;
       }
       if (error) {
-        trackEvent(ProofEvents.QR_SCAN_FAILED, {
-          reason: 'scan_error',
-          error: error.message || error.toString(),
-        });
         console.error(error);
         navigation.navigate('QRCodeTrouble');
       } else {
@@ -79,10 +82,21 @@ const QRCodeViewFinderScreen: React.FC = () => {
         const { sessionId, selfApp } = validatedParams;
         if (selfApp) {
           try {
-            trackEvent(ProofEvents.QR_SCAN_SUCCESS, {
-              scan_type: 'selfApp',
-            });
             const selfAppJson = JSON.parse(selfApp);
+            const gate = await evaluateGoogleUsatGate(selfClient, selfAppJson);
+            if (gate === 'block') {
+              selfClient.trackEvent(ProofEvents.GOOGLE_USAT_BLOCKED, {
+                entry_point: 'qr_scan',
+                reason: 'no_high_security_doc',
+              });
+              useVerificationGateStore.getState().open({
+                reason: 'google_usat_high_security_required',
+                entryPoint: 'qr_scan',
+                requesterName: selfAppJson.appName,
+              });
+              setDoneScanningQR(false);
+              return;
+            }
 
             selfClient.getSelfAppState().setSelfApp(selfAppJson);
             selfClient
@@ -93,22 +107,25 @@ const QRCodeViewFinderScreen: React.FC = () => {
               navigateToDocumentSelector();
             }, 100);
           } catch (parseError) {
-            trackEvent(ProofEvents.QR_SCAN_FAILED, {
-              reason: 'invalid_selfApp_json',
-              error:
-                parseError instanceof Error
-                  ? parseError.message
-                  : 'JSON parse error',
-            });
             console.error('Error parsing selfApp JSON:', parseError);
             setDoneScanningQR(false); // Reset to allow another scan attempt
             navigation.navigate('QRCodeTrouble');
             return;
           }
         } else if (sessionId) {
-          trackEvent(ProofEvents.QR_SCAN_SUCCESS, {
-            scan_type: 'sessionId',
-          });
+          if (isGoogleUsatForceEnabledForTesting()) {
+            selfClient.trackEvent(ProofEvents.GOOGLE_USAT_BLOCKED, {
+              entry_point: 'qr_scan',
+              reason: 'no_high_security_doc',
+            });
+            useVerificationGateStore.getState().open({
+              reason: 'google_usat_high_security_required',
+              entryPoint: 'qr_scan',
+              requesterName: 'Google USAT Faucet',
+            });
+            setDoneScanningQR(false);
+            return;
+          }
 
           selfClient.getSelfAppState().cleanSelfApp();
           selfClient.getSelfAppState().startAppListener(sessionId);
@@ -117,10 +134,6 @@ const QRCodeViewFinderScreen: React.FC = () => {
             navigateToDocumentSelector();
           }, 100);
         } else {
-          trackEvent(ProofEvents.QR_SCAN_FAILED, {
-            reason: 'missing_fields',
-            details: 'No sessionId or selfApp',
-          });
           console.error('No sessionId or selfApp found in QR code');
           setDoneScanningQR(false); // Reset to allow another scan attempt
           navigation.navigate('QRCodeTrouble');
@@ -128,16 +141,10 @@ const QRCodeViewFinderScreen: React.FC = () => {
         }
       }
     },
-    [
-      doneScanningQR,
-      navigation,
-      navigateToDocumentSelector,
-      trackEvent,
-      selfClient,
-    ],
+    [doneScanningQR, navigation, navigateToDocumentSelector, selfClient],
   );
 
-  const shouldRenderCamera = !connectionModalVisible && !doneScanningQR;
+  const shouldRenderCamera = !doneScanningQR;
 
   return (
     <>

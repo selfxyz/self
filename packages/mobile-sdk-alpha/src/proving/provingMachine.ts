@@ -11,7 +11,8 @@ import type { PassportData } from '@selfxyz/common/types';
 import type { EndpointType } from '@selfxyz/common/utils';
 import type { IDDocument } from '@selfxyz/common/utils/types';
 
-import { PassportEvents, ProofEvents } from '../constants/analytics';
+import { markCurrentAttemptAsMock } from '../analytics/onboardingFunnel';
+import { ProofEvents } from '../constants/analytics';
 import { loadSelectedDocument } from '../documents/utils';
 import { getCommitmentTree } from '../stores';
 import { SdkEvents } from '../types/events';
@@ -53,6 +54,7 @@ export interface ProvingState {
   endpointType: EndpointType | null;
   env: 'prod' | 'stg' | null;
   didNewRegistrationProof: boolean;
+  isMock: boolean;
   init: (
     selfClient: SelfClient,
     circuitType: 'dsc' | 'disclose' | 'register',
@@ -127,6 +129,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       secret: null,
       circuitType: null,
       env: null,
+      isMock: false,
       error_code: null,
       reason: null,
       endpointType: null,
@@ -150,6 +153,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     secret: null,
     circuitType: null,
     env: null,
+    isMock: false,
     error_code: null,
     reason: null,
     endpointType: null,
@@ -170,7 +174,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       circuitType: 'dsc' | 'disclose' | 'register',
       userConfirmed: boolean = false,
     ) => {
-      selfClient.trackEvent(ProofEvents.PROVING_INIT);
       get()._closeConnections(selfClient);
 
       // Enable keychain error modal for proving flows
@@ -195,13 +198,9 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       setupActorSubscriptions(actor, selfClient, deps());
       actor.start();
 
-      selfClient.trackEvent(ProofEvents.DOCUMENT_LOAD_STARTED);
       const selectedDocument = await loadSelectedDocument(selfClient);
       if (!selectedDocument) {
         console.error('No document found for proving');
-        selfClient.trackEvent(PassportEvents.PASSPORT_DATA_NOT_FOUND, {
-          stage: 'init',
-        });
         console.error('No document found for proving in init');
         actor!.send({ type: 'PASSPORT_DATA_NOT_FOUND' });
         return;
@@ -216,10 +215,16 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         return;
       }
 
-      // Set environment based on mock property
       const env = passportData.mock ? 'stg' : 'prod';
+      const isMock = passportData.mock === true;
+      if (isMock) {
+        markCurrentAttemptAsMock(selfClient);
+      } else {
+        selfClient.trackEvent(ProofEvents.PROVING_INIT);
+        selfClient.trackEvent(ProofEvents.DOCUMENT_LOAD_STARTED);
+      }
 
-      set({ passportData, secret, env });
+      set({ passportData, secret, env, isMock });
       set({ circuitType });
       // Only skip parsing when the document has already been parsed for non-DSC circuits.
       // Re-parsing would overwrite the alternative CSCA used during registration and is unnecessary
@@ -242,7 +247,9 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
       if (shouldParseDocument) {
         actor.send({ type: 'PARSE_ID_DOCUMENT' });
-        selfClient.trackEvent(ProofEvents.PARSE_ID_DOCUMENT_STARTED);
+        if (!isMock) {
+          selfClient.trackEvent(ProofEvents.PARSE_ID_DOCUMENT_STARTED);
+        }
       } else {
         actor.send({ type: 'FETCH_DATA' });
       }

@@ -6,6 +6,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { qrWrapperStyle } from '../utils/styles.js';
 import { QRcodeSteps } from '../utils/utils.js';
 import { initWebSocket } from '../utils/websocket.js';
+import DesktopQRcode from './DesktopQRcode.js';
+import MobileQRcode from './MobileQRcode.js';
 import QRCode from './QRCode.js';
 import StatusBanner from './StatusBanner.js';
 
@@ -16,9 +18,14 @@ interface SelfQRcodeProps {
   type?: 'websocket' | 'deeplink';
   websocketUrl?: string;
   size?: number;
+  /**
+   * Currently a no-op. The prop is kept for backward compatibility so existing
+   * integrations don't break, but the wrapper always renders in light mode.
+   */
   darkMode?: boolean;
   showBorder?: boolean;
   showStatusText?: boolean;
+  variant?: 'hybrid' | 'desktop' | 'mobile';
 }
 
 const SelfQRcodeWrapper = (props: SelfQRcodeProps) => {
@@ -40,10 +47,12 @@ const SelfQRcode = ({
   type = 'websocket',
   websocketUrl = WS_DB_RELAYER,
   size = 300,
-  darkMode = false,
   showBorder = true,
   showStatusText = true,
+  variant = 'hybrid',
 }: SelfQRcodeProps) => {
+  // darkMode prop is accepted in the type for back-compat but always ignored.
+  const darkMode = false;
   const [proofStep, setProofStep] = useState(QRcodeSteps.WAITING_FOR_MOBILE);
   const [sessionId, setSessionId] = useState('');
   const socketRef = useRef<ReturnType<typeof initWebSocket> | null>(null);
@@ -100,13 +109,36 @@ const SelfQRcode = ({
           sessionId: sessionId,
         });
 
+  if (variant === 'mobile') {
+    return (
+      <MobileQRcode
+        proofStep={proofStep}
+        qrValue={qrValue}
+        selfApp={selfAppRef.current}
+        darkMode={darkMode}
+      />
+    );
+  }
+
+  if (variant === 'desktop') {
+    return (
+      <DesktopQRcode
+        proofStep={proofStep}
+        qrValue={qrValue}
+        size={size}
+        darkMode={darkMode}
+        selfApp={selfAppRef.current}
+      />
+    );
+  }
+
   return (
     <div
-      style={qrWrapperStyle(proofStep, showBorder)}
+      style={qrWrapperStyle(proofStep, showBorder, darkMode)}
       role="img"
       aria-label="Self authentication QR code"
     >
-      <QRCode value={qrValue} size={size} darkMode={darkMode} proofStep={proofStep} />
+      <QRCode value={qrValue} size={size} proofStep={proofStep} />
       {showStatusText && <StatusBanner proofStep={proofStep} qrSize={size} />}
     </div>
   );

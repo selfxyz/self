@@ -15,8 +15,11 @@ export const proofRequestColors = {
   // Slate palette
   slate100: '#F8FAFC',
   slate200: '#E2E8F0',
+  slate300: '#CBD5E1',
   slate400: '#94A3B8',
   slate500: '#71717A',
+  slate700: '#334155',
+  slate800: '#1E293B',
   slate900: '#0F172A',
 
   // Blue palette

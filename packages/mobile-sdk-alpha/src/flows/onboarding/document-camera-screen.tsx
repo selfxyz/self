@@ -6,12 +6,12 @@ import { useCallback, useRef } from 'react';
 import { StyleSheet } from 'react-native';
 import type { MRZInfo } from 'src/types/public';
 
-import Scan from '../../../svgs/icons/passport_camera_scan.svg';
+import Scan from '@selfxyz/mobile-sdk-alpha/svgs/icons/passport_camera_scan.svg';
+
 import passportScanAnimation from '../../animations/passport_scan.json';
 import { Additional, Description, SecondaryButton, Title, View, XStack, YStack } from '../../components';
 import { DelayedLottieView } from '../../components/DelayedLottieView';
 import { MRZScannerView } from '../../components/MRZScannerView';
-import { PassportEvents } from '../../constants/analytics';
 import { black, slate400, slate800, white } from '../../constants/colors';
 import { dinot } from '../../constants/fonts';
 import { useSelfClient } from '../../context';
@@ -81,9 +81,7 @@ export const DocumentCameraScreen = ({ onBack, onSuccess, safeAreaInsets }: Prop
 
           <Additional style={styles.disclaimer}>Self will not capture an image of your ID.</Additional>
 
-          <SecondaryButton trackEvent={PassportEvents.CAMERA_SCREEN_CLOSED} onPress={onBack ?? (() => {})}>
-            Cancel
-          </SecondaryButton>
+          <SecondaryButton onPress={onBack ?? (() => {})}>Cancel</SecondaryButton>
         </YStack>
       </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>

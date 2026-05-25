@@ -50,8 +50,11 @@ module.exports = {
         ],
       },
     ],
-    // Export sorting - using sort-exports for better type prioritization
-    'sort-exports/sort-exports': ['error', { sortDir: 'asc', ignoreCase: false, sortExportKindFirst: 'type' }],
+    // Export sorting is opt-in per file via overrides below. The rule
+    // reorders `export const` declarations, which breaks files with
+    // inter-export dependencies or intentional grouping. Only enable on
+    // pure re-export barrels.
+    'sort-exports/sort-exports': 'off',
 
     'import/first': 'error',
     'import/newline-after-import': 'error',
@@ -75,6 +78,14 @@ module.exports = {
     'prettier/prettier': ['warn', {}, { usePrettierrc: true }],
   },
   overrides: [
+    {
+      // Opt the public-API barrels into export sorting. These files exist
+      // only to re-export from other modules. Do not add source files here.
+      files: ['src/index.ts', 'src/adapters/index.ts'],
+      rules: {
+        'sort-exports/sort-exports': ['error', { sortDir: 'asc', ignoreCase: false, sortExportKindFirst: 'type' }],
+      },
+    },
     {
       // Enable TypeScript project service for source files (required by consistent-type-exports)
       files: ['src/**/*.ts'],

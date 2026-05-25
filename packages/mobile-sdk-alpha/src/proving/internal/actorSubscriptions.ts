@@ -7,6 +7,7 @@ import type { AnyActorRef, AnyEventObject, StateFrom } from 'xstate';
 import {
   completeOnboardingAttempt,
   failOnboardingAttempt,
+  recoverOnboardingAttempt,
   trackOnboardingStep,
 } from '../../analytics/onboardingFunnel';
 import { OnboardingEvents, ProofEvents } from '../../constants/analytics';
@@ -92,7 +93,7 @@ export function setupActorSubscriptions(newActor: AnyActorRef, selfClient: SelfC
       runTask('startProving', (get() as ProvingStateWithMethods).startProving(selfClient));
     }
 
-    if (state.value === 'proving') {
+    if (state.value === 'proving' && get().circuitType === 'register') {
       trackOnboardingStep(selfClient, OnboardingEvents.PROOF_STARTED);
     }
 
@@ -135,8 +136,8 @@ export function setupActorSubscriptions(newActor: AnyActorRef, selfClient: SelfC
       if (get().circuitType === 'register' && get().didNewRegistrationProof) {
         trackOnboardingStep(selfClient, OnboardingEvents.PROOF_SUCCEEDED);
         completeOnboardingAttempt(selfClient);
-      } else if (get().circuitType === 'disclose') {
-        selfClient.trackEvent(OnboardingEvents.DISCLOSURE_COMPLETED);
+      } else if (get().circuitType === 'register' && !get().didNewRegistrationProof) {
+        recoverOnboardingAttempt(selfClient);
       }
 
       emitVerificationComplete(true);
@@ -162,9 +163,10 @@ export function setupActorSubscriptions(newActor: AnyActorRef, selfClient: SelfC
 
       if (get().circuitType === 'disclose') {
         selfClient.getSelfAppState().handleProofResult(false, error_code ?? undefined, reason ?? undefined);
-      } else if (get().circuitType === 'register') {
+      } else if (get().circuitType !== null) {
         failOnboardingAttempt(selfClient, 'proof_generation_started', reason ?? error_code ?? 'proof_failure', {
           recoverable: false,
+          proof_type: get().circuitType,
         });
       }
 
@@ -176,9 +178,10 @@ export function setupActorSubscriptions(newActor: AnyActorRef, selfClient: SelfC
     if (state.value === 'error') {
       if (get().circuitType === 'disclose') {
         selfClient.getSelfAppState().handleProofResult(false, 'error', 'error');
-      } else if (get().circuitType === 'register') {
+      } else if (get().circuitType !== null) {
         failOnboardingAttempt(selfClient, 'proof_generation_started', get().reason ?? get().error_code ?? 'error', {
           recoverable: true,
+          proof_type: get().circuitType,
         });
       }
 

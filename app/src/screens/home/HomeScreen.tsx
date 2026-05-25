@@ -48,7 +48,6 @@ import IdCardLayout from '@/components/homescreen/IdCard';
 import PendingIdCard from '@/components/homescreen/PendingIdCard';
 import UnregisteredIdCard from '@/components/homescreen/UnregisteredIdCard';
 import { useAppUpdates } from '@/hooks/useAppUpdates';
-import useConnectionModal from '@/hooks/useConnectionModal';
 import { useEarnPointsFlow } from '@/hooks/useEarnPointsFlow';
 import { usePoints } from '@/hooks/usePoints';
 import { useReferralConfirmation } from '@/hooks/useReferralConfirmation';
@@ -68,7 +67,6 @@ const HomeScreen: React.FC = () => {
   const selfClient = useSelfClient();
   const referrer = useUserStore(state => state.deepLinkReferrer);
   const hasReferrer = referrer !== undefined;
-  useConnectionModal();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { setIdDetailsDocumentId } = useUserStore();

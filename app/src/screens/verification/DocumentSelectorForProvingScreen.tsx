@@ -25,16 +25,28 @@ import type {
   DocumentMetadata,
   IDDocument,
 } from '@selfxyz/common/utils/types';
+import { isAadhaarDocument, isMRZDocument } from '@selfxyz/common/utils/types';
 import {
   getDocumentAttributes,
   isDocumentValidForProving,
+  isGoogleUsatProofRequest,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
+import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
+import {
+  getPerksForIdType,
+  type Perk,
+  type PerkId,
+} from '@selfxyz/mobile-sdk-alpha/onboarding/perks';
 
 import type { IDSelectorState } from '@/components/documents';
 import { IDSelectorSheet, isDisabledState } from '@/components/documents';
+import {
+  getSecurityLevel,
+  type SecurityLevel,
+} from '@/components/homescreen/cardSecurityBadge';
 import {
   BottomActionBar,
   ConnectedWalletBadge,
@@ -47,7 +59,29 @@ import {
 import { useSelfAppData } from '@/hooks/useSelfAppData';
 import type { RootStackParamList } from '@/navigation';
 import { usePassport } from '@/providers/passportDataProvider';
-import { getDocumentTypeName } from '@/utils/documentUtils';
+import { useVerificationGateStore } from '@/stores/verificationGateStore';
+import {
+  getDocumentTypeName,
+  idTypeForDocumentCategory,
+} from '@/utils/documentUtils';
+import {
+  evaluateGoogleUsatEligibilityForDocument,
+  evaluateGoogleUsatGateForDocument,
+  type IneligibleReason,
+} from '@/utils/googleUsatGate';
+
+function getIneligibleReasonLabel(
+  reason: IneligibleReason | undefined,
+): string | undefined {
+  switch (reason) {
+    case 'needs_nfc':
+      return 'Needs an NFC-enabled passport.';
+    case 'unsupported_id_type':
+      return "This ID type isn't supported for this perk.";
+    default:
+      return undefined;
+  }
+}
 
 function getDocumentDisplayName(
   metadata: DocumentMetadata,
@@ -89,6 +123,34 @@ function getDocumentDisplayName(
   return isMock ? `Dev ${metadata.documentType}` : metadata.documentType;
 }
 
+function getSecurityLabelForDocument(
+  documentData: IDDocument | undefined,
+  isMock: boolean,
+): string | undefined {
+  if (!documentData) {
+    return undefined;
+  }
+  if (!isMRZDocument(documentData) && !isAadhaarDocument(documentData)) {
+    return undefined;
+  }
+  const level: SecurityLevel = getSecurityLevel(documentData, { mock: isMock });
+  return level;
+}
+
+function getNationalityCodeForDocument(
+  documentData: IDDocument | undefined,
+): string | undefined {
+  if (!documentData) {
+    return undefined;
+  }
+  try {
+    const attributes = getDocumentAttributes(documentData);
+    return attributes.nationalitySlice || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 function determineDocumentState(
   metadata: DocumentMetadata,
   documentData: IDDocument | undefined,
@@ -113,6 +175,7 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route =
     useRoute<RouteProp<RootStackParamList, 'DocumentSelectorForProving'>>();
+  const entryPoint = route.params?.entryPoint ?? 'qr_scan';
   const selfClient = useSelfClient();
   const { useSelfAppStore } = selfClient;
   const selfApp = useSelfAppStore(state => state.selfApp);
@@ -220,42 +283,108 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
     };
   }, []);
 
-  const documents = useMemo(() => {
-    return documentCatalog.documents
-      .filter(metadata => metadata.isRegistered)
-      .map(metadata => {
-        const docData = allDocuments[metadata.id];
-        const baseState = determineDocumentState(metadata, docData?.data);
-        const isSelected = metadata.id === selectedDocumentId;
-        const itemState =
-          isSelected && !isDisabledState(baseState) ? 'active' : baseState;
+  const activePerkId: PerkId | undefined = useMemo(() => {
+    if (selfApp && isGoogleUsatProofRequest(selfApp)) {
+      return 'google_cloud_faucet';
+    }
+    return undefined;
+  }, [selfApp]);
 
-        return {
-          id: metadata.id,
-          name: getDocumentDisplayName(metadata, docData?.data),
-          state: itemState,
-        };
-      })
-      .sort((a, b) => {
-        // Get metadata for both documents
-        const metaA = documentCatalog.documents.find(d => d.id === a.id);
-        const metaB = documentCatalog.documents.find(d => d.id === b.id);
+  const { documents, perksByDocumentId, ineligibleReasonByDocumentId } =
+    useMemo(() => {
+      const perksMap: Record<string, Perk[]> = {};
+      const ineligibleMap: Record<string, IneligibleReason> = {};
+      const rows = documentCatalog.documents
+        .filter(metadata => metadata.isRegistered)
+        .map(metadata => {
+          const docData = allDocuments[metadata.id];
+          const baseState = determineDocumentState(metadata, docData?.data);
 
-        // Sort real documents before mock documents
-        if (metaA && metaB) {
-          if (metaA.mock !== metaB.mock) {
-            return metaA.mock ? 1 : -1; // Real first
+          // Perks rail is USAT-only for this slice. We only populate
+          // perksByDocumentId when the active proof request is gated by
+          // a known perk policy AND the document passes that gate.
+          // Ineligible map is built only in that same scope.
+          if (activePerkId && selfApp && docData) {
+            const eligibility = evaluateGoogleUsatEligibilityForDocument(
+              selfApp,
+              docData,
+            );
+            if (!eligibility.eligible) {
+              ineligibleMap[metadata.id] =
+                eligibility.reason ?? 'unsupported_id_type';
+            } else if (!metadata.mock) {
+              const idTypeCode = idTypeForDocumentCategory(
+                metadata.documentCategory,
+              );
+              const perks = idTypeCode ? getPerksForIdType(idTypeCode) : [];
+              if (perks.length > 0) {
+                perksMap[metadata.id] = perks;
+              }
+            }
           }
-        }
 
-        // Within same type (real/mock), sort alphabetically by name
-        return a.name.localeCompare(b.name);
-      });
-  }, [allDocuments, documentCatalog.documents, selectedDocumentId]);
+          const isSelected = metadata.id === selectedDocumentId;
+          const isIneligible = !!ineligibleMap[metadata.id];
+          const itemState: IDSelectorState =
+            isSelected && !isDisabledState(baseState) && !isIneligible
+              ? 'active'
+              : baseState;
+
+          return {
+            id: metadata.id,
+            name: getDocumentDisplayName(metadata, docData?.data),
+            state: itemState,
+            idType: metadata.documentCategory,
+            nationalityCode: getNationalityCodeForDocument(docData?.data),
+            isMock: !!metadata.mock,
+            securityLabel: getSecurityLabelForDocument(
+              docData?.data,
+              !!metadata.mock,
+            ),
+          };
+        })
+        .sort((a, b) => {
+          // Get metadata for both documents
+          const metaA = documentCatalog.documents.find(d => d.id === a.id);
+          const metaB = documentCatalog.documents.find(d => d.id === b.id);
+
+          // Sort real documents before mock documents
+          if (metaA && metaB) {
+            if (metaA.mock !== metaB.mock) {
+              return metaA.mock ? 1 : -1; // Real first
+            }
+          }
+
+          // Within same type (real/mock), sort alphabetically by name
+          return a.name.localeCompare(b.name);
+        });
+
+      return {
+        documents: rows,
+        perksByDocumentId: perksMap,
+        ineligibleReasonByDocumentId: activePerkId ? ineligibleMap : undefined,
+      };
+    }, [
+      allDocuments,
+      documentCatalog.documents,
+      selectedDocumentId,
+      selfApp,
+      activePerkId,
+    ]);
+
+  const activeDocumentPerks =
+    selectedDocumentId && activePerkId
+      ? perksByDocumentId[selectedDocumentId]
+      : undefined;
 
   const selectedDocument = documents.find(doc => doc.id === selectedDocumentId);
+  const selectedIneligibleReason = selectedDocument
+    ? ineligibleReasonByDocumentId?.[selectedDocument.id]
+    : undefined;
   const canContinue =
-    !!selectedDocument && !isDisabledState(selectedDocument.state);
+    !!selectedDocument &&
+    !isDisabledState(selectedDocument.state) &&
+    !selectedIneligibleReason;
 
   // Get document type for the proof request message
   const selectedDocumentType = useMemo(() => {
@@ -289,6 +418,26 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
     setSubmitting(true);
     setError(null);
     try {
+      if (selfApp) {
+        const gate = await evaluateGoogleUsatGateForDocument(
+          selfClient,
+          selfApp,
+          selectedDocumentId,
+        );
+        if (gate === 'block') {
+          selfClient.trackEvent(ProofEvents.GOOGLE_USAT_BLOCKED, {
+            entry_point: entryPoint,
+            reason: 'no_high_security_doc',
+          });
+          useVerificationGateStore.getState().open({
+            reason: 'google_usat_high_security_required',
+            entryPoint,
+            requesterName: selfApp.appName,
+          });
+          setSheetOpen(false);
+          return;
+        }
+      }
       await setSelectedDocument(selectedDocumentId);
       setSheetOpen(false); // Close the sheet first
       navigation.navigate('Prove', { scrollOffset: scrollOffsetRef.current });
@@ -304,6 +453,9 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
     submitting,
     setSelectedDocument,
     navigation,
+    selfApp,
+    selfClient,
+    entryPoint,
   ]);
 
   const handleApprove = async () => {
@@ -314,6 +466,25 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
     setSubmitting(true);
     setError(null);
     try {
+      if (selfApp) {
+        const gate = await evaluateGoogleUsatGateForDocument(
+          selfClient,
+          selfApp,
+          selectedDocumentId,
+        );
+        if (gate === 'block') {
+          selfClient.trackEvent(ProofEvents.GOOGLE_USAT_BLOCKED, {
+            entry_point: entryPoint,
+            reason: 'no_high_security_doc',
+          });
+          useVerificationGateStore.getState().open({
+            reason: 'google_usat_high_security_required',
+            entryPoint,
+            requesterName: selfApp.appName,
+          });
+          return;
+        }
+      }
       await setSelectedDocument(selectedDocumentId);
       navigation.navigate('Prove', { scrollOffset: scrollOffsetRef.current });
     } catch (selectionError) {
@@ -452,10 +623,18 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
       {/* Bottom Action Bar */}
       <BottomActionBar
         selectedDocumentName={selectedDocument?.name || 'Select ID'}
+        selectedDocumentNationalityCode={selectedDocument?.nationalityCode}
+        selectedDocumentIsMock={selectedDocument?.isMock}
+        selectedDocumentSecurityLabel={selectedDocument?.securityLabel}
         onDocumentSelectorPress={() => setSheetOpen(true)}
         onApprovePress={handleApprove}
         approveDisabled={!canContinue}
         approving={submitting}
+        perks={activeDocumentPerks}
+        ineligible={!!selectedIneligibleReason}
+        ineligibleReasonLabel={getIneligibleReasonLabel(
+          selectedIneligibleReason,
+        )}
         testID="document-selector-action-bar"
       />
 
@@ -468,6 +647,9 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
         onSelect={handleSelect}
         onDismiss={() => setSheetOpen(false)}
         onApprove={handleSheetSelect}
+        activePerkId={activePerkId}
+        perksByDocumentId={perksByDocumentId}
+        ineligibleReasonByDocumentId={ineligibleReasonByDocumentId}
         testID="document-selector-sheet"
       />
 

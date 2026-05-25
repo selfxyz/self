@@ -17,7 +17,6 @@ import * as commonUtils from '@selfxyz/common/utils';
 import { generateCommitmentInAppAadhaar } from '@selfxyz/common/utils/passports/validate';
 import { AttestationIdHex } from '@selfxyz/common/utils/types';
 
-import { PassportEvents, ProofEvents } from '../../src/constants/analytics';
 import * as documentUtils from '../../src/documents/utils';
 import { useProvingStore } from '../../src/proving/provingMachine';
 import { fetchAllTreesAndCircuits } from '../../src/stores';
@@ -25,6 +24,8 @@ import type { SelfClient } from '../../src/types/public';
 import { actorMock } from './actorMock';
 
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
+
+const asNonMock = <T extends { mock?: boolean }>(doc: T): T => ({ ...doc, mock: false });
 
 vi.mock('xstate', async () => {
   const actual = await vi.importActual<typeof import('xstate')>('xstate');
@@ -73,7 +74,7 @@ const buildPassportFixture = (): PassportData =>
     encryptedDigest: [11, 12, 13, 14, 15],
     documentType: 'passport',
     documentCategory: 'passport',
-    mock: true,
+    mock: false,
     passportMetadata: {
       dataGroups: '1,2,3',
       dg1Size: 88,
@@ -232,7 +233,7 @@ describe('parseIDDocument', () => {
   });
 
   it('parses passport data successfully and updates state with parsed result', async () => {
-    const passportData = genMockIdDoc({ idType: 'mock_passport' }) as PassportData;
+    const passportData = asNonMock(genMockIdDoc({ idType: 'mock_passport' })) as PassportData;
     const protocolState = buildProtocolState({
       commitmentTree: null,
       dscTree: null,
@@ -257,24 +258,15 @@ describe('parseIDDocument', () => {
     await useProvingStore.getState().parseIDDocument(selfClient);
 
     const state = useProvingStore.getState();
-    expect(getSKIPEMSpy).toHaveBeenCalledWith('staging');
+    expect(getSKIPEMSpy).toHaveBeenCalledWith('production');
     expect(storePassportDataMock).toHaveBeenCalledWith(selfClient, state.passportData);
     if (state.passportData && isMRZDocument(state.passportData)) {
       expect(state.passportData.passportMetadata).toBeDefined();
     }
     expect(actorMock.send).toHaveBeenCalledWith({ type: 'PARSE_SUCCESS' });
-    if (state.passportData && isMRZDocument(state.passportData)) {
-      expect(selfClient.trackEvent).toHaveBeenCalledWith(
-        PassportEvents.PASSPORT_PARSED,
-        expect.objectContaining({
-          success: true,
-          country_code: state.passportData.passportMetadata?.countryCode,
-        }),
-      );
-    }
   });
 
-  it('handles missing passport data with PARSE_ERROR and analytics event', async () => {
+  it('handles missing passport data with PARSE_ERROR', async () => {
     const protocolState = buildProtocolState({
       commitmentTree: null,
       dscTree: null,
@@ -288,7 +280,7 @@ describe('parseIDDocument', () => {
     });
     const selfClient = createSelfClient(protocolState);
 
-    loadSelectedDocumentMock.mockResolvedValue({ data: genMockIdDoc({ idType: 'mock_passport' }) } as any);
+    loadSelectedDocumentMock.mockResolvedValue({ data: asNonMock(genMockIdDoc({ idType: 'mock_passport' })) } as any);
 
     vi.spyOn(commonUtils, 'getSKIPEM').mockResolvedValue({});
 
@@ -301,14 +293,11 @@ describe('parseIDDocument', () => {
     await useProvingStore.getState().parseIDDocument(selfClient);
 
     expect(actorMock.send).toHaveBeenCalledWith({ type: 'PARSE_ERROR' });
-    expect(selfClient.trackEvent).toHaveBeenCalledWith(PassportEvents.PASSPORT_PARSE_FAILED, {
-      error: 'PassportData is not available',
-    });
   });
 
   it('surfaces parsing failures when the DSC cannot be parsed', async () => {
     const passportData = {
-      ...(genMockIdDoc({ idType: 'mock_passport' }) as PassportData),
+      ...(asNonMock(genMockIdDoc({ idType: 'mock_passport' })) as PassportData),
       dsc: 'invalid-certificate',
     } as PassportData;
     const protocolState = buildProtocolState({
@@ -335,71 +324,10 @@ describe('parseIDDocument', () => {
     await useProvingStore.getState().parseIDDocument(selfClient);
 
     expect(actorMock.send).toHaveBeenCalledWith({ type: 'PARSE_ERROR' });
-    expect(selfClient.trackEvent).toHaveBeenCalledWith(
-      PassportEvents.PASSPORT_PARSE_FAILED,
-      expect.objectContaining({
-        error: expect.stringMatching(/asn\\.1|parsing/i),
-      }),
-    );
-  });
-
-  it('continues when DSC metadata cannot be read and logs empty dsc payload', async () => {
-    const passportData = genMockIdDoc({ idType: 'mock_passport' }) as PassportData;
-    let metadataProxy: PassportData['passportMetadata'];
-    Object.defineProperty(passportData, 'passportMetadata', {
-      get() {
-        return metadataProxy;
-      },
-      set(value) {
-        metadataProxy = new Proxy(value, {
-          get(target, prop) {
-            if (prop === 'dsc') {
-              throw new Error('dsc parse failed');
-            }
-            return target[prop as keyof typeof target];
-          },
-        });
-      },
-      configurable: true,
-    });
-
-    const protocolState = buildProtocolState({
-      commitmentTree: null,
-      dscTree: null,
-      deployedCircuits: {
-        REGISTER: [],
-        REGISTER_ID: [],
-        REGISTER_AADHAAR: [],
-        DSC: [],
-        DSC_ID: [],
-      },
-    });
-    const selfClient = createSelfClient(protocolState);
-
-    loadSelectedDocumentMock.mockResolvedValue({ data: passportData } as any);
-
-    vi.spyOn(commonUtils, 'getSKIPEM').mockResolvedValue({});
-
-    await useProvingStore.getState().init(selfClient, 'dsc');
-    actorMock.send.mockClear();
-    vi.mocked(selfClient.trackEvent).mockClear();
-
-    await useProvingStore.getState().parseIDDocument(selfClient);
-
-    const parsedEvent = vi
-      .mocked(selfClient.trackEvent)
-      .mock.calls.find(([event]) => event === PassportEvents.PASSPORT_PARSED)?.[1];
-
-    expect(parsedEvent).toEqual(
-      expect.objectContaining({
-        dsc: {},
-      }),
-    );
-    expect(actorMock.send).toHaveBeenCalledWith({ type: 'PARSE_SUCCESS' });
   });
 
   it('emits PARSE_ERROR when storing parsed passport data fails', async () => {
-    const passportData = genMockIdDoc({ idType: 'mock_passport' }) as PassportData;
+    const passportData = asNonMock(genMockIdDoc({ idType: 'mock_passport' })) as PassportData;
     const protocolState = buildProtocolState({
       commitmentTree: null,
       dscTree: null,
@@ -426,9 +354,6 @@ describe('parseIDDocument', () => {
     await useProvingStore.getState().parseIDDocument(selfClient);
 
     expect(actorMock.send).toHaveBeenCalledWith({ type: 'PARSE_ERROR' });
-    expect(selfClient.trackEvent).toHaveBeenCalledWith(PassportEvents.PASSPORT_PARSE_FAILED, {
-      error: 'storage unavailable',
-    });
   });
 });
 
@@ -442,7 +367,7 @@ describe('startFetchingData', () => {
 
   it('fetches trees and circuits for passport documents', async () => {
     const passportData = {
-      ...(genMockIdDoc({ idType: 'mock_passport' }) as PassportData),
+      ...(asNonMock(genMockIdDoc({ idType: 'mock_passport' })) as PassportData),
       dsc_parsed: { authorityKeyIdentifier: 'KEY123' } as any,
       documentCategory: 'passport',
     } as PassportData;
@@ -471,12 +396,11 @@ describe('startFetchingData', () => {
 
     expect(fetchAllTreesMock).toHaveBeenCalledWith(selfClient, 'passport', 'prod', 'KEY123');
     expect(actorMock.send).toHaveBeenCalledWith({ type: 'FETCH_SUCCESS' });
-    expect(selfClient.trackEvent).toHaveBeenCalledWith(ProofEvents.FETCH_DATA_SUCCESS);
   });
 
   it('fetches trees and circuits for id cards', async () => {
     const idCardData = {
-      ...(genMockIdDoc({ idType: 'mock_id_card' }) as PassportData),
+      ...(asNonMock(genMockIdDoc({ idType: 'mock_id_card' })) as PassportData),
       dsc_parsed: { authorityKeyIdentifier: 'IDKEY' } as any,
       documentCategory: 'id_card',
     } as PassportData;
@@ -508,7 +432,7 @@ describe('startFetchingData', () => {
   });
 
   it('fetches aadhaar protocol data via aadhaar fetcher', async () => {
-    const aadhaarData = genMockIdDoc({ idType: 'mock_aadhaar' }) as AadhaarData;
+    const aadhaarData = asNonMock(genMockIdDoc({ idType: 'mock_aadhaar' })) as AadhaarData;
     const protocolState = buildProtocolState({
       commitmentTree: null,
       dscTree: null,
@@ -551,7 +475,7 @@ describe('startFetchingData', () => {
     });
     const selfClient = createSelfClient(protocolState);
 
-    loadSelectedDocumentMock.mockResolvedValue({ data: genMockIdDoc({ idType: 'mock_passport' }) } as any);
+    loadSelectedDocumentMock.mockResolvedValue({ data: asNonMock(genMockIdDoc({ idType: 'mock_passport' })) } as any);
 
     await useProvingStore.getState().init(selfClient, 'register');
     actorMock.send.mockClear();
@@ -562,14 +486,11 @@ describe('startFetchingData', () => {
     await useProvingStore.getState().startFetchingData(selfClient);
 
     expect(actorMock.send).toHaveBeenCalledWith({ type: 'FETCH_ERROR' });
-    expect(selfClient.trackEvent).toHaveBeenCalledWith(ProofEvents.FETCH_DATA_FAILED, {
-      message: 'PassportData is not available',
-    });
   });
 
   it('emits FETCH_ERROR when DSC data is missing for passports', async () => {
     const passportData = {
-      ...(genMockIdDoc({ idType: 'mock_passport' }) as PassportData),
+      ...(asNonMock(genMockIdDoc({ idType: 'mock_passport' })) as PassportData),
       dsc_parsed: undefined,
       documentCategory: 'passport',
     } as PassportData;
@@ -597,14 +518,11 @@ describe('startFetchingData', () => {
     await useProvingStore.getState().startFetchingData(selfClient);
 
     expect(actorMock.send).toHaveBeenCalledWith({ type: 'FETCH_ERROR' });
-    expect(selfClient.trackEvent).toHaveBeenCalledWith(ProofEvents.FETCH_DATA_FAILED, {
-      message: 'Missing parsed DSC in passport data',
-    });
   });
 
   it('emits FETCH_ERROR when protocol fetch fails', async () => {
     const passportData = {
-      ...(genMockIdDoc({ idType: 'mock_passport' }) as PassportData),
+      ...(asNonMock(genMockIdDoc({ idType: 'mock_passport' })) as PassportData),
       dsc_parsed: { authorityKeyIdentifier: 'KEY123' } as any,
       documentCategory: 'passport',
     } as PassportData;
@@ -633,9 +551,6 @@ describe('startFetchingData', () => {
     await useProvingStore.getState().startFetchingData(selfClient);
 
     expect(actorMock.send).toHaveBeenCalledWith({ type: 'FETCH_ERROR' });
-    expect(selfClient.trackEvent).toHaveBeenCalledWith(ProofEvents.FETCH_DATA_FAILED, {
-      message: 'network down',
-    });
   });
 });
 
@@ -678,10 +593,6 @@ describe('validatingDocument', () => {
 
     expect(clearPassportDataMock).toHaveBeenCalledWith(selfClient);
     expect(actorMock.send).toHaveBeenCalledWith({ type: 'PASSPORT_NOT_SUPPORTED' });
-    expect(selfClient.trackEvent).toHaveBeenCalledWith(
-      PassportEvents.COMING_SOON,
-      expect.objectContaining({ status: 'registration_circuit_not_supported' }),
-    );
   });
 
   it('validates disclose when the user is registered', async () => {
@@ -718,7 +629,6 @@ describe('validatingDocument', () => {
     await useProvingStore.getState().validatingDocument(selfClient);
 
     expect(actorMock.send).toHaveBeenCalledWith({ type: 'VALIDATION_SUCCESS' });
-    expect(selfClient.trackEvent).toHaveBeenCalledWith(ProofEvents.VALIDATION_SUCCESS);
   });
 
   it('emits PASSPORT_DATA_NOT_FOUND when disclose document is not registered', async () => {
@@ -756,7 +666,7 @@ describe('validatingDocument', () => {
   });
 
   it('restores data when aadhaar is already registered with alternative keys', async () => {
-    const aadhaarData = genMockIdDoc({ idType: 'mock_aadhaar' }) as AadhaarData;
+    const aadhaarData = asNonMock(genMockIdDoc({ idType: 'mock_aadhaar' })) as AadhaarData;
     const secret = '123456789';
     const { commitment_list: commitmentList } = generateCommitmentInAppAadhaar(
       secret,
@@ -1151,8 +1061,5 @@ describe('validatingDocument', () => {
     await useProvingStore.getState().validatingDocument(selfClient);
 
     expect(actorMock.send).toHaveBeenCalledWith({ type: 'VALIDATION_ERROR' });
-    expect(selfClient.trackEvent).toHaveBeenCalledWith(ProofEvents.VALIDATION_FAILED, {
-      message: 'PassportData is not available',
-    });
   });
 });

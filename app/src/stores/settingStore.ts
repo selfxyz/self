@@ -50,8 +50,6 @@ interface PersistedSettingsState {
 }
 
 interface NonPersistedSettingsState {
-  hideNetworkModal: boolean;
-  setHideNetworkModal: (hideNetworkModal: boolean) => void;
   // Dev-only one-shot flag armed by the "Test registration circuit" debug
   // shortcut. Bypasses only the document "already registered / nullifier"
   // checks so the register circuit runs even when the document is on-chain.
@@ -188,12 +186,6 @@ export const useSettingStore = create<SettingsState>()(
       useStrongBox: false,
       setUseStrongBox: (useStrongBox: boolean) => set({ useStrongBox }),
 
-      // Non-persisted state (will not be saved to storage)
-      hideNetworkModal: false,
-      setHideNetworkModal: (hideNetworkModal: boolean) => {
-        set({ hideNetworkModal });
-      },
-
       testRegistrationCircuitArmed: false,
       armTestRegistrationCircuit: () =>
         set({ testRegistrationCircuitArmed: true }),
@@ -221,8 +213,6 @@ export const useSettingStore = create<SettingsState>()(
       onRehydrateStorage: () => undefined,
       partialize: state => {
         const persistedState = { ...state };
-        delete (persistedState as Partial<SettingsState>).hideNetworkModal;
-        delete (persistedState as Partial<SettingsState>).setHideNetworkModal;
         delete (persistedState as Partial<SettingsState>)
           .testRegistrationCircuitArmed;
         delete (persistedState as Partial<SettingsState>)

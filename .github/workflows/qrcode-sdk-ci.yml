@@ -14,15 +14,45 @@ on:
       - dev
       - staging
       - main
-    paths:
-      - "sdk/qrcode/**"
-      - "common/**"
-      - ".github/workflows/qrcode-sdk-ci.yml"
-      - ".github/actions/**"
 
 jobs:
+  check_changes:
+    runs-on: ubuntu-slim
+    outputs:
+      should_run: ${{ steps.filter.outputs.should_run }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Check if should run
+        id: filter
+        run: |
+          set -e
+          if [[ "${{ github.base_ref }}" == "main" ]] || [[ "${{ github.base_ref }}" == "staging" ]]; then
+            echo "should_run=true" >> $GITHUB_OUTPUT
+            echo "Running for ${{ github.base_ref }} - no path filter"
+          else
+            # For dev branch, check if relevant files changed
+            # Fetch the base branch to ensure it's available for comparison
+            git fetch origin ${{ github.base_ref }} --depth=1
+            CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD) || {
+              echo "Error: Failed to diff against base branch"
+              exit 1
+            }
+            if echo "$CHANGED_FILES" | grep -qE "^(sdk/qrcode/|common/|\.github/workflows/qrcode-sdk-ci\.yml|\.github/actions/)"; then
+              echo "should_run=true" >> $GITHUB_OUTPUT
+              echo "Running for dev - relevant files changed"
+            else
+              echo "should_run=false" >> $GITHUB_OUTPUT
+              echo "Skipping for dev - no relevant files changed"
+            fi
+          fi
+
   # Build dependencies once and cache for other jobs
   build:
+    needs: check_changes
+    if: github.event.pull_request.draft == false && needs.check_changes.outputs.should_run == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -78,7 +108,8 @@ jobs:
   # Quality checks job
   quality-checks:
     runs-on: ubuntu-latest
-    needs: build
+    needs: [check_changes, build]
+    if: github.event.pull_request.draft == false && needs.check_changes.outputs.should_run == 'true'
     steps:
       - uses: actions/checkout@v6
       - name: Read and sanitize Node.js version
@@ -149,7 +180,8 @@ jobs:
   # Build verification job
   build-verification:
     runs-on: ubuntu-latest
-    needs: build
+    needs: [check_changes, build]
+    if: github.event.pull_request.draft == false && needs.check_changes.outputs.should_run == 'true'
     steps:
       - uses: actions/checkout@v6
       - name: Read and sanitize Node.js version
@@ -214,7 +246,8 @@ jobs:
   # Integration test job
   integration-test:
     runs-on: ubuntu-latest
-    needs: build
+    needs: [check_changes, build]
+    if: github.event.pull_request.draft == false && needs.check_changes.outputs.should_run == 'true'
     steps:
       - uses: actions/checkout@v6
       - name: Read and sanitize Node.js version

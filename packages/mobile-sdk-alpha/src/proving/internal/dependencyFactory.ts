@@ -67,4 +67,5 @@ export interface ProvingStoreSnapshot {
   endpointType: EndpointType | null;
   env: 'prod' | 'stg' | null;
   didNewRegistrationProof?: boolean;
+  isMock?: boolean;
 }

@@ -5,13 +5,22 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator } from 'react-native';
 import { Text, View } from 'tamagui';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import type { RouteProp } from '@react-navigation/native';
+import {
+  useFocusEffect,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import {
+  GOOGLE_USAT_FAUCET_POLICY,
+  hasEligibleAlternativeDocumentForPolicy,
   isDocumentValidForProving,
   pickBestDocumentToSelect,
+  useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
+import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import { black } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
@@ -19,7 +28,12 @@ import { proofRequestColors } from '@/components/proof-request';
 import type { RootStackParamList } from '@/navigation';
 import { usePassport } from '@/providers/passportDataProvider';
 import { useSettingStore } from '@/stores/settingStore';
+import { useVerificationGateStore } from '@/stores/verificationGateStore';
 import { getDocumentTypeName } from '@/utils/documentUtils';
+import {
+  evaluateGoogleUsatGate,
+  evaluateGoogleUsatGateForDocument,
+} from '@/utils/googleUsatGate';
 
 /**
  * Router screen for the proving flow that decides whether to skip the document selector.
@@ -35,12 +49,41 @@ import { getDocumentTypeName } from '@/utils/documentUtils';
 const ProvingScreenRouter: React.FC = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const route =
+    useRoute<RouteProp<RootStackParamList, 'ProvingScreenRouter'>>();
+  const { entryPoint } = route.params;
+  const selfClient = useSelfClient();
+  const { useSelfAppStore } = selfClient;
+  const selfApp = useSelfAppStore(state => state.selfApp);
   const { loadDocumentCatalog, getAllDocuments, setSelectedDocument } =
     usePassport();
   const { skipDocumentSelector } = useSettingStore();
   const [error, setError] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const hasRoutedRef = useRef(false);
+  const openDocumentSelector = useCallback(
+    (documentType: string) => {
+      navigation.replace('DocumentSelectorForProving', {
+        documentType,
+        entryPoint,
+      });
+    },
+    [entryPoint, navigation],
+  );
+
+  const handleGoogleUsatBlocked = useCallback(() => {
+    selfClient.trackEvent(ProofEvents.GOOGLE_USAT_BLOCKED, {
+      entry_point: entryPoint,
+      reason: 'no_high_security_doc',
+    });
+    useVerificationGateStore.getState().open({
+      reason: 'google_usat_high_security_required',
+      entryPoint,
+      requesterName: selfApp?.appName ?? '',
+    });
+    selfClient.getSelfAppState().cleanSelfApp();
+    navigation.goBack();
+  }, [entryPoint, navigation, selfApp?.appName, selfClient]);
 
   const loadAndRoute = useCallback(async () => {
     // Cancel any in-flight request
@@ -53,23 +96,95 @@ const ProvingScreenRouter: React.FC = () => {
       return;
     }
 
+    // For sessionId-only entries, selfApp arrives asynchronously over the
+    // websocket. Wait for it before evaluating the Google USAT gate so we don't
+    // navigate past the gate prematurely.
+    if (!selfApp) {
+      return;
+    }
+
     setError(null);
+
     try {
       const catalog = await loadDocumentCatalog();
+      if (controller.signal.aborted) {
+        return;
+      }
       const docs = await getAllDocuments();
-
-      // Don't continue if this request was aborted
       if (controller.signal.aborted) {
         return;
       }
 
-      // Count valid documents
+      const gate = await evaluateGoogleUsatGate(selfClient, selfApp, {
+        catalog,
+        docs,
+      });
+      if (controller.signal.aborted) {
+        return;
+      }
+
+      // Count valid documents up front so we can derive documentType for the
+      // selector even when the gate forces us there.
       const validDocuments = catalog.documents.filter(doc => {
         const docData = docs[doc.id];
         return isDocumentValidForProving(doc, docData?.data);
       });
-
       const validCount = validDocuments.length;
+      const firstValidDoc = validDocuments[0];
+      const documentType = getDocumentTypeName(
+        firstValidDoc?.documentCategory,
+        firstValidDoc?.idType,
+      );
+
+      if (gate === 'block') {
+        const selectedDocumentId = catalog.selectedDocumentId;
+        const hasAlternativeEligibleDocument = selectedDocumentId
+          ? hasEligibleAlternativeDocumentForPolicy(
+              GOOGLE_USAT_FAUCET_POLICY,
+              docs,
+              selectedDocumentId,
+            )
+          : false;
+
+        let hasAlternativeEligibleValidDocument = false;
+        let alternativeEligibleDocumentType: string | null = null;
+        if (hasAlternativeEligibleDocument && selectedDocumentId) {
+          const alternativeValidDocuments = validDocuments.filter(
+            doc => doc.id !== selectedDocumentId,
+          );
+          for (const doc of alternativeValidDocuments) {
+            const alternativeDocGate = await evaluateGoogleUsatGateForDocument(
+              selfClient,
+              selfApp,
+              doc.id,
+              docs,
+            );
+            if (controller.signal.aborted) {
+              return;
+            }
+            if (alternativeDocGate === 'allow') {
+              hasAlternativeEligibleValidDocument = true;
+              alternativeEligibleDocumentType = getDocumentTypeName(
+                doc.documentCategory,
+                doc.idType,
+              );
+              break;
+            }
+          }
+        }
+
+        if (hasAlternativeEligibleValidDocument) {
+          // Force selector regardless of skipDocumentSelector so the user can
+          // pick the eligible alternative.
+          hasRoutedRef.current = true;
+          openDocumentSelector(alternativeEligibleDocumentType ?? documentType);
+          return;
+        }
+
+        hasRoutedRef.current = true;
+        handleGoogleUsatBlocked();
+        return;
+      }
 
       // Mark as routed to prevent re-routing
       hasRoutedRef.current = true;
@@ -81,42 +196,42 @@ const ProvingScreenRouter: React.FC = () => {
         return;
       }
 
-      // Determine document type from first valid document for display
-      const firstValidDoc = validDocuments[0];
-      const documentType = getDocumentTypeName(
-        firstValidDoc?.documentCategory,
-        firstValidDoc?.idType,
-      );
-
       // Determine if we should skip the selector
       const shouldSkip = skipDocumentSelector || validCount === 1;
 
-      if (shouldSkip) {
-        // Auto-select and navigate to Prove
-        const docToSelect = pickBestDocumentToSelect(catalog, docs);
-        if (docToSelect) {
-          try {
-            await setSelectedDocument(docToSelect);
-            navigation.replace('Prove');
-          } catch (selectError) {
-            console.error('Failed to auto-select document:', selectError);
-            // On error, fall back to showing the selector
-            hasRoutedRef.current = false;
-            navigation.replace('DocumentSelectorForProving', {
-              documentType,
-            });
-          }
-        } else {
-          // No valid document to select, show selector
-          navigation.replace('DocumentSelectorForProving', {
-            documentType,
-          });
+      if (!shouldSkip) {
+        openDocumentSelector(documentType);
+        return;
+      }
+
+      // Auto-select and navigate to Prove
+      const docToSelect = pickBestDocumentToSelect(catalog, docs);
+      if (!docToSelect) {
+        openDocumentSelector(documentType);
+        return;
+      }
+
+      try {
+        const selectedDocGate = await evaluateGoogleUsatGateForDocument(
+          selfClient,
+          selfApp,
+          docToSelect,
+          docs,
+        );
+        if (controller.signal.aborted) {
+          return;
         }
-      } else {
-        // Show the document selector
-        navigation.replace('DocumentSelectorForProving', {
-          documentType,
-        });
+        if (selectedDocGate === 'block') {
+          handleGoogleUsatBlocked();
+          return;
+        }
+        await setSelectedDocument(docToSelect);
+        navigation.replace('Prove');
+      } catch (selectError) {
+        console.error('Failed to auto-select document:', selectError);
+        // On error, fall back to showing the selector
+        hasRoutedRef.current = false;
+        openDocumentSelector(documentType);
       }
     } catch (loadError) {
       // Don't show error if this request was aborted
@@ -132,6 +247,10 @@ const ProvingScreenRouter: React.FC = () => {
     getAllDocuments,
     loadDocumentCatalog,
     navigation,
+    selfApp,
+    selfClient,
+    handleGoogleUsatBlocked,
+    openDocumentSelector,
     setSelectedDocument,
     skipDocumentSelector,
   ]);

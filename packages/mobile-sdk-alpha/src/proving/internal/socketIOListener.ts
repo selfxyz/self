@@ -110,7 +110,10 @@ export const startSocketIOStatusListener = (
         } else if (event === 'SOCKETIO_PROOF_SUCCESS') {
           selfClient.logProofEvent('info', 'TEE processing succeeded', context);
         }
-        selfClient.trackEvent(event as unknown as keyof typeof ProofEvents, eventData);
+        const proofEvent = ProofEvents[event as keyof typeof ProofEvents];
+        if (proofEvent) {
+          selfClient.trackEvent(proofEvent, eventData);
+        }
       });
 
       // Handle actor events

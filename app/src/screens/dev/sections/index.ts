@@ -6,3 +6,4 @@ export { DangerZoneSection } from '@/screens/dev/sections/DangerZoneSection';
 export { DebugShortcutsSection } from '@/screens/dev/sections/DebugShortcutsSection';
 export { DevTogglesSection } from '@/screens/dev/sections/DevTogglesSection';
 export { PushNotificationsSection } from '@/screens/dev/sections/PushNotificationsSection';
+export { SentryTestSection } from '@/screens/dev/sections/SentryTestSection';

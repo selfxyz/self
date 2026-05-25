@@ -11,13 +11,15 @@ import React, {
   useMemo,
   useState,
 } from 'react';
+import { Platform } from 'react-native';
 import ReactNativeBiometrics from 'react-native-biometrics';
 import type { GetOptions, SetOptions } from 'react-native-keychain';
 import Keychain from 'react-native-keychain';
+import { v4 as uuidv4 } from 'uuid';
 
 import { AuthEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
-import { captureException } from '@/config/sentry';
+import { captureException, logAuthEvent } from '@/config/sentry';
 import type { GetSecureOptions } from '@/integrations/keychain';
 import {
   createKeychainOptions,
@@ -33,6 +35,13 @@ import {
 } from '@/utils/keychainErrors';
 
 const SERVICE_NAME = 'secret';
+
+const authSessionId = uuidv4();
+const authBaseContext = {
+  sessionId: authSessionId,
+  platform: Platform.OS as 'ios' | 'android',
+  stage: 'auth',
+};
 
 type SignedPayload<T> = { signature: string; data: T };
 type KeychainOptions = {
@@ -55,17 +64,21 @@ const _getSecurely = async function <T>(
       return null;
     }
 
-    trackEvent(AuthEvents.BIOMETRIC_AUTH_SUCCESS);
+    logAuthEvent('info', 'biometric_login_success', {
+      ...authBaseContext,
+      stage: 'get_securely',
+    });
     return {
       signature: 'authenticated',
       data: formatter(dataString),
     };
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
-    trackEvent(AuthEvents.BIOMETRIC_AUTH_FAILED, {
-      reason: 'unknown_error',
-      error: message,
-    });
+    logAuthEvent(
+      'warn',
+      'biometric_login_failure',
+      { ...authBaseContext, stage: 'get_securely' },
+      { reason: 'unknown_error' },
+    );
     throw error;
   }
 };
@@ -81,10 +94,12 @@ const _getWithBiometrics = async function <T>(
     });
 
     if (!simpleCheck.success) {
-      trackEvent(AuthEvents.BIOMETRIC_AUTH_FAILED, {
-        reason: 'unknown_error',
-        error: 'Authentication failed',
-      });
+      logAuthEvent(
+        'warn',
+        'biometric_login_failure',
+        { ...authBaseContext, stage: 'simple_prompt' },
+        { reason: 'prompt_unsuccessful' },
+      );
       throw new Error('Authentication failed');
     }
 
@@ -98,11 +113,12 @@ const _getWithBiometrics = async function <T>(
       data: formatter(dataString),
     };
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
-    trackEvent(AuthEvents.BIOMETRIC_AUTH_FAILED, {
-      reason: 'unknown_error',
-      error: message,
-    });
+    logAuthEvent(
+      'warn',
+      'biometric_login_failure',
+      { ...authBaseContext, stage: 'with_biometrics' },
+      { reason: 'unknown_error' },
+    );
     throw error;
   }
 };
@@ -110,15 +126,20 @@ const _getWithBiometrics = async function <T>(
 async function checkBiometricsAvailable(): Promise<boolean> {
   try {
     const { available } = await biometrics.isSensorAvailable();
-    trackEvent(AuthEvents.BIOMETRIC_CHECK, { available });
+    logAuthEvent('info', 'biometric_sensor_checked', {
+      ...authBaseContext,
+      stage: 'sensor_check',
+      available,
+    });
     return available;
   } catch (error: unknown) {
     console.error('Error checking biometric availability:', error);
-    const message = error instanceof Error ? error.message : String(error);
-    trackEvent(AuthEvents.BIOMETRIC_CHECK, {
-      reason: 'unknown_error',
-      error: message,
-    });
+    logAuthEvent(
+      'warn',
+      'biometric_sensor_check_failed',
+      { ...authBaseContext, stage: 'sensor_check' },
+      { reason: 'unknown_error' },
+    );
     return false;
   }
 }
@@ -128,9 +149,12 @@ async function restoreFromMnemonic(
   options: KeychainOptions,
 ): Promise<string | false> {
   if (!mnemonic || !ethers.Mnemonic.isValidMnemonic(mnemonic)) {
-    trackEvent(AuthEvents.MNEMONIC_RESTORE_FAILED, {
-      reason: 'invalid_mnemonic',
-    });
+    logAuthEvent(
+      'warn',
+      'mnemonic_restore_failed',
+      { ...authBaseContext, stage: 'restore_from_mnemonic' },
+      { reason: 'invalid_mnemonic' },
+    );
     return false;
   }
 
@@ -142,13 +166,18 @@ async function restoreFromMnemonic(
       service: SERVICE_NAME,
     });
     generateAndStorePointsAddress(mnemonic);
-    trackEvent(AuthEvents.MNEMONIC_RESTORE_SUCCESS);
-    return data;
-  } catch (error: unknown) {
-    trackEvent(AuthEvents.MNEMONIC_RESTORE_FAILED, {
-      reason: 'unknown_error',
-      error: error instanceof Error ? error.message : String(error),
+    logAuthEvent('info', 'mnemonic_restored', {
+      ...authBaseContext,
+      stage: 'restore_from_mnemonic',
     });
+    return data;
+  } catch {
+    logAuthEvent(
+      'warn',
+      'mnemonic_restore_failed',
+      { ...authBaseContext, stage: 'restore_from_mnemonic' },
+      { reason: 'keychain_write_failed' },
+    );
     return false;
   }
 }
@@ -171,17 +200,22 @@ async function loadOrCreateMnemonic(
     if (storedMnemonic) {
       try {
         JSON.parse(storedMnemonic.password);
-        trackEvent(AuthEvents.MNEMONIC_LOADED);
+        logAuthEvent('info', 'mnemonic_loaded', {
+          ...authBaseContext,
+          stage: 'load_or_create',
+        });
         return storedMnemonic.password;
       } catch (e: unknown) {
         console.error(
           'Error parsing stored mnemonic, old secret format was used',
           e,
         );
-        trackEvent(AuthEvents.MNEMONIC_RESTORE_FAILED, {
-          reason: 'unknown_error',
-          error: e instanceof Error ? e.message : String(e),
-        });
+        logAuthEvent(
+          'warn',
+          'mnemonic_parse_failed',
+          { ...authBaseContext, stage: 'load_or_create' },
+          { reason: 'legacy_format' },
+        );
       }
     }
   } catch (error: unknown) {
@@ -210,10 +244,6 @@ async function loadOrCreateMnemonic(
           errorName: err?.name,
         });
       }
-      trackEvent(AuthEvents.MNEMONIC_RESTORE_FAILED, {
-        reason: 'keychain_crypto_failed',
-        errorCode: err?.code,
-      });
 
       if (keychainCryptoFailureCallback) {
         keychainCryptoFailureCallback('crypto_failed');
@@ -229,10 +259,6 @@ async function loadOrCreateMnemonic(
         source: 'loadOrCreateMnemonic',
       });
     }
-    trackEvent(AuthEvents.MNEMONIC_RESTORE_FAILED, {
-      reason: 'unknown_error',
-      error: error instanceof Error ? error.message : String(error),
-    });
     throw error;
   }
   try {
@@ -245,13 +271,18 @@ async function loadOrCreateMnemonic(
       ...setOptions,
       service: SERVICE_NAME,
     });
-    trackEvent(AuthEvents.MNEMONIC_CREATED);
-    return data;
-  } catch (error: unknown) {
-    trackEvent(AuthEvents.MNEMONIC_RESTORE_FAILED, {
-      reason: 'unknown_error',
-      error: error instanceof Error ? error.message : String(error),
+    logAuthEvent('info', 'mnemonic_created', {
+      ...authBaseContext,
+      stage: 'load_or_create',
     });
+    return data;
+  } catch {
+    logAuthEvent(
+      'warn',
+      'mnemonic_create_failed',
+      { ...authBaseContext, stage: 'load_or_create' },
+      { reason: 'keychain_write_failed' },
+    );
     return false;
   }
 }
@@ -301,7 +332,10 @@ export const AuthProvider = ({
       return;
     }
 
-    trackEvent(AuthEvents.BIOMETRIC_LOGIN_ATTEMPT);
+    logAuthEvent('info', 'biometric_login_attempt', {
+      ...authBaseContext,
+      stage: 'login',
+    });
     const promise = biometrics.simplePrompt({
       promptMessage: 'Confirm your identity to access the stored secret',
     });
@@ -327,7 +361,10 @@ export const AuthProvider = ({
       }
       return setTimeout(() => {
         setIsAuthenticated(false);
-        trackEvent(AuthEvents.AUTHENTICATION_TIMEOUT);
+        logAuthEvent('info', 'session_timeout', {
+          ...authBaseContext,
+          stage: 'session_expired',
+        });
       }, authenticationTimeoutinMs);
     });
   }, [authenticationTimeoutinMs, isAuthenticatingPromise]);
@@ -474,8 +511,10 @@ export async function migrateToSecureKeychain(): Promise<boolean> {
       service: SERVICE_NAME,
     });
 
-    trackEvent(AuthEvents.MNEMONIC_CREATED, { migrated: true });
-
+    logAuthEvent('info', 'mnemonic_migrated', {
+      ...authBaseContext,
+      stage: 'keychain_migration',
+    });
     setKeychainMigrationCompleted();
 
     return true;
@@ -487,11 +526,12 @@ export async function migrateToSecureKeychain(): Promise<boolean> {
         source: 'keychain-migration',
       });
     }
-    const message = error instanceof Error ? error.message : String(error);
-    trackEvent(AuthEvents.MNEMONIC_RESTORE_FAILED, {
-      reason: 'migration_failed',
-      error: message,
-    });
+    logAuthEvent(
+      'warn',
+      'mnemonic_migration_failed',
+      { ...authBaseContext, stage: 'keychain_migration' },
+      { reason: 'migration_failed' },
+    );
 
     return false;
   }

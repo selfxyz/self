@@ -6,7 +6,6 @@
 import { Platform } from 'react-native';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { PassportEvents } from '../../../src/constants/analytics';
 import { useReadMRZ } from '../../../src/flows/onboarding/read-mrz';
 import { SdkEvents } from '../../../src/types/events';
 import type { MRZInfo } from '../../../src/types/public';
@@ -96,11 +95,6 @@ describe('useReadMRZ', () => {
       countryCode: 'UTO',
     });
 
-    // Verify success analytics event was tracked
-    expect(mockSelfClient.trackEvent).toHaveBeenCalledWith(PassportEvents.CAMERA_SCAN_SUCCESS, {
-      duration_seconds: expect.any(Number),
-    });
-
     // Verify success event was emitted
     expect(mockSelfClient.emit).toHaveBeenCalledWith(SdkEvents.DOCUMENT_MRZ_READ_SUCCESS);
   });
@@ -138,11 +132,6 @@ describe('useReadMRZ', () => {
       dateOfExpiry: '120415', // Not formatted on Android
       documentType: 'P',
       countryCode: 'UTO',
-    });
-
-    // Verify success analytics event was tracked
-    expect(mockSelfClient.trackEvent).toHaveBeenCalledWith(PassportEvents.CAMERA_SCAN_SUCCESS, {
-      duration_seconds: expect.any(Number),
     });
 
     // Verify success event was emitted
@@ -221,48 +210,6 @@ describe('useReadMRZ', () => {
 
     onPassportRead(new Error('Camera crashed'));
 
-    expect(mockSelfClient.trackEvent).toHaveBeenCalledWith(
-      PassportEvents.CAMERA_SCAN_FAILED,
-      expect.objectContaining({
-        reason: 'unknown_error',
-        error: 'Camera crashed',
-        duration_seconds: expect.any(Number),
-      }),
-    );
     expect(mockSelfClient.emit).toHaveBeenCalledWith(SdkEvents.DOCUMENT_MRZ_READ_FAILURE);
-  });
-
-  it('calculates scan duration correctly', () => {
-    const { result } = renderHook(() => useReadMRZ(scanStartTimeRef));
-    const { onPassportRead } = result.current;
-
-    const mockMRZInfo: MRZInfo = {
-      documentNumber: 'L898902C3',
-      dateOfBirth: '740812',
-      dateOfExpiry: '120415',
-      documentType: 'P',
-      issuingCountry: 'UTO',
-      validation: {
-        format: true,
-        passportNumberChecksum: true,
-        dateOfBirthChecksum: true,
-        dateOfExpiryChecksum: true,
-        compositeChecksum: true,
-        overall: true,
-      },
-    };
-
-    // Call the callback with valid data
-    onPassportRead(null, mockMRZInfo);
-
-    // Verify the duration was calculated and passed to analytics
-    expect(mockSelfClient.trackEvent).toHaveBeenCalledWith(PassportEvents.CAMERA_SCAN_SUCCESS, {
-      duration_seconds: expect.any(Number),
-    });
-
-    // The duration should be approximately 2.5 seconds (2500ms / 1000)
-    const trackEventCall = mockSelfClient.trackEvent.mock.calls[0];
-    const durationSeconds = trackEventCall[1].duration_seconds;
-    expect(durationSeconds).toBeCloseTo(2.5, 1);
   });
 });

@@ -8,11 +8,17 @@ import { Linking, Platform } from 'react-native';
 import { countries } from '@selfxyz/common/constants/countries';
 import type { IdDocInput } from '@selfxyz/common/utils';
 import type { SelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { ProofEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import type { RootStackParamList } from '@/navigation';
 import { navigationRef } from '@/navigation';
 import useUserStore from '@/stores/userStore';
+import { useVerificationGateStore } from '@/stores/verificationGateStore';
 import { IS_DEV_MODE } from '@/utils/devUtils';
+import {
+  evaluateGoogleUsatGate,
+  isGoogleUsatForceEnabledForTesting,
+} from '@/utils/googleUsatGate';
 
 // Validation patterns for each expected parameter
 const VALIDATION_PATTERNS = {
@@ -94,9 +100,15 @@ const validateAndSanitizeParam = (
 const createDeeplinkNavigationState = (
   targetScreen: string,
   parentScreen: string = 'Home',
+  targetParams?: Record<string, unknown>,
 ) => ({
   index: 1, // Current screen index (targetScreen)
-  routes: [{ name: parentScreen }, { name: targetScreen }],
+  routes: [
+    { name: parentScreen },
+    targetParams
+      ? { name: targetScreen, params: targetParams }
+      : { name: targetScreen },
+  ],
 });
 
 // Store the correct parent screen determined by splash screen
@@ -108,7 +120,7 @@ export const getAndClearQueuedUrl = (): string | null => {
   return url;
 };
 
-export const handleUrl = (selfClient: SelfClient, uri: string) => {
+export const handleUrl = async (selfClient: SelfClient, uri: string) => {
   const validatedParams = parseAndValidateUrlParams(uri);
   const {
     sessionId,
@@ -122,6 +134,28 @@ export const handleUrl = (selfClient: SelfClient, uri: string) => {
   if (selfAppStr) {
     try {
       const selfAppJson = JSON.parse(selfAppStr);
+      const gate = await evaluateGoogleUsatGate(selfClient, selfAppJson);
+      if (gate === 'block') {
+        selfClient.trackEvent(ProofEvents.GOOGLE_USAT_BLOCKED, {
+          entry_point: 'deeplink',
+          reason: 'no_high_security_doc',
+        });
+        useVerificationGateStore.getState().open({
+          reason: 'google_usat_high_security_required',
+          entryPoint: 'deeplink',
+          requesterName: selfAppJson.appName,
+        });
+        // On cold launch, handleUrl runs from Splash and never advances the
+        // stack on its own; without this nav, dismissing the gate modal
+        // strands the user on Splash. On warm launch the user is mid-flow,
+        // so leave them in place.
+        if (navigationRef.getCurrentRoute()?.name === 'Splash') {
+          safeNavigate(
+            createDeeplinkNavigationState('Home', correctParentScreen),
+          );
+        }
+        return;
+      }
       selfClient.getSelfAppState().setSelfApp(selfAppJson);
       selfClient.getSelfAppState().startAppListener(selfAppJson.sessionId);
 
@@ -129,6 +163,7 @@ export const handleUrl = (selfClient: SelfClient, uri: string) => {
         createDeeplinkNavigationState(
           'ProvingScreenRouter',
           correctParentScreen,
+          { entryPoint: 'deeplink' },
         ),
       );
 
@@ -142,11 +177,37 @@ export const handleUrl = (selfClient: SelfClient, uri: string) => {
       );
     }
   } else if (sessionId && typeof sessionId === 'string') {
+    if (isGoogleUsatForceEnabledForTesting()) {
+      selfClient.trackEvent(ProofEvents.GOOGLE_USAT_BLOCKED, {
+        entry_point: 'deeplink',
+        reason: 'no_high_security_doc',
+      });
+      useVerificationGateStore.getState().open({
+        reason: 'google_usat_high_security_required',
+        entryPoint: 'deeplink',
+        requesterName: 'Google USAT Faucet',
+      });
+      // Cold-launch only: advance off Splash so dismissing the gate modal
+      // doesn't strand the user. Warm launch leaves the user in place.
+      if (navigationRef.getCurrentRoute()?.name === 'Splash') {
+        safeNavigate(
+          createDeeplinkNavigationState('Home', correctParentScreen),
+        );
+      }
+      return;
+    }
+
     selfClient.getSelfAppState().cleanSelfApp();
     selfClient.getSelfAppState().startAppListener(sessionId);
 
     safeNavigate(
-      createDeeplinkNavigationState('ProvingScreenRouter', correctParentScreen),
+      createDeeplinkNavigationState(
+        'ProvingScreenRouter',
+        correctParentScreen,
+        {
+          entryPoint: 'deeplink',
+        },
+      ),
     );
   } else if (mock_passport) {
     try {
@@ -229,11 +290,11 @@ const safeNavigate = (
   const isColdLaunch = currentRoute?.name === 'Splash';
 
   if (!isColdLaunch && targetScreen) {
+    const targetParams = navigationState.routes[1]?.params;
     // Use object syntax to satisfy TypeScript's strict typing for navigate
-    // The params will be undefined for screens that don't require them
     navigationRef.navigate({
       name: targetScreen,
-      params: undefined,
+      params: targetParams,
     } as Parameters<typeof navigationRef.navigate>[0]);
   } else {
     navigationRef.reset(navigationState);
@@ -330,7 +391,11 @@ export const setupUniversalLinkListenerInNavigation = (
     //   return; // Don't call handleUrl for OAuth callbacks
     // }
     // For non-OAuth URLs, handle normally
-    handleUrl(selfClient, url);
+    handleUrl(selfClient, url).catch(error => {
+      if (IS_DEV_MODE) {
+        console.error('Error handling URL event:', error);
+      }
+    });
   });
   return () => {
     linkingEventListener.remove();

@@ -12,7 +12,6 @@ import {
   TextsContainer,
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
-import { PassportEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import {
   black,
   slate100,
@@ -53,12 +52,7 @@ const DocumentNFCScanScreen: React.FC = () => {
           />
         </>
         <ButtonsContainer>
-          <SecondaryButton
-            trackEvent={PassportEvents.CANCEL_PASSPORT_NFC}
-            onPress={onCancelPress}
-          >
-            Cancel
-          </SecondaryButton>
+          <SecondaryButton onPress={onCancelPress}>Cancel</SecondaryButton>
         </ButtonsContainer>
       </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>
