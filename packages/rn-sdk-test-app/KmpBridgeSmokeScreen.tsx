@@ -27,7 +27,8 @@ interface LogEntry {
   text: string;
 }
 
-const HANDLE_RESPONSE_PREFIX = "window.SelfNativeBridge._handleResponse('";
+const RESPONSE_PREFIX = "window.SelfNativeBridge._handleResponse('";
+const RESPONSE_SUFFIX = "')";
 
 function unescapeJsString(escaped: string): string {
   return escaped
@@ -40,12 +41,12 @@ function unescapeJsString(escaped: string): string {
 }
 
 function extractResponseJson(jsInjection: string): string | null {
-  const start = jsInjection.indexOf(HANDLE_RESPONSE_PREFIX);
-  if (start < 0) return null;
-  const inner = jsInjection.slice(start + HANDLE_RESPONSE_PREFIX.length);
-  const endIdx = inner.lastIndexOf("')");
-  if (endIdx < 0) return null;
-  return unescapeJsString(inner.slice(0, endIdx));
+  const trimmed = jsInjection.trim().replace(/;$/, '');
+  if (!trimmed.startsWith(RESPONSE_PREFIX) || !trimmed.endsWith(RESPONSE_SUFFIX)) {
+    return null;
+  }
+  const escaped = trimmed.slice(RESPONSE_PREFIX.length, -RESPONSE_SUFFIX.length);
+  return unescapeJsString(escaped);
 }
 
 interface KmpBridgeSmokeScreenProps {

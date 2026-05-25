@@ -8,6 +8,10 @@ import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.modules.core.DeviceEventManagerModule
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import xyz.self.sdk.bridge.MessageRouter
 import xyz.self.sdk.handlers.SecureStorageBridgeHandler
 import xyz.self.sdk.providers.EncryptedSharedPreferencesProvider
@@ -18,13 +22,20 @@ class SelfBridgeModule(reactContext: ReactApplicationContext) :
 
     override fun getName(): String = MODULE_NAME
 
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val router: MessageRouter
 
     init {
-        if (SdkProviderRegistry.secureStorage == null) {
-            SdkProviderRegistry.secureStorage = EncryptedSharedPreferencesProvider(reactContext.applicationContext)
+        synchronized(SdkProviderRegistry) {
+            if (SdkProviderRegistry.secureStorage == null) {
+                SdkProviderRegistry.secureStorage =
+                    EncryptedSharedPreferencesProvider(reactContext.applicationContext)
+            }
         }
-        router = MessageRouter(sendToWebView = { jsCode -> emitInjection(jsCode) })
+        router = MessageRouter(
+            sendToWebView = { jsCode -> emitInjection(jsCode) },
+            scope = scope,
+        )
         router.register(SecureStorageBridgeHandler())
     }
 
@@ -41,6 +52,11 @@ class SelfBridgeModule(reactContext: ReactApplicationContext) :
     @ReactMethod
     fun removeListeners(count: Int) {
         // Required by RN for NativeEventEmitter; no-op.
+    }
+
+    override fun invalidate() {
+        scope.cancel()
+        super.invalidate()
     }
 
     private fun emitInjection(jsCode: String) {
