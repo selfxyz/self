@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>NAV-08 Plan — Namespace Rewrite (verbs + places)</title>
+<link rel="stylesheet" href="./_shared.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <h1>NAV-08 · Namespace Rewrite (verbs + places only)</h1>
+  <span class="meta-pill status-Ready">Ready</span>
+  <span class="meta-pill prio-High">High</span>
+  <span class="meta-pill">Updated 2026-05-25</span>
+  <span class="spacer"></span>
+  <div class="links">
+    <a href="../SPEC.html">← Spec</a>
+    <a href="../AUDIT.html">Audit</a>
+  </div>
+</header>
+
+<div class="layout">
+
+<nav class="toc">
+  <h4>On this page</h4>
+  <a href="#why">Why</a>
+  <a href="#decisions">Decisions</a>
+  <a href="#meta">Meta</a>
+  <a href="#mapping">Path Mapping</a>
+  <a href="#scope">Scope</a>
+  <a href="#out-of-scope">Out of Scope</a>
+  <a href="#required-files">Required Files</a>
+  <a href="#approach">Approach</a>
+  <a href="#validation">Validation</a>
+  <a href="#open-questions">Open Questions</a>
+  <a href="#hand-off">Hand-off</a>
+  <h4>Workstream</h4>
+  <a href="../SPEC.html">SPEC ↗</a>
+  <a href="../AUDIT.html">AUDIT ↗</a>
+</nav>
+
+<main>
+
+<section id="why" class="tldr">
+  <h2>Why</h2>
+  <p>
+    Per SPEC invariant #7, every route is either a <strong>verb</strong> (an operation: <code>/tour</code>, <code>/capture/*</code>, <code>/register/*</code>, <code>/disclose/*</code>) or a <strong>place</strong> (a destination: <code>/</code>, <code>/settings</code>, <code>/docs</code>, <code>/history</code>). No journey prefixes (<code>/onboarding</code>), no mode prefixes (<code>/tunnel</code>). Journey context lives in code + Mixpanel funnels; mode lives in metadata (NAV-13's <code>ModeRoute</code>). NAV-08 is the namespace rewrite. Largest blast radius in the workstream — every route registration, every <code>navigate()</code> call, every state path, host deeplinks, tests, docs.
+  </p>
+  <p><strong>Pair with NAV-13.</strong> Routes get tagged with mode metadata at the same moment their paths change — one PR.</p>
+</section>
+
+<section id="decisions" class="decisions-block">
+  <h2>Decisions</h2>
+  <p class="decisions-intro">Locked in on 2026-05-25. See <a href="../DECISIONS.md">DECISIONS.md</a>.</p>
+  <ul class="decisions-list">
+    <li class="decision">
+      <div class="d-head"><code>nav-08-q1-tunnel-paths</code> · Decided</div>
+      <p class="d-q">Rename <code>/tunnel/*</code> → <code>/embed/*</code>, or drop the mode prefix entirely?</p>
+      <p class="d-a"><strong>Drop the prefix entirely.</strong> Paths describe operations only; mode is enforced by NAV-13's <code>&lt;ModeRoute&gt;</code> wrapper, never by URL prefix. Strict invariant #7 compliance.</p>
+    </li>
+    <li class="decision">
+      <div class="d-head"><code>nav-08-q2-backcompat</code> · Decided — chose hard cut over recommended redirect map</div>
+      <p class="d-q">Backwards-compat: redirect map for one release, or hard cut?</p>
+      <p class="d-a"><strong>Hard cut.</strong> No transitional redirects. Document the breaking change in the release notes. Coordinate with anyone shipping deeplinked SelfApp configs before the release ships.</p>
+      <p class="d-note">Pre-PR checklist: search public <code>docs/</code>, partner integration repos, and any rn-sdk fixtures for hard-coded old paths. Open coordination threads <strong>before</strong> the rewrite PR opens.</p>
+    </li>
+  </ul>
+</section>
+
+<section id="meta">
+  <h2>Meta</h2>
+  <div class="meta-grid">
+    <div class="item"><div class="label">Workstream</div><div class="value">nav-hygiene</div></div>
+    <div class="item"><div class="label">Linear</div><div class="value">TBD</div></div>
+    <div class="item"><div class="label">Owner</div><div class="value">TBD</div></div>
+    <div class="item"><div class="label">Branch</div><div class="value"><code>chore/nav-08-namespace</code></div></div>
+    <div class="item"><div class="label">PR</div><div class="value">TBD (paired with NAV-13)</div></div>
+    <div class="item"><div class="label">Depends on</div><div class="value">NAV-01, NAV-12</div></div>
+  </div>
+  <div class="note">
+    <strong>Largest PR in the workstream.</strong> Expect 2-3k LOC changed. Land behind a feature branch; coordinate with anyone touching <code>App.tsx</code>.
+  </div>
+</section>
+
+<section id="mapping">
+  <h2>Path Mapping</h2>
+  <h3>Self-app paths</h3>
+  <table class="std">
+    <thead><tr><th>Old</th><th>New</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><code>/onboarding/tour/:step</code></td><td><code>/tour/:step</code></td><td>Collapses with <code>/tunnel/tour/:step</code> — mode-aware copy via <code>useOperatingMode()</code></td></tr>
+      <tr><td><code>/onboarding/country</code></td><td><code>/pick-country</code></td><td>Verb</td></tr>
+      <tr><td><code>/onboarding/id-type</code></td><td><code>/pick-id-type</code></td><td>Verb</td></tr>
+      <tr><td><code>/onboarding/provider</code></td><td><code>/pick-provider</code></td><td>Verb</td></tr>
+      <tr><td><code>/onboarding/provider-result</code></td><td><code>/capture/provider-result</code></td><td>Part of capture sub-flow</td></tr>
+      <tr><td><code>/onboarding/confirm</code></td><td><code>/capture/confirm</code></td><td></td></tr>
+      <tr><td><code>/onboarding/passport/*</code></td><td><code>/capture/passport/*</code></td><td>Same sub-paths under capture</td></tr>
+      <tr><td><code>/onboarding/eu-id/*</code></td><td><code>/capture/eu-id/*</code></td><td></td></tr>
+      <tr><td><code>/onboarding/aadhaar/*</code></td><td><code>/capture/aadhaar/*</code></td><td></td></tr>
+      <tr><td><code>/onboarding/success</code></td><td>retire</td><td>Replaced by <code>/register/success</code> (NAV-01 disposition table)</td></tr>
+      <tr><td><code>/onboarding/recovery-phrase</code></td><td><code>/backup-phrase</code></td><td>Top-level. Distinct from <code>/settings/recovery-phrase</code> (manage existing)</td></tr>
+      <tr><td><code>/onboarding/failure</code></td><td><code>/register/failure</code></td><td></td></tr>
+      <tr><td><code>/onboarding/kyc-failure</code></td><td><code>/disclose/kyc-failure</code></td><td></td></tr>
+      <tr><td><code>/onboarding/notifications</code></td><td><code>/notify</code></td><td>Top-level first-time prompt</td></tr>
+      <tr><td><code>/onboarding/backup</code>, <code>/signin</code>, <code>/conflict</code></td><td>(stay — deferred by NAV-11)</td><td>Wire post-v1 to <code>/link-social/*</code></td></tr>
+      <tr><td><code>/onboarding/registering</code></td><td>retire</td><td>Replaced by <code>/register/generating</code></td></tr>
+      <tr><td><code>/proving</code></td><td><code>/disclose/request</code></td><td>Verb describing the operation</td></tr>
+      <tr><td><code>/proving/generating</code></td><td><code>/register/generating</code> or <code>/disclose/generating</code></td><td>Context-dependent; see Approach</td></tr>
+      <tr><td><code>/proving/result</code></td><td><code>/disclose/result</code></td><td></td></tr>
+      <tr><td><code>/proving/history</code></td><td><code>/history</code></td><td>Place-noun</td></tr>
+      <tr><td><code>/proving/receipt</code></td><td><code>/receipts/:id</code></td><td>Place + id</td></tr>
+      <tr><td><code>/proving/backup-prompt</code></td><td><code>/register/success</code></td><td>Canonical "you're all set" (NAV-01)</td></tr>
+      <tr><td><code>/proving/kyc-pending</code></td><td><code>/disclose/kyc-pending</code></td><td>Shared with embed</td></tr>
+      <tr><td><code>/proving/kyc-success</code></td><td><code>/disclose/kyc-success</code></td><td>Shared with embed</td></tr>
+      <tr><td><code>/proving/generation-success</code></td><td>retire</td><td>NAV-01 disposition: delete</td></tr>
+      <tr><td><code>/proving/dialogue*</code></td><td>(NAV-02 owned)</td><td>Component or /dev/*</td></tr>
+      <tr><td><code>/account/verified</code></td><td><code>/account/verified</code></td><td>Already correct (NAV-01)</td></tr>
+      <tr><td><code>/points</code>, <code>/points/invite</code></td><td>unchanged</td><td>Already place-noun</td></tr>
+      <tr><td><code>/recovery</code> + sub-paths</td><td><code>/recover/*</code></td><td>Verb</td></tr>
+      <tr><td><code>/manage-documents</code></td><td><code>/docs</code></td><td>Place</td></tr>
+      <tr><td><code>/id-data</code></td><td><code>/docs/:id</code></td><td>Place + id (matches WV-14 vision)</td></tr>
+      <tr><td><code>/coming-soon</code></td><td>unchanged</td><td>or retire — confirm during PR</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Embed (tunnel) paths</h3>
+  <p>Per decision <code>q1</code>: drop the prefix entirely. <code>/tunnel/*</code> paths fold into the canonical operation-noun namespace.</p>
+  <table class="std">
+    <thead><tr><th>Old</th><th>New (drop-prefix)</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><code>/tunnel/tour/:step</code></td><td><code>/tour/:step</code></td><td>Same route as self-app; mode-aware copy</td></tr>
+      <tr><td><code>/tunnel/kyc</code></td><td>retire (collapse into <code>/capture/kyc</code>)</td><td>Per SPEC notes (e)</td></tr>
+      <tr><td><code>/tunnel/kyc-pending</code></td><td><code>/disclose/kyc-pending</code></td><td>Shared</td></tr>
+      <tr><td><code>/tunnel/kyc-failure</code></td><td><code>/disclose/kyc-failure</code></td><td></td></tr>
+      <tr><td><code>/tunnel/kyc-success</code></td><td><code>/disclose/kyc-success</code></td><td></td></tr>
+      <tr><td><code>/tunnel/registration/*</code></td><td>delete (NAV-10)</td><td></td></tr>
+      <tr><td><code>/tunnel/proof/receipt</code></td><td><code>/receipts/:id</code></td><td>Place-noun (or new <code>/disclose/receipt</code> if embed needs distinct UI)</td></tr>
+      <tr><td><code>/tunnel/proof/generating</code></td><td><code>/disclose/generating</code></td><td></td></tr>
+      <tr><td><code>/tunnel/proof/disclose</code></td><td><code>/disclose/request</code> (same as self-app)</td><td></td></tr>
+      <tr><td><code>/tunnel/proof/result</code></td><td><code>/disclose/result</code></td><td></td></tr>
+      <tr><td><code>/tunnel/recovery-required</code></td><td><code>/recover/required</code></td><td></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="scope">
+  <h2>Scope</h2>
+  <ul class="scope">
+    <li>Rename every route registration in <code>App.tsx</code> per the mapping.</li>
+    <li>Update every <code>navigate()</code> call that uses an old path string. ~150+ call sites.</li>
+    <li>Update every <code>state.nextPath</code> / <code>state.backPath</code> string literal in screen code.</li>
+    <li>Update <code>DevRouteMenu.tsx</code> entries.</li>
+    <li>Update tests (<code>tests/screens/tunnel/*</code>, etc.).</li>
+    <li>Update host-integration deeplink docs (if any).</li>
+    <li>Document the breaking-change cutover per decision <code>q2</code> (no transitional redirects).</li>
+    <li>Update SPEC.html and AUDIT.html prose to use the new paths.</li>
+  </ul>
+</section>
+
+<section id="out-of-scope">
+  <h2>Out of Scope</h2>
+  <ul class="scope">
+    <li><strong>No Euclid changes.</strong> Screen content is unaffected.</li>
+    <li><strong>No mode-literal rename</strong> — that's NAV-12.</li>
+    <li><strong>No DEV gating changes</strong> — NAV-02 owns <code>/dev/*</code>.</li>
+    <li><strong>No state-slot renames</strong> — NAV-09 owns that.</li>
+    <li><strong>NAV-13's <code>ModeRoute</code> wrapper</strong> ships in the same PR but as logically separate work; the wrapper is documented in NAV-13's plan.</li>
+  </ul>
+</section>
+
+<section id="required-files">
+  <h2>Required Files</h2>
+  <ul class="scope">
+    <li><code>packages/webview-app/src/App.tsx</code></li>
+    <li>Every screen file that calls <code>navigate(</code> — ~50 files</li>
+    <li><code>packages/webview-app/src/components/DevRouteMenu.tsx</code></li>
+    <li><code>packages/webview-app/src/components/ModeBoot.tsx</code> (constants <code>TUNNEL_HOME_ROUTE</code>, etc.)</li>
+    <li>Test fixtures referencing old paths</li>
+    <li><code>specs/projects/sdk/workstreams/nav-hygiene/SPEC.html</code> + <code>AUDIT.html</code> (prose updates)</li>
+    <li>Any host docs referencing deeplinks (search <code>docs/</code> for old paths)</li>
+  </ul>
+</section>
+
+<section id="approach">
+  <h2>Approach</h2>
+  <h3>Step 1 — Mapping table is canonical</h3>
+  <p>Treat the <a href="#mapping">Path Mapping</a> table above as the source of truth. Every old path appears exactly once.</p>
+
+  <h3>Step 2 — Mechanical sed sweep</h3>
+  <p>For each old → new pair, run a project-wide search-and-replace. Order matters: do longest paths first to avoid partial-prefix collisions. Run <code>yarn types &amp;&amp; yarn build &amp;&amp; yarn test</code> after each batch.</p>
+
+  <h3>Step 3 — Apply the drop-prefix mapping</h3>
+  <p>Per decision <code>q1</code>: <code>/tunnel/*</code> paths fold into self-app routes; mode-awareness is enforced by NAV-13's <code>&lt;ModeRoute&gt;</code> wrapper, which lands in the same PR. The mode prefix is gone from URLs forever.</p>
+
+  <h3>Step 4 — Hard-cut cutover</h3>
+  <p>Per decision <code>q2</code>: no transitional <code>&lt;Navigate&gt;</code> redirects. Document the breaking change in the release notes. Pre-PR coordination tasks:</p>
+  <ul class="scope">
+    <li>Grep partner integration repos (any SelfApp host config) for hard-coded <code>/tunnel/*</code> or <code>/proving/*</code> path strings.</li>
+    <li>Open an issue / Slack thread with host integrators 1 week before the PR opens — share the new path map.</li>
+    <li>Update public <code>docs/</code> with the new path names <strong>after</strong> the rewrite PR merges (not before, to avoid confusing the live state).</li>
+  </ul>
+
+  <h3>Step 5 — Cluster-collapse</h3>
+  <p>Per SPEC notes (b)(c)(d)(e)(f)(g): the kyc-pending/success collapse, the register-success consolidation, the tunnel-kyc retirement, the recovery-phrase top-level move, and the notify top-level move all happen here. Track each in the PR description as a sub-bullet.</p>
+
+  <h3>Step 6 — Test fixture sweep</h3>
+  <p>Tests that mount routes or assert on pathnames need updating. Run <code>yarn test</code> at the package level.</p>
+
+  <h3>Step 7 — Update SPEC + AUDIT prose</h3>
+  <p>The path strings in SPEC.html (e.g. invariant prose, dependency graph labels) and AUDIT.html (route graph mermaid, finding articles) need to reflect the new namespace. Do this at the end so the spec doesn't drift mid-PR.</p>
+</section>
+
+<section id="validation">
+  <h2>Validation</h2>
+  <ul class="scope">
+    <li><code>grep -rn "/onboarding/" packages/webview-app/src</code> — zero hits.</li>
+    <li><code>grep -rn "/proving" packages/webview-app/src</code> — zero hits (in route strings; the screens folder still exists pre-NAV-12).</li>
+    <li><code>grep -rn "/tunnel/" packages/webview-app/src</code> — zero hits (hard-cut per decision <code>q2</code>; no transitional redirects).</li>
+    <li><code>yarn lint &amp;&amp; yarn types &amp;&amp; yarn build &amp;&amp; yarn test</code> — clean.</li>
+    <li>Manual: every cluster smoke-tested end-to-end. Onboarding (passport, eu-id, aadhaar), recovery, settings, points.</li>
+    <li>Manual: embed flow end-to-end with <code>?mode=embed</code>.</li>
+  </ul>
+</section>
+
+<section id="open-questions">
+  <h2>Open Questions</h2>
+  <p style="color:var(--muted);font-size:13px;margin-top:0">Answers persist to <code>localStorage</code>. Aggregate view in <a href="../SPEC.html#open-questions">SPEC.html</a>.</p>
+  <div id="oq-container"></div>
+</section>
+
+<section id="hand-off">
+  <h2>Hand-off</h2>
+  <ul class="scope">
+    <li><strong>Pair PR with <span class="nav-link">NAV-13</span></strong>. Routes need mode declarations the moment their paths change; doing it in two PRs creates a window where mode coupling is broken.</li>
+    <li>After NAV-08 + NAV-13 land: <span class="nav-link">NAV-05</span> sweep operates on the new paths.</li>
+    <li>No transitional-redirect cleanup — hard cut means there's nothing to remove later.</li>
+  </ul>
+</section>
+
+</main>
+</div>
+
+<script src="./_open-questions.js"></script>
+<script>
+  window.NavHygieneOQ.renderQuestionsForPlan('NAV-08', document.getElementById('oq-container'));
+
+  const sections = document.querySelectorAll('section[id]');
+  const tocLinks = document.querySelectorAll('nav.toc a[href^="#"]');
+  const obs = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (entry.isIntersecting) {
+        tocLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === `#${entry.target.id}`));
+      }
+    }
+  }, { rootMargin: '-50% 0px -45% 0px' });
+  sections.forEach(s => obs.observe(s));
+</script>
+
+</body>
+</html>
