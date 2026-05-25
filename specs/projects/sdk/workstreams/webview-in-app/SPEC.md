@@ -1,9 +1,9 @@
 # WebView-in-App — Workstream Spec
 
-> Last updated: 2026-05-19
+> Last updated: 2026-05-25
 > Owner: Self Wallet / SDK
 > Project: [SDK Overview](../../OVERVIEW.md)
-> Status: Active — feature-branch work
+> Status: Active — feature-branch work, nav-hygiene sub-track merged in 2026-05-25
 
 ## The Bet
 
@@ -74,6 +74,7 @@ per platform target, each publishable.
 | Hosted loading  | [SPEC-HOSTED-LOADING.md](./SPEC-HOSTED-LOADING.md)  | Release / build engineer           |
 | Observability   | [SPEC-OBSERVABILITY.md](./SPEC-OBSERVABILITY.md)    | Analytics / product-observability  |
 | Operating modes | [SPEC-MODES.md](./SPEC-MODES.md)                    | SDK / WebView UI (cross-cuts webview/) |
+| Nav hygiene     | [../nav-hygiene/SPEC.html](../nav-hygiene/SPEC.html) (sub-workstream) | WebView UI engineer       |
 
 These run in parallel after `WIA-01`. Bridge host blocks native adapters
 (adapters need the message router to exist before they can be registered).
@@ -81,29 +82,82 @@ Hosted loading is independent of native adapters; observability depends on
 bridge host (the `analytics.trackEvent` routing is settled there). Modes
 depends on bridge host (the `lifecycle.getConfig` response shape is settled
 there) and cross-cuts into the `webview/` workstream for the actual
-webview-app routing implementation.
+webview-app routing implementation. **Nav hygiene** is the routing/naming
+cleanup that lands alongside the WIA work — see the
+[Nav-Hygiene Sub-Track](#nav-hygiene-sub-track) section below.
 
 ## Backlog
 
 | ID     | Title                                              | Track          | Status   |
 | ------ | -------------------------------------------------- | -------------- | -------- |
-| WIA-00 | Revive `packages/rn-sdk/` from paused; workspace dep in `app/` | Umbrella | Pending  |
-| WIA-01 | Establish `feat/webview-in-app` branch + umbrella  | Umbrella       | Active   |
-| WIA-02 | RN WebView host shell + message router (in `rn-sdk`)| Bridge host   | Pending  |
-| WIA-03 | Lifecycle, navigation, analytics handlers          | Bridge host    | Pending  |
-| WIA-04 | SecureStorage handler (wrap react-native-keychain) | Native adapters| Pending  |
-| WIA-05 | Crypto handler (new RN native module, sign/keygen) | Native adapters| Pending  |
-| WIA-06 | NFC handler (normalize RNPassportReader contract)  | Native adapters| Pending  |
-| WIA-07 | Camera / MRZ handler                               | Native adapters| Pending  |
+| WIA-00 | Revive `packages/rn-sdk/` from paused; workspace dep in `app/` | Umbrella | Done     |
+| WIA-01 | Establish `feat/webview-in-app` branch + umbrella  | Umbrella       | Done     |
+| WIA-02 | RN WebView host shell + message router (in `rn-sdk`)| Bridge host   | Done     |
+| WIA-03 | Lifecycle, navigation, analytics handlers          | Bridge host    | Done     |
+| WIA-04 | SecureStorage handler (wrap react-native-keychain) | Native adapters| Done     |
+| WIA-05 | Crypto handler (new RN native module, sign/keygen) | Native adapters| Done     |
+| WIA-06 | NFC handler (normalize RNPassportReader contract)  | Native adapters| Done     |
+| WIA-07 | Camera / MRZ handler                               | Native adapters| Done     |
 | WIA-08 | Biometrics handler                                 | Native adapters| Pending  |
 | WIA-09 | Hosted URL loading + version pinning               | Hosted loading | Pending  |
 | WIA-10 | Retire RN-native Didit integration                 | Umbrella       | Pending  |
 | WIA-11 | Cutover PR — delete legacy RN screens              | Umbrella       | Pending  |
-| WIA-12 | WebView Sentry integration (cohort tags, masking)  | Observability  | Pending  |
-| WIA-13 | WebView Session Replay with PII masking            | Observability  | Pending  |
+| WIA-12 | WebView Sentry integration (cohort tags, masking)  | Observability  | Pending — gated on nav-hygiene |
+| WIA-13 | WebView Session Replay with PII masking            | Observability  | Pending — gated on nav-hygiene |
 | WIA-14 | Re-home ANA-15 attempt_id footer to webview-app    | Observability  | Pending  |
-| WIA-15 | Documents handler (delegate to databaseProvider)   | Native adapters| Pending  |
-| WIA-16 | `mode` + `verificationRequest` in lifecycle.getConfig | Operating modes | Pending  |
+| WIA-15 | Documents handler (delegate to databaseProvider)   | Native adapters| Done     |
+| WIA-16 | `mode` + `verificationRequest` in lifecycle.getConfig | Operating modes | Done  |
+| NAV-01 | Route mode-classification audit                    | Nav hygiene    | Active   |
+| NAV-02 | Dev-only route namespace + DEV gating              | Nav hygiene    | Active   |
+| NAV-03 | BootDecision — single boot decision function       | Nav hygiene    | Active   |
+| NAV-04 | useClusterClose() hook + per-cluster registry      | Nav hygiene    | Active   |
+| NAV-05 | Back vs close terminology sweep + ESLint rule      | Nav hygiene    | Active   |
+| NAV-06 | Cross-document NFC error consolidation             | Nav hygiene    | Active   |
+| NAV-07 | replace:true audit (full sweep)                    | Nav hygiene    | Active   |
+| NAV-08 | Namespace rewrite (verbs + places)                 | Nav hygiene    | Active   |
+| NAV-09 | State-passing convention sweep (NavState)          | Nav hygiene    | Active   |
+| NAV-10 | Delete /tunnel/registration/* dead sub-flow        | Nav hygiene    | Active   |
+| NAV-11 | Wire social sign-on (post-v1)                      | Nav hygiene    | Deferred |
+| NAV-12 | Rename tunnel → embed (mode terminology)           | Nav hygiene    | Active   |
+| NAV-13 | Declare mode at route registration (ModeRoute)     | Nav hygiene    | Active   |
+
+> Status legend: **Done** = code landed on this branch. **Active** = spec ready, implementation in flight or imminent. **Pending** = not started. **Deferred** = postponed past v1.
+
+## Nav-Hygiene Sub-Track
+
+The nav-hygiene workstream (originally `chore/nav-hygiene`) was merged into
+`feat/webview-in-app` on 2026-05-25. Its 11 active plans now ship alongside
+the WIA work on this branch — single coordinated diff into `dev` at cutover.
+
+**Canonical docs** (do not duplicate the spec content here, link to it):
+- [Nav-Hygiene SPEC](../nav-hygiene/SPEC.html) — backlog, invariants, branch model
+- [Nav-Hygiene AUDIT](../nav-hygiene/AUDIT.html) — current-state route audit + triage
+- [Nav-Hygiene DECISIONS.md](../nav-hygiene/DECISIONS.md) — locked-in answers to all 22 open questions
+- [Nav-Hygiene Plans/](../nav-hygiene/plans/) — one HTML plan per NAV-XX
+
+**Why it lands here, not on its own branch:** the nav refactor's blast radius
+(every `<Route>`, every `navigate()` call, every screen handler) overlaps
+heavily with files the WIA pivot is still adding to. Sequencing it onto the
+same feature branch means one rebase target, one cohesive diff into `dev`,
+and observability (WIA-12/13) lands on the *final* names instead of getting
+re-routed mid-flight.
+
+**Execution waves** — ordered to minimize churn:
+
+| Wave | Plans                                  | Why this wave                                                                                  |
+| ---- | -------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| 1    | NAV-01, NAV-10, NAV-12, NAV-02         | Cheap. Doc, deletes, mechanical renames. Run first to shrink the surface everything else sweeps. |
+| 2    | NAV-06, NAV-09, NAV-03, NAV-04, NAV-05, NAV-07 | Independent medium-sized cleanups. Order within the wave doesn't matter much.       |
+| 3    | NAV-08 + NAV-13 (paired)               | Largest sweep. Lands **after** WIA still-in-flight code (WIA-08 biometrics, WIA-14 footer) so the rewrite picks up every screen including the new ones in one pass. |
+| 4    | WIA-12, WIA-13 (observability)         | Instrumented against the canonical post-NAV names.                                             |
+| 5    | WIA-11 (cutover)                       | Final merge to `dev`.                                                                          |
+
+**One coordination item — needs team sign-off, surface early:**
+NAV-03 introduces a new `/embed/error` screen (generic fail-closed surface
+when an invalid embed-mode request boots). See
+[NAV-03 plan → Action Items](../nav-hygiene/plans/NAV-03-boot-decision.html#action-items)
+for the screen spec, copy draft, and Euclid coordination checklist. File the
+design + Euclid issues now; don't gate the workstream on it.
 
 ## Cross-Workstream Dependencies
 
