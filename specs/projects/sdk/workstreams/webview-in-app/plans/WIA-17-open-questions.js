@@ -7,6 +7,9 @@
 // Recommended option is set via `recommended: true`. The Why line under
 // the recommended option comes from `because`.
 //
+// Optional `diagram` on an option renders a small mermaid graph under the
+// option body (used where the choice has a visual shape worth seeing).
+//
 // The `context` field accepts inline HTML (data is hand-authored, no XSS risk).
 
 (() => {
@@ -32,15 +35,27 @@
       options: [
         {
           value: 'a-vendor',
-          label: 'A — vendor provider files in packages/rn-sdk/ios/',
-          note: 'Self-contained: @selfxyz/rn-sdk npm tarball carries the Swift code. Duplicates what self-sdk-swift already has; every provider change has to land twice.'
+          label: 'A. Vendor provider files in packages/rn-sdk/ios/',
+          note: 'Self-contained: @selfxyz/rn-sdk npm tarball carries the Swift code. Duplicates what self-sdk-swift already has; every provider change has to land twice.',
+          diagram: `flowchart LR
+  A["rn-sdk/ios/<br/>Provider.swift"]
+  B["self-sdk-swift/<br/>Provider.swift"]
+  A -. duplicate .-> B
+  classDef dup fill:#ffebe9,stroke:#cf222e
+  class A,B dup`
         },
         {
           value: 'b-peer-spm',
-          label: 'B — import from self-sdk-swift as a peer SPM dep',
+          label: 'B. Import from self-sdk-swift as a peer SPM dep',
           note: 'One source of truth for Swift providers. Mirrors the Android side (Android impls live in kmp-sdk/androidMain, not duplicated in rn-sdk/android/). Costs one line in selfxyz-rn-sdk.podspec.',
           recommended: true,
-          because: 'Matches the Android pattern, eliminates a 2× maintenance cost forever. The cross-package coupling is small (one podspec dep) and explicit.'
+          because: 'Matches the Android pattern, eliminates a 2× maintenance cost forever. The cross-package coupling is small (one podspec dep) and explicit.',
+          diagram: `flowchart LR
+  P["self-sdk-swift<br/>Provider impls"]
+  RN["rn-sdk podspec"] --> P
+  NS["native-shell-ios podspec"] --> P
+  classDef src fill:#dafbe1,stroke:#1a7f37
+  class P src`
         }
       ]
     },
@@ -59,20 +74,39 @@
       options: [
         {
           value: 'a-publish',
-          label: 'A — publish private fork as a Maven artifact (via SD-06)',
-          note: 'Cleanest for keeping selfxyz/self OSS-slim. Couples rollout of #5–#7 to SD-06 shipping. Adds a release-coordination process between the two repos forever.'
+          label: 'A. Publish private fork as a Maven artifact (via SD-06)',
+          note: 'Cleanest for keeping selfxyz/self OSS-slim. Couples rollout of #5–#7 to SD-06 shipping. Adds a release-coordination process between the two repos forever.',
+          diagram: `flowchart LR
+  PRIV["selfxyz/self-webview-sdk<br/>(private fork)"]
+  PUB["GitHub Packages<br/>xyz.self.sdk:mod-*"]
+  RN["rn-sdk build.gradle"]
+  PRIV -- "publish-kmp-sdk.yml" --> PUB --> RN`
         },
         {
           value: 'b-merge',
-          label: 'B — merge MOD modules back into selfxyz/self, gated by Gradle flag',
-          note: 'MOD modules live in this repo\'s packages/kmp-sdk/shared/src/androidMain/; build flag self.sdk.optional.nfc=true opts them in. Default OSS distribution stays slim (flag off); Self app\'s app/ turns the flags on. self-webview-sdk retires.',
+          label: 'B. Merge MOD modules back into selfxyz/self, gated by Gradle flag',
+          note: "MOD modules live in this repo's packages/kmp-sdk/shared/src/androidMain/; build flag self.sdk.optional.nfc=true opts them in. Default OSS distribution stays slim (flag off); Self app's app/ turns the flags on. self-webview-sdk retires.",
           recommended: true,
-          because: 'Eliminates the two-repo coordination cost permanently — every protocol change is one PR, every contributor sees the same code, no "is X in the right repo" friction. Public OSS surface stays slim via the Gradle flag, not via a repo split. Costs Seshanth one merge to unify; saves us every-PR-after-that.'
+          because: 'Eliminates the two-repo coordination cost permanently — every protocol change is one PR, every contributor sees the same code, no "is X in the right repo" friction. Public OSS surface stays slim via the Gradle flag, not via a repo split.',
+          diagram: `flowchart LR
+  THIS["selfxyz/self<br/>kmp-sdk + MOD modules"]
+  FLAG["Gradle flag<br/>self.sdk.optional.nfc"]
+  RETIRED["self-webview-sdk<br/>(retired)"]
+  THIS --- FLAG
+  RETIRED -. retired .-> THIS
+  classDef src fill:#dafbe1,stroke:#1a7f37,stroke-width:2px
+  class THIS,FLAG src`
         },
         {
           value: 'c-mirror',
-          label: 'C — mirror script (sync the two repos)',
-          note: 'Permanent dual maintenance. Drift inevitable. Not recommended under any framing.'
+          label: 'C. Mirror script (sync the two repos)',
+          note: 'Permanent dual maintenance. Drift inevitable. Not recommended under any framing.',
+          diagram: `flowchart LR
+  T["selfxyz/self<br/>kmp-sdk"]
+  P["self-webview-sdk<br/>kmp-sdk"]
+  T <-. "periodic sync" .-> P
+  classDef bad fill:#ffebe9,stroke:#cf222e
+  class T,P bad`
         }
       ]
     },
@@ -91,14 +125,14 @@
       options: [
         {
           value: 'a-fix-now',
-          label: 'Fix createXCFramework in the WIA-17 #2 PR',
+          label: 'A. Fix createXCFramework in the WIA-17 #2 PR',
           note: '~15 LOC change: add release+simulator targets to the existing task. Self-contained, unblocks domain #2, doesn\'t depend on SD-06.',
           recommended: true,
           because: 'Trivial change, eliminates an SD-06 dependency for #2. We were going to do it eventually anyway; doing it now removes a coordination point.'
         },
         {
           value: 'b-wait-sd06',
-          label: 'Wait for SD-06 to ship the release-variant DoD',
+          label: 'B. Wait for SD-06 to ship the release-variant DoD',
           note: 'Defers the task off this rollout\'s critical path. But it adds an external dependency for something that\'s an in-tree Gradle edit.'
         }
       ]
@@ -115,25 +149,34 @@
           (Kotlin and Swift), <em>not</em> consuming <code>kmp-sdk</code>.
           That's the third parallel implementation Path A doesn't touch.
         </p>
-        <p>
-          Once Path A is stable for <code>rn-sdk</code>, the same pattern
-          applies: native shells become <strong>thin glue</strong> (an Activity
-          / a ViewController + provider registrations) and KMP owns the router
-          and handlers. Bridge changes become one-PR-everywhere instead of three.
-        </p>
       `,
       options: [
         {
           value: 'a-file-wia-18',
-          label: 'File WIA-18 · Native-shells onto kmp-sdk as a follow-up workstream',
-          note: 'Scope: replace native-shell-android\'s + native-shell-ios\'s MessageRouter + bridge handlers with KMP equivalents; native shells become thin glue. Same shape as Path A. Land after WIA-17 stabilizes (≥3 domains migrated on the RN side), before WIA-11 cutover.',
+          label: 'A. File WIA-18 · Native-shells onto kmp-sdk as a follow-up',
+          note: 'Replace native-shell-android\'s + native-shell-ios\'s MessageRouter + bridge handlers with KMP equivalents; native shells become thin glue. Same shape as Path A. Land after WIA-17 stabilizes (≥3 domains migrated), before WIA-11 cutover.',
           recommended: true,
-          because: 'Not in WIA-17 scope, but explicitly captured so it doesn\'t get forgotten. Same maintenance calculus as the RN side — every bridge change today lands three times, we can make it one.'
+          because: 'Not in WIA-17 scope, but explicitly captured so it doesn\'t get forgotten. Same maintenance calculus as the RN side — every bridge change today lands three times, we can make it one.',
+          diagram: `flowchart TB
+  KMP["kmp-sdk<br/>MessageRouter ★"]
+  RN["rn-sdk thin glue"]
+  NS["native-shells thin glue"]
+  RN --> KMP
+  NS --> KMP
+  classDef src fill:#dafbe1,stroke:#1a7f37,stroke-width:2px
+  class KMP src`
         },
         {
           value: 'b-leave',
-          label: 'Leave native-shells-lite as is',
-          note: 'Accepts permanent triple maintenance for the bridge protocol. Hidden cost that grows with every domain and every contract change.'
+          label: 'B. Leave native-shells-lite as is',
+          note: 'Accepts permanent triple maintenance for the bridge protocol. Hidden cost that grows with every domain and every contract change.',
+          diagram: `flowchart TB
+  KMP["kmp-sdk router"]
+  RN["rn-sdk uses kmp-sdk"]
+  NS["native-shells<br/>OWN router (3rd dup)"]
+  RN --> KMP
+  classDef bad fill:#ffebe9,stroke:#cf222e
+  class NS bad`
         }
       ]
     },
@@ -153,14 +196,14 @@
       options: [
         {
           value: 'a-kmp-canonical',
-          label: 'Make KMP\'s shape canonical · patch TS once',
+          label: 'A. Make KMP\'s shape canonical · patch TS once',
           note: 'KMP is the source of truth for the WebView protocol per the umbrella spec. Patch packages/webview-bridge/ and the WebView-side adapters to match KMP\'s shape; everyone converges in one PR.',
           recommended: true,
           because: 'Directionally correct — Path A is putting KMP at the center anyway. Doing it once (after ≥3 domains have proven KMP\'s behavior under load) is cheaper than per-domain patches.'
         },
         {
           value: 'b-shim',
-          label: 'Keep KmpBridgeTransport.ts as a permanent shim that normalizes responses',
+          label: 'B. Keep KmpBridgeTransport.ts as a permanent shim that normalizes responses',
           note: 'Avoids touching WebView code. Hides drift behind a translation layer that has to be maintained alongside both routers — exactly the kind of "two-implementations-with-a-bridge" debt we\'re retiring elsewhere.'
         }
       ]
@@ -181,14 +224,14 @@
       options: [
         {
           value: 'a-delete',
-          label: 'Delete the flag in the final cleanup PR',
+          label: 'A. Delete the flag in the final cleanup PR',
           note: 'One small PR: removes the prop, removes the conditional branches in SelfVerification.tsx, removes the prop from any test app. Routing is unconditional through SelfBridgeModule.',
           recommended: true,
           because: 'Dead flags rot. Delete in the same change that makes them obsolete.'
         },
         {
           value: 'b-keep',
-          label: 'Keep the flag as a "debug TS fallback" for emergencies',
+          label: 'B. Keep the flag as a "debug TS fallback" for emergencies',
           note: 'Tempting but wrong: by the time all 8 TS handlers are deleted, there\'s no fallback to fall back to. Keeping the flag means keeping the TS code dead-but-undead "just in case."'
         }
       ]
@@ -209,14 +252,14 @@
       options: [
         {
           value: 'a-common-main',
-          label: 'Move to commonMain/ with a DocumentsProvider interface in the WIA-17 #8 PR',
+          label: 'A. Move to commonMain/ with a DocumentsProvider interface in the #8 PR',
           note: 'Matches the pattern from #1915 (which moved SecureStorageBridgeHandler and CryptoBridgeHandler to commonMain). Handler is platform-agnostic business logic; the provider interface gets Android and iOS impls.',
           recommended: true,
           because: 'Consistent with the architecture #1915 already established for the other handlers. The iOS version is small enough that promoting it to commonMain is roughly a file-move + interface extraction.'
         },
         {
           value: 'b-mod-path',
-          label: 'Wait for OQ-2\'s MOD path to deliver it',
+          label: 'B. Wait for OQ-2\'s MOD path to deliver it',
           note: 'Couples #8 to OQ-2 unnecessarily. Documents is a wholly-public domain — there\'s no reason it should travel with the optional MOD modules.'
         }
       ]
@@ -238,14 +281,14 @@
       options: [
         {
           value: 'a-keep-disabled',
-          label: 'Keep cinterop disabled · Swift providers via registry',
+          label: 'A. Keep cinterop disabled · Swift providers via registry',
           note: 'Matches the Android pattern (KMP delegates to providers; some are KMP-internal, some are consumer-supplied). The Swift provider model gives RN/native-shell consumers a place to inject their own impls. Cinterop adds K/N toolchain risk and gives no architectural win we don\'t already have.',
           recommended: true,
           because: 'The registry model is the right separation of concerns; cinterop would mix policy (in K/N) with mechanism (Swift APIs). Keep them on opposite sides of a clean interface.'
         },
         {
           value: 'b-enable',
-          label: 'Re-enable cinterop for stock iOS impls',
+          label: 'B. Re-enable cinterop for stock iOS impls',
           note: 'Would let KMP own iOS Keychain / crypto directly. K/N cinterop is finicky; we\'d own its maintenance. Doesn\'t compose well with the consumer-supplied provider model we keep for things like react-native-biometrics.'
         }
       ]
@@ -290,6 +333,21 @@
     );
   }
 
+  // Process any unrendered mermaid blocks inside a root element.
+  function runMermaid(root) {
+    if (!window.mermaid || !window.mermaid.run) return;
+    const nodes = root.querySelectorAll('pre.mermaid:not([data-processed="true"])');
+    if (!nodes.length) return;
+    try {
+      window.mermaid.run({ nodes: Array.from(nodes) });
+    } catch (e) {
+      // Mermaid may not be ready yet on first paint — try again next tick.
+      setTimeout(() => {
+        try { window.mermaid.run({ nodes: Array.from(nodes) }); } catch {}
+      }, 50);
+    }
+  }
+
   function renderCard(q) {
     const answers = loadAnswers();
     const answer = answers[q.id] || {};
@@ -303,8 +361,13 @@
     const optionsHtml = q.options.map(opt => {
       const selected = answer.value === opt.value;
       const rec = !!opt.recommended;
+      // opt.diagram is mermaid syntax (hand-authored, trusted). Do not escape —
+      // mermaid expects raw text including <br/> tags inside node labels.
+      const diagramHtml = opt.diagram
+        ? `<div class="oq-option-diagram"><pre class="mermaid">${opt.diagram}</pre></div>`
+        : '';
       return `
-        <label class="oq-option ${selected ? 'selected' : ''} ${rec ? 'recommended' : ''}">
+        <label class="oq-option ${selected ? 'selected' : ''}">
           <input type="radio" name="${q.id}" value="${escapeHtml(opt.value)}" ${selected ? 'checked' : ''}/>
           <div class="oq-option-body">
             <div class="option-label">
@@ -313,6 +376,7 @@
             </div>
             <div class="option-note">${opt.note}</div>
             ${rec && opt.because ? `<div class="oq-rec-because"><strong>Why:</strong> ${opt.because}</div>` : ''}
+            ${diagramHtml}
           </div>
         </label>
       `;
@@ -365,6 +429,7 @@
         saveAnswer(q.id, { value: e.target.value });
         const fresh = renderCard(q);
         card.replaceWith(fresh);
+        runMermaid(fresh);
         document.dispatchEvent(new CustomEvent('oq-changed'));
       }
     });
@@ -379,6 +444,7 @@
         saveAnswer(q.id, { notes: next || null });
         const fresh = renderCard(q);
         card.replaceWith(fresh);
+        runMermaid(fresh);
         document.dispatchEvent(new CustomEvent('oq-changed'));
       });
     }
@@ -389,6 +455,7 @@
         clearAnswer(q.id);
         const fresh = renderCard(q);
         card.replaceWith(fresh);
+        runMermaid(fresh);
         document.dispatchEvent(new CustomEvent('oq-changed'));
       }
     });
@@ -404,11 +471,10 @@
     const total = OPEN_QUESTIONS.length;
     const pct = Math.round((answered / total) * 100);
     summary.innerHTML = `
-      <span class="oq-summary-label">Decisions</span>
-      <span class="oq-summary-count">${answered} of ${total} answered</span>
+      <span class="oq-summary-count">${answered} / ${total}</span>
       <span class="oq-summary-bar"><span class="oq-summary-fill" style="width:${pct}%"></span></span>
-      ${answered ? '<button type="button" id="oq-export-btn" class="oq-export-btn">Export as markdown</button>' : ''}
-      ${answered ? '<button type="button" id="oq-reset-btn" class="oq-reset-btn">Reset all</button>' : ''}
+      ${answered ? '<button type="button" id="oq-export-btn" class="oq-icon-btn" title="Export as markdown">↗</button>' : ''}
+      ${answered ? '<button type="button" id="oq-reset-btn" class="oq-icon-btn oq-icon-btn-danger" title="Reset all">⟲</button>' : ''}
     `;
 
     const exportBtn = document.getElementById('oq-export-btn');
@@ -458,13 +524,27 @@
       const slot = document.querySelector(`[data-oq-slot="${q.id}"]`);
       if (slot) {
         slot.innerHTML = '';
-        slot.appendChild(renderCard(q));
+        const card = renderCard(q);
+        slot.appendChild(card);
+        runMermaid(card);
       }
     });
     updateSummary();
   }
 
-  document.addEventListener('DOMContentLoaded', renderAll);
+  // Wait for mermaid to be ready before initial render so option diagrams paint.
+  function whenReady(cb) {
+    if (window.mermaid && window.mermaid.run) return cb();
+    let tries = 0;
+    const t = setInterval(() => {
+      if ((window.mermaid && window.mermaid.run) || ++tries > 40) {
+        clearInterval(t);
+        cb();
+      }
+    }, 50);
+  }
+
+  document.addEventListener('DOMContentLoaded', () => whenReady(renderAll));
   document.addEventListener('oq-changed', updateSummary);
 
   // Expose for debugging

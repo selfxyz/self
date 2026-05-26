@@ -38,11 +38,11 @@
   .pill.warn   { color: var(--high);   background: var(--high-soft);   border-color: var(--high); }
   .spacer { flex: 1; }
 
-  .layout { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 32px; max-width: 1240px; margin: 0 auto; padding: 24px; }
-  nav.toc { position: sticky; top: 64px; align-self: start; max-height: calc(100vh - 80px); overflow-y: auto; font-size: 13px; }
-  nav.toc h4 { margin: 12px 0 6px 0; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  .layout { display: grid; grid-template-columns: 160px minmax(0, 1fr); gap: 24px; max-width: 1180px; margin: 0 auto; padding: 24px; }
+  nav.toc { position: sticky; top: 64px; align-self: start; max-height: calc(100vh - 80px); overflow-y: auto; font-size: 12.5px; }
+  nav.toc h4 { margin: 12px 0 4px 0; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
   nav.toc h4:first-child { margin-top: 0; }
-  nav.toc a { display: block; padding: 4px 6px; border-radius: 4px; color: var(--text); }
+  nav.toc a { display: block; padding: 3px 6px; border-radius: 4px; color: var(--text); }
   nav.toc a:hover { background: var(--surface-alt); text-decoration: none; }
 
   main { min-width: 0; }
@@ -141,19 +141,10 @@
     transition: border-color .12s, background .12s;
   }
   .oq-option:hover { border-color: var(--accent); }
-  .oq-option.recommended {
-    background: var(--done-soft);
-    border-color: var(--done);
-  }
   .oq-option.selected {
     background: var(--accent-soft);
     border-color: var(--accent);
     box-shadow: 0 0 0 1px var(--accent) inset;
-  }
-  .oq-option.selected.recommended {
-    background: var(--done-soft);
-    border-color: var(--done);
-    box-shadow: 0 0 0 1px var(--done) inset;
   }
   .oq-option input[type="radio"] { margin-top: 3px; cursor: pointer; flex-shrink: 0; }
   .oq-option-body { flex: 1; min-width: 0; }
@@ -181,17 +172,33 @@
     letter-spacing: 0.06em;
     padding: 2px 8px;
     border-radius: 999px;
-    background: var(--done);
+    background: var(--accent);
     color: white;
     line-height: 1.4;
   }
   .oq-rec-because {
     margin-top: 8px;
     padding-top: 6px;
-    border-top: 1px dashed var(--done);
+    border-top: 1px dashed var(--accent);
     font-size: 12px;
-    color: var(--done);
+    color: var(--accent);
     font-weight: 500;
+  }
+  .oq-option-diagram {
+    margin-top: 10px;
+    padding: 8px 10px;
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: 6px;
+    overflow-x: auto;
+  }
+  .oq-option-diagram pre.mermaid {
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin: 0;
+    text-align: center;
+    min-height: 60px;
   }
 
   .oq-notes { margin-top: 12px; }
@@ -236,42 +243,52 @@
   }
   .oq-clear-btn:hover { color: var(--high); border-color: var(--high); background: var(--high-soft); }
 
-  .oq-summary {
+  .oq-summary-wrap {
     position: sticky; top: 56px; z-index: 50;
-    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
-    padding: 10px 14px; margin-bottom: 16px;
+    display: flex; justify-content: center;
+    margin-bottom: 16px;
+    pointer-events: none;
+  }
+  .oq-summary {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 5px 14px;
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    border-radius: 999px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    pointer-events: auto;
+    font-size: 12px;
+    line-height: 1;
   }
-  .oq-summary-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 600; }
-  .oq-summary-count { font-size: 13px; font-weight: 600; color: var(--text); }
+  .oq-summary-count {
+    font-size: 12px; font-weight: 600; color: var(--text);
+    white-space: nowrap;
+  }
   .oq-summary-bar {
-    flex: 1; min-width: 100px; max-width: 240px;
-    height: 6px; background: var(--surface-alt);
-    border-radius: 3px; overflow: hidden;
+    width: 100px; height: 5px;
+    background: var(--surface-alt);
+    border-radius: 999px; overflow: hidden;
     border: 1px solid var(--border-soft);
   }
   .oq-summary-fill {
     display: block; height: 100%;
-    background: linear-gradient(90deg, var(--accent), var(--done));
+    background: var(--accent);
     transition: width .25s;
   }
-  .oq-export-btn, .oq-reset-btn {
-    font: inherit; font-size: 11px;
-    padding: 4px 10px; border-radius: 4px;
-    background: var(--accent-soft); color: var(--accent);
-    border: 1px solid var(--accent);
+  .oq-icon-btn {
+    font: inherit; font-size: 13px; line-height: 1;
+    width: 22px; height: 22px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 999px;
+    background: var(--surface-alt);
+    color: var(--accent);
+    border: 1px solid var(--border-soft);
     cursor: pointer;
-    font-weight: 600;
+    padding: 0;
   }
-  .oq-export-btn:hover { background: var(--accent); color: white; }
-  .oq-reset-btn {
-    background: transparent; color: var(--muted); border-color: var(--border);
-    font-weight: 500;
-  }
-  .oq-reset-btn:hover { color: var(--high); border-color: var(--high); background: var(--high-soft); }
+  .oq-icon-btn:hover { background: var(--accent); color: white; border-color: var(--accent); }
+  .oq-icon-btn-danger { color: var(--muted); }
+  .oq-icon-btn-danger:hover { background: var(--high); border-color: var(--high); color: white; }
   .legend {
     font-size: 12px;
     color: var(--muted);
@@ -328,7 +345,9 @@
 
 <main>
 
-<div id="oq-summary" class="oq-summary"></div>
+<div class="oq-summary-wrap">
+  <div id="oq-summary" class="oq-summary"></div>
+</div>
 
 <section id="intro">
   <h2>What this page is</h2>
@@ -519,67 +538,10 @@ flowchart LR
 <!-- =========== OPEN QUESTIONS =========== -->
 
 <section id="oq-1">
-  <div class="diagram">
-    <div class="label">OQ-1 · two options for the Swift provider home</div>
-    <pre class="mermaid">
-flowchart LR
-  subgraph A["Option A — vendor inside rn-sdk"]
-    direction TB
-    A_RN[rn-sdk/ios/SecureStorageProvider.swift]
-    A_PEER[self-sdk-swift/SecureStorageProvider.swift]
-    A_RN -.duplicate.-> A_PEER
-  end
-  subgraph B["Option B — peer SPM dep (Recommended)"]
-    direction TB
-    B_PEER["self-sdk-swift<br/>SecureStorageProvider · CryptoProviderImpl · ..."]
-    B_RN["rn-sdk podspec imports<br/>self-sdk-swift via SPM"]
-    B_NS["native-shell-ios podspec imports<br/>self-sdk-swift via SPM"]
-    B_RN --> B_PEER
-    B_NS --> B_PEER
-  end
-
-  classDef dup fill:#ffebe9,stroke:#cf222e
-  classDef src fill:#dafbe1,stroke:#1a7f37
-  class A_RN,A_PEER dup
-  class B_PEER src
-    </pre>
-  </div>
   <div data-oq-slot="oq-1"></div>
 </section>
 
 <section id="oq-2">
-  <div class="diagram">
-    <div class="label">OQ-2 · how MOD handlers cross the public/private boundary</div>
-    <pre class="mermaid">
-flowchart TB
-  subgraph A["Option A — publish private fork as a Maven artifact"]
-    A_PRIV[selfxyz/self-webview-sdk<br/>kmp-sdk + MOD modules]
-    A_PUB[GitHub Packages<br/>xyz.self.sdk:shared-android:X.Y.Z<br/>xyz.self.sdk:mod-nfc:X.Y.Z]
-    A_RN[rn-sdk build.gradle<br/>declares the mod artifacts]
-    A_PRIV -- publish-kmp-sdk.yml --> A_PUB
-    A_PUB --> A_RN
-  end
-
-  subgraph B["Option B — merge MOD modules back into this repo behind a Gradle flag (Recommended)"]
-    B_THIS[selfxyz/self<br/>packages/kmp-sdk<br/>includes optional MOD modules]
-    B_FLAG["Gradle flag:<br/>self.sdk.optional.nfc=true<br/>(off by default)"]
-    B_PRIV_DIES[self-webview-sdk retires]
-    B_THIS --- B_FLAG
-    B_PRIV_DIES -.retired.-> B_THIS
-  end
-
-  subgraph C["Option C — mirror script (NOT recommended)"]
-    C_THIS[selfxyz/self/packages/kmp-sdk]
-    C_PRIV[selfxyz/self-webview-sdk/kmp-sdk]
-    C_THIS <-. periodic sync .-> C_PRIV
-  end
-
-  classDef src fill:#dafbe1,stroke:#1a7f37,stroke-width:2px
-  classDef bad fill:#ffebe9,stroke:#cf222e
-  class B_THIS,B_FLAG src
-  class C_THIS,C_PRIV bad
-    </pre>
-  </div>
   <div data-oq-slot="oq-2"></div>
 </section>
 
@@ -588,27 +550,6 @@ flowchart TB
 </section>
 
 <section id="oq-4">
-  <div class="diagram">
-    <div class="label">OQ-4 · the third implementation we should also retire</div>
-    <pre class="mermaid">
-flowchart LR
-  subgraph TODAY["Today (after Path A)"]
-    TODAY_KMP[kmp-sdk MessageRouter]
-    TODAY_RN[rn-sdk SelfBridgeModule<br/>★ uses kmp-sdk]
-    TODAY_NS["native-shell-{android,ios}<br/>OWN MessageRouter (third dup)"]
-  end
-  subgraph TOMORROW["Tomorrow (WIA-18 candidate)"]
-    TMR_KMP[kmp-sdk MessageRouter ★]
-    TMR_RN[rn-sdk SelfBridgeModule<br/>uses kmp-sdk]
-    TMR_NS[native-shells thin glue<br/>uses kmp-sdk]
-  end
-
-  classDef dup fill:#ffebe9,stroke:#cf222e
-  classDef src fill:#dafbe1,stroke:#1a7f37,stroke-width:2px
-  class TODAY_NS dup
-  class TMR_KMP src
-    </pre>
-  </div>
   <div data-oq-slot="oq-4"></div>
 </section>
 
