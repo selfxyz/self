@@ -452,7 +452,7 @@ flowchart TB
   WV -. bridge JSON .-> NS_R
   WV -. bridge JSON .-> KMP_R
 
-  classDef dup fill:#F24236,stroke:#2A1F18,stroke-width:1px,color:#FFFFFF
+  classDef dup fill:#F24236,stroke:#F24236,stroke-width:0px,color:#FFFFFF
   class RN_R,NS_R,KMP_R dup
     </pre>
   </div>
@@ -512,7 +512,7 @@ flowchart TB
   REG --> AND
   REG --> SWIFT
 
-  classDef src fill:#46AA44,stroke:#2A1F18,stroke-width:1px,color:#FFFFFF
+  classDef src fill:#46AA44,stroke:#46AA44,stroke-width:0px,color:#FFFFFF
   class KMP_R,KMP_H src
     </pre>
   </div>
@@ -565,7 +565,7 @@ flowchart LR
   NS_IOS --> KMP
   KMP --> SWIFT
 
-  classDef core fill:#46AA44,stroke:#2A1F18,stroke-width:1px,color:#FFFFFF
+  classDef core fill:#46AA44,stroke:#46AA44,stroke-width:0px,color:#FFFFFF
   class KMP,SWIFT core
     </pre>
   </div>
@@ -632,7 +632,6 @@ flowchart LR
     securityLevel: 'loose',
     flowchart: { curve: 'basis', padding: 18, nodeSpacing: 36, rankSpacing: 50, htmlLabels: true },
     themeCSS: `
-      .node rect, .node polygon, .node circle, .node ellipse, .node path { stroke-width: 1px !important; }
       .cluster rect { stroke-dasharray: 3 3 !important; stroke-width: 1px !important; rx: 8px !important; ry: 8px !important; }
       .edgePath .path { stroke-width: 1.5px !important; }
       .arrowheadPath { fill: #2A1F18 !important; }
