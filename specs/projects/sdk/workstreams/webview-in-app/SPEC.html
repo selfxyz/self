@@ -361,12 +361,15 @@
       this workstream's responsibility — see <a href="./SPEC-OBSERVABILITY.html">SPEC-OBSERVABILITY</a>.
       ANA-15 (<code>attempt_id</code> footer on error screens) is re-homed to <code>WIA-14</code>; if
       ANA-15 ships unmodified before cutover, its work is overwritten.</li>
-    <li><strong>Two-repo split (<code>selfxyz/self</code> ↔ <code>selfxyz/self-webview-sdk</code>)</strong>
-      blocks WIA-17 domain #4 onward. Decision owner: project leads. See
-      <a href="./plans/WIA-17-path-a-migration.html#prereq">WIA-17 P-1</a>.</li>
+    <li><strong>MOD handler distribution (<code>nfc</code>, <code>biometrics</code>, <code>camera</code>)</strong>
+      blocks WIA-17 domains #5–#7 only. This repo's <code>kmp-sdk</code> was scoped to 3 domains in
+      #1915 (2026-04-04); the optional MOD handlers live in the private <code>selfxyz/self-webview-sdk</code>
+      fork. Resolve before #5 by publishing the fork as a Maven artifact (preferred) or merging MOD work
+      back here. See <a href="./plans/WIA-17-path-a-migration.html#prereq">WIA-17 P-1</a>.</li>
     <li><strong>SD-06 (hosted Maven publishing for KMP)</strong> is required before WIA-11 cutover so
       <code>app/</code> can consume the KMP AAR without each builder running <code>publishToMavenLocal</code>.
-      Not blocking WIA-17 domains #1–#6 (<code>mavenLocal()</code> sufficient). See
+      Not blocking WIA-17 domains #1–#4 (<code>mavenLocal()</code> sufficient). Becomes load-bearing for
+      #5–#7 if MOD handlers are delivered via the private-fork artifact path. See
       <a href="./plans/WIA-17-path-a-migration.html#prereq">WIA-17 P-2</a>.</li>
   </ul>
 </section>
