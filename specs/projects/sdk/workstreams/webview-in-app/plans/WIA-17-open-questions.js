@@ -41,7 +41,7 @@
   A[rn-sdk/ios Provider.swift]
   B[self-sdk-swift Provider.swift]
   A -. duplicate .-> B
-  classDef dup fill:#FBDFE2,stroke:#EF626C
+  classDef dup fill:#F24236,stroke:#2A1F18,stroke-width:1px,color:#FFFFFF
   class A,B dup`
         },
         {
@@ -54,7 +54,7 @@
   P[self-sdk-swift Provider impls]
   RN[rn-sdk podspec] --> P
   NS[native-shell-ios podspec] --> P
-  classDef src fill:#B3B7EE,stroke:#22181C
+  classDef src fill:#46AA44,stroke:#2A1F18,stroke-width:1px,color:#FFFFFF
   class P src`
         }
       ]
@@ -94,7 +94,7 @@
   RETIRED[self-webview-sdk retired]
   THIS --- FLAG
   RETIRED -. retired .-> THIS
-  classDef src fill:#B3B7EE,stroke:#22181C,stroke-width:2px
+  classDef src fill:#46AA44,stroke:#2A1F18,stroke-width:1px,color:#FFFFFF
   class THIS,FLAG src`
         },
         {
@@ -105,7 +105,7 @@
   T[selfxyz/self kmp-sdk]
   P[self-webview-sdk kmp-sdk]
   T <-. periodic sync .-> P
-  classDef bad fill:#FBDFE2,stroke:#EF626C
+  classDef bad fill:#F24236,stroke:#2A1F18,stroke-width:1px,color:#FFFFFF
   class T,P bad`
         }
       ]
@@ -163,7 +163,7 @@
   NS[native-shells thin glue]
   RN --> KMP
   NS --> KMP
-  classDef src fill:#B3B7EE,stroke:#22181C,stroke-width:2px
+  classDef src fill:#46AA44,stroke:#2A1F18,stroke-width:1px,color:#FFFFFF
   class KMP src`
         },
         {
@@ -175,7 +175,7 @@
   RN[rn-sdk uses kmp-sdk]
   NS[native-shells own router 3rd dup]
   RN --> KMP
-  classDef bad fill:#FBDFE2,stroke:#EF626C
+  classDef bad fill:#F24236,stroke:#2A1F18,stroke-width:1px,color:#FFFFFF
   class NS bad`
         }
       ]

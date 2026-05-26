@@ -50,12 +50,22 @@ h1, h2, h3, h4, h5, h6 { font-family: "Lora", Georgia, serif; font-weight: 600; 
 - `theme: 'base'` + explicit `themeVariables` keeps mermaid in sync with the palette. Don't rely on `default`.
 - For decision questions with multiple options, give each option its own small diagram. Don't pack all options into one big subgraph diagram.
 
+**Minimalism — optimize for readability:**
+
+- **Default nodes have no fill emphasis.** White background, very soft 1px border (matches `--border-soft`). Most boxes in a diagram should look like this; they're scaffolding for the story.
+- **Color is reserved for the 2-3 nodes that carry the point.** Pick at most two semantic emphasis classes per diagram: usually one positive (green, `--done`) and one negative (red, `--high`). White text on saturated fill, not tinted backgrounds with colored borders.
+- **Arrows are dark and strong.** `lineColor: #2A1F18` (coffee/ink). Default mermaid gray arrows fade behind labels and disappear into long node text. Edge labels get an opaque background matching the page so they don't sit on top of the arrow line.
+- **No box borders on glue nodes.** Borders compete with the arrows and the colored emphasis nodes for attention.
+- **Subgraphs:** dashed 1px border, transparent fill, generous padding. They're grouping, not containers.
+- **Spacing:** `nodeSpacing: 36`, `rankSpacing: 50`, `padding: 18`. Whitespace beats stroke weight every time.
+
 **Rendering gotchas (mermaid v10):**
 
 - No `<br/>` inside subgraph titles. The title height gets mis-measured and the first contained node renders behind it. Use shorter titles, or move detail into the node labels below.
 - No `{}`, parentheses, or `#` inside quoted subgraph titles. Use plain unquoted `subgraph FOO[Label]` syntax where possible.
 - Keep node labels free of `<br/>` unless you actually need a hard break. Plain commas or spaces wrap fine.
 - Prefer one decision per diagram. Big diagrams that pack multiple options into nested subgraphs overflow on narrow main columns.
+- For the canonical mermaid theme + `themeCSS` block, copy from `specs/projects/sdk/workstreams/webview-in-app/plans/WIA-17-architecture-options.html`. Don't roll your own.
 
 ## Interactive open questions
 
