@@ -50,6 +50,13 @@ h1, h2, h3, h4, h5, h6 { font-family: "Lora", Georgia, serif; font-weight: 600; 
 - `theme: 'base'` + explicit `themeVariables` keeps mermaid in sync with the palette. Don't rely on `default`.
 - For decision questions with multiple options, give each option its own small diagram. Don't pack all options into one big subgraph diagram.
 
+**Rendering gotchas (mermaid v10):**
+
+- No `<br/>` inside subgraph titles. The title height gets mis-measured and the first contained node renders behind it. Use shorter titles, or move detail into the node labels below.
+- No `{}`, parentheses, or `#` inside quoted subgraph titles. Use plain unquoted `subgraph FOO[Label]` syntax where possible.
+- Keep node labels free of `<br/>` unless you actually need a hard break. Plain commas or spaces wrap fine.
+- Prefer one decision per diagram. Big diagrams that pack multiple options into nested subgraphs overflow on narrow main columns.
+
 ## Interactive open questions
 
 When a page collects user decisions:

@@ -38,8 +38,8 @@
           label: 'A. Vendor provider files in packages/rn-sdk/ios/',
           note: 'Self-contained: @selfxyz/rn-sdk npm tarball carries the Swift code. Duplicates what self-sdk-swift already has; every provider change has to land twice.',
           diagram: `flowchart LR
-  A["rn-sdk/ios/<br/>Provider.swift"]
-  B["self-sdk-swift/<br/>Provider.swift"]
+  A[rn-sdk/ios Provider.swift]
+  B[self-sdk-swift Provider.swift]
   A -. duplicate .-> B
   classDef dup fill:#FBDFE2,stroke:#EF626C
   class A,B dup`
@@ -51,9 +51,9 @@
           recommended: true,
           because: 'Matches the Android pattern, eliminates a 2× maintenance cost forever. The cross-package coupling is small (one podspec dep) and explicit.',
           diagram: `flowchart LR
-  P["self-sdk-swift<br/>Provider impls"]
-  RN["rn-sdk podspec"] --> P
-  NS["native-shell-ios podspec"] --> P
+  P[self-sdk-swift Provider impls]
+  RN[rn-sdk podspec] --> P
+  NS[native-shell-ios podspec] --> P
   classDef src fill:#B3B7EE,stroke:#22181C
   class P src`
         }
@@ -77,10 +77,10 @@
           label: 'A. Publish private fork as a Maven artifact (via SD-06)',
           note: 'Cleanest for keeping selfxyz/self OSS-slim. Couples rollout of #5–#7 to SD-06 shipping. Adds a release-coordination process between the two repos forever.',
           diagram: `flowchart LR
-  PRIV["selfxyz/self-webview-sdk<br/>(private fork)"]
-  PUB["GitHub Packages<br/>xyz.self.sdk:mod-*"]
-  RN["rn-sdk build.gradle"]
-  PRIV -- "publish-kmp-sdk.yml" --> PUB --> RN`
+  PRIV[self-webview-sdk private fork]
+  PUB[GitHub Packages]
+  RN[rn-sdk build.gradle]
+  PRIV -- publish-kmp-sdk.yml --> PUB --> RN`
         },
         {
           value: 'b-merge',
@@ -89,9 +89,9 @@
           recommended: true,
           because: 'Eliminates the two-repo coordination cost permanently — every protocol change is one PR, every contributor sees the same code, no "is X in the right repo" friction. Public OSS surface stays slim via the Gradle flag, not via a repo split.',
           diagram: `flowchart LR
-  THIS["selfxyz/self<br/>kmp-sdk + MOD modules"]
-  FLAG["Gradle flag<br/>self.sdk.optional.nfc"]
-  RETIRED["self-webview-sdk<br/>(retired)"]
+  THIS[selfxyz/self kmp-sdk + MOD modules]
+  FLAG[Gradle flag self.sdk.optional.nfc]
+  RETIRED[self-webview-sdk retired]
   THIS --- FLAG
   RETIRED -. retired .-> THIS
   classDef src fill:#B3B7EE,stroke:#22181C,stroke-width:2px
@@ -102,9 +102,9 @@
           label: 'C. Mirror script (sync the two repos)',
           note: 'Permanent dual maintenance. Drift inevitable. Not recommended under any framing.',
           diagram: `flowchart LR
-  T["selfxyz/self<br/>kmp-sdk"]
-  P["self-webview-sdk<br/>kmp-sdk"]
-  T <-. "periodic sync" .-> P
+  T[selfxyz/self kmp-sdk]
+  P[self-webview-sdk kmp-sdk]
+  T <-. periodic sync .-> P
   classDef bad fill:#FBDFE2,stroke:#EF626C
   class T,P bad`
         }
@@ -158,9 +158,9 @@
           recommended: true,
           because: 'Not in WIA-17 scope, but explicitly captured so it doesn\'t get forgotten. Same maintenance calculus as the RN side — every bridge change today lands three times, we can make it one.',
           diagram: `flowchart TB
-  KMP["kmp-sdk<br/>MessageRouter ★"]
-  RN["rn-sdk thin glue"]
-  NS["native-shells thin glue"]
+  KMP[kmp-sdk MessageRouter]
+  RN[rn-sdk thin glue]
+  NS[native-shells thin glue]
   RN --> KMP
   NS --> KMP
   classDef src fill:#B3B7EE,stroke:#22181C,stroke-width:2px
@@ -171,9 +171,9 @@
           label: 'B. Leave native-shells-lite as is',
           note: 'Accepts permanent triple maintenance for the bridge protocol. Hidden cost that grows with every domain and every contract change.',
           diagram: `flowchart TB
-  KMP["kmp-sdk router"]
-  RN["rn-sdk uses kmp-sdk"]
-  NS["native-shells<br/>OWN router (3rd dup)"]
+  KMP[kmp-sdk router]
+  RN[rn-sdk uses kmp-sdk]
+  NS[native-shells own router 3rd dup]
   RN --> KMP
   classDef bad fill:#FBDFE2,stroke:#EF626C
   class NS bad`

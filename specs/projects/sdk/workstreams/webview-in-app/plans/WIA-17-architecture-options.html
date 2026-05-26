@@ -421,25 +421,25 @@
     <div class="label">Current state · 3 bridge implementations · 1 protocol</div>
     <pre class="mermaid">
 flowchart TB
-  WV([WebView · webview-app])
+  WV([WebView])
 
-  subgraph RN["packages/rn-sdk (Self app)"]
+  subgraph RN[packages/rn-sdk]
     direction TB
     RN_R[TS MessageRouter]
     RN_H[8x TS Handlers]
-    RN_N["RN native modules<br/>SelfCryptoModule.kt<br/>react-native-keychain<br/>..."]
+    RN_N[RN native modules]
     RN_R --> RN_H --> RN_N
   end
 
-  subgraph NS["packages/native-shell-{android,ios}"]
+  subgraph NS[packages/native-shell-lite]
     direction TB
-    NS_R[Kotlin/Swift MessageRouter]
+    NS_R[Kotlin/Swift Router]
     NS_H[Kotlin/Swift Handlers]
     NS_OS[OS APIs]
     NS_R --> NS_H --> NS_OS
   end
 
-  subgraph KMP["packages/kmp-sdk (3 domains only since #1915)<br/>+ private fork has MOD-01/02/04"]
+  subgraph KMP[packages/kmp-sdk]
     direction TB
     KMP_R[KMP MessageRouter]
     KMP_H[KMP BridgeHandlers]
@@ -473,33 +473,33 @@ flowchart TB
     <div class="label">Target state · 1 bridge implementation · platform providers via registry</div>
     <pre class="mermaid">
 flowchart TB
-  WV([WebView · webview-app])
+  WV([WebView])
 
-  subgraph SHELL_RN["rn-sdk · SelfBridgeModule<br/>(Kotlin + Swift, ~70 LOC each)"]
+  subgraph SHELL_RN[rn-sdk SelfBridgeModule]
     direction TB
-    RN_GLUE[JS ↔ native marshalling]
+    RN_GLUE[JS native marshalling]
   end
-  subgraph SHELL_KOT["native-shell-android · NativeShellActivity<br/>(thin glue)"]
+  subgraph SHELL_KOT[native-shell-android]
     direction TB
     KOT_GLUE[Activity wraps WebView]
   end
-  subgraph SHELL_IOS["native-shell-ios · SelfWebViewHost<br/>(thin glue)"]
+  subgraph SHELL_IOS[native-shell-ios]
     direction TB
     IOS_GLUE[ViewController wraps WKWebView]
   end
 
-  subgraph KMP["kmp-sdk · single bridge implementation"]
+  subgraph KMP[kmp-sdk single bridge implementation]
     direction TB
-    KMP_R[★ MessageRouter]
-    KMP_H[★ All BridgeHandlers]
+    KMP_R[MessageRouter]
+    KMP_H[All BridgeHandlers]
     REG[SdkProviderRegistry]
     KMP_R --> KMP_H --> REG
   end
 
-  subgraph PROV["Per-platform providers (registry-injected)"]
+  subgraph PROV[Per-platform providers]
     direction LR
-    AND["Android impls<br/>EncryptedSharedPreferences<br/>AndroidKeystoreCryptoProvider<br/>RN-lib wrappers"]
-    SWIFT["iOS impls<br/>self-sdk-swift<br/>(Keychain · KMP Crypto · ...)"]
+    AND[Android impls in KMP]
+    SWIFT[iOS impls in self-sdk-swift]
   end
 
   WV -. bridge JSON .-> RN_GLUE
@@ -535,24 +535,25 @@ flowchart TB
     <div class="label">Three consumer surfaces · all bridge to the same KMP core</div>
     <pre class="mermaid">
 flowchart LR
-  subgraph CONSUMERS["Consumers"]
+  subgraph CONSUMERS[Consumers]
     direction TB
-    SELF[Self app · RN app]
-    PARTNER[External partner<br/>native Kotlin]
-    THIRD[Future 3rd-party RN apps]
-    SAMPLE[OSS native Swift sample]
+    SELF[Self app]
+    PARTNER[External partner Kotlin]
+    THIRD[3rd-party RN apps]
+    SAMPLE[OSS Swift sample]
   end
 
-  subgraph PACKAGES["Packages"]
+  subgraph PACKAGES[Packages]
     direction TB
-    RN_SDK["packages/rn-sdk<br/>(npm)"]
-    NS_AND["packages/native-shell-android<br/>(AAR sample)"]
-    NS_IOS["packages/native-shell-ios<br/>(SPM sample)"]
+    RN_SDK[packages/rn-sdk]
+    NS_AND[packages/native-shell-android]
+    NS_IOS[packages/native-shell-ios]
   end
 
-  subgraph CORE["Single bridge core"]
-    KMP["packages/kmp-sdk<br/>(Maven artifact)"]
-    SWIFT["packages/self-sdk-swift<br/>(SPM dep · iOS providers)"]
+  subgraph CORE[Single bridge core]
+    direction TB
+    KMP[packages/kmp-sdk]
+    SWIFT[packages/self-sdk-swift]
   end
 
   SELF --> RN_SDK
