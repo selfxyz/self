@@ -1,0 +1,866 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>WIA-17 · Architecture deep-dive — target topology + open decisions</title>
+<style>
+  :root {
+    --bg: #fafbfc;
+    --surface: #ffffff;
+    --surface-alt: #f6f8fa;
+    --border: #d1d9e0;
+    --border-soft: #e1e4e8;
+    --text: #1f2328;
+    --muted: #656d76;
+    --accent: #0969da;
+    --accent-soft: #ddf4ff;
+    --high: #cf222e;
+    --high-soft: #ffebe9;
+    --med: #9a6700;
+    --med-soft: #fff8c5;
+    --done: #1a7f37;
+    --done-soft: #dafbe1;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; color: var(--text); background: var(--bg); }
+  code, pre, kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.9em; }
+  code { background: var(--surface-alt); padding: 1px 5px; border-radius: 4px; border: 1px solid var(--border-soft); }
+  pre { background: var(--surface-alt); padding: 12px 14px; border-radius: 6px; border: 1px solid var(--border-soft); overflow: auto; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  header.topbar { position: sticky; top: 0; z-index: 100; background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  header h1 { margin: 0; font-size: 16px; font-weight: 600; }
+  .pill { font-size: 11px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface-alt); }
+  .pill.active { color: var(--accent); background: var(--accent-soft); border-color: var(--accent); }
+  .pill.done   { color: var(--done);   background: var(--done-soft);   border-color: var(--done); }
+  .pill.warn   { color: var(--high);   background: var(--high-soft);   border-color: var(--high); }
+  .spacer { flex: 1; }
+
+  .layout { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 32px; max-width: 1240px; margin: 0 auto; padding: 24px; }
+  nav.toc { position: sticky; top: 64px; align-self: start; max-height: calc(100vh - 80px); overflow-y: auto; font-size: 13px; }
+  nav.toc h4 { margin: 12px 0 6px 0; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  nav.toc h4:first-child { margin-top: 0; }
+  nav.toc a { display: block; padding: 4px 6px; border-radius: 4px; color: var(--text); }
+  nav.toc a:hover { background: var(--surface-alt); text-decoration: none; }
+
+  main { min-width: 0; }
+  main section { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 18px 22px; margin-bottom: 16px; }
+  main h2 { margin: 0 0 10px 0; font-size: 17px; }
+  main h3 { margin: 16px 0 6px 0; font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  main p { margin: 6px 0 10px 0; }
+  main ul, main ol { margin: 6px 0 10px 18px; padding: 0; }
+  main li { margin: 3px 0; }
+
+  table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 13px; }
+  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--border-soft); vertical-align: top; }
+  th { background: var(--surface-alt); font-weight: 600; }
+
+  .callout { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 10px 14px; border-radius: 0 6px 6px 0; margin: 10px 0; }
+  .callout.warn { border-left-color: var(--high); background: var(--high-soft); }
+  .callout.note { border-left-color: var(--med); background: var(--med-soft); }
+  .callout.win  { border-left-color: var(--done); background: var(--done-soft); }
+
+  /* Diagram container */
+  .diagram {
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: 8px;
+    padding: 18px 14px 8px;
+    margin: 14px 0;
+    text-align: center;
+    overflow-x: auto;
+  }
+  .diagram .label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    text-align: left;
+    padding: 0 8px 8px;
+  }
+  .mermaid { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+
+  /* Open Question cards — mirrors nav-hygiene oq-card pattern */
+  .oq-card {
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: 8px;
+    padding: 16px 18px;
+    margin: 12px 0;
+    border-left: 3px solid var(--accent);
+  }
+  .oq-card .oq-head {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+  .oq-card .oq-id {
+    font-family: ui-monospace, monospace; font-size: 10px;
+    color: var(--muted); padding: 2px 6px;
+    background: var(--surface-alt); border-radius: 4px;
+  }
+  .oq-card .oq-impact {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em;
+    padding: 2px 6px; border-radius: 4px;
+    background: var(--med-soft); color: var(--med);
+  }
+  .oq-card .oq-question { font-weight: 600; font-size: 14px; margin: 0; }
+  .oq-card .oq-context {
+    font-size: 12.5px;
+    color: var(--muted);
+    margin: 8px 0 12px;
+    background: var(--surface-alt);
+    border-left: 3px solid var(--border);
+    padding: 10px 12px;
+    border-radius: 0 4px 4px 0;
+  }
+  .oq-card .oq-context p { margin: 0 0 6px; }
+  .oq-card .oq-context p:last-child { margin-bottom: 0; }
+  .oq-card .oq-context code { background: var(--surface); border: 1px solid var(--border-soft); }
+  .oq-card .oq-context strong { color: var(--text); font-weight: 600; }
+
+  .oq-options { display: grid; gap: 8px; }
+  .oq-option {
+    padding: 10px 12px; border-radius: 6px; border: 1px solid var(--border-soft);
+    background: var(--surface-alt);
+  }
+  .oq-option.recommended {
+    background: var(--done-soft);
+    border-color: var(--done);
+  }
+  .oq-option .option-label {
+    font-weight: 600;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 4px;
+  }
+  .oq-option .option-note { color: var(--text); font-size: 12.5px; }
+  .oq-rec-chip {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--done);
+    color: white;
+    line-height: 1.4;
+  }
+  .oq-rec-because {
+    margin-top: 8px;
+    padding-top: 6px;
+    border-top: 1px dashed var(--done);
+    font-size: 12px;
+    color: var(--done);
+    font-weight: 500;
+  }
+  .legend {
+    font-size: 12px;
+    color: var(--muted);
+    background: var(--surface-alt);
+    border: 1px solid var(--border-soft);
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin: 8px 0;
+  }
+  .legend .swatch {
+    display: inline-block;
+    width: 10px; height: 10px;
+    border-radius: 2px;
+    vertical-align: middle;
+    margin-right: 4px;
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <h1>WIA-17 · Architecture deep-dive</h1>
+  <span class="pill active">Decision pack</span>
+  <span class="pill">2026-05-26</span>
+  <span class="spacer"></span>
+  <div>
+    <a href="./WIA-17-path-a-migration.html">↑ WIA-17 plan</a>
+    &nbsp;·&nbsp;
+    <a href="../SPEC.html">↑↑ SPEC</a>
+  </div>
+</header>
+
+<div class="layout">
+
+<nav class="toc">
+  <h4>Topology</h4>
+  <a href="#today">Today — three implementations</a>
+  <a href="#target">Target — one source of truth</a>
+  <a href="#full-system">Full system view</a>
+
+  <h4>Open decisions</h4>
+  <a href="#oq-1">OQ-1 · Provider distribution</a>
+  <a href="#oq-2">OQ-2 · MOD-handler delivery</a>
+  <a href="#oq-3">OQ-3 · iOS XCFramework variant</a>
+  <a href="#oq-4">OQ-4 · Native-shell consolidation</a>
+  <a href="#oq-5">OQ-5 · Envelope drift</a>
+  <a href="#oq-6">OQ-6 · useKmpBridge flag</a>
+  <a href="#oq-7">OQ-7 · Documents androidMain</a>
+  <a href="#oq-8">OQ-8 · KMP iOS cinterop</a>
+
+  <h4>Out of scope</h4>
+  <a href="#non-questions">Settled, not asking</a>
+</nav>
+
+<main>
+
+<section id="intro">
+  <h2>What this page is</h2>
+  <p>
+    This is the technical-decisions companion to the <a href="./WIA-17-path-a-migration.html">WIA-17 plan</a>.
+    The plan lists <em>what</em> ships per domain; this page argues the <em>shape</em> of the SDK once it
+    does, with diagrams and a recommended answer for every open architectural question.
+  </p>
+  <p class="callout win">
+    <strong>The frame.</strong> Today the same bridge protocol is implemented in <strong>three places</strong>:
+    KMP shared, the RN-side TS handlers, and the native-shells-lite Kotlin/Swift packages. Every protocol
+    change has to land three times. Path A retires one of them (RN). The CTO call captured here is to
+    retire the other one too (native-shells-lite) once Path A is stable, leaving <strong>kmp-sdk as the
+    single bridge implementation</strong> for every shell.
+  </p>
+  <div class="legend">
+    <span class="swatch" style="background:var(--high-soft);border:1px solid var(--high)"></span> red = duplicate / drift risk &nbsp;·&nbsp;
+    <span class="swatch" style="background:var(--done-soft);border:1px solid var(--done)"></span> green = single source of truth &nbsp;·&nbsp;
+    <span class="swatch" style="background:var(--accent-soft);border:1px solid var(--accent)"></span> blue = thin shell / glue
+  </div>
+</section>
+
+<section id="today">
+  <h2>Today — three parallel bridge implementations</h2>
+  <p>
+    Every consumer (Self Wallet RN, the external native-Kotlin partner, the OSS native-shell-ios sample)
+    speaks the same JSON bridge protocol to the same WebView. But each one ships its own
+    <code>MessageRouter</code> + handlers. Drift between them shows up as bugs the WebView can't tell
+    apart (e.g. KMP returns <code>DOMAIN_NOT_FOUND</code> where TS returns <code>HANDLER_NOT_FOUND</code>).
+  </p>
+  <div class="diagram">
+    <div class="label">Current state · 3 bridge implementations · 1 protocol</div>
+    <pre class="mermaid">
+flowchart TB
+  WV([WebView · webview-app])
+
+  subgraph RN["packages/rn-sdk (Self Wallet)"]
+    direction TB
+    RN_R[TS MessageRouter]
+    RN_H[8x TS Handlers]
+    RN_N["RN native modules<br/>SelfCryptoModule.kt<br/>react-native-keychain<br/>..."]
+    RN_R --> RN_H --> RN_N
+  end
+
+  subgraph NS["packages/native-shell-{android,ios}"]
+    direction TB
+    NS_R[Kotlin/Swift MessageRouter]
+    NS_H[Kotlin/Swift Handlers]
+    NS_OS[OS APIs]
+    NS_R --> NS_H --> NS_OS
+  end
+
+  subgraph KMP["packages/kmp-sdk (3 domains only since #1915)<br/>+ private fork has MOD-01/02/04"]
+    direction TB
+    KMP_R[KMP MessageRouter]
+    KMP_H[KMP BridgeHandlers]
+    KMP_P[Provider Registry]
+    KMP_R --> KMP_H --> KMP_P
+  end
+
+  WV -. bridge JSON .-> RN_R
+  WV -. bridge JSON .-> NS_R
+  WV -. bridge JSON .-> KMP_R
+
+  classDef dup fill:#ffebe9,stroke:#cf222e,stroke-width:2px
+  class RN_R,NS_R,KMP_R dup
+    </pre>
+  </div>
+  <p class="callout warn">
+    Every bridge protocol change must be made <strong>three times</strong>. Every error-vocabulary tweak,
+    every envelope-shape adjustment, every new method. The "WebView can't tell which shell" invariant in
+    <a href="../SPEC.html#invariants">SPEC §Invariants</a> is enforced by code review, not by construction.
+  </p>
+</section>
+
+<section id="target">
+  <h2>Target — one bridge implementation, three thin shells</h2>
+  <p>
+    Path A collapses RN onto KMP. The follow-on (OQ-4) collapses native-shells-lite onto KMP too. End
+    state: <strong>one MessageRouter, one set of handlers, one provider registry</strong>, with
+    platform-specific provider impls injected at boot per host.
+  </p>
+  <div class="diagram">
+    <div class="label">Target state · 1 bridge implementation · platform providers via registry</div>
+    <pre class="mermaid">
+flowchart TB
+  WV([WebView · webview-app])
+
+  subgraph SHELL_RN["rn-sdk · SelfBridgeModule<br/>(Kotlin + Swift, ~70 LOC each)"]
+    direction TB
+    RN_GLUE[JS ↔ native marshalling]
+  end
+  subgraph SHELL_KOT["native-shell-android · NativeShellActivity<br/>(thin glue)"]
+    direction TB
+    KOT_GLUE[Activity wraps WebView]
+  end
+  subgraph SHELL_IOS["native-shell-ios · SelfWebViewHost<br/>(thin glue)"]
+    direction TB
+    IOS_GLUE[ViewController wraps WKWebView]
+  end
+
+  subgraph KMP["kmp-sdk · single bridge implementation"]
+    direction TB
+    KMP_R[★ MessageRouter]
+    KMP_H[★ All BridgeHandlers]
+    REG[SdkProviderRegistry]
+    KMP_R --> KMP_H --> REG
+  end
+
+  subgraph PROV["Per-platform providers (registry-injected)"]
+    direction LR
+    AND["Android impls<br/>EncryptedSharedPreferences<br/>AndroidKeystoreCryptoProvider<br/>RN-lib wrappers"]
+    SWIFT["iOS impls<br/>self-sdk-swift<br/>(Keychain · KMP Crypto · ...)"]
+  end
+
+  WV -. bridge JSON .-> RN_GLUE
+  WV -. bridge JSON .-> KOT_GLUE
+  WV -. bridge JSON .-> IOS_GLUE
+  RN_GLUE --> KMP_R
+  KOT_GLUE --> KMP_R
+  IOS_GLUE --> KMP_R
+  REG --> AND
+  REG --> SWIFT
+
+  classDef src fill:#dafbe1,stroke:#1a7f37,stroke-width:2px
+  classDef glue fill:#ddf4ff,stroke:#0969da
+  class KMP_R,KMP_H src
+  class RN_GLUE,KOT_GLUE,IOS_GLUE glue
+    </pre>
+  </div>
+  <p class="callout win">
+    <strong>What this buys.</strong> Bridge protocol change = one PR in <code>kmp-sdk</code>. Error
+    vocabulary = one file. The invariant becomes structural: the WebView <em>can't</em> tell which shell
+    it's in because they all share the same router class. Drift becomes a compile error, not a code
+    review concern.
+  </p>
+</section>
+
+<section id="full-system">
+  <h2>Full system view (consumers + shells + providers)</h2>
+  <p>
+    A wider lens including all known consumers — Self Wallet (RN), the external partner (native Kotlin),
+    OSS sample consumers (Swift), and future third-party RN apps.
+  </p>
+  <div class="diagram">
+    <div class="label">Three consumer surfaces · all bridge to the same KMP core</div>
+    <pre class="mermaid">
+flowchart LR
+  subgraph CONSUMERS["Consumers"]
+    direction TB
+    SELF[Self Wallet · RN app]
+    PARTNER[External partner<br/>native Kotlin]
+    THIRD[Future 3rd-party RN apps]
+    SAMPLE[OSS native Swift sample]
+  end
+
+  subgraph PACKAGES["Packages"]
+    direction TB
+    RN_SDK["packages/rn-sdk<br/>(npm)"]
+    NS_AND["packages/native-shell-android<br/>(AAR sample)"]
+    NS_IOS["packages/native-shell-ios<br/>(SPM sample)"]
+  end
+
+  subgraph CORE["Single bridge core"]
+    KMP["packages/kmp-sdk<br/>(Maven artifact)"]
+    SWIFT["packages/self-sdk-swift<br/>(SPM dep · iOS providers)"]
+  end
+
+  SELF --> RN_SDK
+  THIRD --> RN_SDK
+  PARTNER --> NS_AND
+  SAMPLE --> NS_IOS
+
+  RN_SDK --> KMP
+  NS_AND --> KMP
+  NS_IOS --> KMP
+  KMP --> SWIFT
+
+  classDef pkg fill:#ddf4ff,stroke:#0969da
+  classDef core fill:#dafbe1,stroke:#1a7f37,stroke-width:2px
+  class RN_SDK,NS_AND,NS_IOS pkg
+  class KMP,SWIFT core
+    </pre>
+  </div>
+</section>
+
+<!-- =========== OPEN QUESTIONS =========== -->
+
+<section id="oq-1">
+  <div class="oq-card">
+    <div class="oq-head">
+      <span class="oq-id">OQ-1</span>
+      <span class="oq-impact">Blocks #2 / #3</span>
+      <h3 class="oq-question" style="margin:0;font-size:14px;text-transform:none;letter-spacing:0;color:var(--text)">
+        Where does the iOS Swift provider code live?
+      </h3>
+    </div>
+    <div class="oq-context">
+      <p>
+        KMP iOS handlers (<code>SecureStorageBridgeHandler.kt</code>, <code>CryptoBridgeHandler.kt</code>)
+        delegate to <code>IosProviderRegistry</code>. Someone has to register a Swift impl
+        (<code>SecureStorageProvider</code>, <code>CryptoProviderImpl</code>) before the WebView mounts.
+        Two homes are viable:
+      </p>
+    </div>
+    <div class="diagram">
+      <div class="label">OQ-1 · two options for the Swift provider home</div>
+      <pre class="mermaid">
+flowchart LR
+  subgraph A["Option A — vendor inside rn-sdk"]
+    direction TB
+    A_RN[rn-sdk/ios/SecureStorageProvider.swift]
+    A_PEER[self-sdk-swift/SecureStorageProvider.swift]
+    A_RN -.duplicate.-> A_PEER
+  end
+  subgraph B["Option B — peer SPM dep (Recommended)"]
+    direction TB
+    B_PEER["self-sdk-swift<br/>SecureStorageProvider · CryptoProviderImpl · ..."]
+    B_RN["rn-sdk podspec imports<br/>self-sdk-swift via SPM"]
+    B_NS["native-shell-ios podspec imports<br/>self-sdk-swift via SPM"]
+    B_RN --> B_PEER
+    B_NS --> B_PEER
+  end
+
+  classDef dup fill:#ffebe9,stroke:#cf222e
+  classDef src fill:#dafbe1,stroke:#1a7f37
+  class A_RN,A_PEER dup
+  class B_PEER src
+      </pre>
+    </div>
+    <div class="oq-options">
+      <div class="oq-option">
+        <div class="option-label">A — vendor provider files in <code>packages/rn-sdk/ios/</code></div>
+        <div class="option-note">
+          Self-contained: <code>@selfxyz/rn-sdk</code> npm tarball carries the Swift code. Duplicates
+          what <code>self-sdk-swift</code> already has; every provider change has to land twice.
+        </div>
+      </div>
+      <div class="oq-option recommended">
+        <div class="option-label">B — import from <code>self-sdk-swift</code> as a peer SPM dep <span class="oq-rec-chip">Recommended</span></div>
+        <div class="option-note">
+          One source of truth for Swift providers. Mirrors the Android side (Android impls live in
+          <code>kmp-sdk/androidMain</code>, not duplicated in <code>rn-sdk/android/</code>). Costs one
+          line in <code>selfxyz-rn-sdk.podspec</code>.
+        </div>
+        <div class="oq-rec-because">
+          Why: matches the Android pattern, eliminates a 2x maintenance cost forever. The cross-package
+          coupling is small (one podspec dep) and explicit.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="oq-2">
+  <div class="oq-card">
+    <div class="oq-head">
+      <span class="oq-id">OQ-2</span>
+      <span class="oq-impact">Blocks #5 / #6 / #7</span>
+      <h3 class="oq-question" style="margin:0;font-size:14px;text-transform:none;letter-spacing:0;color:var(--text)">
+        How do the MOD handlers (<code>nfc</code>, <code>biometrics</code>, <code>camera</code>) reach <code>rn-sdk</code>?
+      </h3>
+    </div>
+    <div class="oq-context">
+      <p>
+        Commit <code>37b8f0ca7</code> (#1915, 2026-04-04) deliberately scoped this repo's
+        <code>packages/kmp-sdk/</code> down to 3 domains and stripped the optional MOD modules. They
+        live in the private <code>selfxyz/self-webview-sdk</code> fork. Three ways to bridge that gap:
+      </p>
+    </div>
+    <div class="diagram">
+      <div class="label">OQ-2 · how MOD handlers cross the public/private boundary</div>
+      <pre class="mermaid">
+flowchart TB
+  subgraph A["Option A — publish private fork as a Maven artifact"]
+    A_PRIV[selfxyz/self-webview-sdk<br/>kmp-sdk + MOD modules]
+    A_PUB[GitHub Packages<br/>xyz.self.sdk:shared-android:X.Y.Z<br/>xyz.self.sdk:mod-nfc:X.Y.Z]
+    A_RN[rn-sdk build.gradle<br/>declares the mod artifacts]
+    A_PRIV -- publish-kmp-sdk.yml --> A_PUB
+    A_PUB --> A_RN
+  end
+
+  subgraph B["Option B — merge MOD modules back into this repo behind a Gradle flag (Recommended)"]
+    B_THIS[selfxyz/self<br/>packages/kmp-sdk<br/>includes optional MOD modules]
+    B_FLAG["Gradle flag:<br/>self.sdk.optional.nfc=true<br/>(off by default)"]
+    B_PRIV_DIES[self-webview-sdk retires]
+    B_THIS --- B_FLAG
+    B_PRIV_DIES -.retired.-> B_THIS
+  end
+
+  subgraph C["Option C — mirror script (NOT recommended)"]
+    C_THIS[selfxyz/self/packages/kmp-sdk]
+    C_PRIV[selfxyz/self-webview-sdk/kmp-sdk]
+    C_THIS <-. periodic sync .-> C_PRIV
+  end
+
+  classDef src fill:#dafbe1,stroke:#1a7f37,stroke-width:2px
+  classDef bad fill:#ffebe9,stroke:#cf222e
+  class B_THIS,B_FLAG src
+  class C_THIS,C_PRIV bad
+      </pre>
+    </div>
+    <div class="oq-options">
+      <div class="oq-option">
+        <div class="option-label">A — publish private fork as a Maven artifact (via SD-06)</div>
+        <div class="option-note">
+          Cleanest for keeping <code>selfxyz/self</code> OSS-slim. Couples rollout of #5–#7 to SD-06
+          shipping. Adds a release-coordination process between the two repos forever.
+        </div>
+      </div>
+      <div class="oq-option recommended">
+        <div class="option-label">B — merge MOD modules back into <code>selfxyz/self</code>, gated by Gradle flag <span class="oq-rec-chip">Recommended</span></div>
+        <div class="option-note">
+          MOD modules live in this repo's <code>packages/kmp-sdk/shared/src/androidMain/</code>; build
+          flag <code>self.sdk.optional.nfc=true</code> opts them in. Default OSS distribution stays
+          slim (flag off); Self Wallet's <code>app/</code> turns the flags on. <code>self-webview-sdk</code>
+          retires.
+        </div>
+        <div class="oq-rec-because">
+          Why: eliminates the two-repo coordination cost permanently — every protocol change is one PR,
+          every contributor sees the same code, no "is X in the right repo" friction. Public OSS
+          surface stays slim via the Gradle flag, not via a repo split. Costs Seshanth one merge to
+          unify; saves us every-PR-after-that. This is the kind of debt we should pay off now rather
+          than amortize forever.
+        </div>
+      </div>
+      <div class="oq-option">
+        <div class="option-label">C — mirror script (sync the two repos)</div>
+        <div class="option-note">
+          Permanent dual maintenance. Drift inevitable. Not recommended under any framing.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="oq-3">
+  <div class="oq-card">
+    <div class="oq-head">
+      <span class="oq-id">OQ-3</span>
+      <span class="oq-impact">Affects #2 / #3</span>
+      <h3 class="oq-question" style="margin:0;font-size:14px;text-transform:none;letter-spacing:0;color:var(--text)">
+        How do we get a release-variant XCFramework for iOS?
+      </h3>
+    </div>
+    <div class="oq-context">
+      <p>
+        <code>packages/kmp-sdk/shared/build.gradle.kts:184</code>'s <code>createXCFramework</code> task
+        currently produces <em>debug</em> variants only. iOS podspecs that vendor the framework need
+        release variants to ship to the App Store.
+      </p>
+    </div>
+    <div class="oq-options">
+      <div class="oq-option recommended">
+        <div class="option-label">Fix <code>createXCFramework</code> in the WIA-17 #2 PR <span class="oq-rec-chip">Recommended</span></div>
+        <div class="option-note">
+          ~15 LOC change: add release+simulator targets to the existing task. Self-contained, unblocks
+          domain #2, doesn't depend on SD-06.
+        </div>
+        <div class="oq-rec-because">
+          Why: trivial change, eliminates an SD-06 dependency for #2. We were going to do it eventually
+          anyway; doing it now removes a coordination point.
+        </div>
+      </div>
+      <div class="oq-option">
+        <div class="option-label">Wait for SD-06 to ship the release-variant DoD</div>
+        <div class="option-note">
+          Defers the task off this rollout's critical path. But it adds an external dependency for
+          something that's an in-tree Gradle edit.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="oq-4">
+  <div class="oq-card">
+    <div class="oq-head">
+      <span class="oq-id">OQ-4</span>
+      <span class="oq-impact">Future workstream (not WIA-17)</span>
+      <h3 class="oq-question" style="margin:0;font-size:14px;text-transform:none;letter-spacing:0;color:var(--text)">
+        Should <code>native-shells-lite</code> also wrap <code>kmp-sdk</code> after Path A lands?
+      </h3>
+    </div>
+    <div class="oq-context">
+      <p>
+        Confirmed by reading the code: <code>packages/native-shell-android/</code> and
+        <code>packages/native-shell-ios/</code> each ship their own <code>MessageRouter</code> +
+        <code>BridgeHandler</code> classes (Kotlin and Swift), <em>not</em> consuming
+        <code>kmp-sdk</code>. That's the third parallel implementation Path A doesn't touch.
+      </p>
+      <p>
+        Once Path A is stable for <code>rn-sdk</code>, the same pattern applies: native shells become
+        <strong>thin glue</strong> (an Activity / a ViewController + provider registrations) and KMP
+        owns the router and handlers. Bridge changes become one-PR-everywhere instead of three.
+      </p>
+    </div>
+    <div class="diagram">
+      <div class="label">OQ-4 · the third implementation we should also retire</div>
+      <pre class="mermaid">
+flowchart LR
+  subgraph TODAY["Today (after Path A)"]
+    TODAY_KMP[kmp-sdk MessageRouter]
+    TODAY_RN[rn-sdk SelfBridgeModule<br/>★ uses kmp-sdk]
+    TODAY_NS["native-shell-{android,ios}<br/>OWN MessageRouter (third dup)"]
+  end
+  subgraph TOMORROW["Tomorrow (WIA-18 candidate)"]
+    TMR_KMP[kmp-sdk MessageRouter ★]
+    TMR_RN[rn-sdk SelfBridgeModule<br/>uses kmp-sdk]
+    TMR_NS[native-shells thin glue<br/>uses kmp-sdk]
+  end
+
+  classDef dup fill:#ffebe9,stroke:#cf222e
+  classDef src fill:#dafbe1,stroke:#1a7f37,stroke-width:2px
+  class TODAY_NS dup
+  class TMR_KMP src
+      </pre>
+    </div>
+    <div class="oq-options">
+      <div class="oq-option recommended">
+        <div class="option-label">File <strong>WIA-18 · Native-shells onto kmp-sdk</strong> as a follow-up workstream <span class="oq-rec-chip">Recommended</span></div>
+        <div class="option-note">
+          Scope: replace <code>native-shell-android</code>'s + <code>native-shell-ios</code>'s
+          <code>MessageRouter</code> + bridge handlers with KMP equivalents; native shells become thin
+          glue. Same shape as Path A. Land after WIA-17 stabilizes (≥3 domains migrated on the RN
+          side), before WIA-11 cutover.
+        </div>
+        <div class="oq-rec-because">
+          Why: not in WIA-17 scope, but explicitly captured so it doesn't get forgotten. Same maintenance
+          calculus as the RN side — every bridge change today lands three times, we can make it one.
+        </div>
+      </div>
+      <div class="oq-option">
+        <div class="option-label">Leave native-shells-lite as is</div>
+        <div class="option-note">
+          Accepts permanent triple maintenance for the bridge protocol. Hidden cost that grows with
+          every domain and every contract change.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="oq-5">
+  <div class="oq-card">
+    <div class="oq-head">
+      <span class="oq-id">OQ-5</span>
+      <span class="oq-impact">After ≥3 domains migrated</span>
+      <h3 class="oq-question" style="margin:0;font-size:14px;text-transform:none;letter-spacing:0;color:var(--text)">
+        How do we resolve the bridge envelope drift?
+      </h3>
+    </div>
+    <div class="oq-context">
+      <p>Observed drift between TS and KMP routers:</p>
+      <ul>
+        <li>Missing-handler error: KMP <code>DOMAIN_NOT_FOUND</code> vs TS <code>HANDLER_NOT_FOUND</code></li>
+        <li>KMP responses lack <code>type</code> / <code>version</code> / <code>timestamp</code> fields</li>
+        <li>KMP enforces <code>isTrustedSource</code>; TS has no equivalent</li>
+        <li>Malformed-message handling: KMP silent drop vs TS <code>console.error</code></li>
+      </ul>
+    </div>
+    <div class="oq-options">
+      <div class="oq-option recommended">
+        <div class="option-label">Make KMP's shape canonical · patch TS once <span class="oq-rec-chip">Recommended</span></div>
+        <div class="option-note">
+          KMP is the source of truth for the WebView protocol per the umbrella spec. Patch
+          <code>packages/webview-bridge/</code> and the WebView-side adapters to match KMP's shape;
+          everyone converges in one PR.
+        </div>
+        <div class="oq-rec-because">
+          Why: directionally correct — Path A is putting KMP at the center anyway. Doing it once
+          (after ≥3 domains have proven KMP's behavior under load) is cheaper than per-domain patches.
+        </div>
+      </div>
+      <div class="oq-option">
+        <div class="option-label">Keep <code>KmpBridgeTransport.ts</code> as a permanent shim that normalizes responses</div>
+        <div class="option-note">
+          Avoids touching WebView code. Hides drift behind a translation layer that has to be maintained
+          alongside both routers — exactly the kind of "two-implementations-with-a-bridge" debt we're
+          retiring elsewhere.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="oq-6">
+  <div class="oq-card">
+    <div class="oq-head">
+      <span class="oq-id">OQ-6</span>
+      <span class="oq-impact">Final cleanup PR</span>
+      <h3 class="oq-question" style="margin:0;font-size:14px;text-transform:none;letter-spacing:0;color:var(--text)">
+        What happens to the <code>useKmpBridge</code> flag once all domains migrate?
+      </h3>
+    </div>
+    <div class="oq-context">
+      <p>
+        <code>useKmpBridge</code> is a per-domain routing flag in <code>SelfVerification.tsx</code>.
+        It exists so each domain PR can ship additively (TS handler still runs by default; KMP path
+        opt-in). After domain #8 lands and its TS handler is deleted, the flag has nothing to gate.
+      </p>
+    </div>
+    <div class="oq-options">
+      <div class="oq-option recommended">
+        <div class="option-label">Delete the flag in the final cleanup PR <span class="oq-rec-chip">Recommended</span></div>
+        <div class="option-note">
+          One small PR: removes the prop, removes the conditional branches in
+          <code>SelfVerification.tsx</code>, removes the prop from any test app. Routing is unconditional
+          through <code>SelfBridgeModule</code>.
+        </div>
+        <div class="oq-rec-because">
+          Why: dead flags rot. Delete in the same change that makes them obsolete.
+        </div>
+      </div>
+      <div class="oq-option">
+        <div class="option-label">Keep the flag as a "debug TS fallback" for emergencies</div>
+        <div class="option-note">
+          Tempting but wrong: by the time all 8 TS handlers are deleted, there's no fallback to fall back
+          to. Keeping the flag means keeping the TS code dead-but-undead "just in case."
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="oq-7">
+  <div class="oq-card">
+    <div class="oq-head">
+      <span class="oq-id">OQ-7</span>
+      <span class="oq-impact">Affects #8</span>
+      <h3 class="oq-question" style="margin:0;font-size:14px;text-transform:none;letter-spacing:0;color:var(--text)">
+        Where does <code>DocumentsBridgeHandler</code> for Android come from?
+      </h3>
+    </div>
+    <div class="oq-context">
+      <p>
+        Confirmed by file listing: this repo's <code>kmp-sdk</code> has a
+        <code>DocumentsBridgeHandler.kt</code> in <code>iosMain/</code> but <strong>not</strong> in
+        <code>androidMain/</code> or <code>commonMain/</code>. Either we add it here, or it arrives via
+        OQ-2 (the MOD path).
+      </p>
+    </div>
+    <div class="oq-options">
+      <div class="oq-option recommended">
+        <div class="option-label">Move to <code>commonMain/</code> with a <code>DocumentsProvider</code> interface in the WIA-17 #8 PR <span class="oq-rec-chip">Recommended</span></div>
+        <div class="option-note">
+          Matches the pattern from #1915 (which moved <code>SecureStorageBridgeHandler</code> and
+          <code>CryptoBridgeHandler</code> to <code>commonMain</code>). Handler is platform-agnostic
+          business logic; the provider interface gets Android and iOS impls.
+        </div>
+        <div class="oq-rec-because">
+          Why: consistent with the architecture #1915 already established for the other handlers. The
+          iOS version is small enough that promoting it to <code>commonMain</code> is roughly a
+          file-move + interface extraction.
+        </div>
+      </div>
+      <div class="oq-option">
+        <div class="option-label">Wait for OQ-2's MOD path to deliver it</div>
+        <div class="option-note">
+          Couples #8 to OQ-2 unnecessarily. Documents is a wholly-public domain — there's no reason it
+          should travel with the optional MOD modules.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="oq-8">
+  <div class="oq-card">
+    <div class="oq-head">
+      <span class="oq-id">OQ-8</span>
+      <span class="oq-impact">Doesn't affect WIA-17 — captured to defer explicitly</span>
+      <h3 class="oq-question" style="margin:0;font-size:14px;text-transform:none;letter-spacing:0;color:var(--text)">
+        Should KMP iOS cinterop be re-enabled?
+      </h3>
+    </div>
+    <div class="oq-context">
+      <p>
+        <code>packages/kmp-sdk/shared/build.gradle.kts:34-63</code> has cinterop <strong>disabled</strong>.
+        That's why iOS handlers are <code>NotImplementedError</code> stubs that delegate to
+        <code>IosProviderRegistry</code>. Re-enabling cinterop would let KMP iOS handlers call Keychain
+        Services / Security framework directly — no Swift provider needed for stock impls.
+      </p>
+    </div>
+    <div class="oq-options">
+      <div class="oq-option recommended">
+        <div class="option-label">Keep cinterop disabled · Swift providers via registry <span class="oq-rec-chip">Recommended</span></div>
+        <div class="option-note">
+          Matches the Android pattern (KMP delegates to providers; some are KMP-internal, some are
+          consumer-supplied). The Swift provider model gives RN/native-shell consumers a place to
+          inject their own impls. Cinterop adds K/N toolchain risk and gives no architectural win we
+          don't already have.
+        </div>
+        <div class="oq-rec-because">
+          Why: the registry model is the right separation of concerns; cinterop would mix policy
+          (in K/N) with mechanism (Swift APIs). Keep them on opposite sides of a clean interface.
+        </div>
+      </div>
+      <div class="oq-option">
+        <div class="option-label">Re-enable cinterop for stock iOS impls</div>
+        <div class="option-note">
+          Would let KMP own iOS Keychain / crypto directly. K/N cinterop is finicky; we'd own its
+          maintenance. Doesn't compose well with the consumer-supplied provider model we keep for
+          things like <code>react-native-biometrics</code>.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="non-questions">
+  <h2>Settled — not asking</h2>
+  <p>
+    The following are <em>not</em> open questions. The plan treats them as decided.
+  </p>
+  <ul>
+    <li><strong>Path A vs Path B</strong> · Path A confirmed by PR #2108's smoke pass and the resulting merge.</li>
+    <li><strong>Per-domain PRs vs one big sweep</strong> · per-domain. Smaller revert windows; one of the durable preferences captured in <code>CLAUDE.md</code>.</li>
+    <li><strong>TS handler retirement timing</strong> · same PR as each domain's migration, not a sweep at the end. Matches the "delete legacy in-PR" preference.</li>
+    <li><strong>SD-06 for #1–#4</strong> · not blocking; <code>mavenLocal()</code> sufficient for the rollout.</li>
+    <li><strong>Hosted URL vs embedded bundle for Self Wallet v1</strong> · embedded bundle, per <a href="../SPEC-HOSTED-LOADING.html">SPEC-HOSTED-LOADING</a>. Hosted is a post-v1 evolution.</li>
+    <li><strong>Bridge protocol version</strong> · stays at 1 throughout this rollout. Envelope shape changes (OQ-5) are non-version-breaking.</li>
+  </ul>
+</section>
+
+</main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'default',
+    securityLevel: 'loose',
+    flowchart: { curve: 'basis', padding: 14 },
+    themeVariables: {
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      fontSize: '13px',
+      primaryColor: '#ddf4ff',
+      primaryBorderColor: '#0969da',
+      primaryTextColor: '#1f2328',
+      lineColor: '#656d76',
+      secondaryColor: '#f6f8fa',
+      tertiaryColor: '#ffffff'
+    }
+  });
+</script>
+
+</body>
+</html>

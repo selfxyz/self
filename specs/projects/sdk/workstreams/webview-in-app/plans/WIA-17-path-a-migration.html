@@ -69,6 +69,8 @@
   <div>
     <a href="../SPEC.html">↑ SPEC</a>
     &nbsp;·&nbsp;
+    <a href="./WIA-17-architecture-options.html"><strong>Architecture deep-dive</strong></a>
+    &nbsp;·&nbsp;
     <a href="./PATH-A-rn-wraps-kmp.html">Prototype spec</a>
     &nbsp;·&nbsp;
     <a href="./SPIKE-rn-wraps-kmp.md">Research notes</a>
@@ -88,6 +90,7 @@
   <a href="#validation">Validation matrix</a>
   <a href="#oos">Out of scope</a>
   <a href="#decisions">Decisions needed</a>
+  <a href="#architecture-link">Architecture deep-dive ↗</a>
 </nav>
 
 <main>
@@ -406,18 +409,78 @@
 </section>
 
 <section id="decisions">
-  <h2>Decisions needed</h2>
+  <h2>Open architectural decisions</h2>
   <p>
-    None of these block <strong>#1–#4</strong>. They block <strong>#5–#7</strong>
-    (MOD-dependent domains) or affect iOS specifics (#2/#3).
+    Full context, diagrams, and recommended answer for each → <a href="./WIA-17-architecture-options.html"><strong>Architecture deep-dive</strong></a>.
   </p>
-  <ol>
-    <li><strong>P-1 — MOD handler distribution (blocks #5–#7).</strong> Publish the private fork as a Maven artifact (option A, likely via SD-06), merge MOD work back here (option B), or mirror (option C, not recommended). Owner: Seshanth + Rémi.</li>
-    <li><strong>P-2 — SD-06 publishing timeline.</strong> Not blocking #1–#4 (<code>mavenLocal()</code> sufficient). Becomes load-bearing when P-1 picks option A, and required regardless before WIA-11. Owner: Ayman.</li>
-    <li><strong>XCFramework release-variant build (affects #2/#3).</strong> Either domain #2 fixes <code>createXCFramework</code> in this repo, or it waits for SD-06's release-variant DoD.</li>
-    <li><strong>iOS provider distribution (affects #2/#3).</strong> Are Swift providers shipped <em>inside</em> <code>packages/rn-sdk/ios/</code>, or imported from <code>self-sdk-swift</code> as a peer package? Affects how downstream RN apps consume them.</li>
-    <li><strong><code>DocumentsBridgeHandler</code> on Android (affects #8).</strong> Handler exists on iosMain in this repo; confirm whether androidMain parity needs to be added here or comes via P-1 option A.</li>
-  </ol>
+  <p>
+    Pre-filled recommendations are below; review and confirm. None block <strong>#1</strong>.
+  </p>
+  <table>
+    <thead>
+      <tr><th>ID</th><th>Question</th><th>Affects</th><th>Recommended answer</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a href="./WIA-17-architecture-options.html#oq-1">OQ-1</a></td>
+        <td>iOS Swift provider home</td>
+        <td>#2, #3</td>
+        <td>Import from <code>self-sdk-swift</code> as a peer SPM dep (not vendored)</td>
+      </tr>
+      <tr>
+        <td><a href="./WIA-17-architecture-options.html#oq-2">OQ-2</a></td>
+        <td>MOD handler delivery</td>
+        <td>#5, #6, #7</td>
+        <td>Merge MOD modules back into this repo, gated by Gradle flag</td>
+      </tr>
+      <tr>
+        <td><a href="./WIA-17-architecture-options.html#oq-3">OQ-3</a></td>
+        <td>XCFramework release variant</td>
+        <td>#2, #3</td>
+        <td>Fix <code>createXCFramework</code> in the #2 PR</td>
+      </tr>
+      <tr>
+        <td><a href="./WIA-17-architecture-options.html#oq-4">OQ-4</a></td>
+        <td>Native-shells onto KMP (third dup)</td>
+        <td>future WIA-18</td>
+        <td>File as follow-up workstream after WIA-17 stabilizes</td>
+      </tr>
+      <tr>
+        <td><a href="./WIA-17-architecture-options.html#oq-5">OQ-5</a></td>
+        <td>Bridge envelope drift</td>
+        <td>after ≥3 domains</td>
+        <td>KMP shape canonical; patch TS / WebView once</td>
+      </tr>
+      <tr>
+        <td><a href="./WIA-17-architecture-options.html#oq-6">OQ-6</a></td>
+        <td><code>useKmpBridge</code> flag</td>
+        <td>final cleanup PR</td>
+        <td>Delete after domain #8</td>
+      </tr>
+      <tr>
+        <td><a href="./WIA-17-architecture-options.html#oq-7">OQ-7</a></td>
+        <td><code>DocumentsBridgeHandler</code> Android</td>
+        <td>#8</td>
+        <td>Move to <code>commonMain</code> with <code>DocumentsProvider</code> interface in the #8 PR</td>
+      </tr>
+      <tr>
+        <td><a href="./WIA-17-architecture-options.html#oq-8">OQ-8</a></td>
+        <td>KMP iOS cinterop</td>
+        <td>n/a (defer)</td>
+        <td>Keep disabled; Swift providers via registry</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="architecture-link">
+  <h2>Architecture deep-dive</h2>
+  <p>
+    See the companion page for the full topology (today's three parallel bridge implementations vs. the
+    one-source-of-truth target), all eight open questions with mermaid diagrams, and the recommended
+    answer for each: <a href="./WIA-17-architecture-options.html"><strong>WIA-17 Architecture
+    deep-dive</strong></a>.
+  </p>
 </section>
 
 </main>

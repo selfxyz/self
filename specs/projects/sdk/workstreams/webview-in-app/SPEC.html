@@ -220,9 +220,11 @@
   <p class="callout">
     This direction is the outcome of the <a href="./plans/PATH-A-rn-wraps-kmp.html">Path A spike</a> — the
     Android <code>secureStorage</code> prototype landed in <strong>PR #2108</strong> with hardware smoke
-    PASS. The remaining domains roll out under <a href="./plans/WIA-17-path-a-migration.html">WIA-17</a>.
-    Bridge envelope, error vocabulary, and per-domain handler behavior come straight from <code>kmp-sdk</code>,
-    so the WebView cannot tell which shell (native-Kotlin, KMP, or RN) it is running inside.
+    PASS. The remaining domains roll out under <a href="./plans/WIA-17-path-a-migration.html">WIA-17</a>;
+    full topology + open architectural decisions live in the
+    <a href="./plans/WIA-17-architecture-options.html">WIA-17 architecture deep-dive</a>. Bridge envelope,
+    error vocabulary, and per-domain handler behavior come straight from <code>kmp-sdk</code>, so the
+    WebView cannot tell which shell (native-Kotlin, KMP, or RN) it is running inside.
   </p>
 </section>
 
