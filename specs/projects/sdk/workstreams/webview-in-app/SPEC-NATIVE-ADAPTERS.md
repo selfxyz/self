@@ -41,14 +41,20 @@ capability is wired in the RN host. It covers `WIA-04` (secureStorage),
 
 ## Handler Map
 
-| Bridge domain   | Backed by (RN side)                            | Wrapper effort      |
-| --------------- | ---------------------------------------------- | ------------------- |
-| `secureStorage` | `react-native-keychain` (SecureEnclave/Keystore)| Thin                |
-| `crypto`        | **New** RN native module (AndroidKeyStore + iOS Security framework) | New module          |
-| `nfc`           | `RNPassportReader` (Android) + `PassportReader` (iOS) via `react-native-passport-reader` | Normalize signatures + events |
-| `camera`        | Existing `MRZScannerModule` (iOS) + Android counterpart | Normalize + lifecycle |
-| `biometrics`    | `react-native-biometrics` (or equivalent — settled in plan) | Thin                |
-| `documents`     | Existing `databaseProvider` + keychain split   | Delegate            |
+Each bridge domain is handled by a KMP `*BridgeHandler` registered into
+`MessageRouter` from `SelfBridgeModule`. The RN-side "wrapper" effort
+is now consumer-supplied **providers** plugged into the KMP
+`SdkProviderRegistry`, not new TS handlers or new RN-only native
+modules.
+
+| Bridge domain   | KMP handler                       | RN-side provider implementation                                         |
+| --------------- | --------------------------------- | ----------------------------------------------------------------------- |
+| `secureStorage` | `SecureStorageBridgeHandler`      | Android: `EncryptedSharedPreferencesProvider` (already in KMP androidMain). iOS: Swift `SecureStorageProvider` wrapping `react-native-keychain`. |
+| `crypto`        | `CryptoBridgeHandler`             | Android: `AndroidKeystoreCryptoProvider` (already in KMP androidMain). iOS: `CryptoProviderImpl.swift` (already in `self-sdk-swift`). |
+| `nfc`           | `NfcBridgeHandler` (MOD-01/02)    | Android: `AndroidNfcProvider` wrapping `react-native-passport-reader`. iOS: provider via `SelfSdkNfc` SPM target wrapping `PassportReader`. |
+| `camera`        | `CameraMrzBridgeHandler` (MOD-03) | Android: provider wrapping existing `MRZScannerModule`. iOS: provider via `SelfSdkOcr` SPM target (MOD-05). |
+| `biometrics`    | `BiometricBridgeHandler`          | Android + iOS: provider wrapping `react-native-biometrics`.            |
+| `documents`     | `DocumentsBridgeHandler`          | Provider delegates to the existing `databaseProvider` flow.            |
 
 `haptic`, `analytics`, `lifecycle`, and `navigation` do not require
 native code and are covered in [SPEC-BRIDGE-HOST.md](./SPEC-BRIDGE-HOST.md).
@@ -74,20 +80,27 @@ layer that the bridge router can call uniformly.
 
 ## Decisions
 
-1. **One new native module, named `SelfCrypto`, lives in
-   `packages/rn-sdk/`.** No existing RN module exposes key generation
-   + ECDSA signing with the algorithm choices the bridge protocol
-   requires. `react-native-keychain` does not cover it. The new
-   module is a thin wrapper over AndroidKeyStore (Kotlin, in
-   `packages/rn-sdk/android/`) and the iOS Security framework
-   (Swift, in `packages/rn-sdk/ios/`), autolinked into any RN host
-   that depends on `@selfxyz/rn-sdk`. Other handlers wrap existing
-   libraries; this is the only net-new native code in the workstream.
+1. **`rn-sdk` wraps `kmp-sdk` — no net-new SDK-side native module.**
+   The KMP shared module already implements every bridge handler we
+   need, with platform-specific providers it delegates to via
+   `SdkProviderRegistry`. `packages/rn-sdk/android/` ships a thin
+   `SelfBridgeModule` (Kotlin) that constructs a KMP `MessageRouter`,
+   registers the handlers, and bridges incoming JSON / outgoing
+   JS-injection to React Native's bus. iOS gets an analogous Swift
+   shim that registers providers into `IosProviderRegistry` before
+   mounting the WebView. The build-side prototype for `secureStorage`
+   on Android is in
+   [`plans/PATH-A-rn-wraps-kmp.html`](./plans/PATH-A-rn-wraps-kmp.html);
+   it supersedes earlier guidance that called for a net-new
+   `SelfCrypto` RN module in `packages/rn-sdk/{android,ios}/`.
 2. **Crypto algorithm matches the Kotlin/Swift shells exactly.**
-   EC/secp256r1 keys, SHA256withECDSA signatures. Same algorithm
+   EC/secp256r1 keys, SHA256withECDSA signatures. The KMP
+   `AndroidKeystoreCryptoProvider` and `self-sdk-swift`'s
+   `CryptoProviderImpl` already encode the same algorithm
    identifiers as `packages/native-shell-android/` and
-   `packages/native-shell-ios/`. WebView code is agnostic to which
-   shell runs underneath; algorithm parity is what guarantees that.
+   `packages/native-shell-ios/`. By piggybacking on those, RN gets
+   algorithm parity by construction — no separate algorithm
+   specification on the RN side.
 3. **Keychain stays native-managed.** `secureStorage` delegates to
    `react-native-keychain`, which binds SecureEnclave/Keystore. No
    JS-side fallback path is permitted in the handler.
@@ -124,16 +137,24 @@ layer that the bridge router can call uniformly.
 
 ## Per-Handler Notes
 
-- **`secureStorage`** wraps three `react-native-keychain` operations
-  (`setGenericPassword`, `getGenericPassword`, `resetGenericPassword`).
-  Keys are namespaced with a `self.` prefix to avoid collision with
+- **`secureStorage`** on Android is satisfied entirely by KMP's
+  `EncryptedSharedPreferencesProvider` (already shipped in
+  `kmp-sdk/shared/src/androidMain/`). On iOS, the host registers a
+  Swift `SecureStorageProvider` that wraps `react-native-keychain`'s
+  underlying SecureEnclave-backed APIs. The TS-side
+  `KeychainHandler.ts` is retained behind the `useKmpBridge=false`
+  default until WIA-04 promotes the KMP path and deletes it. Keys
+  are namespaced with a `self.` prefix to avoid collision with
   any RN-app-level keychain usage that survives cutover.
-- **`crypto`** ships with the new `SelfCrypto` native module. Keys
-  generated by `crypto.generateKey` are stored in the hardware-backed
-  keystore. The public key returned by `crypto.getPublicKey` is the
-  uncompressed SEC1 form (matches the Kotlin/Swift shells). The
+- **`crypto`** uses KMP's `CryptoBridgeHandler` with
+  `AndroidKeystoreCryptoProvider` (Android) and Swift's
+  `CryptoProviderImpl` (iOS, from `self-sdk-swift`). Keys generated
+  by `crypto.generateKey` are stored in the hardware-backed keystore.
+  The public key returned by `crypto.getPublicKey` is the X.509
+  SubjectPublicKeyInfo form (uncompressed SEC1 inside). The
   signature returned by `crypto.sign` is DER-encoded ECDSA over the
-  SHA-256 of the input bytes.
+  SHA-256 of the input bytes — the existing shape both KMP providers
+  emit today.
 - **`nfc`** distinguishes a `scan` from a `cancelScan`. `cancelScan`
   is idempotent and never errors if no scan is in flight. `isSupported`
   returns the union of "the hardware exists" and "the OS gave us NFC

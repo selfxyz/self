@@ -50,20 +50,56 @@ serve external SDK consumers (KMP, partner wallets), not Self Wallet itself.
 ## Code Home
 
 The bridge host implementation lives in **`packages/rn-sdk/`** (revived
-from paused). `app/` consumes it as a workspace dependency. This makes
-the RN host symmetric with `packages/native-shell-android/` and
-`packages/native-shell-ios/`: three bridge-compatible shells, one
-per platform target, each publishable.
+from paused). `app/` consumes it as a workspace dependency.
 
-- `packages/rn-sdk/` — message router, bridge handlers, the WebView
-  shell component, and the new `SelfCrypto` native module
-  (`packages/rn-sdk/ios/`, `packages/rn-sdk/android/`).
+- `packages/rn-sdk/` — the WebView shell component (TS), a thin
+  `SelfBridgeModule` native module that registers KMP bridge handlers
+  into the RN runtime, and TS adapters for the handful of domains
+  that need an RN-only path (e.g. `analytics`, `navigation`,
+  `lifecycle` reply shapes).
 - `app/` — splash, error boundary, deep-link receiver, workspace dep
   on `@selfxyz/rn-sdk`. Imports and mounts the shell at the root of
   the navigation graph.
 - Future 3rd-party RN apps install `@selfxyz/rn-sdk` from npm and
   consume the same shell + handlers. Self Wallet is consumer #1, not
   the only consumer.
+
+## Architecture — Path A (rn-sdk wraps kmp-sdk)
+
+The React Native SDK does **not** reimplement the bridge layer.
+Instead it consumes `packages/kmp-sdk/` (Android AAR + iOS XCFramework)
+and registers KMP's bridge handlers and the consumer's platform
+providers into the `SdkProviderRegistry`. This collapses three parallel
+bridge implementations (Kotlin native-shell, RN-side TS handlers,
+KMP shared) into one source of truth in KMP commonMain / per-platform
+providers.
+
+- KMP owns: `MessageRouter`, `SecureStorageBridgeHandler`,
+  `CryptoBridgeHandler`, `LifecycleBridgeHandler`, and (as MOD-01→06
+  lands) `NfcBridgeHandler`, `CameraMrzBridgeHandler`,
+  `BiometricBridgeHandler`, `DocumentsBridgeHandler`. Each handler
+  delegates to a `*Provider` interface in `commonMain`.
+- `rn-sdk` owns: the WebView shell, `SelfBridgeModule` (Kotlin) which
+  instantiates a `MessageRouter`, registers KMP handlers, and bridges
+  inbound JSON / outbound JS-injection to React Native's message bus,
+  and a Swift counterpart for iOS that does the same against the
+  XCFramework via `IosProviderRegistry`.
+- Self Wallet (and any RN consumer) supplies platform providers that
+  wrap existing RN-native modules: `react-native-keychain` →
+  `SecureStorageProvider`, AndroidKeyStore / iOS Security Framework
+  → `CryptoProvider`, `react-native-passport-reader` → `NfcProvider`,
+  `MRZScannerModule` → `CameraMrzProvider`, etc. Providers are
+  registered into the KMP `SdkProviderRegistry` before the WebView
+  mounts.
+
+This direction is the outcome of the
+[Path A spike](./plans/PATH-A-rn-wraps-kmp.html) — the build-side
+prototype on Android is complete; hardware smoke is the remaining
+gate. The bridge envelope, error vocabulary, and per-domain handler
+behavior come straight from `kmp-sdk`, so the WebView cannot tell
+which shell (native-Kotlin, KMP, or RN) it is running inside —
+the invariant from the umbrella holds by construction rather than
+by parallel maintenance.
 
 ## Tracks
 
@@ -91,18 +127,18 @@ webview-app routing implementation.
 | WIA-01 | Establish `feat/webview-in-app` branch + umbrella  | Umbrella       | Active   |
 | WIA-02 | RN WebView host shell + message router (in `rn-sdk`)| Bridge host   | Pending  |
 | WIA-03 | Lifecycle, navigation, analytics handlers          | Bridge host    | Pending  |
-| WIA-04 | SecureStorage handler (wrap react-native-keychain) | Native adapters| Pending  |
-| WIA-05 | Crypto handler (new RN native module, sign/keygen) | Native adapters| Pending  |
-| WIA-06 | NFC handler (normalize RNPassportReader contract)  | Native adapters| Pending  |
-| WIA-07 | Camera / MRZ handler                               | Native adapters| Pending  |
-| WIA-08 | Biometrics handler                                 | Native adapters| Pending  |
+| WIA-04 | SecureStorage handler — Path A prototype lands; production wiring registers `EncryptedSharedPreferencesProvider` (Android) + RNKeychain-backed Swift `SecureStorageProvider` (iOS) into `SdkProviderRegistry` | Native adapters| In prototype |
+| WIA-05 | Crypto handler — register KMP's `CryptoBridgeHandler` in `SelfBridgeModule`; consumer-side providers reuse `AndroidKeystoreCryptoProvider` and `self-sdk-swift`'s `CryptoProviderImpl`. No net-new RN-only `SelfCrypto` module. | Native adapters| Pending  |
+| WIA-06 | NFC handler — register KMP's `NfcBridgeHandler`; provide RN-flavored `NfcProvider` wrapping `react-native-passport-reader` | Native adapters| Pending (depends on MOD-01/02) |
+| WIA-07 | Camera / MRZ handler — register KMP's `CameraMrzBridgeHandler`; provide RN-flavored `CameraMrzProvider` wrapping existing `MRZScannerModule` | Native adapters| Pending (depends on MOD-01/03/05) |
+| WIA-08 | Biometrics handler — register KMP's `BiometricBridgeHandler`; provide RN `BiometricProvider` wrapping `react-native-biometrics` | Native adapters| Pending  |
 | WIA-09 | Hosted URL loading + version pinning               | Hosted loading | Pending  |
 | WIA-10 | Retire RN-native Didit integration                 | Umbrella       | Pending  |
 | WIA-11 | Cutover PR — delete legacy RN screens              | Umbrella       | Pending  |
 | WIA-12 | WebView Sentry integration (cohort tags, masking)  | Observability  | Pending  |
 | WIA-13 | WebView Session Replay with PII masking            | Observability  | Pending  |
 | WIA-14 | Re-home ANA-15 attempt_id footer to webview-app    | Observability  | Pending  |
-| WIA-15 | Documents handler (delegate to databaseProvider)   | Native adapters| Pending  |
+| WIA-15 | Documents handler — register KMP's `DocumentsBridgeHandler`; provide RN `DocumentsProvider` that delegates to the existing `databaseProvider` flow | Native adapters| Pending  |
 | WIA-16 | `mode` + `verificationRequest` in lifecycle.getConfig | Operating modes | Pending  |
 
 ## Cross-Workstream Dependencies
