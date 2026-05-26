@@ -23,6 +23,7 @@
 - [Templates](./framework/TEMPLATES.md) — copy-paste templates for all three tiers
 - [Spec Execution Model](./framework/SPEC-EXECUTION-MODEL.md) — stable context plus one plan file per PR
 - [Product Spec Enhancement Prompt](./framework/PRODUCT-SPEC-ENHANCEMENT-PROMPT.md) — Figma cross-reference agent prompt
+- [HTML Spec Practices](./framework/HTML-SPEC-PRACTICES.md) — fonts, palette, layout, interactive open questions, CSS strategy
 
 Project rules and spec-writing guidelines are consolidated in the root `CLAUDE.md`.
 
