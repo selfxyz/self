@@ -364,7 +364,7 @@ const returnTo = searchParams.get('returnTo') ?? state?.returnTo;</code></pre>
       </ul>
       <p><strong>Why no compat shim needed:</strong> the bridge protocol does NOT send the literal across host↔webview. The mode value is owned independently on both sides (host sends a config object, both sides interpret it locally). Renaming both sides in sync is safe.</p>
       <p><strong>Terminology in docs:</strong> SPEC.html, AUDIT.html, and the workstream conversations all say "self-app" and "embed." The code is the lone holdout using "wallet" and "tunnel."</p>
-      <p><strong>RN code impact:</strong> the Self Wallet RN app reads the mode via <code>rn-sdk</code>. If the literal becomes 'self-app', the wallet code reads 'self-app' (matches the product name).</p>
+      <p><strong>RN code impact:</strong> the Self app RN app reads the mode via <code>rn-sdk</code>. If the literal becomes 'self-app', the wallet code reads 'self-app' (matches the product name).</p>
     `,
     options: [
       { value: "self-app-embed", label: "'self-app' | 'embed'", note: "Matches all docs + AUDIT. Larger diff (every 'wallet' usage updates). Cleanest end state. Recommended." },

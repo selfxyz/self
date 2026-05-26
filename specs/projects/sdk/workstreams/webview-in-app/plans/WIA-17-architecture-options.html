@@ -239,7 +239,7 @@
 <section id="today">
   <h2>Today — three parallel bridge implementations</h2>
   <p>
-    Every consumer (Self Wallet RN, the external native-Kotlin partner, the OSS native-shell-ios sample)
+    Every consumer (Self app RN, the external native-Kotlin partner, the OSS native-shell-ios sample)
     speaks the same JSON bridge protocol to the same WebView. But each one ships its own
     <code>MessageRouter</code> + handlers. Drift between them shows up as bugs the WebView can't tell
     apart (e.g. KMP returns <code>DOMAIN_NOT_FOUND</code> where TS returns <code>HANDLER_NOT_FOUND</code>).
@@ -250,7 +250,7 @@
 flowchart TB
   WV([WebView · webview-app])
 
-  subgraph RN["packages/rn-sdk (Self Wallet)"]
+  subgraph RN["packages/rn-sdk (Self app)"]
     direction TB
     RN_R[TS MessageRouter]
     RN_H[8x TS Handlers]
@@ -355,7 +355,7 @@ flowchart TB
 <section id="full-system">
   <h2>Full system view (consumers + shells + providers)</h2>
   <p>
-    A wider lens including all known consumers — Self Wallet (RN), the external partner (native Kotlin),
+    A wider lens including all known consumers — Self app (RN), the external partner (native Kotlin),
     OSS sample consumers (Swift), and future third-party RN apps.
   </p>
   <div class="diagram">
@@ -364,7 +364,7 @@ flowchart TB
 flowchart LR
   subgraph CONSUMERS["Consumers"]
     direction TB
-    SELF[Self Wallet · RN app]
+    SELF[Self app · RN app]
     PARTNER[External partner<br/>native Kotlin]
     THIRD[Future 3rd-party RN apps]
     SAMPLE[OSS native Swift sample]
@@ -529,7 +529,7 @@ flowchart TB
         <div class="option-note">
           MOD modules live in this repo's <code>packages/kmp-sdk/shared/src/androidMain/</code>; build
           flag <code>self.sdk.optional.nfc=true</code> opts them in. Default OSS distribution stays
-          slim (flag off); Self Wallet's <code>app/</code> turns the flags on. <code>self-webview-sdk</code>
+          slim (flag off); Self app's <code>app/</code> turns the flags on. <code>self-webview-sdk</code>
           retires.
         </div>
         <div class="oq-rec-because">
@@ -834,7 +834,7 @@ flowchart LR
     <li><strong>Per-domain PRs vs one big sweep</strong> · per-domain. Smaller revert windows; one of the durable preferences captured in <code>CLAUDE.md</code>.</li>
     <li><strong>TS handler retirement timing</strong> · same PR as each domain's migration, not a sweep at the end. Matches the "delete legacy in-PR" preference.</li>
     <li><strong>SD-06 for #1–#4</strong> · not blocking; <code>mavenLocal()</code> sufficient for the rollout.</li>
-    <li><strong>Hosted URL vs embedded bundle for Self Wallet v1</strong> · embedded bundle, per <a href="../SPEC-HOSTED-LOADING.html">SPEC-HOSTED-LOADING</a>. Hosted is a post-v1 evolution.</li>
+    <li><strong>Hosted URL vs embedded bundle for Self app v1</strong> · embedded bundle, per <a href="../SPEC-HOSTED-LOADING.html">SPEC-HOSTED-LOADING</a>. Hosted is a post-v1 evolution.</li>
     <li><strong>Bridge protocol version</strong> · stays at 1 throughout this rollout. Envelope shape changes (OQ-5) are non-version-breaking.</li>
   </ul>
 </section>

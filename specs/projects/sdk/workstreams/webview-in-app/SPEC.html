@@ -126,18 +126,18 @@
 <section id="bet">
   <h2>The Bet</h2>
   <p>
-    The React Native Self Wallet (<code>app/</code>) replaces its native screens with a single WebView that
+    The React Native Self app (<code>app/</code>) replaces its native screens with a single WebView that
     loads the deployed <code>webview-app</code>. The <strong>RN app becomes the native shell.</strong> Custom
     Kotlin/Swift shells (<code>native-shells-lite/</code>) remain active but serve external SDK consumers
-    (KMP, partner wallets), not Self Wallet itself.
+    (KMP, partner wallets), not Self app itself.
   </p>
 </section>
 
 <section id="why">
   <h2>Why</h2>
   <ul>
-    <li>The <code>webview-app</code> is the active product surface and is already ~80% of a full wallet UI;
-      shipping it inside Self Wallet collapses two parallel UI tracks into one and starts dogfooding the
+    <li>The <code>webview-app</code> is the active product surface and is already ~80% of a full Self-app UI;
+      shipping it inside Self app collapses two parallel UI tracks into one and starts dogfooding the
       SDK in production.</li>
     <li>The RN app already owns the hardware: NFC, MRZ, QR, keychain, biometrics. Re-implementing those in
       a Kotlin/Swift shell duplicates production-tested modules.</li>
@@ -149,12 +149,12 @@
 <section id="north-star">
   <h2>North Star</h2>
   <ul>
-    <li><strong>Goal:</strong> Self Wallet renders the verification flow from a hosted <code>webview-app</code>
+    <li><strong>Goal:</strong> Self app renders the verification flow from a hosted <code>webview-app</code>
       URL, with the existing RN process providing the hardware, secure storage, and lifecycle handlers via
       the bridge protocol.</li>
-    <li><strong>Success metric:</strong> A user installs the next Self Wallet release, completes registration
+    <li><strong>Success metric:</strong> A user installs the next Self app release, completes registration
       and disclose end-to-end without any RN screen being rendered (Splash + error boundary only), and the
-      keychain entries written by the WebView open the same wallet on next launch.</li>
+      keychain entries written by the WebView open the same Self-app session on next launch.</li>
     <li><strong>Constraint:</strong> The bridge JSON contract is the only coupling between the RN host and
       the WebView. No imports across the boundary, no platform extensions, no side channels.</li>
   </ul>
@@ -187,7 +187,7 @@
     <li><code>app/</code> — splash, error boundary, deep-link receiver, workspace dep on
       <code>@selfxyz/rn-sdk</code>. Imports and mounts the shell at the root of the navigation graph.</li>
     <li>Future 3rd-party RN apps install <code>@selfxyz/rn-sdk</code> from npm and consume the same shell +
-      handlers. Self Wallet is consumer #1, not the only consumer.</li>
+      handlers. Self app is consumer #1, not the only consumer.</li>
   </ul>
 </section>
 
@@ -210,7 +210,7 @@
       which instantiates a <code>MessageRouter</code>, registers KMP handlers, and bridges inbound JSON /
       outbound JS-injection to React Native's message bus, and a Swift counterpart for iOS that does the
       same against the XCFramework via <code>IosProviderRegistry</code>.</li>
-    <li><strong>Self Wallet (and any RN consumer) supplies platform providers</strong> that wrap existing
+    <li><strong>Self app (and any RN consumer) supplies platform providers</strong> that wrap existing
       RN-native modules: <code>react-native-keychain</code> → <code>SecureStorageProvider</code>,
       AndroidKeyStore / iOS Security Framework → <code>CryptoProvider</code>,
       <code>react-native-passport-reader</code> → <code>NfcProvider</code>, <code>MRZScannerModule</code> →
@@ -344,7 +344,7 @@
 <section id="deps">
   <h2>Cross-Workstream Dependencies</h2>
   <ul>
-    <li><strong><code>webview/</code> workstream</strong> must complete enough parity work that Self Wallet
+    <li><strong><code>webview/</code> workstream</strong> must complete enough parity work that Self app
       users can register, disclose, and manage settings without falling back to RN. The umbrella tracks
       readiness via the existing <code>webview/</code> backlog; blocking items are WV-05 (Didit web SDK to
       production), WV-13–WV-16 (remaining screens), and settings parity.</li>
@@ -401,7 +401,7 @@
 <section id="invariants">
   <h2>Invariants</h2>
   <ol>
-    <li>The WebView must not know which native shell it runs inside. Bridge messages from Self Wallet are
+    <li>The WebView must not know which native shell it runs inside. Bridge messages from Self app are
       indistinguishable from bridge messages from the Kotlin/Swift shells.</li>
     <li>Keychain operations originate in TypeScript inside the WebView, are sent over the bridge, and
       execute in the RN host's native modules. No JS-side fallback for keychain reads or writes.</li>

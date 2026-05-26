@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>SPEC — Operating Modes (wallet vs tunnel)</title>
+<title>SPEC — Operating Modes (self-app vs embed)</title>
 <style>
   :root {
     --bg: #fafbfc;
@@ -59,7 +59,7 @@
 <body>
 
 <header class="topbar">
-  <h1>SPEC — Operating Modes (wallet vs tunnel)</h1>
+  <h1>SPEC — Operating Modes (self-app vs embed)</h1>
   <span class="pill done">WIA-16 done</span>
   <span class="pill">2026-05-26</span>
   <span class="spacer"></span>
@@ -89,11 +89,11 @@
   <h2>Scope</h2>
   <p>The same <code>webview-app</code> bundle ships two operating modes:</p>
   <ul>
-    <li><strong>Tunnel mode</strong> — host invokes the WebView for a single verification. The user
+    <li><strong>Embed mode</strong> — host invokes the WebView for a single verification. The user
       registers (if not already), discloses, the host receives a terminal result, the WebView exits.
       No home, no settings, no persistent UI. This is what 3rd-party RN apps (and the eventual
       Kotlin/Swift SDK consumers) embed.</li>
-    <li><strong>Wallet mode</strong> — the WebView is the persistent UI of the Self Wallet RN app.
+    <li><strong>Self-app mode</strong> — the WebView is the persistent UI of the Self app RN app.
       Home screen, proof history, settings (cloud backup, recovery, notifications), multiple entry
       points (deep links, QR scans, dev shortcuts). Long-lived; survives across attempts.</li>
   </ul>
@@ -111,9 +111,9 @@
   <h3>In scope</h3>
   <ul>
     <li>The bridge-level signal that selects mode at boot.</li>
-    <li>Tunnel-mode termination semantics (when does the WebView call <code>lifecycle.setResult</code>
+    <li>Embed-mode termination semantics (when does the WebView call <code>lifecycle.setResult</code>
       / <code>lifecycle.dismiss</code>).</li>
-    <li>Wallet-mode persistence semantics (when does the WebView stay resident vs unmount).</li>
+    <li>Self-app-mode persistence semantics (when does the WebView stay resident vs unmount).</li>
     <li>Mode-exclusive surfaces (what each mode renders / does not render).</li>
     <li>Shared surfaces (registration, proving, KYC capture) and how they branch terminally based on
       mode.</li>
@@ -135,29 +135,29 @@
   <ol>
     <li><strong>Mode is signaled via <code>lifecycle.getConfig()</code> response, not via URL or query
       param.</strong> The WebView calls <code>bridge.lifecycle.getConfig()</code> during its initial
-      mount. The host returns <code>{ mode: 'tunnel' | 'wallet', verificationRequest?, ... }</code>. The
+      mount. The host returns <code>{ mode: 'self-app' | 'embed', verificationRequest?, ... }</code>. The
       WebView routes accordingly.</li>
-    <li><strong>Default mode is wallet.</strong> If the host returns no mode field, or the WebView is
-      opened in a browser without a bridge, it boots into wallet mode at <code>/</code>. This keeps the
-      Self Wallet path unchanged and makes browser-based testing predictable.</li>
-    <li><strong>Tunnel requires an inbound <code>verificationRequest</code>.</strong> A host that
-      declares <code>mode: 'tunnel'</code> must include a <code>verificationRequest</code> payload with
-      at minimum <code>userId</code>, <code>scope</code>, and <code>disclosures</code>. A tunnel-mode
+    <li><strong>Default mode is self-app.</strong> If the host returns no mode field, or the WebView is
+      opened in a browser without a bridge, it boots into self-app mode at <code>/</code>. This keeps the
+      Self app path unchanged and makes browser-based testing predictable.</li>
+    <li><strong>Embed mode requires an inbound <code>verificationRequest</code>.</strong> A host that
+      declares <code>mode: 'embed'</code> must include a <code>verificationRequest</code> payload with
+      at minimum <code>userId</code>, <code>scope</code>, and <code>disclosures</code>. An embed-mode
       boot with a missing or malformed request fails closed — the WebView renders a recoverable error
-      rather than falling back to wallet mode.</li>
-    <li><strong>Tunnel terminates exactly once.</strong> Successful disclose calls
+      rather than falling back to self-app mode.</li>
+    <li><strong>Embed mode terminates exactly once.</strong> Successful disclose calls
       <code>lifecycle.setResult({ success: true, ... })</code> then <code>lifecycle.dismiss()</code>.
       Failure calls <code>setResult({ success: false, errorCode, errorMessage })</code> then
       <code>dismiss()</code>. Cancellation calls <code>dismiss()</code> only. The WebView does not
-      navigate to a home screen after a terminal event in tunnel mode — there is no home screen.</li>
-    <li><strong>Wallet stays resident.</strong> A completed flow in wallet mode (proof generated,
+      navigate to a home screen after a terminal event in embed mode — there is no home screen.</li>
+    <li><strong>Self-app stays resident.</strong> A completed flow in self-app mode (proof generated,
       settings change saved, etc.) returns the user to <code>/</code> (or whichever stack root makes
-      sense for that flow). Wallet mode never calls <code>lifecycle.dismiss()</code> on its own — only
+      sense for that flow). Self-app mode never calls <code>lifecycle.dismiss()</code> on its own — only
       the host unmounts it.</li>
     <li><strong>Shared screens infer mode from a context, not from props.</strong> The registration
       flow, proving machine, KYC capture, and recovery flow exist in both modes. They consume an
-      <code>OperatingMode</code> context to decide terminal behavior (tunnel: emit result + dismiss;
-      wallet: navigate home). Per-screen mode props are forbidden.</li>
+      <code>OperatingMode</code> context to decide terminal behavior (embed: emit result + dismiss;
+      self-app: navigate home). Per-screen mode props are forbidden.</li>
     <li><strong><code>/tunnel/*</code> URL prefix stays internal.</strong> The host does not navigate
       the WebView to <code>/tunnel/tour/1</code>; the WebView itself chooses where to start based on the
       mode value from <code>getConfig</code>. The URL prefix is an implementation detail of how tunnel
@@ -171,17 +171,17 @@
    → bridge.lifecycle.getConfig
         → { mode, verificationRequest, ... }
    → mode?
-        ├─ tunnel
+        ├─ embed
         │    → verificationRequest present + valid?
         │         ├─ no  → Recoverable error
         │         │         → setResult(failure) + dismiss
         │         └─ yes → /tunnel/tour/1
-        ├─ wallet (or missing) → / HomeScreen
+        ├─ self-app (or missing) → / HomeScreen
 
 shared registration → shared proving
    → OperatingMode context
-        ├─ tunnel → setResult + dismiss
-        └─ wallet → navigate /</pre>
+        ├─ embed    → setResult + dismiss
+        └─ self-app → navigate /</pre>
   <p>
     The shared engine (registration, proving, KYC capture) is mode-blind in its internals. Terminal
     navigation reads the <code>OperatingMode</code> context once and routes accordingly.
@@ -191,7 +191,7 @@ shared registration → shared proving
 <section id="surfaces">
   <h2>Mode-exclusive surfaces</h2>
   <table>
-    <thead><tr><th>Surface</th><th>Wallet</th><th>Tunnel</th></tr></thead>
+    <thead><tr><th>Surface</th><th>Self-app</th><th>Embed</th></tr></thead>
     <tbody>
       <tr><td><code>/</code> HomeScreen (document catalog)</td><td class="check">✓</td><td class="dash">—</td></tr>
       <tr><td><code>/settings/*</code> (cloud backup, etc.)</td><td class="check">✓</td><td class="dash">—</td></tr>
@@ -221,19 +221,19 @@ shared registration → shared proving
       install.</li>
     <li>Mode is decided once at WebView boot and never changes for the lifetime of that WebView
       instance.</li>
-    <li>Tunnel mode always emits exactly one terminal envelope to the host (<code>setResult</code> for
-      success/failure, <code>dismiss</code> for cancel). A tunnel that completes without emitting a
+    <li>Embed mode always emits exactly one terminal envelope to the host (<code>setResult</code> for
+      success/failure, <code>dismiss</code> for cancel). An embed flow that completes without emitting a
       terminal envelope is a bug.</li>
-    <li>Wallet mode never emits a terminal envelope on its own. Only the host (RN app) can unmount the
+    <li>Self-app mode never emits a terminal envelope on its own. Only the host (RN app) can unmount the
       WebView.</li>
-    <li>Wallet-only routes are unreachable from tunnel mode. If a tunnel flow tries to navigate to
+    <li>Self-app-only routes are unreachable from embed mode. If a tunnel flow tries to navigate to
       <code>/settings/...</code>, the router returns a 404-equivalent and the flow continues at its
       current step.</li>
-    <li>Tunnel-only routes are unreachable from wallet mode by the same rule, with the exception that
-      wallet flows MAY internally use the shared registration/proving screens (which are not
-      tunnel-only).</li>
+    <li>Embed-only routes are unreachable from self-app mode by the same rule, with the exception that
+      self-app flows MAY internally use the shared registration/proving screens (which are not
+      embed-only).</li>
     <li>Browser-host fallback (WebView opened in a browser tab with no native transport) always renders
-      wallet mode. Tunnel mode is a native-host feature; reviewer/QA browser sessions never see it.</li>
+      self-app mode. Embed mode is a native-host feature; reviewer/QA browser sessions never see it.</li>
   </ol>
 </section>
 
@@ -253,11 +253,11 @@ shared registration → shared proving
     <li><code>WV-MD-01</code> Mode-aware initial routing in webview-app entry.</li>
     <li><code>WV-MD-02</code> <code>OperatingMode</code> React context + provider, consumed by shared
       registration/proving/recovery flows for terminal navigation.</li>
-    <li><code>WV-MD-03</code> Tunnel-mode guard: validate <code>verificationRequest</code> shape, fail
+    <li><code>WV-MD-03</code> Embed-mode guard: validate <code>verificationRequest</code> shape, fail
       closed on missing/malformed input.</li>
     <li><code>WV-MD-04</code> Router 404s for cross-mode navigation attempts.</li>
-    <li><code>WV-MD-05</code> Wallet-mode parity work that was already in the <code>webview/</code>
-      backlog (settings, deep-link router, etc.) explicitly tagged as wallet-mode.</li>
+    <li><code>WV-MD-05</code> Self-app-mode parity work that was already in the <code>webview/</code>
+      backlog (settings, deep-link router, etc.) explicitly tagged as self-app-mode.</li>
   </ul>
   <p>
     The <code>webview/</code> workstream's <code>SPEC.md</code> should add the <code>WV-MD-*</code>
@@ -268,18 +268,18 @@ shared registration → shared proving
 <section id="host-implications">
   <h2>RN host implications</h2>
   <p>
-    The Self Wallet RN app, when mounting <code>&lt;SelfVerification /&gt;</code> (or the eventual
-    <code>&lt;SelfWalletShell /&gt;</code>), passes <code>mode: 'wallet'</code> in its
+    The Self app RN app, when mounting <code>&lt;SelfVerification /&gt;</code> (or the eventual
+    <code>&lt;SelfAppShell /&gt;</code>), passes <code>mode: 'self-app'</code> in its
     <code>lifecycle.getConfig</code> handler response. 3rd-party RN apps embedding
-    <code>@selfxyz/rn-sdk</code> pass <code>mode: 'tunnel'</code> along with their
+    <code>@selfxyz/rn-sdk</code> pass <code>mode: 'embed'</code> along with their
     <code>verificationRequest</code>. The handler in <code>packages/rn-sdk/</code>'s
     <code>LifecycleHandler</code> accepts an optional <code>mode</code> field in its config and defaults
-    to wallet when consuming hosts do not specify.
+    to self-app when consuming hosts do not specify.
   </p>
   <p>
     This means a small change to <code>LifecycleHandler</code> in <code>rn-sdk</code>: the
     <code>getConfig</code> return object gains a <code>mode</code> field, plumbed from a new prop on
-    <code>&lt;SelfVerification /&gt;</code> (or a separate <code>&lt;SelfWalletShell /&gt;</code>
+    <code>&lt;SelfVerification /&gt;</code> (or a separate <code>&lt;SelfAppShell /&gt;</code>
     component, TBD in <code>WIA-16</code>'s plan).
   </p>
 </section>
@@ -299,15 +299,15 @@ shared registration → shared proving
 <section id="validation">
   <h2>Validation</h2>
   <ul>
-    <li>A wallet-mode boot lands on <code>/</code> and shows HomeScreen with no
+    <li>A self-app-mode boot lands on <code>/</code> and shows HomeScreen with no
       <code>verificationRequest</code> consumed.</li>
-    <li>A tunnel-mode boot with a valid <code>verificationRequest</code> lands on
+    <li>A embed-mode boot with a valid <code>verificationRequest</code> lands on
       <code>/tunnel/tour/1</code> and completes by emitting <code>setResult</code> + <code>dismiss</code>.</li>
-    <li>A tunnel-mode boot with a missing <code>verificationRequest</code> shows a recoverable error
+    <li>A embed-mode boot with a missing <code>verificationRequest</code> shows a recoverable error
       and emits <code>setResult({ success: false, errorCode: 'INVALID_REQUEST' })</code>.</li>
-    <li>A tunnel flow that tries to navigate to <code>/settings/security</code> stays on its current
+    <li>An embed flow that tries to navigate to <code>/settings/security</code> stays on its current
       screen; the router does not honor the navigation.</li>
-    <li>A WebView opened in a desktop browser with no native bridge boots into wallet mode regardless
+    <li>A WebView opened in a desktop browser with no native bridge boots into self-app mode regardless
       of any query params.</li>
   </ul>
 </section>

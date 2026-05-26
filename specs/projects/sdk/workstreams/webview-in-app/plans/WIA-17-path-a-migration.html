@@ -110,8 +110,8 @@
     cheap.
   </p>
   <p class="callout">
-    This plan does <strong>not</strong> touch <code>app/</code> (Self
-    Wallet) integration. That happens at WIA-11 cutover, after all
+    This plan does <strong>not</strong> touch <code>app/</code> (Self app)
+    integration. That happens at WIA-11 cutover, after all
     domains are migrated and SD-06 has shipped hosted Maven publishing.
     The same applies to converging the
     <code>selfxyz/self</code> ↔ <code>selfxyz/self-webview-sdk</code>
@@ -159,13 +159,13 @@
     Currently <code>rn-sdk-test-app</code> resolves
     <code>xyz.self.sdk:shared-android:0.1.0</code> via
     <code>mavenLocal()</code>. That works for prototype dev but forces
-    every consumer (including Self Wallet) to run
+    every consumer (including Self app) to run
     <code>./gradlew publishToMavenLocal</code> before building. SD-06
     publishes KMP artifacts to GitHub Packages so consumers just declare
     a Maven repo + creds. <code>mavenLocal()</code> is sufficient for
     domains #1–#4. SD-06 is the natural delivery vehicle for P-1 option A
     (publish the private fork as an artifact), and is <strong>required
-    regardless</strong> before Self Wallet integration (WIA-11 cutover).
+    regardless</strong> before Self app integration (WIA-11 cutover).
   </p>
   <p>
     <strong>Decision owner:</strong> Ayman (assigned). <strong>Deadline:</strong>
@@ -399,7 +399,7 @@
 <section id="oos">
   <h2>Out of scope</h2>
   <ul>
-    <li><strong><code>app/</code> (Self Wallet) integration.</strong> Comes at WIA-11 cutover, after all domains migrated + SD-06 shipped.</li>
+    <li><strong><code>app/</code> (Self app) integration.</strong> Comes at WIA-11 cutover, after all domains migrated + SD-06 shipped.</li>
     <li><strong>Re-enabling KMP iOS cinterop.</strong> Larger decision owned by Seshanth. This rollout works with cinterop disabled by going through the Swift provider model.</li>
     <li><strong>Converging the two-repo split.</strong> Captured as prerequisite P-1, not a sub-task of this plan.</li>
     <li><strong>Bridge protocol version bumps.</strong> The drift in the parking lot is envelope-level; the protocol version stays at 1 throughout this rollout.</li>

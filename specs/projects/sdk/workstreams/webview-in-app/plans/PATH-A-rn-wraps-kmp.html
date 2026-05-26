@@ -107,7 +107,7 @@
     commits to building a new <code>SelfCrypto</code> native module inside <code>packages/rn-sdk/</code>. But
     <code>packages/kmp-sdk/</code> already has Kotlin-side handlers for <code>secureStorage</code>, <code>crypto</code>, and
     <code>lifecycle</code>, delegated through a Provider Registry pattern. Building them twice — once in
-    <code>kmp-sdk</code> for the native-Kotlin consumer, once in <code>rn-sdk</code> for Self Wallet — is duplication
+    <code>kmp-sdk</code> for the native-Kotlin consumer, once in <code>rn-sdk</code> for Self app — is duplication
     that grows linearly with every future bridge change.
   </p>
   <p>
@@ -131,7 +131,7 @@
   <p>
     The prototype lives behind a feature flag — existing TS handlers and the existing
     <code>SelfVerification</code> behavior are untouched. The PR is mergeable to <code>feat/webview-in-app</code>
-    without changing default behavior for Self Wallet or any existing consumer.
+    without changing default behavior for Self app or any existing consumer.
   </p>
 </section>
 
@@ -149,7 +149,7 @@
   <ul>
     <li>iOS. Defer until Android proves the binding model — KMP iOS still has cinterop disabled and stub handlers, and adds a layer of unknown the prototype does not need.</li>
     <li>Replacing or deleting existing TS handlers. They keep working as the default path.</li>
-    <li>Self Wallet (<code>app/</code>) integration. The prototype is exercised from <code>rn-sdk-test-app</code>.</li>
+    <li>Self app (<code>app/</code>) integration. The prototype is exercised from <code>rn-sdk-test-app</code>.</li>
     <li>Remote publishing of KMP artifacts. SD-06 (<code>SELF-2534</code>) is already specced and owned by someone else; this PR uses <code>mavenLocal()</code>.</li>
     <li>Convergence of the <code>selfxyz/self</code> ↔ <code>selfxyz/self-webview-sdk</code> <code>kmp-sdk</code> forks. This PR consumes <em>this</em> repo's <code>packages/kmp-sdk/</code> as-is.</li>
     <li>Bridge protocol envelope cleanup (the small KMP vs TS drift documented in the research notes).</li>
@@ -212,7 +212,7 @@
   <h2>Abort conditions</h2>
   <p>Stop the prototype and write up findings without merging if any are true:</p>
   <ol>
-    <li>KMP AAR cannot be consumed by <code>packages/rn-sdk/android/build.gradle</code> without making the <em>host app</em> add bespoke repositories (mavenLocal in particular doesn't propagate transitively the way mavenCentral does; if the only path is "Self Wallet's <code>settings.gradle</code> must reference mavenLocal," that's an unacceptable consumer-side leak for a prototype). <strong>Mitigated:</strong> the KMP dep is declared <code>compileOnly</code> in <code>rn-sdk</code> and the package wraps <code>SelfBridgeModule</code> instantiation in <code>try/catch</code>. Consumers opt in by adding <code>xyz.self.sdk:shared-android</code> to their own host module.</li>
+    <li>KMP AAR cannot be consumed by <code>packages/rn-sdk/android/build.gradle</code> without making the <em>host app</em> add bespoke repositories (mavenLocal in particular doesn't propagate transitively the way mavenCentral does; if the only path is "Self app's <code>settings.gradle</code> must reference mavenLocal," that's an unacceptable consumer-side leak for a prototype). <strong>Mitigated:</strong> the KMP dep is declared <code>compileOnly</code> in <code>rn-sdk</code> and the package wraps <code>SelfBridgeModule</code> instantiation in <code>try/catch</code>. Consumers opt in by adding <code>xyz.self.sdk:shared-android</code> to their own host module.</li>
     <li>Kotlin version conflicts between <code>rn-sdk/android</code>'s <code>1.9.24</code> and <code>kmp-sdk</code>'s Kotlin Multiplatform plugin can't be resolved without forcing the host app onto a specific Kotlin version.</li>
     <li>The native glue total (the two new Kotlin files) exceeds ~250 LOC.</li>
     <li>Round-tripping <code>secureStorage.set</code> takes longer than 50ms on a release build on a recent emulator.</li>

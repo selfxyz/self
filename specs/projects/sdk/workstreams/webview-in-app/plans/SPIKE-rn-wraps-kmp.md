@@ -112,7 +112,7 @@ Stop and write up findings without finishing if any of these become true:
 - iOS. Defer until Android proves the binding model.
 - Any handler other than `secureStorage`.
 - Replacing TS handlers in `rn-sdk` for domains other than secureStorage.
-- Self Wallet integration. The prototype lives in `rn-sdk-test-app` only.
+- Self app integration. The prototype lives in `rn-sdk-test-app` only.
 - Production publishing (SD-06). Local Maven is sufficient.
 - Removing the existing TS `MessageRouter` or TS handlers. Both paths coexist behind the gate flag during the prototype.
 - Convergence of `selfxyz/self` ↔ `selfxyz/self-webview-sdk` kmp-sdk forks. That's a separate decision — see below.

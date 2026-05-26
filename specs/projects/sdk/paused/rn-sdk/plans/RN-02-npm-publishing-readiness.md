@@ -22,7 +22,7 @@
 ## Out of Scope
 
 - actual publish execution
-- Self Wallet integration fixes
+- Self app integration fixes
 
 ## Files to Modify
 

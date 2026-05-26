@@ -314,7 +314,7 @@
 <section id="tldr" class="tldr">
   <h2>TL;DR</h2>
   <p>
-    The SDK runs in two modes — <strong>self-app</strong> (Self Wallet, full UX) and <strong>embed</strong> (third-party host like Acme, one-shot verification). Today the router doesn't know which mode a route belongs to. ~14 registered routes are pre-built self-app screens awaiting wiring (proof history, receipts, KYC pending/success, points, backup prompt); a smaller set (~5) is genuinely orphan and should be deleted or moved to <code>/dev/*</code>. This workstream defines the routing contract — mode declaration at registration, cluster-owned close, single boot decision, back/close terminology — and a classification backlog. Wiring of self-app pre-builds belongs to WV-13 / WV-14 downstream.
+    The SDK runs in two modes — <strong>self-app</strong> (Self app, full UX) and <strong>embed</strong> (third-party host like Acme, one-shot verification). Today the router doesn't know which mode a route belongs to. ~14 registered routes are pre-built self-app screens awaiting wiring (proof history, receipts, KYC pending/success, points, backup prompt); a smaller set (~5) is genuinely orphan and should be deleted or moved to <code>/dev/*</code>. This workstream defines the routing contract — mode declaration at registration, cluster-owned close, single boot decision, back/close terminology — and a classification backlog. Wiring of self-app pre-builds belongs to WV-13 / WV-14 downstream.
   </p>
   <p style="font-size:12px;color:var(--muted);margin-top:8px">
     Triage every unwired route in the board in <a href="./AUDIT.html">AUDIT.html</a> — export pastes a disposition table into NAV-01's plan.
@@ -332,7 +332,7 @@
   <div class="modes">
     <div class="mode-card">
       <h3>self-app <span class="pill">mode=self-app</span></h3>
-      <p>The Self Wallet app. Long-lived, multi-entry. Home, settings, document management, proof history, receipts, points, recovery, backup prompts, account state.</p>
+      <p>The Self app app. Long-lived, multi-entry. Home, settings, document management, proof history, receipts, points, recovery, backup prompts, account state.</p>
       <p style="margin-top:6px;font-size:12px"><strong>Lifecycle:</strong> persistent. User opens, navigates, leaves, returns.</p>
     </div>
     <div class="mode-card embed">

@@ -96,7 +96,7 @@
   </p>
   <p>
     Hosted HTTPS URL loading from <code>verify.self.xyz</code> is a future evolution under the
-    <code>sdk-distribution/</code> workstream; it is not the v1 mechanism for Self Wallet because
+    <code>sdk-distribution/</code> workstream; it is not the v1 mechanism for Self app because
     (a) embedded bundles avoid offline-first-launch friction, (b) HTTPS introduces a single point of
     failure if the CDN goes down, and (c) WebView caches across hosted deploys are out of our control.
   </p>
@@ -132,7 +132,7 @@
       <code>${RNFS.MainBundlePath}/self-wallet/index.html</code> (or relative path fallback). The bundle
       is produced by <code>@selfxyz/webview-app</code> build and copied into
       <code>packages/rn-sdk/assets/self-wallet/</code> by the build-pipeline (BP-01, done).</li>
-    <li><strong>Each Self Wallet release is paired with a webview-app build.</strong> The bundle is
+    <li><strong>Each Self app release is paired with a webview-app build.</strong> The bundle is
       frozen at app build time. Updating the WebView requires shipping a new RN binary release — no OTA.
       The app-version constant in the RN host's release notes carries the webview-app commit it was
       built against.</li>
@@ -145,7 +145,7 @@
       recoverable error with a retry button. The 3s / 10s thresholds match the bridge host's invariant
       in <a href="./SPEC-BRIDGE-HOST.html">SPEC-BRIDGE-HOST</a>.</li>
     <li><strong>Version mismatch fails closed.</strong> If the bundled WebView's handshake advertises a
-      protocol version the host does not support, the host shows a "Please update Self Wallet" error and
+      protocol version the host does not support, the host shows a "Please update Self app" error and
       captures a Sentry exception. The host does not attempt a best-effort downgrade.</li>
     <li><strong>Hosted URL loading is a future evolution, not v1.</strong> When and if we want OTA-style
       updates without app store cycles, the <code>sdk-distribution/</code> workstream wires
@@ -170,7 +170,7 @@ Shell → WebView: load index.html from app bundle
   │    Shell → App: show recoverable error screen
   └─ version mismatch on ready
        Shell → Sentry: captureException(webview_protocol_mismatch)
-       Shell → App: show "Please update Self Wallet"</pre>
+       Shell → App: show "Please update Self app"</pre>
 </section>
 
 <section id="invariants">
@@ -248,7 +248,7 @@ Shell → WebView: load index.html from app bundle
     <li>Synthetic <code>devServerUrl</code> in a release build → prop ignored, embedded bundle loads
       (because the dev code path is compiled out).</li>
     <li>Synthetic version mismatch (host pinned to v1, WebView handshake declares v2) → "Please update
-      Self Wallet" screen, Sentry exception captured.</li>
+      Self app" screen, Sentry exception captured.</li>
   </ul>
 </section>
 

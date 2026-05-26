@@ -284,7 +284,7 @@ export function decideBootRoute(input: BootInputs): BootAction { ... }</code></p
     <li><code>cd packages/webview-app &amp;&amp; yarn test components/bootDecision</code> — all 6 unit tests pass.</li>
     <li><code>yarn types</code> — clean.</li>
     <li><code>yarn build</code> — clean.</li>
-    <li>Manual: launch the dev server with no <code>?mode=</code> param → lands on <code>/</code> (wallet mode).</li>
+    <li>Manual: launch the dev server with no <code>?mode=</code> param → lands on <code>/</code> (self-app mode).</li>
     <li>Manual: launch with <code>?mode=tunnel</code> + valid verification request → lands on <code>/tunnel/tour/1</code>.</li>
     <li>Manual: launch with <code>?mode=tunnel</code> + malformed request → <em>(1)</em> the page renders <code>/embed/error</code> with the generic copy; <em>(2)</em> bridge receives <code>setResult({success:false, errorCode:'INVALID_REQUEST'})</code> + <code>dismiss</code>. Confirm via bridge inspector / log.</li>
     <li><code>grep -rn "ModeBoot" packages/webview-app/src</code> — zero hits (rename complete).</li>

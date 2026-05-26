@@ -298,7 +298,7 @@ When working with Linear issues during development:
 
 ## SDK Architecture
 
-The Self Wallet app serves as a **test environment** for the SDK refactor. For SDK architecture context:
+The Self app app serves as a **test environment** for the SDK refactor. For SDK architecture context:
 
 - **[SDK Overview](../specs/projects/sdk/OVERVIEW.md)** — System architecture, bridge protocol, decision matrix (read-only reference)
 - **Implementation specs** — Canonical source is `specs/projects/sdk/workstreams/<scope>/plans/` (version-controlled). Linear documents attached to issues are mirrored copies for tracking/discovery. When in doubt, trust the repo spec.

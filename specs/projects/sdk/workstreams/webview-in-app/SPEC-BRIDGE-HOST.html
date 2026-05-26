@@ -123,7 +123,7 @@
 
 <section id="architecture">
   <h2>Architecture</h2>
-  <pre>RN Host (Self Wallet)
+  <pre>RN Host (Self app)
   ├─ Splash / Init
   ├─ Error Boundary
   └─ WebView Shell
@@ -161,7 +161,7 @@ WebView (webview-app)
   <ol>
     <li><strong>The WebView component is owned by <code>@selfxyz/rn-sdk</code>.</strong> The package
       imports the bridge transport adapter from <code>@selfxyz/webview-bridge</code> and wires it to a
-      <code>react-native-webview</code> ref. Consumer apps (Self Wallet today, 3rd-party RN apps later)
+      <code>react-native-webview</code> ref. Consumer apps (Self app today, 3rd-party RN apps later)
       mount the exported component and pass in only the host-app concerns (splash, error boundary,
       deep-link payload). The shell itself is library code.</li>
     <li><strong>One message router, ten domains, no extensions.</strong> The router accepts only the

@@ -322,7 +322,7 @@
 
 <section id="overview">
   <h2>Overview</h2>
-  <p style="margin-top:0;color:var(--muted)">A snapshot of the route graph as it exists today. The SDK runs in two modes — <strong style="color:var(--self-app)">self-app</strong> (full Self Wallet UX) and <strong style="color:var(--embed)">embed</strong> (third-party host, one-shot verification). Most "unreachable" routes are pre-built self-app screens awaiting WV-13 / WV-14 wiring — not deletion candidates. This audit feeds <a href="./SPEC.html">SPEC.html</a>'s NAV-* backlog, especially NAV-01 (route classification).</p>
+  <p style="margin-top:0;color:var(--muted)">A snapshot of the route graph as it exists today. The SDK runs in two modes — <strong style="color:var(--self-app)">self-app</strong> (full Self app UX) and <strong style="color:var(--embed)">embed</strong> (third-party host, one-shot verification). Most "unreachable" routes are pre-built self-app screens awaiting WV-13 / WV-14 wiring — not deletion candidates. This audit feeds <a href="./SPEC.html">SPEC.html</a>'s NAV-* backlog, especially NAV-01 (route classification).</p>
   <div class="stats">
     <div class="stat self-app"><div class="num" id="stat-selfapp">~14</div><div class="label">Self-app pre-builds</div></div>
     <div class="stat med"><div class="num" id="stat-truly">~5</div><div class="label">True orphans</div></div>
@@ -334,7 +334,7 @@
 
 <section id="graphs">
   <h2>Route Graphs</h2>
-  <p style="margin-top:0;color:var(--muted);font-size:13px">Three views. <strong style="color:var(--embed)">Embed flow</strong> is the focused one-shot path used by third-party hosts. <strong style="color:var(--self-app)">Self-app surface</strong> is what the Self Wallet uses (target state with pre-builds wired). <strong>Full (current)</strong> is the actual state of <code>App.tsx</code> today, including every unwired pre-build.</p>
+  <p style="margin-top:0;color:var(--muted);font-size:13px">Three views. <strong style="color:var(--embed)">Embed flow</strong> is the focused one-shot path used by third-party hosts. <strong style="color:var(--self-app)">Self-app surface</strong> is what the Self app uses (target state with pre-builds wired). <strong>Full (current)</strong> is the actual state of <code>App.tsx</code> today, including every unwired pre-build.</p>
 
   <div class="tabs">
     <div class="tab active" data-tab="embed">Embed flow (target)</div>
@@ -394,7 +394,7 @@ flowchart TD
     <div class="mermaid-wrap">
 <pre class="mermaid">
 flowchart TD
-    Launch([Self Wallet open]) --> Home["/<br/>HomeScreen"]
+    Launch([Self app open]) --> Home["/<br/>HomeScreen"]
     Home --> Settings["/settings"]
     Home --> Manage["/docs"]
     Home -->|no docs yet| Tour["/tour/:step"]
@@ -598,7 +598,7 @@ flowchart TD
       <h3>Self-app pre-builds awaiting wiring (~9)</h3>
       <span class="sev-badge sev-med">Medium severity</span>
     </div>
-    <p>Pre-built self-app screens reachable only via <code>DevRouteMenu</code> — Self Wallet pieces that haven't been hooked into production navigation yet:</p>
+    <p>Pre-built self-app screens reachable only via <code>DevRouteMenu</code> — Self app pieces that haven't been hooked into production navigation yet:</p>
     <ul>
       <li>Proof artifacts: <code>/proving/history</code>, <code>/proving/receipt</code>, <code>/proving/generation-success</code>, <code>/proving/backup-prompt</code>, <code>/proving/kyc-pending</code>, <code>/proving/kyc-success</code></li>
       <li>Account: <code>/account/verified</code></li>

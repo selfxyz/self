@@ -1,7 +1,7 @@
 # Onboarding Analytics & Funnel — Implementation Spec
 
 > Last updated: 2026-05-07
-> Owner: Self Wallet / Product Analytics
+> Owner: Self app / Product Analytics
 > Project: [SDK Overview](../../OVERVIEW.md)
 > Status: Active
 

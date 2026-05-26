@@ -2,13 +2,13 @@
 
 > Last updated: 2026-05-19
 > Owner: Self Engineering
-> Status: Active (WebView-first; Self Wallet adopts the WebView as its host via `webview-in-app`)
+> Status: Active (WebView-first; Self app adopts the WebView as its host via `webview-in-app`)
 
 ## Current Scope
 
 On **May 19, 2026**, the SDK initiative gained a new track:
 
-- The **Self Wallet RN app (`app/`) is becoming a bridge-compatible
+- The **Self app RN app (`app/`) is becoming a bridge-compatible
   WebView host.** The wallet's UI surfaces are being replaced with a
   single WebView loading the deployed `webview-app`. The existing
   `native-shell-android/ios` packages remain active but serve
@@ -144,7 +144,7 @@ See [KMP Revival Spec](./workstreams/kmp-revival/SPEC.md) for details.
 | Test App             | `packages/sdk-test-app/`                                          | Deferred | Future native E2E harness                                                          | Not required for current UI migration          |
 | KMP Native Shell     | `packages/kmp-sdk/`                                               | Active   | Native shell for KMP consumers — 3-domain scope (secureStorage, crypto, lifecycle) | KR-01 (Android), KR-02 (iOS), KR-03 (validate) |
 | Swift Providers      | `packages/self-sdk-swift/`                                        | Active   | iOS keychain/crypto provider implementations for KMP SDK                           | Required by KR-02 (query param support)        |
-| RN SDK               | `packages/rn-sdk/`                                                | Active   | Bridge-compatible RN host shell + `SelfCrypto` native module. Consumed by `app/` (Self Wallet) and publishable for 3rd-party RN apps. | Revived under `webview-in-app` (WIA-00).       |
+| RN SDK               | `packages/rn-sdk/`                                                | Active   | Bridge-compatible RN host shell + `SelfCrypto` native module. Consumed by `app/` (Self app) and publishable for 3rd-party RN apps. | Revived under `webview-in-app` (WIA-00).       |
 | Native Consolidation | `app/ios/`, `packages/mobile-sdk-alpha/ios/`, related native code | Paused   | Historical native cleanup and parity track                                         | Keep as reference only for now                 |
 | KMP Test App         | `packages/kmp-sdk-test-app/`                                      | Active   | E2E test harness for KMP SDK                                                       | Scope to 3-domain in KR-03                     |
 | MiniPay Sample       | `packages/kmp-minipay-sample/`                                    | Paused   | Historical KMP integration example                                                 | May resume now that KMP path is active         |

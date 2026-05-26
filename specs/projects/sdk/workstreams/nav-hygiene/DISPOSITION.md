@@ -33,7 +33,7 @@ changes, update this file in the PR that changes it.
 > e.g. `pick-country`).
 
 > **Classification legend**
-> - `self-app` — Self Wallet only (persistent UX, home, settings)
+> - `self-app` — Self app only (persistent UX, home, settings)
 > - `embed` — Third-party host only (one-shot verification)
 > - `shared` — Both modes can reach it; behavior may differ per mode
 > - `dev` — Only registered when `import.meta.env.DEV`, only reachable via DevRouteMenu
@@ -44,7 +44,7 @@ changes, update this file in the PR that changes it.
 
 | Route                                          | Component                          | Note                                                                 |
 | ---------------------------------------------- | ---------------------------------- | -------------------------------------------------------------------- |
-| `/`                                            | `HomeScreen`                       | Self Wallet home. Mode-gated entry point.                            |
+| `/`                                            | `HomeScreen`                       | Self app home. Mode-gated entry point.                            |
 | `/settings`                                    | `SettingsScreen`                   | Settings root.                                                       |
 | `/settings/security`                           | `SecurityScreen`                   | Security settings (recovery phrase entry to /settings/recovery-phrase) |
 | `/settings/notifications`                      | `NotificationPreferencesScreen`    | Push notification preferences.                                       |

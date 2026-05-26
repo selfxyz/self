@@ -12,7 +12,7 @@ On **March 11, 2026**, the active SDK scope changed to **WebView only, with no c
 - The current client path should ship as a browser/WebView experience.
 - Self-owned NFC, native MRZ/camera handlers, biometrics, keychain bridging, KMP shells, and RN native-shell packaging are out of scope for this workstream.
 - End-to-end document capture and verification should route through a **web-capable KYC provider** (currently Didit).
-- The paused native specs are preserved under [SDK Paused Work](../../paused/INDEX.md) for possible future reuse in Self Wallet or other mobile-native projects.
+- The paused native specs are preserved under [SDK Paused Work](../../paused/INDEX.md) for possible future reuse in Self app or other mobile-native projects.
 
 ## North Star
 
@@ -47,10 +47,10 @@ On **March 11, 2026**, the active SDK scope changed to **WebView only, with no c
 As of 2026-05-19, the WebView ships two operating modes from a single
 bundle:
 
-- **Tunnel mode** — one-shot verification invoked by a host (3rd-party
+- **Embed mode** — one-shot verification invoked by a host (3rd-party
   RN app, future Kotlin/Swift consumers). Terminates with
   `lifecycle.setResult` + `lifecycle.dismiss`. Boots at `/tunnel/tour/1`.
-- **Wallet mode** — persistent UI for the Self Wallet. Boots at `/`
+- **Self-app mode** — persistent UI for the Self app. Boots at `/`
   HomeScreen. Long-lived, multi-entry, includes settings / proof
   history / document management.
 
@@ -112,9 +112,9 @@ webview backlog.
 | WV-EUCLID-TODO | Shared UI to build in Euclid before adopting in WebView + RN app                                | In Progress | Medium   | -                   | [plans/WV-EUCLID-TODO.md](./plans/WV-EUCLID-TODO.md)                                             | Running backlog of components that belong in `@selfxyz/euclid` so WebView and the RN app share one implementation. Current items: Eligible Perks card (reverted on `codex/add-eligible-perks-card-to-id-data-view`).                                                                                              |
 | WV-MD-01       | Mode-aware initial routing in webview-app entry                                                 | Pending     | High     | WIA-16              | —                                                                                                | Consume `mode` from `lifecycle.getConfig` response; route to `/tunnel/tour/1` or `/` accordingly. Default to wallet on missing field. Browser host always wallet. See [WebView-in-App Modes](../webview-in-app/SPEC-MODES.html).                                                                            |
 | WV-MD-02       | `OperatingMode` React context for shared registration/proving/recovery                          | Pending     | High     | WV-MD-01            | —                                                                                                | Provider sets mode once at boot. Shared screens read it for terminal navigation (tunnel: setResult + dismiss; wallet: navigate `/`). Per-screen mode props forbidden.                                                                                                                                             |
-| WV-MD-03       | Tunnel-mode guard: validate `verificationRequest` shape, fail closed on missing/malformed       | Pending     | High     | WV-MD-01            | —                                                                                                | Tunnel boot without valid `verificationRequest` emits `setResult({ success: false, errorCode: 'INVALID_REQUEST' })` and dismisses.                                                                                                                                                                                |
+| WV-MD-03       | Embed-mode guard: validate `verificationRequest` shape, fail closed on missing/malformed       | Pending     | High     | WV-MD-01            | —                                                                                                | Tunnel boot without valid `verificationRequest` emits `setResult({ success: false, errorCode: 'INVALID_REQUEST' })` and dismisses.                                                                                                                                                                                |
 | WV-MD-04       | Router 404s for cross-mode navigation attempts                                                  | Pending     | Medium   | WV-MD-01            | —                                                                                                | Tunnel flows cannot navigate to `/settings/*`; wallet-only routes return 404-equivalent and the flow stays put.                                                                                                                                                                                                   |
-| WV-MD-05       | Tag existing parity backlog (WV-13/14/15/etc) as wallet-mode and align scope                    | Pending     | Medium   | WV-MD-01            | —                                                                                                | Settings, deep-link router, proof history, document management are wallet-only. Backlog rows updated to reflect that explicitly post-WV-MD-01.                                                                                                                                                                    |
+| WV-MD-05       | Tag existing parity backlog (WV-13/14/15/etc) as self-app-mode and align scope                    | Pending     | Medium   | WV-MD-01            | —                                                                                                | Settings, deep-link router, proof history, document management are wallet-only. Backlog rows updated to reflect that explicitly post-WV-MD-01.                                                                                                                                                                    |
 
 Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 
