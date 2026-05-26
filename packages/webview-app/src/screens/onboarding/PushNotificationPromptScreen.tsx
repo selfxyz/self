@@ -24,13 +24,13 @@ export const PushNotificationPromptScreen: React.FC = () => {
     navigate('/', { replace: true });
   }, [mock, navigate, haptic, analytics]);
 
-  const onDismiss = useCallback(() => {
+  const handleClose = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('push_notification_dismissed', { mock });
     navigate('/', { replace: true });
   }, [mock, navigate, haptic, analytics]);
 
-  const onClose = useCallback(() => {
+  const handleBack = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('push_notification_header_back', { mock });
     navigate(`/onboarding/recovery-phrase${getPromptMockSearch(mock)}`);
@@ -40,8 +40,8 @@ export const PushNotificationPromptScreen: React.FC = () => {
     <EuclidPushNotificationPromptScreen
       insets={WEB_SAFE_AREA.insets}
       onEnableNotifications={onEnableNotifications}
-      onDismiss={onDismiss}
-      onClose={onClose}
+      onDismiss={handleClose}
+      onClose={handleBack}
     />
   );
 };

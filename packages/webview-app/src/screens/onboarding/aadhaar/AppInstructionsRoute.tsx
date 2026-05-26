@@ -23,7 +23,7 @@ export const AadhaarAppInstructionsRoute: React.FC = () => {
   const state = (location.state as { countryCode?: string } | null) ?? {};
   const [isUploadProcessing, setIsUploadProcessing] = useState(false);
 
-  const onClose = useCallback(() => {
+  const handleBack = useCallback(() => {
     haptic.trigger('selection');
     navigate(-1);
   }, [haptic, navigate]);
@@ -69,7 +69,7 @@ export const AadhaarAppInstructionsRoute: React.FC = () => {
   return (
     <AadhaarAppInstructionsScreen
       insets={WEB_SAFE_AREA.insets}
-      onClose={onClose}
+      onClose={handleBack}
       onInstall={onInstall}
       onUpload={onUpload}
       isUploadProcessing={isUploadProcessing}

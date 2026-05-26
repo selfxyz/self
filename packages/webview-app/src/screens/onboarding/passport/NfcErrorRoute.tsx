@@ -22,7 +22,7 @@ export const PassportNfcErrorRoute: React.FC = () => {
       stage?: 'mrz' | 'nfc';
     } | null) ?? {};
 
-  const onClose = useCallback(() => {
+  const handleClose = useCallback(() => {
     haptic.trigger('selection');
     navigate('/', { replace: true });
   }, [haptic, navigate]);
@@ -50,7 +50,7 @@ export const PassportNfcErrorRoute: React.FC = () => {
   return (
     <PassportNfcErrorScreen
       insets={WEB_SAFE_AREA.insets}
-      onClose={onClose}
+      onClose={handleClose}
       onStartOver={onStartOver}
       onTryDifferentMethod={onTryDifferentMethod}
     />

@@ -35,7 +35,7 @@ export const EuIdNfcInstructionsRoute: React.FC = () => {
   const startedRef = useRef(false);
   const [busy, setBusy] = useState(false);
 
-  const onClose = useCallback(() => {
+  const handleBack = useCallback(() => {
     haptic.trigger('selection');
     navigate('/onboarding/eu-id/back-instructions', { replace: true });
   }, [haptic, navigate]);
@@ -45,7 +45,7 @@ export const EuIdNfcInstructionsRoute: React.FC = () => {
     analytics.trackEvent('eu_id_nfc_need_help');
   }, [analytics, haptic]);
 
-  const onContinue = useCallback(() => {
+  const handleContinue = useCallback(() => {
     if (startedRef.current || busy) return;
     startedRef.current = true;
     setBusy(true);
@@ -142,9 +142,9 @@ export const EuIdNfcInstructionsRoute: React.FC = () => {
   return (
     <EuIdNfcInstructionsScreen
       insets={WEB_SAFE_AREA.insets}
-      onClose={onClose}
+      onClose={handleBack}
       onNeedHelp={onNeedHelp}
-      onContinue={onContinue}
+      onContinue={handleContinue}
     />
   );
 };

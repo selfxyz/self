@@ -30,7 +30,7 @@ export const EmbedProofReceiptScreen: React.FC = () => {
     }));
   }, [displayLabels, request.disclosures]);
 
-  const onClose = useCallback(() => {
+  const handleBack = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('tunnel_proof_receipt_closed');
     navigate(backPath, { replace: true, state: backState });
@@ -40,7 +40,7 @@ export const EmbedProofReceiptScreen: React.FC = () => {
     <ProofRequestScreen
       {...WEB_SAFE_AREA}
       variant="default"
-      onClose={onClose}
+      onClose={handleBack}
       appIcon={<SelfLogo size={40} />}
       appName={appName}
       appEndpoint={displayAppEndpoint}

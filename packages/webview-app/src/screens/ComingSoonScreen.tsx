@@ -25,13 +25,13 @@ export const ComingSoonScreen: React.FC = () => {
 
   const documentTypeText = documentType === 'i' ? 'ID Cards' : documentType === 'p' ? 'Passports' : '';
 
-  const onDismiss = useCallback(() => {
+  const handleClose = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('coming_soon_dismissed');
     navigate('/', { replace: true });
   }, [navigate, haptic, analytics]);
 
-  const onNotifyMe = useCallback(() => {
+  const handleContinue = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('coming_soon_notify_me');
     navigate('/', { replace: true });
@@ -48,8 +48,8 @@ export const ComingSoonScreen: React.FC = () => {
           : "We're working to roll out support for this feature."
       }
       description="If you'd like to be notified when this becomes available, let us know."
-      onNotifyPress={onNotifyMe}
-      onBack={onDismiss}
+      onNotifyPress={handleContinue}
+      onBack={handleClose}
       renderFlag={renderFlag}
     />
   );

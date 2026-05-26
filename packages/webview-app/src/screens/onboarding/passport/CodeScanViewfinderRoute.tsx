@@ -66,7 +66,7 @@ export const PassportCodeScanViewfinderRoute: React.FC = () => {
     };
   }, [analytics, cameraAdapter, haptic, navigate, state]);
 
-  const onClose = useCallback(() => {
+  const handleBack = useCallback(() => {
     haptic.trigger('selection');
     navigate('/onboarding/passport/code-scan-instructions', {
       state,
@@ -82,7 +82,7 @@ export const PassportCodeScanViewfinderRoute: React.FC = () => {
   return (
     <PassportCodeScanViewfinderScreen
       insets={WEB_SAFE_AREA.insets}
-      onClose={onClose}
+      onClose={handleBack}
       onCaptureTips={onCaptureTips}
     />
   );

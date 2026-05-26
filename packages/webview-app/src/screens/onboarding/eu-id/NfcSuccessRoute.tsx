@@ -18,7 +18,7 @@ export const EuIdNfcSuccessRoute: React.FC = () => {
   const state =
     (location.state as { countryCode?: string } | null) ?? {};
 
-  const onClose = useCallback(() => {
+  const handleClose = useCallback(() => {
     haptic.trigger('selection');
     navigate('/', { replace: true });
   }, [haptic, navigate]);
@@ -32,7 +32,7 @@ export const EuIdNfcSuccessRoute: React.FC = () => {
   return (
     <EuIdNfcSuccessScreen
       insets={WEB_SAFE_AREA.insets}
-      onClose={onClose}
+      onClose={handleClose}
       onFinishRegistration={onFinishRegistration}
     />
   );

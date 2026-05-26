@@ -25,12 +25,12 @@ export const SettingsScreen: React.FC = () => {
   const navigate = useNavigate();
   const { analytics, haptic, lifecycle } = useSelfClient();
 
-  const onBack = useCallback(() => {
+  const handleBack = useCallback(() => {
     haptic.trigger('selection');
     navigate('/', { replace: true });
   }, [navigate, haptic]);
 
-  const onDismiss = useCallback(async () => {
+  const handleClose = useCallback(async () => {
     haptic.trigger('selection');
     analytics.trackEvent('settings_dismiss_pressed');
     lifecycle.dismiss({ reason: 'user_cancel' });
@@ -41,7 +41,7 @@ export const SettingsScreen: React.FC = () => {
       {...WEB_SAFE_AREA}
       escapeIcon={({ size, color }) => <LeftArrowIcon size={size} color={color} />}
       infoIcon={({ size, color }) => <QuestionCircleStrokeIcon size={size} color={color} />}
-      onClose={onBack}
+      onClose={handleBack}
       showBackupInfoBox={false}
       isBackupEnabled={false}
       CTAs={[]}
@@ -142,7 +142,7 @@ export const SettingsScreen: React.FC = () => {
       bottomSectionItems={[
         {
           label: 'Close Self',
-          onPress: onDismiss,
+          onPress: handleClose,
         },
       ]}
     />

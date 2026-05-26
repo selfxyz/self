@@ -15,7 +15,7 @@ export const QRViewfinderScreen: React.FC = () => {
   const navigate = useNavigate();
   const { analytics, haptic } = useSelfClient();
 
-  const onClose = useCallback(() => {
+  const handleBack = useCallback(() => {
     haptic.trigger('selection');
     navigate(-1);
   }, [haptic, navigate]);
@@ -33,7 +33,7 @@ export const QRViewfinderScreen: React.FC = () => {
   return (
     <EuclidQRViewfinderScreen
       {...WEB_SAFE_AREA}
-      onClose={onClose}
+      onClose={handleBack}
       onInfoPress={onInfoPress}
       onHowItWorks={onHowItWorks}
     />

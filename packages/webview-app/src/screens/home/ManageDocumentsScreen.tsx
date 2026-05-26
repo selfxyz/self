@@ -16,7 +16,7 @@ export const ManageDocumentsScreen: React.FC = () => {
   const { analytics, haptic } = useSelfClient();
   const [dialogue, setDialogue] = useState<{ title: string; description: string } | undefined>();
 
-  const onBack = useCallback(() => {
+  const handleBack = useCallback(() => {
     haptic.trigger('selection');
     navigate('/settings');
   }, [navigate, haptic]);
@@ -64,7 +64,7 @@ export const ManageDocumentsScreen: React.FC = () => {
           onPress: onDocumentPress,
         },
       ]}
-      onBack={onBack}
+      onBack={handleBack}
       onAddDocument={onAddDocument}
       dialogue={dialogue}
       onViewIdDetails={onViewIdDetails}

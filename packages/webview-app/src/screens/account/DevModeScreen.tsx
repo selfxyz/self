@@ -46,7 +46,7 @@ export const DevModeScreen: React.FC = () => {
     subtitle: 'Digital credential for developers',
   };
 
-  const onBack = useCallback(() => {
+  const handleBack = useCallback(() => {
     haptic.trigger('selection');
     navigate('/settings');
   }, [navigate, haptic]);
@@ -116,7 +116,7 @@ export const DevModeScreen: React.FC = () => {
     <EuclidDevModeScreen
       {...WEB_SAFE_AREA}
       escapeIcon={({ size, color }) => <LeftArrowIcon size={size} color={color} />}
-      onBack={onBack}
+      onBack={handleBack}
       idCard={idCard}
       documentType={documentType}
       onDocumentTypePress={() => {

@@ -18,7 +18,7 @@ export const LaunchRecoveryScreen: React.FC = () => {
   const { analytics, haptic } = useSelfClient();
   const backPath = (location.state as Partial<NavState> | null)?.backPath ?? '/settings/security';
 
-  const onClose = useCallback(() => {
+  const handleBack = useCallback(() => {
     haptic.trigger('selection');
     navigate(backPath, { replace: true });
   }, [backPath, navigate, haptic]);
@@ -41,7 +41,7 @@ export const LaunchRecoveryScreen: React.FC = () => {
       <EuclidLaunchRecoveryScreen
         insets={WEB_SAFE_AREA.insets}
         escapeIcon={({ size, color }) => <LeftArrowIcon size={size} color={color} />}
-        onClose={onClose}
+        onClose={handleBack}
         onAppleBackup={() => navigate('/coming-soon')}
         onGoogleBackup={() => navigate('/coming-soon')}
         onEnterRecoveryPhrase={onEnterRecoveryPhrase}

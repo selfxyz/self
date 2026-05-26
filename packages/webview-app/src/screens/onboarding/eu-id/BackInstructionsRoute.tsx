@@ -17,7 +17,7 @@ export const EuIdBackInstructionsRoute: React.FC = () => {
   const { analytics, haptic } = useSelfClient();
   const state = (location.state as { countryCode?: string } | null) ?? {};
 
-  const onClose = useCallback(() => {
+  const handleBack = useCallback(() => {
     haptic.trigger('selection');
     navigate(-1);
   }, [haptic, navigate]);
@@ -28,7 +28,7 @@ export const EuIdBackInstructionsRoute: React.FC = () => {
     navigate('/onboarding/eu-id/can-instructions', { state });
   }, [analytics, haptic, navigate, state]);
 
-  const onContinue = useCallback(() => {
+  const handleContinue = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('eu_id_back_continue');
     navigate('/onboarding/eu-id/code-scan-viewfinder', { state });
@@ -37,9 +37,9 @@ export const EuIdBackInstructionsRoute: React.FC = () => {
   return (
     <EuIdBackInstructionsScreen
       insets={WEB_SAFE_AREA.insets}
-      onClose={onClose}
+      onClose={handleBack}
       onNeedHelp={onNeedHelp}
-      onContinue={onContinue}
+      onContinue={handleContinue}
     />
   );
 };

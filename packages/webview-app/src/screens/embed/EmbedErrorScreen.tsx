@@ -36,7 +36,7 @@ export const EmbedErrorScreen: React.FC = () => {
     analytics.trackEvent('embed_error_shown', { code: state.code });
   }, [analytics, state.code]);
 
-  const onClose = () => {
+  const handleClose = () => {
     void bridge.request('lifecycle', 'dismiss', { reason: 'user_cancel' }).catch(() => {
       // Best-effort — the host may already be tearing down the WebView.
     });
@@ -65,7 +65,7 @@ export const EmbedErrorScreen: React.FC = () => {
       </p>
       <button
         type="button"
-        onClick={onClose}
+        onClick={handleClose}
         style={{
           appearance: 'none',
           padding: '12px 24px',

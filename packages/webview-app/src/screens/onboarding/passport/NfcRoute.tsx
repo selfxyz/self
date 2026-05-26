@@ -150,7 +150,7 @@ export const PassportNfcRoute: React.FC = () => {
     state.documentType,
   ]);
 
-  const onClose = useCallback(() => {
+  const handleBack = useCallback(() => {
     haptic.trigger('selection');
     navigate('/onboarding/passport/code-scan-instructions', { replace: true });
   }, [haptic, navigate]);
@@ -163,7 +163,7 @@ export const PassportNfcRoute: React.FC = () => {
   return (
     <PassportNfcInstructionsScreen
       insets={WEB_SAFE_AREA.insets}
-      onClose={onClose}
+      onClose={handleBack}
       onCaptureTips={onCaptureTips}
       step={step}
     />

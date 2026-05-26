@@ -21,13 +21,13 @@ export const RecoveryFailureScreen: React.FC = () => {
 
   const nextPath = (location.state as Partial<NavState> | null)?.nextPath ?? null;
 
-  const onDismiss = useCallback(() => {
+  const handleClose = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('recovery_failure_dismissed');
     navigate('/', { replace: true });
   }, [analytics, haptic, navigate]);
 
-  const onTryAgain = useCallback(() => {
+  const handleRetry = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('recovery_failure_try_again');
     navigate('/recovery/phrase-input', {
@@ -39,8 +39,8 @@ export const RecoveryFailureScreen: React.FC = () => {
   return (
     <RegistrationFailureScreen
       {...WEB_SAFE_AREA}
-      onDismiss={onDismiss}
-      onTryDifferentMethod={onTryAgain}
+      onDismiss={handleClose}
+      onTryDifferentMethod={handleRetry}
       copy={{
         title: 'Recovery failed',
         body: 'Something went wrong while restoring your account. You can try again or dismiss to return home.',

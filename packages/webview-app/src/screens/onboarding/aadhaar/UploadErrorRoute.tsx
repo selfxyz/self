@@ -18,7 +18,7 @@ export const AadhaarUploadErrorRoute: React.FC = () => {
   const state =
     (location.state as { countryCode?: string; errorMessage?: string } | null) ?? {};
 
-  const onClose = useCallback(() => {
+  const handleClose = useCallback(() => {
     haptic.trigger('selection');
     navigate('/', { replace: true });
   }, [haptic, navigate]);
@@ -38,7 +38,7 @@ export const AadhaarUploadErrorRoute: React.FC = () => {
   return (
     <AadhaarUploadErrorScreen
       insets={WEB_SAFE_AREA.insets}
-      onClose={onClose}
+      onClose={handleClose}
       onTryDifferentMethod={onTryDifferentMethod}
       onUploadFromLibrary={onUploadFromLibrary}
     />

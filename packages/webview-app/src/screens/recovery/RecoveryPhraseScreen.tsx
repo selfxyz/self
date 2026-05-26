@@ -328,7 +328,7 @@ export const OnboardingRecoveryPhraseScreen: React.FC = () => {
   const notificationsPath = `/onboarding/notifications${getPromptMockSearch(mock)}`;
   const successPath = `/onboarding/success${getPromptMockSearch(mock)}`;
 
-  const onBack = useCallback(() => {
+  const handleBack = useCallback(() => {
     navigate(successPath);
   }, [navigate, successPath]);
 
@@ -338,7 +338,7 @@ export const OnboardingRecoveryPhraseScreen: React.FC = () => {
 
   return (
     <RecoveryPhraseScreenBase
-      onBack={onBack}
+      onBack={handleBack}
       onAppleBackup={advanceToNotifications}
       onGoogleBackup={advanceToNotifications}
     />

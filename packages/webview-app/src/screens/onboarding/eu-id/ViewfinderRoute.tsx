@@ -66,7 +66,7 @@ export const EuIdViewfinderRoute: React.FC = () => {
     };
   }, [analytics, cameraAdapter, haptic, navigate, state]);
 
-  const onClose = useCallback(() => {
+  const handleBack = useCallback(() => {
     haptic.trigger('selection');
     navigate('/onboarding/eu-id/back-instructions', { state, replace: true });
   }, [haptic, navigate, state]);
@@ -79,7 +79,7 @@ export const EuIdViewfinderRoute: React.FC = () => {
   return (
     <EuIdViewfinderScreen
       insets={WEB_SAFE_AREA.insets}
-      onClose={onClose}
+      onClose={handleBack}
       onCaptureTips={onCaptureTips}
     />
   );

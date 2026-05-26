@@ -11618,6 +11618,7 @@ __metadata:
     eslint-plugin-import: "npm:^2.31.0"
     eslint-plugin-prettier: "npm:^5.5.4"
     eslint-plugin-react: "npm:^7.37.5"
+    eslint-plugin-self-handlers: "portal:./eslint-rules"
     eslint-plugin-simple-import-sort: "npm:^12.1.1"
     eslint-plugin-sort-exports: "npm:^0.9.1"
     jsdom: "npm:^29.0.1"
@@ -24161,6 +24162,14 @@ __metadata:
   checksum: 10c0/c850bfd556291d4d9234f5ca38db1436924a1013627c8ab1853f77cac73ec19b020e861e6c7b783436a48b6ffcdfba4547598235a37ad4611b6739f65fd8ad57
   languageName: node
   linkType: hard
+
+"eslint-plugin-self-handlers@portal:./eslint-rules::locator=%40selfxyz%2Fwebview-app%40workspace%3Apackages%2Fwebview-app":
+  version: 0.0.0-use.local
+  resolution: "eslint-plugin-self-handlers@portal:./eslint-rules::locator=%40selfxyz%2Fwebview-app%40workspace%3Apackages%2Fwebview-app"
+  peerDependencies:
+    eslint: ">=8"
+  languageName: node
+  linkType: soft
 
 "eslint-plugin-simple-import-sort@npm:^12.1.1":
   version: 12.1.1

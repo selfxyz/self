@@ -27,7 +27,7 @@ export const ProofRequestReceiptScreen: React.FC = () => {
 
   const walletAddress = request.userId?.startsWith('0x') ? request.userId : undefined;
 
-  const onClose = useCallback(() => {
+  const handleClose = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('proof_receipt_closed');
     navigate('/', { replace: true });
@@ -36,7 +36,7 @@ export const ProofRequestReceiptScreen: React.FC = () => {
   return (
     <EuclidProofRequestReceiptScreen
       insets={WEB_SAFE_AREA.insets}
-      onClose={onClose}
+      onClose={handleClose}
       appIcon={<SelfLogo size={40} />}
       appName={appName}
       appEndpoint={displayAppEndpoint}

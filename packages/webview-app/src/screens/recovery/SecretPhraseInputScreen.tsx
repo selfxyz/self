@@ -122,7 +122,7 @@ export const SecretPhraseInputScreen: React.FC = () => {
     }
   }, [cooldownTick, isLocked, lockedUntil]);
 
-  const onBack = useCallback(() => {
+  const handleBack = useCallback(() => {
     haptic.trigger('selection');
     navigate(-1);
   }, [navigate, haptic]);
@@ -297,7 +297,7 @@ export const SecretPhraseInputScreen: React.FC = () => {
           label="Recovery Phrase"
           escapeIcon={({ size, color }) => <LeftArrowIcon size={size} color={color} />}
           infoIcon={({ size }) => <div style={{ width: size, height: size }} />}
-          onEscape={onBack}
+          onEscape={handleBack}
           onPressInfo={() => {}}
         />
       </div>

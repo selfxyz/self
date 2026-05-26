@@ -110,3 +110,18 @@ NAV-07 swept every terminal `navigate('/')` and the 5 named violations; future P
 - Terminal screens close their cluster via `useClusterClose()` (see `src/utils/clusterClose.ts`), never by hardcoding `navigate('/')` or inlining `lifecycle.setResult + dismiss`.
 - The hook is mode-aware: self-app users land on the cluster's entry path (with `state.nextPath` override); embed users get a `setResult({success:false, error:'user_cancelled'})` (when the cluster is mid-flow) then `dismiss({reason:'user_cancel'})`.
 - Cluster is inferred from `useLocation().pathname`'s first segment. To add a new cluster, extend the `Cluster` union + `CLUSTER_CLOSE` registry in `src/utils/clusterCloseRegistry.ts`.
+
+## Handler naming
+
+Local handler declarations in `src/screens/**/*.tsx` use one of four canonical names so a reader can tell intent from the wire-up alone. The ESLint rule [`self-handlers/handler-names`](./eslint-rules/handler-names.js) enforces the ban list at lint time.
+
+| Canonical name      | Intent                                                                          | Body shape                                                                                          |
+| ------------------- | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `handleClose`       | Exit this cluster                                                               | `useClusterClose()` (preferred), or `navigate('/', { replace: true })` / `lifecycle.dismiss(...)`   |
+| `handleBack`        | Walk one step back                                                              | `navigate(-1)` or `navigate(state.backPath ?? -1)`                                                  |
+| `handleRetry`       | Re-attempt the current step in place                                            | `navigate(currentStepPath, { replace: true })`                                                      |
+| `handleContinue`    | Advance to a forward target                                                     | `navigate(nextStepPath)` — a more descriptive name is fine when the target is fixed (e.g. `handleStartProving`, `handleGenerateProof`) |
+
+**Banned local names** (lint error): `onDismiss`, `handleDismiss`, `onCancel`, `handleCancel`, `onEscape`. They overload meaning and hide whether the action closes the cluster, walks back, or skips.
+
+**Important — Euclid props are unaffected.** The ban applies to **local declarations only**. Euclid component props keep their existing names; the wire-up reads `<EuclidScreen onDismiss={handleClose}>`, which makes the intent clear at the call site.

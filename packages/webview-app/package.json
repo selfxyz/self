@@ -51,6 +51,7 @@
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-prettier": "^5.5.4",
     "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-self-handlers": "portal:./eslint-rules",
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "eslint-plugin-sort-exports": "^0.9.1",
     "jsdom": "^29.0.1",

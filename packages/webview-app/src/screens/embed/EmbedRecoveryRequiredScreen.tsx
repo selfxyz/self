@@ -27,7 +27,7 @@ export const EmbedRecoveryRequiredScreen: React.FC = () => {
     });
   }, [navigate, haptic, analytics]);
 
-  const onCancel = useCallback(() => {
+  const handleClose = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('tunnel_recovery_cancelled');
     navigate(TUNNEL_RECOVERY_BACK_PATH, { replace: true });
@@ -41,8 +41,8 @@ export const EmbedRecoveryRequiredScreen: React.FC = () => {
       primaryActionLabel="Recover with phrase"
       secondaryActionLabel="Cancel"
       onPrimaryAction={onRecoverWithPhrase}
-      onSecondaryAction={onCancel}
-      onClose={onCancel}
+      onSecondaryAction={handleClose}
+      onClose={handleClose}
     />
   );
 };

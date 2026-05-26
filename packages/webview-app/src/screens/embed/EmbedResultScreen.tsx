@@ -47,7 +47,7 @@ export const EmbedResultScreen: React.FC = () => {
 
   const demo = isDemoMode(location.search);
 
-  const onContinue = useCallback(async () => {
+  const handleContinue = useCallback(async () => {
     if (demo) {
       const demoResult: VerificationResult = {
         success: true,
@@ -78,7 +78,7 @@ export const EmbedResultScreen: React.FC = () => {
     }
   }, [demo, request.userId, verificationId, lifecycle, analytics]);
 
-  const onRetry = useCallback(() => {
+  const handleRetry = useCallback(() => {
     navigate(getTunnelBackPath(source), { replace: true });
   }, [navigate, source]);
 
@@ -88,7 +88,7 @@ export const EmbedResultScreen: React.FC = () => {
     });
   }, [location.pathname, location.state, navigate]);
 
-  const onCancel = useCallback(async () => {
+  const handleClose = useCallback(async () => {
     try {
       const result: VerificationResult = {
         success: false,
@@ -121,7 +121,7 @@ export const EmbedResultScreen: React.FC = () => {
         timestamp={timestamp}
         successTitle="Identity Verified"
         successDescription="Your identity has been verified. You can now use Self ID to prove your identity to participating partners."
-        onContinue={onContinue}
+        onContinue={handleContinue}
         onViewDetails={onViewDetails}
       />
     );
@@ -137,9 +137,9 @@ export const EmbedResultScreen: React.FC = () => {
       timestamp={timestamp}
       failureTitle="Verification Failed"
       failureDescription={error ?? 'Something went wrong during verification. Please try again.'}
-      onRetry={onRetry}
+      onRetry={handleRetry}
       onViewDetails={onViewDetails}
-      onClose={onCancel}
+      onClose={handleClose}
     />
   );
 };

@@ -44,7 +44,7 @@ export const ProofHistoryScreen: React.FC = () => {
   const navigate = useNavigate();
   const { analytics, haptic } = useSelfClient();
 
-  const onClose = useCallback(() => {
+  const handleClose = useCallback(() => {
     haptic.trigger('selection');
     navigate('/', { replace: true });
   }, [navigate, haptic]);
@@ -63,7 +63,7 @@ export const ProofHistoryScreen: React.FC = () => {
   return (
     <EuclidProofHistoryScreen
       insets={WEB_SAFE_AREA.insets}
-      onClose={onClose}
+      onClose={handleClose}
       onInfoPress={onInfoPress}
       onViewIdData={onViewIdData}
       proofHistory={MOCK_PROOF_HISTORY}

@@ -19,7 +19,7 @@ export const RecoverySuccessScreen: React.FC = () => {
 
   const nextPath = (location.state as Partial<NavState> | null)?.nextPath ?? null;
 
-  const onClose = useCallback(() => {
+  const handleClose = useCallback(() => {
     haptic.trigger('success');
     analytics.trackEvent('recovery_success_continue_pressed');
     navigate(nextPath ?? '/', { replace: true });
@@ -30,7 +30,7 @@ export const RecoverySuccessScreen: React.FC = () => {
       insets={WEB_SAFE_AREA.insets}
       escapeIcon={({ size, color }) => <LeftArrowIcon size={size} color={color} />}
       logo={<img src="/logos/self.svg" alt="" width={64} height={64} aria-hidden="true" />}
-      onClose={onClose}
+      onClose={handleClose}
       onAppleBackup={() => navigate('/coming-soon')}
       onGoogleBackup={() => navigate('/coming-soon')}
     />
