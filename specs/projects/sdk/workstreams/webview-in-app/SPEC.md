@@ -107,18 +107,18 @@ cleanup that lands alongside the WIA work — see the
 | WIA-14 | Re-home ANA-15 attempt_id footer to webview-app    | Observability  | Pending  |
 | WIA-15 | Documents handler (delegate to databaseProvider)   | Native adapters| Done     |
 | WIA-16 | `mode` + `verificationRequest` in lifecycle.getConfig | Operating modes | Done  |
-| NAV-01 | Route mode-classification audit                    | Nav hygiene    | Active   |
-| NAV-02 | Dev-only route namespace + DEV gating              | Nav hygiene    | Active   |
-| NAV-03 | BootDecision — single boot decision function       | Nav hygiene    | Active   |
-| NAV-04 | useClusterClose() hook + per-cluster registry      | Nav hygiene    | Active   |
-| NAV-05 | Back vs close terminology sweep + ESLint rule      | Nav hygiene    | Active   |
-| NAV-06 | Cross-document NFC error consolidation             | Nav hygiene    | Active   |
-| NAV-07 | replace:true audit (full sweep)                    | Nav hygiene    | Active   |
+| NAV-01 | Route mode-classification audit                    | Nav hygiene    | Done     |
+| NAV-02 | Dev-only route namespace + DEV gating              | Nav hygiene    | Done     |
+| NAV-03 | BootDecision — single boot decision function       | Nav hygiene    | Done     |
+| NAV-04 | useClusterClose() hook + per-cluster registry      | Nav hygiene    | Done     |
+| NAV-05 | Back vs close terminology sweep + ESLint rule      | Nav hygiene    | Done     |
+| NAV-06 | Cross-document NFC error consolidation             | Nav hygiene    | Done     |
+| NAV-07 | replace:true audit (full sweep)                    | Nav hygiene    | Done     |
 | NAV-08 | Namespace rewrite (verbs + places)                 | Nav hygiene    | Done     |
-| NAV-09 | State-passing convention sweep (NavState)          | Nav hygiene    | Active   |
-| NAV-10 | Delete /tunnel/registration/* dead sub-flow        | Nav hygiene    | Active   |
+| NAV-09 | State-passing convention sweep (NavState)          | Nav hygiene    | Done     |
+| NAV-10 | Delete /tunnel/registration/* dead sub-flow        | Nav hygiene    | Done     |
 | NAV-11 | Wire social sign-on (post-v1)                      | Nav hygiene    | Deferred |
-| NAV-12 | Rename tunnel → embed (mode terminology)           | Nav hygiene    | Active   |
+| NAV-12 | Rename tunnel → embed (mode terminology)           | Nav hygiene    | Done     |
 | NAV-13 | Declare mode at route registration (ModeRoute)     | Nav hygiene    | Done     |
 
 > Status legend: **Done** = code landed on this branch. **Active** = spec ready, implementation in flight or imminent. **Pending** = not started. **Deferred** = postponed past v1.
