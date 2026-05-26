@@ -135,6 +135,33 @@ layer that the bridge router can call uniformly.
    the handler wraps. Re-entry is the WebView's responsibility (one
    in-flight scan at a time; the WebView gates concurrent requests).
 
+## iOS scaffolding (cross-cutting)
+
+KMP iOS handlers are `NotImplementedError` stubs that delegate to
+`IosProviderRegistry` — cinterop is disabled in
+`packages/kmp-sdk/shared/build.gradle.kts`. Re-enabling cinterop is a
+separate decision owned by `kmp-sdk` maintainers; this workstream works
+with the registry model. The iOS side of every domain therefore needs
+a Swift `*Provider` registered into `IosProviderRegistry` **before**
+the WebView mounts.
+
+The first iOS domain (`secureStorage` per the
+[WIA-17 plan](./plans/WIA-17-path-a-migration.html#rollout)) lands the
+common scaffolding:
+
+- `packages/rn-sdk/ios/SelfBridgeModule.swift` — RCT module exposing
+  `routeMessage(_:)` to JS, owns a long-lived KMP `MessageRouter`,
+  emits responses via `DeviceEventEmitter` mirroring the Android shape.
+- `packages/rn-sdk/ios/SelfBridgeModule.m` — RCT bridge glue
+  (`RCT_EXTERN_MODULE` + method exports).
+- `selfxyz-rn-sdk.podspec` — vendored `SelfSdk.xcframework` from
+  `packages/kmp-sdk/`'s `createXCFramework` task (the task currently
+  emits debug variants only; SD-06 or the first iOS domain PR
+  switches it to release).
+
+Subsequent iOS domains add their `*Provider` Swift implementation
+and one registration line; they do not re-scaffold the module.
+
 ## Per-Handler Notes
 
 - **`secureStorage`** on Android is satisfied entirely by KMP's

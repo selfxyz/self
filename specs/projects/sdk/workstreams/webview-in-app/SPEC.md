@@ -143,7 +143,7 @@ cleanup that lands alongside the WIA work — see the
 | WIA-14 | Re-home ANA-15 attempt_id footer to webview-app    | Observability  | Pending  |
 | WIA-15 | Documents handler (delegate to databaseProvider)   | Native adapters| Done (TS); superseded by WIA-17 |
 | WIA-16 | `mode` + `verificationRequest` in lifecycle.getConfig | Operating modes | Done  |
-| WIA-17 | Path A migration — replace TS handlers with `SelfBridgeModule` + KMP `*BridgeHandler` registrations; consumer-supplied providers wrap existing RN libs. Build + Android secureStorage smoke landed in PR #2108. | Native adapters| In progress (secureStorage proven; remaining domains pending) |
+| WIA-17 | Path A migration — replace TS handlers with `SelfBridgeModule` + KMP `*BridgeHandler` registrations; consumer-supplied providers wrap existing RN libs. Build + Android secureStorage smoke landed in PR #2108. **Execution plan:** [plans/WIA-17-path-a-migration.html](./plans/WIA-17-path-a-migration.html). | Native adapters| In progress (secureStorage proven; remaining domains pending) |
 | NAV-01 | Route mode-classification audit                    | Nav hygiene    | Done     |
 | NAV-02 | Dev-only route namespace + DEV gating              | Nav hygiene    | Done     |
 | NAV-03 | BootDecision — single boot decision function       | Nav hygiene    | Done     |
@@ -219,6 +219,17 @@ design + Euclid issues now; don't gate the workstream on it.
   [SPEC-OBSERVABILITY.md](./SPEC-OBSERVABILITY.md). ANA-15 (`attempt_id`
   footer on error screens) is re-homed to `WIA-14`; if ANA-15 ships
   unmodified before cutover, its work is overwritten.
+- **`packages/kmp-sdk/` source-of-truth (two-repo split)** —
+  `selfxyz/self-webview-sdk` (private) holds a fork of `kmp-sdk` where
+  MOD-01/02/04 are landing. WIA-17 domains #1–#3 can run against this
+  repo's `packages/kmp-sdk/` regardless of the outcome; domains #4+ are
+  blocked until the split is resolved in writing. See
+  [WIA-17 prerequisites P-1](./plans/WIA-17-path-a-migration.html#prereq).
+- **SD-06 hosted Maven publishing** (`SELF-2534`, assigned Ayman) —
+  required before Self Wallet (`app/`) integrates the migrated SDK at
+  WIA-11 cutover; not blocking WIA-17 domain rollout in
+  `rn-sdk-test-app`. See
+  [WIA-17 prerequisites P-2](./plans/WIA-17-path-a-migration.html#prereq).
 
 ## Out of Scope
 
