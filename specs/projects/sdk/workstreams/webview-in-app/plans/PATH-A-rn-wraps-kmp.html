@@ -203,7 +203,7 @@
     <li>Change the bridge protocol shape. The router envelope drift (<code>DOMAIN_NOT_FOUND</code> vs <code>HANDLER_NOT_FOUND</code>, missing <code>type</code>/<code>version</code>/<code>timestamp</code> in KMP responses) is real and must be patched eventually, but not in this PR. The TS shim normalizes the response shape so the WebView never sees the drift.</li>
     <li>Touch <code>packages/kmp-sdk/shared/src/iosMain/</code> or <code>packages/self-sdk-swift/</code>. iOS is deferred.</li>
     <li>Set up CI for the KMP-publishing → rn-sdk-consuming build. Local-only validation is enough for the prototype.</li>
-    <li>Edit <code>SPEC-NATIVE-ADAPTERS.md</code>'s Decision 1. If the prototype succeeds, a follow-up PR amends that spec; if it fails, the spec stands.</li>
+    <li>Edit <code>SPEC-NATIVE-ADAPTERS.html</code>'s Decision 1. If the prototype succeeds, a follow-up PR amends that spec; if it fails, the spec stands.</li>
     <li>Try to make this prototype work with a hosted Maven (GitHub Packages). SD-06 owns that infrastructure work.</li>
   </ul>
 </section>

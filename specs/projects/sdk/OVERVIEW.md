@@ -20,7 +20,7 @@ On **May 19, 2026**, the SDK initiative gained a new track:
   workspace dependency; 3rd-party RN apps will install it from npm.
   The three bridge-compatible shells (Kotlin, Swift, React Native)
   are now symmetric.
-- New workstream: [WebView-in-App Spec](./workstreams/webview-in-app/SPEC.md).
+- New workstream: [WebView-in-App Spec](./workstreams/webview-in-app/SPEC.html).
 - Cutover model: long-lived feature branch (`feat/webview-in-app`)
   off `dev`, no production RemoteConfig flag. Legacy RN screens are
   deleted at merge time.

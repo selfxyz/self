@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>WIA-17 · Path A migration — execution plan</title>
+<style>
+  :root {
+    --bg: #fafbfc;
+    --surface: #ffffff;
+    --surface-alt: #f6f8fa;
+    --border: #d1d9e0;
+    --border-soft: #e1e4e8;
+    --text: #1f2328;
+    --muted: #656d76;
+    --accent: #0969da;
+    --accent-soft: #ddf4ff;
+    --high: #cf222e;
+    --high-soft: #ffebe9;
+    --med: #9a6700;
+    --med-soft: #fff8c5;
+    --done: #1a7f37;
+    --done-soft: #dafbe1;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; color: var(--text); background: var(--bg); }
+  code, pre, kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.9em; }
+  code { background: var(--surface-alt); padding: 1px 5px; border-radius: 4px; border: 1px solid var(--border-soft); }
+  pre { background: var(--surface-alt); padding: 12px 14px; border-radius: 6px; border: 1px solid var(--border-soft); overflow: auto; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  header.topbar { position: sticky; top: 0; z-index: 100; background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  header h1 { margin: 0; font-size: 16px; font-weight: 600; }
+  .pill { font-size: 11px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface-alt); }
+  .pill.active { color: var(--accent); background: var(--accent-soft); border-color: var(--accent); }
+  .pill.blocked { color: var(--high); background: var(--high-soft); border-color: var(--high); }
+  .pill.done { color: var(--done); background: var(--done-soft); border-color: var(--done); }
+  .pill.draft { color: var(--med); background: var(--med-soft); border-color: var(--med); }
+  .spacer { flex: 1; }
+  .layout { display: grid; grid-template-columns: 220px 1fr; gap: 32px; max-width: 1100px; margin: 0 auto; padding: 24px; }
+  nav.toc { position: sticky; top: 64px; align-self: start; font-size: 13px; }
+  nav.toc h4 { margin: 0 0 6px 0; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  nav.toc a { display: block; padding: 3px 0; color: var(--text); }
+  main { min-width: 0; }
+  main section { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 18px 22px; margin-bottom: 16px; }
+  main h2 { margin: 0 0 10px 0; font-size: 16px; }
+  main h3 { margin: 16px 0 6px 0; font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  main p { margin: 6px 0 10px 0; }
+  main ul, main ol { margin: 6px 0 10px 18px; padding: 0; }
+  main li { margin: 3px 0; }
+  table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 13px; }
+  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--border-soft); vertical-align: top; }
+  th { background: var(--surface-alt); font-weight: 600; }
+  .callout { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 8px 12px; border-radius: 0 6px 6px 0; margin: 10px 0; }
+  .callout.warn { border-left-color: var(--high); background: var(--high-soft); }
+  .status-done { color: var(--done); font-weight: 600; }
+  .status-blocked { color: var(--high); font-weight: 600; }
+  .status-ready { color: var(--accent); font-weight: 600; }
+  .status-pending { color: var(--muted); }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <h1>WIA-17 · Path A migration — execution plan</h1>
+  <span class="pill draft">Draft</span>
+  <span class="pill blocked">Blocked on two-repo split</span>
+  <span class="pill">2026-05-26</span>
+  <span class="spacer"></span>
+  <div>
+    <a href="../SPEC.html">↑ SPEC</a>
+    &nbsp;·&nbsp;
+    <a href="./PATH-A-rn-wraps-kmp.html">Prototype spec</a>
+    &nbsp;·&nbsp;
+    <a href="./SPIKE-rn-wraps-kmp.md">Research notes</a>
+  </div>
+</header>
+
+<div class="layout">
+
+<nav class="toc">
+  <h4>On this page</h4>
+  <a href="#purpose">Purpose</a>
+  <a href="#prereq">Prerequisites</a>
+  <a href="#rollout">Per-domain rollout</a>
+  <a href="#ios-scaffolding">iOS scaffolding</a>
+  <a href="#retire-ts">Retiring TS handlers</a>
+  <a href="#drift">Envelope drift parking lot</a>
+  <a href="#validation">Validation matrix</a>
+  <a href="#oos">Out of scope</a>
+  <a href="#decisions">Decisions needed</a>
+</nav>
+
+<main>
+
+<section id="purpose">
+  <h2>Purpose</h2>
+  <p>
+    PR #2108 landed the build-side prototype of Path A (<code>rn-sdk</code> wrapping
+    <code>kmp-sdk</code> for the <code>secureStorage</code> domain on Android).
+    Smoke is PASS. This plan covers the rollout from prototype to full
+    migration: extend the wrap pattern to the remaining bridge domains,
+    add the iOS Swift-provider scaffolding (KMP iOS still has cinterop
+    disabled — all iOS handlers delegate to consumer-supplied Swift
+    providers via <code>IosProviderRegistry</code>), retire the duplicated
+    TS handlers one domain at a time, and converge the bridge envelope
+    drift only after enough domains are on Path A to make convergence
+    cheap.
+  </p>
+  <p class="callout">
+    This plan does <strong>not</strong> touch <code>app/</code> (Self
+    Wallet) integration. That happens at WIA-11 cutover, after all
+    domains are migrated and SD-06 has shipped hosted Maven publishing.
+    The same applies to converging the
+    <code>selfxyz/self</code> ↔ <code>selfxyz/self-webview-sdk</code>
+    <code>kmp-sdk</code> forks — that decision is captured below as a
+    prerequisite, not as a sub-task of this plan.
+  </p>
+</section>
+
+<section id="prereq">
+  <h2>Prerequisites — blocking</h2>
+  <h3>P-1 · Two-repo split decision</h3>
+  <p>
+    <code>packages/kmp-sdk/</code> exists in this repo AND in
+    <code>selfxyz/self-webview-sdk</code> (private). The latter is where
+    Seshanth's MOD-01/02/04 work is landing (PR #7). Every domain past
+    <code>crypto</code> + <code>secureStorage</code> needs handler code
+    from MOD work, so the rollout cannot run cleanly until "which
+    <code>kmp-sdk</code> is canonical going forward" is decided in
+    writing. Three options:
+  </p>
+  <ul>
+    <li><strong>A — <code>selfxyz/self</code> is canonical.</strong> Merge MOD work back into this repo. <code>self-webview-sdk</code> retires. Lowest coordination cost for this rollout; highest cost on Seshanth's open MOD PRs.</li>
+    <li><strong>B — <code>selfxyz/self-webview-sdk</code> is canonical.</strong> Delete <code>packages/kmp-sdk/</code> from this repo; consume the artifact from a hosted Maven (via SD-06). Cleanest long-term; gates this rollout on SD-06 shipping.</li>
+    <li><strong>C — Sync.</strong> Mirror script or periodic merge. Keeps both alive; doubles maintenance permanently. Not recommended.</li>
+  </ul>
+  <p>
+    <strong>Decision owner:</strong> Seshanth + Rémi. <strong>Deadline:</strong>
+    before WIA-17 domain #4 (lifecycle). Domains #1–#3 can run on the
+    current <code>packages/kmp-sdk/</code> regardless of the outcome.
+  </p>
+
+  <h3>P-2 · SD-06 hosted Maven publishing (<a href="https://linear.app/selfprotocol/issue/SELF-2534">SELF-2534</a>)</h3>
+  <p>
+    Currently <code>rn-sdk-test-app</code> resolves <code>xyz.self.sdk:shared-android:0.1.0</code>
+    via <code>mavenLocal()</code>. That works for prototype dev but
+    forces every consumer (including Self Wallet) to run
+    <code>./gradlew publishToMavenLocal</code> before building. SD-06
+    publishes KMP artifacts to GitHub Packages so consumers just declare
+    a Maven repo + creds. This plan does <strong>not</strong> require
+    SD-06 to ship before domains #1–#6; <code>mavenLocal()</code> is
+    sufficient for the migration. SD-06 <strong>is</strong> required
+    before Self Wallet integration (WIA-11 cutover).
+  </p>
+  <p>
+    <strong>Decision owner:</strong> Ayman (assigned). <strong>Deadline:</strong>
+    before WIA-11.
+  </p>
+</section>
+
+<section id="rollout">
+  <h2>Per-domain rollout</h2>
+  <p>
+    One PR per domain, sized like PR #2108 (~150–300 LOC of net-new
+    native glue + spec entry + smoke screen extension). Each PR
+    extends the existing <code>useKmpBridge</code> flag's routing to
+    the new domain, leaves the TS handler intact behind the flag, and
+    deletes the TS handler in a follow-up commit only after hardware
+    smoke passes for that domain.
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Domain · platform</th>
+        <th>Why this slot</th>
+        <th>KMP handler</th>
+        <th>Provider</th>
+        <th>Blockers</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>0</td>
+        <td><code>secureStorage</code> · Android</td>
+        <td>Prototype landed.</td>
+        <td><code>SecureStorageBridgeHandler</code></td>
+        <td><code>EncryptedSharedPreferencesProvider</code> (already in KMP)</td>
+        <td>—</td>
+        <td><span class="status-done">Done</span> · PR #2108</td>
+      </tr>
+      <tr>
+        <td>1</td>
+        <td><code>crypto</code> · Android</td>
+        <td>Cheapest next win. KMP's <code>AndroidKeystoreCryptoProvider</code> already implements the same EC/P-256/SHA256withECDSA used by the existing <code>SelfCryptoModule.kt</code>; this domain deletes the largest duplicated native module.</td>
+        <td><code>CryptoBridgeHandler</code></td>
+        <td><code>AndroidKeystoreCryptoProvider</code> (already in KMP)</td>
+        <td>—</td>
+        <td><span class="status-ready">Ready</span></td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td><code>secureStorage</code> · iOS</td>
+        <td>Forces the iOS Swift-provider scaffolding into the tree. Every subsequent iOS domain becomes cheap once the bridge module + <code>IosProviderRegistry</code> wiring exists.</td>
+        <td><code>SecureStorageBridgeHandler</code></td>
+        <td>New Swift <code>SecureStorageProvider</code> wrapping Keychain Services (mirrors <code>self-sdk-swift</code>'s <code>SecureStorageProviderImpl</code>)</td>
+        <td>iOS scaffolding (see <a href="#ios-scaffolding">below</a>)</td>
+        <td><span class="status-ready">Ready</span></td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td><code>crypto</code> · iOS</td>
+        <td>Reuses <code>self-sdk-swift</code>'s <code>CryptoProviderImpl</code> — already written.</td>
+        <td><code>CryptoBridgeHandler</code></td>
+        <td><code>CryptoProviderImpl.swift</code> (already in <code>self-sdk-swift</code>)</td>
+        <td>Domain #2 (iOS scaffolding)</td>
+        <td><span class="status-ready">Ready</span></td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td><code>lifecycle</code> · both</td>
+        <td>Small surface; validates that the request/response shape and lifecycle teardown semantics match across the bridge. Lets us delete <code>LifecycleHandler.ts</code>.</td>
+        <td><code>LifecycleBridgeHandler</code></td>
+        <td>No platform provider — handler responds with the host's <code>VerificationRequest</code> + <code>mode</code>.</td>
+        <td>P-1 (two-repo decision)</td>
+        <td><span class="status-pending">Pending</span></td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td><code>biometrics</code> · both</td>
+        <td>Small surface but hardware-dependent. Validates the bridge for one-shot prompt handlers.</td>
+        <td><code>BiometricBridgeHandler</code></td>
+        <td>RN-flavored providers wrapping <code>react-native-biometrics</code>.</td>
+        <td>P-1</td>
+        <td><span class="status-pending">Pending</span></td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td><code>nfc</code> · both</td>
+        <td>Large surface. Needs the MOD-02 / MOD-04 optional KMP modules to land first.</td>
+        <td><code>NfcBridgeHandler</code></td>
+        <td>RN-flavored providers wrapping <code>react-native-passport-reader</code>.</td>
+        <td><span class="status-blocked">MOD-02 / MOD-04 not merged</span></td>
+        <td><span class="status-blocked">Blocked</span></td>
+      </tr>
+      <tr>
+        <td>7</td>
+        <td><code>camera</code> / MRZ · both</td>
+        <td>Similar shape to NFC. Needs MOD-03 / MOD-05.</td>
+        <td><code>CameraMrzBridgeHandler</code></td>
+        <td>RN-flavored providers wrapping existing <code>MRZScannerModule</code>.</td>
+        <td><span class="status-blocked">MOD-03 / MOD-05 not merged</span></td>
+        <td><span class="status-blocked">Blocked</span></td>
+      </tr>
+      <tr>
+        <td>8</td>
+        <td><code>documents</code> · both</td>
+        <td>Last because the existing <code>databaseProvider</code> integration is the most entangled with <code>app/</code> code paths.</td>
+        <td><code>DocumentsBridgeHandler</code></td>
+        <td>Provider delegates to existing <code>databaseProvider</code>.</td>
+        <td>P-1</td>
+        <td><span class="status-pending">Pending</span></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="ios-scaffolding">
+  <h2>iOS Swift-provider scaffolding (domain #2 lands this)</h2>
+  <p>
+    KMP iOS handlers are <code>NotImplementedError</code> stubs that
+    delegate to <code>IosProviderRegistry</code> (cinterop is disabled
+    in <code>packages/kmp-sdk/shared/build.gradle.kts</code>).
+    Re-enabling cinterop is a separate, larger decision owned by
+    Seshanth. For this rollout, the iOS path is: RN consumer registers
+    Swift providers into <code>IosProviderRegistry</code> before mounting
+    the WebView. The scaffolding domain #2 needs to land:
+  </p>
+  <ul>
+    <li>
+      <code>packages/rn-sdk/ios/SelfBridgeModule.swift</code> — RCT
+      module that exposes <code>routeMessage(_:)</code> to JS and
+      forwards to a long-lived <code>MessageRouter</code> instance
+      from the KMP XCFramework. Constructs and registers
+      <code>SecureStorageBridgeHandler</code> on init.
+    </li>
+    <li>
+      <code>packages/rn-sdk/ios/SelfBridgeModule.m</code> — RCT bridge
+      glue (<code>RCT_EXTERN_MODULE</code> + method exports), mirroring
+      the pattern in <code>SelfMRZScannerModule.m</code>.
+    </li>
+    <li>
+      Swift <code>SecureStorageProvider</code> implementation that wraps
+      Keychain Services with the same key namespacing as the Android
+      provider (<code>self_sdk_secure_prefs</code> equivalent — single
+      shared keychain access group).
+    </li>
+    <li>
+      <code>selfxyz-rn-sdk.podspec</code> updates: add
+      <code>SelfSdk.xcframework</code> as a vendored framework, ensure
+      the consumer Podfile picks it up through autolinking.
+    </li>
+  </ul>
+  <p class="callout warn">
+    <strong>Open question, surface to Seshanth:</strong> the KMP
+    <code>SelfSdk.xcframework</code> is built from
+    <code>./gradlew createXCFramework</code> in <code>packages/kmp-sdk/</code>.
+    That task currently produces <em>debug</em> variants only (see
+    <code>packages/kmp-sdk/shared/build.gradle.kts:184</code>). SD-06's
+    DoD includes switching to release; the iOS PR needs release variants
+    to ship in a podspec. Either domain #2 fixes that task to produce
+    release variants too, or it depends on SD-06 progress.
+  </p>
+</section>
+
+<section id="retire-ts">
+  <h2>Retiring TS handlers</h2>
+  <p>
+    Each domain PR retires the corresponding TS handler in a
+    <strong>follow-up commit on the same PR</strong>, after smoke
+    passes. The follow-up commit:
+  </p>
+  <ol>
+    <li>Updates <code>SelfVerification.tsx</code> to remove the domain from the <code>useKmpBridge</code>-gated branch — once the KMP path is the only path, the flag isn't needed for that domain.</li>
+    <li>Deletes the <code>{Domain}Handler.ts</code> file + its test.</li>
+    <li>Removes the handler from <code>createHandlers</code> in <code>packages/rn-sdk/src/handlers/index.ts</code>.</li>
+    <li>If the domain had an associated RN-native module (e.g. <code>SelfCryptoModule.kt</code>), deletes it and any Swift counterpart.</li>
+  </ol>
+  <p>
+    Do <strong>not</strong> bulk-delete TS handlers in a sweep PR. The
+    per-domain pairing keeps every revert window small. After domain #8
+    lands, the <code>useKmpBridge</code> flag becomes vestigial and is
+    deleted in a final cleanup PR.
+  </p>
+</section>
+
+<section id="drift">
+  <h2>Bridge envelope drift — parking lot</h2>
+  <p>
+    KMP's <code>MessageRouter</code> and TS's <code>MessageRouter</code>
+    emit response envelopes with minor differences observed during the
+    spike:
+  </p>
+  <ul>
+    <li><strong>Missing-handler error code:</strong> KMP emits <code>DOMAIN_NOT_FOUND</code>; TS emits <code>HANDLER_NOT_FOUND</code>.</li>
+    <li><strong>Malformed-message handling:</strong> KMP drops silently; TS logs to <code>console.error</code> first.</li>
+    <li><strong><code>isTrustedSource</code> parameter:</strong> KMP requires a boolean second arg on <code>onMessageReceived</code>; TS has no equivalent. The RN bridge module currently hardcodes <code>true</code>.</li>
+  </ul>
+  <p>
+    <strong>Do not converge these until at least 3 domains are on Path A.</strong>
+    Converging the envelope now would require touching code in both
+    <code>kmp-sdk</code> and <code>rn-sdk</code>, doubling the surface of
+    the next 2–3 PRs without buying anything functional. Once domains
+    #1–#3 are merged, file a follow-up that picks the canonical shape
+    (KMP's, since that's where the WebView protocol contract is
+    authoritative per the umbrella spec invariants) and patches the TS
+    side once.
+  </p>
+</section>
+
+<section id="validation">
+  <h2>Validation matrix</h2>
+  <p>What each domain PR must show before it can merge.</p>
+  <table>
+    <thead>
+      <tr><th>Check</th><th>How</th><th>Required for…</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>TS typecheck</td><td><code>yarn workspace @selfxyz/rn-sdk typecheck</code></td><td>Every PR</td></tr>
+      <tr><td>Unit tests</td><td><code>yarn workspace @selfxyz/rn-sdk vitest run</code> incl. new <code>KmpBridgeTransport</code> coverage if the shim is touched</td><td>Every PR</td></tr>
+      <tr><td>rn-sdk Android lib build</td><td><code>:selfxyz_rn-sdk:assembleRelease</code> through the test-app's Gradle</td><td>Every Android domain</td></tr>
+      <tr><td>Full test-app APK</td><td><code>:app:assembleDebug</code></td><td>Every Android domain</td></tr>
+      <tr><td>Dex contains expected classes</td><td>Grep dump-classes for the new <code>*BridgeHandler</code> + provider</td><td>Every Android domain</td></tr>
+      <tr><td>rn-sdk iOS pod install</td><td><code>cd packages/rn-sdk-test-app/ios && pod install</code> resolves the new XCFramework</td><td>Every iOS domain</td></tr>
+      <tr><td>Test-app iOS build</td><td><code>xcodebuild -workspace … build</code></td><td>Every iOS domain</td></tr>
+      <tr><td>Hardware smoke</td><td>Smoke screen in <code>rn-sdk-test-app</code> exercises set/get/remove (or equivalent per domain) on a real device or emulator; reviewer comments PASS/FAIL with log on the PR</td><td>Every domain; required for merge into <code>feat/webview-in-app</code></td></tr>
+      <tr><td>TS handler deletion regression check</td><td>After the retirement commit lands, default-path tests still pass (the same domain works <em>without</em> <code>useKmpBridge</code> — i.e. the flag is now gone but behavior is unchanged from the user's perspective)</td><td>Retirement commit</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="oos">
+  <h2>Out of scope</h2>
+  <ul>
+    <li><strong><code>app/</code> (Self Wallet) integration.</strong> Comes at WIA-11 cutover, after all domains migrated + SD-06 shipped.</li>
+    <li><strong>Re-enabling KMP iOS cinterop.</strong> Larger decision owned by Seshanth. This rollout works with cinterop disabled by going through the Swift provider model.</li>
+    <li><strong>Converging the two-repo split.</strong> Captured as prerequisite P-1, not a sub-task of this plan.</li>
+    <li><strong>Bridge protocol version bumps.</strong> The drift in the parking lot is envelope-level; the protocol version stays at 1 throughout this rollout.</li>
+    <li><strong>New bridge domains.</strong> The 10 existing domains are fixed by the umbrella spec; this plan only migrates the existing ones.</li>
+    <li><strong>Performance optimization.</strong> The native-RN-native-RN round-trip is acceptable per the smoke; defer profiling until cutover prep.</li>
+  </ul>
+</section>
+
+<section id="decisions">
+  <h2>Decisions needed before this plan executes</h2>
+  <ol>
+    <li><strong>Two-repo split outcome (P-1).</strong> Without this, domains #4+ block.</li>
+    <li><strong>SD-06 publishing timeline (P-2).</strong> Not blocking #1–#6, but Self Wallet integration cannot land without it.</li>
+    <li><strong>XCFramework release-variant build.</strong> Either domain #2 fixes <code>createXCFramework</code> in this repo, or it waits for SD-06.</li>
+    <li><strong>iOS provider distribution.</strong> Are Swift providers shipped <em>inside</em> <code>packages/rn-sdk/ios/</code>, or imported from <code>self-sdk-swift</code> as a peer package? Affects how downstream RN apps consume them.</li>
+  </ol>
+  <p>
+    Each decision should land in a comment on this file's PR (or as an
+    update to this section) before the corresponding work starts.
+  </p>
+</section>
+
+</main>
+</div>
+
+</body>
+</html>

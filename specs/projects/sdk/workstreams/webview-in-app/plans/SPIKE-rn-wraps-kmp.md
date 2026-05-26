@@ -2,11 +2,11 @@
 
 > Status: Research complete, prototype not yet started
 > Author: research pass on 2026-05-25
-> Parent: [WebView-in-App](../SPEC.md), [Native Adapters](../SPEC-NATIVE-ADAPTERS.md)
+> Parent: [WebView-in-App](../SPEC.html), [Native Adapters](../SPEC-NATIVE-ADAPTERS.html)
 
 ## Why this spike exists
 
-[Native Adapters spec](../SPEC-NATIVE-ADAPTERS.md) (Decision 1) commits to building a new RN-side `SelfCrypto` native module inside `packages/rn-sdk/`. That decision was made before the MOD-01 → MOD-06 series in the `kmp-sdk` workstream made the same `crypto` handler addressable from KMP commonMain through a provider registry. Building it twice — once in Kotlin/Swift inside `kmp-sdk`, once in Kotlin/Swift inside `rn-sdk`'s native folder — is the duplication concern raised internally on 2026-05-25.
+[Native Adapters spec](../SPEC-NATIVE-ADAPTERS.html) (Decision 1) commits to building a new RN-side `SelfCrypto` native module inside `packages/rn-sdk/`. That decision was made before the MOD-01 → MOD-06 series in the `kmp-sdk` workstream made the same `crypto` handler addressable from KMP commonMain through a provider registry. Building it twice — once in Kotlin/Swift inside `kmp-sdk`, once in Kotlin/Swift inside `rn-sdk`'s native folder — is the duplication concern raised internally on 2026-05-25.
 
 You are evaluating one question: **should `packages/rn-sdk/` ship a React Native binding that delegates the bridge router and handlers into `packages/kmp-sdk/`, instead of maintaining a parallel TS MessageRouter + TS handlers + a new RN-only `SelfCrypto` native module?**
 
@@ -48,7 +48,7 @@ What's missing: remote repository configuration and a publish workflow. **SD-06 
 - KMP enforces `isTrustedSource` boolean parameter; TS has no equivalent
 - KMP error code on missing handler is `DOMAIN_NOT_FOUND`; TS uses `HANDLER_NOT_FOUND`
 
-These drifts exist today and are a soft "different shells, slightly different behavior" violation of the [webview-in-app invariant 1](../SPEC.md#invariants). Path A (wrapping KMP) eliminates them by construction. Path B (status quo) requires a separate cleanup PR to converge.
+These drifts exist today and are a soft "different shells, slightly different behavior" violation of the [webview-in-app invariant 1](../SPEC.html#invariants). Path A (wrapping KMP) eliminates them by construction. Path B (status quo) requires a separate cleanup PR to converge.
 
 ### `feat/sdk-native-modules` is not the MOD work
 
@@ -139,4 +139,4 @@ The spike's recommendation assumes one source of truth. If the split persists, P
 - WebView-side changes (no `packages/webview-app/` edits)
 - Bridge protocol envelope changes (the drift documented above is informational; converging the envelopes is a follow-up regardless of Path A vs B)
 - Retirement of any handler in `rn-sdk` (Path A would eventually retire them but that's separate PRs after the prototype proves)
-- Cloud backup, push notification token registration, and the other [Known Gaps](../SPEC-NATIVE-ADAPTERS.md#known-gaps) — out of scope for both paths
+- Cloud backup, push notification token registration, and the other [Known Gaps](../SPEC-NATIVE-ADAPTERS.html#gaps) — out of scope for both paths
