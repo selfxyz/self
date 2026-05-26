@@ -6,21 +6,38 @@
 <title>WIA-17 · Architecture deep-dive — target topology + open decisions</title>
 <style>
   :root {
-    --bg: #fafbfc;
-    --surface: #ffffff;
-    --surface-alt: #f6f8fa;
-    --border: #d1d9e0;
-    --border-soft: #e1e4e8;
-    --text: #1f2328;
-    --muted: #656d76;
-    --accent: #0969da;
-    --accent-soft: #ddf4ff;
-    --high: #cf222e;
-    --high-soft: #ffebe9;
-    --med: #9a6700;
-    --med-soft: #fff8c5;
-    --done: #1a7f37;
-    --done-soft: #dafbe1;
+    /* Palette · WIA-17 trial */
+    --p-ink:    #22181C;
+    --p-coral:  #EF626C;
+    --p-yellow: #FDE74C;
+    --p-peri:   #B3B7EE;
+    --p-cream:  #FBF9FF;
+
+    /* Tokens */
+    --bg:           var(--p-cream);
+    --surface:      #ffffff;
+    --surface-alt:  #F3F0F9;
+    --border:       #D8D2E2;
+    --border-soft:  #EAE6F0;
+    --text:         var(--p-ink);
+    --muted:        #6E6571;
+
+    /* "Blue" accent — derived darker periwinkle for AA contrast on white;
+       the palette periwinkle stays available as --accent-chip for badges/fills. */
+    --accent:       #7681D6;
+    --accent-soft:  #E6E8F7;
+    --accent-chip:  var(--p-peri);
+
+    --high:         var(--p-coral);
+    --high-soft:    #FBDFE2;
+
+    --med:          #8E6E0E;
+    --med-soft:     #FFF4B8;
+    --med-chip:     var(--p-yellow);
+
+    /* Palette has no green — "done" collapses into the accent. */
+    --done:         var(--accent);
+    --done-soft:    var(--accent-soft);
   }
   * { box-sizing: border-box; }
   body { margin: 0; font: 14px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; color: var(--text); background: var(--bg); }
@@ -172,8 +189,8 @@
     letter-spacing: 0.06em;
     padding: 2px 8px;
     border-radius: 999px;
-    background: var(--accent);
-    color: white;
+    background: var(--accent-chip);
+    color: var(--text);
     line-height: 1.4;
   }
   .oq-rec-because {
@@ -413,7 +430,7 @@ flowchart TB
   WV -. bridge JSON .-> NS_R
   WV -. bridge JSON .-> KMP_R
 
-  classDef dup fill:#ffebe9,stroke:#cf222e,stroke-width:2px
+  classDef dup fill:#FBDFE2,stroke:#EF626C,stroke-width:2px
   class RN_R,NS_R,KMP_R dup
     </pre>
   </div>
@@ -473,8 +490,8 @@ flowchart TB
   REG --> AND
   REG --> SWIFT
 
-  classDef src fill:#dafbe1,stroke:#1a7f37,stroke-width:2px
-  classDef glue fill:#ddf4ff,stroke:#0969da
+  classDef src fill:#B3B7EE,stroke:#22181C,stroke-width:2px
+  classDef glue fill:#FBF9FF,stroke:#7681D6
   class KMP_R,KMP_H src
   class RN_GLUE,KOT_GLUE,IOS_GLUE glue
     </pre>
@@ -527,8 +544,8 @@ flowchart LR
   NS_IOS --> KMP
   KMP --> SWIFT
 
-  classDef pkg fill:#ddf4ff,stroke:#0969da
-  classDef core fill:#dafbe1,stroke:#1a7f37,stroke-width:2px
+  classDef pkg fill:#FBF9FF,stroke:#7681D6
+  classDef core fill:#B3B7EE,stroke:#22181C,stroke-width:2px
   class RN_SDK,NS_AND,NS_IOS pkg
   class KMP,SWIFT core
     </pre>
@@ -592,18 +609,21 @@ flowchart LR
 <script>
   mermaid.initialize({
     startOnLoad: true,
-    theme: 'default',
+    theme: 'base',
     securityLevel: 'loose',
     flowchart: { curve: 'basis', padding: 14 },
     themeVariables: {
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
       fontSize: '13px',
-      primaryColor: '#ddf4ff',
-      primaryBorderColor: '#0969da',
-      primaryTextColor: '#1f2328',
-      lineColor: '#656d76',
-      secondaryColor: '#f6f8fa',
-      tertiaryColor: '#ffffff'
+      primaryColor: '#FBF9FF',
+      primaryBorderColor: '#7681D6',
+      primaryTextColor: '#22181C',
+      lineColor: '#6E6571',
+      secondaryColor: '#F3F0F9',
+      tertiaryColor: '#ffffff',
+      mainBkg: '#FBF9FF',
+      clusterBkg: '#F3F0F9',
+      clusterBorder: '#D8D2E2'
     }
   });
 </script>
