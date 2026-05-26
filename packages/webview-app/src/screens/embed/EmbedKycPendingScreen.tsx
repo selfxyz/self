@@ -11,13 +11,13 @@ import { KycPendingScreen } from '@selfxyz/euclid';
 import { WEB_SAFE_AREA } from '../../utils/insets';
 import { createMockProviderResult, isDemoMode } from '../../utils/mockOnboardingFlow';
 
-export const TunnelKycPendingScreen: React.FC = () => {
+export const EmbedKycPendingScreen: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
   const handleTap = useCallback(() => {
     if (!isDemoMode(location.search)) return;
-    navigate(`/tunnel/kyc-success${location.search}`, {
+    navigate(`/disclose/kyc-success${location.search}`, {
       state: { providerResult: createMockProviderResult({ outcome: 'demo' }) },
     });
   }, [navigate, location.search]);

@@ -39,11 +39,7 @@ export function installAssetPathShim(): void {
 
   const OriginalXHR = window.XMLHttpRequest;
   const originalOpen = OriginalXHR.prototype.open;
-  OriginalXHR.prototype.open = function patchedOpen(
-    method: string,
-    url: string | URL,
-    ...rest: unknown[]
-  ): void {
+  OriginalXHR.prototype.open = function patchedOpen(method: string, url: string | URL, ...rest: unknown[]): void {
     const urlStr = typeof url === 'string' ? url : url.toString();
     const finalUrl = shouldRewrite(urlStr) ? rewrite(urlStr) : urlStr;
     return originalOpen.call(this, method, finalUrl, ...(rest as []));

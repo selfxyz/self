@@ -62,7 +62,7 @@ export const DiscloseResultScreen: React.FC = () => {
     }
   }, [analytics, lifecycle, result, resultSent]);
 
-  const onContinue = useCallback(async () => {
+  const handleContinue = useCallback(async () => {
     haptic.trigger('selection');
     const delivered = await deliverResult();
     if (delivered) {
@@ -71,14 +71,14 @@ export const DiscloseResultScreen: React.FC = () => {
     navigate('/', { replace: true });
   }, [deliverResult, haptic, lifecycle, navigate]);
 
-  const onRetry = useCallback(() => {
+  const handleRetry = useCallback(() => {
     haptic.trigger('selection');
-    navigate({ pathname: '/proving', search: location.search }, { replace: true });
+    navigate({ pathname: '/disclose/request', search: location.search }, { replace: true });
   }, [haptic, location.search, navigate]);
 
   const onViewDetails = useCallback(() => {
     haptic.trigger('selection');
-    navigate({ pathname: '/proving/receipt', search: location.search });
+    navigate({ pathname: '/receipts/current', search: location.search });
   }, [haptic, location.search, navigate]);
 
   // userId is the wallet address when userIdType=hex (real Playground sends
@@ -98,7 +98,7 @@ export const DiscloseResultScreen: React.FC = () => {
         successTitle="Proof Generated"
         successDescription="Your identity was shared successfully for this request."
         onViewDetails={onViewDetails}
-        onContinue={onContinue}
+        onContinue={handleContinue}
       />
     );
   }
@@ -114,8 +114,8 @@ export const DiscloseResultScreen: React.FC = () => {
       walletAddress={walletAddress}
       failureTitle="Proof Generation Failed"
       failureDescription={normalizedError?.message ?? 'The proof request could not be completed. Please try again.'}
-      onClose={onContinue}
-      onRetry={onRetry}
+      onClose={handleContinue}
+      onRetry={handleRetry}
       onViewDetails={onViewDetails}
     />
   );

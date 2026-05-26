@@ -11,21 +11,21 @@ import { KycFailureScreen as EuclidKycFailureScreen } from '@selfxyz/euclid';
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
 
-export const TunnelKycFailureScreen: React.FC = () => {
+export const EmbedKycFailureScreen: React.FC = () => {
   const navigate = useNavigate();
   const { analytics, haptic } = useSelfClient();
 
-  const handleDismiss = useCallback(() => {
+  const handleClose = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('tunnel_kyc_failure_dismissed');
-    navigate('/tunnel/tour/4', { replace: true });
+    navigate('/tour/4', { replace: true });
   }, [analytics, haptic, navigate]);
 
-  const handleTryAgain = useCallback(() => {
+  const handleRetry = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('tunnel_kyc_failure_retry_pressed');
-    navigate('/tunnel/kyc', { replace: true });
+    navigate('/capture/kyc', { replace: true });
   }, [analytics, haptic, navigate]);
 
-  return <EuclidKycFailureScreen {...WEB_SAFE_AREA} onDismiss={handleDismiss} onTryAgain={handleTryAgain} />;
+  return <EuclidKycFailureScreen {...WEB_SAFE_AREA} onDismiss={handleClose} onTryAgain={handleRetry} />;
 };

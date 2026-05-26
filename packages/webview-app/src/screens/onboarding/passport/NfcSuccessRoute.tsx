@@ -15,24 +15,23 @@ export const PassportNfcSuccessRoute: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { analytics, haptic } = useSelfClient();
-  const state =
-    (location.state as { countryCode?: string } | null) ?? {};
+  const state = (location.state as { countryCode?: string } | null) ?? {};
 
-  const onClose = useCallback(() => {
+  const handleClose = useCallback(() => {
     haptic.trigger('selection');
-    navigate('/');
+    navigate('/', { replace: true });
   }, [haptic, navigate]);
 
   const onFinishRegistration = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('passport_registration_finished');
-    navigate('/onboarding/success', { state, replace: true });
+    navigate('/capture/success', { state, replace: true });
   }, [analytics, haptic, navigate, state]);
 
   return (
     <PassportNfcSuccessScreen
       insets={WEB_SAFE_AREA.insets}
-      onClose={onClose}
+      onClose={handleClose}
       onFinishRegistration={onFinishRegistration}
     />
   );

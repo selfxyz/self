@@ -13,12 +13,12 @@ import { useVerificationRequest } from '../../providers/VerificationRequestProvi
 import { WEB_SAFE_AREA } from '../../utils/insets';
 import { titleCaseDisclosure } from '../../utils/provingUtils';
 
-export const TunnelProofReceiptScreen: React.FC = () => {
+export const EmbedProofReceiptScreen: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { analytics, haptic } = useSelfClient();
   const { displayLabels, request, appName, displayAppEndpoint, timestamp } = useVerificationRequest();
-  const { backPath = '/tunnel/proof/result', backState } =
+  const { backPath = '/disclose/result', backState } =
     (location.state as { backPath?: string; backState?: Record<string, unknown> } | null) ?? {};
 
   const proofItems = useMemo(() => {
@@ -30,7 +30,7 @@ export const TunnelProofReceiptScreen: React.FC = () => {
     }));
   }, [displayLabels, request.disclosures]);
 
-  const onClose = useCallback(() => {
+  const handleBack = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('tunnel_proof_receipt_closed');
     navigate(backPath, { replace: true, state: backState });
@@ -40,7 +40,7 @@ export const TunnelProofReceiptScreen: React.FC = () => {
     <ProofRequestScreen
       {...WEB_SAFE_AREA}
       variant="default"
-      onClose={onClose}
+      onClose={handleBack}
       appIcon={<SelfLogo size={40} />}
       appName={appName}
       appEndpoint={displayAppEndpoint}

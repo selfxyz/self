@@ -20,13 +20,13 @@ export const KycFailureScreen: React.FC = () => {
   const { analytics, haptic } = useSelfClient();
   const state = (location.state as MockOnboardingNavigationState | null) ?? null;
 
-  const handleDismiss = useCallback(() => {
+  const handleClose = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('kyc_failure_dismissed');
     navigate('/', { state: { skipOnboardingRedirect: true } });
   }, [analytics, haptic, navigate]);
 
-  const handleTryAgain = useCallback(() => {
+  const handleRetry = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('kyc_failure_retry_pressed');
     navigate(getProviderPath(state?.retryMockOutcome ?? 'success'), {
@@ -40,7 +40,7 @@ export const KycFailureScreen: React.FC = () => {
   return (
     <>
       <MockRegistrationFailureButton />
-      <EuclidKycFailureScreen {...WEB_SAFE_AREA} onDismiss={handleDismiss} onTryAgain={handleTryAgain} />
+      <EuclidKycFailureScreen {...WEB_SAFE_AREA} onDismiss={handleClose} onTryAgain={handleRetry} />
     </>
   );
 };

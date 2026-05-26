@@ -17,15 +17,15 @@ export const EuIdCanInstructionsRoute: React.FC = () => {
   const { analytics, haptic } = useSelfClient();
   const state = (location.state as { countryCode?: string; canValue?: string } | null) ?? {};
 
-  const onClose = useCallback(() => {
+  const handleBack = useCallback(() => {
     haptic.trigger('selection');
     navigate(-1);
   }, [haptic, navigate]);
 
-  const onContinue = useCallback(() => {
+  const handleContinue = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('eu_id_can_continue');
-    navigate('/onboarding/eu-id/nfc-instructions', {
+    navigate('/capture/eu-id/nfc-instructions', {
       state: { ...state, useCan: true },
     });
   }, [analytics, haptic, navigate, state]);
@@ -33,8 +33,8 @@ export const EuIdCanInstructionsRoute: React.FC = () => {
   return (
     <EuIdCanInstructionsScreen
       insets={WEB_SAFE_AREA.insets}
-      onClose={onClose}
-      onContinue={onContinue}
+      onClose={handleBack}
+      onContinue={handleContinue}
       canValue={state.canValue}
     />
   );

@@ -9,22 +9,25 @@ import { useNavigate } from 'react-router-dom';
 import { ConflictDetectedScreen as EuclidConflictDetectedScreen } from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
+import type { NavState } from '../../types/navState';
 import { WEB_SAFE_AREA } from '../../utils/insets';
 
-const TUNNEL_RECOVERY_RETURN_PATH = '/tunnel/proof/generating';
-const TUNNEL_RECOVERY_BACK_PATH = '/tunnel/tour/4';
+const TUNNEL_RECOVERY_RETURN_PATH = '/disclose/generating';
+const TUNNEL_RECOVERY_BACK_PATH = '/tour/4';
 
-export const TunnelRecoveryRequiredScreen: React.FC = () => {
+export const EmbedRecoveryRequiredScreen: React.FC = () => {
   const navigate = useNavigate();
   const { analytics, haptic } = useSelfClient();
 
   const onRecoverWithPhrase = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('tunnel_recovery_phrase_selected');
-    navigate(`/recovery/phrase-input?returnTo=${encodeURIComponent(TUNNEL_RECOVERY_RETURN_PATH)}`);
+    navigate('/recover/phrase-input', {
+      state: { nextPath: TUNNEL_RECOVERY_RETURN_PATH } satisfies Partial<NavState>,
+    });
   }, [navigate, haptic, analytics]);
 
-  const onCancel = useCallback(() => {
+  const handleClose = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('tunnel_recovery_cancelled');
     navigate(TUNNEL_RECOVERY_BACK_PATH, { replace: true });
@@ -38,8 +41,8 @@ export const TunnelRecoveryRequiredScreen: React.FC = () => {
       primaryActionLabel="Recover with phrase"
       secondaryActionLabel="Cancel"
       onPrimaryAction={onRecoverWithPhrase}
-      onSecondaryAction={onCancel}
-      onClose={onCancel}
+      onSecondaryAction={handleClose}
+      onClose={handleClose}
     />
   );
 };

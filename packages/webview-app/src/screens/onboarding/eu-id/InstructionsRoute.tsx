@@ -17,22 +17,16 @@ export const EuIdInstructionsRoute: React.FC = () => {
   const { analytics, haptic } = useSelfClient();
   const state = (location.state as { countryCode?: string } | null) ?? {};
 
-  const onClose = useCallback(() => {
+  const handleBack = useCallback(() => {
     haptic.trigger('selection');
     navigate(-1);
   }, [haptic, navigate]);
 
-  const onContinue = useCallback(() => {
+  const handleContinue = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('eu_id_instructions_continue');
-    navigate('/onboarding/eu-id/back-instructions', { state });
+    navigate('/capture/eu-id/back-instructions', { state });
   }, [analytics, haptic, navigate, state]);
 
-  return (
-    <EuIdInstructionsScreen
-      insets={WEB_SAFE_AREA.insets}
-      onClose={onClose}
-      onContinue={onContinue}
-    />
-  );
+  return <EuIdInstructionsScreen insets={WEB_SAFE_AREA.insets} onClose={handleBack} onContinue={handleContinue} />;
 };

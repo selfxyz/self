@@ -23,16 +23,16 @@ interface TunnelResultState {
 const getTunnelBackPath = (source: TunnelResultState['source']): string => {
   switch (source) {
     case 'disclose':
-      return '/tunnel/proof/disclose';
+      return '/disclose/request';
     case 'kyc':
-      return '/tunnel/kyc';
+      return '/capture/kyc';
     case 'proving':
     default:
-      return '/tunnel/proof/generating';
+      return '/disclose/generating';
   }
 };
 
-export const TunnelResultScreen: React.FC = () => {
+export const EmbedResultScreen: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { analytics, lifecycle } = useSelfClient();
@@ -47,7 +47,7 @@ export const TunnelResultScreen: React.FC = () => {
 
   const demo = isDemoMode(location.search);
 
-  const onContinue = useCallback(async () => {
+  const handleContinue = useCallback(async () => {
     if (demo) {
       const demoResult: VerificationResult = {
         success: true,
@@ -78,17 +78,17 @@ export const TunnelResultScreen: React.FC = () => {
     }
   }, [demo, request.userId, verificationId, lifecycle, analytics]);
 
-  const onRetry = useCallback(() => {
+  const handleRetry = useCallback(() => {
     navigate(getTunnelBackPath(source), { replace: true });
   }, [navigate, source]);
 
   const onViewDetails = useCallback(() => {
-    navigate('/tunnel/proof/receipt', {
+    navigate('/receipts/current', {
       state: { backPath: location.pathname, backState: location.state },
     });
   }, [location.pathname, location.state, navigate]);
 
-  const onCancel = useCallback(async () => {
+  const handleClose = useCallback(async () => {
     try {
       const result: VerificationResult = {
         success: false,
@@ -121,7 +121,7 @@ export const TunnelResultScreen: React.FC = () => {
         timestamp={timestamp}
         successTitle="Identity Verified"
         successDescription="Your identity has been verified. You can now use Self ID to prove your identity to participating partners."
-        onContinue={onContinue}
+        onContinue={handleContinue}
         onViewDetails={onViewDetails}
       />
     );
@@ -137,9 +137,9 @@ export const TunnelResultScreen: React.FC = () => {
       timestamp={timestamp}
       failureTitle="Verification Failed"
       failureDescription={error ?? 'Something went wrong during verification. Please try again.'}
-      onRetry={onRetry}
+      onRetry={handleRetry}
       onViewDetails={onViewDetails}
-      onClose={onCancel}
+      onClose={handleClose}
     />
   );
 };

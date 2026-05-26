@@ -44,7 +44,7 @@ export const IDDataScreen: React.FC = () => {
   const navigate = useNavigate();
   const { analytics, haptic } = useSelfClient();
 
-  const onClose = useCallback(() => {
+  const handleBack = useCallback(() => {
     haptic.trigger('selection');
     navigate(-1);
   }, [navigate, haptic]);
@@ -52,7 +52,7 @@ export const IDDataScreen: React.FC = () => {
   const onManageID = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('id_data_manage_pressed');
-    navigate('/manage-documents');
+    navigate('/docs');
   }, [navigate, haptic, analytics]);
 
   return (
@@ -73,7 +73,7 @@ export const IDDataScreen: React.FC = () => {
         </div>
       }
       documentData={MOCK_DOCUMENT_DATA}
-      onClose={onClose}
+      onClose={handleBack}
       onInfo={() => analytics.trackEvent('id_data_info_pressed')}
       onManageID={onManageID}
       closeIcon={({ size, color }) => <LeftArrowIcon size={size} color={color} />}

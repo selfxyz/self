@@ -17,24 +17,18 @@ export const PassportInstructionsRoute: React.FC = () => {
   const { analytics, haptic } = useSelfClient();
   const state = (location.state as { countryCode?: string } | null) ?? {};
 
-  const onClose = useCallback(() => {
+  const handleBack = useCallback(() => {
     haptic.trigger('selection');
     navigate(-1);
   }, [haptic, navigate]);
 
-  const onContinue = useCallback(() => {
+  const handleContinue = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('passport_instructions_continue');
-    navigate('/onboarding/passport/code-scan-instructions', {
+    navigate('/capture/passport/code-scan-instructions', {
       state,
     });
   }, [analytics, haptic, navigate, state]);
 
-  return (
-    <PassportInstructionsScreen
-      insets={WEB_SAFE_AREA.insets}
-      onClose={onClose}
-      onContinue={onContinue}
-    />
-  );
+  return <PassportInstructionsScreen insets={WEB_SAFE_AREA.insets} onClose={handleBack} onContinue={handleContinue} />;
 };

@@ -7,7 +7,7 @@ import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
 import { useBridge } from './BridgeProvider';
 
-export type OperatingMode = 'wallet' | 'tunnel';
+export type OperatingMode = 'self-app' | 'embed';
 
 export interface OperatingModeContextValue {
   mode: OperatingMode;
@@ -33,12 +33,10 @@ const GETCONFIG_TIMEOUT_MS = 800;
 
 const Ctx = createContext<OperatingModeContextValue | null>(null);
 
-export const OperatingModeProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+export const OperatingModeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const bridge = useBridge();
   const [state, setState] = useState<OperatingModeContextValue>({
-    mode: 'wallet',
+    mode: 'self-app',
     verificationRequest: null,
     isReady: false,
   });
@@ -48,14 +46,9 @@ export const OperatingModeProvider: React.FC<{ children: React.ReactNode }> = ({
 
     void (async () => {
       try {
-        const config = await bridge.request<HostConfigResponse>(
-          'lifecycle',
-          'getConfig',
-          {},
-          GETCONFIG_TIMEOUT_MS,
-        );
+        const config = await bridge.request<HostConfigResponse>('lifecycle', 'getConfig', {}, GETCONFIG_TIMEOUT_MS);
         if (cancelled) return;
-        const mode: OperatingMode = config?.mode === 'tunnel' ? 'tunnel' : 'wallet';
+        const mode: OperatingMode = config?.mode === 'embed' ? 'embed' : 'self-app';
         setState({
           mode,
           verificationRequest: config?.verificationRequest ?? null,
@@ -63,11 +56,11 @@ export const OperatingModeProvider: React.FC<{ children: React.ReactNode }> = ({
         });
       } catch {
         // Browser-host fallback, missing transport, or a host that doesn't
-        // implement getConfig: default to wallet. Tunnel requires explicit
-        // host signaling.
+        // implement getConfig: default to self-app. Embed mode requires
+        // explicit host signaling.
         if (cancelled) return;
         setState({
-          mode: 'wallet',
+          mode: 'self-app',
           verificationRequest: null,
           isReady: true,
         });

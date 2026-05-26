@@ -22,9 +22,9 @@ export const PassportNfcErrorRoute: React.FC = () => {
       stage?: 'mrz' | 'nfc';
     } | null) ?? {};
 
-  const onClose = useCallback(() => {
+  const handleClose = useCallback(() => {
     haptic.trigger('selection');
-    navigate('/');
+    navigate('/', { replace: true });
   }, [haptic, navigate]);
 
   const onStartOver = useCallback(() => {
@@ -33,7 +33,7 @@ export const PassportNfcErrorRoute: React.FC = () => {
       stage: state.stage,
       error: state.errorMessage,
     });
-    navigate('/onboarding/passport/instructions', {
+    navigate('/capture/passport/instructions', {
       state: { countryCode: state.countryCode },
       replace: true,
     });
@@ -44,13 +44,13 @@ export const PassportNfcErrorRoute: React.FC = () => {
     analytics.trackEvent('passport_try_different_method', {
       stage: state.stage,
     });
-    navigate('/onboarding/country', { replace: true });
+    navigate('/pick-country', { replace: true });
   }, [analytics, haptic, navigate, state.stage]);
 
   return (
     <PassportNfcErrorScreen
       insets={WEB_SAFE_AREA.insets}
-      onClose={onClose}
+      onClose={handleClose}
       onStartOver={onStartOver}
       onTryDifferentMethod={onTryDifferentMethod}
     />

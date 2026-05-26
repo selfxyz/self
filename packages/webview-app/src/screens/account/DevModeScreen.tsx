@@ -46,7 +46,7 @@ export const DevModeScreen: React.FC = () => {
     subtitle: 'Digital credential for developers',
   };
 
-  const onBack = useCallback(() => {
+  const handleBack = useCallback(() => {
     haptic.trigger('selection');
     navigate('/settings');
   }, [navigate, haptic]);
@@ -87,7 +87,7 @@ export const DevModeScreen: React.FC = () => {
       // Pass the document identity through state so RegisteringScreen renders
       // the correct IDCard variant on first paint (avoids a passport →
       // dev-passport flicker while loadSelectedDocument resolves async).
-      navigate('/onboarding/registering', {
+      navigate('/register/generating', {
         replace: true,
         state: { documentCategory: mockDoc.documentCategory, mock: true },
       });
@@ -99,24 +99,13 @@ export const DevModeScreen: React.FC = () => {
     } finally {
       setIsGenerating(false);
     }
-  }, [
-    analytics,
-    ageIndex,
-    client,
-    documentType,
-    expiryIndex,
-    haptic,
-    isGenerating,
-    nationality,
-    navigate,
-    ofacCheck,
-  ]);
+  }, [analytics, ageIndex, client, documentType, expiryIndex, haptic, isGenerating, nationality, navigate, ofacCheck]);
 
   return (
     <EuclidDevModeScreen
       {...WEB_SAFE_AREA}
       escapeIcon={({ size, color }) => <LeftArrowIcon size={size} color={color} />}
-      onBack={onBack}
+      onBack={handleBack}
       idCard={idCard}
       documentType={documentType}
       onDocumentTypePress={() => {
@@ -130,12 +119,7 @@ export const DevModeScreen: React.FC = () => {
       onNationalityPress={() => {
         haptic.trigger('selection');
         setNationality(prev => {
-          const order: Array<keyof typeof nationalityMap> = [
-            'united states of america',
-            'germany',
-            'france',
-            'india',
-          ];
+          const order: Array<keyof typeof nationalityMap> = ['united states of america', 'germany', 'france', 'india'];
           return order[(order.indexOf(prev) + 1) % order.length];
         });
       }}

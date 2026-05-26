@@ -8,15 +8,15 @@ import type React from 'react';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { EmbedDiscloseScreen } from '../../../src/screens/embed/EmbedDiscloseScreen';
+import { EmbedKycFailureScreen } from '../../../src/screens/embed/EmbedKycFailureScreen';
+import { EmbedKycSuccessScreen } from '../../../src/screens/embed/EmbedKycSuccessScreen';
+import { EmbedProofReceiptScreen } from '../../../src/screens/embed/EmbedProofReceiptScreen';
+import { EmbedProvingScreen } from '../../../src/screens/embed/EmbedProvingScreen';
+import { EmbedRecoveryRequiredScreen } from '../../../src/screens/embed/EmbedRecoveryRequiredScreen';
+import { EmbedResultScreen } from '../../../src/screens/embed/EmbedResultScreen';
+import { TourScreen as EmbedTourScreen } from '../../../src/screens/embed/TourScreen';
 import { LaunchRecoveryScreen } from '../../../src/screens/recovery/LaunchRecoveryScreen';
-import { TourScreen as TunnelTourScreen } from '../../../src/screens/tunnel/TourScreen';
-import { TunnelDiscloseScreen } from '../../../src/screens/tunnel/TunnelDiscloseScreen';
-import { TunnelKycFailureScreen } from '../../../src/screens/tunnel/TunnelKycFailureScreen';
-import { TunnelKycSuccessScreen } from '../../../src/screens/tunnel/TunnelKycSuccessScreen';
-import { TunnelProofReceiptScreen } from '../../../src/screens/tunnel/TunnelProofReceiptScreen';
-import { TunnelProvingScreen } from '../../../src/screens/tunnel/TunnelProvingScreen';
-import { TunnelRecoveryRequiredScreen } from '../../../src/screens/tunnel/TunnelRecoveryRequiredScreen';
-import { TunnelResultScreen } from '../../../src/screens/tunnel/TunnelResultScreen';
 
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 
@@ -51,6 +51,10 @@ vi.mock('../../../src/providers/SelfClientProvider', () => ({
     haptic,
     lifecycle,
   }),
+}));
+
+vi.mock('../../../src/providers/OperatingModeProvider', () => ({
+  useOperatingMode: () => ({ mode: 'embed', verificationRequest: null, isReady: true }),
 }));
 
 vi.mock('../../../src/providers/VerificationRequestProvider', () => ({
@@ -216,12 +220,12 @@ const renderResultRoute = (
   render(
     <MemoryRouter initialEntries={[initialEntry]}>
       <Routes>
-        <Route path="/tunnel/proof/result" element={<TunnelResultScreen />} />
-        <Route path="/tunnel/tour/4" element={<LocationDisplay />} />
-        <Route path="/tunnel/kyc" element={<LocationDisplay />} />
-        <Route path="/tunnel/proof/generating" element={<LocationDisplay />} />
-        <Route path="/tunnel/proof/disclose" element={<LocationDisplay />} />
-        <Route path="/tunnel/proof/receipt" element={<LocationDisplay />} />
+        <Route path="/disclose/result" element={<EmbedResultScreen />} />
+        <Route path="/tour/4" element={<LocationDisplay />} />
+        <Route path="/capture/kyc" element={<LocationDisplay />} />
+        <Route path="/disclose/generating" element={<LocationDisplay />} />
+        <Route path="/disclose/request" element={<LocationDisplay />} />
+        <Route path="/receipts/current" element={<LocationDisplay />} />
         <Route path="/" element={<LocationDisplay />} />
       </Routes>
       <LocationDisplay />
@@ -239,9 +243,9 @@ const renderReceiptRoute = (
   render(
     <MemoryRouter initialEntries={[initialEntry]}>
       <Routes>
-        <Route path="/tunnel/proof/receipt" element={<TunnelProofReceiptScreen />} />
-        <Route path="/tunnel/kyc-success" element={<LocationDisplay />} />
-        <Route path="/tunnel/proof/result" element={<LocationDisplay />} />
+        <Route path="/receipts/current" element={<EmbedProofReceiptScreen />} />
+        <Route path="/disclose/kyc-success" element={<LocationDisplay />} />
+        <Route path="/disclose/result" element={<LocationDisplay />} />
       </Routes>
       <LocationDisplay />
     </MemoryRouter>,
@@ -249,12 +253,12 @@ const renderReceiptRoute = (
 
 const renderProvingRoute = () =>
   render(
-    <MemoryRouter initialEntries={['/tunnel/proof/generating']}>
+    <MemoryRouter initialEntries={['/disclose/generating']}>
       <Routes>
-        <Route path="/tunnel/proof/generating" element={<TunnelProvingScreen />} />
-        <Route path="/tunnel/recovery-required" element={<LocationDisplay />} />
-        <Route path="/tunnel/proof/receipt" element={<LocationDisplay />} />
-        <Route path="/tunnel/proof/result" element={<LocationDisplay />} />
+        <Route path="/disclose/generating" element={<EmbedProvingScreen />} />
+        <Route path="/recover/required" element={<LocationDisplay />} />
+        <Route path="/receipts/current" element={<LocationDisplay />} />
+        <Route path="/disclose/result" element={<LocationDisplay />} />
       </Routes>
       <LocationDisplay />
     </MemoryRouter>,
@@ -262,10 +266,10 @@ const renderProvingRoute = () =>
 
 const renderDiscloseRoute = () =>
   render(
-    <MemoryRouter initialEntries={['/tunnel/proof/disclose']}>
+    <MemoryRouter initialEntries={['/disclose/request']}>
       <Routes>
-        <Route path="/tunnel/proof/disclose" element={<TunnelDiscloseScreen />} />
-        <Route path="/tunnel/proof/result" element={<LocationDisplay />} />
+        <Route path="/disclose/request" element={<EmbedDiscloseScreen />} />
+        <Route path="/disclose/result" element={<LocationDisplay />} />
       </Routes>
       <LocationDisplay />
     </MemoryRouter>,
@@ -282,11 +286,11 @@ const renderKycSuccessRoute = (
   render(
     <MemoryRouter initialEntries={[initialEntry]}>
       <Routes>
-        <Route path="/tunnel/kyc-success" element={<TunnelKycSuccessScreen />} />
-        <Route path="/tunnel/kyc" element={<LocationDisplay />} />
-        <Route path="/tunnel/kyc-failure" element={<LocationDisplay />} />
-        <Route path="/tunnel/tour/4" element={<LocationDisplay />} />
-        <Route path="/tunnel/proof/generating" element={<LocationDisplay />} />
+        <Route path="/disclose/kyc-success" element={<EmbedKycSuccessScreen />} />
+        <Route path="/capture/kyc" element={<LocationDisplay />} />
+        <Route path="/disclose/kyc-failure" element={<LocationDisplay />} />
+        <Route path="/tour/4" element={<LocationDisplay />} />
+        <Route path="/disclose/generating" element={<LocationDisplay />} />
       </Routes>
       <LocationDisplay />
     </MemoryRouter>,
@@ -294,11 +298,11 @@ const renderKycSuccessRoute = (
 
 const renderKycFailureRoute = () =>
   render(
-    <MemoryRouter initialEntries={['/tunnel/kyc-failure']}>
+    <MemoryRouter initialEntries={['/disclose/kyc-failure']}>
       <Routes>
-        <Route path="/tunnel/kyc-failure" element={<TunnelKycFailureScreen />} />
-        <Route path="/tunnel/kyc" element={<LocationDisplay />} />
-        <Route path="/tunnel/tour/4" element={<LocationDisplay />} />
+        <Route path="/disclose/kyc-failure" element={<EmbedKycFailureScreen />} />
+        <Route path="/capture/kyc" element={<LocationDisplay />} />
+        <Route path="/tour/4" element={<LocationDisplay />} />
       </Routes>
       <LocationDisplay />
     </MemoryRouter>,
@@ -306,11 +310,11 @@ const renderKycFailureRoute = () =>
 
 const renderRecoveryRequiredRoute = () =>
   render(
-    <MemoryRouter initialEntries={['/tunnel/recovery-required']}>
+    <MemoryRouter initialEntries={['/recover/required']}>
       <Routes>
-        <Route path="/tunnel/recovery-required" element={<TunnelRecoveryRequiredScreen />} />
-        <Route path="/recovery/phrase-input" element={<LocationDisplay />} />
-        <Route path="/tunnel/tour/4" element={<LocationDisplay />} />
+        <Route path="/recover/required" element={<EmbedRecoveryRequiredScreen />} />
+        <Route path="/recover/phrase-input" element={<LocationDisplay />} />
+        <Route path="/tour/4" element={<LocationDisplay />} />
       </Routes>
       <LocationDisplay />
     </MemoryRouter>,
@@ -318,11 +322,11 @@ const renderRecoveryRequiredRoute = () =>
 
 const renderTourRestoreRoute = () =>
   render(
-    <MemoryRouter initialEntries={['/tunnel/tour/1']}>
+    <MemoryRouter initialEntries={['/tour/1']}>
       <Routes>
-        <Route path="/tunnel/tour/:step" element={<TunnelTourScreen />} />
-        <Route path="/recovery" element={<LaunchRecoveryScreen />} />
-        <Route path="/recovery/phrase-input" element={<LocationDisplay />} />
+        <Route path="/tour/:step" element={<EmbedTourScreen />} />
+        <Route path="/recover" element={<LaunchRecoveryScreen />} />
+        <Route path="/recover/phrase-input" element={<LocationDisplay />} />
         <Route path="/settings/security" element={<LocationDisplay />} />
       </Routes>
       <LocationDisplay />
@@ -355,79 +359,88 @@ describe('tunnel flow screens', () => {
 
   it('retries proving failures back to the proving route', () => {
     renderResultRoute({
-      pathname: '/tunnel/proof/result',
+      pathname: '/disclose/result',
       state: { success: false, error: 'TEE down', source: 'proving' },
     });
 
     fireEvent.click(screen.getByRole('button', { name: /retry/i }));
 
-    expectLocation('/tunnel/proof/generating');
+    expectLocation('/disclose/generating');
   });
 
   it('retries disclose failures back to the disclose route', () => {
     renderResultRoute({
-      pathname: '/tunnel/proof/result',
+      pathname: '/disclose/result',
       state: { success: false, error: 'TEE down', source: 'disclose' },
     });
 
     fireEvent.click(screen.getByRole('button', { name: /retry/i }));
 
-    expectLocation('/tunnel/proof/disclose');
+    expectLocation('/disclose/request');
   });
 
   it('routes success details to the proof receipt screen', () => {
     renderResultRoute({
-      pathname: '/tunnel/proof/result',
+      pathname: '/disclose/result',
       state: { success: true },
     });
 
     fireEvent.click(screen.getByRole('button', { name: /view details/i }));
 
-    expectLocation('/tunnel/proof/receipt');
+    expectLocation('/receipts/current');
   });
 
   it('routes failure details to the proof receipt screen', () => {
     renderResultRoute({
-      pathname: '/tunnel/proof/result',
+      pathname: '/disclose/result',
       state: { success: false, error: 'TEE down', source: 'proving' },
     });
 
     fireEvent.click(screen.getByRole('button', { name: /view details/i }));
 
-    expectLocation('/tunnel/proof/receipt');
+    expectLocation('/receipts/current');
   });
 
-  it('routes proving failure close back to tunnel tour step 4', () => {
+  it('routes proving failure close to lifecycle.dismiss', async () => {
     renderResultRoute({
-      pathname: '/tunnel/proof/result',
+      pathname: '/disclose/result',
       state: { success: false, error: 'TEE down', source: 'proving' },
     });
 
     fireEvent.click(screen.getByRole('button', { name: /close/i }));
 
-    expectLocation('/tunnel/tour/4');
+    await waitFor(() => {
+      expect(lifecycle.setResult).toHaveBeenCalled();
+      expect(lifecycle.dismiss).toHaveBeenCalled();
+    });
   });
 
-  it('keeps disclose failure close inside the tunnel disclose route', () => {
+  it('keeps disclose failure close on lifecycle.dismiss', async () => {
     renderResultRoute({
-      pathname: '/tunnel/proof/result',
+      pathname: '/disclose/result',
       state: { success: false, error: 'TEE down', source: 'disclose' },
     });
 
     fireEvent.click(screen.getByRole('button', { name: /close/i }));
 
-    expectLocation('/tunnel/proof/disclose');
+    await waitFor(() => {
+      expect(lifecycle.setResult).toHaveBeenCalled();
+      expect(lifecycle.dismiss).toHaveBeenCalled();
+    });
   });
 
-  it('keeps kyc failure close inside the tunnel kyc route', () => {
+  it('keeps kyc failure close on lifecycle.dismiss', async () => {
     renderResultRoute({
-      pathname: '/tunnel/proof/result',
+      pathname: '/disclose/result',
       state: { success: false, error: 'Provider cancelled', source: 'kyc' },
     });
 
     fireEvent.click(screen.getByRole('button', { name: /close/i }));
 
-    expectLocation('/tunnel/kyc');
+    await waitFor(() => {
+      expect(lifecycle.setResult).toHaveBeenCalled();
+      expect(lifecycle.dismiss).toHaveBeenCalled();
+    });
   });
 
   it('routes account recovery choice to the recovery-required screen', async () => {
@@ -436,7 +449,7 @@ describe('tunnel flow screens', () => {
     renderProvingRoute();
 
     await waitFor(() => {
-      expectLocation('/tunnel/recovery-required');
+      expectLocation('/recover/required');
     });
   });
 
@@ -447,16 +460,16 @@ describe('tunnel flow screens', () => {
     renderProvingRoute();
 
     expect(screen.getByText(/proof-generation:generatingProof/i)).toBeTruthy();
-    expectLocation('/tunnel/proof/generating');
+    expectLocation('/disclose/generating');
     expect(initMock).not.toHaveBeenCalled();
   });
 
-  it('routes recovery required primary action to phrase input with returnTo', () => {
+  it('routes recovery required primary action to phrase input with nextPath state', () => {
     renderRecoveryRequiredRoute();
 
     fireEvent.click(screen.getByRole('button', { name: /recover with phrase/i }));
 
-    expectLocation('/recovery/phrase-input?returnTo=%2Ftunnel%2Fproof%2Fgenerating');
+    expectLocation('/recover/phrase-input');
   });
 
   it('keeps recovery required cancel inside the tunnel flow', () => {
@@ -464,18 +477,18 @@ describe('tunnel flow screens', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
 
-    expectLocation('/tunnel/tour/4');
+    expectLocation('/tour/4');
   });
 
   it('keeps receipt close on the provided tunnel back path', () => {
     renderReceiptRoute({
-      pathname: '/tunnel/proof/receipt',
-      state: { backPath: '/tunnel/proof/result' },
+      pathname: '/receipts/current',
+      state: { backPath: '/disclose/result' },
     });
 
     fireEvent.click(screen.getByRole('button', { name: /close receipt/i }));
 
-    expectLocation('/tunnel/proof/result');
+    expectLocation('/disclose/result');
   });
 
   it('restores result state when closing receipt', () => {
@@ -485,14 +498,14 @@ describe('tunnel flow screens', () => {
       <MemoryRouter
         initialEntries={[
           {
-            pathname: '/tunnel/proof/receipt',
-            state: { backPath: '/tunnel/proof/result', backState: resultState },
+            pathname: '/receipts/current',
+            state: { backPath: '/disclose/result', backState: resultState },
           },
         ]}
       >
         <Routes>
-          <Route path="/tunnel/proof/receipt" element={<TunnelProofReceiptScreen />} />
-          <Route path="/tunnel/proof/result" element={<StateDisplay />} />
+          <Route path="/receipts/current" element={<EmbedProofReceiptScreen />} />
+          <Route path="/disclose/result" element={<StateDisplay />} />
         </Routes>
       </MemoryRouter>,
     );
@@ -504,7 +517,7 @@ describe('tunnel flow screens', () => {
 
   it('keeps kyc cancel inside the tunnel flow', async () => {
     renderKycSuccessRoute({
-      pathname: '/tunnel/kyc-success',
+      pathname: '/disclose/kyc-success',
       state: {
         providerResult: {
           provider: 'didit',
@@ -514,7 +527,7 @@ describe('tunnel flow screens', () => {
     });
 
     await waitFor(() => {
-      expectLocation('/tunnel/tour/4');
+      expectLocation('/tour/4');
     });
   });
 
@@ -527,7 +540,7 @@ describe('tunnel flow screens', () => {
     renderProvingRoute();
 
     await waitFor(() => {
-      expectLocation('/tunnel/proof/result');
+      expectLocation('/disclose/result');
     });
 
     expect(analytics.trackEvent).toHaveBeenCalledWith('tunnel_proving_init_failed', { error: 'bad request' });
@@ -535,7 +548,7 @@ describe('tunnel flow screens', () => {
 
   it('routes retryable kyc error to the failure screen', async () => {
     renderKycSuccessRoute({
-      pathname: '/tunnel/kyc-success',
+      pathname: '/disclose/kyc-success',
       state: {
         providerResult: {
           provider: 'didit',
@@ -546,13 +559,13 @@ describe('tunnel flow screens', () => {
     });
 
     await waitFor(() => {
-      expectLocation('/tunnel/kyc-failure');
+      expectLocation('/disclose/kyc-failure');
     });
   });
 
   it('routes non-retryable kyc error back to the tour', async () => {
     renderKycSuccessRoute({
-      pathname: '/tunnel/kyc-success',
+      pathname: '/disclose/kyc-success',
       state: {
         providerResult: {
           provider: 'didit',
@@ -563,7 +576,7 @@ describe('tunnel flow screens', () => {
     });
 
     await waitFor(() => {
-      expectLocation('/tunnel/tour/4');
+      expectLocation('/tour/4');
     });
   });
 
@@ -572,7 +585,7 @@ describe('tunnel flow screens', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /retry kyc/i }));
 
-    expectLocation('/tunnel/kyc');
+    expectLocation('/capture/kyc');
   });
 
   it('dismisses kyc failure back to the tunnel tour', () => {
@@ -580,28 +593,31 @@ describe('tunnel flow screens', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /dismiss kyc failure/i }));
 
-    expectLocation('/tunnel/tour/4');
+    expectLocation('/tour/4');
   });
 
   it('falls back to result screen when receipt has no backPath', () => {
     renderReceiptRoute({
-      pathname: '/tunnel/proof/receipt',
+      pathname: '/receipts/current',
     });
 
     fireEvent.click(screen.getByRole('button', { name: /close receipt/i }));
 
-    expectLocation('/tunnel/proof/result');
+    expectLocation('/disclose/result');
   });
 
-  it('defaults missing failure source close to tunnel tour step 4', () => {
+  it('defaults missing failure source close to lifecycle.dismiss', async () => {
     renderResultRoute({
-      pathname: '/tunnel/proof/result',
+      pathname: '/disclose/result',
       state: { success: false, error: 'Unknown error' },
     });
 
     fireEvent.click(screen.getByRole('button', { name: /close/i }));
 
-    expectLocation('/tunnel/tour/4');
+    await waitFor(() => {
+      expect(lifecycle.setResult).toHaveBeenCalled();
+      expect(lifecycle.dismiss).toHaveBeenCalled();
+    });
   });
 
   it('keeps tour restore back button inside the tunnel flow', () => {
@@ -610,16 +626,16 @@ describe('tunnel flow screens', () => {
     fireEvent.click(screen.getByRole('button', { name: /restore tour 1/i }));
     fireEvent.click(screen.getByRole('button', { name: /back from recovery/i }));
 
-    expectLocation('/tunnel/tour/1');
+    expectLocation('/tour/1');
   });
 
-  it('forwards returnTo when entering recovery phrase from tunnel tour', () => {
+  it('forwards nextPath when entering recovery phrase from tunnel tour', () => {
     renderTourRestoreRoute();
 
     fireEvent.click(screen.getByRole('button', { name: /restore tour 1/i }));
     fireEvent.click(screen.getByRole('button', { name: /enter recovery phrase/i }));
 
-    expectLocation(`/recovery/phrase-input?returnTo=${encodeURIComponent('/tunnel/tour/1')}`);
+    expectLocation('/recover/phrase-input');
   });
 
   it('hides confirm button on receipt when backState is missing', () => {
@@ -627,14 +643,14 @@ describe('tunnel flow screens', () => {
       <MemoryRouter
         initialEntries={[
           {
-            pathname: '/tunnel/proof/receipt',
-            state: { backPath: '/tunnel/proof/result' },
+            pathname: '/receipts/current',
+            state: { backPath: '/disclose/result' },
           },
         ]}
       >
         <Routes>
-          <Route path="/tunnel/proof/receipt" element={<TunnelProofReceiptScreen />} />
-          <Route path="/tunnel/proof/result" element={<LocationDisplay />} />
+          <Route path="/receipts/current" element={<EmbedProofReceiptScreen />} />
+          <Route path="/disclose/result" element={<LocationDisplay />} />
         </Routes>
       </MemoryRouter>,
     );
@@ -647,14 +663,14 @@ describe('tunnel flow screens', () => {
       <MemoryRouter
         initialEntries={[
           {
-            pathname: '/tunnel/proof/receipt',
-            state: { backPath: '/tunnel/proof/result', backState: { success: false, error: 'TEE down' } },
+            pathname: '/receipts/current',
+            state: { backPath: '/disclose/result', backState: { success: false, error: 'TEE down' } },
           },
         ]}
       >
         <Routes>
-          <Route path="/tunnel/proof/receipt" element={<TunnelProofReceiptScreen />} />
-          <Route path="/tunnel/proof/result" element={<LocationDisplay />} />
+          <Route path="/receipts/current" element={<EmbedProofReceiptScreen />} />
+          <Route path="/disclose/result" element={<LocationDisplay />} />
         </Routes>
       </MemoryRouter>,
     );
@@ -668,14 +684,14 @@ describe('tunnel flow screens', () => {
       <MemoryRouter
         initialEntries={[
           {
-            pathname: '/tunnel/proof/receipt',
-            state: { backPath: '/tunnel/proof/result', backState: { success: true } },
+            pathname: '/receipts/current',
+            state: { backPath: '/disclose/result', backState: { success: true } },
           },
         ]}
       >
         <Routes>
-          <Route path="/tunnel/proof/receipt" element={<TunnelProofReceiptScreen />} />
-          <Route path="/tunnel/proof/result" element={<LocationDisplay />} />
+          <Route path="/receipts/current" element={<EmbedProofReceiptScreen />} />
+          <Route path="/disclose/result" element={<LocationDisplay />} />
         </Routes>
       </MemoryRouter>,
     );
@@ -692,7 +708,7 @@ describe('tunnel flow screens', () => {
     renderDiscloseRoute();
 
     await waitFor(() => {
-      expectLocation('/tunnel/proof/result');
+      expectLocation('/disclose/result');
     });
 
     expect(analytics.trackEvent).toHaveBeenCalledWith('tunnel_disclose_init_failed', { error: 'bad request' });

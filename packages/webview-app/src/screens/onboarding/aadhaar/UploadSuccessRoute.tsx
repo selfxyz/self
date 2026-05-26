@@ -15,25 +15,18 @@ export const AadhaarUploadSuccessRoute: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { analytics, haptic } = useSelfClient();
-  const state =
-    (location.state as { countryCode?: string } | null) ?? {};
+  const state = (location.state as { countryCode?: string } | null) ?? {};
 
-  const onClose = useCallback(() => {
+  const handleClose = useCallback(() => {
     haptic.trigger('selection');
-    navigate('/');
+    navigate('/', { replace: true });
   }, [haptic, navigate]);
 
-  const onContinue = useCallback(() => {
+  const handleContinue = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('aadhaar_upload_success_continue');
-    navigate('/onboarding/success', { state, replace: true });
+    navigate('/capture/success', { state, replace: true });
   }, [analytics, haptic, navigate, state]);
 
-  return (
-    <AadhaarUploadSuccessScreen
-      insets={WEB_SAFE_AREA.insets}
-      onClose={onClose}
-      onContinue={onContinue}
-    />
-  );
+  return <AadhaarUploadSuccessScreen insets={WEB_SAFE_AREA.insets} onClose={handleClose} onContinue={handleContinue} />;
 };

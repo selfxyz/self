@@ -36,13 +36,13 @@ export const ProvingScreen: React.FC = () => {
     }));
   }, [displayLabels, request.disclosures]);
 
-  const onVerify = useCallback(() => {
+  const handleStartProving = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('prove_verify_pressed');
-    navigate({ pathname: '/proving/generating', search: location.search }, { replace: true });
+    navigate({ pathname: '/disclose/generating', search: location.search }, { replace: true });
   }, [analytics, haptic, location.search, navigate]);
 
-  const onCancel = useCallback(async () => {
+  const handleClose = useCallback(async () => {
     haptic.trigger('selection');
     analytics.trackEvent('prove_verify_cancelled');
     try {
@@ -60,8 +60,8 @@ export const ProvingScreen: React.FC = () => {
     <ProofRequestScreen
       {...WEB_SAFE_AREA}
       variant="default"
-      onClose={onCancel}
-      onConfirm={onVerify}
+      onClose={handleClose}
+      onConfirm={handleStartProving}
       appIcon={<SelfLogo size={40} />}
       appName={appName}
       appEndpoint={displayAppEndpoint}

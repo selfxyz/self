@@ -9,6 +9,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Button, colors, Description, KycPendingScreen, spacing, Title } from '@selfxyz/euclid';
 import { generateMockDocument, storePassportData } from '@selfxyz/mobile-sdk-alpha/browser';
 
+import { useOperatingMode } from '../../providers/OperatingModeProvider';
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { useVerificationRequest } from '../../providers/VerificationRequestProvider';
 import type { KycProviderResult } from '../../types/kycProvider';
@@ -36,8 +37,9 @@ export const ProviderLaunchScreen: React.FC = () => {
 
   const { backPath, countryCode = '', documentType = '', nextPath } = (location.state as ProviderLaunchState) || {};
 
-  const defaultNextPath = nextPath ?? '/onboarding/provider-result';
-  const isTunnelFlow = defaultNextPath.startsWith('/tunnel/') || backPath?.startsWith('/tunnel/') === true;
+  const defaultNextPath = nextPath ?? '/capture/provider-result';
+  const { mode } = useOperatingMode();
+  const isEmbedFlow = mode === 'embed';
   const verificationId = ctxVerificationId ?? `kyc-${Date.now()}`;
 
   const [phase, setPhase] = useState<Phase>('loading');
@@ -226,8 +228,8 @@ export const ProviderLaunchScreen: React.FC = () => {
       documentType,
     });
 
-    if (isTunnelFlow) {
-      navigate(backPath ?? '/tunnel/tour/4', { replace: true });
+    if (isEmbedFlow) {
+      navigate(backPath ?? '/tour/4', { replace: true });
       return;
     }
 
@@ -238,7 +240,7 @@ export const ProviderLaunchScreen: React.FC = () => {
     }
 
     navigate('/', { state: { skipOnboardingRedirect: true } });
-  }, [analytics, backPath, countryCode, documentType, haptic, isTunnelFlow, lifecycle, navigate]);
+  }, [analytics, backPath, countryCode, documentType, haptic, isEmbedFlow, lifecycle, navigate]);
 
   const handleRetry = useCallback(() => {
     haptic.trigger('selection');

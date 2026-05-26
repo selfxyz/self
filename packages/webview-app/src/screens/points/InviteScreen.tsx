@@ -15,7 +15,7 @@ export const InviteScreen: React.FC = () => {
   const navigate = useNavigate();
   const { analytics, haptic } = useSelfClient();
 
-  const onClose = useCallback(() => {
+  const handleBack = useCallback(() => {
     haptic.trigger('selection');
     navigate(-1);
   }, [haptic, navigate]);
@@ -31,7 +31,7 @@ export const InviteScreen: React.FC = () => {
   return (
     <EuclidInviteScreen
       {...WEB_SAFE_AREA}
-      onClose={onClose}
+      onClose={handleBack}
       onMessagesPress={() => onShare('messages')}
       onSharePress={() => onShare('share')}
       onWhatsAppPress={() => onShare('whatsapp')}

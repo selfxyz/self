@@ -36,9 +36,9 @@ export const SocialSignOnMethodPickerScreen: React.FC = () => {
     navigate('/coming-soon');
   }, [navigate, haptic, analytics]);
 
-  const onDismiss = useCallback(() => {
+  const handleContinue = useCallback(() => {
     haptic.trigger('selection');
-    navigate(`/onboarding/notifications${getPromptMockSearch(mock)}`);
+    navigate(`/notify${getPromptMockSearch(mock)}`);
   }, [mock, navigate, haptic]);
 
   return (
@@ -47,7 +47,7 @@ export const SocialSignOnMethodPickerScreen: React.FC = () => {
       onApple={onApple}
       onGoogle={onGoogle}
       onSeedPhrase={onSeedPhrase}
-      onDismiss={onDismiss}
+      onDismiss={handleContinue}
     />
   );
 };

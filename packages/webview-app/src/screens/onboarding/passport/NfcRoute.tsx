@@ -7,10 +7,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { PassportNfcInstructionsScreen } from '@selfxyz/euclid';
-import {
-  bridgeNFCScannerAdapter,
-  onNfcProgress,
-} from '@selfxyz/webview-bridge/adapters';
+import { bridgeNFCScannerAdapter, onNfcProgress } from '@selfxyz/webview-bridge/adapters';
 
 import { useBridge } from '../../../providers/BridgeProvider';
 import { useSelfClient } from '../../../providers/SelfClientProvider';
@@ -61,7 +58,7 @@ export const PassportNfcRoute: React.FC = () => {
 
   useEffect(() => {
     if (!mrz) {
-      navigate('/onboarding/passport/code-scan-instructions', { replace: true });
+      navigate('/capture/passport/code-scan-instructions', { replace: true });
       return;
     }
     if (startedRef.current) return;
@@ -100,9 +97,7 @@ export const PassportNfcRoute: React.FC = () => {
           mock: false,
           isRegistered: false,
         };
-        const existingIndex = catalog.documents.findIndex(
-          (d: { id: string }) => d.id === docId,
-        );
+        const existingIndex = catalog.documents.findIndex((d: { id: string }) => d.id === docId);
         if (existingIndex >= 0) {
           catalog.documents[existingIndex] = entry;
         } else {
@@ -113,17 +108,16 @@ export const PassportNfcRoute: React.FC = () => {
 
         analytics.trackEvent('passport_nfc_scan_succeeded');
         haptic.trigger('success');
-        navigate('/onboarding/passport/nfc-success', {
+        navigate('/capture/passport/nfc-success', {
           state: { countryCode: state.countryCode },
           replace: true,
         });
       } catch (err) {
         if (cancelled) return;
-        const message =
-          err instanceof Error ? err.message : 'NFC scan failed';
+        const message = err instanceof Error ? err.message : 'NFC scan failed';
         analytics.trackEvent('passport_nfc_scan_failed', { error: message });
         haptic.trigger('warning');
-        navigate('/onboarding/passport/nfc-error', {
+        navigate('/capture/passport/nfc-error', {
           state: {
             countryCode: state.countryCode,
             errorMessage: message,
@@ -138,21 +132,11 @@ export const PassportNfcRoute: React.FC = () => {
       cancelled = true;
       unsubscribe();
     };
-  }, [
-    analytics,
-    bridge,
-    documents,
-    haptic,
-    mrz,
-    navigate,
-    nfcScanner,
-    state.countryCode,
-    state.documentType,
-  ]);
+  }, [analytics, bridge, documents, haptic, mrz, navigate, nfcScanner, state.countryCode, state.documentType]);
 
-  const onClose = useCallback(() => {
+  const handleBack = useCallback(() => {
     haptic.trigger('selection');
-    navigate('/onboarding/passport/code-scan-instructions', { replace: true });
+    navigate('/capture/passport/code-scan-instructions', { replace: true });
   }, [haptic, navigate]);
 
   const onCaptureTips = useCallback(() => {
@@ -163,7 +147,7 @@ export const PassportNfcRoute: React.FC = () => {
   return (
     <PassportNfcInstructionsScreen
       insets={WEB_SAFE_AREA.insets}
-      onClose={onClose}
+      onClose={handleBack}
       onCaptureTips={onCaptureTips}
       step={step}
     />
