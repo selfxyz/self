@@ -20,6 +20,11 @@ buildscript {
 
 allprojects {
     repositories {
+        // mavenLocal resolves @selfxyz/rn-sdk's KMP AAR dependency during the
+        // PATH-A spike (see specs/projects/sdk/workstreams/webview-in-app/plans/
+        // PATH-A-rn-wraps-kmp.html). Remove once SD-06 (SELF-2534) publishes
+        // KMP artifacts to a hosted Maven repository.
+        mavenLocal()
         google()
         mavenCentral()
         maven {

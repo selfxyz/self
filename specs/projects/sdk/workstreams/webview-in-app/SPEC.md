@@ -50,20 +50,56 @@ serve external SDK consumers (KMP, partner wallets), not Self Wallet itself.
 ## Code Home
 
 The bridge host implementation lives in **`packages/rn-sdk/`** (revived
-from paused). `app/` consumes it as a workspace dependency. This makes
-the RN host symmetric with `packages/native-shell-android/` and
-`packages/native-shell-ios/`: three bridge-compatible shells, one
-per platform target, each publishable.
+from paused). `app/` consumes it as a workspace dependency.
 
-- `packages/rn-sdk/` — message router, bridge handlers, the WebView
-  shell component, and the new `SelfCrypto` native module
-  (`packages/rn-sdk/ios/`, `packages/rn-sdk/android/`).
+- `packages/rn-sdk/` — the WebView shell component (TS), a thin
+  `SelfBridgeModule` native module that registers KMP bridge handlers
+  into the RN runtime, and TS adapters for the handful of domains
+  that need an RN-only path (e.g. `analytics`, `navigation`,
+  `lifecycle` reply shapes).
 - `app/` — splash, error boundary, deep-link receiver, workspace dep
   on `@selfxyz/rn-sdk`. Imports and mounts the shell at the root of
   the navigation graph.
 - Future 3rd-party RN apps install `@selfxyz/rn-sdk` from npm and
   consume the same shell + handlers. Self Wallet is consumer #1, not
   the only consumer.
+
+## Architecture — Path A (rn-sdk wraps kmp-sdk)
+
+The React Native SDK does **not** reimplement the bridge layer.
+Instead it consumes `packages/kmp-sdk/` (Android AAR + iOS XCFramework)
+and registers KMP's bridge handlers and the consumer's platform
+providers into the `SdkProviderRegistry`. This collapses three parallel
+bridge implementations (Kotlin native-shell, RN-side TS handlers,
+KMP shared) into one source of truth in KMP commonMain / per-platform
+providers.
+
+- KMP owns: `MessageRouter`, `SecureStorageBridgeHandler`,
+  `CryptoBridgeHandler`, `LifecycleBridgeHandler`, and (as MOD-01→06
+  lands) `NfcBridgeHandler`, `CameraMrzBridgeHandler`,
+  `BiometricBridgeHandler`, `DocumentsBridgeHandler`. Each handler
+  delegates to a `*Provider` interface in `commonMain`.
+- `rn-sdk` owns: the WebView shell, `SelfBridgeModule` (Kotlin) which
+  instantiates a `MessageRouter`, registers KMP handlers, and bridges
+  inbound JSON / outbound JS-injection to React Native's message bus,
+  and a Swift counterpart for iOS that does the same against the
+  XCFramework via `IosProviderRegistry`.
+- Self Wallet (and any RN consumer) supplies platform providers that
+  wrap existing RN-native modules: `react-native-keychain` →
+  `SecureStorageProvider`, AndroidKeyStore / iOS Security Framework
+  → `CryptoProvider`, `react-native-passport-reader` → `NfcProvider`,
+  `MRZScannerModule` → `CameraMrzProvider`, etc. Providers are
+  registered into the KMP `SdkProviderRegistry` before the WebView
+  mounts.
+
+This direction is the outcome of the
+[Path A spike](./plans/PATH-A-rn-wraps-kmp.html) — the build-side
+prototype on Android is complete; hardware smoke is the remaining
+gate. The bridge envelope, error vocabulary, and per-domain handler
+behavior come straight from `kmp-sdk`, so the WebView cannot tell
+which shell (native-Kotlin, KMP, or RN) it is running inside —
+the invariant from the umbrella holds by construction rather than
+by parallel maintenance.
 
 ## Tracks
 
@@ -94,19 +130,20 @@ cleanup that lands alongside the WIA work — see the
 | WIA-01 | Establish `feat/webview-in-app` branch + umbrella  | Umbrella       | Done     |
 | WIA-02 | RN WebView host shell + message router (in `rn-sdk`)| Bridge host   | Done     |
 | WIA-03 | Lifecycle, navigation, analytics handlers          | Bridge host    | Done     |
-| WIA-04 | SecureStorage handler (wrap react-native-keychain) | Native adapters| Done     |
-| WIA-05 | Crypto handler (new RN native module, sign/keygen) | Native adapters| Done     |
-| WIA-06 | NFC handler (normalize RNPassportReader contract)  | Native adapters| Done     |
-| WIA-07 | Camera / MRZ handler                               | Native adapters| Done     |
-| WIA-08 | Biometrics handler                                 | Native adapters| Pending  |
+| WIA-04 | SecureStorage handler (wrap react-native-keychain) | Native adapters| Done (TS); superseded by WIA-17 |
+| WIA-05 | Crypto handler (new RN native module, sign/keygen) | Native adapters| Done (TS); superseded by WIA-17 |
+| WIA-06 | NFC handler (normalize RNPassportReader contract)  | Native adapters| Done (TS); superseded by WIA-17 |
+| WIA-07 | Camera / MRZ handler                               | Native adapters| Done (TS); superseded by WIA-17 |
+| WIA-08 | Biometrics handler                                 | Native adapters| Pending — implement directly under WIA-17 |
 | WIA-09 | Hosted URL loading + version pinning               | Hosted loading | Pending  |
 | WIA-10 | Retire RN-native Didit integration                 | Umbrella       | Pending  |
 | WIA-11 | Cutover PR — delete legacy RN screens              | Umbrella       | Pending  |
 | WIA-12 | WebView Sentry integration (cohort tags, masking)  | Observability  | Pending — gated on nav-hygiene |
 | WIA-13 | WebView Session Replay with PII masking            | Observability  | Pending — gated on nav-hygiene |
 | WIA-14 | Re-home ANA-15 attempt_id footer to webview-app    | Observability  | Pending  |
-| WIA-15 | Documents handler (delegate to databaseProvider)   | Native adapters| Done     |
+| WIA-15 | Documents handler (delegate to databaseProvider)   | Native adapters| Done (TS); superseded by WIA-17 |
 | WIA-16 | `mode` + `verificationRequest` in lifecycle.getConfig | Operating modes | Done  |
+| WIA-17 | Path A migration — replace TS handlers with `SelfBridgeModule` + KMP `*BridgeHandler` registrations; consumer-supplied providers wrap existing RN libs. Build + Android secureStorage smoke landed in PR #2108. | Native adapters| In progress (secureStorage proven; remaining domains pending) |
 | NAV-01 | Route mode-classification audit                    | Nav hygiene    | Done     |
 | NAV-02 | Dev-only route namespace + DEV gating              | Nav hygiene    | Done     |
 | NAV-03 | BootDecision — single boot decision function       | Nav hygiene    | Done     |
@@ -121,7 +158,7 @@ cleanup that lands alongside the WIA work — see the
 | NAV-12 | Rename tunnel → embed (mode terminology)           | Nav hygiene    | Done     |
 | NAV-13 | Declare mode at route registration (ModeRoute)     | Nav hygiene    | Done     |
 
-> Status legend: **Done** = code landed on this branch. **Active** = spec ready, implementation in flight or imminent. **Pending** = not started. **Deferred** = postponed past v1.
+> Status legend: **Done** = code landed on this branch. **Active** = spec ready, implementation in flight or imminent. **In progress** = work underway. **Pending** = not started. **Deferred** = postponed past v1. **Done (TS); superseded by WIA-17** = current code on the branch is the original TS-handler implementation; the row is closed for that scope but the domain is targeted for replacement under Path A.
 
 ## Nav-Hygiene Sub-Track
 

@@ -21,6 +21,7 @@ import {
 import WebView, { type WebViewMessageEvent } from 'react-native-webview';
 
 import { MessageRouter } from './bridge/MessageRouter';
+import { KmpBridgeTransport } from './bridge/KmpBridgeTransport';
 import { createHandlers } from './handlers';
 import type { AnalyticsSink } from './handlers/AnalyticsHandler';
 import type { NavigationCallbacks } from './handlers/NavigationHandler';
@@ -100,6 +101,14 @@ export interface SelfVerificationProps {
   documents?: DocumentsStore;
   crypto?: SelfCryptoModule;
   /**
+   * Prototype flag — when true, route `secureStorage.*` bridge messages
+   * through the KMP-backed native module (SelfBridge) instead of the local
+   * TS KeychainHandler. All other domains continue to use the existing TS
+   * handlers. See specs/projects/sdk/workstreams/webview-in-app/plans/
+   * PATH-A-rn-wraps-kmp.html. Default: false.
+   */
+  useKmpBridge?: boolean;
+  /**
    * Time in ms before the loading splash transitions to a "still loading"
    * state with a manual retry. Defaults to 3000ms.
    */
@@ -116,6 +125,15 @@ type LoadStage = 'loading' | 'slow' | 'failed' | 'ready';
 
 const DEFAULT_SPINNER_TIMEOUT_MS = 3000;
 const DEFAULT_LOAD_TIMEOUT_MS = 10_000;
+
+function isSecureStorageRequest(raw: string): boolean {
+  try {
+    const parsed = JSON.parse(raw) as { type?: string; domain?: string };
+    return parsed.type === 'request' && parsed.domain === 'secureStorage';
+  } catch {
+    return false;
+  }
+}
 
 function buildRequestSearch(request: VerificationRequest): string {
   const params = new URLSearchParams();
@@ -162,6 +180,7 @@ export const SelfVerification: React.FC<SelfVerificationProps> = ({
   navigation,
   documents,
   crypto,
+  useKmpBridge = false,
   spinnerTimeoutMs = DEFAULT_SPINNER_TIMEOUT_MS,
   loadTimeoutMs = DEFAULT_LOAD_TIMEOUT_MS,
   style,
@@ -193,6 +212,20 @@ export const SelfVerification: React.FC<SelfVerificationProps> = ({
       }),
     [debug],
   );
+
+  const kmpTransport = useMemo<KmpBridgeTransport | undefined>(() => {
+    if (!useKmpBridge) return undefined;
+    return new KmpBridgeTransport({
+      inject: (js: string) => {
+        webViewRef.current?.injectJavaScript(js);
+      },
+      debug,
+    });
+  }, [useKmpBridge, debug]);
+
+  useEffect(() => {
+    return () => kmpTransport?.dispose();
+  }, [kmpTransport]);
 
   // Wrap lifecycle ready so the loading splash dismisses.
   const wrappedOnSuccess = useCallback(
@@ -274,9 +307,14 @@ export const SelfVerification: React.FC<SelfVerificationProps> = ({
 
   const onMessage = useCallback(
     (event: WebViewMessageEvent) => {
-      router.onMessageReceived(event.nativeEvent.data);
+      const raw = event.nativeEvent.data;
+      if (kmpTransport?.isAvailable() && isSecureStorageRequest(raw)) {
+        kmpTransport.dispatch(raw);
+        return;
+      }
+      router.onMessageReceived(raw);
     },
-    [router],
+    [router, kmpTransport],
   );
 
   const requestSearch = useMemo(() => buildRequestSearch(request), [request]);
