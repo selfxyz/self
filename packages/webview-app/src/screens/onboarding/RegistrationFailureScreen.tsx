@@ -25,7 +25,7 @@ export const RegistrationFailureScreen: React.FC = () => {
   const handleRetry = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('registration_failure_try_again');
-    navigate('/onboarding/tour/1');
+    navigate('/tour/1');
   }, [analytics, haptic, navigate]);
 
   return (

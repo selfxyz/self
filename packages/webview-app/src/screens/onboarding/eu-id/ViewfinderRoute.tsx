@@ -37,7 +37,7 @@ export const EuIdViewfinderRoute: React.FC = () => {
         }
         analytics.trackEvent('eu_id_mrz_scan_succeeded');
         haptic.trigger('success');
-        navigate('/onboarding/eu-id/nfc-instructions', {
+        navigate('/capture/eu-id/nfc-instructions', {
           state: {
             ...state,
             mrz: {
@@ -50,11 +50,10 @@ export const EuIdViewfinderRoute: React.FC = () => {
         });
       } catch (err) {
         if (cancelled) return;
-        const message =
-          err instanceof Error ? err.message : 'MRZ scan failed';
+        const message = err instanceof Error ? err.message : 'MRZ scan failed';
         analytics.trackEvent('eu_id_mrz_scan_failed', { error: message });
         haptic.trigger('warning');
-        navigate('/onboarding/eu-id/nfc-error', {
+        navigate('/capture/eu-id/nfc-error', {
           state: { ...state, errorMessage: message, stage: 'mrz' },
           replace: true,
         });
@@ -68,7 +67,7 @@ export const EuIdViewfinderRoute: React.FC = () => {
 
   const handleBack = useCallback(() => {
     haptic.trigger('selection');
-    navigate('/onboarding/eu-id/back-instructions', { state, replace: true });
+    navigate('/capture/eu-id/back-instructions', { state, replace: true });
   }, [haptic, navigate, state]);
 
   const onCaptureTips = useCallback(() => {
@@ -76,11 +75,5 @@ export const EuIdViewfinderRoute: React.FC = () => {
     analytics.trackEvent('eu_id_viewfinder_capture_tips');
   }, [analytics, haptic]);
 
-  return (
-    <EuIdViewfinderScreen
-      insets={WEB_SAFE_AREA.insets}
-      onClose={handleBack}
-      onCaptureTips={onCaptureTips}
-    />
-  );
+  return <EuIdViewfinderScreen insets={WEB_SAFE_AREA.insets} onClose={handleBack} onCaptureTips={onCaptureTips} />;
 };

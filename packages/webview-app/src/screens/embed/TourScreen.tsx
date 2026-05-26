@@ -22,25 +22,25 @@ export const TourScreen: React.FC = () => {
 
   const onNext = useCallback(async () => {
     if (stepNum < 4) {
-      navigate(`/tunnel/tour/${stepNum + 1}${mockParam}`);
+      navigate(`/tour/${stepNum + 1}${mockParam}`);
       return;
     }
 
     try {
       const selectedDoc = await loadSelectedDocument(client);
       if (selectedDoc?.metadata?.isRegistered === true) {
-        navigate('/tunnel/proof/disclose');
+        navigate('/disclose/request');
         return;
       }
     } catch {
       // Fall through to KYC when document state is unavailable.
     }
 
-    navigate(`/tunnel/kyc${mockParam}`);
+    navigate(`/capture/kyc${mockParam}`);
   }, [navigate, stepNum, client, mockParam]);
 
   const onRestore = useCallback(() => {
-    navigate('/recovery', { state: { backPath: `/tunnel/tour/${step ?? '1'}` } });
+    navigate('/recover', { state: { backPath: `/tour/${step ?? '1'}` } });
   }, [navigate, step]);
 
   switch (step) {
@@ -53,6 +53,6 @@ export const TourScreen: React.FC = () => {
     case '4':
       return <LaunchTour4Screen {...WEB_SAFE_AREA} onNext={onNext} onRestore={onRestore} />;
     default:
-      return <Navigate to="/tunnel/tour/1" replace />;
+      return <Navigate to="/tour/1" replace />;
   }
 };

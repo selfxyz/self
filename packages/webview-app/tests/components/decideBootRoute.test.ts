@@ -36,15 +36,15 @@ describe('decideBootRoute', () => {
     ).toEqual({ type: 'noop' });
   });
 
-  it('self-app on a /tunnel/* route → navigate home with replace', () => {
+  it('self-app on any other path → noop (ModeRoute enforces mode access)', () => {
     expect(
       decideBootRoute({
         isReady: true,
         mode: 'self-app',
         verificationRequest: null,
-        pathname: '/tunnel/tour/1',
+        pathname: '/recover/required',
       }),
-    ).toEqual({ type: 'navigate', to: '/', replace: true });
+    ).toEqual({ type: 'noop' });
   });
 
   it('embed with valid request, on root → navigate into embed home with replace', () => {
@@ -55,16 +55,16 @@ describe('decideBootRoute', () => {
         verificationRequest: VALID_REQUEST,
         pathname: '/',
       }),
-    ).toEqual({ type: 'navigate', to: '/tunnel/tour/1', replace: true });
+    ).toEqual({ type: 'navigate', to: '/tour/1', replace: true });
   });
 
-  it('embed with valid request, already inside /tunnel → noop', () => {
+  it('embed with valid request, already on a route → noop', () => {
     expect(
       decideBootRoute({
         isReady: true,
         mode: 'embed',
         verificationRequest: VALID_REQUEST,
-        pathname: '/tunnel/proof/result',
+        pathname: '/disclose/result',
       }),
     ).toEqual({ type: 'noop' });
   });
@@ -90,7 +90,7 @@ describe('decideBootRoute', () => {
         isReady: true,
         mode: 'embed',
         verificationRequest: { userId: 'user-1' } as VerificationRequestPayload,
-        pathname: '/tunnel/tour/1',
+        pathname: '/tour/1',
       }),
     ).toEqual({
       type: 'fail-closed',

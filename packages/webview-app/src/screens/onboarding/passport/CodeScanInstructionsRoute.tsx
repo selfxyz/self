@@ -25,7 +25,7 @@ export const PassportCodeScanInstructionsRoute: React.FC = () => {
   const onOpenCamera = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('passport_open_camera');
-    navigate('/onboarding/passport/code-scan-viewfinder', {
+    navigate('/capture/passport/code-scan-viewfinder', {
       state,
     });
   }, [analytics, haptic, navigate, state]);

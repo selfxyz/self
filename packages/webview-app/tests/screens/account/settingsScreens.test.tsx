@@ -170,10 +170,10 @@ const renderRoutes = (initialEntries: string[]) =>
         <Route path="/settings/dev-mode" element={<DevModeScreen />} />
         <Route path="/settings/backup" element={<LocationDisplay />} />
         <Route path="/settings/recovery-phrase" element={<LocationDisplay />} />
-        <Route path="/recovery" element={<LocationDisplay />} />
-        <Route path="/manage-documents" element={<LocationDisplay />} />
+        <Route path="/recover" element={<LocationDisplay />} />
+        <Route path="/docs" element={<LocationDisplay />} />
         <Route path="/coming-soon" element={<LocationDisplay />} />
-        <Route path="/tunnel/tour/1" element={<LocationDisplay />} />
+        <Route path="/tour/1" element={<LocationDisplay />} />
       </Routes>
       <LocationDisplay />
     </MemoryRouter>,
@@ -196,7 +196,7 @@ describe('WV-16 settings screens', () => {
     it('navigates to manage documents', () => {
       renderRoutes(['/settings']);
       fireEvent.click(screen.getByRole('button', { name: /manage documents/i }));
-      expectLocation('/manage-documents');
+      expectLocation('/docs');
       expect(haptic.trigger).toHaveBeenCalledWith('selection');
     });
 
@@ -221,7 +221,7 @@ describe('WV-16 settings screens', () => {
     it('navigates to tunnel flow', () => {
       renderRoutes(['/settings']);
       fireEvent.click(screen.getByRole('button', { name: /tunnel flow/i }));
-      expectLocation('/tunnel/tour/1');
+      expectLocation('/tour/1');
     });
 
     it('dismisses via lifecycle on close', () => {
@@ -250,7 +250,7 @@ describe('WV-16 settings screens', () => {
     it('navigates to restore account', () => {
       renderRoutes(['/settings/security']);
       fireEvent.click(screen.getByRole('button', { name: /restore account/i }));
-      expectLocation('/recovery');
+      expectLocation('/recover');
       expect(analytics.trackEvent).toHaveBeenCalledWith('security_restore_account_pressed');
     });
 

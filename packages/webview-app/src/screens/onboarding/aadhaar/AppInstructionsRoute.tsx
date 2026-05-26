@@ -12,8 +12,7 @@ import { useBridge } from '../../../providers/BridgeProvider';
 import { useSelfClient } from '../../../providers/SelfClientProvider';
 import { WEB_SAFE_AREA } from '../../../utils/insets';
 
-const M_AADHAAR_PLAY_STORE_URL =
-  'https://play.google.com/store/apps/details?id=in.gov.uidai.mAadhaarPlus';
+const M_AADHAAR_PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=in.gov.uidai.mAadhaarPlus';
 
 export const AadhaarAppInstructionsRoute: React.FC = () => {
   const navigate = useNavigate();
@@ -50,13 +49,12 @@ export const AadhaarAppInstructionsRoute: React.FC = () => {
         await bridge.request('camera', 'aadhaarUploadFromLibrary', {});
         analytics.trackEvent('aadhaar_upload_succeeded');
         haptic.trigger('success');
-        navigate('/onboarding/aadhaar/upload-success', { state, replace: true });
+        navigate('/capture/aadhaar/upload-success', { state, replace: true });
       } catch (err) {
-        const message =
-          err instanceof Error ? err.message : 'Aadhaar upload failed';
+        const message = err instanceof Error ? err.message : 'Aadhaar upload failed';
         analytics.trackEvent('aadhaar_upload_failed', { error: message });
         haptic.trigger('warning');
-        navigate('/onboarding/aadhaar/upload-error', {
+        navigate('/capture/aadhaar/upload-error', {
           state: { ...state, errorMessage: message },
           replace: true,
         });

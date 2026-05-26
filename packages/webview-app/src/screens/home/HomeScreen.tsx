@@ -27,7 +27,6 @@ interface DocumentCatalog {
   selectedDocumentId?: string;
 }
 
-
 export const HomeScreen: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -60,14 +59,14 @@ export const HomeScreen: React.FC = () => {
 
   useEffect(() => {
     if (!loading && !hasDocuments && !skipOnboardingRedirect) {
-      navigate('/onboarding/tour/1', { replace: true });
+      navigate('/tour/1', { replace: true });
     }
   }, [hasDocuments, loading, navigate, skipOnboardingRedirect]);
 
   const onAddDocument = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('home_add_document_pressed');
-    navigate('/onboarding/tour/1');
+    navigate('/tour/1');
   }, [navigate, haptic, analytics]);
 
   const onSettings = useCallback(() => {
@@ -78,7 +77,7 @@ export const HomeScreen: React.FC = () => {
   const onRestartOnboarding = useCallback(() => {
     haptic.trigger('selection');
     mockDocumentStore.clear();
-    navigate('/onboarding/tour/1');
+    navigate('/tour/1');
   }, [haptic, navigate]);
 
   if (loading || (!hasDocuments && !skipOnboardingRedirect)) {

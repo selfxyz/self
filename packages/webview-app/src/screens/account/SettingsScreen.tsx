@@ -55,7 +55,7 @@ export const SettingsScreen: React.FC = () => {
               description: 'Your registered passports and IDs',
               onPress: () => {
                 haptic.trigger('selection');
-                navigate('/manage-documents');
+                navigate('/docs');
               },
             },
             {
@@ -120,7 +120,7 @@ export const SettingsScreen: React.FC = () => {
               onPress: () => {
                 haptic.trigger('selection');
                 navigate(
-                  '/proving?disclosures=name,nationality,age_above_18,date_of_birth&appName=Playground&appEndpoint=https%3A%2F%2Fplayground.staging.self.xyz%2Fapi%2Fverify&environment=stg&endpointType=staging_https&userIdType=hex&userId=0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
+                  '/disclose/request?disclosures=name,nationality,age_above_18,date_of_birth&appName=Playground&appEndpoint=https%3A%2F%2Fplayground.staging.self.xyz%2Fapi%2Fverify&environment=stg&endpointType=staging_https&userIdType=hex&userId=0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
                 );
               },
             },
@@ -130,7 +130,7 @@ export const SettingsScreen: React.FC = () => {
               description: 'Demo: register + disclose in one flow',
               onPress: () => {
                 haptic.trigger('selection');
-                navigate('/tunnel/tour/1');
+                navigate('/tour/1');
               },
             },
           ],

@@ -8,7 +8,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { createMockProviderResult, getMockOutcomeFromSearch, isDemoMode } from '../../utils/mockOnboardingFlow';
 
 /**
- * Redirects `/tunnel/kyc` to `ProviderLaunchScreen` at `/onboarding/provider`
+ * Redirects `/capture/kyc` to `ProviderLaunchScreen` at `/pick-provider`
  * with the tunnel-specific `nextPath` injected into navigation state.
  *
  * In dev mode, supports `?mock=kyc-failure|registration-failure|cancel|success`
@@ -20,10 +20,10 @@ export const EmbedKycWrapper: React.FC = () => {
   const mockOutcome = getMockOutcomeFromSearch(location.search);
 
   if (isDemoMode(location.search)) {
-    const pendingPath = `/tunnel/kyc-pending${location.search}`;
+    const pendingPath = `/disclose/kyc-pending${location.search}`;
     return (
       <Navigate
-        to="/onboarding/provider"
+        to="/pick-provider"
         replace
         state={{
           ...incomingState,
@@ -37,7 +37,7 @@ export const EmbedKycWrapper: React.FC = () => {
   if (import.meta.env.DEV && location.search.includes('mock=')) {
     return (
       <Navigate
-        to="/tunnel/kyc-success"
+        to="/disclose/kyc-success"
         replace
         state={{ providerResult: createMockProviderResult({ outcome: mockOutcome }) }}
       />
@@ -46,12 +46,12 @@ export const EmbedKycWrapper: React.FC = () => {
 
   return (
     <Navigate
-      to="/onboarding/provider"
+      to="/pick-provider"
       replace
       state={{
         ...incomingState,
-        backPath: '/tunnel/tour/4',
-        nextPath: '/tunnel/kyc-success',
+        backPath: '/tour/4',
+        nextPath: '/disclose/kyc-success',
       }}
     />
   );

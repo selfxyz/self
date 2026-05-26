@@ -12,8 +12,8 @@ import { useSelfClient } from '../../providers/SelfClientProvider';
 import type { NavState } from '../../types/navState';
 import { WEB_SAFE_AREA } from '../../utils/insets';
 
-const TUNNEL_RECOVERY_RETURN_PATH = '/tunnel/proof/generating';
-const TUNNEL_RECOVERY_BACK_PATH = '/tunnel/tour/4';
+const TUNNEL_RECOVERY_RETURN_PATH = '/disclose/generating';
+const TUNNEL_RECOVERY_BACK_PATH = '/tour/4';
 
 export const EmbedRecoveryRequiredScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -22,7 +22,7 @@ export const EmbedRecoveryRequiredScreen: React.FC = () => {
   const onRecoverWithPhrase = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('tunnel_recovery_phrase_selected');
-    navigate('/recovery/phrase-input', {
+    navigate('/recover/phrase-input', {
       state: { nextPath: TUNNEL_RECOVERY_RETURN_PATH } satisfies Partial<NavState>,
     });
   }, [navigate, haptic, analytics]);

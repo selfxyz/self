@@ -37,7 +37,7 @@ export const PassportCodeScanViewfinderRoute: React.FC = () => {
         }
         analytics.trackEvent('passport_mrz_scan_succeeded');
         haptic.trigger('success');
-        navigate('/onboarding/passport/nfc', {
+        navigate('/capture/passport/nfc', {
           state: {
             ...state,
             mrz: {
@@ -50,11 +50,10 @@ export const PassportCodeScanViewfinderRoute: React.FC = () => {
         });
       } catch (err) {
         if (cancelled) return;
-        const message =
-          err instanceof Error ? err.message : 'MRZ scan failed';
+        const message = err instanceof Error ? err.message : 'MRZ scan failed';
         analytics.trackEvent('passport_mrz_scan_failed', { error: message });
         haptic.trigger('warning');
-        navigate('/onboarding/passport/nfc-error', {
+        navigate('/capture/passport/nfc-error', {
           state: { ...state, errorMessage: message, stage: 'mrz' },
           replace: true,
         });
@@ -68,7 +67,7 @@ export const PassportCodeScanViewfinderRoute: React.FC = () => {
 
   const handleBack = useCallback(() => {
     haptic.trigger('selection');
-    navigate('/onboarding/passport/code-scan-instructions', {
+    navigate('/capture/passport/code-scan-instructions', {
       state,
       replace: true,
     });

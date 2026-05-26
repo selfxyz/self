@@ -25,16 +25,10 @@ export const PassportInstructionsRoute: React.FC = () => {
   const handleContinue = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('passport_instructions_continue');
-    navigate('/onboarding/passport/code-scan-instructions', {
+    navigate('/capture/passport/code-scan-instructions', {
       state,
     });
   }, [analytics, haptic, navigate, state]);
 
-  return (
-    <PassportInstructionsScreen
-      insets={WEB_SAFE_AREA.insets}
-      onClose={handleBack}
-      onContinue={handleContinue}
-    />
-  );
+  return <PassportInstructionsScreen insets={WEB_SAFE_AREA.insets} onClose={handleBack} onContinue={handleContinue} />;
 };

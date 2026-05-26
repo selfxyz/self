@@ -325,8 +325,8 @@ export const OnboardingRecoveryPhraseScreen: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const mock = getPromptMockFromSearch(location.search);
-  const notificationsPath = `/onboarding/notifications${getPromptMockSearch(mock)}`;
-  const successPath = `/onboarding/success${getPromptMockSearch(mock)}`;
+  const notificationsPath = `/notify${getPromptMockSearch(mock)}`;
+  const successPath = `/capture/success${getPromptMockSearch(mock)}`;
 
   const handleBack = useCallback(() => {
     navigate(successPath);

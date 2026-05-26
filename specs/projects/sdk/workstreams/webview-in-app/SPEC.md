@@ -114,12 +114,12 @@ cleanup that lands alongside the WIA work — see the
 | NAV-05 | Back vs close terminology sweep + ESLint rule      | Nav hygiene    | Active   |
 | NAV-06 | Cross-document NFC error consolidation             | Nav hygiene    | Active   |
 | NAV-07 | replace:true audit (full sweep)                    | Nav hygiene    | Active   |
-| NAV-08 | Namespace rewrite (verbs + places)                 | Nav hygiene    | Active   |
+| NAV-08 | Namespace rewrite (verbs + places)                 | Nav hygiene    | Done     |
 | NAV-09 | State-passing convention sweep (NavState)          | Nav hygiene    | Active   |
 | NAV-10 | Delete /tunnel/registration/* dead sub-flow        | Nav hygiene    | Active   |
 | NAV-11 | Wire social sign-on (post-v1)                      | Nav hygiene    | Deferred |
 | NAV-12 | Rename tunnel → embed (mode terminology)           | Nav hygiene    | Active   |
-| NAV-13 | Declare mode at route registration (ModeRoute)     | Nav hygiene    | Active   |
+| NAV-13 | Declare mode at route registration (ModeRoute)     | Nav hygiene    | Done     |
 
 > Status legend: **Done** = code landed on this branch. **Active** = spec ready, implementation in flight or imminent. **Pending** = not started. **Deferred** = postponed past v1.
 

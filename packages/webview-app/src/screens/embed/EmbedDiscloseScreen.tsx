@@ -33,7 +33,7 @@ const DemoEmbedDiscloseScreen: React.FC<{ search: string }> = ({ search }) => {
     if (stepIndex < DEMO_DISCLOSE_STEPS.length - 1) {
       setStepIndex(i => i + 1);
     } else {
-      navigate(`/tunnel/proof/result${search}`, { replace: true, state: { success: true } });
+      navigate(`/disclose/result${search}`, { replace: true, state: { success: true } });
     }
   }, [stepIndex, navigate, search]);
 
@@ -107,7 +107,7 @@ const StandardEmbedDiscloseScreen: React.FC = () => {
   const navigateToError = useCallback(
     (error: string) => {
       haptic.trigger('error');
-      navigate('/tunnel/proof/result', {
+      navigate('/disclose/result', {
         replace: true,
         state: { success: false, error, source: 'disclose' as const },
       });
@@ -161,7 +161,7 @@ const StandardEmbedDiscloseScreen: React.FC = () => {
       setHasCompleted(true);
       analytics.trackEvent('tunnel_proving_disclose_complete');
       haptic.trigger('success');
-      navigate('/tunnel/proof/result', { replace: true, state: { success: true } });
+      navigate('/disclose/result', { replace: true, state: { success: true } });
     }
 
     return () => {

@@ -8,6 +8,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 import { LaunchRecoveryScreen as EuclidLaunchRecoveryScreen, LeftArrowIcon } from '@selfxyz/euclid';
 
+import { useOperatingMode } from '../../providers/OperatingModeProvider';
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import type { NavState } from '../../types/navState';
 import { WEB_SAFE_AREA } from '../../utils/insets';
@@ -16,6 +17,7 @@ export const LaunchRecoveryScreen: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { analytics, haptic } = useSelfClient();
+  const { mode } = useOperatingMode();
   const backPath = (location.state as Partial<NavState> | null)?.backPath ?? '/settings/security';
 
   const handleBack = useCallback(() => {
@@ -23,18 +25,16 @@ export const LaunchRecoveryScreen: React.FC = () => {
     navigate(backPath, { replace: true });
   }, [backPath, navigate, haptic]);
 
-  const isTunnelFlow = backPath.startsWith('/tunnel/');
+  const isEmbedFlow = mode === 'embed';
 
   const onEnterRecoveryPhrase = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('recovery_enter_phrase_pressed');
     navigate(
-      '/recovery/phrase-input',
-      isTunnelFlow
-        ? { state: { nextPath: backPath } satisfies Partial<NavState> }
-        : undefined,
+      '/recover/phrase-input',
+      isEmbedFlow ? { state: { nextPath: backPath } satisfies Partial<NavState> } : undefined,
     );
-  }, [backPath, isTunnelFlow, navigate, haptic, analytics]);
+  }, [backPath, isEmbedFlow, navigate, haptic, analytics]);
 
   return (
     <div className="launch-recovery-screen">

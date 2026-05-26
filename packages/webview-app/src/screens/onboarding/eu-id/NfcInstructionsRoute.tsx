@@ -37,7 +37,7 @@ export const EuIdNfcInstructionsRoute: React.FC = () => {
 
   const handleBack = useCallback(() => {
     haptic.trigger('selection');
-    navigate('/onboarding/eu-id/back-instructions', { replace: true });
+    navigate('/capture/eu-id/back-instructions', { replace: true });
   }, [haptic, navigate]);
 
   const onNeedHelp = useCallback(() => {
@@ -76,8 +76,7 @@ export const EuIdNfcInstructionsRoute: React.FC = () => {
     void (async () => {
       try {
         const result = await nfcScanner.scan(scanParams);
-        const documentNumber =
-          state.mrz?.passportNumber ?? state.canValue ?? 'unknown';
+        const documentNumber = state.mrz?.passportNumber ?? state.canValue ?? 'unknown';
         const docId = `id_card-${documentNumber}`;
         await documents.saveDocument(docId, result as never);
 
@@ -90,9 +89,7 @@ export const EuIdNfcInstructionsRoute: React.FC = () => {
           mock: false,
           isRegistered: false,
         };
-        const existingIndex = catalog.documents.findIndex(
-          (d: { id: string }) => d.id === docId,
-        );
+        const existingIndex = catalog.documents.findIndex((d: { id: string }) => d.id === docId);
         if (existingIndex >= 0) {
           catalog.documents[existingIndex] = entry;
         } else {
@@ -103,16 +100,15 @@ export const EuIdNfcInstructionsRoute: React.FC = () => {
 
         analytics.trackEvent('eu_id_nfc_scan_succeeded');
         haptic.trigger('success');
-        navigate('/onboarding/eu-id/nfc-success', {
+        navigate('/capture/eu-id/nfc-success', {
           state: { countryCode: state.countryCode },
           replace: true,
         });
       } catch (err) {
-        const message =
-          err instanceof Error ? err.message : 'NFC scan failed';
+        const message = err instanceof Error ? err.message : 'NFC scan failed';
         analytics.trackEvent('eu_id_nfc_scan_failed', { error: message });
         haptic.trigger('warning');
-        navigate('/onboarding/eu-id/nfc-error', {
+        navigate('/capture/eu-id/nfc-error', {
           state: {
             countryCode: state.countryCode,
             errorMessage: message,

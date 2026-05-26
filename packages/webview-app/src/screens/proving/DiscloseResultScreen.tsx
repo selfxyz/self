@@ -73,12 +73,12 @@ export const DiscloseResultScreen: React.FC = () => {
 
   const handleRetry = useCallback(() => {
     haptic.trigger('selection');
-    navigate({ pathname: '/proving', search: location.search }, { replace: true });
+    navigate({ pathname: '/disclose/request', search: location.search }, { replace: true });
   }, [haptic, location.search, navigate]);
 
   const onViewDetails = useCallback(() => {
     haptic.trigger('selection');
-    navigate({ pathname: '/proving/receipt', search: location.search });
+    navigate({ pathname: '/receipts/current', search: location.search });
   }, [haptic, location.search, navigate]);
 
   // userId is the wallet address when userIdType=hex (real Playground sends

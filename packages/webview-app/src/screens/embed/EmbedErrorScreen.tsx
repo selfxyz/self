@@ -58,10 +58,9 @@ export const EmbedErrorScreen: React.FC = () => {
         padding: 32,
       }}
     >
-      <h1 style={{ fontSize: 22, margin: '0 0 16px' }}>Verification couldn't start</h1>
+      <h1 style={{ fontSize: 22, margin: '0 0 16px' }}>Verification couldn&apos;t start</h1>
       <p style={{ fontSize: 14, opacity: 0.8, maxWidth: 360, margin: '0 0 32px' }}>
-        The verification request was invalid or could not be completed. Please
-        return to the app that opened this view.
+        The verification request was invalid or could not be completed. Please return to the app that opened this view.
       </p>
       <button
         type="button"

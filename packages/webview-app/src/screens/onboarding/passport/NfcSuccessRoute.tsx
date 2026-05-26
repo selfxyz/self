@@ -15,8 +15,7 @@ export const PassportNfcSuccessRoute: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { analytics, haptic } = useSelfClient();
-  const state =
-    (location.state as { countryCode?: string } | null) ?? {};
+  const state = (location.state as { countryCode?: string } | null) ?? {};
 
   const handleClose = useCallback(() => {
     haptic.trigger('selection');
@@ -26,7 +25,7 @@ export const PassportNfcSuccessRoute: React.FC = () => {
   const onFinishRegistration = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('passport_registration_finished');
-    navigate('/onboarding/success', { state, replace: true });
+    navigate('/capture/success', { state, replace: true });
   }, [analytics, haptic, navigate, state]);
 
   return (

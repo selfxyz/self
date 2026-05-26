@@ -5,9 +5,7 @@
 import type { OperatingMode, VerificationRequestPayload } from '../providers/OperatingModeProvider';
 import { hasValidVerificationRequest } from '../providers/OperatingModeProvider';
 
-const TUNNEL_PATH_PREFIX = '/tunnel';
-const TUNNEL_HOME_ROUTE = '/tunnel/tour/1';
-const WALLET_HOME_ROUTE = '/';
+const EMBED_HOME_ROUTE = '/tour/1';
 const EMBED_ERROR_ROUTE = '/embed/error';
 
 export interface BootInputs {
@@ -30,9 +28,10 @@ export type BootAction =
  * action the boot component should dispatch. No side effects — call sites
  * are responsible for actually navigating / firing bridge calls.
  *
- * Replaces the implicit decision tree previously split across ModeBoot's
- * two `useEffect` hooks. Each branch is independently testable; six
- * test cases cover the full tree (see bootDecision.test.ts).
+ * After NAV-08 + NAV-13: paths no longer carry mode-coupling via prefix.
+ * The cross-mode reroute (self-app user on an embed route) is now handled
+ * by `<ModeRoute>` at the routing layer; BootDecision only handles the
+ * boot-time decisions (initial nav + fail-closed on missing request).
  */
 export function decideBootRoute(input: BootInputs): BootAction {
   if (!input.isReady) return { type: 'wait' };
@@ -45,15 +44,13 @@ export function decideBootRoute(input: BootInputs): BootAction {
         errorRoute: EMBED_ERROR_ROUTE,
       };
     }
-    if (!input.pathname.startsWith(TUNNEL_PATH_PREFIX)) {
-      return { type: 'navigate', to: TUNNEL_HOME_ROUTE, replace: true };
+    if (input.pathname === '/' || input.pathname === '') {
+      return { type: 'navigate', to: EMBED_HOME_ROUTE, replace: true };
     }
     return { type: 'noop' };
   }
 
-  // self-app
-  if (input.pathname.startsWith(TUNNEL_PATH_PREFIX)) {
-    return { type: 'navigate', to: WALLET_HOME_ROUTE, replace: true };
-  }
+  // self-app — no path-based reroute. `<ModeRoute>` enforces embed-only
+  // route rejection from self-app at render time.
   return { type: 'noop' };
 }

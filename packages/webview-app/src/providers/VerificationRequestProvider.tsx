@@ -17,10 +17,7 @@ export const VerificationRequestProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
   const { search } = useLocation();
-  const value = useMemo(
-    () => parseVerificationRequestContext(search || window.location.search),
-    [search],
-  );
+  const value = useMemo(() => parseVerificationRequestContext(search || window.location.search), [search]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 };

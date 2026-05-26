@@ -8,7 +8,7 @@ export const InitialRouteRedirect: React.FC = () => {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   if (params.has('disclosures') || params.has('proofItems')) {
-    return <Navigate to={{ pathname: '/proving', search: location.search }} replace />;
+    return <Navigate to={{ pathname: '/disclose/request', search: location.search }} replace />;
   }
   return <Navigate to="/" replace />;
 };

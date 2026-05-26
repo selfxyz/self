@@ -54,16 +54,19 @@ export const ProofGenerationRouteScreen: React.FC = () => {
       hasNavigatedRef.current = true;
       const message = error instanceof Error ? error.message : 'The proof request could not be completed.';
       analytics.trackEvent('prove_generation_init_failed', { error: message });
-      navigate({ pathname: '/proving/result', search: location.search }, {
-        replace: true,
-        state: {
-          success: false,
-          error: {
-            code: 'proof_generation_init_failed',
-            message,
+      navigate(
+        { pathname: '/disclose/result', search: location.search },
+        {
+          replace: true,
+          state: {
+            success: false,
+            error: {
+              code: 'proof_generation_init_failed',
+              message,
+            },
           },
         },
-      });
+      );
     });
   }, [analytics, client, hasValidRequestContext, init, location.search, navigate, verificationCtx]);
 
@@ -78,16 +81,19 @@ export const ProofGenerationRouteScreen: React.FC = () => {
 
     if (currentState === 'passport_data_not_found') {
       hasNavigatedRef.current = true;
-      navigate({ pathname: '/proving/result', search: location.search }, {
-        replace: true,
-        state: {
-          success: false,
-          error: {
-            code: 'passport_data_not_found',
-            message: 'No document found. Please register a document first.',
+      navigate(
+        { pathname: '/disclose/result', search: location.search },
+        {
+          replace: true,
+          state: {
+            success: false,
+            error: {
+              code: 'passport_data_not_found',
+              message: 'No document found. Please register a document first.',
+            },
           },
         },
-      });
+      );
       return;
     }
 
@@ -99,22 +105,28 @@ export const ProofGenerationRouteScreen: React.FC = () => {
 
     if (currentState === 'completed') {
       hasNavigatedRef.current = true;
-      navigate({ pathname: '/proving/result', search: location.search }, {
-        replace: true,
-        state: { success: true },
-      });
+      navigate(
+        { pathname: '/disclose/result', search: location.search },
+        {
+          replace: true,
+          state: { success: true },
+        },
+      );
       return;
     }
 
     if (currentState === 'error' || currentState === 'failure' || currentState === 'passport_not_supported') {
       hasNavigatedRef.current = true;
-      navigate({ pathname: '/proving/result', search: location.search }, {
-        replace: true,
-        state: {
-          success: false,
-          error: getFailureState(currentState, errorCode, reason),
+      navigate(
+        { pathname: '/disclose/result', search: location.search },
+        {
+          replace: true,
+          state: {
+            success: false,
+            error: getFailureState(currentState, errorCode, reason),
+          },
         },
-      });
+      );
     }
   }, [circuitType, client, currentState, errorCode, location.search, navigate, reason, setUserConfirmed]);
 

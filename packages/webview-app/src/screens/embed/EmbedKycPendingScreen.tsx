@@ -17,7 +17,7 @@ export const EmbedKycPendingScreen: React.FC = () => {
 
   const handleTap = useCallback(() => {
     if (!isDemoMode(location.search)) return;
-    navigate(`/tunnel/kyc-success${location.search}`, {
+    navigate(`/disclose/kyc-success${location.search}`, {
       state: { providerResult: createMockProviderResult({ outcome: 'demo' }) },
     });
   }, [navigate, location.search]);

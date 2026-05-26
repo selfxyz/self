@@ -27,15 +27,15 @@ export const EmbedKycSuccessScreen: React.FC = () => {
     if (demo || !providerResult) return;
 
     if (providerResult.status === 'cancel') {
-      navigate('/tunnel/tour/4', { replace: true });
+      navigate('/tour/4', { replace: true });
       return;
     }
 
     if (providerResult.status === 'error') {
       if (providerResult.error?.retryable === false) {
-        navigate('/tunnel/tour/4', { replace: true });
+        navigate('/tour/4', { replace: true });
       } else {
-        navigate('/tunnel/kyc-failure', { replace: true, state: { providerResult } });
+        navigate('/disclose/kyc-failure', { replace: true, state: { providerResult } });
       }
       return;
     }
@@ -44,7 +44,7 @@ export const EmbedKycSuccessScreen: React.FC = () => {
   const onGenerateProof = useCallback(() => {
     haptic.trigger('success');
     analytics.trackEvent('tunnel_kyc_success_generate_proof');
-    navigate(`/tunnel/proof/generating${location.search}`);
+    navigate(`/disclose/generating${location.search}`);
   }, [navigate, location.search, haptic, analytics]);
 
   return <KycVerificationSuccessScreen insets={WEB_SAFE_AREA.insets} onGenerateProof={onGenerateProof} />;

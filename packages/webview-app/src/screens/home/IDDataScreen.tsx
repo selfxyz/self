@@ -52,7 +52,7 @@ export const IDDataScreen: React.FC = () => {
   const onManageID = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('id_data_manage_pressed');
-    navigate('/manage-documents');
+    navigate('/docs');
   }, [navigate, haptic, analytics]);
 
   return (

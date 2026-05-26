@@ -200,7 +200,7 @@ export const SecretPhraseInputScreen: React.FC = () => {
         haptic.trigger('success');
         analytics.trackEvent('recovery_phrase_recovered', { documentCategory: 'none' });
         if (isMountedRef.current) {
-          navigate('/tunnel/kyc', { replace: true });
+          navigate('/capture/kyc', { replace: true });
         }
         return;
       } else {
@@ -262,7 +262,7 @@ export const SecretPhraseInputScreen: React.FC = () => {
         if (nextPath) {
           navigate(nextPath, { replace: true });
         } else {
-          navigate('/recovery/success');
+          navigate('/recover/success');
         }
       }
     } catch (error) {
@@ -273,7 +273,7 @@ export const SecretPhraseInputScreen: React.FC = () => {
         reason,
       });
       if (isMountedRef.current) {
-        navigate('/recovery/failure', {
+        navigate('/recover/failure', {
           replace: true,
           state: nextPath ? ({ nextPath } satisfies Partial<NavState>) : undefined,
         });

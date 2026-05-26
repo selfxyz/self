@@ -24,20 +24,20 @@ export const ManageDocumentsScreen: React.FC = () => {
   const onAddDocument = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('manage_docs_add_pressed');
-    navigate('/onboarding/country');
+    navigate('/pick-country');
   }, [navigate, haptic, analytics]);
 
   const onDocumentPress = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('manage_docs_document_pressed');
-    navigate('/id-data');
+    navigate('/docs/current');
   }, [haptic, analytics, navigate]);
 
   const onViewIdDetails = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('manage_docs_view_details');
     setDialogue(undefined);
-    navigate('/id-data');
+    navigate('/docs/current');
   }, [navigate, haptic, analytics]);
 
   const onRemoveId = useCallback(() => {

@@ -127,7 +127,7 @@ export const getPromptMockSearch = (mock: PromptMockState = DEFAULT_PROMPT_MOCK)
   MOCKS_ENABLED ? `?mock=${mock}` : '';
 
 export const getProviderPath = (outcome: MockRegistrationOutcome): string =>
-  `/onboarding/provider${getMockOutcomeSearch(outcome)}`;
+  `/pick-provider${getMockOutcomeSearch(outcome)}`;
 
 export const isDemoMode = (search: string): boolean =>
   MOCKS_ENABLED && new URLSearchParams(search).get('mock') === 'demo';

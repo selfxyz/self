@@ -25,13 +25,13 @@ export const EuIdBackInstructionsRoute: React.FC = () => {
   const onNeedHelp = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('eu_id_back_need_help');
-    navigate('/onboarding/eu-id/can-instructions', { state });
+    navigate('/capture/eu-id/can-instructions', { state });
   }, [analytics, haptic, navigate, state]);
 
   const handleContinue = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('eu_id_back_continue');
-    navigate('/onboarding/eu-id/code-scan-viewfinder', { state });
+    navigate('/capture/eu-id/code-scan-viewfinder', { state });
   }, [analytics, haptic, navigate, state]);
 
   return (

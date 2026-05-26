@@ -43,7 +43,7 @@ export const SecurityScreen: React.FC = () => {
   const onRestoreAccount = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('security_restore_account_pressed');
-    navigate('/recovery');
+    navigate('/recover');
   }, [navigate, haptic, analytics]);
 
   const onDisableBackups = useCallback(() => {

@@ -12,17 +12,26 @@
 
 export type Cluster =
   | 'home'
-  | 'onboarding'
+  | 'tour'
+  | 'pick-country'
+  | 'pick-id-type'
+  | 'pick-provider'
+  | 'capture'
+  | 'register'
+  | 'disclose'
+  | 'receipts'
+  | 'history'
+  | 'notify'
+  | 'backup-phrase'
+  | 'recover'
   | 'docs'
-  | 'proving'
-  | 'disclose' // NAV-08 namespace; not yet registered
-  | 'recovery'
   | 'settings'
   | 'points'
   | 'account'
-  | 'embed' // /embed/error
-  | 'tunnel' // legacy embed paths until NAV-08
-  | 'dev';
+  | 'embed'
+  | 'onboarding' // NAV-11 deferred screens (backup/signin/conflict)
+  | 'dev'
+  | 'coming-soon';
 
 export type EmbedCloseTarget =
   | { kind: 'dismiss-only' }
@@ -44,17 +53,26 @@ const USER_CANCELLED: EmbedCloseTarget = {
 
 export const CLUSTER_CLOSE: Record<Cluster, CloseTarget> = {
   home: { selfApp: '/', embed: DISMISS_ONLY },
-  onboarding: { selfApp: '/', embed: USER_CANCELLED },
-  docs: { selfApp: '/manage-documents', embed: DISMISS_ONLY },
-  proving: { selfApp: '/', embed: USER_CANCELLED },
-  disclose: { selfApp: '/proving/history', embed: USER_CANCELLED },
-  recovery: { selfApp: '/settings/security', embed: DISMISS_ONLY },
+  tour: { selfApp: '/', embed: USER_CANCELLED },
+  'pick-country': { selfApp: '/', embed: USER_CANCELLED },
+  'pick-id-type': { selfApp: '/', embed: USER_CANCELLED },
+  'pick-provider': { selfApp: '/', embed: USER_CANCELLED },
+  capture: { selfApp: '/', embed: USER_CANCELLED },
+  register: { selfApp: '/', embed: USER_CANCELLED },
+  disclose: { selfApp: '/history', embed: USER_CANCELLED },
+  receipts: { selfApp: '/history', embed: DISMISS_ONLY },
+  history: { selfApp: '/', embed: DISMISS_ONLY },
+  notify: { selfApp: '/', embed: DISMISS_ONLY },
+  'backup-phrase': { selfApp: '/', embed: DISMISS_ONLY },
+  recover: { selfApp: '/settings/security', embed: DISMISS_ONLY },
+  docs: { selfApp: '/docs', embed: DISMISS_ONLY },
   settings: { selfApp: '/', embed: DISMISS_ONLY },
   points: { selfApp: '/', embed: DISMISS_ONLY },
   account: { selfApp: '/', embed: DISMISS_ONLY },
   embed: { selfApp: '/', embed: DISMISS_ONLY },
-  tunnel: { selfApp: '/', embed: USER_CANCELLED },
+  onboarding: { selfApp: '/', embed: USER_CANCELLED },
   dev: { selfApp: '/', embed: DISMISS_ONLY },
+  'coming-soon': { selfApp: '/', embed: DISMISS_ONLY },
 };
 
 const KNOWN_CLUSTERS = new Set<Cluster>(Object.keys(CLUSTER_CLOSE) as Cluster[]);

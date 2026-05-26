@@ -10,7 +10,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { KycPendingScreen } from '../../../src/screens/proving/KycPendingScreen';
 import { KycSuccessScreen } from '../../../src/screens/proving/KycSuccessScreen';
-import { ProofGenerationSuccessScreen } from '../../../src/screens/proving/ProofGenerationSuccessScreen';
 import { ProofHistoryScreen } from '../../../src/screens/proving/ProofHistoryScreen';
 import { ProofRequestReceiptScreen } from '../../../src/screens/proving/ProofRequestReceiptScreen';
 import { ProofSuccessBackupScreen } from '../../../src/screens/proving/ProofSuccessBackupScreen';
@@ -63,11 +62,6 @@ vi.mock('@selfxyz/euclid', () => ({
   KycVerificationSuccessScreen: ({ onGenerateProof }: { onGenerateProof: () => void }) => (
     <button onClick={onGenerateProof} type="button">
       Generate proof
-    </button>
-  ),
-  ProofGenerationSuccessScreen: ({ onShieldIdentity }: { onShieldIdentity: () => void }) => (
-    <button onClick={onShieldIdentity} type="button">
-      Shield my identity
     </button>
   ),
   ProofRequestReceiptScreen: ({ onClose }: { onClose: () => void }) => (
@@ -125,8 +119,8 @@ const renderWithRoutes = (
         <Route path="/settings/notifications" element={<LocationDisplay />} />
         <Route path="/settings/security" element={<LocationDisplay />} />
         <Route path="/settings/recovery-phrase" element={<LocationDisplay />} />
-        <Route path="/proving" element={<LocationDisplay />} />
-        <Route path="/proving/receipt" element={<LocationDisplay />} />
+        <Route path="/disclose/request" element={<LocationDisplay />} />
+        <Route path="/receipts/current" element={<LocationDisplay />} />
         <Route path="/" element={<LocationDisplay />} />
       </Routes>
     </MemoryRouter>,
@@ -146,7 +140,7 @@ describe('proving support screens', () => {
   };
 
   it('routes proof history ID-data CTA to the registered placeholder screen', () => {
-    renderWithRoutes(['/proving/history'], '/proving/history', <ProofHistoryScreen />);
+    renderWithRoutes(['/history'], '/history', <ProofHistoryScreen />);
 
     fireEvent.click(screen.getByRole('button', { name: /view id data/i }));
 
@@ -154,7 +148,7 @@ describe('proving support screens', () => {
   });
 
   it('routes proof backup CTA into the recovery phrase screen', () => {
-    renderWithRoutes(['/proving/backup-prompt'], '/proving/backup-prompt', <ProofSuccessBackupScreen />);
+    renderWithRoutes(['/register/success'], '/register/success', <ProofSuccessBackupScreen />);
 
     fireEvent.click(screen.getByRole('button', { name: /back up account/i }));
 
@@ -162,7 +156,7 @@ describe('proving support screens', () => {
   });
 
   it('routes KYC pending live-updates CTA to notification settings', () => {
-    renderWithRoutes(['/proving/kyc-pending'], '/proving/kyc-pending', <KycPendingScreen />);
+    renderWithRoutes(['/disclose/kyc-pending'], '/disclose/kyc-pending', <KycPendingScreen />);
 
     fireEvent.click(screen.getByRole('button', { name: /receive live updates/i }));
 
@@ -170,23 +164,15 @@ describe('proving support screens', () => {
   });
 
   it('routes KYC success CTA back into proving flow', () => {
-    renderWithRoutes(['/proving/kyc-success'], '/proving/kyc-success', <KycSuccessScreen />);
+    renderWithRoutes(['/disclose/kyc-success'], '/disclose/kyc-success', <KycSuccessScreen />);
 
     fireEvent.click(screen.getByRole('button', { name: /generate proof/i }));
 
-    expectLocation('/proving');
-  });
-
-  it('routes proof generation success CTA home', () => {
-    renderWithRoutes(['/proving/generation-success'], '/proving/generation-success', <ProofGenerationSuccessScreen />);
-
-    fireEvent.click(screen.getByRole('button', { name: /shield my identity/i }));
-
-    expectLocation('/');
+    expectLocation('/disclose/request');
   });
 
   it('routes proof backup remind-later CTA home', () => {
-    renderWithRoutes(['/proving/backup-prompt'], '/proving/backup-prompt', <ProofSuccessBackupScreen />);
+    renderWithRoutes(['/register/success'], '/register/success', <ProofSuccessBackupScreen />);
 
     fireEvent.click(screen.getByRole('button', { name: /remind later/i }));
 
@@ -194,11 +180,10 @@ describe('proving support screens', () => {
   });
 
   it('routes proof receipt close CTA home', () => {
-    renderWithRoutes(['/proving/receipt'], '/proving/receipt', <ProofRequestReceiptScreen />);
+    renderWithRoutes(['/receipts/current'], '/receipts/current', <ProofRequestReceiptScreen />);
 
     fireEvent.click(screen.getByRole('button', { name: /close receipt/i }));
 
     expectLocation('/');
   });
-
 });

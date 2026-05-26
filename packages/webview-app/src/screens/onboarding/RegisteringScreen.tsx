@@ -9,7 +9,11 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import type { ProofGenerationStep } from '@selfxyz/euclid';
 import { ProofGenerationScreen } from '@selfxyz/euclid';
 import type { ProvingStateType } from '@selfxyz/mobile-sdk-alpha/browser';
-import { loadSelectedDocument, markCurrentDocumentAsRegistered, useProvingStore } from '@selfxyz/mobile-sdk-alpha/browser';
+import {
+  loadSelectedDocument,
+  markCurrentDocumentAsRegistered,
+  useProvingStore,
+} from '@selfxyz/mobile-sdk-alpha/browser';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
@@ -95,7 +99,7 @@ export const RegisteringScreen: React.FC = () => {
       finishedRef.current = true;
       haptic.trigger('error');
       analytics.trackEvent('onboarding_register_failed', { error });
-      navigate('/onboarding/failure', { replace: true, state: { error } });
+      navigate('/register/failure', { replace: true, state: { error } });
     },
     [analytics, haptic, navigate],
   );

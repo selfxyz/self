@@ -39,7 +39,7 @@ export const ProvingScreen: React.FC = () => {
   const handleStartProving = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('prove_verify_pressed');
-    navigate({ pathname: '/proving/generating', search: location.search }, { replace: true });
+    navigate({ pathname: '/disclose/generating', search: location.search }, { replace: true });
   }, [analytics, haptic, location.search, navigate]);
 
   const handleClose = useCallback(async () => {

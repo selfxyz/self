@@ -33,9 +33,7 @@ const GETCONFIG_TIMEOUT_MS = 800;
 
 const Ctx = createContext<OperatingModeContextValue | null>(null);
 
-export const OperatingModeProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+export const OperatingModeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const bridge = useBridge();
   const [state, setState] = useState<OperatingModeContextValue>({
     mode: 'self-app',
@@ -48,12 +46,7 @@ export const OperatingModeProvider: React.FC<{ children: React.ReactNode }> = ({
 
     void (async () => {
       try {
-        const config = await bridge.request<HostConfigResponse>(
-          'lifecycle',
-          'getConfig',
-          {},
-          GETCONFIG_TIMEOUT_MS,
-        );
+        const config = await bridge.request<HostConfigResponse>('lifecycle', 'getConfig', {}, GETCONFIG_TIMEOUT_MS);
         if (cancelled) return;
         const mode: OperatingMode = config?.mode === 'embed' ? 'embed' : 'self-app';
         setState({

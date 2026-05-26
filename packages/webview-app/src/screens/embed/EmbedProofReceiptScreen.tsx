@@ -18,7 +18,7 @@ export const EmbedProofReceiptScreen: React.FC = () => {
   const navigate = useNavigate();
   const { analytics, haptic } = useSelfClient();
   const { displayLabels, request, appName, displayAppEndpoint, timestamp } = useVerificationRequest();
-  const { backPath = '/tunnel/proof/result', backState } =
+  const { backPath = '/disclose/result', backState } =
     (location.state as { backPath?: string; backState?: Record<string, unknown> } | null) ?? {};
 
   const proofItems = useMemo(() => {

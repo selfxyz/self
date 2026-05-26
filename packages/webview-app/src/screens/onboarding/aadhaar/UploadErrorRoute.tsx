@@ -15,8 +15,7 @@ export const AadhaarUploadErrorRoute: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { analytics, haptic } = useSelfClient();
-  const state =
-    (location.state as { countryCode?: string; errorMessage?: string } | null) ?? {};
+  const state = (location.state as { countryCode?: string; errorMessage?: string } | null) ?? {};
 
   const handleClose = useCallback(() => {
     haptic.trigger('selection');
@@ -26,13 +25,13 @@ export const AadhaarUploadErrorRoute: React.FC = () => {
   const onTryDifferentMethod = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('aadhaar_try_different_method');
-    navigate('/onboarding/country', { replace: true });
+    navigate('/pick-country', { replace: true });
   }, [analytics, haptic, navigate]);
 
   const onUploadFromLibrary = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('aadhaar_upload_retry');
-    navigate('/onboarding/aadhaar/instructions', { state, replace: true });
+    navigate('/capture/aadhaar/instructions', { state, replace: true });
   }, [analytics, haptic, navigate, state]);
 
   return (

@@ -25,14 +25,8 @@ export const EuIdInstructionsRoute: React.FC = () => {
   const handleContinue = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('eu_id_instructions_continue');
-    navigate('/onboarding/eu-id/back-instructions', { state });
+    navigate('/capture/eu-id/back-instructions', { state });
   }, [analytics, haptic, navigate, state]);
 
-  return (
-    <EuIdInstructionsScreen
-      insets={WEB_SAFE_AREA.insets}
-      onClose={handleBack}
-      onContinue={handleContinue}
-    />
-  );
+  return <EuIdInstructionsScreen insets={WEB_SAFE_AREA.insets} onClose={handleBack} onContinue={handleContinue} />;
 };

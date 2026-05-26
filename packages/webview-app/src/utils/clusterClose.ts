@@ -11,11 +11,7 @@ import type { NavState } from '../types/navState';
 import type { Cluster } from './clusterCloseRegistry';
 import { CLUSTER_CLOSE, inferClusterFromPath } from './clusterCloseRegistry';
 
-export type {
-  Cluster,
-  CloseTarget,
-  EmbedCloseTarget,
-} from './clusterCloseRegistry';
+export type { Cluster, CloseTarget, EmbedCloseTarget } from './clusterCloseRegistry';
 export { CLUSTER_CLOSE, inferClusterFromPath } from './clusterCloseRegistry';
 
 /**

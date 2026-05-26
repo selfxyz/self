@@ -87,7 +87,7 @@ export const DevModeScreen: React.FC = () => {
       // Pass the document identity through state so RegisteringScreen renders
       // the correct IDCard variant on first paint (avoids a passport →
       // dev-passport flicker while loadSelectedDocument resolves async).
-      navigate('/onboarding/registering', {
+      navigate('/register/generating', {
         replace: true,
         state: { documentCategory: mockDoc.documentCategory, mock: true },
       });
@@ -99,18 +99,7 @@ export const DevModeScreen: React.FC = () => {
     } finally {
       setIsGenerating(false);
     }
-  }, [
-    analytics,
-    ageIndex,
-    client,
-    documentType,
-    expiryIndex,
-    haptic,
-    isGenerating,
-    nationality,
-    navigate,
-    ofacCheck,
-  ]);
+  }, [analytics, ageIndex, client, documentType, expiryIndex, haptic, isGenerating, nationality, navigate, ofacCheck]);
 
   return (
     <EuclidDevModeScreen
@@ -130,12 +119,7 @@ export const DevModeScreen: React.FC = () => {
       onNationalityPress={() => {
         haptic.trigger('selection');
         setNationality(prev => {
-          const order: Array<keyof typeof nationalityMap> = [
-            'united states of america',
-            'germany',
-            'france',
-            'india',
-          ];
+          const order: Array<keyof typeof nationalityMap> = ['united states of america', 'germany', 'france', 'india'];
           return order[(order.indexOf(prev) + 1) % order.length];
         });
       }}

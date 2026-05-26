@@ -23,12 +23,12 @@ interface TunnelResultState {
 const getTunnelBackPath = (source: TunnelResultState['source']): string => {
   switch (source) {
     case 'disclose':
-      return '/tunnel/proof/disclose';
+      return '/disclose/request';
     case 'kyc':
-      return '/tunnel/kyc';
+      return '/capture/kyc';
     case 'proving':
     default:
-      return '/tunnel/proof/generating';
+      return '/disclose/generating';
   }
 };
 
@@ -83,7 +83,7 @@ export const EmbedResultScreen: React.FC = () => {
   }, [navigate, source]);
 
   const onViewDetails = useCallback(() => {
-    navigate('/tunnel/proof/receipt', {
+    navigate('/receipts/current', {
       state: { backPath: location.pathname, backState: location.state },
     });
   }, [location.pathname, location.state, navigate]);

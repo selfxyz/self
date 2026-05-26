@@ -10,6 +10,28 @@ NAV-11 (deferred), and NAV-13 consume. WV-13 / WV-14 read the
 `self-app` rows for the wiring backlog. If a row's classification
 changes, update this file in the PR that changes it.
 
+> **NAV-08 + NAV-13 status (post-landing):** The `Note` column captures
+> the *intended* old → new mapping. The new paths are now live in
+> `App.tsx` and every `<Route>` is wrapped in `<ModeRoute>`. Three
+> deviations from the original mapping, applied during execution because
+> DISPOSITION was silent on collisions:
+>
+> 1. `/onboarding/success` → **`/capture/success`** (not retired —
+>    `ScanSuccessScreen` is a real screen with distinct behavior from
+>    `ProofSuccessBackupScreen`, so they live at different paths now).
+> 2. `/proving/backup-prompt` → **`/register/success`** (self-app only;
+>    `ProofSuccessBackupScreen` is the canonical "all set, backup now").
+> 3. Where two distinct screens shared a single canonical path (e.g.
+>    `ProvingScreen` + `EmbedDiscloseScreen` both mapping to
+>    `/disclose/request`), a thin `<ModeDispatch>` wrapper selects
+>    between them at render time. The path is shared; the screens are
+>    not yet merged. `<ModeDispatch>` lives at
+>    `packages/webview-app/src/components/modeDispatch.tsx`.
+>
+> The `pick-country` / `pick-id-type` / `pick-provider` paths each form
+> their own cluster (the cluster registry uses the full first segment,
+> e.g. `pick-country`).
+
 > **Classification legend**
 > - `self-app` — Self Wallet only (persistent UX, home, settings)
 > - `embed` — Third-party host only (one-shot verification)

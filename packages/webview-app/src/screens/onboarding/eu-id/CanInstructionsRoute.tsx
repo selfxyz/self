@@ -25,7 +25,7 @@ export const EuIdCanInstructionsRoute: React.FC = () => {
   const handleContinue = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('eu_id_can_continue');
-    navigate('/onboarding/eu-id/nfc-instructions', {
+    navigate('/capture/eu-id/nfc-instructions', {
       state: { ...state, useCan: true },
     });
   }, [analytics, haptic, navigate, state]);

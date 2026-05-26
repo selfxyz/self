@@ -30,7 +30,7 @@ export const RecoveryFailureScreen: React.FC = () => {
   const handleRetry = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('recovery_failure_try_again');
-    navigate('/recovery/phrase-input', {
+    navigate('/recover/phrase-input', {
       replace: true,
       state: nextPath ? ({ nextPath } satisfies Partial<NavState>) : undefined,
     });

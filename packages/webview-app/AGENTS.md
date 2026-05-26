@@ -109,7 +109,7 @@ NAV-07 swept every terminal `navigate('/')` and the 5 named violations; future P
 
 - Terminal screens close their cluster via `useClusterClose()` (see `src/utils/clusterClose.ts`), never by hardcoding `navigate('/')` or inlining `lifecycle.setResult + dismiss`.
 - The hook is mode-aware: self-app users land on the cluster's entry path (with `state.nextPath` override); embed users get a `setResult({success:false, error:'user_cancelled'})` (when the cluster is mid-flow) then `dismiss({reason:'user_cancel'})`.
-- Cluster is inferred from `useLocation().pathname`'s first segment. To add a new cluster, extend the `Cluster` union + `CLUSTER_CLOSE` registry in `src/utils/clusterCloseRegistry.ts`.
+- Cluster is inferred from `useLocation().pathname`'s first segment. After NAV-08, the live clusters are `tour`, `pick-country`, `pick-id-type`, `pick-provider`, `capture`, `register`, `disclose`, `receipts`, `history`, `notify`, `backup-phrase`, `recover`, `docs`, `settings`, `points`, `account`, `embed`, `onboarding` (NAV-11-deferred only), `dev`, `coming-soon`, and `home` (fallback). To add a new cluster, extend the `Cluster` union + `CLUSTER_CLOSE` registry in `src/utils/clusterCloseRegistry.ts`.
 
 ## Handler naming
 

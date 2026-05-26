@@ -38,7 +38,7 @@ export const SocialSignOnMethodPickerScreen: React.FC = () => {
 
   const handleContinue = useCallback(() => {
     haptic.trigger('selection');
-    navigate(`/onboarding/notifications${getPromptMockSearch(mock)}`);
+    navigate(`/notify${getPromptMockSearch(mock)}`);
   }, [mock, navigate, haptic]);
 
   return (

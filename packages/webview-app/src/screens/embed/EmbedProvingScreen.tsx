@@ -28,7 +28,7 @@ const DemoEmbedProvingScreen: React.FC<{ search: string }> = ({ search }) => {
     if (stepIndex < DEMO_PROVING_STEPS.length - 1) {
       setStepIndex(i => i + 1);
     } else {
-      navigate(`/tunnel/proof/disclose${search}`, { replace: true });
+      navigate(`/disclose/request${search}`, { replace: true });
     }
   }, [stepIndex, navigate, search]);
 
@@ -95,7 +95,7 @@ const StandardEmbedProvingScreen: React.FC = () => {
   const navigateToError = useCallback(
     (error: string) => {
       haptic.trigger('error');
-      navigate('/tunnel/proof/result', { replace: true, state: { success: false, error, source: 'proving' as const } });
+      navigate('/disclose/result', { replace: true, state: { success: false, error, source: 'proving' as const } });
     },
     [haptic, navigate],
   );
@@ -126,7 +126,7 @@ const StandardEmbedProvingScreen: React.FC = () => {
 
     if (currentState === 'account_recovery_choice') {
       analytics.trackEvent('tunnel_recovery_required');
-      navigate('/tunnel/recovery-required', { replace: true });
+      navigate('/recover/required', { replace: true });
       return;
     }
 
@@ -144,7 +144,7 @@ const StandardEmbedProvingScreen: React.FC = () => {
       analytics.trackEvent('tunnel_proving_registration_complete', { previousPhase: phase });
       // Brief delay to allow tree reader to index the on-chain commitment
       // before disclose fetches the identity tree.
-      setTimeout(() => navigate('/tunnel/proof/disclose', { replace: true }), 5000);
+      setTimeout(() => navigate('/disclose/request', { replace: true }), 5000);
     }
   }, [currentState, initDone, phase, analytics, haptic, navigate, errorCode, reason, navigateToError]);
 

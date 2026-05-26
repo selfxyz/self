@@ -37,7 +37,7 @@ export const EuIdNfcErrorRoute: React.FC = () => {
       stage: state.stage,
       error: state.errorMessage,
     });
-    navigate('/onboarding/eu-id/instructions', {
+    navigate('/capture/eu-id/instructions', {
       state: { countryCode: state.countryCode },
       replace: true,
     });
@@ -48,7 +48,7 @@ export const EuIdNfcErrorRoute: React.FC = () => {
     analytics.trackEvent('eu_id_try_different_method', {
       stage: state.stage,
     });
-    navigate('/onboarding/country', { replace: true });
+    navigate('/pick-country', { replace: true });
   }, [analytics, haptic, navigate, state.stage]);
 
   return (

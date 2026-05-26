@@ -33,7 +33,7 @@ export const PushNotificationPromptScreen: React.FC = () => {
   const handleBack = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('push_notification_header_back', { mock });
-    navigate(`/onboarding/recovery-phrase${getPromptMockSearch(mock)}`);
+    navigate(`/backup-phrase${getPromptMockSearch(mock)}`);
   }, [mock, navigate, haptic, analytics]);
 
   return (
