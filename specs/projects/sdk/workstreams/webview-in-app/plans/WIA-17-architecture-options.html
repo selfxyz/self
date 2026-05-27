@@ -6,7 +6,7 @@
 <title>WIA-17 · Architecture deep-dive: target topology + open decisions</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,500;0,600;0,700;1,500&display=swap" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Allura&family=Lato:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,500;0,600;0,700;1,500&display=swap" />
 <style>
   :root {
     /* Palette · WIA-17 trial v3 */
@@ -327,6 +327,18 @@
   .oq-icon-btn:hover { background: var(--accent); color: white; border-color: var(--accent); }
   .oq-icon-btn-danger { color: var(--muted); }
   .oq-icon-btn-danger:hover { background: var(--high); border-color: var(--high); color: white; }
+
+  .page-signature {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 8px 24px 24px;
+    text-align: right;
+    font-family: "Allura", cursive;
+    font-size: 32px;
+    line-height: 1;
+    color: var(--muted);
+    user-select: none;
+  }
   .legend {
     font-size: 12px;
     color: var(--muted);
@@ -636,6 +648,8 @@ flowchart LR
 
 </main>
 </div>
+
+<div class="page-signature">Michelangelo</div>
 
 <script src="./WIA-17-open-questions.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
