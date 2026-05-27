@@ -125,13 +125,14 @@
   }
   .mermaid { font-family: "Lato", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
 
-  /* Open Question cards — mirrors nav-hygiene oq-card pattern */
+  /* Open Question card content sits flat inside the parent <section>'s
+     own box — no extra background, border, or padding. The section IS
+     the card. */
   .oq-card {
-    background: var(--surface);
-    border: 1px solid var(--border-soft);
-    border-radius: 8px;
-    padding: 16px 18px;
-    margin: 12px 0;
+    background: transparent;
+    border: 0;
+    padding: 0;
+    margin: 0;
   }
   .oq-card .oq-head {
     display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
