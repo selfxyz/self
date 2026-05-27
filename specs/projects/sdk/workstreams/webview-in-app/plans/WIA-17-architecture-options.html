@@ -333,11 +333,21 @@
     margin: 0 auto;
     padding: 8px 24px 24px;
     text-align: right;
-    font-family: "Allura", cursive;
-    font-size: 32px;
-    line-height: 1;
     color: var(--muted);
     user-select: none;
+  }
+  .page-signature .by {
+    font-family: "Lora", Georgia, serif;
+    font-style: italic;
+    font-size: 14px;
+    margin-right: 10px;
+    vertical-align: middle;
+  }
+  .page-signature .name {
+    font-family: "Allura", cursive;
+    font-size: 34px;
+    line-height: 1;
+    vertical-align: middle;
   }
   .legend {
     font-size: 12px;
@@ -649,7 +659,7 @@ flowchart LR
 </main>
 </div>
 
-<div class="page-signature">Michelangelo</div>
+<div class="page-signature"><span class="by">A spec by</span><span class="name">Michelangelo</span></div>
 
 <script src="./WIA-17-open-questions.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
