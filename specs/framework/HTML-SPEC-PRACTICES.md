@@ -57,7 +57,8 @@ h1, h2, h3, h4, h5, h6 { font-family: "Lora", Georgia, serif; font-weight: 600; 
 - **Arrows are dark and strong.** `lineColor: #2A1F18` (coffee/ink). Default mermaid gray arrows fade behind labels and disappear into long node text. Edge labels get an opaque background matching the page so they don't sit on top of the arrow line.
 - **No box borders on glue nodes.** Borders compete with the arrows and the colored emphasis nodes for attention.
 - **Subgraphs:** dashed 1px border, transparent fill, generous padding. They're grouping, not containers.
-- **Spacing:** `nodeSpacing: 36`, `rankSpacing: 50`, `padding: 18`. Whitespace beats stroke weight every time.
+- **Spacing:** `nodeSpacing: 40`, `rankSpacing: 60`, `padding: 18`. Whitespace beats stroke weight every time.
+- **Curve style:** use `curve: 'linear'`, not `'basis'`. B-splines wander and land at odd points on node edges (corners instead of midpoints) when multiple arrows fan into the same target. Linear arrows enter cleanly and consistently. Use `monotoneX` / `monotoneY` if you need a slight curve.
 
 **Rendering gotchas (mermaid v10):**
 
