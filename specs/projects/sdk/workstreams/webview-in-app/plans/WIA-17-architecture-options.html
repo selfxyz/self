@@ -284,7 +284,7 @@
     pointer-events: none;
   }
   .oq-summary {
-    display: inline-flex; align-items: center; gap: 10px;
+    display: inline-flex; align-items: center; gap: 5px;
     padding: 5px 14px;
     background: var(--surface);
     border: 1px solid var(--border);
@@ -320,6 +320,9 @@
     padding: 0;
     flex-shrink: 0;
   }
+  /* First icon button gets extra left margin to push the icon group right
+     and detach it visually from the progress bar. */
+  #oq-export-btn { margin-left: 10px; }
   .oq-icon-btn svg { display: block; }
   .oq-icon-btn:hover { background: var(--accent); color: white; border-color: var(--accent); }
   .oq-icon-btn-danger { color: var(--muted); }
