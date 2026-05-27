@@ -185,13 +185,15 @@
   .oq-option {
     display: flex; align-items: flex-start; gap: 10px;
     padding: 8px 10px; border-radius: 6px;
+    border: 1px solid var(--border-soft);
     background: transparent;
     cursor: pointer;
-    transition: background .12s;
+    transition: background .12s, border-color .12s;
   }
-  .oq-option:hover { background: var(--accent-soft); }
+  .oq-option:hover { background: var(--accent-soft); border-color: var(--accent); }
   .oq-option.selected {
     background: var(--accent-soft);
+    border-color: var(--accent);
     box-shadow: inset 3px 0 0 var(--accent);
   }
   .oq-option input[type="radio"] { margin-top: 3px; cursor: pointer; flex-shrink: 0; }
