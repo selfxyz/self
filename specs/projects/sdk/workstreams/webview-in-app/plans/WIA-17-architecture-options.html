@@ -9,9 +9,9 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,500;0,600;0,700;1,500&display=swap" />
 <style>
   :root {
-    /* Palette · WIA-17 trial v2 */
+    /* Palette · WIA-17 trial v3 */
     --p-yellow: #FCE694;
-    --p-slate:  #8B95C9;
+    --p-blue:   #067BC2;
     --p-green:  #46AA44;
     --p-ice:    #D6EDFF;
     --p-red:    #F24236;
@@ -25,10 +25,10 @@
     --text:         #2A1F18;
     --muted:        #786C60;
 
-    /* Accent (slate) — derived darker for AA contrast on white text */
-    --accent:       #6671B0;
+    /* Accent (saturated blue, AA contrast on white) */
+    --accent:       var(--p-blue);
     --accent-soft:  var(--p-ice);
-    --accent-chip:  var(--p-slate);
+    --accent-chip:  var(--p-blue);
 
     /* Done = real green */
     --done:         var(--p-green);
@@ -223,7 +223,7 @@
     padding: 2px 8px;
     border-radius: 999px;
     background: var(--accent-chip);
-    color: var(--text);
+    color: #FFFFFF;
     line-height: 1.4;
   }
   .oq-rec-because {
