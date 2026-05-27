@@ -333,19 +333,60 @@
     );
   }
 
-  // Process any unrendered mermaid blocks inside a root element.
+  // Process any unrendered mermaid blocks inside a root element, then move
+  // every cluster's label to the bottom-left, outside the cluster box.
   function runMermaid(root) {
     if (!window.mermaid || !window.mermaid.run) return;
     const nodes = root.querySelectorAll('pre.mermaid:not([data-processed="true"])');
-    if (!nodes.length) return;
-    try {
-      window.mermaid.run({ nodes: Array.from(nodes) });
-    } catch (e) {
-      // Mermaid may not be ready yet on first paint — try again next tick.
-      setTimeout(() => {
-        try { window.mermaid.run({ nodes: Array.from(nodes) }); } catch {}
-      }, 50);
-    }
+    const reposition = () => requestAnimationFrame(() => postProcessDiagrams(root));
+    if (!nodes.length) { reposition(); return; }
+    const fire = () => {
+      try {
+        const p = window.mermaid.run({ nodes: Array.from(nodes) });
+        Promise.resolve(p).then(reposition, reposition);
+      } catch {
+        setTimeout(fire, 50);
+      }
+    };
+    fire();
+  }
+
+  // Move each cluster label below the cluster rectangle, left-aligned, and
+  // expand the SVG viewBox to keep the relocated label visible. Idempotent
+  // per-cluster via a data flag.
+  function postProcessDiagrams(root) {
+    root.querySelectorAll('svg').forEach(svg => {
+      let extraHeight = 0;
+      svg.querySelectorAll('g.cluster').forEach(cluster => {
+        const rect = cluster.querySelector('rect');
+        const label = cluster.querySelector('g.cluster-label');
+        if (!rect || !label) return;
+        if (label.dataset.repositioned === 'true') return;
+        label.dataset.repositioned = 'true';
+
+        const rx = parseFloat(rect.getAttribute('x') || '0');
+        const ry = parseFloat(rect.getAttribute('y') || '0');
+        const rh = parseFloat(rect.getAttribute('height') || '0');
+
+        // Bottom-left outside: x = cluster left + 2px inset, y = cluster bottom + 4px gap
+        label.setAttribute('transform', `translate(${rx + 2}, ${ry + rh + 4})`);
+        extraHeight = Math.max(extraHeight, 22);
+      });
+
+      if (extraHeight && !svg.dataset.expanded) {
+        svg.dataset.expanded = 'true';
+        const vb = (svg.getAttribute('viewBox') || '').split(/\s+/).map(parseFloat);
+        if (vb.length === 4 && !vb.some(Number.isNaN)) {
+          vb[3] += extraHeight;
+          svg.setAttribute('viewBox', vb.join(' '));
+        }
+        const hAttr = svg.getAttribute('height');
+        if (hAttr) {
+          const h = parseFloat(hAttr);
+          if (!Number.isNaN(h)) svg.setAttribute('height', h + extraHeight);
+        }
+      }
+    });
   }
 
   function renderCard(q) {
@@ -526,9 +567,11 @@
         slot.innerHTML = '';
         const card = renderCard(q);
         slot.appendChild(card);
-        runMermaid(card);
       }
     });
+    // Single mermaid pass over the entire document — picks up both static
+    // topology diagrams and the per-option diagrams just rendered into cards.
+    runMermaid(document.body);
     updateSummary();
   }
 

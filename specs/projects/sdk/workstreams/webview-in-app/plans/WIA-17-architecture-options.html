@@ -626,8 +626,11 @@ flowchart LR
 <script src="./WIA-17-open-questions.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
 <script>
+  // startOnLoad: false — open-questions.js drives the render + post-process
+  // (cluster label repositioning, viewBox expansion) for both static and
+  // dynamic diagrams uniformly.
   mermaid.initialize({
-    startOnLoad: true,
+    startOnLoad: false,
     theme: 'base',
     securityLevel: 'loose',
     flowchart: { curve: 'basis', padding: 18, nodeSpacing: 36, rankSpacing: 50, htmlLabels: true },
@@ -635,7 +638,9 @@ flowchart LR
       .cluster rect { stroke-dasharray: 3 3 !important; stroke-width: 1px !important; rx: 8px !important; ry: 8px !important; }
       .edgePath .path { stroke-width: 1.5px !important; }
       .arrowheadPath { fill: #2A1F18 !important; }
-      .edgeLabel { background: #FAFAF8 !important; padding: 0 4px !important; }
+      .edgeLabel { background: transparent !important; padding: 0 !important; }
+      .edgeLabel rect { fill: transparent !important; }
+      .cluster-label foreignObject > div { font-size: 11px !important; color: #786C60 !important; font-weight: 400 !important; text-align: left !important; }
     `,
     themeVariables: {
       fontFamily: '"Lato", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
@@ -644,12 +649,12 @@ flowchart LR
       primaryBorderColor: '#ECE7DE',
       primaryTextColor:   '#2A1F18',
       lineColor:          '#2A1F18',
-      secondaryColor:     '#FAFAF8',
+      secondaryColor:     '#FFFFFF',
       tertiaryColor:      '#FFFFFF',
       mainBkg:            '#FFFFFF',
       clusterBkg:         'transparent',
       clusterBorder:      '#DDD7CD',
-      edgeLabelBackground:'#FAFAF8'
+      edgeLabelBackground:'transparent'
     }
   });
 </script>
