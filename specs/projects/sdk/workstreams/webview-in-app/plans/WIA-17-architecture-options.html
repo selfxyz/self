@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>WIA-17 · Architecture deep-dive — target topology + open decisions</title>
+<title>WIA-17 · Architecture deep-dive: target topology + open decisions</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,500;0,600;0,700;1,500&display=swap" />
@@ -372,8 +372,8 @@
 
 <nav class="toc">
   <h4>Topology</h4>
-  <a href="#today">Today — three implementations</a>
-  <a href="#target">Target — one source of truth</a>
+  <a href="#today">Today: three implementations</a>
+  <a href="#target">Target: one source of truth</a>
   <a href="#full-system">Full system view</a>
 
   <h4>Open decisions</h4>
@@ -419,7 +419,7 @@
 </section>
 
 <section id="today">
-  <h2>Today — three parallel bridge implementations</h2>
+  <h2>Today: three parallel bridge implementations</h2>
   <p>
     Every consumer (Self app RN, the external native-Kotlin partner, the OSS native-shell-ios sample)
     speaks the same JSON bridge protocol to the same WebView. But each one ships its own
@@ -472,7 +472,7 @@ flowchart TB
 </section>
 
 <section id="target">
-  <h2>Target — one bridge implementation, three thin shells</h2>
+  <h2>Target: one bridge implementation, three thin shells</h2>
   <p>
     Path A collapses RN onto KMP. The follow-on (OQ-4) collapses native-shells-lite onto KMP too. End
     state: <strong>one MessageRouter, one set of handlers, one provider registry</strong>, with
@@ -614,7 +614,7 @@ flowchart LR
 </section>
 
 <section id="non-questions">
-  <h2>Settled — not asking</h2>
+  <h2>Settled: not asking</h2>
   <p>
     The following are <em>not</em> open questions. The plan treats them as decided.
   </p>
