@@ -627,29 +627,15 @@ flowchart LR
 </div>
 
 <script src="./WIA-17-open-questions.js"></script>
-<script type="module">
-  // Load mermaid 10 (ESM) + the ELK layout adapter. ELK does port-based
-  // edge routing — multi-edge fan-in to the same node terminates at the
-  // correct edge midpoint instead of wandering into corners (the default
-  // dagre layout's weakness with basis curves).
-  //
-  // Graceful fallback: if the ELK plugin URL fails, mermaid still loads
-  // and falls back to its bundled dagre layout.
-  // open-questions.js polls window.mermaid, so we set it explicitly here.
-  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.esm.min.mjs';
-  let elkRegistered = false;
-  try {
-    const elk = await import('https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.1.7/dist/mermaid-layout-elk.esm.min.mjs');
-    mermaid.registerLayoutLoaders(elk.default);
-    elkRegistered = true;
-  } catch (e) {
-    console.warn('[WIA-17] ELK layout plugin unavailable; falling back to dagre.', e);
-  }
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+  // startOnLoad: false — open-questions.js drives the render + post-process
+  // (cluster label repositioning, viewBox expansion) for both static and
+  // dynamic diagrams uniformly.
   mermaid.initialize({
     startOnLoad: false,
     theme: 'base',
     securityLevel: 'loose',
-    ...(elkRegistered ? { layout: 'elk' } : {}),
     flowchart: { curve: 'basis', padding: 18, nodeSpacing: 40, rankSpacing: 60, htmlLabels: true, useMaxWidth: true },
     themeCSS: `
       .cluster rect { stroke-dasharray: 3 3 !important; stroke-width: 1px !important; rx: 8px !important; ry: 8px !important; }
@@ -694,8 +680,6 @@ flowchart LR
       edgeLabelBackground:'#F4F1EC'
     }
   });
-  // Expose for open-questions.js (which polls window.mermaid)
-  window.mermaid = mermaid;
 </script>
 
 </body>
