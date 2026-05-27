@@ -4,9 +4,11 @@
 
 When a spec earns HTML (interactive elements, diagrams, status pills, multi-page workstream), follow these. Markdown is still the default for prose-only specs.
 
+**Reference page:** [WIA-17 Architecture deep-dive](../projects/sdk/workstreams/webview-in-app/plans/WIA-17-architecture-options.html) is the canonical example. Copy its `:root` block, mermaid init, and OQ card pattern verbatim. Don't roll your own.
+
 ## Fonts
 
-Google Fonts. Use both.
+Locked in. Google Fonts, both.
 
 ```html
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -15,84 +17,187 @@ Google Fonts. Use both.
 ```
 
 - **Lora** (serif) for every heading (`h1`–`h6`) and for prominent decision text rendered as a paragraph (e.g. the OQ card question).
-- **Lato** (sans) for body, navigation, tables, uppercase eyebrow labels, and mermaid diagram labels.
+- **Lato** (sans) for body, navigation, tables, eyebrow labels, mermaid diagram labels, code captions.
 - `ui-monospace` for code, pre, kbd. Don't theme these.
-
-CSS shape:
 
 ```css
 body { font: 14.5px/1.6 "Lato", -apple-system, BlinkMacSystemFont, sans-serif; }
 h1, h2, h3, h4, h5, h6 { font-family: "Lora", Georgia, serif; font-weight: 600; letter-spacing: -0.005em; }
 ```
 
+## Palette
+
+Locked in. Drop this `:root` block into any new page.
+
+```css
+:root {
+  --p-yellow: #FCE694;
+  --p-blue:   #067BC2;
+  --p-green:  #46AA44;
+  --p-ice:    #D6EDFF;
+  --p-red:    #F24236;
+
+  --bg:           #FFFDF6;
+  --surface:      #FFFFFF;
+  --surface-alt:  #F5F3EC;
+  --border:       #DDD7CD;
+  --border-soft:  #ECE7DE;
+  --text:         #2A1F18;
+  --muted:        #786C60;
+
+  --accent:       var(--p-blue);
+  --accent-soft:  var(--p-ice);
+  --accent-chip:  var(--p-blue);
+
+  --done:         var(--p-green);
+  --done-soft:    #DCF3DB;
+
+  --high:         var(--p-red);
+  --high-soft:    #FDDDDA;
+
+  --med:          #8A6A1F;
+  --med-soft:     var(--p-yellow);
+
+  --graph-bg:     #F5F3EC;
+}
+```
+
+- Page bg (`--bg`) is the warm cream `#FFFDF6`. White section cards sit one shade brighter on top.
+- `--graph-bg` and `--surface-alt` are the same slightly-darker cream so graph panels, code blocks, table headers, and status chips all share one tone.
+- One accent (`#067BC2`, AA on white). Soft tint `#D6EDFF` for hover/selected backgrounds.
+- Real green for success/answered, real red for danger/duplicate, palette yellow for warnings.
+
 ## Writing style
 
-- **No em dashes.** Use a hyphen, a comma, parentheses, or a period and a new sentence. This goes for the rendered prose, the JS data files that feed it, and the commit messages that ship it.
-- **Eyebrow labels stay sans.** `main h3` used as a small-caps label ("WHY", "DECISION") stays in Lato bold caps. Reserve Lora for real headings.
-- **Descriptive link text.** `[SDK Overview](./OVERVIEW.md)` not `[OVERVIEW.md](./OVERVIEW.md)`.
+- **No em dashes.** Use a colon, hyphen, comma, parentheses, or a new sentence. Applies to prose, JS data, commit messages.
+- **Titles use colons** when the second clause elaborates: `Today: three parallel bridge implementations`, not `Today — three parallel bridge implementations`.
+- **No `text-transform: uppercase` as decoration.** Eyebrow labels stay sans + small + letter-spaced, but render in sentence case. The exception is the explicit mermaid scope override (see Diagrams).
+- **Descriptive link text:** `[SDK Overview](./OVERVIEW.md)`, not `[OVERVIEW.md](./OVERVIEW.md)`.
+- **Compound code identifiers in diagrams get spaced:** `KMP Message Router`, not `KMP MessageRouter`, when readability beats code-mapping.
 
 ## Layout
 
-- Sticky topbar with title + pills + cross-doc links.
-- 2-column grid: TOC sidebar (≤180px) + main (`minmax(0, 1fr)`), wrap on narrow.
-- TOC sticky under the topbar, font 12.5px, narrow padding. Don't oversize the rail; content first.
-- Sections in cards: white surface, soft border, 8px radius, 16px gap.
+- Sticky topbar with title + pills + cross-doc links. Add `will-change: transform` and a 1px shadow so it stays composited across rerenders.
+- 2-column grid: TOC sidebar (160px), main `minmax(0, 1fr)`, gap 24px, max-width 1180px.
+- TOC sticky under the topbar, 12.5px Lato, narrow padding. Content first; don't oversize the rail.
+- Each `<section>` is the box: white surface, 1px `--border`, 8px radius, 16px margin between sections. **Don't add another card inside.**
+
+## One box per question
+
+The hardest rule to enforce and the most worth it. Trace from any chip (e.g. the OQ id pill) outward to the page background. It should pass **exactly one** white card. If you count two, you've nested a `.oq-card` or similar inside the `<section>` and need to flatten it.
+
+```css
+.oq-card { background: transparent; border: 0; padding: 0; margin: 0; }
+```
+
+The section provides the box. The card is just a content wrapper for the JS renderer.
 
 ## Status & chips
 
 - One status vocabulary across the workstream. Done / In progress / Active / Pending / Deferred / Blocked / Superseded.
 - Status pills are class-driven (`.status.done`, `.status.pending`, etc.). Color comes from the palette tokens.
-- A **Recommended** chip on a chosen option uses the palette accent on its background with ink text. Don't tint the surrounding card; let the chip carry the signal.
+- The **Recommended** chip is inline `·` separator text, not a pill. Inherits the answer label's font and color (`var(--accent)`), prefixed by a muted middot. Reads as `B. Import from self-sdk-swift · Recommended`.
+
+```css
+.oq-rec-chip { font: inherit; color: var(--accent); background: transparent; border: 0; padding: 0; }
+.oq-rec-chip::before { content: "·"; color: var(--muted); margin-right: 6px; font-weight: 400; }
+```
 
 ## Diagrams
 
-- Mermaid via CDN. One page can mix static topology diagrams and dynamically-rendered per-option diagrams.
-- `theme: 'base'` + explicit `themeVariables` keeps mermaid in sync with the palette. Don't rely on `default`.
-- For decision questions with multiple options, give each option its own small diagram. Don't pack all options into one big subgraph diagram.
+Mermaid v10 via CDN. Static topology diagrams + dynamically-rendered per-option diagrams on the same page.
 
-**Minimalism — optimize for readability:**
+### Theme + chrome
 
-- **Default nodes have no fill emphasis.** White background, very soft 1px border (matches `--border-soft`). Most boxes in a diagram should look like this; they're scaffolding for the story.
-- **Color is reserved for the 2-3 nodes that carry the point.** Pick at most two semantic emphasis classes per diagram: usually one positive (green, `--done`) and one negative (red, `--high`). White text on saturated fill, not tinted backgrounds with colored borders.
-- **Arrows are dark and strong.** `lineColor: #2A1F18` (coffee/ink). Default mermaid gray arrows fade behind labels and disappear into long node text. Edge labels get an opaque background matching the page so they don't sit on top of the arrow line.
-- **No box borders on glue nodes.** Borders compete with the arrows and the colored emphasis nodes for attention.
-- **Subgraphs:** dashed 1px border, transparent fill, generous padding. They're grouping, not containers.
-- **Spacing:** `nodeSpacing: 40`, `rankSpacing: 60`, `padding: 18`. Whitespace beats stroke weight every time.
-- **Curve style:** use `curve: 'linear'`, not `'basis'`. B-splines wander and land at odd points on node edges (corners instead of midpoints) when multiple arrows fan into the same target. Linear arrows enter cleanly and consistently. Use `monotoneX` / `monotoneY` if you need a slight curve.
+- `theme: 'base'` plus the explicit `themeVariables` from the reference page. **Never `theme: 'default'`** because its palette is purple/yellow and overrides yours.
+- **Don't use the ELK layout adapter.** It silently overrides `themeVariables` and reverts the palette to purple/yellow.
+- `curve: 'basis'` for smooth arrows. The corner-arrival issue (multi-edge fan-in landing at node corners) is a mermaid layout quirk; restructure the diagram to avoid it rather than switching engines.
+- `nodeSpacing: 40`, `rankSpacing: 60`, `padding: 18`, `htmlLabels: true`, `useMaxWidth: true`.
 
-**Rendering gotchas (mermaid v10):**
+### Minimalism for readability
 
-- No `<br/>` inside subgraph titles. The title height gets mis-measured and the first contained node renders behind it. Use shorter titles, or move detail into the node labels below.
-- No `{}`, parentheses, or `#` inside quoted subgraph titles. Use plain unquoted `subgraph FOO[Label]` syntax where possible.
-- Keep node labels free of `<br/>` unless you actually need a hard break. Plain commas or spaces wrap fine.
-- Prefer one decision per diagram. Big diagrams that pack multiple options into nested subgraphs overflow on narrow main columns.
-- For the canonical mermaid theme + `themeCSS` block, copy from `specs/projects/sdk/workstreams/webview-in-app/plans/WIA-17-architecture-options.html`. Don't roll your own.
+- **Every node goes through a classDef** with explicit `stroke:#DDD7CD, stroke-width:1px`. Default mermaid borders render with subtly different attributes than classDef strokes; passing all nodes through the same path makes border color and width visually identical across red/green/plain boxes.
+  ```
+  classDef plain fill:#FFFFFF,stroke:#DDD7CD,stroke-width:1px,color:#2A1F18
+  classDef src   fill:#46AA44,stroke:#DDD7CD,stroke-width:1px,color:#FFFFFF
+  classDef dup   fill:#F24236,stroke:#DDD7CD,stroke-width:1px,color:#FFFFFF
+  ```
+- **Color is reserved for the 2–3 nodes that carry the point.** White text on saturated fill, not tinted backgrounds with colored borders.
+- **Arrows are coffee-ink and strong:** `lineColor: '#2A1F18'`, edge path `stroke-width: 1.5px`. Default mermaid gray disappears behind labels.
+- **Subgraphs:** dashed 1px border, transparent fill, 8px radius. They're grouping, not containers.
+- **Edge and cluster labels get a `--graph-bg` background patch** (not transparent, not page-bg). They sit on top of the arrow / dashed border behind them and erase the line under the text.
+
+### Label positioning (mermaid post-process)
+
+Mermaid v10 places cluster (subgraph) labels at the top-center, where incoming arrows clip them. Reposition them via a small post-render JS pass:
+
+```js
+// after mermaid.run({ nodes }) resolves
+root.querySelectorAll('svg g.cluster').forEach(cluster => {
+  const rect = cluster.querySelector('rect');
+  const label = cluster.querySelector('g.cluster-label');
+  if (!rect || !label || label.dataset.repositioned === 'true') return;
+  label.dataset.repositioned = 'true';
+  const rx = parseFloat(rect.getAttribute('x') || '0');
+  const ry = parseFloat(rect.getAttribute('y') || '0');
+  const rh = parseFloat(rect.getAttribute('height') || '0');
+  label.setAttribute('transform', `translate(${rx + 4}, ${ry + rh - 8})`);
+});
+```
+
+Same pass also: re-appends `g.edgeLabels` to the end of the SVG (so labels paint on top of arrows) and hides empty `g.edgeLabel` foreignObjects (mermaid emits one per edge, leaving a stray patch at the SVG origin).
+
+### Rendering gotchas
+
+- No `<br/>` in subgraph titles. Title height gets mis-measured and the first contained node renders behind it.
+- No `{}`, parentheses, or `#` inside quoted subgraph titles. Use plain `subgraph FOO[Label]`.
+- Explicit `text-transform: none !important` on `.nodeLabel`, `.edgeLabel`, `foreignObject > div` inside `themeCSS`. Inherited page CSS leaks into mermaid SVG otherwise; node text comes out uppercased.
+- For decision questions with multiple options, **give each option its own small diagram** inside the option card. Don't pack multiple options into nested subgraphs of one big diagram.
+- For the canonical `themeVariables` + `themeCSS` + post-process JS, copy from the reference page. Don't reinvent.
+
+### Diagram chrome
+
+Caption sits on the section surface; only the rendered SVG carries the tinted graph background.
+
+```css
+.diagram { margin: 14px 0; }
+.diagram .label { font-size: 11.5px; color: var(--muted); padding: 0 2px 6px; }
+.diagram pre.mermaid, .oq-option-diagram pre.mermaid {
+  background: var(--graph-bg) !important;
+  border: 1px solid var(--border-soft) !important;
+  padding: 6px 8px !important;
+  border-radius: 6px !important;
+  margin: 0 !important;
+}
+```
 
 ## Interactive open questions
 
 When a page collects user decisions:
 
-- Each question is a card: id + impact chip + status pill + Lora question text + context + radio options + "Something else" + notes textarea + Clear button.
-- One option per question can be `recommended: true` with a `because:` rationale shown under it.
-- Persist to `localStorage` (keyed per workstream, versioned: e.g. `wia-17-open-questions-v1`).
-- Provide a thin sticky summary pill at the top: `X / N` + progress bar + export-as-markdown + reset.
-- Pattern reference: `specs/projects/sdk/workstreams/webview-in-app/plans/WIA-17-open-questions.js`.
+- Each question is a `<section>` with a `<div data-oq-slot="oq-N"></div>` placeholder. A JS registry (`*-open-questions.js`) renders the card into the slot.
+- The card itself has no chrome (`.oq-card` is transparent); the `<section>` is the visible box.
+- Card content: id + impact + status pill (header row, no surface) → Lora question text → muted description (flat, no inner box) → radio options → notes textarea → optional Clear button.
+- Each option (`.oq-option`) is a thin-bordered row, transparent at rest, accent-soft on hover/selected with a 3px accent inset on the left when selected.
+- One option per question can be `recommended: true` with a `because:` rationale rendered below it.
+- Persist to `localStorage`, versioned per workstream: `wia-17-open-questions-v1`.
+- **Sticky summary pill** centered at the top: `X / N` + 100px progress bar + inline-SVG export and reset icons (12px, 22px round buttons). Pure pill shape, fully rounded, only as wide as its contents.
+
+**Use inline SVG for icons**, not unicode glyphs. `⟲` and `↺` render with inconsistent baselines across font fallbacks and don't center reliably; SVG inherits `currentColor` and centers deterministically.
+
+Pattern reference: [WIA-17 open questions JS](../projects/sdk/workstreams/webview-in-app/plans/WIA-17-open-questions.js).
 
 ## CSS strategy
 
-Do **not** pull in a classless framework (sakura, water, simple, pico, etc.). They don't ship the layouts we need (sticky sidebar, status pills, mermaid containers, OQ cards), and fighting their defaults costs more than writing 100 lines of CSS once.
+Do **not** pull in a classless framework (sakura, water, simple, pico). They don't ship the layouts we need (sticky sidebar, status pills, mermaid containers, OQ cards), and fighting their defaults costs more than writing ~150 lines of CSS once.
 
 Do:
 
 1. **Inline `<style>` per page** while a pattern is being trialed (current default). Self-contained, no link rot.
-2. **Extract to `specs/framework/_spec.css`** the moment the same CSS appears in 3+ files. Link it with `<link rel="stylesheet" href="../../framework/_spec.css">` (relative path resolved per page).
-3. **Keep page-specific styles inline** (e.g. OQ card variations, custom diagram cards). Don't push everything into the shared file.
+2. **Extract to `specs/framework/_spec.css`** the moment the same CSS appears in 3+ files. Link with `<link rel="stylesheet" href="../../framework/_spec.css">`.
+3. **Keep page-specific styles inline.** Don't push everything into the shared file.
 
-Tokens live in `:root` as CSS custom properties so a palette swap is a 5-variable edit, not a find-and-replace.
-
-## Palette
-
-Currently **trialing** the WIA-17 palette on a single page before rolling out. When locked in, document it here. Until then, copy the `:root` block from `specs/projects/sdk/workstreams/webview-in-app/plans/WIA-17-architecture-options.html`.
+Tokens live in `:root` as CSS custom properties so a palette swap is a 5-variable edit.
 
 ## Filename conventions
 
