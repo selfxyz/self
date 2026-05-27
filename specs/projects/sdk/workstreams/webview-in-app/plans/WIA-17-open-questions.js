@@ -41,7 +41,7 @@
   A[rn-sdk/ios Provider.swift]
   B[self-sdk-swift Provider.swift]
   A -. duplicate .-> B
-  classDef dup fill:#F24236,stroke:#F24236,stroke-width:0px,color:#FFFFFF
+  classDef dup fill:#F24236,stroke:#DDD7CD,stroke-width:1px,color:#FFFFFF
   class A,B dup`
         },
         {
@@ -54,8 +54,10 @@
   P[self-sdk-swift Provider impls]
   RN[rn-sdk podspec] --> P
   NS[native-shell-ios podspec] --> P
-  classDef src fill:#46AA44,stroke:#46AA44,stroke-width:0px,color:#FFFFFF
-  class P src`
+  classDef src fill:#46AA44,stroke:#DDD7CD,stroke-width:1px,color:#FFFFFF
+  classDef plain fill:#FFFFFF,stroke:#DDD7CD,stroke-width:1px,color:#2A1F18
+  class P src
+  class RN,NS plain`
         }
       ]
     },
@@ -80,7 +82,9 @@
   PRIV[self-webview-sdk private fork]
   PUB[GitHub Packages]
   RN[rn-sdk build.gradle]
-  PRIV -- publish-kmp-sdk.yml --> PUB --> RN`
+  PRIV -- publish-kmp-sdk.yml --> PUB --> RN
+  classDef plain fill:#FFFFFF,stroke:#DDD7CD,stroke-width:1px,color:#2A1F18
+  class PRIV,PUB,RN plain`
         },
         {
           value: 'b-merge',
@@ -94,8 +98,10 @@
   RETIRED[self-webview-sdk retired]
   THIS --- FLAG
   RETIRED -. retired .-> THIS
-  classDef src fill:#46AA44,stroke:#46AA44,stroke-width:0px,color:#FFFFFF
-  class THIS,FLAG src`
+  classDef src fill:#46AA44,stroke:#DDD7CD,stroke-width:1px,color:#FFFFFF
+  classDef plain fill:#FFFFFF,stroke:#DDD7CD,stroke-width:1px,color:#2A1F18
+  class THIS,FLAG src
+  class RETIRED plain`
         },
         {
           value: 'c-mirror',
@@ -105,7 +111,7 @@
   T[selfxyz/self kmp-sdk]
   P[self-webview-sdk kmp-sdk]
   T <-. periodic sync .-> P
-  classDef bad fill:#F24236,stroke:#F24236,stroke-width:0px,color:#FFFFFF
+  classDef bad fill:#F24236,stroke:#DDD7CD,stroke-width:1px,color:#FFFFFF
   class T,P bad`
         }
       ]
@@ -163,8 +169,10 @@
   NS[native-shells thin glue]
   RN --> KMP
   NS --> KMP
-  classDef src fill:#46AA44,stroke:#46AA44,stroke-width:0px,color:#FFFFFF
-  class KMP src`
+  classDef src fill:#46AA44,stroke:#DDD7CD,stroke-width:1px,color:#FFFFFF
+  classDef plain fill:#FFFFFF,stroke:#DDD7CD,stroke-width:1px,color:#2A1F18
+  class KMP src
+  class RN,NS plain`
         },
         {
           value: 'b-leave',
@@ -175,8 +183,10 @@
   RN[rn-sdk uses kmp-sdk]
   NS[native-shells own router 3rd dup]
   RN --> KMP
-  classDef bad fill:#F24236,stroke:#F24236,stroke-width:0px,color:#FFFFFF
-  class NS bad`
+  classDef bad fill:#F24236,stroke:#DDD7CD,stroke-width:1px,color:#FFFFFF
+  classDef plain fill:#FFFFFF,stroke:#DDD7CD,stroke-width:1px,color:#2A1F18
+  class NS bad
+  class KMP,RN plain`
         }
       ]
     },

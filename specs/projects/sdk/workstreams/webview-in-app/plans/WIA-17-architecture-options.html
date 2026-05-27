@@ -522,8 +522,10 @@ flowchart TB
   REG --> AND
   REG --> SWIFT
 
-  classDef src fill:#46AA44,stroke:#46AA44,stroke-width:0px,color:#FFFFFF
+  classDef src fill:#46AA44,stroke:#DDD7CD,stroke-width:1px,color:#FFFFFF
+  classDef plain fill:#FFFFFF,stroke:#DDD7CD,stroke-width:1px,color:#2A1F18
   class KMP_R,KMP_H src
+  class WV,RN_GLUE,KOT_GLUE,IOS_GLUE,REG,AND,SWIFT plain
     </pre>
   </div>
   <p class="callout win">
@@ -575,8 +577,10 @@ flowchart LR
   NS_IOS --> KMP
   KMP --> SWIFT
 
-  classDef core fill:#46AA44,stroke:#46AA44,stroke-width:0px,color:#FFFFFF
+  classDef core fill:#46AA44,stroke:#DDD7CD,stroke-width:1px,color:#FFFFFF
+  classDef plain fill:#FFFFFF,stroke:#DDD7CD,stroke-width:1px,color:#2A1F18
   class KMP,SWIFT core
+  class SELF,PARTNER,THIRD,SAMPLE,RN_SDK,NS_AND,NS_IOS plain
     </pre>
   </div>
 </section>
