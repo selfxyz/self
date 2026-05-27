@@ -368,9 +368,10 @@
         const ry = parseFloat(rect.getAttribute('y') || '0');
         const rh = parseFloat(rect.getAttribute('height') || '0');
 
-        // Bottom-left outside: x = cluster left + 2px inset, y = cluster bottom + 4px gap
-        label.setAttribute('transform', `translate(${rx + 2}, ${ry + rh + 4})`);
-        extraHeight = Math.max(extraHeight, 22);
+        // Bottom-left outside: sit just under the cluster bottom border (1px gap).
+        // White background on the label (themeCSS) erases the dashed border where they overlap.
+        label.setAttribute('transform', `translate(${rx + 4}, ${ry + rh - 8})`);
+        extraHeight = Math.max(extraHeight, 16);
       });
 
       if (extraHeight && !svg.dataset.expanded) {

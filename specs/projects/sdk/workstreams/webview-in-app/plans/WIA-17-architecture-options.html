@@ -62,7 +62,7 @@
   a { color: var(--accent); text-decoration: none; }
   a:hover { text-decoration: underline; }
 
-  header.topbar { position: sticky; top: 0; z-index: 100; background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  header.topbar { position: sticky; top: 0; z-index: 100; background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; will-change: transform; box-shadow: 0 1px 0 rgba(0,0,0,0.02); }
   header h1 { margin: 0; font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
   .pill { font-size: 11px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface-alt); }
   .pill.active { color: var(--accent); background: var(--accent-soft); border-color: var(--accent); }
@@ -72,7 +72,7 @@
 
   .layout { display: grid; grid-template-columns: 160px minmax(0, 1fr); gap: 24px; max-width: 1180px; margin: 0 auto; padding: 24px; }
   nav.toc { position: sticky; top: 64px; align-self: start; max-height: calc(100vh - 80px); overflow-y: auto; font-size: 12.5px; }
-  nav.toc h4 { margin: 12px 0 4px 0; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  nav.toc h4 { margin: 12px 0 4px 0; font-size: 10px; color: var(--muted);  letter-spacing: 0.04em; }
   nav.toc h4:first-child { margin-top: 0; }
   nav.toc a { display: block; padding: 3px 6px; border-radius: 4px; color: var(--text); }
   nav.toc a:hover { background: var(--surface-alt); text-decoration: none; }
@@ -80,7 +80,7 @@
   main { min-width: 0; }
   main section { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 18px 22px; margin-bottom: 16px; }
   main h2 { margin: 0 0 12px 0; font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
-  main h3 { margin: 16px 0 6px 0; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; font-family: "Lato", -apple-system, sans-serif; font-weight: 700; }
+  main h3 { margin: 16px 0 6px 0; font-size: 11px; color: var(--muted);  letter-spacing: 0.08em; font-family: "Lato", -apple-system, sans-serif; font-weight: 700; }
   main p { margin: 6px 0 10px 0; }
   main ul, main ol { margin: 6px 0 10px 18px; padding: 0; }
   main li { margin: 3px 0; }
@@ -106,7 +106,7 @@
   }
   .diagram .label {
     font-size: 11px;
-    text-transform: uppercase;
+    
     letter-spacing: 0.06em;
     color: var(--muted);
     text-align: left;
@@ -133,7 +133,7 @@
     background: var(--surface-alt); border-radius: 4px;
   }
   .oq-card .oq-impact {
-    font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em;
+    font-size: 10px;  letter-spacing: 0.04em;
     padding: 2px 6px; border-radius: 4px;
     background: var(--med-soft); color: var(--med);
   }
@@ -163,7 +163,7 @@
   .oq-card.status-open      { border-left: 3px solid var(--accent); }
   .oq-card.status-needs-text { border-left: 3px solid var(--med); }
   .oq-card .oq-status {
-    font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em;
+    font-size: 10px;  letter-spacing: 0.06em;
     padding: 2px 8px; border-radius: 4px; font-weight: 600;
     margin-left: auto;
   }
@@ -207,7 +207,7 @@
     display: inline-block;
     font-size: 10px;
     font-weight: 700;
-    text-transform: uppercase;
+    
     letter-spacing: 0.06em;
     padding: 2px 8px;
     border-radius: 999px;
@@ -246,7 +246,7 @@
   .oq-notes-label {
     display: block;
     font-size: 11px;
-    text-transform: uppercase;
+    
     letter-spacing: 0.04em;
     color: var(--muted);
     margin-bottom: 4px;
@@ -638,9 +638,19 @@ flowchart LR
       .cluster rect { stroke-dasharray: 3 3 !important; stroke-width: 1px !important; rx: 8px !important; ry: 8px !important; }
       .edgePath .path { stroke-width: 1.5px !important; }
       .arrowheadPath { fill: #2A1F18 !important; }
-      .edgeLabel { background: transparent !important; padding: 0 !important; }
-      .edgeLabel rect { fill: transparent !important; }
-      .cluster-label foreignObject > div { font-size: 11px !important; color: #786C60 !important; font-weight: 400 !important; text-align: left !important; }
+      .edgeLabel { background: #FFFFFF !important; padding: 0 4px !important; text-transform: none !important; }
+      .edgeLabel rect { fill: #FFFFFF !important; }
+      .cluster-label foreignObject > div {
+        font-size: 12.5px !important;
+        color: #786C60 !important;
+        font-weight: 400 !important;
+        text-align: left !important;
+        text-transform: none !important;
+        background: #FFFFFF !important;
+        padding: 0 5px !important;
+        display: inline-block !important;
+      }
+      .nodeLabel, .edgeLabel, foreignObject > div { text-transform: none !important; }
     `,
     themeVariables: {
       fontFamily: '"Lato", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
@@ -654,7 +664,7 @@ flowchart LR
       mainBkg:            '#FFFFFF',
       clusterBkg:         'transparent',
       clusterBorder:      '#DDD7CD',
-      edgeLabelBackground:'transparent'
+      edgeLabelBackground:'#FFFFFF'
     }
   });
 </script>
