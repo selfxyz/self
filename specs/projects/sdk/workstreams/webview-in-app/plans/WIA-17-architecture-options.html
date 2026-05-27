@@ -179,18 +179,20 @@
   .oq-card.status-needs-text .oq-status { background: var(--med-soft); color: var(--med); }
 
   .oq-options { display: grid; gap: 8px; }
+  /* Option is just a radio + text — no card chrome. Selected state still
+     paints a soft accent background so the user sees their pick clearly.
+     The graph inside an option keeps its own tinted background. */
   .oq-option {
     display: flex; align-items: flex-start; gap: 10px;
-    padding: 10px 12px; border-radius: 6px; border: 1px solid var(--border-soft);
-    background: var(--surface-alt);
+    padding: 8px 10px; border-radius: 6px;
+    background: transparent;
     cursor: pointer;
-    transition: border-color .12s, background .12s;
+    transition: background .12s;
   }
-  .oq-option:hover { border-color: var(--accent); }
+  .oq-option:hover { background: var(--accent-soft); }
   .oq-option.selected {
     background: var(--accent-soft);
-    border-color: var(--accent);
-    box-shadow: 0 0 0 1px var(--accent) inset;
+    box-shadow: inset 3px 0 0 var(--accent);
   }
   .oq-option input[type="radio"] { margin-top: 3px; cursor: pointer; flex-shrink: 0; }
   .oq-option-body { flex: 1; min-width: 0; }
@@ -205,11 +207,8 @@
   }
   .oq-option .option-note { color: var(--text); font-size: 12.5px; }
   .oq-option.oq-option-other {
-    background: var(--surface);
-    border-style: dashed;
+    color: var(--muted);
   }
-  .oq-option.oq-option-other:hover { background: var(--accent-soft); }
-  .oq-option.oq-option-other.selected { border-style: solid; background: var(--accent-soft); }
   .oq-rec-chip {
     display: inline-block;
     font-size: 10px;
