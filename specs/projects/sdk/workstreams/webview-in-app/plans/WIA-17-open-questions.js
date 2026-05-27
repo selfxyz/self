@@ -351,11 +351,16 @@
     fire();
   }
 
-  // Move each cluster label below the cluster rectangle, left-aligned, and
-  // expand the SVG viewBox to keep the relocated label visible. Idempotent
-  // per-cluster via a data flag.
+  // Post-process each rendered SVG:
+  //   1. Move cluster labels to the bottom-left outside the cluster rect.
+  //   2. Re-append the edge-label group so labels paint on top of arrows.
+  //   3. Hide any empty edge-label rect (mermaid emits one per edge even
+  //      when there's no label, which leaves a small patch at the SVG origin).
+  //   4. Expand the viewBox so relocated cluster labels stay visible.
+  // Idempotent per cluster/svg via data flags.
   function postProcessDiagrams(root) {
     root.querySelectorAll('svg').forEach(svg => {
+      // 1. Reposition cluster labels
       let extraHeight = 0;
       svg.querySelectorAll('g.cluster').forEach(cluster => {
         const rect = cluster.querySelector('rect');
@@ -368,12 +373,27 @@
         const ry = parseFloat(rect.getAttribute('y') || '0');
         const rh = parseFloat(rect.getAttribute('height') || '0');
 
-        // Bottom-left outside: sit just under the cluster bottom border (1px gap).
-        // White background on the label (themeCSS) erases the dashed border where they overlap.
         label.setAttribute('transform', `translate(${rx + 4}, ${ry + rh - 8})`);
         extraHeight = Math.max(extraHeight, 16);
       });
 
+      // 2. Force edge labels to paint on top by re-appending the edgeLabels
+      //    group to the end of the SVG (or its root <g>).
+      const edgeLabelsGroup = svg.querySelector('g.edgeLabels');
+      if (edgeLabelsGroup && !edgeLabelsGroup.dataset.lifted) {
+        edgeLabelsGroup.dataset.lifted = 'true';
+        edgeLabelsGroup.parentNode.appendChild(edgeLabelsGroup);
+      }
+
+      // 3. Hide empty edge-label foreignObjects (which mermaid still emits
+      //    for unlabelled edges, leaving an empty patch at the origin).
+      svg.querySelectorAll('g.edgeLabel').forEach(g => {
+        const fo = g.querySelector('foreignObject');
+        const text = (fo && fo.textContent ? fo.textContent : '').trim();
+        if (!text) g.style.display = 'none';
+      });
+
+      // 4. Expand viewBox for relocated cluster labels
       if (extraHeight && !svg.dataset.expanded) {
         svg.dataset.expanded = 'true';
         const vb = (svg.getAttribute('viewBox') || '').split(/\s+/).map(parseFloat);
