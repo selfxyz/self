@@ -310,7 +310,6 @@
     transition: width .25s;
   }
   .oq-icon-btn {
-    font: inherit; font-size: 13px; line-height: 1;
     width: 22px; height: 22px;
     display: inline-flex; align-items: center; justify-content: center;
     border-radius: 999px;
@@ -319,7 +318,9 @@
     border: 1px solid var(--border-soft);
     cursor: pointer;
     padding: 0;
+    flex-shrink: 0;
   }
+  .oq-icon-btn svg { display: block; }
   .oq-icon-btn:hover { background: var(--accent); color: white; border-color: var(--accent); }
   .oq-icon-btn-danger { color: var(--muted); }
   .oq-icon-btn-danger:hover { background: var(--high); border-color: var(--high); color: white; }

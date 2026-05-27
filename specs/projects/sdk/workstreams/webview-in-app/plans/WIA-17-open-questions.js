@@ -545,8 +545,18 @@
     summary.innerHTML = `
       <span class="oq-summary-count">${answered} / ${total}</span>
       <span class="oq-summary-bar"><span class="oq-summary-fill" style="width:${pct}%"></span></span>
-      ${answered ? '<button type="button" id="oq-export-btn" class="oq-icon-btn" title="Export as markdown">↗</button>' : ''}
-      ${answered ? '<button type="button" id="oq-reset-btn" class="oq-icon-btn oq-icon-btn-danger" title="Reset all">⟲</button>' : ''}
+      ${answered ? `<button type="button" id="oq-export-btn" class="oq-icon-btn" title="Export as markdown" aria-label="Export as markdown">
+        <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M5 11l6-6"/>
+          <path d="M6 5h5v5"/>
+        </svg>
+      </button>` : ''}
+      ${answered ? `<button type="button" id="oq-reset-btn" class="oq-icon-btn oq-icon-btn-danger" title="Reset all" aria-label="Reset all">
+        <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M13.5 8a5.5 5.5 0 1 1-1.61-3.89"/>
+          <path d="M13.5 2v3.5H10"/>
+        </svg>
+      </button>` : ''}
     `;
 
     const exportBtn = document.getElementById('oq-export-btn');
