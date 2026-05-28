@@ -365,6 +365,11 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
                     );
                   }
 
+                  // SCAN_STARTED must fire before any KYC branch event so the
+                  // funnel attempt is bootstrapped — trackBranchEvent no-ops
+                  // when currentAttempt is null. See ANA-12 Path C invariant
+                  // (specs/projects/sdk/workstreams/analytics/plans/
+                  // ANA-12-branch-specific-funnel-events.md).
                   trackOnboardingStep(
                     trackEventClient,
                     OnboardingEvents.SCAN_STARTED,

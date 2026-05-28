@@ -24,6 +24,9 @@ const PRIVATE_MODULES = [
     repoName: 'react-native-passport-reader',
     localPath: path.join(ANDROID_DIR, 'react-native-passport-reader'),
     validationFiles: ['android/build.gradle'],
+    // Pinned to PR #4 (chore/upgrade-rn-0_83) until RN upgrade lands.
+    // Do NOT merge that branch to main; bump this SHA when the branch advances.
+    commit: 'e4ec4900c95dcf1209cb72891120c37f0f93b13c',
   },
 ];
 
