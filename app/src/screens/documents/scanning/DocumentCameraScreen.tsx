@@ -64,7 +64,8 @@ const DocumentCameraScreen: React.FC = () => {
   });
 
   // Add a ref to track when the camera screen is mounted
-  const scanStartTimeRef = useRef(Date.now());
+  const [scanStartTime] = useState(() => Date.now());
+  const scanStartTimeRef = useRef(scanStartTime);
   const { onPassportRead } = useReadMRZ(scanStartTimeRef);
 
   useEffect(() => {

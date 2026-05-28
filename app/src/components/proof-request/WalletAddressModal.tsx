@@ -32,15 +32,16 @@ export const WalletAddressModal: React.FC<WalletAddressModalProps> = ({
   testID = 'wallet-address-modal',
 }) => {
   const [copied, setCopied] = useState(false);
+  const [wasVisible, setWasVisible] = useState(visible);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const label = userIdType === 'hex' ? 'Connected Wallet' : 'Connected ID';
 
-  // Reset copied state when modal closes
-  useEffect(() => {
+  if (wasVisible !== visible) {
+    setWasVisible(visible);
     if (!visible) {
       setCopied(false);
     }
-  }, [visible]);
+  }
 
   // Clear timeout on unmount or when modal closes/address changes
   useEffect(() => {

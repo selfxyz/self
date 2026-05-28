@@ -53,7 +53,6 @@ const PassportDataSelector = () => {
   const [loading, setLoading] = useState(true);
 
   const loadPassportDataInfo = useCallback(async () => {
-    setLoading(true);
     const catalog = await loadDocumentCatalog();
     const docs = await getAllDocuments();
     setDocumentCatalog(catalog);
@@ -74,7 +73,10 @@ const PassportDataSelector = () => {
   ]);
 
   useEffect(() => {
-    loadPassportDataInfo();
+    const run = async () => {
+      await loadPassportDataInfo();
+    };
+    run();
   }, [loadPassportDataInfo]);
 
   const handleDocumentSelection = async (
