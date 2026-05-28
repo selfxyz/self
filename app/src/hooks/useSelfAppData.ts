@@ -16,42 +16,44 @@ import { formatUserId } from '@/utils/formatUserId';
  * Returns memoized values for logo source, URL, formatted user ID, and disclosure items.
  */
 export function useSelfAppData(selfApp: SelfApp | null) {
+  const logoBase64 = selfApp?.logoBase64;
+  const endpoint = selfApp?.endpoint;
+  const userId = selfApp?.userId;
+  const userIdType = selfApp?.userIdType;
+  const disclosures = selfApp?.disclosures as SelfAppDisclosureConfig;
+
   const logoSource = useMemo(() => {
-    if (!selfApp?.logoBase64) {
+    if (!logoBase64) {
       return null;
     }
 
     // Check if the logo is already a URL
-    if (
-      selfApp.logoBase64.startsWith('http://') ||
-      selfApp.logoBase64.startsWith('https://')
-    ) {
-      return { uri: selfApp.logoBase64 };
+    if (logoBase64.startsWith('http://') || logoBase64.startsWith('https://')) {
+      return { uri: logoBase64 };
     }
 
     // Otherwise handle as base64
-    const base64String = selfApp.logoBase64.startsWith('data:image')
-      ? selfApp.logoBase64
-      : `data:image/png;base64,${selfApp.logoBase64}`;
+    const base64String = logoBase64.startsWith('data:image')
+      ? logoBase64
+      : `data:image/png;base64,${logoBase64}`;
     return { uri: base64String };
-  }, [selfApp?.logoBase64]);
+  }, [logoBase64]);
 
   const url = useMemo(() => {
-    if (!selfApp?.endpoint) {
+    if (!endpoint) {
       return null;
     }
-    return formatEndpoint(selfApp.endpoint);
-  }, [selfApp?.endpoint]);
+    return formatEndpoint(endpoint);
+  }, [endpoint]);
 
   const formattedUserId = useMemo(
-    () => formatUserId(selfApp?.userId, selfApp?.userIdType),
-    [selfApp?.userId, selfApp?.userIdType],
+    () => formatUserId(userId, userIdType),
+    [userId, userIdType],
   );
 
   const disclosureItems = useMemo(() => {
-    const disclosures = (selfApp?.disclosures as SelfAppDisclosureConfig) || {};
-    return getDisclosureItems(disclosures);
-  }, [selfApp?.disclosures]);
+    return getDisclosureItems(disclosures || {});
+  }, [disclosures]);
 
   return {
     logoSource,
