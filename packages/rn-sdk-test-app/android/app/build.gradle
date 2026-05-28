@@ -65,7 +65,4 @@ dependencies {
     implementation("xyz.self.sdk:shared:0.1.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
     compileOnly("androidx.camera:camera-view:1.4.1")
-    if (project.hasProperty('newArchEnabled') ? newArchEnabled.toBoolean() : false) {
-        implementation("com.facebook.react:react-android-codegen:0.83.9")
-    }
 }
