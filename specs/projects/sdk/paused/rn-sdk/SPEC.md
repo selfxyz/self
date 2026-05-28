@@ -56,7 +56,7 @@
 | ------------- | --------------------------- | -------------------------------------------------- | ----------- |
 | **You need**  | Person 1 (`webview-app`)    | Vite bundle (`dist/`)                              | Ready       |
 | **You need**  | Person 1 (`webview-bridge`) | Bridge protocol types                              | Ready       |
-| **Needs you** | Self app app             | `SelfVerification` for verification flow (Phase 2) | Not started |
+| **Needs you** | Self app app                | `SelfVerification` for verification flow (Phase 2) | Not started |
 
 **Status:**
 
@@ -76,7 +76,7 @@
 
 | ID    | Title                                                            | Status | Priority | Depends On | Plan                                                                                                     | PR    |
 | ----- | ---------------------------------------------------------------- | ------ | -------- | ---------- | -------------------------------------------------------------------------------------------------------- | ----- |
-| RN-01 | Self app integration validation for `SelfVerification`        | Paused | High     | -          | [plans/RN-01-self-wallet-integration-validation.md](./plans/RN-01-self-wallet-integration-validation.md) | -     |
+| RN-01 | Self app integration validation for `SelfVerification`           | Paused | High     | -          | [plans/RN-01-self-wallet-integration-validation.md](./plans/RN-01-self-wallet-integration-validation.md) | -     |
 | RN-02 | npm publishing readiness and release path                        | Paused | Medium   | RN-01      | [plans/RN-02-npm-publishing-readiness.md](./plans/RN-02-npm-publishing-readiness.md)                     | -     |
 | RN-03 | APDU allowlist, timeout, and payload hardening in RN NFC handler | Done   | High     | -          | [plans/RN-03-nfc-hardening.md](./plans/RN-03-nfc-hardening.md)                                           | #1797 |
 
@@ -119,7 +119,7 @@ The RN SDK (`packages/rn-sdk/`) exists with the core implementation complete: `S
 | `SelfVerification` component   | Implemented — wraps `react-native-webview` with bridge wiring    |
 | Native handler bridges         | All 5 implemented (NFC, biometrics, keychain, camera, lifecycle) |
 | Asset bundling (iOS + Android) | Implemented for both platforms                                   |
-| Self app integration        | Not validated — see RN-01                                        |
+| Self app integration           | Not validated — see RN-01                                        |
 | npm publishing                 | Not ready — see RN-02                                            |
 | NFC hardening                  | Completed — see RN-03                                            |
 
@@ -847,14 +847,14 @@ const source = useDevServer
 
 ## Files You Will NOT Modify
 
-| File                              | Why                                                                      |
-| --------------------------------- | ------------------------------------------------------------------------ |
-| `packages/webview-bridge/src/*`   | Owned by Person 1 -- bridge protocol already defined                     |
-| `packages/webview-app/src/*`      | Owned by Person 1 -- WebView UI screens                                  |
-| `packages/mobile-sdk-alpha/src/*` | Owned by Person 4 -- WebView engine core                                 |
-| `packages/kmp-sdk/shared/src/*`   | Owned by Person 2 -- Kotlin native shell (reference only)                |
+| File                              | Why                                                                   |
+| --------------------------------- | --------------------------------------------------------------------- |
+| `packages/webview-bridge/src/*`   | Owned by Person 1 -- bridge protocol already defined                  |
+| `packages/webview-app/src/*`      | Owned by Person 1 -- WebView UI screens                               |
+| `packages/mobile-sdk-alpha/src/*` | Owned by Person 4 -- WebView engine core                              |
+| `packages/kmp-sdk/shared/src/*`   | Owned by Person 2 -- Kotlin native shell (reference only)             |
 | `app/src/*`                       | Self app app -- integration consumer, not modified by this workstream |
-| `common/src/*`                    | Shared utilities -- out of scope                                         |
+| `common/src/*`                    | Shared utilities -- out of scope                                      |
 
 ## Chunking Guide
 
@@ -1216,7 +1216,7 @@ ls packages/rn-sdk/assets/self-wallet/index.html  # Assets bundled
 
 | Item                                         | Discovered during | Suggested spec                                                                         |
 | -------------------------------------------- | ----------------- | -------------------------------------------------------------------------------------- |
-| Self app migration to `SelfVerification`  | Spec writing      | Separate migration spec after SDK is stable                                            |
+| Self app migration to `SelfVerification`     | Spec writing      | Separate migration spec after SDK is stable                                            |
 | MiniPay RN sample integration                | Spec writing      | `integrations/SPEC.md` (already exists)                                                |
 | Camera library selection for MRZ scanning    | Chunk 5C planning | Depends on host app camera setup -- may need configurable adapter                      |
 | RN test app MRZ DRY consolidation            | Complete          | [MRZ Consolidation Spec (archived)](../../../../archive/sdk/SPEC-MRZ-CONSOLIDATION.md) |

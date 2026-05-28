@@ -26,6 +26,7 @@ The MOD work is **not** in this repo and there is no convergence plan in writing
 ### `kmp-sdk` publishing posture
 
 `packages/kmp-sdk/shared/build.gradle.kts:1-216` already has:
+
 - `maven-publish` plugin enabled
 - `iosArm64()` + `iosSimulatorArm64()` framework targets configured (static `SelfSdk` framework)
 - `createXCFramework` task (currently debug-variant only)
@@ -59,6 +60,7 @@ That branch in this repo predates the MOD plan and adds RN-native modules inside
 ### Path A — `rn-sdk` wraps `kmp-sdk` via the provider registry
 
 `packages/rn-sdk/` becomes a thin layer:
+
 - `SelfVerification.tsx` keeps the `<WebView>` JSX, lifecycle props, and prop-to-handler wiring
 - The TS `MessageRouter` is deleted. The WebView's `onMessage` callback forwards raw JSON into the native module; responses come back via JS injection emitted by KMP's router
 - A new RN native module (one per platform) exposes two methods to JS: `onMessageFromWebView(rawJson)` and `subscribeToInjections(callback)`. The Kotlin/Swift bodies hand off to a long-lived `MessageRouter` instance owned by the module
@@ -93,7 +95,7 @@ You are proving the binding works for **one domain on one platform**. Anything b
   - Registers `SecureStorageBridgeHandler` with the router
   - Exposes `onMessageFromWebView(rawJson: String)` to JS via `@ReactMethod`
   - Sends router output back to JS via `injectJavaScript`-equivalent (DeviceEventEmitter for now; refine later)
-- Modify `SelfVerification.tsx` to forward `onMessage` to `NativeModules.SelfBridge.onMessageFromWebView` *only when the new path is active* (gate behind a prop or env flag — do not break existing behavior)
+- Modify `SelfVerification.tsx` to forward `onMessage` to `NativeModules.SelfBridge.onMessageFromWebView` _only when the new path is active_ (gate behind a prop or env flag — do not break existing behavior)
 - Use `packages/rn-sdk-test-app/` to run the prototype on an Android emulator or device
 - Validate by hitting `bridge.secureStorage.set` → `bridge.secureStorage.get` round-trip from a stub WebView page
 

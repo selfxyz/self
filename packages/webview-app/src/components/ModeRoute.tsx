@@ -32,7 +32,7 @@ interface ModeRouteProps {
  * Used as a function call in JSX:
  *   {ModeRoute({ mode: 'shared', path: '/tour/:step', element: <TourScreen /> })}
  */
-export function ModeRoute({ mode, path, element }: ModeRouteProps): JSX.Element {
+export function ModeRoute({ mode, path, element }: ModeRouteProps): React.JSX.Element {
   return <Route path={path} element={<ModeRouteGate mode={mode}>{element}</ModeRouteGate>} />;
 }
 
