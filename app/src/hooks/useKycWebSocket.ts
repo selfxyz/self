@@ -118,14 +118,16 @@ export function useKycWebSocket(options: UseKycWebSocketOptions = {}) {
           redactSessionId(sessionId),
         );
 
+        let isMockData = false;
         try {
           const applicantInfoDeserialized = deserializeApplicantInfo(
             data.applicantInfo,
           );
+          isMockData = applicantInfoDeserialized.idNumber.startsWith('Mock');
           const kycData: KycData = {
             documentType: applicantInfoDeserialized.idType as DocumentType,
             documentCategory: 'kyc',
-            mock: applicantInfoDeserialized.idNumber.startsWith('Mock'),
+            mock: isMockData,
             signature: data.signature,
             pubkey: data.pubkey,
             serializedApplicantInfo: data.applicantInfo,
@@ -143,7 +145,7 @@ export function useKycWebSocket(options: UseKycWebSocketOptions = {}) {
             documentId,
           );
 
-          if (!kycData.mock) {
+          if (!isMockData) {
             trackKycVerdict(selfClient, {
               provider: KYC_PROVIDER,
               outcome: 'approved',
@@ -164,12 +166,14 @@ export function useKycWebSocket(options: UseKycWebSocketOptions = {}) {
             'failed',
             'Failed to store KYC data',
           );
-          trackKycVerdict(selfClient, {
-            provider: KYC_PROVIDER,
-            outcome: 'error',
-            error_code: 'store_failed',
-            duration_seconds: verdictDurationSeconds(sessionId),
-          });
+          if (!isMockData) {
+            trackKycVerdict(selfClient, {
+              provider: KYC_PROVIDER,
+              outcome: 'error',
+              error_code: 'store_failed',
+              duration_seconds: verdictDurationSeconds(sessionId),
+            });
+          }
           onError?.('Failed to store KYC data');
         }
 
