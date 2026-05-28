@@ -2,12 +2,9 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import type { BubblingEventHandler } from 'CodegenTypes';
 import type * as React from 'react';
-import {
-  codegenNativeComponent,
-  type CodegenTypes,
-  type ViewProps,
-} from 'react-native';
+import { codegenNativeComponent, type ViewProps } from 'react-native';
 
 type PassportReadEvent = Readonly<{
   data: string;
@@ -21,8 +18,8 @@ type PassportErrorEvent = Readonly<{
 
 interface NativeProps extends ViewProps {
   isMounted?: boolean;
-  onPassportRead?: CodegenTypes.BubblingEventHandler<PassportReadEvent>;
-  onError?: CodegenTypes.BubblingEventHandler<PassportErrorEvent>;
+  onPassportRead?: BubblingEventHandler<PassportReadEvent>;
+  onError?: BubblingEventHandler<PassportErrorEvent>;
 }
 
 type NativeType = React.ComponentType<NativeProps>;
