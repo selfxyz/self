@@ -64,17 +64,13 @@ overrides:
   '@tamagui/animations-react-native': 1.144.4
   '@tamagui/toast': 1.144.4
   '@types/node': ^22.18.3
-  '@types/react': ^18.3.4
-  '@types/react-dom': ^18.3.0
+  '@types/react': ^19.2.0
+  '@types/react-dom': ^19.2.0
   ethereum-cryptography: 3.2.0
   punycode: npm:punycode.js@^2.3.1
-  react: ^18.3.1
-  react-dom: ^18.3.1
-  # Pin react-native to the version the dev/yarn build was actually shipping.
-  # app/package.json declares 0.77.0 but yarn's `resolutions` had been forcing
-  # the entire workspace to 0.76.9; without this override, pnpm honors the
-  # literal declaration and a second copy of react-native lands in node_modules.
-  react-native: 0.76.9
+  react: ^19.2.0
+  react-dom: ^19.2.0
+  react-native: 0.83.9
   react-native-passkey: ^3.3.3
   react-native-blur-effect: 1.1.3
   react-native-webview: 13.16.0
