@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import {
   ActivityIndicator,
   RefreshControl,
@@ -29,6 +29,7 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot, plexMono } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
+import { usePullToRefresh } from '@/hooks/usePullToRefresh';
 import type { RootStackParamList } from '@/navigation';
 import { useProofHistoryStore } from '@/stores/proofHistoryStore';
 import type { ProofHistory } from '@/stores/proofTypes';
@@ -70,19 +71,18 @@ export const ProofHistoryList: React.FC<ProofHistoryListProps> = ({
     initDatabase,
     hasMore,
   } = useProofHistoryStore();
-  const [refreshing, setRefreshing] = useState(false);
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+
+  const refreshHistory = useCallback(async () => {
+    resetHistory();
+    await loadMoreHistory();
+  }, [resetHistory, loadMoreHistory]);
+  const { refreshing, onRefresh } = usePullToRefresh(refreshHistory);
 
   useEffect(() => {
     initDatabase();
   }, [initDatabase]);
-
-  useEffect(() => {
-    if (!isLoading && refreshing) {
-      setRefreshing(false);
-    }
-  }, [isLoading, refreshing]);
 
   const formatDate = (timestamp: number) => {
     return new Date(timestamp).toLocaleTimeString([], {
@@ -342,12 +342,6 @@ export const ProofHistoryList: React.FC<ProofHistoryListProps> = ({
     },
     [],
   );
-
-  const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    resetHistory();
-    loadMoreHistory();
-  }, [resetHistory, loadMoreHistory]);
 
   const keyExtractor = useCallback((item: ProofHistory) => item.sessionId, []);
 

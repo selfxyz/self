@@ -51,10 +51,21 @@ react {
     // extraPackagerArgs = []
 
     /* Hermes Commands */
-    // The hermes compiler command to run. By default it is 'hermesc'
-    // Dynamic path that works across different platforms (macOS, Linux, Windows)
+    // Resolve hermesc from the workspace-local node_modules.
+    //
+    // Layout post-RN-0.83 upgrade in this Yarn v4 monorepo:
+    //   app/node_modules/hermes-compiler/hermesc/<platform>-bin/hermesc
+    //
+    // Notes:
+    //   - In RN <= 0.82 the binary lived under react-native/sdks/hermesc/...;
+    //     in 0.83+ it ships as the separate `hermes-compiler` package.
+    //   - rootProject.projectDir is app/android, so ../node_modules = app/node_modules
+    //     (NOT ../../node_modules — that resolves to the repo root, where this
+    //     workspace doesn't host react-native).
+    //   - We fail loudly in CI rather than silently falling back to PATH —
+    //     a wrong fallback previously shipped a non-Hermes bundle and broke E2E.
     hermesCommand = {
-        def hermesPath = file("${rootProject.projectDir}/../../node_modules/react-native/sdks/hermesc").absolutePath
+        def hermescRoot = file("${rootProject.projectDir}/../node_modules/hermes-compiler/hermesc").absolutePath
         def osName = System.getProperty('os.name').toLowerCase()
         def platformDir
         def executableName = "hermesc"
@@ -67,17 +78,22 @@ react {
             platformDir = "win64-bin"
             executableName = "hermesc.exe"
         } else {
-            // Fallback to trying common locations
             platformDir = "linux64-bin"
         }
 
-        def dynamicPath = "${hermesPath}/${platformDir}/${executableName}"
+        def dynamicPath = "${hermescRoot}/${platformDir}/${executableName}"
+        def isCi = System.env.CI == "true" || System.env.GITHUB_ACTIONS == "true"
 
-        // Check if the dynamic path exists, otherwise fallback to just 'hermesc'
         if (new File(dynamicPath).exists()) {
+            println "[hermesCommand] Using bundled hermesc: ${dynamicPath}"
             return dynamicPath
+        } else if (isCi) {
+            throw new GradleException(
+                "[hermesCommand] Bundled hermesc not found at ${dynamicPath} (platform=${platformDir}). " +
+                "Refusing to fall back to PATH in CI — ensure `hermes-compiler` is installed under app/node_modules."
+            )
         } else {
-            // Fallback to system PATH
+            println "[hermesCommand] WARN: ${dynamicPath} missing; falling back to PATH 'hermesc' (local dev only)"
             return "hermesc"
         }
     }()
@@ -140,7 +156,7 @@ android {
         applicationId "com.proofofpassportapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 157
+        versionCode 159
         versionName "2.9.23"
         manifestPlaceholders = [appAuthRedirectScheme: 'com.proofofpassportapp']
         externalNativeBuild {

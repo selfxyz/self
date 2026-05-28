@@ -11,7 +11,7 @@ appId: com.proofofpassportapp
 # 3. Disclaimer → Home (proven path; testIDs from the Self codebase).
 - extendedWaitUntil:
     visible:
-      id: "disclaimer-screen-root"
+      id: "disclaimer-dismiss-button"
     timeout: 120000
 - tapOn:
     id: "disclaimer-dismiss-button"

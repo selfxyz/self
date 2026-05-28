@@ -33,24 +33,18 @@ module.exports = {
       },
     ],
 
-    // Core React Native transforms (minimal set needed for tests)
-    ['@babel/plugin-transform-class-properties', { loose: true }],
-    ['@babel/plugin-transform-classes', { loose: true }],
-    ['@babel/plugin-transform-private-methods', { loose: true }],
-    ['@babel/plugin-transform-private-property-in-object', { loose: true }],
+    // TODO(SELF-2803): replace this hand-rolled subset with
+    // @react-native/babel-preset directly once the hermes-parser WASM issue
+    // under Jest has a cleaner workaround.
+    // We intentionally do NOT list class/spread/destructuring/optional-chaining/
+    // nullish-coalescing transforms — modern Node (preset-env target: current)
+    // supports them natively. Forcing them caused "Missing class properties
+    // transform" on class fields and "spread arguments in super() without
+    // compiling classes" errors after the RN 0.77 → 0.83 upgrade.
     '@babel/plugin-syntax-dynamic-import',
     '@babel/plugin-syntax-export-default-from',
     '@babel/plugin-transform-export-namespace-from',
     '@babel/plugin-transform-unicode-regex',
-    ['@babel/plugin-transform-destructuring', { useBuiltIns: true }],
-    '@babel/plugin-transform-spread',
-    [
-      '@babel/plugin-transform-object-rest-spread',
-      { loose: true, useBuiltIns: true },
-    ],
-    ['@babel/plugin-transform-optional-chaining', { loose: true }],
-    ['@babel/plugin-transform-nullish-coalescing-operator', { loose: true }],
-    ['@babel/plugin-transform-logical-assignment-operators', { loose: true }],
     // Flow type stripping to support React Native's Flow-based sources
     ['@babel/plugin-syntax-flow'],
     ['@babel/plugin-transform-flow-strip-types', { allowDeclareFields: true }],

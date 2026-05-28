@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { useCallback } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
@@ -36,6 +36,7 @@ export const useEarnPointsFlow = ({
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { registerReferral } = useRegisterReferral();
   const referrer = useUserStore(state => state.deepLinkReferrer);
+  const handleReferralFlowRef = useRef<() => Promise<void>>(async () => {});
 
   const navigateToPointsProof = useCallback(async () => {
     const selfApp = await pointsSelfApp();
@@ -136,7 +137,7 @@ export const useEarnPointsFlow = ({
     const showReferralErrorModal = (errorMessage: string) => {
       const callbackId = registerModalCallbacks({
         onButtonPress: async () => {
-          await handleReferralFlow();
+          await handleReferralFlowRef.current();
         },
         onModalDismiss: () => {
           // Clear referrer when user dismisses to prevent retry loop
@@ -181,6 +182,10 @@ export const useEarnPointsFlow = ({
       });
     }
   }, [referrer, registerReferral, navigation]);
+
+  useEffect(() => {
+    handleReferralFlowRef.current = handleReferralFlow;
+  }, [handleReferralFlow]);
 
   const onEarnPointsPress = useCallback(
     async (skipReferralFlow = true) => {

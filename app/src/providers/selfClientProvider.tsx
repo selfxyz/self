@@ -29,7 +29,11 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import { logNFCEvent, logProofEvent } from '@/config/sentry';
-import { createKycSession, launchKycVerification } from '@/integrations/kyc';
+import {
+  createKycSession,
+  KYC_PROVIDER,
+  launchKycVerification,
+} from '@/integrations/kyc';
 import type { RootStackParamList } from '@/navigation';
 import { navigationRef } from '@/navigation';
 import {
@@ -346,7 +350,6 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
               break;
             case 'kyc':
               (async () => {
-                const KYC_PROVIDER = 'didit';
                 const sessionRequestedAt = Date.now();
                 let providerOpenedAt = 0;
                 const trackEventClient = { trackEvent };
@@ -362,6 +365,11 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
                     );
                   }
 
+                  // SCAN_STARTED must fire before any KYC branch event so the
+                  // funnel attempt is bootstrapped — trackBranchEvent no-ops
+                  // when currentAttempt is null. See ANA-12 Path C invariant
+                  // (specs/projects/sdk/workstreams/analytics/plans/
+                  // ANA-12-branch-specific-funnel-events.md).
                   trackOnboardingStep(
                     trackEventClient,
                     OnboardingEvents.SCAN_STARTED,

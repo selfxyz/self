@@ -8,15 +8,21 @@ import { isAadhaarDocument, isMRZDocument } from '@selfxyz/common/utils/types';
 
 export type SecurityLevel = 'HI-SECURITY' | 'LOW-SECURITY' | 'STANDARD';
 
+export interface SecurityLevelOptions {
+  /** Mock/dev documents never reach HI-SECURITY regardless of dg2Hash presence. */
+  mock?: boolean;
+}
+
 export function getSecurityBadgeLabel(
   document: PassportData | AadhaarData,
+  options: SecurityLevelOptions = {},
 ): string {
   if (isAadhaarDocument(document)) {
     return 'QR verified';
   }
 
   if (isMRZDocument(document)) {
-    return getSecurityLevel(document) === 'HI-SECURITY'
+    return getSecurityLevel(document, options) === 'HI-SECURITY'
       ? 'NFC verified'
       : 'MRZ verified';
   }
@@ -26,7 +32,7 @@ export function getSecurityBadgeLabel(
 
 /**
  * Determines security badge based on document type and NFC presence.
- * - KYC documents -> STANDARD (always)
+ * - Mock documents -> LOW-SECURITY (always, regardless of populated NFC fields)
  * - Aadhaar -> LOW-SECURITY (always, no NFC)
  * - MRZ documents (passport, ID card) -> HI-SECURITY if NFC, LOW-SECURITY otherwise
  *
@@ -35,14 +41,17 @@ export function getSecurityBadgeLabel(
  */
 export function getSecurityLevel(
   document: PassportData | AadhaarData,
+  options: SecurityLevelOptions = {},
 ): SecurityLevel {
+  if (options.mock) {
+    return 'LOW-SECURITY';
+  }
+
   if (isAadhaarDocument(document)) {
     return 'LOW-SECURITY'; // Aadhaar never has NFC
   }
 
   if (isMRZDocument(document)) {
-    // Check if document has NFC data (dg2Hash presence indicates NFC read)
-    // dg2Hash contains facial image data which requires NFC to extract
     const hasNfc = Boolean(
       document.dg2Hash &&
       Array.isArray(document.dg2Hash) &&
@@ -51,5 +60,5 @@ export function getSecurityLevel(
     return hasNfc ? 'HI-SECURITY' : 'LOW-SECURITY';
   }
 
-  return 'LOW-SECURITY'; // Fallback
+  return 'LOW-SECURITY';
 }

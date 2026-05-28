@@ -11,9 +11,9 @@
 
 ANA-13 stamps `attempt_id` on every Sentry event captured during an active onboarding attempt. Support can already find a user's events in Sentry by `attempt_id:<uuid>` — but only if the user can tell support which `attempt_id` to search for.
 
-Today the `attempt_id` is invisible to the user. When someone files a support ticket with *"I got stuck during scanning"*, support has to guess which Sentry event corresponds to that user, often by timestamp + country, which is noisy and fragile.
+Today the `attempt_id` is invisible to the user. When someone files a support ticket with _"I got stuck during scanning"_, support has to guess which Sentry event corresponds to that user, often by timestamp + country, which is noisy and fragile.
 
-A persistent `support_uuid` (set as Sentry `user.id`) is the right cross-session identity and should be exposed in Settings — that's a separate, larger workstream. This spec is the **in-flow** counterpart: surface the `attempt_id` of the *currently active* onboarding attempt on the screens where a user is most likely to stop and ask for help.
+A persistent `support_uuid` (set as Sentry `user.id`) is the right cross-session identity and should be exposed in Settings — that's a separate, larger workstream. This spec is the **in-flow** counterpart: surface the `attempt_id` of the _currently active_ onboarding attempt on the screens where a user is most likely to stop and ask for help.
 
 ## Decision
 

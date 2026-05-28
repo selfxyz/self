@@ -60,12 +60,34 @@ jest.mock('@selfxyz/mobile-sdk-alpha/components', () => {
   const View = jest.fn(({ children, ...props }) => children || null);
   View.displayName = 'MockView';
 
+  const PerkRail = jest.fn(
+    ({ logos = [], label, variant, onPress, testID, style }) => {
+      const visibleLogos =
+        variant === 'minimal' ? logos.slice(0, 1) : logos.slice(0, 3);
+      return (
+        <mock-perk-rail
+          testID={testID}
+          variant={variant}
+          onPress={onPress}
+          style={style}
+        >
+          {visibleLogos.map((logo, index) => (
+            <mock-perk-rail-logo key={index}>{logo}</mock-perk-rail-logo>
+          ))}
+          <mock-perk-rail-label>{label}</mock-perk-rail-label>
+        </mock-perk-rail>
+      );
+    },
+  );
+  PerkRail.displayName = 'MockPerkRail';
+
   return {
     __esModule: true,
     Button,
     XStack,
     Title,
     View,
+    PerkRail,
     // Provide minimal Text to satisfy potential usages
     Text,
   };
@@ -164,17 +186,12 @@ jest.mock('tamagui', () => {
 
 // Mock Tamagui lucide icons to simple components to avoid theme context
 jest.mock('@tamagui/lucide-icons', () => {
-  // Avoid requiring React to prevent nested require memory issues
-  // Return mock components that can be queried by testID
+  const { jsx } = require('react/jsx-runtime');
+
+  // Return lightweight host elements that React 19 can render safely.
   const makeIcon = name => {
-    // Use a mock element tag that React can render
-    const Icon = props => ({
-      $$typeof: Symbol.for('react.element'),
-      type: `mock-icon-${name}`,
-      props: { testID: `icon-${name}`, ...props },
-      key: null,
-      ref: null,
-    });
+    const Icon = props =>
+      jsx(`mock-icon-${name}`, { testID: `icon-${name}`, ...props });
     Icon.displayName = `MockIcon(${name})`;
     return Icon;
   };
@@ -185,6 +202,7 @@ jest.mock('@tamagui/lucide-icons', () => {
     Clipboard: makeIcon('clipboard'),
     Check: makeIcon('check'),
     Circle: makeIcon('circle'),
+    CircleHelp: makeIcon('circle-help'),
     ChevronDown: makeIcon('chevron-down'),
     ChevronLeft: makeIcon('chevron-left'),
   };
