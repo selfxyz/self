@@ -115,12 +115,12 @@ NAV-07 swept every terminal `navigate('/')` and the 5 named violations; future P
 
 Local handler declarations in `src/screens/**/*.tsx` use one of four canonical names so a reader can tell intent from the wire-up alone. The ESLint rule [`self-handlers/handler-names`](./eslint-rules/handler-names.js) enforces the ban list at lint time.
 
-| Canonical name      | Intent                                                                          | Body shape                                                                                          |
-| ------------------- | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| `handleClose`       | Exit this cluster                                                               | `useClusterClose()` (preferred), or `navigate('/', { replace: true })` / `lifecycle.dismiss(...)`   |
-| `handleBack`        | Walk one step back                                                              | `navigate(-1)` or `navigate(state.backPath ?? -1)`                                                  |
-| `handleRetry`       | Re-attempt the current step in place                                            | `navigate(currentStepPath, { replace: true })`                                                      |
-| `handleContinue`    | Advance to a forward target                                                     | `navigate(nextStepPath)` — a more descriptive name is fine when the target is fixed (e.g. `handleStartProving`, `handleGenerateProof`) |
+| Canonical name   | Intent                               | Body shape                                                                                                                             |
+| ---------------- | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `handleClose`    | Exit this cluster                    | `useClusterClose()` (preferred), or `navigate('/', { replace: true })` / `lifecycle.dismiss(...)`                                      |
+| `handleBack`     | Walk one step back                   | `navigate(-1)` or `navigate(state.backPath ?? -1)`                                                                                     |
+| `handleRetry`    | Re-attempt the current step in place | `navigate(currentStepPath, { replace: true })`                                                                                         |
+| `handleContinue` | Advance to a forward target          | `navigate(nextStepPath)` — a more descriptive name is fine when the target is fixed (e.g. `handleStartProving`, `handleGenerateProof`) |
 
 **Banned local names** (lint error): `onDismiss`, `handleDismiss`, `onCancel`, `handleCancel`, `onEscape`. They overload meaning and hide whether the action closes the cluster, walks back, or skips.
 

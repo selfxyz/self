@@ -4,9 +4,9 @@
 
 import React, { useCallback, useMemo } from 'react';
 import { Alert, View } from 'react-native';
+import type { RouteProp } from '@react-navigation/native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { RouteProp } from '@react-navigation/native';
 
 import {
   type AnalyticsSink,

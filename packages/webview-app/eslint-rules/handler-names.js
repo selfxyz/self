@@ -4,13 +4,7 @@
 
 'use strict';
 
-const BANNED = new Set([
-  'onDismiss',
-  'handleDismiss',
-  'onCancel',
-  'handleCancel',
-  'onEscape',
-]);
+const BANNED = new Set(['onDismiss', 'handleDismiss', 'onCancel', 'handleCancel', 'onEscape']);
 
 const CANONICAL_HINT =
   'Use one of: `handleClose` (cluster-exit; body should call `useClusterClose()`), ' +
