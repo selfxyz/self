@@ -936,7 +936,7 @@ importers:
         specifier: 3.5.3
         version: 3.5.3
       prettier-plugin-solidity:
-        specifier: ^2.1.0
+        specifier: 2.3.1
         version: 2.3.1(prettier@3.5.3)
       solidity-coverage:
         specifier: ^0.8.14
