@@ -47,13 +47,20 @@ describe('usePullToRefresh', () => {
     expect(result.current.refreshing).toBe(false);
   });
 
-  it('clears refreshing even when the action rejects', async () => {
-    const action = jest.fn(() => Promise.reject(new Error('boom')));
+  it('clears refreshing and logs when the action rejects', async () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const error = new Error('boom');
+    const action = jest.fn(() => Promise.reject(error));
     const { result } = renderHook(() => usePullToRefresh(action));
 
     await act(async () => {
       result.current.onRefresh();
     });
     expect(result.current.refreshing).toBe(false);
+    expect(warn).toHaveBeenCalledWith(
+      'usePullToRefresh: refresh action failed',
+      error,
+    );
+    warn.mockRestore();
   });
 });

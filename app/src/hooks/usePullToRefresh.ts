@@ -17,7 +17,9 @@ export function usePullToRefresh(
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     Promise.resolve(refreshAction())
-      .catch(() => {})
+      .catch(error => {
+        console.warn('usePullToRefresh: refresh action failed', error);
+      })
       .finally(() => setRefreshing(false));
   }, [refreshAction]);
 
