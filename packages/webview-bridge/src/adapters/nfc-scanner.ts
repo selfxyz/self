@@ -16,7 +16,12 @@ export function bridgeNFCScannerAdapter(bridge: WebViewBridge): BridgeNFCScanner
     scan(opts: NfcScanParams & { signal?: AbortSignal }): Promise<unknown> {
       const { signal, ...params } = opts;
 
-      const promise = bridge.request('nfc', 'scanPassport', params as unknown as Record<string, unknown>, NFC_TIMEOUT_MS);
+      const promise = bridge.request(
+        'nfc',
+        'scanPassport',
+        params as unknown as Record<string, unknown>,
+        NFC_TIMEOUT_MS,
+      );
 
       if (signal) {
         const onAbort = () => {
