@@ -70,17 +70,11 @@ const MockText = ({
 // Test component that uses the passport hook and extracts context values
 const TestComponent = () => {
   const passportContext = usePassport();
-  const [contextValues, setContextValues] = useState<string[]>([]);
-
-  useEffect(() => {
-    // Extract function names from context to verify they exist
-    const functionNames = Object.keys(passportContext).filter(
-      key =>
-        typeof passportContext[key as keyof typeof passportContext] ===
-        'function',
-    );
-    setContextValues(functionNames);
-  }, [passportContext]);
+  const contextValues = Object.keys(passportContext).filter(
+    key =>
+      typeof passportContext[key as keyof typeof passportContext] ===
+      'function',
+  );
 
   return (
     <>

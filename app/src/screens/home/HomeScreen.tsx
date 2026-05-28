@@ -113,27 +113,29 @@ const HomeScreen: React.FC = () => {
     | undefined;
   const [shouldTriggerReferralTest, setShouldTriggerReferralTest] =
     useState(false);
+  const [referralParamSeen, setReferralParamSeen] = useState(false);
 
-  // Watch for testReferralFlow param and trigger once
-  useEffect(() => {
-    if (routeParams?.testReferralFlow && isFocused) {
-      setShouldTriggerReferralTest(true);
-      // Clear the param
-      navigation.setParams({ testReferralFlow: undefined } as never);
-    }
-  }, [routeParams?.testReferralFlow, isFocused, navigation]);
+  const referralParamActive =
+    Boolean(routeParams?.testReferralFlow) && isFocused;
+
+  // Latch the dev trigger on the rising edge of the one-shot nav param.
+  if (referralParamActive && !referralParamSeen) {
+    setReferralParamSeen(true);
+    setShouldTriggerReferralTest(true);
+  } else if (!referralParamActive && referralParamSeen) {
+    setReferralParamSeen(false);
+  }
 
   useTestReferralFlow(shouldTriggerReferralTest);
 
-  // Reset trigger flag after hook processes it
   useEffect(() => {
-    if (shouldTriggerReferralTest) {
-      const timer = setTimeout(() => {
-        setShouldTriggerReferralTest(false);
-      }, 3500); // Slightly longer than the 3 second timer in the hook
-      return () => clearTimeout(timer);
-    }
-  }, [shouldTriggerReferralTest]);
+    if (!shouldTriggerReferralTest) return;
+    navigation.setParams({ testReferralFlow: undefined } as never);
+    const timer = setTimeout(() => {
+      setShouldTriggerReferralTest(false);
+    }, 3500); // Slightly longer than the 3 second timer in the hook
+    return () => clearTimeout(timer);
+  }, [shouldTriggerReferralTest, navigation]);
 
   const loadDocuments = useCallback(async () => {
     setLoading(true);

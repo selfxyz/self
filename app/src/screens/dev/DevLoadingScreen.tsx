@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type LottieView from 'lottie-react-native';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Adapt, Button, Select, Sheet, Text, XStack, YStack } from 'tamagui';
 import { Check, ChevronDown } from '@tamagui/lucide-icons';
 
@@ -37,71 +37,45 @@ const allProvingStates = [
   'passport_data_not_found',
 ] as const;
 
+const TERMINAL_STATES: ProvingStateType[] = [
+  'completed',
+  'error',
+  'failure',
+  'passport_not_supported',
+  'account_recovery_choice',
+  'passport_data_not_found',
+];
+
+const SAFE_TO_CLOSE_STATES: ProvingStateType[] = [
+  'proving',
+  'post_proving',
+  'completed',
+];
+
 const DevLoadingScreen: React.FC = () => {
   const [currentState, setCurrentState] = useState<ProvingStateType>('idle');
   const [documentType, setDocumentType] =
     useState<provingMachineCircuitType>('dsc');
-  const [animationSource, setAnimationSource] = useState<
-    LottieView['props']['source']
-  >(proveLoadingAnimation);
-  const [loadingText, setLoadingText] = useState<{
-    actionText: string;
-    actionSubText: string;
-    estimatedTime: string;
-    statusBarProgress: number;
-  }>({
-    actionText: '',
-    actionSubText: '',
-    estimatedTime: '',
-    statusBarProgress: 0,
-  });
-  const [canCloseApp, setCanCloseApp] = useState(false);
-  const [shouldLoopAnimation, setShouldLoopAnimation] = useState(true);
-
-  const terminalStates = useMemo<ProvingStateType[]>(
-    () => [
-      'completed',
-      'error',
-      'failure',
-      'passport_not_supported',
-      'account_recovery_choice',
-      'passport_data_not_found',
-    ],
-    [],
+  const loadingText = useMemo(
+    () => getLoadingScreenText(currentState, 'rsa', '65537', documentType),
+    [currentState, documentType],
   );
 
-  const safeToCloseStates = useMemo<ProvingStateType[]>(
-    () => ['proving', 'post_proving', 'completed'],
-    [],
-  );
-
-  useEffect(() => {
-    const { actionText, actionSubText, estimatedTime, statusBarProgress } =
-      getLoadingScreenText(currentState, 'rsa', '65537', documentType);
-    setLoadingText({
-      actionText,
-      actionSubText,
-      estimatedTime,
-      statusBarProgress,
-    });
-
+  const animationSource = useMemo<LottieView['props']['source']>(() => {
     switch (currentState) {
-      case 'completed':
-        break;
       case 'error':
       case 'failure':
       case 'passport_not_supported':
       case 'account_recovery_choice':
       case 'passport_data_not_found':
-        setAnimationSource(failAnimation);
-        break;
+        return failAnimation;
       default:
-        setAnimationSource(proveLoadingAnimation);
-        break;
+        return proveLoadingAnimation;
     }
-    setCanCloseApp(safeToCloseStates.includes(currentState));
-    setShouldLoopAnimation(!terminalStates.includes(currentState));
-  }, [currentState, documentType, safeToCloseStates, terminalStates]);
+  }, [currentState]);
+
+  const canCloseApp = SAFE_TO_CLOSE_STATES.includes(currentState);
+  const shouldLoopAnimation = !TERMINAL_STATES.includes(currentState);
 
   const [open, setOpen] = useState(false);
   const [documentTypeOpen, setDocumentTypeOpen] = useState(false);
