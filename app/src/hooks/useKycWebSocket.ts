@@ -8,7 +8,13 @@ import { KYC_TEE_URL } from '@env';
 
 import { deserializeApplicantInfo } from '@selfxyz/common';
 import type { DocumentType, KycData } from '@selfxyz/common/utils/types';
+import {
+  sanitizeErrorMessage,
+  trackKycVerdict,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
 
+import { KYC_PROVIDER } from '@/integrations/kyc';
 import type { ApplicantInfoSerialized } from '@/integrations/kyc/types';
 import { navigationRef } from '@/navigation';
 import { storeDocumentWithDeduplication } from '@/providers/passportDataProvider';
@@ -45,6 +51,16 @@ export function useKycWebSocket(options: UseKycWebSocketOptions = {}) {
   );
   const getPendingVerification = usePendingKycStore(
     state => state.getPendingVerification,
+  );
+  const selfClient = useSelfClient();
+
+  const verdictDurationSeconds = useCallback(
+    (sessionId: string): number | undefined => {
+      const createdAt = getPendingVerification(sessionId)?.createdAt;
+      if (!createdAt) return undefined;
+      return parseFloat(((Date.now() - createdAt) / 1000).toFixed(2));
+    },
+    [getPendingVerification],
   );
 
   const socketsRef = useRef<Map<string, Socket>>(new Map());
@@ -127,6 +143,14 @@ export function useKycWebSocket(options: UseKycWebSocketOptions = {}) {
             documentId,
           );
 
+          if (!kycData.mock) {
+            trackKycVerdict(selfClient, {
+              provider: KYC_PROVIDER,
+              outcome: 'approved',
+              duration_seconds: verdictDurationSeconds(sessionId),
+            });
+          }
+
           if (navigationRef.isReady()) {
             navigationRef.navigate('KYCVerified', { documentId });
           }
@@ -140,6 +164,12 @@ export function useKycWebSocket(options: UseKycWebSocketOptions = {}) {
             'failed',
             'Failed to store KYC data',
           );
+          trackKycVerdict(selfClient, {
+            provider: KYC_PROVIDER,
+            outcome: 'error',
+            error_code: 'store_failed',
+            duration_seconds: verdictDurationSeconds(sessionId),
+          });
           onError?.('Failed to store KYC data');
         }
 
@@ -151,6 +181,12 @@ export function useKycWebSocket(options: UseKycWebSocketOptions = {}) {
       socket.on('verification_failed', (reason: string) => {
         console.log('[KycWebSocket] Verification failed:', reason);
         updateVerificationStatus(sessionId, 'failed', reason);
+        trackKycVerdict(selfClient, {
+          provider: KYC_PROVIDER,
+          outcome: 'rejected',
+          reason: sanitizeErrorMessage(reason),
+          duration_seconds: verdictDurationSeconds(sessionId),
+        });
         onVerificationFailed?.(reason);
 
         socket.disconnect();
@@ -161,6 +197,13 @@ export function useKycWebSocket(options: UseKycWebSocketOptions = {}) {
       socket.on('error', (errorMessage: string) => {
         console.error('[KycWebSocket] Socket error:', errorMessage);
         updateVerificationStatus(sessionId, 'failed', errorMessage);
+        trackKycVerdict(selfClient, {
+          provider: KYC_PROVIDER,
+          outcome: 'error',
+          error_code: 'tee_error',
+          reason: sanitizeErrorMessage(errorMessage),
+          duration_seconds: verdictDurationSeconds(sessionId),
+        });
         onError?.(errorMessage);
 
         socket.disconnect();
@@ -179,6 +222,8 @@ export function useKycWebSocket(options: UseKycWebSocketOptions = {}) {
       addPendingVerification,
       updateVerificationStatus,
       getPendingVerification,
+      selfClient,
+      verdictDurationSeconds,
       onSuccess,
       onError,
       onVerificationFailed,

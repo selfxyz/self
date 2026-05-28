@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type { KnownEventName } from '../constants/analytics';
-import { OnboardingEvents } from '../constants/analytics';
+import { KycEvents, OnboardingEvents } from '../constants/analytics';
 import type { SelfClient } from '../types/public';
 
 export type OnboardingBranch = 'biometric_passport' | 'biometric_id' | 'kyc' | 'aadhaar' | 'pending';
@@ -201,6 +201,14 @@ export function trackBranchEvent(
   selfClient.trackEvent(event, {
     ...properties,
     ...baseProperties(currentAttempt),
+  });
+}
+
+export function trackKycVerdict(selfClient: Pick<SelfClient, 'trackEvent'>, properties: Record<string, unknown>): void {
+  if (currentAttempt?.isMock) return;
+  selfClient.trackEvent(KycEvents.VERIFICATION_RESOLVED, {
+    ...properties,
+    ...(currentAttempt ? baseProperties(currentAttempt) : {}),
   });
 }
 

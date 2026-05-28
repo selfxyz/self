@@ -147,6 +147,7 @@ export {
   resolveOnboardingBranch,
   setOnboardingBranch,
   trackBranchEvent,
+  trackKycVerdict,
   trackOnboardingRetry,
   trackOnboardingStep,
 } from './analytics/onboardingFunnel';

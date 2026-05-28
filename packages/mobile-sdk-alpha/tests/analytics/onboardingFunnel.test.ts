@@ -10,14 +10,16 @@ import {
   completeOnboardingAttempt,
   failOnboardingAttempt,
   incrementAttemptRetryCount,
+  markCurrentAttemptAsMock,
   recoverOnboardingAttempt,
   resolveOnboardingBranch,
   setOnboardingBranch,
   trackBranchEvent,
+  trackKycVerdict,
   trackOnboardingRetry,
   trackOnboardingStep,
 } from '../../src/analytics/onboardingFunnel';
-import { BiometricEvents, OnboardingEvents } from '../../src/constants/analytics';
+import { BiometricEvents, KycEvents, OnboardingEvents } from '../../src/constants/analytics';
 
 function makeClient() {
   return { trackEvent: vi.fn() };
@@ -418,6 +420,53 @@ describe('failOnboardingAttempt', () => {
   it('is a no-op when no attempt is active', () => {
     const client = makeClient();
     failOnboardingAttempt(client, 'scan_started', 'nfc_timeout');
+    expect(client.trackEvent).not.toHaveBeenCalled();
+  });
+});
+
+describe('trackKycVerdict', () => {
+  it('emits the verdict with the funnel triple when an attempt is active', () => {
+    const client = makeClient();
+    trackOnboardingStep(client, OnboardingEvents.SCAN_STARTED, { branch: 'kyc' });
+    client.trackEvent.mockClear();
+
+    trackKycVerdict(client, { provider: 'didit', outcome: 'approved', duration_seconds: 12.5 });
+
+    expect(client.trackEvent).toHaveBeenCalledTimes(1);
+    const [event, props] = client.trackEvent.mock.calls[0];
+    expect(event).toBe(KycEvents.VERIFICATION_RESOLVED);
+    expect(props.outcome).toBe('approved');
+    expect(props.provider).toBe('didit');
+    expect(props.current_branch).toBe('kyc');
+    expect(props.attempt_id).toBeTruthy();
+  });
+
+  it('still emits when no attempt is active, without the funnel triple', () => {
+    const client = makeClient();
+
+    trackKycVerdict(client, { provider: 'didit', outcome: 'rejected', reason: 'document_expired' });
+
+    expect(client.trackEvent).toHaveBeenCalledTimes(1);
+    const [event, props] = client.trackEvent.mock.calls[0];
+    expect(event).toBe(KycEvents.VERIFICATION_RESOLVED);
+    expect(props.outcome).toBe('rejected');
+    expect(props.attempt_id).toBeUndefined();
+    expect(props.initial_branch).toBeUndefined();
+  });
+
+  it('does not bootstrap an attempt', () => {
+    const client = makeClient();
+    trackKycVerdict(client, { provider: 'didit', outcome: 'approved' });
+    expect(_getCurrentOnboardingAttempt()).toBeNull();
+  });
+
+  it('suppresses emission for mock attempts', () => {
+    const client = makeClient();
+    markCurrentAttemptAsMock(client);
+    client.trackEvent.mockClear();
+
+    trackKycVerdict(client, { provider: 'didit', outcome: 'approved' });
+
     expect(client.trackEvent).not.toHaveBeenCalled();
   });
 });

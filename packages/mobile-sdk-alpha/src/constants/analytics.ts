@@ -84,6 +84,7 @@ export const KycEvents = {
   RETRY_TRIGGERED: 'KYC: Retry Triggered',
   SESSION_CREATED: 'KYC: Session Created',
   SESSION_REQUESTED: 'KYC: Session Requested',
+  VERIFICATION_RESOLVED: 'KYC: Verification Resolved',
 } as const;
 
 export const IDDataEvents = {
