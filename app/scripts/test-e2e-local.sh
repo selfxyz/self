@@ -169,6 +169,12 @@ run_maestro_tests() {
 
 
 shutdown_all_simulators() {
+    if ! command -v xcrun &> /dev/null; then
+        log_error "xcrun not found. iOS E2E tests require Xcode Command Line Tools."
+        echo "Install Xcode and run: xcode-select --install"
+        exit 1
+    fi
+
     log_info "🔌 Shutting down all running iOS simulators..."
     xcrun simctl shutdown all
     log_success "All simulators shut down"

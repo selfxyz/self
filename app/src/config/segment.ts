@@ -12,8 +12,6 @@ import {
   StartupFlushPolicy,
 } from '@segment/analytics-react-native';
 
-import '@ethersproject/shims';
-
 let segmentClient: ReturnType<typeof createClient> | null = null;
 
 class DisableTrackingPlugin extends EventPlugin {

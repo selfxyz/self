@@ -14,7 +14,7 @@ import {
 
 export const useModal = (params: ModalParams) => {
   const [visible, setVisible] = useState(false);
-  const callbackIdRef = useRef<number>();
+  const callbackIdRef = useRef<number | undefined>(undefined);
 
   const handleModalDismiss = useCallback(() => {
     setVisible(false);

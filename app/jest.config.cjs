@@ -25,6 +25,7 @@ module.exports = {
   ],
   testPathIgnorePatterns: [
     '/node_modules/',
+    '/ios/Pods/',
     '/scripts/tests/', // Node.js native test runner tests
     '/babel\\.config\\.test\\.cjs',
   ],

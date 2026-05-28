@@ -117,6 +117,12 @@ pnpm types # Verify type checking
 - For Android: Ensure emulator is running or device is connected before `pnpm android`
 - Metro bundler starts automatically; use `pnpm start` to run it separately
 
+#### Workspace-Root Preflight (do not bypass)
+
+`yarn ios`, `yarn start`, and `yarn start:clean` run `node scripts/preflight-workspace-config.cjs` before Metro. The preflight fails fast if a stray `react-native.config.{js,cjs,mjs}` or `metro.config.{js,cjs,mjs}` exists at the **monorepo root**. Either file at the workspace root hijacks the RN CLI / Metro project-root anchor (the CLI walks up from CWD and stops at the first config it finds), making Metro resolve `./index` against the repo root instead of `app/`. The failure mode is a confusing `Metro resolver failed for module "./index"` that's easy to misdiagnose.
+
+These files are easy to miss locally because broad personal gitignore rules (e.g. `*.config.*`) can hide them from `git status`. Do **not** bypass the preflight by running `react-native start` / `npx expo start` directly — fix the underlying config (delete the stray file at the root). See `app/scripts/preflight-workspace-config.cjs` for the exact patterns checked.
+
 #### iOS Simulator Selection
 
 `pnpm ios` now selects a simulator by UDID, shuts down stale booted simulators, explicitly boots the chosen device, waits for boot completion, then starts the React Native iOS build against that simulator.

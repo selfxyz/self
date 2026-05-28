@@ -30,7 +30,7 @@ export const LogLevelSelector: React.FC<LogLevelSelectorProps> = ({
   onSelect,
 }) => {
   const [open, setOpen] = useState(false);
-  const callbackIdRef = useRef<number>();
+  const callbackIdRef = useRef<number | undefined>(undefined);
 
   const logLevels = ['debug', 'info', 'warn', 'error'] as const;
 

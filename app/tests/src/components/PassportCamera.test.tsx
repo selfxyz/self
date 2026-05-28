@@ -17,15 +17,39 @@ let nativeProps: any;
 jest.mock('react-native', () => ({
   Platform: { OS: 'ios', select: ({ ios }: any) => ios },
   PixelRatio: { getPixelSizeForLayoutSize: () => 0 },
-  requireNativeComponent: () => (props: any) => {
-    nativeProps = props;
-    return null;
+  codegenNativeCommands: jest.fn(() => ({})),
+  codegenNativeComponent: jest.fn(() => () => null),
+  requireNativeComponent: (name: string) => {
+    const MockNativeComponent = jest.fn((props: any) => {
+      nativeProps = props;
+      return null;
+    });
+    MockNativeComponent.displayName = `Mock(${name})`;
+    return MockNativeComponent;
   },
 }));
 
 describe('PassportCamera components', () => {
   beforeEach(() => {
     mockExtract.mockReset();
+    nativeProps = undefined;
+  });
+
+  it('renders the iOS native view and forwards passport reads', () => {
+    const onPassportRead = jest.fn();
+    render(<NativePassportCamera isMounted onPassportRead={onPassportRead} />);
+
+    expect(nativeProps).toEqual(
+      expect.objectContaining({
+        onPassportRead: expect.any(Function),
+        onError: expect.any(Function),
+        style: expect.objectContaining({
+          width: '130%',
+          height: '130%',
+        }),
+      }),
+    );
+    expect(nativeProps).not.toHaveProperty('isMounted');
   });
 
   it('invokes MRZ parser for string data on native', () => {
@@ -67,6 +91,27 @@ describe('PassportCamera components', () => {
         dateOfBirth: '900101',
         documentType: 'P',
         issuingCountry: 'UTO',
+      }),
+    );
+  });
+
+  it('maps native errors to Error objects on native', () => {
+    const onPassportRead = jest.fn();
+    render(<NativePassportCamera isMounted onPassportRead={onPassportRead} />);
+
+    nativeProps.onError({
+      nativeEvent: {
+        error: 'NativeScanError',
+        errorMessage: 'scan failed',
+        stackTrace: 'stack-trace',
+      },
+    });
+
+    expect(onPassportRead).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: 'NativeScanError',
+        message: 'scan failed',
+        stack: 'stack-trace',
       }),
     );
   });

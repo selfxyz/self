@@ -17,6 +17,7 @@
 
 - **[React Native Upgrade Plan (Mobile App)](./topics/RN-UPGRADE-PLAN.md)** — staged migration plan from RN 0.77 to supported versions.
 - **[RN Upgrade Checklist](./topics/RN-UPGRADE-CHECKLIST.md)** — shared owner/status tracker for coordinating the upgrade across developers.
+- **[RN Upgrade Follow-Ups](./topics/RN-UPGRADE-FOLLOWUPS.md)** — deferred hygiene and ownership items surfaced during the RN 0.83 / Expo SDK 55 upgrade.
 
 ## Framework
 

@@ -61,5 +61,8 @@ describe('bundle-analyze-ci.cjs', () => {
     assert(scriptContent.includes('checkBundleSize(bundleSize, platform)'));
     assert(scriptContent.includes('return false'));
     assert(scriptContent.includes('return true'));
+    assert(scriptContent.includes('--entry-file "${entryFile}"'));
+    assert(scriptContent.includes('--bundle-output "${bundleFile}"'));
+    assert(scriptContent.includes('--sourcemap-output "${sourcemapFile}"'));
   });
 });

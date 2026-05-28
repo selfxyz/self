@@ -35,7 +35,7 @@ export const ErrorInjectionSelector = () => {
   );
   const clearAllErrors = useErrorInjectionStore(state => state.clearAllErrors);
   const [open, setOpen] = useState(false);
-  const callbackIdRef = useRef<number>();
+  const callbackIdRef = useRef<number | undefined>(undefined);
 
   const handleModalDismiss = useCallback(() => {
     setOpen(false);

@@ -17,7 +17,7 @@ public class CameraActivityPackage implements ReactPackage {
     @Override
     public List<ViewManager> createViewManagers(ReactApplicationContext reactContext) {
         return List.of(
-                new com.proofofpassportapp.ui.PassportOCRViewManager(reactContext)
+                new com.proofofpassportapp.ui.PassportOCRViewManager()
         );
     }
 

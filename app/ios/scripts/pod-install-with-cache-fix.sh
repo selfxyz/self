@@ -34,7 +34,10 @@ extract_conflicting_pods() {
 
 run_recovery_for_conflicts() {
   local attempt="${1:-1}"
-  mapfile -t conflicting_pods < <(extract_conflicting_pods)
+  conflicting_pods=()
+  while IFS= read -r line; do
+    [ -n "$line" ] && conflicting_pods+=("$line")
+  done < <(extract_conflicting_pods)
 
   if [ ${#conflicting_pods[@]} -eq 0 ]; then
     return 1
