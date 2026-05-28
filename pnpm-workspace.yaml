@@ -39,6 +39,10 @@ allowBuilds:
 # default block on exotic subdeps rejects it. Re-enable once that's removed.
 blockExoticSubdeps: false
 
+patchedDependencies:
+  lottie-react-native@7.2.2: pnpm-patches/lottie-react-native@7.2.2.patch
+  react-native-svg@15.14.0: pnpm-patches/react-native-svg@15.14.0.patch
+
 # Pin jsdom to v25 across the workspace. jsdom v26+ uses cssstyle v5, which
 # turns CSSStyleDeclaration into a strict Proxy that rejects react-dom v18's
 # numeric-index style writes (TypeError: 'set' on proxy: trap returned falsish).

@@ -438,7 +438,7 @@ jobs:
           BUNDLE_TMP=$(mktemp)
           if unzip -p "$APK_PATH" assets/index.android.bundle > "$BUNDLE_TMP" 2>/dev/null && [ -s "$BUNDLE_TMP" ]; then
             BUNDLE_SIZE=$(stat -f%z "$BUNDLE_TMP" 2>/dev/null || stat -c%s "$BUNDLE_TMP" 2>/dev/null || echo "unknown")
-            HERMESC_ROOT="app/node_modules/hermes-compiler/hermesc"
+            HERMESC_ROOT="node_modules/hermes-compiler/hermesc"
             case "$(uname -s)" in
               Darwin*) HERMESC="$HERMESC_ROOT/osx-bin/hermesc" ;;
               MINGW*|MSYS*|CYGWIN*) HERMESC="$HERMESC_ROOT/win64-bin/hermesc.exe" ;;
