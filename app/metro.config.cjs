@@ -78,6 +78,11 @@ const config = {
       new RegExp(
         'packages/mobile-sdk-alpha/node_modules/react-native-webview(/|$)',
       ),
+      new RegExp('packages/rn-sdk/node_modules/react(/|$)'),
+      new RegExp('packages/rn-sdk/node_modules/react-dom(/|$)'),
+      new RegExp('packages/rn-sdk/node_modules/react-native(/|$)'),
+      new RegExp('packages/rn-sdk/node_modules/scheduler(/|$)'),
+      new RegExp('packages/rn-sdk/node_modules/react-native-webview(/|$)'),
       new RegExp('packages/mobile-sdk-demo/node_modules/react(/|$)'),
       new RegExp('packages/mobile-sdk-demo/node_modules/react-dom(/|$)'),
       new RegExp('packages/mobile-sdk-demo/node_modules/react-native(/|$)'),
@@ -107,6 +112,10 @@ const config = {
       assert: require.resolve('assert'),
       events: require.resolve('events'),
       process: require.resolve('process'),
+      react: path.resolve(projectRoot, 'node_modules/react'),
+      'react-dom': path.resolve(projectRoot, 'node_modules/react-dom'),
+      'react-native': path.resolve(projectRoot, 'node_modules/react-native'),
+      scheduler: path.resolve(projectRoot, 'node_modules/scheduler'),
       'react-native-svg': path.resolve(
         projectRoot,
         'node_modules/react-native-svg',

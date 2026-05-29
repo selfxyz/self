@@ -18,7 +18,7 @@ export const KycPendingScreen: React.FC = () => {
   const onCheckBackLater = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('kyc_pending_check_back_later');
-    navigate('/');
+    navigate('/', { replace: true });
   }, [navigate, haptic, analytics]);
 
   const onReceiveLiveUpdates = useCallback(() => {

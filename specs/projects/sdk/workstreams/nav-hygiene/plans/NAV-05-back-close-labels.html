@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>NAV-05 Plan — Back vs Close Terminology Sweep</title>
+<link rel="stylesheet" href="./_shared.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <h1>NAV-05 · Back vs Close Terminology Sweep</h1>
+  <span class="meta-pill status-Ready">Ready</span>
+  <span class="meta-pill prio-Medium">Medium</span>
+  <span class="meta-pill">Updated 2026-05-25</span>
+  <span class="spacer"></span>
+  <div class="links">
+    <a href="../SPEC.html">← Spec</a>
+    <a href="../AUDIT.html">Audit</a>
+  </div>
+</header>
+
+<div class="layout">
+
+<nav class="toc">
+  <h4>On this page</h4>
+  <a href="#why">Why</a>
+  <a href="#decisions">Decisions</a>
+  <a href="#meta">Meta</a>
+  <a href="#findings">Audit Findings</a>
+  <a href="#scope">Scope</a>
+  <a href="#out-of-scope">Out of Scope</a>
+  <a href="#required-files">Required Files</a>
+  <a href="#approach">Approach</a>
+  <a href="#validation">Validation</a>
+  <a href="#open-questions">Open Questions</a>
+  <a href="#hand-off">Hand-off</a>
+  <h4>Workstream</h4>
+  <a href="../SPEC.html">SPEC ↗</a>
+  <a href="../AUDIT.html">AUDIT ↗</a>
+</nav>
+
+<main>
+
+<section id="why" class="tldr">
+  <h2>Why</h2>
+  <p>
+    Per SPEC invariant #3: <strong>back</strong> walks the user backward in the cluster's local history; <strong>close</strong> ends the cluster (home in self-app, <code>setResult+dismiss</code> in embed). Today the code conflates these. <code>onClose</code> sometimes does <code>navigate(-1)</code> (back), sometimes <code>navigate('/')</code> (close). Handler names span 11 patterns — <code>onClose</code>, <code>onDismiss</code>, <code>handleClose</code>, <code>handleDismiss</code>, <code>handleBack</code>, <code>onBack</code>, <code>onEscape</code>, <code>onCancel</code>, … NAV-05 sweeps every screen, aligns handler-name + semantics, and replaces ad-hoc close logic with <code>useClusterClose()</code> from NAV-04.
+  </p>
+</section>
+
+<section id="decisions" class="decisions-block">
+  <h2>Decisions</h2>
+  <p class="decisions-intro">Locked in on 2026-05-25. See <a href="../DECISIONS.md">DECISIONS.md</a>.</p>
+  <ul class="decisions-list">
+    <li class="decision">
+      <div class="d-head"><code>nav-05-q1-handler-names</code> · Decided</div>
+      <p class="d-q">Standardize handler names AND semantics, or only enforce semantics?</p>
+      <p class="d-a"><strong>Standardize both.</strong> Canonical set: <code>handleClose</code>, <code>handleBack</code>, <code>handleRetry</code>, <code>handleContinue</code>. Every screen renames.</p>
+    </li>
+    <li class="decision">
+      <div class="d-head"><code>nav-05-q2-eslint-rule</code> · Decided</div>
+      <p class="d-q">Custom ESLint rule, or rely on review + AGENTS.md?</p>
+      <p class="d-a"><strong>Ship a custom ESLint rule.</strong> Lives at <code>packages/webview-app/eslint-rules/handler-names.js</code>. AGENTS.md still documents the rule for humans.</p>
+    </li>
+  </ul>
+</section>
+
+<section id="meta">
+  <h2>Meta</h2>
+  <div class="meta-grid">
+    <div class="item"><div class="label">Workstream</div><div class="value">nav-hygiene</div></div>
+    <div class="item"><div class="label">Linear</div><div class="value">TBD</div></div>
+    <div class="item"><div class="label">Owner</div><div class="value">TBD</div></div>
+    <div class="item"><div class="label">Branch</div><div class="value"><code>chore/nav-05-back-close-labels</code></div></div>
+    <div class="item"><div class="label">PR</div><div class="value">TBD</div></div>
+    <div class="item"><div class="label">Depends on</div><div class="value">NAV-04</div></div>
+  </div>
+</section>
+
+<section id="findings">
+  <h2>Audit Findings</h2>
+  <h3>Inconsistency examples</h3>
+  <table class="std">
+    <thead><tr><th>File:line</th><th>Handler name</th><th>Wired to Euclid prop</th><th>Actual behavior</th><th>Issue</th></tr></thead>
+    <tbody>
+      <tr><td><code>IDDataScreen.tsx:47</code></td><td><code>onClose</code></td><td><code>onClose</code></td><td><code>navigate(-1)</code></td><td>Named "close," does back</td></tr>
+      <tr><td><code>SimpleDialogueScreen.tsx:18</code></td><td><code>onClose</code></td><td><code>onClose</code></td><td><code>navigate(-1)</code></td><td>Same</td></tr>
+      <tr><td><code>RecoverySuccessScreen.tsx:28</code></td><td><code>onClose</code></td><td><code>onClose</code></td><td><code>navigate(returnTo ?? '/')</code></td><td>Cluster-exit, named "close" — OK</td></tr>
+      <tr><td><code>ProvingScreen.tsx:44</code></td><td><code>onCancel</code></td><td><code>onClose</code></td><td><code>lifecycle.dismiss(...)</code></td><td>Two different vocab on same wire</td></tr>
+      <tr><td><code>KycFailureScreen.tsx:23</code></td><td><code>handleDismiss</code></td><td><code>onDismiss</code></td><td><code>navigate('/', ...)</code></td><td>Hides cluster-exit behind "dismiss"</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Naming convention to enforce</h3>
+  <table class="std">
+    <thead><tr><th>Intent</th><th>Local handler name</th><th>Implementation</th></tr></thead>
+    <tbody>
+      <tr><td>Cluster-exit (close the flow, mode-aware)</td><td><code>handleClose</code></td><td><code>useClusterClose()</code> from NAV-04</td></tr>
+      <tr><td>Walk back one step in local history</td><td><code>handleBack</code></td><td><code>navigate(-1)</code> (or <code>navigate(state.backPath)</code> when explicit)</td></tr>
+      <tr><td>Retry the current attempt (in place)</td><td><code>handleRetry</code></td><td>screen-specific re-attempt</td></tr>
+      <tr><td>Continue to next step</td><td><code>handleContinue</code></td><td><code>navigate(nextPath)</code></td></tr>
+    </tbody>
+  </table>
+  <p style="font-size:12px;color:var(--muted)"><strong>Banned names:</strong> <code>onDismiss</code>, <code>onCancel</code>, <code>onEscape</code>, <code>handleDismiss</code>, <code>handleCancel</code> (as local handler names). Euclid prop names are unchanged — we control only what we name our callbacks.</p>
+</section>
+
+<section id="scope">
+  <h2>Scope</h2>
+  <ul class="scope">
+    <li>Sweep every screen in <code>packages/webview-app/src/screens/</code> (~50 files).</li>
+    <li>For each handler that walks back, rename to <code>handleBack</code>; implement via <code>navigate(-1)</code> or explicit <code>state.backPath</code>.</li>
+    <li>For each handler that exits the cluster, rename to <code>handleClose</code>; implement via <code>useClusterClose()</code>.</li>
+    <li>For each handler that retries, rename to <code>handleRetry</code>.</li>
+    <li>For each handler that advances, rename to <code>handleContinue</code> (when target is variable) or a descriptive name (when target is fixed, e.g. <code>handleStartProving</code>).</li>
+    <li>Add to <code>packages/webview-app/AGENTS.md</code> a "Handler naming conventions" section enumerating the table above.</li>
+    <li>Add a custom ESLint rule at <code>packages/webview-app/eslint-rules/handler-names.js</code> that flags banned local-handler names (<code>onDismiss</code>, <code>handleDismiss</code>, <code>onCancel</code>, <code>handleCancel</code>, <code>onEscape</code>) in <code>src/screens/**/*.tsx</code>. Auto-fixer maps to the canonical name where the intent is unambiguous; otherwise the rule emits a hint and leaves the rename to the developer.</li>
+  </ul>
+</section>
+
+<section id="out-of-scope">
+  <h2>Out of Scope</h2>
+  <ul class="scope">
+    <li><strong>No Euclid changes.</strong> Euclid component prop names (<code>onClose</code>, <code>onDismiss</code>, <code>onTryAgain</code>) are not ours to rename.</li>
+    <li><strong>No new shared header component.</strong> AUDIT confirms one doesn't exist; building one is a separate scope (Euclid territory).</li>
+    <li><strong>No URL-label changes</strong> ("back" or "close" in the URL — none exist today; we operate on handler names + UI strings).</li>
+    <li><strong>No bridge changes.</strong></li>
+  </ul>
+</section>
+
+<section id="required-files">
+  <h2>Required Files</h2>
+  <ul class="scope">
+    <li>~50 screen files under <code>packages/webview-app/src/screens/</code> (handler renames, body changes)</li>
+    <li><code>packages/webview-app/AGENTS.md</code> (new naming-convention section)</li>
+    <li><code>.eslintrc.cjs</code> (register the custom rule)</li>
+    <li><code>packages/webview-app/eslint-rules/handler-names.js</code> (new — custom ESLint rule per decision <code>q2</code>)</li>
+    <li><code>packages/webview-app/eslint-rules/handler-names.test.js</code> (new — rule unit tests via <code>RuleTester</code>)</li>
+  </ul>
+</section>
+
+<section id="approach">
+  <h2>Approach</h2>
+  <h3>Step 1 — Generate the per-screen audit table</h3>
+  <p>Use the research already in <a href="../AUDIT.html">AUDIT.html</a>. Produce a table with one row per screen × handler: current name, new name, new implementation.</p>
+
+  <h3>Step 2 — Mechanical renames</h3>
+  <p>For each screen, rename the local handler. Update the body so the implementation matches the intent. Example:</p>
+  <pre><code>// Before
+const onClose = useCallback(() =&gt; { navigate(-1); }, [navigate]);
+// inside JSX: &lt;EuclidScreen onClose={onClose} /&gt;
+
+// After (the handler does "back," so rename + Euclid prop wiring is just `onClose={handleBack}`)
+const handleBack = useCallback(() =&gt; { navigate(-1); }, [navigate]);
+// &lt;EuclidScreen onClose={handleBack} /&gt;</code></pre>
+  <p>Euclid prop stays <code>onClose</code>; the wire makes the intent explicit because the local handler name says "back."</p>
+
+  <h3>Step 3 — Cluster-exit handlers route through NAV-04</h3>
+  <pre><code>// Before
+const handleDismiss = useCallback(() =&gt; { navigate('/', { state: { skipOnboardingRedirect: true } }); }, [navigate]);
+
+// After
+const handleClose = useClusterClose();
+// &lt;EuclidScreen onDismiss={handleClose} /&gt;</code></pre>
+  <p>If <code>useClusterClose</code>'s default close target loses the <code>skipOnboardingRedirect</code> state, NAV-09 (state-passing) will define how to pass it through; for NAV-05, this is documented as a known limitation.</p>
+
+  <h3>Step 4 — Documentation</h3>
+  <p>Add to <code>packages/webview-app/AGENTS.md</code>:</p>
+  <blockquote style="border-left:3px solid var(--accent); padding-left:12px; color:var(--muted); font-size:13px;">
+    <strong>Handler naming:</strong> <code>handleClose</code> = cluster-exit via <code>useClusterClose()</code>; <code>handleBack</code> = <code>navigate(-1)</code> or <code>navigate(state.backPath)</code>; <code>handleRetry</code> = re-attempt; <code>handleContinue</code> = advance. Do not use <code>onDismiss</code>, <code>onCancel</code>, or <code>handleDismiss</code> as local handler names — those words only exist on Euclid props.
+  </blockquote>
+</section>
+
+<section id="validation">
+  <h2>Validation</h2>
+  <ul class="scope">
+    <li><code>grep -rn "const onDismiss\|const handleDismiss\|const onCancel\|const handleCancel" packages/webview-app/src/screens</code> — zero matches.</li>
+    <li><code>grep -rn "const onClose" packages/webview-app/src/screens</code> — only when followed by a <code>useClusterClose()</code> call (and even then prefer <code>handleClose</code>).</li>
+    <li><code>yarn types &amp;&amp; yarn build</code> — clean.</li>
+    <li>Manual: every cluster terminal screen, close behavior is correct in both modes.</li>
+    <li>Manual: every back-button takes the user one logical step backward (no surprise jumps to home).</li>
+  </ul>
+</section>
+
+<section id="open-questions">
+  <h2>Open Questions</h2>
+  <p style="color:var(--muted);font-size:13px;margin-top:0">Answers persist to <code>localStorage</code>. Aggregate view in <a href="../SPEC.html#open-questions">SPEC.html</a>.</p>
+  <div id="oq-container"></div>
+</section>
+
+<section id="hand-off">
+  <h2>Hand-off</h2>
+  <ul class="scope">
+    <li>Blocks on <span class="nav-link">NAV-04</span> (needs <code>useClusterClose</code> to migrate to).</li>
+    <li>Coordinates with <span class="nav-link">NAV-09</span> (state slot rename) — if <code>state.backPath</code> / <code>state.nextPath</code> get renamed, NAV-05's <code>handleBack</code> / <code>handleContinue</code> bodies update with NAV-09.</li>
+  </ul>
+</section>
+
+</main>
+</div>
+
+<script src="./_open-questions.js"></script>
+<script>
+  window.NavHygieneOQ.renderQuestionsForPlan('NAV-05', document.getElementById('oq-container'));
+
+  const sections = document.querySelectorAll('section[id]');
+  const tocLinks = document.querySelectorAll('nav.toc a[href^="#"]');
+  const obs = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (entry.isIntersecting) {
+        tocLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === `#${entry.target.id}`));
+      }
+    }
+  }, { rootMargin: '-50% 0px -45% 0px' });
+  sections.forEach(s => obs.observe(s));
+</script>
+
+</body>
+</html>

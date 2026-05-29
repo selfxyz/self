@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SPEC — Operating Modes (self-app vs embed)</title>
+<style>
+  :root {
+    --bg: #fafbfc;
+    --surface: #ffffff;
+    --surface-alt: #f6f8fa;
+    --border: #d1d9e0;
+    --border-soft: #e1e4e8;
+    --text: #1f2328;
+    --muted: #656d76;
+    --accent: #0969da;
+    --accent-soft: #ddf4ff;
+    --high: #cf222e;
+    --high-soft: #ffebe9;
+    --med: #9a6700;
+    --med-soft: #fff8c5;
+    --done: #1a7f37;
+    --done-soft: #dafbe1;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; color: var(--text); background: var(--bg); }
+  code, pre, kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.9em; }
+  code { background: var(--surface-alt); padding: 1px 5px; border-radius: 4px; border: 1px solid var(--border-soft); }
+  pre { background: var(--surface-alt); padding: 12px 14px; border-radius: 6px; border: 1px solid var(--border-soft); overflow: auto; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  header.topbar { position: sticky; top: 0; z-index: 100; background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  header h1 { margin: 0; font-size: 16px; font-weight: 600; }
+  .pill { font-size: 11px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface-alt); }
+  .pill.done { color: var(--done); background: var(--done-soft); border-color: var(--done); }
+  .spacer { flex: 1; }
+  .layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 32px; max-width: 1100px; margin: 0 auto; padding: 24px; }
+  nav.toc { position: sticky; top: 64px; align-self: start; font-size: 13px; }
+  nav.toc h4 { margin: 0 0 6px 0; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  nav.toc a { display: block; padding: 4px 6px; border-radius: 4px; color: var(--text); }
+  nav.toc a:hover { background: var(--surface-alt); text-decoration: none; }
+  main { min-width: 0; }
+  main section { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 18px 22px; margin-bottom: 16px; }
+  main h2 { margin: 0 0 10px 0; font-size: 16px; }
+  main h3 { margin: 16px 0 6px 0; font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  main p { margin: 6px 0 10px 0; }
+  main ul, main ol { margin: 6px 0 10px 18px; padding: 0; }
+  main li { margin: 3px 0; }
+  table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 13px; }
+  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--border-soft); vertical-align: top; }
+  th { background: var(--surface-alt); font-weight: 600; }
+  .status { font-size: 11px; padding: 2px 8px; border-radius: 999px; display: inline-block; white-space: nowrap; border: 1px solid var(--border); background: var(--surface-alt); color: var(--muted); }
+  .status.done { color: var(--done); background: var(--done-soft); border-color: var(--done); }
+  .status.pending { color: var(--muted); }
+  td.check { text-align: center; color: var(--done); font-weight: 700; }
+  td.dash { text-align: center; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <h1>SPEC — Operating Modes (self-app vs embed)</h1>
+  <span class="pill done">WIA-16 done</span>
+  <span class="pill">2026-05-26</span>
+  <span class="spacer"></span>
+  <div>
+    <a href="./SPEC.html">↑ WebView-in-App</a>
+  </div>
+</header>
+
+<div class="layout">
+
+<nav class="toc">
+  <h4>On this page</h4>
+  <a href="#scope">Scope</a>
+  <a href="#decisions">Decisions</a>
+  <a href="#architecture">Architecture</a>
+  <a href="#surfaces">Mode-exclusive surfaces</a>
+  <a href="#invariants">Invariants</a>
+  <a href="#backlog">Backlog</a>
+  <a href="#host-implications">RN host implications</a>
+  <a href="#coord">Cross-workstream</a>
+  <a href="#validation">Validation</a>
+</nav>
+
+<main>
+
+<section id="scope">
+  <h2>Scope</h2>
+  <p>The same <code>webview-app</code> bundle ships two operating modes:</p>
+  <ul>
+    <li><strong>Embed mode</strong> — host invokes the WebView for a single verification. The user
+      registers (if not already), discloses, the host receives a terminal result, the WebView exits.
+      No home, no settings, no persistent UI. This is what 3rd-party RN apps (and the eventual
+      Kotlin/Swift SDK consumers) embed.</li>
+    <li><strong>Self-app mode</strong> — the WebView is the persistent UI of the Self app RN app.
+      Home screen, proof history, settings (cloud backup, recovery, notifications), multiple entry
+      points (deep links, QR scans, dev shortcuts). Long-lived; survives across attempts.</li>
+  </ul>
+  <p>
+    Both modes load the same JS bundle, use the same <code>SelfClient</code>, same proving machine, and
+    the same bridge adapters. <strong>The distinction is initial-routing + termination semantics, not a
+    fork.</strong>
+  </p>
+  <p>
+    This spec defines the contract that lets the host signal which mode the WebView should boot in. It
+    covers <code>WIA-16</code> (mode contract in the bridge) and is consumed by <code>webview/</code>
+    for <code>WV-MD-*</code> implementation work in webview-app.
+  </p>
+
+  <h3>In scope</h3>
+  <ul>
+    <li>The bridge-level signal that selects mode at boot.</li>
+    <li>Embed-mode termination semantics (when does the WebView call <code>lifecycle.setResult</code>
+      / <code>lifecycle.dismiss</code>).</li>
+    <li>Self-app-mode persistence semantics (when does the WebView stay resident vs unmount).</li>
+    <li>Mode-exclusive surfaces (what each mode renders / does not render).</li>
+    <li>Shared surfaces (registration, proving, KYC capture) and how they branch terminally based on
+      mode.</li>
+  </ul>
+
+  <h3>Out of scope</h3>
+  <ul>
+    <li>Forking the bundle. There is one <code>@selfxyz/webview-app</code> bundle.</li>
+    <li>Forking the npm package. There is one <code>@selfxyz/rn-sdk</code>.</li>
+    <li>A third mode (e.g., "embedded preview", "demo"). Two modes only.</li>
+    <li>Per-screen feature flags. Mode is a single decision at boot.</li>
+    <li>Mode switching mid-session. The mode is fixed for the WebView's lifetime; relaunching the
+      WebView is the only way to change mode.</li>
+  </ul>
+</section>
+
+<section id="decisions">
+  <h2>Decisions</h2>
+  <ol>
+    <li><strong>Mode is signaled via <code>lifecycle.getConfig()</code> response, not via URL or query
+      param.</strong> The WebView calls <code>bridge.lifecycle.getConfig()</code> during its initial
+      mount. The host returns <code>{ mode: 'self-app' | 'embed', verificationRequest?, ... }</code>. The
+      WebView routes accordingly.</li>
+    <li><strong>Default mode is self-app.</strong> If the host returns no mode field, or the WebView is
+      opened in a browser without a bridge, it boots into self-app mode at <code>/</code>. This keeps the
+      Self app path unchanged and makes browser-based testing predictable.</li>
+    <li><strong>Embed mode requires an inbound <code>verificationRequest</code>.</strong> A host that
+      declares <code>mode: 'embed'</code> must include a <code>verificationRequest</code> payload with
+      at minimum <code>userId</code>, <code>scope</code>, and <code>disclosures</code>. An embed-mode
+      boot with a missing or malformed request fails closed — the WebView renders a recoverable error
+      rather than falling back to self-app mode.</li>
+    <li><strong>Embed mode terminates exactly once.</strong> Successful disclose calls
+      <code>lifecycle.setResult({ success: true, ... })</code> then <code>lifecycle.dismiss()</code>.
+      Failure calls <code>setResult({ success: false, errorCode, errorMessage })</code> then
+      <code>dismiss()</code>. Cancellation calls <code>dismiss()</code> only. The WebView does not
+      navigate to a home screen after a terminal event in embed mode — there is no home screen.</li>
+    <li><strong>Self-app stays resident.</strong> A completed flow in self-app mode (proof generated,
+      settings change saved, etc.) returns the user to <code>/</code> (or whichever stack root makes
+      sense for that flow). Self-app mode never calls <code>lifecycle.dismiss()</code> on its own — only
+      the host unmounts it.</li>
+    <li><strong>Shared screens infer mode from a context, not from props.</strong> The registration
+      flow, proving machine, KYC capture, and recovery flow exist in both modes. They consume an
+      <code>OperatingMode</code> context to decide terminal behavior (embed: emit result + dismiss;
+      self-app: navigate home). Per-screen mode props are forbidden.</li>
+    <li><strong><code>/tunnel/*</code> URL prefix stays internal.</strong> The host does not navigate
+      the WebView to <code>/tunnel/tour/1</code>; the WebView itself chooses where to start based on the
+      mode value from <code>getConfig</code>. The URL prefix is an implementation detail of how tunnel
+      screens are organized, not a host contract.</li>
+  </ol>
+</section>
+
+<section id="architecture">
+  <h2>Architecture</h2>
+  <pre>WebView mount
+   → bridge.lifecycle.getConfig
+        → { mode, verificationRequest, ... }
+   → mode?
+        ├─ embed
+        │    → verificationRequest present + valid?
+        │         ├─ no  → Recoverable error
+        │         │         → setResult(failure) + dismiss
+        │         └─ yes → /tunnel/tour/1
+        ├─ self-app (or missing) → / HomeScreen
+
+shared registration → shared proving
+   → OperatingMode context
+        ├─ embed    → setResult + dismiss
+        └─ self-app → navigate /</pre>
+  <p>
+    The shared engine (registration, proving, KYC capture) is mode-blind in its internals. Terminal
+    navigation reads the <code>OperatingMode</code> context once and routes accordingly.
+  </p>
+</section>
+
+<section id="surfaces">
+  <h2>Mode-exclusive surfaces</h2>
+  <table>
+    <thead><tr><th>Surface</th><th>Self-app</th><th>Embed</th></tr></thead>
+    <tbody>
+      <tr><td><code>/</code> HomeScreen (document catalog)</td><td class="check">✓</td><td class="dash">—</td></tr>
+      <tr><td><code>/settings/*</code> (cloud backup, etc.)</td><td class="check">✓</td><td class="dash">—</td></tr>
+      <tr><td><code>/proving/history</code></td><td class="check">✓</td><td class="dash">—</td></tr>
+      <tr><td><code>/manage-documents</code></td><td class="check">✓</td><td class="dash">—</td></tr>
+      <tr><td>Persistent profile / points / referrals</td><td class="check">✓</td><td class="dash">—</td></tr>
+      <tr><td><code>/tunnel/tour/:step</code> welcome</td><td class="dash">—</td><td class="check">✓</td></tr>
+      <tr><td><code>/tunnel/proof/result</code> exit</td><td class="dash">—</td><td class="check">✓</td></tr>
+      <tr><td><code>/tunnel/recovery-required</code> gate</td><td class="dash">—</td><td class="check">✓</td></tr>
+      <tr><td>Registration flow (<code>/onboarding/*</code>)</td><td class="check">✓</td><td class="check">✓</td></tr>
+      <tr><td>Proving flow</td><td class="check">✓</td><td class="check">✓</td></tr>
+      <tr><td>KYC capture (provider modal)</td><td class="check">✓</td><td class="check">✓</td></tr>
+      <tr><td>Recovery flow</td><td class="check">✓</td><td class="check">✓</td></tr>
+    </tbody>
+  </table>
+  <p>
+    Shared rows reuse the same components. The terminal behavior differs via <code>OperatingMode</code>
+    context; the screens themselves do not branch.
+  </p>
+</section>
+
+<section id="invariants">
+  <h2>Invariants</h2>
+  <ol>
+    <li>One bundle, one package. No mode-specific build, no mode-specific npm artifact. A consumer
+      chooses mode by what they pass to <code>lifecycle.getConfig</code>, not by which package they
+      install.</li>
+    <li>Mode is decided once at WebView boot and never changes for the lifetime of that WebView
+      instance.</li>
+    <li>Embed mode always emits exactly one terminal envelope to the host (<code>setResult</code> for
+      success/failure, <code>dismiss</code> for cancel). An embed flow that completes without emitting a
+      terminal envelope is a bug.</li>
+    <li>Self-app mode never emits a terminal envelope on its own. Only the host (RN app) can unmount the
+      WebView.</li>
+    <li>Self-app-only routes are unreachable from embed mode. If a tunnel flow tries to navigate to
+      <code>/settings/...</code>, the router returns a 404-equivalent and the flow continues at its
+      current step.</li>
+    <li>Embed-only routes are unreachable from self-app mode by the same rule, with the exception that
+      self-app flows MAY internally use the shared registration/proving screens (which are not
+      embed-only).</li>
+    <li>Browser-host fallback (WebView opened in a browser tab with no native transport) always renders
+      self-app mode. Embed mode is a native-host feature; reviewer/QA browser sessions never see it.</li>
+  </ol>
+</section>
+
+<section id="backlog">
+  <h2>Backlog (this topic)</h2>
+  <table>
+    <thead><tr><th>ID</th><th>Title</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>WIA-16</td><td><code>mode</code> + <code>verificationRequest</code> in <code>lifecycle.getConfig</code> response</td><td><span class="status done">Done</span></td></tr>
+    </tbody>
+  </table>
+  <p>
+    Downstream items live in the <code>webview/</code> workstream (<code>WV-MD-*</code>), which owns
+    the actual webview-app implementation:
+  </p>
+  <ul>
+    <li><code>WV-MD-01</code> Mode-aware initial routing in webview-app entry.</li>
+    <li><code>WV-MD-02</code> <code>OperatingMode</code> React context + provider, consumed by shared
+      registration/proving/recovery flows for terminal navigation.</li>
+    <li><code>WV-MD-03</code> Embed-mode guard: validate <code>verificationRequest</code> shape, fail
+      closed on missing/malformed input.</li>
+    <li><code>WV-MD-04</code> Router 404s for cross-mode navigation attempts.</li>
+    <li><code>WV-MD-05</code> Self-app-mode parity work that was already in the <code>webview/</code>
+      backlog (settings, deep-link router, etc.) explicitly tagged as self-app-mode.</li>
+  </ul>
+  <p>
+    The <code>webview/</code> workstream's <code>SPEC.md</code> should add the <code>WV-MD-*</code>
+    block to its backlog and link back to this spec.
+  </p>
+</section>
+
+<section id="host-implications">
+  <h2>RN host implications</h2>
+  <p>
+    The Self app RN app, when mounting <code>&lt;SelfVerification /&gt;</code> (or the eventual
+    <code>&lt;SelfAppShell /&gt;</code>), passes <code>mode: 'self-app'</code> in its
+    <code>lifecycle.getConfig</code> handler response. 3rd-party RN apps embedding
+    <code>@selfxyz/rn-sdk</code> pass <code>mode: 'embed'</code> along with their
+    <code>verificationRequest</code>. The handler in <code>packages/rn-sdk/</code>'s
+    <code>LifecycleHandler</code> accepts an optional <code>mode</code> field in its config and defaults
+    to self-app when consuming hosts do not specify.
+  </p>
+  <p>
+    This means a small change to <code>LifecycleHandler</code> in <code>rn-sdk</code>: the
+    <code>getConfig</code> return object gains a <code>mode</code> field, plumbed from a new prop on
+    <code>&lt;SelfVerification /&gt;</code> (or a separate <code>&lt;SelfAppShell /&gt;</code>
+    component, TBD in <code>WIA-16</code>'s plan).
+  </p>
+</section>
+
+<section id="coord">
+  <h2>Cross-workstream coordination</h2>
+  <ul>
+    <li><strong><code>webview/</code></strong> owns <code>WV-MD-01..05</code> implementation in
+      webview-app. Update its <code>SPEC.md</code> to list those items and cross-link here.</li>
+    <li><strong><code>rn-sdk</code> package</strong> owns the <code>LifecycleHandler</code> change to
+      surface <code>mode</code> in <code>getConfig</code>. Belongs to <code>WIA-16</code>'s plan.</li>
+    <li><strong><code>webview-bridge</code></strong> stays unchanged — the bridge protocol already
+      supports arbitrary fields in <code>lifecycle.getConfig</code> responses.</li>
+  </ul>
+</section>
+
+<section id="validation">
+  <h2>Validation</h2>
+  <ul>
+    <li>A self-app-mode boot lands on <code>/</code> and shows HomeScreen with no
+      <code>verificationRequest</code> consumed.</li>
+    <li>A embed-mode boot with a valid <code>verificationRequest</code> lands on
+      <code>/tunnel/tour/1</code> and completes by emitting <code>setResult</code> + <code>dismiss</code>.</li>
+    <li>A embed-mode boot with a missing <code>verificationRequest</code> shows a recoverable error
+      and emits <code>setResult({ success: false, errorCode: 'INVALID_REQUEST' })</code>.</li>
+    <li>An embed flow that tries to navigate to <code>/settings/security</code> stays on its current
+      screen; the router does not honor the navigation.</li>
+    <li>A WebView opened in a desktop browser with no native bridge boots into self-app mode regardless
+      of any query params.</li>
+  </ul>
+</section>
+
+</main>
+</div>
+
+</body>
+</html>

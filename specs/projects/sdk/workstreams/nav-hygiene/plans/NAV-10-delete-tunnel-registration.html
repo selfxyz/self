@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>NAV-10 Plan — Delete /tunnel/registration/* Dead Sub-Flow</title>
+<link rel="stylesheet" href="./_shared.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <h1>NAV-10 · Delete /tunnel/registration/* Dead Sub-Flow</h1>
+  <span class="meta-pill status-Ready">Ready</span>
+  <span class="meta-pill prio-Low">Low</span>
+  <span class="meta-pill">Updated 2026-05-25</span>
+  <span class="spacer"></span>
+  <div class="links">
+    <a href="../SPEC.html">← Spec</a>
+    <a href="../AUDIT.html">Audit</a>
+  </div>
+</header>
+
+<div class="layout">
+
+<nav class="toc">
+  <h4>On this page</h4>
+  <a href="#why">Why</a>
+  <a href="#decisions">Decisions</a>
+  <a href="#meta">Meta</a>
+  <a href="#scope">Scope</a>
+  <a href="#out-of-scope">Out of Scope</a>
+  <a href="#required-files">Required Files</a>
+  <a href="#approach">Approach</a>
+  <a href="#validation">Validation</a>
+  <a href="#open-questions">Open Questions</a>
+  <a href="#hand-off">Hand-off</a>
+  <h4>Workstream</h4>
+  <a href="../SPEC.html">SPEC ↗</a>
+  <a href="../AUDIT.html">AUDIT ↗</a>
+</nav>
+
+<main>
+
+<section id="why" class="tldr">
+  <h2>Why</h2>
+  <p>
+    Two routes — <code>/tunnel/registration/country</code> and <code>/tunnel/registration/id-type</code> — render screens that bypass KYC entirely. Reachable only via DevRouteMenu. No production caller. NAV-01 triage classified both as <span class="disp-pill delete">delete</span>. NAV-10 removes them.
+  </p>
+</section>
+
+<section id="decisions" class="decisions-block">
+  <h2>Decisions</h2>
+  <p class="decisions-intro">Locked in on 2026-05-25. See <a href="../DECISIONS.md">DECISIONS.md</a>.</p>
+  <ul class="decisions-list">
+    <li class="decision">
+      <div class="d-head"><code>nav-10-q1-delete-vs-move</code> · Decided</div>
+      <p class="d-q">Delete entirely, or move to <code>/dev/embed-registration/*</code>?</p>
+      <p class="d-a"><strong>Delete entirely.</strong> Remove App.tsx routes, screen files, DevRouteMenu entries. ~150 LOC removed. Anyone who needs a bypass-KYC dev tool later can re-add it explicitly.</p>
+    </li>
+  </ul>
+</section>
+
+<section id="meta">
+  <h2>Meta</h2>
+  <div class="meta-grid">
+    <div class="item"><div class="label">Workstream</div><div class="value">nav-hygiene</div></div>
+    <div class="item"><div class="label">Linear</div><div class="value">TBD</div></div>
+    <div class="item"><div class="label">Owner</div><div class="value">TBD</div></div>
+    <div class="item"><div class="label">Branch</div><div class="value"><code>chore/nav-10-delete-tunnel-registration</code></div></div>
+    <div class="item"><div class="label">PR</div><div class="value">TBD</div></div>
+    <div class="item"><div class="label">Depends on</div><div class="value">NAV-01</div></div>
+  </div>
+</section>
+
+<section id="scope">
+  <h2>Scope</h2>
+  <ul class="scope">
+    <li>Remove both routes from <code>App.tsx</code> (lines 159, 160).</li>
+    <li>Delete the screen files <code>TunnelCountryPickerScreen.tsx</code> and <code>TunnelIDTypeScreen.tsx</code>.</li>
+    <li>Remove the two corresponding DevRouteMenu entries.</li>
+    <li>Strip the imports from <code>App.tsx</code>.</li>
+  </ul>
+  <p>Confirm no test references the deleted routes before removing.</p>
+</section>
+
+<section id="out-of-scope">
+  <h2>Out of Scope</h2>
+  <ul class="scope">
+    <li><strong>Other <code>/tunnel/*</code> routes</strong> — owned by NAV-08.</li>
+    <li><strong>The <code>TunnelCountryPickerScreen</code> / <code>TunnelIDTypeScreen</code> source files</strong> — deleted, not refactored.</li>
+    <li><strong>Any consolidation with self-app country/id-type pickers.</strong> If a real embed-mode picker is ever needed, that's a new feature, not a NAV-10 follow-up.</li>
+  </ul>
+</section>
+
+<section id="required-files">
+  <h2>Required Files</h2>
+  <ul class="scope">
+    <li><code>packages/webview-app/src/App.tsx</code> (lines ~159–160)</li>
+    <li><code>packages/webview-app/src/screens/tunnel/TunnelCountryPickerScreen.tsx</code> (delete)</li>
+    <li><code>packages/webview-app/src/screens/tunnel/TunnelIDTypeScreen.tsx</code> (delete)</li>
+    <li><code>packages/webview-app/src/components/DevRouteMenu.tsx</code> (2 entries)</li>
+  </ul>
+</section>
+
+<section id="approach">
+  <h2>Approach</h2>
+  <h3>Step 1 — Confirm no production caller</h3>
+  <p>Run <code>grep -rn "/tunnel/registration" packages/ app/</code>. Confirm hits only in: <code>App.tsx</code> (the registrations), <code>DevRouteMenu.tsx</code> (the entries), the two screen files themselves. No <code>navigate()</code> calls.</p>
+
+  <h3>Step 2 — Delete</h3>
+  <p>Remove route registrations, screen files, and DevRouteMenu entries. Mechanical.</p>
+
+  <h3>Step 3 — Strip imports</h3>
+  <p>Remove the two imports from <code>App.tsx</code> (TunnelCountryPickerScreen, TunnelIDTypeScreen).</p>
+</section>
+
+<section id="validation">
+  <h2>Validation</h2>
+  <ul class="scope">
+    <li><code>grep -rn "TunnelCountryPickerScreen\|TunnelIDTypeScreen" packages/webview-app/src</code> — zero hits.</li>
+    <li><code>grep -rn "/tunnel/registration" packages/webview-app/src</code> — zero hits.</li>
+    <li><code>yarn types &amp;&amp; yarn build</code> — clean.</li>
+    <li>Manual: DevRouteMenu no longer shows the two entries.</li>
+    <li>Manual: navigating directly to the old path returns the catch-all redirect to <code>/</code>.</li>
+  </ul>
+</section>
+
+<section id="open-questions">
+  <h2>Open Questions</h2>
+  <p style="color:var(--muted);font-size:13px;margin-top:0">Answers persist to <code>localStorage</code>. Aggregate view in <a href="../SPEC.html#open-questions">SPEC.html</a>.</p>
+  <div id="oq-container"></div>
+</section>
+
+<section id="hand-off">
+  <h2>Hand-off</h2>
+  <ul class="scope">
+    <li>None. NAV-10 is a leaf cleanup.</li>
+  </ul>
+</section>
+
+</main>
+</div>
+
+<script src="./_open-questions.js"></script>
+<script>
+  window.NavHygieneOQ.renderQuestionsForPlan('NAV-10', document.getElementById('oq-container'));
+
+  const sections = document.querySelectorAll('section[id]');
+  const tocLinks = document.querySelectorAll('nav.toc a[href^="#"]');
+  const obs = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (entry.isIntersecting) {
+        tocLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === `#${entry.target.id}`));
+      }
+    }
+  }, { rootMargin: '-50% 0px -45% 0px' });
+  sections.forEach(s => obs.observe(s));
+</script>
+
+</body>
+</html>

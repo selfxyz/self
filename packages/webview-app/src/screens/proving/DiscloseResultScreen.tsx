@@ -6,7 +6,7 @@ import type React from 'react';
 import { useCallback, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { colors, StatusState, WarningOctagonIcon } from '@selfxyz/euclid';
+import { ProofFailureScreen, ProofSuccessScreen, SelfLogo } from '@selfxyz/euclid';
 import type { BridgeError, VerificationResult } from '@selfxyz/webview-bridge';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
@@ -24,7 +24,7 @@ export const DiscloseResultScreen: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { analytics, haptic, lifecycle } = useSelfClient();
-  const { request, verificationId } = useVerificationRequest();
+  const { request, verificationId, appName, displayAppEndpoint, timestamp } = useVerificationRequest();
 
   const { success = true, error, resultSent = false } = (location.state as DiscloseResultLocationState | null) ?? {};
   const normalizedError = normalizeError(error);
@@ -35,17 +35,13 @@ export const DiscloseResultScreen: React.FC = () => {
             success: true,
             userId: request.userId,
             verificationId,
-            claims: {
-              resultType: 'proofRequested',
-            },
+            claims: { resultType: 'proofRequested' },
           }
         : {
             success: false,
             userId: request.userId,
             verificationId,
-            claims: {
-              resultType: 'proofRequested',
-            },
+            claims: { resultType: 'proofRequested' },
             error: normalizedError ?? {
               code: 'proof_generation_failed',
               message: 'The proof request could not be completed.',
@@ -54,58 +50,73 @@ export const DiscloseResultScreen: React.FC = () => {
     [normalizedError, request.userId, success, verificationId],
   );
 
-  const onContinue = useCallback(async () => {
+  const deliverResult = useCallback(async () => {
+    if (resultSent) return true;
+    try {
+      await lifecycle.setResult(result);
+      return true;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to deliver result';
+      analytics.trackEvent('verification_result_callback_failed', { error: message });
+      return false;
+    }
+  }, [analytics, lifecycle, result, resultSent]);
+
+  const handleContinue = useCallback(async () => {
     haptic.trigger('selection');
-    let hasDeliveredResult = resultSent;
-
-    if (!resultSent && result) {
-      try {
-        await lifecycle.setResult(result);
-        hasDeliveredResult = true;
-      } catch (err) {
-        const message = err instanceof Error ? err.message : 'Failed to deliver result';
-        analytics.trackEvent('verification_result_callback_failed', {
-          error: message,
-        });
-      }
+    const delivered = await deliverResult();
+    if (delivered) {
+      await lifecycle.dismiss();
     }
+    navigate('/', { replace: true });
+  }, [deliverResult, haptic, lifecycle, navigate]);
 
-    if (success) {
-      if (hasDeliveredResult) {
-        await lifecycle.dismiss();
-      }
-      navigate('/', { replace: true });
-      return;
-    }
+  const handleRetry = useCallback(() => {
+    haptic.trigger('selection');
+    navigate({ pathname: '/disclose/request', search: location.search }, { replace: true });
+  }, [haptic, location.search, navigate]);
 
-    navigate('/proving', { replace: true });
-  }, [analytics, haptic, lifecycle, navigate, result, resultSent, success]);
+  const onViewDetails = useCallback(() => {
+    haptic.trigger('selection');
+    navigate({ pathname: '/receipts/current', search: location.search });
+  }, [haptic, location.search, navigate]);
+
+  // userId is the wallet address when userIdType=hex (real Playground sends
+  // either a hex address or a uuid; only display when it's clearly an address).
+  const walletAddress = request.userId?.startsWith('0x') ? request.userId : undefined;
+
+  if (success) {
+    return (
+      <ProofSuccessScreen
+        {...WEB_SAFE_AREA}
+        appIcon={<SelfLogo size={40} />}
+        appName={appName}
+        appEndpoint={displayAppEndpoint}
+        documentType="passport"
+        timestamp={timestamp}
+        walletAddress={walletAddress}
+        successTitle="Proof Generated"
+        successDescription="Your identity was shared successfully for this request."
+        onViewDetails={onViewDetails}
+        onContinue={handleContinue}
+      />
+    );
+  }
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flex: 1,
-        minHeight: 0,
-        paddingTop: WEB_SAFE_AREA.insets.top,
-        paddingBottom: WEB_SAFE_AREA.insets.bottom,
-      }}
-    >
-      <StatusState
-        variant={success ? 'success' : 'fail'}
-        title={success ? 'Proof Generated' : 'Proof Generation Failed'}
-        description={
-          success
-            ? 'Your identity was shared successfully for this request.'
-            : (normalizedError?.message ?? 'The proof request could not be completed. Please try again.')
-        }
-        animationSource={success ? '/animations/proof-success.json' : undefined}
-        animationSize={240}
-        loopAnimation={false}
-        buttonText={success ? 'Done' : 'Try Again'}
-        onButtonPress={onContinue}
-        icon={success ? undefined : <WarningOctagonIcon size={64} color={colors.red500} />}
-      />
-    </div>
+    <ProofFailureScreen
+      {...WEB_SAFE_AREA}
+      appIcon={<SelfLogo size={40} />}
+      appName={appName}
+      appEndpoint={displayAppEndpoint}
+      documentType="passport"
+      timestamp={timestamp}
+      walletAddress={walletAddress}
+      failureTitle="Proof Generation Failed"
+      failureDescription={normalizedError?.message ?? 'The proof request could not be completed. Please try again.'}
+      onClose={handleContinue}
+      onRetry={handleRetry}
+      onViewDetails={onViewDetails}
+    />
   );
 };

@@ -29,7 +29,7 @@ export const VerificationResultScreen: React.FC = () => {
     resultSent?: boolean;
   }) || {};
 
-  const onContinue = useCallback(async () => {
+  const handleContinue = useCallback(async () => {
     haptic.trigger('selection');
     if (!resultSent && result) {
       try {
@@ -43,7 +43,7 @@ export const VerificationResultScreen: React.FC = () => {
     } else if (!resultSent) {
       lifecycle.dismiss();
     }
-    navigate('/');
+    navigate('/', { replace: true });
   }, [analytics, haptic, lifecycle, navigate, result, resultSent]);
 
   return (
@@ -68,7 +68,7 @@ export const VerificationResultScreen: React.FC = () => {
         animationSize={240}
         loopAnimation={false}
         buttonText="Continue"
-        onButtonPress={onContinue}
+        onButtonPress={handleContinue}
         icon={success ? undefined : <WarningOctagonIcon size={64} color={colors.red500} />}
       />
     </div>

@@ -260,20 +260,133 @@ function loadNfc(): NfcDeps | undefined {
   }
 }
 
+export interface PassportReaderModule {
+  scan(options: PassportScanOptions): Promise<unknown>;
+}
+
+export interface PassportScanOptions {
+  documentNumber: string;
+  dateOfBirth: string;
+  dateOfExpiry: string;
+  canNumber?: string;
+  useCan?: boolean;
+  skipPACE?: boolean;
+  skipCA?: boolean;
+  extendedMode?: boolean;
+  usePacePolling?: boolean;
+  sessionId?: string;
+  quality?: number;
+  skipReselect?: boolean;
+}
+
+function loadPassportReader(): PassportReaderModule | undefined {
+  try {
+    const { NativeModules, Platform } =
+      require('react-native') as typeof import('react-native');
+    if (Platform.OS === 'android') {
+      const reader = NativeModules.RNPassportReader as
+        | { scan?: (options: PassportScanOptions) => Promise<unknown> }
+        | undefined;
+      if (reader && typeof reader.scan === 'function') {
+        return { scan: options => reader.scan!(options) };
+      }
+      return undefined;
+    }
+    if (Platform.OS === 'ios') {
+      const reader = NativeModules.PassportReader as
+        | {
+            scanPassport?: (
+              passportNumber: string,
+              dateOfBirth: string,
+              dateOfExpiry: string,
+              canNumber: string,
+              useCan: boolean,
+              skipPACE: boolean,
+              skipCA: boolean,
+              extendedMode: boolean,
+              usePacePolling: boolean,
+              sessionId: string,
+            ) => Promise<unknown>;
+          }
+        | undefined;
+      if (reader && typeof reader.scanPassport === 'function') {
+        return {
+          scan: ({
+            documentNumber,
+            dateOfBirth,
+            dateOfExpiry,
+            canNumber = '',
+            useCan = false,
+            skipPACE = false,
+            skipCA = false,
+            extendedMode = false,
+            usePacePolling = false,
+            sessionId = '',
+          }) =>
+            reader.scanPassport!(
+              documentNumber,
+              dateOfBirth,
+              dateOfExpiry,
+              canNumber,
+              useCan,
+              skipPACE,
+              skipCA,
+              extendedMode,
+              usePacePolling,
+              sessionId,
+            ),
+        };
+      }
+    }
+  } catch {
+    // react-native unavailable (unit-test environment) — fall through.
+  }
+  return undefined;
+}
+
+function isPassportScanParams(
+  params: Record<string, unknown>,
+): params is Record<string, unknown> & {
+  passportNumber: string;
+  dateOfBirth: string;
+  dateOfExpiry: string;
+} {
+  return (
+    typeof params.passportNumber === 'string' &&
+    typeof params.dateOfBirth === 'string' &&
+    typeof params.dateOfExpiry === 'string'
+  );
+}
+
 export class NfcHandler implements BridgeHandler {
   readonly domain: BridgeDomain = 'nfc';
   private readonly router: MessageRouter;
   private readonly nfc: NfcDeps | undefined;
+  private readonly passportReader: PassportReaderModule | undefined;
   private readonly apduTimeoutMs: number;
   private scanning = false;
 
-  constructor(router: MessageRouter, nfc?: NfcDeps, options?: NfcHandlerOptions) {
+  constructor(
+    router: MessageRouter,
+    nfc?: NfcDeps,
+    options?: NfcHandlerOptions & { passportReader?: PassportReaderModule },
+  ) {
     this.router = router;
     this.nfc = nfc ?? loadNfc();
+    this.passportReader = options?.passportReader ?? loadPassportReader();
     this.apduTimeoutMs = resolveApduTimeoutMs(options?.apduTimeoutMs);
   }
 
   async handle(method: string, params: Record<string, unknown>): Promise<unknown> {
+    if (method === 'scanPassport') {
+      if (!isPassportScanParams(params)) {
+        throw new BridgeHandlerError(
+          'INVALID_PARAMS',
+          'scanPassport requires passportNumber, dateOfBirth, and dateOfExpiry',
+        );
+      }
+      return this.scanPassport(params);
+    }
     if (!this.nfc) {
       throw new BridgeHandlerError('NOT_AVAILABLE', 'react-native-nfc-manager is not installed');
     }
@@ -287,6 +400,73 @@ export class NfcHandler implements BridgeHandler {
         return this.cancelScan();
       default:
         throw new BridgeHandlerError('METHOD_NOT_FOUND', `Unknown nfc method: ${method}`);
+    }
+  }
+
+  private async scanPassport(
+    params: Record<string, unknown> & {
+      passportNumber: string;
+      dateOfBirth: string;
+      dateOfExpiry: string;
+    },
+  ): Promise<unknown> {
+    if (!this.passportReader) {
+      throw new BridgeHandlerError(
+        'NOT_AVAILABLE',
+        'Native passport reader module is not installed',
+      );
+    }
+    if (this.scanning) {
+      throw new BridgeHandlerError('ALREADY_SCANNING', 'An NFC scan is already in progress');
+    }
+
+    this.scanning = true;
+    this.pushProgress('initializing', 0);
+    try {
+      this.pushProgress('waiting_for_tag', 10);
+      const result = await this.passportReader.scan({
+        documentNumber: params.passportNumber,
+        dateOfBirth: params.dateOfBirth,
+        dateOfExpiry: params.dateOfExpiry,
+        canNumber:
+          typeof params.canNumber === 'string' ? params.canNumber : '',
+        useCan: typeof params.useCan === 'boolean' ? params.useCan : false,
+        skipPACE:
+          typeof params.skipPACE === 'boolean' ? params.skipPACE : false,
+        skipCA: typeof params.skipCA === 'boolean' ? params.skipCA : false,
+        extendedMode:
+          typeof params.extendedMode === 'boolean' ? params.extendedMode : false,
+        usePacePolling:
+          typeof params.usePacePolling === 'boolean'
+            ? params.usePacePolling
+            : false,
+        sessionId:
+          typeof params.sessionId === 'string' ? params.sessionId : '',
+        quality:
+          typeof params.quality === 'number' ? (params.quality as number) : 1,
+        skipReselect:
+          typeof params.skipReselect === 'boolean'
+            ? params.skipReselect
+            : false,
+      });
+      this.pushProgress('complete', 100);
+      return result;
+    } catch (err) {
+      this.pushProgress('error', 0);
+      if (err instanceof BridgeHandlerError) {
+        throw err;
+      }
+      const code =
+        typeof err === 'object' && err !== null && 'code' in err
+          ? String((err as { code?: unknown }).code ?? 'NFC_SCAN_FAILED')
+          : 'NFC_SCAN_FAILED';
+      const message =
+        typeof err === 'object' && err !== null && 'message' in err
+          ? String((err as { message?: unknown }).message ?? 'NFC scan failed')
+          : 'NFC scan failed';
+      throw new BridgeHandlerError(code, message);
+    } finally {
+      this.scanning = false;
     }
   }
 

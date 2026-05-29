@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>WebView-in-App — Workstream Spec</title>
+<style>
+  :root {
+    --bg: #fafbfc;
+    --surface: #ffffff;
+    --surface-alt: #f6f8fa;
+    --border: #d1d9e0;
+    --border-soft: #e1e4e8;
+    --text: #1f2328;
+    --muted: #656d76;
+    --accent: #0969da;
+    --accent-soft: #ddf4ff;
+    --high: #cf222e;
+    --high-soft: #ffebe9;
+    --med: #9a6700;
+    --med-soft: #fff8c5;
+    --done: #1a7f37;
+    --done-soft: #dafbe1;
+    --deferred: #8a6b1c;
+    --deferred-soft: #fff1c8;
+    --draft: #6e7781;
+    --draft-soft: #eaeef2;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; color: var(--text); background: var(--bg); }
+  code, pre, kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.9em; }
+  code { background: var(--surface-alt); padding: 1px 5px; border-radius: 4px; border: 1px solid var(--border-soft); }
+  pre { background: var(--surface-alt); padding: 12px 14px; border-radius: 6px; border: 1px solid var(--border-soft); overflow: auto; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  header.topbar { position: sticky; top: 0; z-index: 100; background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  header h1 { margin: 0; font-size: 16px; font-weight: 600; }
+  .pill { font-size: 11px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface-alt); }
+  .pill.active   { color: var(--accent);   background: var(--accent-soft);   border-color: var(--accent); }
+  .pill.done     { color: var(--done);     background: var(--done-soft);     border-color: var(--done); }
+  .pill.draft    { color: var(--med);      background: var(--med-soft);      border-color: var(--med); }
+  .pill.blocked  { color: var(--high);     background: var(--high-soft);     border-color: var(--high); }
+  .pill.deferred { color: var(--deferred); background: var(--deferred-soft); border-color: var(--deferred); }
+  .spacer { flex: 1; }
+
+  .layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 32px; max-width: 1240px; margin: 0 auto; padding: 24px; }
+  nav.toc { position: sticky; top: 64px; align-self: start; max-height: calc(100vh - 80px); overflow-y: auto; font-size: 13px; }
+  nav.toc h4 { margin: 0 0 6px 0; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  nav.toc a { display: block; padding: 4px 6px; border-radius: 4px; color: var(--text); }
+  nav.toc a:hover { background: var(--surface-alt); text-decoration: none; }
+
+  main { min-width: 0; }
+  main section { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 18px 22px; margin-bottom: 16px; }
+  main h2 { margin: 0 0 10px 0; font-size: 16px; }
+  main h3 { margin: 16px 0 6px 0; font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  main p { margin: 6px 0 10px 0; }
+  main ul, main ol { margin: 6px 0 10px 18px; padding: 0; }
+  main li { margin: 3px 0; }
+
+  table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 13px; }
+  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--border-soft); vertical-align: top; }
+  th { background: var(--surface-alt); font-weight: 600; }
+
+  .status { font-size: 11px; padding: 2px 8px; border-radius: 999px; display: inline-block; white-space: nowrap; border: 1px solid var(--border); background: var(--surface-alt); color: var(--muted); }
+  .status.done     { color: var(--done);     background: var(--done-soft);     border-color: var(--done); }
+  .status.active   { color: var(--accent);   background: var(--accent-soft);   border-color: var(--accent); }
+  .status.progress { color: var(--accent);   background: var(--accent-soft);   border-color: var(--accent); }
+  .status.pending  { color: var(--muted);    background: var(--surface-alt);   border-color: var(--border); }
+  .status.deferred { color: var(--deferred); background: var(--deferred-soft); border-color: var(--deferred); }
+  .status.blocked  { color: var(--high);     background: var(--high-soft);     border-color: var(--high); }
+  .status.superseded { color: var(--med);    background: var(--med-soft);      border-color: var(--med); }
+
+  .callout { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 8px 12px; border-radius: 0 6px 6px 0; margin: 10px 0; }
+  .callout.warn { border-left-color: var(--high); background: var(--high-soft); }
+  .callout.note { border-left-color: var(--med); background: var(--med-soft); }
+
+  .legend { font-size: 12px; color: var(--muted); margin-top: 6px; }
+  .legend .status { margin-right: 6px; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <h1>WebView-in-App — Workstream Spec</h1>
+  <span class="pill active">Active</span>
+  <span class="pill">2026-05-26</span>
+  <span class="spacer"></span>
+  <div>
+    <a href="../../OVERVIEW.md">↑ SDK Overview</a>
+    &nbsp;·&nbsp;
+    <a href="./SPEC-BRIDGE-HOST.html">Bridge host</a>
+    &nbsp;·&nbsp;
+    <a href="./SPEC-NATIVE-ADAPTERS.html">Native adapters</a>
+    &nbsp;·&nbsp;
+    <a href="./SPEC-HOSTED-LOADING.html">Hosted loading</a>
+    &nbsp;·&nbsp;
+    <a href="./SPEC-MODES.html">Modes</a>
+    &nbsp;·&nbsp;
+    <a href="./SPEC-OBSERVABILITY.html">Observability</a>
+  </div>
+</header>
+
+<div class="layout">
+
+<nav class="toc">
+  <h4>On this page</h4>
+  <a href="#bet">The Bet</a>
+  <a href="#why">Why</a>
+  <a href="#north-star">North Star</a>
+  <a href="#branch-model">Branch model</a>
+  <a href="#code-home">Code home</a>
+  <a href="#architecture">Architecture (Path A)</a>
+  <a href="#tracks">Tracks</a>
+  <a href="#backlog">Backlog</a>
+  <a href="#nav-hygiene">Nav-hygiene sub-track</a>
+  <a href="#deps">Cross-workstream deps</a>
+  <a href="#oos">Out of scope</a>
+  <a href="#invariants">Invariants</a>
+  <a href="#validation">Validation</a>
+  <a href="#cancelled">Cancelled</a>
+</nav>
+
+<main>
+
+<section id="bet">
+  <h2>The Bet</h2>
+  <p>
+    The React Native Self app (<code>app/</code>) replaces its native screens with a single WebView that
+    loads the deployed <code>webview-app</code>. The <strong>RN app becomes the native shell.</strong> Custom
+    Kotlin/Swift shells (<code>native-shells-lite/</code>) remain active but serve external SDK consumers
+    (KMP, partner wallets), not Self app itself.
+  </p>
+</section>
+
+<section id="why">
+  <h2>Why</h2>
+  <ul>
+    <li>The <code>webview-app</code> is the active product surface and is already ~80% of a full Self-app UI;
+      shipping it inside Self app collapses two parallel UI tracks into one and starts dogfooding the
+      SDK in production.</li>
+    <li>The RN app already owns the hardware: NFC, MRZ, QR, keychain, biometrics. Re-implementing those in
+      a Kotlin/Swift shell duplicates production-tested modules.</li>
+    <li>The cost is bounded: the RN app does not speak the bridge protocol today, but the adapter delta
+      is a single-workstream sized piece of work.</li>
+  </ul>
+</section>
+
+<section id="north-star">
+  <h2>North Star</h2>
+  <ul>
+    <li><strong>Goal:</strong> Self app renders the verification flow from a hosted <code>webview-app</code>
+      URL, with the existing RN process providing the hardware, secure storage, and lifecycle handlers via
+      the bridge protocol.</li>
+    <li><strong>Success metric:</strong> A user installs the next Self app release, completes registration
+      and disclose end-to-end without any RN screen being rendered (Splash + error boundary only), and the
+      keychain entries written by the WebView open the same Self-app session on next launch.</li>
+    <li><strong>Constraint:</strong> The bridge JSON contract is the only coupling between the RN host and
+      the WebView. No imports across the boundary, no platform extensions, no side channels.</li>
+  </ul>
+</section>
+
+<section id="branch-model">
+  <h2>Branch model</h2>
+  <ul>
+    <li>All workstream PRs land on <code>feat/webview-in-app</code>, a long-lived feature branch off <code>dev</code>.</li>
+    <li>Each spec under this folder produces one PR into <code>feat/webview-in-app</code>.</li>
+    <li>The branch merges to <code>dev</code> in a single cutover PR when internal testing is green. At
+      cutover, the legacy RN screens are deleted in the same PR — no parallel paths, no RemoteConfig flag,
+      no dual-write shims.</li>
+    <li>Speed &gt; ceremony on this initiative. Correctness still rules security-critical paths (keychain,
+      signing keys, attestation persistence).</li>
+  </ul>
+</section>
+
+<section id="code-home">
+  <h2>Code home</h2>
+  <p>
+    The bridge host implementation lives in <strong><code>packages/rn-sdk/</code></strong> (revived from
+    paused). <code>app/</code> consumes it as a workspace dependency.
+  </p>
+  <ul>
+    <li><code>packages/rn-sdk/</code> — the WebView shell component (TS), a thin <code>SelfBridgeModule</code>
+      native module that registers KMP bridge handlers into the RN runtime, and TS adapters for the handful
+      of domains that need an RN-only path (e.g. <code>analytics</code>, <code>navigation</code>,
+      <code>lifecycle</code> reply shapes).</li>
+    <li><code>app/</code> — splash, error boundary, deep-link receiver, workspace dep on
+      <code>@selfxyz/rn-sdk</code>. Imports and mounts the shell at the root of the navigation graph.</li>
+    <li>Future 3rd-party RN apps install <code>@selfxyz/rn-sdk</code> from npm and consume the same shell +
+      handlers. Self app is consumer #1, not the only consumer.</li>
+  </ul>
+</section>
+
+<section id="architecture">
+  <h2>Architecture — Path A (<code>rn-sdk</code> wraps <code>kmp-sdk</code>)</h2>
+  <p>
+    The React Native SDK does <strong>not</strong> reimplement the bridge layer. Instead it consumes
+    <code>packages/kmp-sdk/</code> (Android AAR + iOS XCFramework) and registers KMP's bridge handlers and
+    the consumer's platform providers into the <code>SdkProviderRegistry</code>. This collapses three
+    parallel bridge implementations (Kotlin native-shell, RN-side TS handlers, KMP shared) into one source
+    of truth in KMP commonMain / per-platform providers.
+  </p>
+  <ul>
+    <li><strong>KMP owns:</strong> <code>MessageRouter</code>, <code>SecureStorageBridgeHandler</code>,
+      <code>CryptoBridgeHandler</code>, <code>LifecycleBridgeHandler</code>, and (as MOD-01→06 lands)
+      <code>NfcBridgeHandler</code>, <code>CameraMrzBridgeHandler</code>, <code>BiometricBridgeHandler</code>,
+      <code>DocumentsBridgeHandler</code>. Each handler delegates to a <code>*Provider</code> interface in
+      <code>commonMain</code>.</li>
+    <li><strong><code>rn-sdk</code> owns:</strong> the WebView shell, <code>SelfBridgeModule</code> (Kotlin)
+      which instantiates a <code>MessageRouter</code>, registers KMP handlers, and bridges inbound JSON /
+      outbound JS-injection to React Native's message bus, and a Swift counterpart for iOS that does the
+      same against the XCFramework via <code>IosProviderRegistry</code>.</li>
+    <li><strong>Self app (and any RN consumer) supplies platform providers</strong> that wrap existing
+      RN-native modules: <code>react-native-keychain</code> → <code>SecureStorageProvider</code>,
+      AndroidKeyStore / iOS Security Framework → <code>CryptoProvider</code>,
+      <code>react-native-passport-reader</code> → <code>NfcProvider</code>, <code>MRZScannerModule</code> →
+      <code>CameraMrzProvider</code>, etc. Providers are registered into the KMP
+      <code>SdkProviderRegistry</code> before the WebView mounts.</li>
+  </ul>
+  <p class="callout">
+    This direction is the outcome of the <a href="./plans/PATH-A-rn-wraps-kmp.html">Path A spike</a> — the
+    Android <code>secureStorage</code> prototype landed in <strong>PR #2108</strong> with hardware smoke
+    PASS. The remaining domains roll out under <a href="./plans/WIA-17-path-a-migration.html">WIA-17</a>;
+    full topology + open architectural decisions live in the
+    <a href="./plans/WIA-17-architecture-options.html">WIA-17 architecture deep-dive</a>. Bridge envelope,
+    error vocabulary, and per-domain handler behavior come straight from <code>kmp-sdk</code>, so the
+    WebView cannot tell which shell (native-Kotlin, KMP, or RN) it is running inside.
+  </p>
+</section>
+
+<section id="tracks">
+  <h2>Tracks</h2>
+  <table>
+    <thead><tr><th>Track</th><th>Spec</th><th>Owner-shaped for</th></tr></thead>
+    <tbody>
+      <tr><td>Bridge host</td><td><a href="./SPEC-BRIDGE-HOST.html">SPEC-BRIDGE-HOST</a></td><td>RN/TS engineer (no native needed)</td></tr>
+      <tr><td>Native adapters</td><td><a href="./SPEC-NATIVE-ADAPTERS.html">SPEC-NATIVE-ADAPTERS</a></td><td>iOS + Android native engineers</td></tr>
+      <tr><td>Hosted loading</td><td><a href="./SPEC-HOSTED-LOADING.html">SPEC-HOSTED-LOADING</a></td><td>Release / build engineer</td></tr>
+      <tr><td>Observability</td><td><a href="./SPEC-OBSERVABILITY.html">SPEC-OBSERVABILITY</a></td><td>Analytics / product-observability</td></tr>
+      <tr><td>Operating modes</td><td><a href="./SPEC-MODES.html">SPEC-MODES</a></td><td>SDK / WebView UI (cross-cuts <code>webview/</code>)</td></tr>
+      <tr><td>Nav hygiene</td><td><a href="../nav-hygiene/SPEC.html">../nav-hygiene/SPEC</a> (sub-workstream)</td><td>WebView UI engineer</td></tr>
+    </tbody>
+  </table>
+  <p>
+    These run in parallel after <code>WIA-01</code>. Bridge host blocks native adapters (adapters need the
+    message router to exist before they can be registered). Hosted loading is independent of native adapters;
+    observability depends on bridge host (the <code>analytics.trackEvent</code> routing is settled there).
+    Modes depends on bridge host (the <code>lifecycle.getConfig</code> response shape is settled there) and
+    cross-cuts into the <code>webview/</code> workstream for the actual webview-app routing implementation.
+    <strong>Nav hygiene</strong> is the routing/naming cleanup that lands alongside the WIA work — see the
+    <a href="#nav-hygiene">Nav-Hygiene Sub-Track</a> section below.
+  </p>
+</section>
+
+<section id="backlog">
+  <h2>Backlog</h2>
+  <table>
+    <thead><tr><th>ID</th><th>Title</th><th>Track</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>WIA-00</td><td>Revive <code>packages/rn-sdk/</code> from paused; workspace dep in <code>app/</code></td><td>Umbrella</td><td><span class="status done">Done</span></td></tr>
+      <tr><td>WIA-01</td><td>Establish <code>feat/webview-in-app</code> branch + umbrella</td><td>Umbrella</td><td><span class="status done">Done</span></td></tr>
+      <tr><td>WIA-02</td><td>RN WebView host shell + message router (in <code>rn-sdk</code>)</td><td>Bridge host</td><td><span class="status done">Done</span></td></tr>
+      <tr><td>WIA-03</td><td>Lifecycle, navigation, analytics handlers</td><td>Bridge host</td><td><span class="status done">Done</span></td></tr>
+      <tr><td>WIA-04</td><td>SecureStorage handler (wrap react-native-keychain)</td><td>Native adapters</td><td><span class="status superseded">Done (TS); superseded by WIA-17</span></td></tr>
+      <tr><td>WIA-05</td><td>Crypto handler (new RN native module, sign/keygen)</td><td>Native adapters</td><td><span class="status superseded">Done (TS); superseded by WIA-17</span></td></tr>
+      <tr><td>WIA-06</td><td>NFC handler (normalize RNPassportReader contract)</td><td>Native adapters</td><td><span class="status superseded">Done (TS); superseded by WIA-17</span></td></tr>
+      <tr><td>WIA-07</td><td>Camera / MRZ handler</td><td>Native adapters</td><td><span class="status superseded">Done (TS); superseded by WIA-17</span></td></tr>
+      <tr><td>WIA-08</td><td>Biometrics handler</td><td>Native adapters</td><td><span class="status pending">Pending — implement directly under WIA-17</span></td></tr>
+      <tr><td>WIA-09</td><td>Hosted URL loading + version pinning</td><td>Hosted loading</td><td><span class="status pending">Pending</span></td></tr>
+      <tr><td>WIA-10</td><td>Retire RN-native Didit integration</td><td>Umbrella</td><td><span class="status pending">Pending</span></td></tr>
+      <tr><td>WIA-11</td><td>Cutover PR — delete legacy RN screens</td><td>Umbrella</td><td><span class="status pending">Pending</span></td></tr>
+      <tr><td>WIA-12</td><td>WebView Sentry integration (cohort tags, masking)</td><td>Observability</td><td><span class="status pending">Pending — gated on nav-hygiene</span></td></tr>
+      <tr><td>WIA-13</td><td>WebView Session Replay with PII masking</td><td>Observability</td><td><span class="status pending">Pending — gated on nav-hygiene</span></td></tr>
+      <tr><td>WIA-14</td><td>Re-home ANA-15 attempt_id footer to webview-app</td><td>Observability</td><td><span class="status pending">Pending</span></td></tr>
+      <tr><td>WIA-15</td><td>Documents handler (delegate to databaseProvider)</td><td>Native adapters</td><td><span class="status superseded">Done (TS); superseded by WIA-17</span></td></tr>
+      <tr><td>WIA-16</td><td><code>mode</code> + <code>verificationRequest</code> in lifecycle.getConfig</td><td>Operating modes</td><td><span class="status done">Done</span></td></tr>
+      <tr><td>WIA-17</td><td><a href="./plans/WIA-17-path-a-migration.html">Path A migration</a> — replace TS handlers with <code>SelfBridgeModule</code> + KMP <code>*BridgeHandler</code> registrations; consumer-supplied providers wrap existing RN libs.</td><td>Native adapters</td><td><span class="status progress">In progress — Android <code>secureStorage</code> proven (PR #2108); remaining domains pending</span></td></tr>
+      <tr><td>NAV-01</td><td>Route mode-classification audit</td><td>Nav hygiene</td><td><span class="status done">Done</span></td></tr>
+      <tr><td>NAV-02</td><td>Dev-only route namespace + DEV gating</td><td>Nav hygiene</td><td><span class="status done">Done</span></td></tr>
+      <tr><td>NAV-03</td><td>BootDecision — single boot decision function</td><td>Nav hygiene</td><td><span class="status done">Done</span></td></tr>
+      <tr><td>NAV-04</td><td>useClusterClose() hook + per-cluster registry</td><td>Nav hygiene</td><td><span class="status done">Done</span></td></tr>
+      <tr><td>NAV-05</td><td>Back vs close terminology sweep + ESLint rule</td><td>Nav hygiene</td><td><span class="status done">Done</span></td></tr>
+      <tr><td>NAV-06</td><td>Cross-document NFC error consolidation</td><td>Nav hygiene</td><td><span class="status done">Done</span></td></tr>
+      <tr><td>NAV-07</td><td><code>replace:true</code> audit (full sweep)</td><td>Nav hygiene</td><td><span class="status done">Done</span></td></tr>
+      <tr><td>NAV-08</td><td>Namespace rewrite (verbs + places)</td><td>Nav hygiene</td><td><span class="status done">Done</span></td></tr>
+      <tr><td>NAV-09</td><td>State-passing convention sweep (NavState)</td><td>Nav hygiene</td><td><span class="status done">Done</span></td></tr>
+      <tr><td>NAV-10</td><td>Delete <code>/tunnel/registration/*</code> dead sub-flow</td><td>Nav hygiene</td><td><span class="status done">Done</span></td></tr>
+      <tr><td>NAV-11</td><td>Wire social sign-on (post-v1)</td><td>Nav hygiene</td><td><span class="status deferred">Deferred</span></td></tr>
+      <tr><td>NAV-12</td><td>Rename tunnel → embed (mode terminology)</td><td>Nav hygiene</td><td><span class="status done">Done</span></td></tr>
+      <tr><td>NAV-13</td><td>Declare mode at route registration (<code>ModeRoute</code>)</td><td>Nav hygiene</td><td><span class="status done">Done</span></td></tr>
+    </tbody>
+  </table>
+  <p class="legend">
+    <span class="status done">Done</span> code landed on this branch.
+    <span class="status progress">In progress</span> work underway.
+    <span class="status active">Active</span> spec ready, implementation imminent.
+    <span class="status pending">Pending</span> not started.
+    <span class="status deferred">Deferred</span> postponed past v1.
+    <span class="status superseded">Done (TS); superseded by WIA-17</span> the TS-handler implementation landed but is targeted for replacement under Path A.
+  </p>
+</section>
+
+<section id="nav-hygiene">
+  <h2>Nav-Hygiene sub-track</h2>
+  <p>
+    The nav-hygiene workstream (originally <code>chore/nav-hygiene</code>) was merged into
+    <code>feat/webview-in-app</code> on 2026-05-25. Its 11 active plans now ship alongside the WIA work on
+    this branch — single coordinated diff into <code>dev</code> at cutover.
+  </p>
+  <h3>Canonical docs</h3>
+  <ul>
+    <li><a href="../nav-hygiene/SPEC.html">Nav-Hygiene SPEC</a> — backlog, invariants, branch model</li>
+    <li><a href="../nav-hygiene/AUDIT.html">Nav-Hygiene AUDIT</a> — current-state route audit + triage</li>
+    <li><a href="../nav-hygiene/DECISIONS.md">Nav-Hygiene DECISIONS</a> — locked-in answers to all 22 open questions</li>
+    <li><a href="../nav-hygiene/plans/">Nav-Hygiene Plans/</a> — one HTML plan per NAV-XX</li>
+  </ul>
+  <h3>Why it lands here, not on its own branch</h3>
+  <p>
+    The nav refactor's blast radius (every <code>&lt;Route&gt;</code>, every <code>navigate()</code> call,
+    every screen handler) overlaps heavily with files the WIA pivot is still adding to. Sequencing it onto
+    the same feature branch means one rebase target, one cohesive diff into <code>dev</code>, and
+    observability (WIA-12/13) lands on the <em>final</em> names instead of getting re-routed mid-flight.
+  </p>
+  <h3>Execution waves</h3>
+  <table>
+    <thead><tr><th>Wave</th><th>Plans</th><th>Why this wave</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>NAV-01, NAV-10, NAV-12, NAV-02</td><td>Cheap. Doc, deletes, mechanical renames. Run first to shrink the surface everything else sweeps.</td></tr>
+      <tr><td>2</td><td>NAV-06, NAV-09, NAV-03, NAV-04, NAV-05, NAV-07</td><td>Independent medium-sized cleanups. Order within the wave doesn't matter much.</td></tr>
+      <tr><td>3</td><td>NAV-08 + NAV-13 (paired)</td><td>Largest sweep. Lands <strong>after</strong> WIA still-in-flight code (WIA-08 biometrics, WIA-14 footer) so the rewrite picks up every screen including the new ones in one pass.</td></tr>
+      <tr><td>4</td><td>WIA-12, WIA-13 (observability)</td><td>Instrumented against the canonical post-NAV names.</td></tr>
+      <tr><td>5</td><td>WIA-11 (cutover)</td><td>Final merge to <code>dev</code>.</td></tr>
+    </tbody>
+  </table>
+  <p class="callout note">
+    <strong>One coordination item — needs team sign-off, surface early:</strong> NAV-03 introduces a new
+    <code>/embed/error</code> screen (generic fail-closed surface when an invalid embed-mode request boots).
+    See <a href="../nav-hygiene/plans/NAV-03-boot-decision.html#action-items">NAV-03 plan → Action Items</a>
+    for the screen spec, copy draft, and Euclid coordination checklist. File the design + Euclid issues
+    now; don't gate the workstream on it.
+  </p>
+</section>
+
+<section id="deps">
+  <h2>Cross-Workstream Dependencies</h2>
+  <ul>
+    <li><strong><code>webview/</code> workstream</strong> must complete enough parity work that Self app
+      users can register, disclose, and manage settings without falling back to RN. The umbrella tracks
+      readiness via the existing <code>webview/</code> backlog; blocking items are WV-05 (Didit web SDK to
+      production), WV-13–WV-16 (remaining screens), and settings parity.</li>
+    <li><strong><code>build-pipeline/</code> workstream</strong> (BP-01, done) produces the artifact served
+      at the hosted URL. <code>WIA-09</code> does not depend on a new build artifact — it consumes the
+      existing one.</li>
+    <li><strong><code>sdk-distribution/</code> workstream</strong> owns <code>verify.self.xyz</code>
+      hosting. <code>WIA-09</code> pins to that URL contract; coordinate URL or major-version changes with
+      that workstream's owner.</li>
+    <li><strong><code>native-shells-lite/</code> workstream</strong> keeps Kotlin/Swift shells in parity
+      with the bridge protocol changes introduced here. Owner of that workstream must mirror any new
+      handler shape added by <code>WIA-02</code>/<code>WIA-03</code>.</li>
+    <li><strong><code>analytics/</code> workstream</strong> (ANA-13 landed 2026-05-19) defines the
+      observability surface this workstream must preserve through cutover. The carve-out in
+      <code>analytics/SPEC.md</code> ("WebView has no Sentry integration today; out of scope") becomes
+      this workstream's responsibility — see <a href="./SPEC-OBSERVABILITY.html">SPEC-OBSERVABILITY</a>.
+      ANA-15 (<code>attempt_id</code> footer on error screens) is re-homed to <code>WIA-14</code>; if
+      ANA-15 ships unmodified before cutover, its work is overwritten.</li>
+    <li><strong>MOD handler distribution (<code>nfc</code>, <code>biometrics</code>, <code>camera</code>)</strong>
+      blocks WIA-17 domains #5–#7 only. This repo's <code>kmp-sdk</code> was scoped to 3 domains in
+      #1915 (2026-04-04); the optional MOD handlers live in the private <code>selfxyz/self-webview-sdk</code>
+      fork. Resolve before #5 by publishing the fork as a Maven artifact (preferred) or merging MOD work
+      back here. See <a href="./plans/WIA-17-path-a-migration.html#prereq">WIA-17 P-1</a>.</li>
+    <li><strong>SD-06 (hosted Maven publishing for KMP)</strong> is required before WIA-11 cutover so
+      <code>app/</code> can consume the KMP AAR without each builder running <code>publishToMavenLocal</code>.
+      Not blocking WIA-17 domains #1–#4 (<code>mavenLocal()</code> sufficient). Becomes load-bearing for
+      #5–#7 if MOD handlers are delivered via the private-fork artifact path. See
+      <a href="./plans/WIA-17-path-a-migration.html#prereq">WIA-17 P-2</a>.</li>
+  </ul>
+</section>
+
+<section id="oos">
+  <h2>Out of scope</h2>
+  <ul>
+    <li><strong>No new bridge domains.</strong> The 10 existing domains (<code>nfc</code>,
+      <code>biometrics</code>, <code>secureStorage</code>, <code>camera</code>, <code>crypto</code>,
+      <code>haptic</code>, <code>analytics</code>, <code>lifecycle</code>, <code>documents</code>,
+      <code>navigation</code>) cover everything this workstream needs. Anything that doesn't fit goes
+      into <code>analytics.trackEvent</code> or a host callback.</li>
+    <li><strong>No RemoteConfig flag</strong> for the WebView host vs. RN screens. Cutover is at merge time.</li>
+    <li><strong>No web fallback for keychain.</strong> Secure storage remains 100% native.</li>
+    <li><strong>No Didit RN-native SDK</strong> in the final cutover. The web SDK is canonical. The
+      RN-native integration is retired with the RN screens.</li>
+    <li><strong>No proving-machine relocation.</strong> Proving stays in <code>mobile-sdk-alpha</code> and
+      runs inside the WebView. The RN host does not own proving state.</li>
+    <li><strong>No SDK distribution work.</strong> Hosting the bundle for external consumers is
+      <code>sdk-distribution/</code>'s problem, not this workstream's.</li>
+    <li><strong>No fork of the observability stack.</strong> This workstream extends the ANA-13 surface
+      (same Sentry project, same cohort tag taxonomy, same redact list, same terminal-event clear
+      semantics) — it does not introduce a parallel observability pipeline for the WebView.</li>
+  </ul>
+</section>
+
+<section id="invariants">
+  <h2>Invariants</h2>
+  <ol>
+    <li>The WebView must not know which native shell it runs inside. Bridge messages from Self app are
+      indistinguishable from bridge messages from the Kotlin/Swift shells.</li>
+    <li>Keychain operations originate in TypeScript inside the WebView, are sent over the bridge, and
+      execute in the RN host's native modules. No JS-side fallback for keychain reads or writes.</li>
+    <li>Bridge protocol version mismatches fail closed. If the WebView speaks a protocol version the RN
+      host does not implement, the host returns an error envelope and the WebView surfaces a recoverable
+      error to the user.</li>
+    <li>The RN host renders exactly two non-WebView surfaces in production: a splash/initialization screen
+      and a top-level error boundary. Everything else is the WebView.</li>
+    <li>Observability continuity: every onboarding attempt produces a Sentry event stream identifiable by
+      <code>attempt_id</code>, regardless of whether the error originates in the RN host or inside the
+      WebView. WebView errors land in the same Sentry project as RN-host errors; cohort tags
+      (<code>attempt_id</code>, <code>initial_branch</code>, <code>current_branch</code>,
+      <code>document_country</code>, <code>document_type</code>, <code>signature_algorithm</code>,
+      <code>csca_hash_algorithm</code>, <code>kyc_provider</code>) are set on the captured event regardless
+      of origin. The PII redact list from ANA-13
+      (<code>passport|mrz|dg\d|chip|aadhaar|name|dob|birth|photo</code>) applies on both sides.</li>
+  </ol>
+</section>
+
+<section id="validation">
+  <h2>Validation</h2>
+  <p>Each track's spec defines its own validation. The umbrella holds two:</p>
+  <ul>
+    <li><strong>End-to-end registration on a real device.</strong> A fresh install on iOS and Android
+      completes passport NFC registration via the WebView, with all hardware calls routed through the
+      bridge. Keychain entries persist across app launches.</li>
+    <li><strong>End-to-end disclose on a real device.</strong> A QR-launched disclose request completes,
+      returns a result to the calling browser/relayer, and produces analytics events identical in shape
+      to the pre-cutover RN flow.</li>
+  </ul>
+  <p>
+    The cutover PR (<code>WIA-11</code>) cannot merge until both validations pass on a TestFlight + Play
+    internal-track build.
+  </p>
+</section>
+
+<section id="cancelled">
+  <h2>Cancelled</h2>
+  <p><em>(none yet — leave for future cancellations; do not reuse IDs.)</em></p>
+</section>
+
+</main>
+</div>
+
+</body>
+</html>

@@ -29,7 +29,7 @@ describe('createHandlers', () => {
     expect(nfcHandler).toBeInstanceOf(NfcHandler);
   });
 
-  it('returns handlers for all five domains', () => {
+  it('returns handlers for all bridge domains', () => {
     const router = new MessageRouter({ sendToWebView: vi.fn() });
     const handlers = createHandlers({
       request: {},
@@ -41,6 +41,17 @@ describe('createHandlers', () => {
     });
 
     const domains = handlers.map(h => h.domain).sort();
-    expect(domains).toEqual(['biometrics', 'camera', 'lifecycle', 'nfc', 'secureStorage']);
+    expect(domains).toEqual([
+      'analytics',
+      'biometrics',
+      'camera',
+      'crypto',
+      'documents',
+      'haptic',
+      'lifecycle',
+      'navigation',
+      'nfc',
+      'secureStorage',
+    ]);
   });
 });

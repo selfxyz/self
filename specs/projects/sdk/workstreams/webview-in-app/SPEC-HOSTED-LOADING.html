@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SPEC — Bundle Loading & Versioning</title>
+<style>
+  :root {
+    --bg: #fafbfc;
+    --surface: #ffffff;
+    --surface-alt: #f6f8fa;
+    --border: #d1d9e0;
+    --border-soft: #e1e4e8;
+    --text: #1f2328;
+    --muted: #656d76;
+    --accent: #0969da;
+    --accent-soft: #ddf4ff;
+    --high: #cf222e;
+    --high-soft: #ffebe9;
+    --med: #9a6700;
+    --med-soft: #fff8c5;
+    --done: #1a7f37;
+    --done-soft: #dafbe1;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; color: var(--text); background: var(--bg); }
+  code, pre, kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.9em; }
+  code { background: var(--surface-alt); padding: 1px 5px; border-radius: 4px; border: 1px solid var(--border-soft); }
+  pre { background: var(--surface-alt); padding: 12px 14px; border-radius: 6px; border: 1px solid var(--border-soft); overflow: auto; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  header.topbar { position: sticky; top: 0; z-index: 100; background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  header h1 { margin: 0; font-size: 16px; font-weight: 600; }
+  .pill { font-size: 11px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface-alt); }
+  .pill.active { color: var(--accent); background: var(--accent-soft); border-color: var(--accent); }
+  .spacer { flex: 1; }
+  .layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 32px; max-width: 1100px; margin: 0 auto; padding: 24px; }
+  nav.toc { position: sticky; top: 64px; align-self: start; font-size: 13px; }
+  nav.toc h4 { margin: 0 0 6px 0; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  nav.toc a { display: block; padding: 4px 6px; border-radius: 4px; color: var(--text); }
+  nav.toc a:hover { background: var(--surface-alt); text-decoration: none; }
+  main { min-width: 0; }
+  main section { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 18px 22px; margin-bottom: 16px; }
+  main h2 { margin: 0 0 10px 0; font-size: 16px; }
+  main h3 { margin: 16px 0 6px 0; font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  main p { margin: 6px 0 10px 0; }
+  main ul, main ol { margin: 6px 0 10px 18px; padding: 0; }
+  main li { margin: 3px 0; }
+  table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 13px; }
+  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--border-soft); vertical-align: top; }
+  th { background: var(--surface-alt); font-weight: 600; }
+  .status { font-size: 11px; padding: 2px 8px; border-radius: 999px; display: inline-block; white-space: nowrap; border: 1px solid var(--border); background: var(--surface-alt); color: var(--muted); }
+  .status.done { color: var(--done); background: var(--done-soft); border-color: var(--done); }
+  .status.pending { color: var(--muted); }
+  .callout { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 8px 12px; border-radius: 0 6px 6px 0; margin: 10px 0; }
+  .callout.warn { border-left-color: var(--high); background: var(--high-soft); }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <h1>SPEC — Bundle Loading & Versioning</h1>
+  <span class="pill active">Active</span>
+  <span class="pill">2026-05-26</span>
+  <span class="spacer"></span>
+  <div>
+    <a href="./SPEC.html">↑ WebView-in-App</a>
+  </div>
+</header>
+
+<div class="layout">
+
+<nav class="toc">
+  <h4>On this page</h4>
+  <a href="#scope">Scope</a>
+  <a href="#decisions">Decisions</a>
+  <a href="#sequence">Loading sequence</a>
+  <a href="#invariants">Invariants</a>
+  <a href="#gaps">Known gaps</a>
+  <a href="#backlog">Backlog</a>
+  <a href="#coord">Cross-workstream</a>
+  <a href="#validation">Validation</a>
+</nav>
+
+<main>
+
+<section id="scope">
+  <h2>Scope</h2>
+  <p>
+    The RN host loads the WebView from an <strong>embedded bundle</strong> at app install time. The
+    build-pipeline (BP-01, done) copies the latest <code>@selfxyz/webview-app</code> dist into
+    <code>packages/rn-sdk/assets/self-wallet/</code>, which gets bundled into the host's iOS .ipa /
+    Android .apk. This matches what <code>packages/native-shell-android/</code> and
+    <code>packages/native-shell-ios/</code> currently do, and is consistent with the existing
+    <code>rn-sdk-test-app</code> integration.
+  </p>
+  <p>
+    Hosted HTTPS URL loading from <code>verify.self.xyz</code> is a future evolution under the
+    <code>sdk-distribution/</code> workstream; it is not the v1 mechanism for Self app because
+    (a) embedded bundles avoid offline-first-launch friction, (b) HTTPS introduces a single point of
+    failure if the CDN goes down, and (c) WebView caches across hosted deploys are out of our control.
+  </p>
+  <p>This spec covers <code>WIA-09</code>.</p>
+
+  <h3>In scope</h3>
+  <ul>
+    <li>The production URL contract.</li>
+    <li>The coupling between the RN binary version and the WebView protocol version it supports.</li>
+    <li>The dev-server override pattern.</li>
+    <li>Offline / first-launch behavior.</li>
+    <li>Loading-latency UX (splash → ready handoff).</li>
+    <li>Sentry instrumentation for load failures.</li>
+  </ul>
+
+  <h3>Out of scope</h3>
+  <ul>
+    <li>Hosting infrastructure for <code>verify.self.xyz</code> — owned by <code>sdk-distribution/</code>.
+      This spec consumes the URL; it does not specify the CDN, TLS, or caching policy.</li>
+    <li>The bundle build pipeline that produces the artifact behind that URL — owned by
+      <code>build-pipeline/</code> (BP-01, done).</li>
+    <li>The bridge protocol itself — owned by <code>packages/webview-bridge/</code>. Version handshake
+      belongs to it; this spec defers to it.</li>
+    <li>Embedded-bundle fallback. Considered as a follow-up under "Known Gaps"; not part of v1.</li>
+  </ul>
+</section>
+
+<section id="decisions">
+  <h2>Decisions</h2>
+  <ol>
+    <li><strong>The WebView loads from an embedded bundle.</strong> Android:
+      <code>file:///android_asset/self-wallet/index.html</code>. iOS:
+      <code>${RNFS.MainBundlePath}/self-wallet/index.html</code> (or relative path fallback). The bundle
+      is produced by <code>@selfxyz/webview-app</code> build and copied into
+      <code>packages/rn-sdk/assets/self-wallet/</code> by the build-pipeline (BP-01, done).</li>
+    <li><strong>Each Self app release is paired with a webview-app build.</strong> The bundle is
+      frozen at app build time. Updating the WebView requires shipping a new RN binary release — no OTA.
+      The app-version constant in the RN host's release notes carries the webview-app commit it was
+      built against.</li>
+    <li><strong><code>devServerUrl</code> is the only override, and it is <code>__DEV__</code>-gated.</strong>
+      Production builds compile the dev path out entirely. Engineers working locally pass
+      <code>devServerUrl="http://localhost:5173"</code> (or their dev box's IP); release binaries ignore
+      the prop.</li>
+    <li><strong>Loading UX is splash + spinner up to 3 seconds.</strong> Past 3s the splash transitions
+      to a "still loading" state. Past 10s without <code>lifecycle.ready</code>, the host shows a
+      recoverable error with a retry button. The 3s / 10s thresholds match the bridge host's invariant
+      in <a href="./SPEC-BRIDGE-HOST.html">SPEC-BRIDGE-HOST</a>.</li>
+    <li><strong>Version mismatch fails closed.</strong> If the bundled WebView's handshake advertises a
+      protocol version the host does not support, the host shows a "Please update Self app" error and
+      captures a Sentry exception. The host does not attempt a best-effort downgrade.</li>
+    <li><strong>Hosted URL loading is a future evolution, not v1.</strong> When and if we want OTA-style
+      updates without app store cycles, the <code>sdk-distribution/</code> workstream wires
+      <code>verify.self.xyz/v1/</code> as an alternative source. The bridge protocol and the host shell
+      stay identical; only the <code>source</code> prop on the WebView changes. This spec does not block
+      on that evolution.</li>
+  </ol>
+</section>
+
+<section id="sequence">
+  <h2>Loading sequence</h2>
+  <pre>App (Splash) → Shell: mount, source = bundle | __DEV__ override
+Shell → WebView: load index.html from app bundle
+  ├─ success within 3s
+  │    WebView → Shell: load complete
+  │    WebView → Shell: bridge.lifecycle.ready({ protocolVersion })
+  │    Shell → App: hand off, hide splash
+  ├─ 3s elapsed, no ready
+  │    Shell → App: show "still loading" state + manual retry
+  ├─ 10s elapsed, no ready
+  │    Shell → Sentry: captureException(webview_load_timeout)
+  │    Shell → App: show recoverable error screen
+  └─ version mismatch on ready
+       Shell → Sentry: captureException(webview_protocol_mismatch)
+       Shell → App: show "Please update Self app"</pre>
+</section>
+
+<section id="invariants">
+  <h2>Invariants</h2>
+  <ol>
+    <li>Production builds load only the embedded bundle. The <code>devServerUrl</code> prop is gated on
+      <code>__DEV__</code> and compiled out of release builds entirely — a malicious or accidental prop
+      in production has no effect.</li>
+    <li>The host emits a Sentry breadcrumb at every state transition in the loading sequence (mount,
+      load complete, ready, timeout, mismatch). These breadcrumbs are present on every captured
+      exception, regardless of which state surfaced it.</li>
+    <li>The host has no logic that depends on the WebView's internal route table. The bundle is an
+      opaque entry point.</li>
+    <li>First-launch failures (corrupt bundle, asset-bundling misconfiguration) surface as user-actionable
+      errors with a retry, not silent crashes.</li>
+    <li>The Sentry exception captured on timeout / mismatch carries the <code>runtime: rn-host</code>
+      tag and a <code>webview_source</code> tag identifying bundle vs dev-server source.</li>
+  </ol>
+</section>
+
+<section id="gaps">
+  <h2>Known gaps</h2>
+  <ul>
+    <li><strong>WebView updates require app-store cycles.</strong> With the embedded bundle model, a
+      UI-only WebView change ships only when a new RN binary is released. If iteration speed becomes a
+      constraint, the hosted-URL evolution (Decision 6) is the answer.</li>
+    <li><strong>Cohort-targeted WebView builds.</strong> A/B testing the WebView in v1 requires shipping
+      multiple RN binaries (per-cohort builds), which is impractical. Defer to the hosted-URL evolution
+      when this becomes a real need.</li>
+    <li><strong>Bundle size.</strong> The embedded WebView bundle adds to the app's install size. If
+      install-size pressure becomes a concern, the hosted-URL evolution shrinks the binary at the cost
+      of a network dependency on first launch.</li>
+  </ul>
+</section>
+
+<section id="backlog">
+  <h2>Backlog (this topic)</h2>
+  <table>
+    <thead><tr><th>ID</th><th>Title</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>WIA-09</td><td>Bundle loading + version pinning</td><td><span class="status pending">Pending</span></td></tr>
+    </tbody>
+  </table>
+  <p>
+    <code>WIA-09</code>'s PR adds the loading-state machine in the WebView shell, the
+    <code>__DEV__</code>-gated <code>devServerUrl</code> prop, the Sentry breadcrumb hooks, and the two
+    error screens (timeout, version mismatch). The embedded-asset paths and the build-pipeline copy step
+    already exist from BP-01 and the rn-sdk-test-app integration.
+  </p>
+</section>
+
+<section id="coord">
+  <h2>Cross-workstream coordination</h2>
+  <ul>
+    <li><strong><code>build-pipeline/</code></strong> owns the bundle artifact under
+      <code>packages/rn-sdk/assets/self-wallet/</code> (BP-01, done). Any change to the bundle layout
+      requires coordinated updates in this spec.</li>
+    <li><strong><code>sdk-distribution/</code></strong> owns the future hosted-URL evolution
+      (Decision 6). Not active in v1.</li>
+    <li><strong><code>webview/</code></strong> workstream owns the WebView's protocol-version declaration
+      on <code>lifecycle.ready</code>. Coordinate version bumps so the host and the bundle do not ship
+      mismatched majors.</li>
+  </ul>
+</section>
+
+<section id="validation">
+  <h2>Validation</h2>
+  <ul>
+    <li>Production build, airplane mode → bundle loads fine (no network dependency); splash hides
+      within 3s on a regression test device.</li>
+    <li>Production build with a corrupted asset folder → error screen with retry; no crash; Sentry
+      breadcrumb chain present on the captured exception.</li>
+    <li>Dev build with <code>devServerUrl="http://localhost:5173"</code> → loads localhost. Stop the
+      dev server → "still loading" state at 3s, error at 10s, retry restores load.</li>
+    <li>Synthetic <code>devServerUrl</code> in a release build → prop ignored, embedded bundle loads
+      (because the dev code path is compiled out).</li>
+    <li>Synthetic version mismatch (host pinned to v1, WebView handshake declares v2) → "Please update
+      Self app" screen, Sentry exception captured.</li>
+  </ul>
+</section>
+
+</main>
+</div>
+
+</body>
+</html>

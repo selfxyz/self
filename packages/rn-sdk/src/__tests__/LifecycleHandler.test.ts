@@ -32,20 +32,28 @@ describe('LifecycleHandler', () => {
   });
 
   describe('getConfig', () => {
-    it('returns verification request, debug flag, and platform', async () => {
-      const { handler } = createHandler({ debug: true });
+    it('returns mode, verification request, debug flag, and platform', async () => {
+      const { handler } = createHandler({ debug: true, mode: 'embed' });
       const result = await handler.handle('getConfig', {});
       expect(result).toEqual({
+        mode: 'embed',
         verificationRequest: { userId: 'user-1', scope: 'test', disclosures: ['nationality'] },
         debug: true,
         platform: 'react-native',
       });
     });
 
+    it('defaults mode to "self-app" when not specified', async () => {
+      const { handler } = createHandler();
+      const result = await handler.handle('getConfig', {}) as Record<string, unknown>;
+      expect(result.mode).toBe('self-app');
+    });
+
     it('returns empty request when none provided', async () => {
       const { handler } = createHandler({ request: {} });
       const result = await handler.handle('getConfig', {}) as Record<string, unknown>;
       expect(result).toEqual({
+        mode: 'self-app',
         verificationRequest: {},
         debug: false,
         platform: 'react-native',

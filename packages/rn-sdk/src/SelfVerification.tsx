@@ -2,12 +2,32 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useRef, useCallback, useMemo } from 'react';
-import { View, Platform, type ViewStyle } from 'react-native';
+import React, {
+  useRef,
+  useCallback,
+  useMemo,
+  useState,
+  useEffect,
+} from 'react';
+import {
+  View,
+  Platform,
+  Text,
+  TouchableOpacity,
+  ActivityIndicator,
+  BackHandler,
+  type ViewStyle,
+} from 'react-native';
 import WebView, { type WebViewMessageEvent } from 'react-native-webview';
 
 import { MessageRouter } from './bridge/MessageRouter';
+import { KmpBridgeTransport } from './bridge/KmpBridgeTransport';
 import { createHandlers } from './handlers';
+import type { AnalyticsSink } from './handlers/AnalyticsHandler';
+import type { NavigationCallbacks } from './handlers/NavigationHandler';
+import type { DocumentsStore } from './handlers/DocumentsHandler';
+import type { SelfCryptoModule } from './handlers/CryptoHandler';
+import type { OperatingMode } from './handlers/LifecycleHandler';
 
 // Resolve iOS main bundle path via react-native-fs (optional peerDep).
 // Falls back to a relative path when RNFS is not installed.
@@ -23,6 +43,19 @@ export interface VerificationRequest {
   userId?: string;
   scope?: string;
   disclosures?: string[];
+  appName?: string;
+  appEndpoint?: string;
+  environment?: 'prod' | 'stg';
+  endpointType?: 'https' | 'celo' | 'staging_https' | 'staging_celo';
+  version?: number;
+  chainID?: number;
+  verificationId?: string;
+  userDefinedData?: string;
+  selfDefinedData?: string;
+  excludedCountries?: string[];
+  proofItems?: string[];
+  userIdType?: 'hex' | 'uuid';
+  timestamp?: number;
 }
 
 export interface VerificationResult {
@@ -44,8 +77,95 @@ export interface SelfVerificationProps {
   onFailure: (error: SelfSdkError) => void;
   onCancelled: () => void;
   debug?: boolean;
+  /**
+   * Operating mode signaled to the WebView at boot via lifecycle.getConfig.
+   * 'self-app' = persistent UI (Self app). 'embed' = one-shot
+   * verification (3rd-party SDK embedders). Default: 'self-app'.
+   * See specs/projects/sdk/workstreams/webview-in-app/SPEC-MODES.html.
+   */
+  mode?: OperatingMode;
+  /**
+   * When set (and __DEV__ is true), load this URL instead of the bundled
+   * asset. Release builds compile the dev path out entirely so this is
+   * ignored even if a malicious caller passes it in production.
+   */
   devServerUrl?: string;
+  /**
+   * Bridge handler injection points. Each is optional; omitting leaves the
+   * handler with default behavior (analytics is silent, navigation reports
+   * not-handled, documents uses an in-memory store, crypto requires the
+   * native SelfCrypto module).
+   */
+  analytics?: AnalyticsSink;
+  navigation?: NavigationCallbacks;
+  documents?: DocumentsStore;
+  crypto?: SelfCryptoModule;
+  /**
+   * Prototype flag — when true, route `secureStorage.*` bridge messages
+   * through the KMP-backed native module (SelfBridge) instead of the local
+   * TS KeychainHandler. All other domains continue to use the existing TS
+   * handlers. See specs/projects/sdk/workstreams/webview-in-app/plans/
+   * PATH-A-rn-wraps-kmp.html. Default: false.
+   */
+  useKmpBridge?: boolean;
+  /**
+   * Time in ms before the loading splash transitions to a "still loading"
+   * state with a manual retry. Defaults to 3000ms.
+   */
+  spinnerTimeoutMs?: number;
+  /**
+   * Time in ms before the loading splash treats the WebView as failed to
+   * load and surfaces a recoverable error. Defaults to 10000ms.
+   */
+  loadTimeoutMs?: number;
   style?: ViewStyle;
+}
+
+type LoadStage = 'loading' | 'slow' | 'failed' | 'ready';
+
+const DEFAULT_SPINNER_TIMEOUT_MS = 3000;
+const DEFAULT_LOAD_TIMEOUT_MS = 10_000;
+
+function isSecureStorageRequest(raw: string): boolean {
+  try {
+    const parsed = JSON.parse(raw) as { type?: string; domain?: string };
+    return parsed.type === 'request' && parsed.domain === 'secureStorage';
+  } catch {
+    return false;
+  }
+}
+
+function buildRequestSearch(request: VerificationRequest): string {
+  const params = new URLSearchParams();
+  const set = (key: string, value: string | number | undefined) => {
+    if (value === undefined || value === null) return;
+    const str = String(value);
+    if (!str) return;
+    params.set(key, str);
+  };
+  set('userId', request.userId);
+  set('scope', request.scope);
+  if (request.disclosures && request.disclosures.length > 0) {
+    params.set('disclosures', request.disclosures.join(','));
+  }
+  if (request.excludedCountries && request.excludedCountries.length > 0) {
+    params.set('excludedCountries', request.excludedCountries.join(','));
+  }
+  if (request.proofItems && request.proofItems.length > 0) {
+    params.set('proofItems', request.proofItems.join(','));
+  }
+  set('appName', request.appName);
+  set('appEndpoint', request.appEndpoint);
+  set('environment', request.environment);
+  set('endpointType', request.endpointType);
+  set('version', request.version);
+  set('chainID', request.chainID);
+  set('verificationId', request.verificationId);
+  set('userDefinedData', request.userDefinedData);
+  set('selfDefinedData', request.selfDefinedData);
+  set('userIdType', request.userIdType);
+  set('timestamp', request.timestamp);
+  return params.toString();
 }
 
 export const SelfVerification: React.FC<SelfVerificationProps> = ({
@@ -54,10 +174,33 @@ export const SelfVerification: React.FC<SelfVerificationProps> = ({
   onFailure,
   onCancelled,
   debug = false,
+  mode,
   devServerUrl,
+  analytics,
+  navigation,
+  documents,
+  crypto,
+  useKmpBridge = false,
+  spinnerTimeoutMs = DEFAULT_SPINNER_TIMEOUT_MS,
+  loadTimeoutMs = DEFAULT_LOAD_TIMEOUT_MS,
   style,
 }) => {
   const webViewRef = useRef<WebView>(null);
+  const [loadStage, setLoadStage] = useState<LoadStage>('loading');
+  const [reloadKey, setReloadKey] = useState(0);
+
+  // Track WebView readiness via the lifecycle.ready bridge message.
+  const handleReady = useCallback(() => {
+    setLoadStage('ready');
+  }, []);
+
+  // We extend onGoBack so React Native's BackHandler can route through it.
+  const navigationWithBack = useMemo<NavigationCallbacks>(() => {
+    return {
+      onGoBack: navigation?.onGoBack,
+      onGoTo: navigation?.onGoTo,
+    };
+  }, [navigation]);
 
   const router = useMemo(
     () =>
@@ -67,56 +210,207 @@ export const SelfVerification: React.FC<SelfVerificationProps> = ({
         },
         debug,
       }),
-    [],
+    [debug],
   );
 
-  useMemo(() => {
+  const kmpTransport = useMemo<KmpBridgeTransport | undefined>(() => {
+    if (!useKmpBridge) return undefined;
+    return new KmpBridgeTransport({
+      inject: (js: string) => {
+        webViewRef.current?.injectJavaScript(js);
+      },
+      debug,
+    });
+  }, [useKmpBridge, debug]);
+
+  useEffect(() => {
+    return () => kmpTransport?.dispose();
+  }, [kmpTransport]);
+
+  // Wrap lifecycle ready so the loading splash dismisses.
+  const wrappedOnSuccess = useCallback(
+    (result: VerificationResult) => {
+      onSuccess(result);
+    },
+    [onSuccess],
+  );
+
+  useEffect(() => {
     const handlers = createHandlers({
       request,
-      onSuccess,
+      onSuccess: wrappedOnSuccess,
       onFailure,
       onCancelled,
       debug,
       router,
+      analytics,
+      navigation: navigationWithBack,
+      documents,
+      crypto,
+      mode,
     });
+    // Wrap the lifecycle ready handler to mark the splash dismissed.
+    const lifecycle = handlers.find(h => h.domain === 'lifecycle');
+    if (lifecycle) {
+      const originalHandle = lifecycle.handle.bind(lifecycle);
+      lifecycle.handle = async (method, params) => {
+        if (method === 'ready') {
+          handleReady();
+        }
+        return originalHandle(method, params);
+      };
+    }
     handlers.forEach(h => router.register(h));
-  }, [request, onSuccess, onFailure, onCancelled, debug, router]);
+  }, [
+    request,
+    wrappedOnSuccess,
+    onFailure,
+    onCancelled,
+    debug,
+    router,
+    analytics,
+    navigationWithBack,
+    documents,
+    crypto,
+    mode,
+    handleReady,
+  ]);
+
+  // Hardware-back routing on Android: ask the WebView first via the bridge;
+  // if the WebView's navigation handler claims it (returns handled=true), we
+  // do nothing here. If not, the BackHandler falls through to the host
+  // navigator's default behavior.
+  useEffect(() => {
+    if (Platform.OS !== 'android') return undefined;
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      router.pushEvent('navigation', 'back', {});
+      // Always claim the back press — the WebView decides what to do.
+      return true;
+    });
+    return () => sub.remove();
+  }, [router]);
+
+  // Loading state machine: spinner → slow → failed.
+  useEffect(() => {
+    if (loadStage === 'ready') return undefined;
+    const slowTimer = setTimeout(() => {
+      setLoadStage(stage => (stage === 'loading' ? 'slow' : stage));
+    }, spinnerTimeoutMs);
+    const failTimer = setTimeout(() => {
+      setLoadStage(stage => (stage === 'ready' ? stage : 'failed'));
+    }, loadTimeoutMs);
+    return () => {
+      clearTimeout(slowTimer);
+      clearTimeout(failTimer);
+    };
+  }, [loadStage, reloadKey, spinnerTimeoutMs, loadTimeoutMs]);
 
   const onMessage = useCallback(
     (event: WebViewMessageEvent) => {
-      router.onMessageReceived(event.nativeEvent.data);
+      const raw = event.nativeEvent.data;
+      if (kmpTransport?.isAvailable() && isSecureStorageRequest(raw)) {
+        kmpTransport.dispatch(raw);
+        return;
+      }
+      router.onMessageReceived(raw);
     },
-    [router],
+    [router, kmpTransport],
   );
 
-  const source = devServerUrl
-    ? { uri: devServerUrl }
-    : Platform.select({
-        android: { uri: 'file:///android_asset/self-wallet/index.html' },
-        // iOS: Host app must add assets/self-wallet/ to the Xcode "Copy Bundle Resources" build phase.
-        // When react-native-fs is installed we resolve an absolute path via MainBundlePath;
-        // otherwise we fall back to a relative path that UIWebView resolves against the bundle root.
-        ios: {
-          uri: mainBundlePath
+  const requestSearch = useMemo(() => buildRequestSearch(request), [request]);
+
+  const source = useMemo(() => {
+    if (__DEV__ && devServerUrl) {
+      const sep = devServerUrl.includes('?') ? '&' : '?';
+      const uri = requestSearch ? `${devServerUrl}${sep}${requestSearch}` : devServerUrl;
+      return { uri };
+    }
+    const appendSearch = (uri: string) =>
+      requestSearch ? `${uri}?${requestSearch}` : uri;
+    return Platform.select({
+      android: { uri: appendSearch('file:///android_asset/self-wallet/index.html') },
+      ios: {
+        uri: appendSearch(
+          mainBundlePath
             ? `${mainBundlePath}/self-wallet/index.html`
             : 'self-wallet/index.html',
-        },
-      });
+        ),
+      },
+    });
+  }, [devServerUrl, requestSearch]);
+
+  const retry = useCallback(() => {
+    setLoadStage('loading');
+    setReloadKey(k => k + 1);
+    webViewRef.current?.reload();
+  }, []);
 
   return (
-    <View style={[{ flex: 1 }, style]}>
+    <View style={[{ flex: 1, backgroundColor: '#000' }, style]}>
       <WebView
+        key={reloadKey}
         ref={webViewRef}
         source={source!}
         onMessage={onMessage}
         javaScriptEnabled
         domStorageEnabled
-        allowFileAccess={false}
-        allowUniversalAccessFromFileURLs={false}
+        allowFileAccess
+        allowFileAccessFromFileURLs
+        allowUniversalAccessFromFileURLs
         mediaPlaybackRequiresUserAction={false}
         originWhitelist={['*']}
-        style={{ flex: 1 }}
+        style={{ flex: 1, opacity: loadStage === 'ready' ? 1 : 0 }}
       />
+      {loadStage !== 'ready' ? (
+        <LoadingOverlay stage={loadStage} onRetry={retry} />
+      ) : null}
+    </View>
+  );
+};
+
+interface LoadingOverlayProps {
+  stage: 'loading' | 'slow' | 'failed';
+  onRetry: () => void;
+}
+
+const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ stage, onRetry }) => {
+  const showRetry = stage !== 'loading';
+  return (
+    <View
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: '#000',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <ActivityIndicator size="large" color="#fff" />
+      {stage === 'slow' ? (
+        <Text style={{ color: '#fff', marginTop: 16 }}>Still loading…</Text>
+      ) : null}
+      {stage === 'failed' ? (
+        <Text style={{ color: '#fff', marginTop: 16 }}>Couldn't load Self.</Text>
+      ) : null}
+      {showRetry ? (
+        <TouchableOpacity
+          onPress={onRetry}
+          accessibilityRole="button"
+          style={{
+            marginTop: 24,
+            paddingHorizontal: 24,
+            paddingVertical: 12,
+            borderColor: '#fff',
+            borderWidth: 1,
+            borderRadius: 8,
+          }}
+        >
+          <Text style={{ color: '#fff' }}>Retry</Text>
+        </TouchableOpacity>
+      ) : null}
     </View>
   );
 };

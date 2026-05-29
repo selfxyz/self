@@ -4,19 +4,13 @@
 
 import type React from 'react';
 import { useCallback } from 'react';
-import type { Location } from 'react-router-dom';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { RegistrationFailureScreen } from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
+import type { NavState } from '../../types/navState';
 import { WEB_SAFE_AREA } from '../../utils/insets';
-
-function getReturnTo(location: Location): string | null {
-  const searchParams = new URLSearchParams(location.search);
-  const state = location.state as { returnTo?: string } | null;
-  return searchParams.get('returnTo') ?? state?.returnTo ?? null;
-}
 
 // TODO: Replace with dedicated RecoveryFailureScreen from Euclid
 // once SELF-2345 (recovery phrase UX redesign) lands.
@@ -25,33 +19,28 @@ export const RecoveryFailureScreen: React.FC = () => {
   const location = useLocation();
   const { analytics, haptic } = useSelfClient();
 
-  const returnTo = getReturnTo(location);
+  const nextPath = (location.state as Partial<NavState> | null)?.nextPath ?? null;
 
-  const onDismiss = useCallback(() => {
+  const handleClose = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('recovery_failure_dismissed');
-    navigate('/');
+    navigate('/', { replace: true });
   }, [analytics, haptic, navigate]);
 
-  const onTryAgain = useCallback(() => {
+  const handleRetry = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('recovery_failure_try_again');
-
-    const target = returnTo
-      ? `/recovery/phrase-input?returnTo=${encodeURIComponent(returnTo)}`
-      : '/recovery/phrase-input';
-
-    navigate(target, {
+    navigate('/recover/phrase-input', {
       replace: true,
-      state: returnTo ? { returnTo } : undefined,
+      state: nextPath ? ({ nextPath } satisfies Partial<NavState>) : undefined,
     });
-  }, [analytics, haptic, navigate, returnTo]);
+  }, [analytics, haptic, navigate, nextPath]);
 
   return (
     <RegistrationFailureScreen
       {...WEB_SAFE_AREA}
-      onDismiss={onDismiss}
-      onTryDifferentMethod={onTryAgain}
+      onDismiss={handleClose}
+      onTryDifferentMethod={handleRetry}
       copy={{
         title: 'Recovery failed',
         body: 'Something went wrong while restoring your account. You can try again or dismiss to return home.',

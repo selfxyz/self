@@ -16,7 +16,7 @@ export const ManageDocumentsScreen: React.FC = () => {
   const { analytics, haptic } = useSelfClient();
   const [dialogue, setDialogue] = useState<{ title: string; description: string } | undefined>();
 
-  const onBack = useCallback(() => {
+  const handleBack = useCallback(() => {
     haptic.trigger('selection');
     navigate('/settings');
   }, [navigate, haptic]);
@@ -24,20 +24,20 @@ export const ManageDocumentsScreen: React.FC = () => {
   const onAddDocument = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('manage_docs_add_pressed');
-    navigate('/onboarding/country');
+    navigate('/pick-country');
   }, [navigate, haptic, analytics]);
 
   const onDocumentPress = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('manage_docs_document_pressed');
-    navigate('/id-data');
+    navigate('/docs/current');
   }, [haptic, analytics, navigate]);
 
   const onViewIdDetails = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('manage_docs_view_details');
     setDialogue(undefined);
-    navigate('/id-data');
+    navigate('/docs/current');
   }, [navigate, haptic, analytics]);
 
   const onRemoveId = useCallback(() => {
@@ -64,7 +64,7 @@ export const ManageDocumentsScreen: React.FC = () => {
           onPress: onDocumentPress,
         },
       ]}
-      onBack={onBack}
+      onBack={handleBack}
       onAddDocument={onAddDocument}
       dialogue={dialogue}
       onViewIdDetails={onViewIdDetails}

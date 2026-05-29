@@ -1,0 +1,62 @@
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
+
+import type React from 'react';
+import { useCallback } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+
+// TODO(NAV-06 → Euclid follow-up): replace PassportNfcErrorScreen with
+// EuIdNfcErrorScreen once it lands upstream in @selfxyz/euclid. Copy stays
+// passport-flavored in the meantime; analytics + navigation targets below
+// are already EU-ID-correct.
+import { PassportNfcErrorScreen } from '@selfxyz/euclid';
+
+import { useSelfClient } from '../../../providers/SelfClientProvider';
+import { WEB_SAFE_AREA } from '../../../utils/insets';
+
+export const EuIdNfcErrorRoute: React.FC = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { analytics, haptic } = useSelfClient();
+  const state =
+    (location.state as {
+      countryCode?: string;
+      errorMessage?: string;
+      stage?: 'mrz' | 'nfc';
+    } | null) ?? {};
+
+  const handleClose = useCallback(() => {
+    haptic.trigger('selection');
+    navigate('/', { replace: true });
+  }, [haptic, navigate]);
+
+  const onStartOver = useCallback(() => {
+    haptic.trigger('selection');
+    analytics.trackEvent('eu_id_scan_start_over', {
+      stage: state.stage,
+      error: state.errorMessage,
+    });
+    navigate('/capture/eu-id/instructions', {
+      state: { countryCode: state.countryCode },
+      replace: true,
+    });
+  }, [analytics, haptic, navigate, state]);
+
+  const onTryDifferentMethod = useCallback(() => {
+    haptic.trigger('selection');
+    analytics.trackEvent('eu_id_try_different_method', {
+      stage: state.stage,
+    });
+    navigate('/pick-country', { replace: true });
+  }, [analytics, haptic, navigate, state.stage]);
+
+  return (
+    <PassportNfcErrorScreen
+      insets={WEB_SAFE_AREA.insets}
+      onClose={handleClose}
+      onStartOver={onStartOver}
+      onTryDifferentMethod={onTryDifferentMethod}
+    />
+  );
+};

@@ -1,0 +1,79 @@
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+
+buildscript {
+  ext.getExtOrDefault = { name ->
+    return rootProject.ext.has(name) ? rootProject.ext.get(name) : project.properties['SelfRnSdk_' + name]
+  }
+
+  repositories {
+    google()
+    mavenCentral()
+  }
+
+  dependencies {
+    classpath "com.android.tools.build:gradle:7.4.2"
+    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${getExtOrDefault('kotlinVersion') ?: '1.9.24'}"
+  }
+}
+
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+
+def getExtOrIntegerDefault(name) {
+  return rootProject.ext.has(name) ? rootProject.ext.get(name) : (project.properties['SelfRnSdk_' + name]).toInteger()
+}
+
+android {
+  namespace 'xyz.self.rnsdk'
+  compileSdkVersion getExtOrIntegerDefault('compileSdkVersion') ?: 34
+
+  defaultConfig {
+    minSdkVersion getExtOrIntegerDefault('minSdkVersion') ?: 24
+    targetSdkVersion getExtOrIntegerDefault('targetSdkVersion') ?: 34
+  }
+
+  buildTypes {
+    release {
+      minifyEnabled false
+    }
+  }
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_17
+    targetCompatibility JavaVersion.VERSION_17
+  }
+
+  kotlinOptions {
+    jvmTarget = '17'
+  }
+
+  sourceSets {
+    main {
+      java.srcDirs += "src/main/java"
+      kotlin.srcDirs += "src/main/java"
+    }
+  }
+}
+
+repositories {
+  mavenLocal()
+  mavenCentral()
+  google()
+}
+
+dependencies {
+  implementation "com.facebook.react:react-native:+"
+  implementation "org.jetbrains.kotlin:kotlin-stdlib:${getExtOrDefault('kotlinVersion') ?: '1.9.24'}"
+  // KMP bridge wiring is opt-in. compileOnly lets us compile SelfBridgeModule
+  // against KMP types without forcing every @selfxyz/rn-sdk consumer to pull
+  // the AAR. Consumers that want the bridge enabled add the KMP dep at the
+  // host level (e.g. rn-sdk-test-app/android/app/build.gradle), and
+  // SelfCryptoPackage gracefully skips SelfBridgeModule registration if
+  // the classes aren't present at runtime. Replace with a stable hosted
+  // Maven coordinate once SD-06 (SELF-2534) lands.
+  compileOnly "xyz.self.sdk:shared-android:0.1.0"
+  // Match React Native 0.76.x's pinned coroutines version (1.6.1) to avoid
+  // version-constraint conflicts in the consumer's resolution graph.
+  compileOnly "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1"
+}

@@ -4,7 +4,7 @@
 
 import type React from 'react';
 import { useCallback, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import { ProofRequestScreen, SelfLogo } from '@selfxyz/euclid';
 
@@ -16,8 +16,9 @@ import { hasDiscloseRequestContext } from '../../utils/verificationRequest';
 
 export const ProvingScreen: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { analytics, haptic, lifecycle } = useSelfClient();
-  const { request, displayLabels, appName, appEndpoint, timestamp } = useVerificationRequest();
+  const { request, displayLabels, appName, displayAppEndpoint, timestamp } = useVerificationRequest();
   const hasValidRequestContext = hasDiscloseRequestContext({ request, displayLabels });
 
   useEffect(() => {
@@ -35,13 +36,13 @@ export const ProvingScreen: React.FC = () => {
     }));
   }, [displayLabels, request.disclosures]);
 
-  const onVerify = useCallback(() => {
+  const handleStartProving = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('prove_verify_pressed');
-    navigate('/proving/generating', { replace: true });
-  }, [analytics, haptic, navigate]);
+    navigate({ pathname: '/disclose/generating', search: location.search }, { replace: true });
+  }, [analytics, haptic, location.search, navigate]);
 
-  const onCancel = useCallback(async () => {
+  const handleClose = useCallback(async () => {
     haptic.trigger('selection');
     analytics.trackEvent('prove_verify_cancelled');
     try {
@@ -59,11 +60,11 @@ export const ProvingScreen: React.FC = () => {
     <ProofRequestScreen
       {...WEB_SAFE_AREA}
       variant="default"
-      onClose={onCancel}
-      onConfirm={onVerify}
+      onClose={handleClose}
+      onConfirm={handleStartProving}
       appIcon={<SelfLogo size={40} />}
       appName={appName}
-      appEndpoint={appEndpoint}
+      appEndpoint={displayAppEndpoint}
       timestamp={timestamp}
       items={proofItems}
       documentType="passport"

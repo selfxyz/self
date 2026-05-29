@@ -115,6 +115,7 @@ describe('navigation', () => {
         'Support',
         'Troubleshooting',
         'WebView',
+        'WebViewHost',
       ]);
     });
   });

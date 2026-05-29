@@ -56,6 +56,26 @@ export class MessageRouter {
       return;
     }
 
+    if (
+      typeof request.version === 'number' &&
+      request.version !== BRIDGE_PROTOCOL_VERSION
+    ) {
+      this.sendResponse({
+        type: 'response',
+        version: BRIDGE_PROTOCOL_VERSION,
+        id: generateUuid(),
+        domain: request.domain,
+        requestId: request.id,
+        success: false,
+        error: {
+          code: 'UNSUPPORTED_VERSION',
+          message: `Bridge protocol version ${request.version} not supported; host expects ${BRIDGE_PROTOCOL_VERSION}`,
+        },
+        timestamp: Date.now(),
+      });
+      return;
+    }
+
     const handler = this.handlers.get(request.domain);
     if (!handler) {
       this.sendResponse({
