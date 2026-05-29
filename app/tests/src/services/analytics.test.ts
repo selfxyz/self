@@ -196,12 +196,8 @@ describe('analytics', () => {
       setOnboardingTags: jest.Mock;
     };
 
-    it.each([
-      ['Onboarding: Completed'],
-      ['Onboarding: Failed'],
-      ['Onboarding: Recovered'],
-    ])('clears cohort tags on %s', eventName => {
-      trackEvent(eventName);
+    it('clears cohort tags on Onboarding: Ended', () => {
+      trackEvent('Onboarding: Ended');
       expect(onboardingContext.clearOnboardingTags).toHaveBeenCalledTimes(1);
       expect(onboardingContext.setOnboardingTags).not.toHaveBeenCalled();
     });

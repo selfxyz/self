@@ -1006,9 +1006,7 @@ jest.mock('@selfxyz/mobile-sdk-alpha/constants/analytics', () => ({
     SCAN_SUCCEEDED: 'Onboarding: Document Scan Succeeded',
     PROOF_STARTED: 'Onboarding: Proof Generation Started',
     PROOF_SUCCEEDED: 'Onboarding: Proof Generation Succeeded',
-    COMPLETED: 'Onboarding: Completed',
-    RECOVERED: 'Onboarding: Recovered',
-    FAILED: 'Onboarding: Failed',
+    ENDED: 'Onboarding: Ended',
     STEP_RETRIED: 'Onboarding: Step Retried',
   },
   PointEvents: {

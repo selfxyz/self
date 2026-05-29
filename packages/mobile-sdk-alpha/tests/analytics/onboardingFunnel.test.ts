@@ -11,6 +11,7 @@ import {
   failOnboardingAttempt,
   incrementAttemptRetryCount,
   markCurrentAttemptAsMock,
+  moveOnboardingAttemptToRecovery,
   recoverOnboardingAttempt,
   resolveOnboardingBranch,
   setOnboardingBranch,
@@ -226,23 +227,24 @@ describe('incrementAttemptRetryCount', () => {
 });
 
 describe('completeOnboardingAttempt', () => {
-  it('fires COMPLETED with duration_seconds, used_fallback=false, and clears the attempt', () => {
+  it('fires ENDED with outcome=completed, duration_seconds, used_fallback=false, and clears the attempt', () => {
     const client = makeClient();
     trackOnboardingStep(client, OnboardingEvents.DOCUMENT_TYPE_SELECTED, {
       branch: 'biometric_passport',
     });
     completeOnboardingAttempt(client);
 
-    const completedCall = client.trackEvent.mock.calls.find(([name]: string[]) => name === OnboardingEvents.COMPLETED);
-    expect(completedCall).toBeTruthy();
-    expect(typeof completedCall![1].duration_seconds).toBe('number');
-    expect(completedCall![1].used_fallback).toBe(false);
-    expect(completedCall![1].initial_branch).toBe('biometric_passport');
-    expect(completedCall![1].current_branch).toBe('biometric_passport');
+    const endedCall = client.trackEvent.mock.calls.find(([name]: string[]) => name === OnboardingEvents.ENDED);
+    expect(endedCall).toBeTruthy();
+    expect(endedCall![1].outcome).toBe('completed');
+    expect(typeof endedCall![1].duration_seconds).toBe('number');
+    expect(endedCall![1].used_fallback).toBe(false);
+    expect(endedCall![1].initial_branch).toBe('biometric_passport');
+    expect(endedCall![1].current_branch).toBe('biometric_passport');
     expect(_getCurrentOnboardingAttempt()).toBeNull();
   });
 
-  it('fires COMPLETED with used_fallback=true when branches diverge', () => {
+  it('fires ENDED with used_fallback=true when branches diverge', () => {
     const client = makeClient();
     trackOnboardingStep(client, OnboardingEvents.DOCUMENT_TYPE_SELECTED, {
       branch: 'biometric_passport',
@@ -250,10 +252,11 @@ describe('completeOnboardingAttempt', () => {
     setOnboardingBranch('kyc');
     completeOnboardingAttempt(client);
 
-    const completedCall = client.trackEvent.mock.calls.find(([name]: string[]) => name === OnboardingEvents.COMPLETED);
-    expect(completedCall![1].used_fallback).toBe(true);
-    expect(completedCall![1].initial_branch).toBe('biometric_passport');
-    expect(completedCall![1].current_branch).toBe('kyc');
+    const endedCall = client.trackEvent.mock.calls.find(([name]: string[]) => name === OnboardingEvents.ENDED);
+    expect(endedCall![1].outcome).toBe('completed');
+    expect(endedCall![1].used_fallback).toBe(true);
+    expect(endedCall![1].initial_branch).toBe('biometric_passport');
+    expect(endedCall![1].current_branch).toBe('kyc');
   });
 
   it('is a no-op when no attempt is active (prevents disclosure-later pollution)', () => {
@@ -262,47 +265,45 @@ describe('completeOnboardingAttempt', () => {
     expect(client.trackEvent).not.toHaveBeenCalled();
   });
 
-  it('is a no-op if COMPLETED was already fired (idempotent)', () => {
+  it('is a no-op if the attempt already ended (idempotent)', () => {
     const client = makeClient();
     trackOnboardingStep(client, OnboardingEvents.COUNTRY_SELECTED, { country_code: 'FR' });
     completeOnboardingAttempt(client);
     completeOnboardingAttempt(client);
 
-    const completedCalls = client.trackEvent.mock.calls.filter(
-      ([name]: string[]) => name === OnboardingEvents.COMPLETED,
-    );
-    expect(completedCalls).toHaveLength(1);
+    const endedCalls = client.trackEvent.mock.calls.filter(([name]: string[]) => name === OnboardingEvents.ENDED);
+    expect(endedCalls).toHaveLength(1);
   });
 });
 
 describe('recoverOnboardingAttempt', () => {
-  it('fires RECOVERED with duration_seconds, used_fallback=false, and clears the attempt', () => {
+  it('fires ENDED with outcome=recovered, duration_seconds, used_fallback=false, and clears the attempt', () => {
     const client = makeClient();
     trackOnboardingStep(client, OnboardingEvents.DOCUMENT_TYPE_SELECTED, {
       branch: 'biometric_passport',
     });
     recoverOnboardingAttempt(client);
 
-    const recoveredCall = client.trackEvent.mock.calls.find(([name]: string[]) => name === OnboardingEvents.RECOVERED);
-    expect(recoveredCall).toBeTruthy();
-    expect(typeof recoveredCall![1].duration_seconds).toBe('number');
-    expect(recoveredCall![1].used_fallback).toBe(false);
-    expect(recoveredCall![1].initial_branch).toBe('biometric_passport');
-    expect(recoveredCall![1].current_branch).toBe('biometric_passport');
+    const endedCall = client.trackEvent.mock.calls.find(([name]: string[]) => name === OnboardingEvents.ENDED);
+    expect(endedCall).toBeTruthy();
+    expect(endedCall![1].outcome).toBe('recovered');
+    expect(typeof endedCall![1].duration_seconds).toBe('number');
+    expect(endedCall![1].used_fallback).toBe(false);
+    expect(endedCall![1].initial_branch).toBe('biometric_passport');
+    expect(endedCall![1].current_branch).toBe('biometric_passport');
     expect(_getCurrentOnboardingAttempt()).toBeNull();
   });
 
-  it('does NOT fire RECOVERED and does NOT fire COMPLETED on the same attempt', () => {
+  it('marks the outcome as recovered, never completed, on the same attempt', () => {
     const client = makeClient();
     trackOnboardingStep(client, OnboardingEvents.DOCUMENT_TYPE_SELECTED, {
       branch: 'biometric_passport',
     });
     recoverOnboardingAttempt(client);
 
-    expect(client.trackEvent.mock.calls.find(([name]: string[]) => name === OnboardingEvents.RECOVERED)).toBeTruthy();
-    expect(
-      client.trackEvent.mock.calls.find(([name]: string[]) => name === OnboardingEvents.COMPLETED),
-    ).toBeUndefined();
+    const endedCalls = client.trackEvent.mock.calls.filter(([name]: string[]) => name === OnboardingEvents.ENDED);
+    expect(endedCalls).toHaveLength(1);
+    expect(endedCalls[0][1].outcome).toBe('recovered');
   });
 
   it('is a no-op when no attempt is active', () => {
@@ -311,16 +312,37 @@ describe('recoverOnboardingAttempt', () => {
     expect(client.trackEvent).not.toHaveBeenCalled();
   });
 
-  it('is idempotent — repeated calls fire RECOVERED only once', () => {
+  it('is idempotent — repeated calls fire ENDED only once', () => {
     const client = makeClient();
     trackOnboardingStep(client, OnboardingEvents.COUNTRY_SELECTED, { country_code: 'FR' });
     recoverOnboardingAttempt(client);
     recoverOnboardingAttempt(client);
 
-    const recoveredCalls = client.trackEvent.mock.calls.filter(
-      ([name]: string[]) => name === OnboardingEvents.RECOVERED,
-    );
-    expect(recoveredCalls).toHaveLength(1);
+    const endedCalls = client.trackEvent.mock.calls.filter(([name]: string[]) => name === OnboardingEvents.ENDED);
+    expect(endedCalls).toHaveLength(1);
+  });
+});
+
+describe('moveOnboardingAttemptToRecovery', () => {
+  it('fires ENDED with outcome=moved_to_recovery and stage=validating_document, and clears the attempt', () => {
+    const client = makeClient();
+    trackOnboardingStep(client, OnboardingEvents.DOCUMENT_TYPE_SELECTED, {
+      branch: 'biometric_passport',
+    });
+    moveOnboardingAttemptToRecovery(client);
+
+    const endedCall = client.trackEvent.mock.calls.find(([name]: string[]) => name === OnboardingEvents.ENDED);
+    expect(endedCall).toBeTruthy();
+    expect(endedCall![1].outcome).toBe('moved_to_recovery');
+    expect(endedCall![1].stage).toBe('validating_document');
+    expect(endedCall![1].initial_branch).toBe('biometric_passport');
+    expect(_getCurrentOnboardingAttempt()).toBeNull();
+  });
+
+  it('is a no-op when no attempt is active (disclosure-later safe)', () => {
+    const client = makeClient();
+    moveOnboardingAttemptToRecovery(client);
+    expect(client.trackEvent).not.toHaveBeenCalled();
   });
 });
 
@@ -397,7 +419,7 @@ describe('trackBranchEvent', () => {
 });
 
 describe('failOnboardingAttempt', () => {
-  it('fires FAILED with stage/reason/used_fallback and clears the attempt', () => {
+  it('fires ENDED with outcome=failed, stage/reason/used_fallback and clears the attempt', () => {
     const client = makeClient();
     trackOnboardingStep(client, OnboardingEvents.DOCUMENT_TYPE_SELECTED, {
       branch: 'biometric_passport',
@@ -405,8 +427,9 @@ describe('failOnboardingAttempt', () => {
     setOnboardingBranch('kyc');
     failOnboardingAttempt(client, 'scan_started', 'kyc_provider_error', { recoverable: true });
 
-    const failedCall = client.trackEvent.mock.calls.find(([name]: string[]) => name === OnboardingEvents.FAILED);
-    expect(failedCall?.[1]).toMatchObject({
+    const endedCall = client.trackEvent.mock.calls.find(([name]: string[]) => name === OnboardingEvents.ENDED);
+    expect(endedCall?.[1]).toMatchObject({
+      outcome: 'failed',
       stage: 'scan_started',
       reason: 'kyc_provider_error',
       recoverable: true,
