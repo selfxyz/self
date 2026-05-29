@@ -111,7 +111,7 @@ The branch split tells you _what happened_ (initial intent vs final outcome) but
 
 ### Data-confirmation drop-off — gap
 
-The biometric data-confirmation screen (`DataConfirmationScreen`, where the user reviews parsed MRZ/NFC fields between scan and proof) fires no analytics today, so abandonment there is invisible — it folds into a generic drop between `Document Scan Succeeded` and `Proof Generation Started`. ANA-19 will add a biometric milestone (view + confirm) to surface this step.
+The biometric data-confirmation screen (`DataConfirmationScreen`, where the user reviews parsed MRZ/NFC fields between scan and proof) fires no analytics today, so abandonment there is invisible — it folds into a generic drop between `Onboarding: Document Scan Succeeded` and `Onboarding: Proof Generation Started`. ANA-19 will add a biometric milestone (view + confirm) to surface this step.
 
 ## Execution Model
 
