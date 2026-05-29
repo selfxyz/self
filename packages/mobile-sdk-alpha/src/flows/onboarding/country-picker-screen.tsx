@@ -9,7 +9,7 @@ import { CountryPickerScreen as CountryPickerUI, type SafeArea } from '@selfxyz/
 
 import { trackOnboardingStep } from '../../analytics/onboardingFunnel';
 import { RoundFlag } from '../../components';
-import { DocumentEvents, OnboardingEvents } from '../../constants/analytics';
+import { OnboardingEvents } from '../../constants/analytics';
 import { useSelfClient } from '../../context';
 import { useCountries } from '../../documents/useCountries';
 import { buttonTap } from '../../haptic';
@@ -77,7 +77,6 @@ const CountryPickerScreen: React.FC<SafeArea> & { statusBar: typeof CountryPicke
       getCountryName={getCountryName}
       searchValue={searchValue}
       onClose={selfClient.goBack}
-      onInfoPress={() => selfClient.trackEvent(DocumentEvents.COUNTRY_HELP_TAPPED)}
       onSearchChange={onSearchChange}
       showInfoIcon={false}
     />
