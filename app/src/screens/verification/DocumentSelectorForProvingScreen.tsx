@@ -295,6 +295,7 @@ const DocumentSelectorForProvingScreen: React.FC = () => {
       const perksMap: Record<string, Perk[]> = {};
       const ineligibleMap: Record<string, IneligibleReason> = {};
       const rows = documentCatalog.documents
+        .filter(metadata => metadata.isRegistered)
         .map(metadata => {
           const docData = allDocuments[metadata.id];
           const baseState = determineDocumentState(metadata, docData?.data);
