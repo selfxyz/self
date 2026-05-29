@@ -27,7 +27,6 @@ class MainApplication : Application(), ReactApplication {
         add(CameraActivityPackage())
         add(QRCodeScannerPackage())
         add(BackupPackage())
-        add(SelfMRZScannerPackage())
       }
 
   private val packages by lazy { createPackages() }
