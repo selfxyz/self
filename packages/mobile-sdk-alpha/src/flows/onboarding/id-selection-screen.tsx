@@ -3,7 +3,6 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type React from 'react';
-import { useEffect } from 'react';
 import { Pressable, StyleSheet, Text, View as RNView } from 'react-native';
 
 import { colors, fontFamily } from '@selfxyz/euclid-core';
@@ -15,13 +14,13 @@ import SelfLogo from '@selfxyz/mobile-sdk-alpha/svgs/logo.svg';
 
 import { resolveOnboardingBranch, trackOnboardingStep } from '../../analytics/onboardingFunnel';
 import { BodyText, PerkRail, RoundFlag, View, XStack, YStack } from '../../components';
-import { OnboardingEvents, RegistrationPickerEvents } from '../../constants/analytics';
+import { OnboardingEvents } from '../../constants/analytics';
 import { useSelfClient } from '../../context';
 import { buttonTap } from '../../haptic';
 import { SdkEvents } from '../../types/events';
 import { getDocumentBadgeLabel } from './badges';
 import { getDocumentDisplaySubtitle, getDocumentDisplayTitle } from './documentCardCopy';
-import { getPerkRailContent, getPerksForIdType } from './perks';
+import { getPerkRailContent } from './perks';
 
 const KYC_DOC_TYPE = 'kyc';
 
@@ -105,13 +104,6 @@ const IDSelectionScreen: React.FC<IDSelectionScreenProps> = ({ countryCode, docu
   const selfClient = useSelfClient();
   const biometricTypes = documentTypes.filter(t => t !== KYC_DOC_TYPE);
 
-  const biometricTypesKey = biometricTypes.join(',');
-  useEffect(() => {
-    selfClient.trackEvent(RegistrationPickerEvents.VIEWED, {
-      available_id_types: biometricTypesKey ? biometricTypesKey.split(',') : [],
-    });
-  }, [selfClient, biometricTypesKey]);
-
   const onSelectDocumentType = (docType: string) => {
     buttonTap();
 
@@ -124,13 +116,6 @@ const IDSelectionScreen: React.FC<IDSelectionScreenProps> = ({ countryCode, docu
       country_code: countryCode,
     });
 
-    const perks = getPerksForIdType(docType);
-    selfClient.trackEvent(RegistrationPickerEvents.SELECTED, {
-      id_type: getDocumentNameForEvent(docType),
-      was_eligible_for_perks: perks.length > 0,
-      perk_ids: perks.map(p => p.id),
-    });
-
     selfClient.emit(SdkEvents.DOCUMENT_TYPE_SELECTED, {
       documentType: docType,
       documentName: getDocumentNameForEvent(docType),
@@ -139,9 +124,6 @@ const IDSelectionScreen: React.FC<IDSelectionScreenProps> = ({ countryCode, docu
   };
 
   const onTapKyc = () => {
-    selfClient.trackEvent(RegistrationPickerEvents.UNSUPPORTED_TAPPED, {
-      country_code: countryCode,
-    });
     onSelectDocumentType(KYC_DOC_TYPE);
   };
 

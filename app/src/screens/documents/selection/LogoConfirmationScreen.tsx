@@ -22,7 +22,6 @@ import {
   SecondaryButton,
 } from '@selfxyz/mobile-sdk-alpha/components';
 import {
-  AppEvents,
   KycEvents,
   OnboardingEvents,
 } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
@@ -60,17 +59,14 @@ const LogoConfirmationScreen: React.FC = () => {
   const { showModal } = useFeedback();
   const navigateToOnboarding = useHapticNavigation('DocumentOnboarding');
   const selfClient = useSelfClient();
-  const { trackEvent } = selfClient;
 
   const handleConfirm = useCallback(() => {
     buttonTap();
-    trackEvent(AppEvents.LOGO_CONFIRMATION_ANSWERED, { answer: 'yes' });
     navigateToOnboarding();
-  }, [navigateToOnboarding, trackEvent]);
+  }, [navigateToOnboarding]);
 
   const handleNotFound = useCallback(() => {
     buttonTap();
-    trackEvent(AppEvents.LOGO_CONFIRMATION_ANSWERED, { answer: 'no' });
     // "No" on the chip-symbol check routes through the KYC provider —
     // update the canonical funnel branch accordingly.
     setOnboardingBranch('kyc');
@@ -181,7 +177,7 @@ const LogoConfirmationScreen: React.FC = () => {
         }
       },
     });
-  }, [countryCode, navigation, selfClient, showModal, trackEvent]);
+  }, [countryCode, navigation, selfClient, showModal]);
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={slate100}>

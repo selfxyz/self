@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type { KnownEventName } from '../constants/analytics';
-import { OnboardingEvents } from '../constants/analytics';
+import { KycEvents, OnboardingEvents } from '../constants/analytics';
 import type { SelfClient } from '../types/public';
 
 export type OnboardingBranch = 'biometric_passport' | 'biometric_id' | 'kyc' | 'aadhaar' | 'pending';
@@ -16,9 +16,12 @@ export type OnboardingStage =
   | 'document_type_selected'
   | 'scan_started'
   | 'scan_succeeded'
+  | 'validating_document'
   | 'proof_generation_started'
   | 'proof_generation_succeeded'
   | 'completed';
+
+export type OnboardingOutcome = 'completed' | 'recovered' | 'moved_to_recovery' | 'failed';
 
 interface OnboardingAttempt {
   id: string;
@@ -81,54 +84,47 @@ export function _resetOnboardingFunnelForTests(): void {
   currentAttempt = null;
 }
 
+function endOnboardingAttempt(
+  selfClient: Pick<SelfClient, 'trackEvent'>,
+  outcome: OnboardingOutcome,
+  properties?: Record<string, unknown>,
+): void {
+  const attempt = currentAttempt;
+  if (!attempt) return;
+  currentAttempt = null;
+
+  if (attempt.isMock) return;
+
+  selfClient.trackEvent(OnboardingEvents.ENDED, {
+    ...properties,
+    ...baseProperties(attempt),
+    outcome,
+    duration_seconds: durationSeconds(attempt.startedAt),
+    country_code: attempt.countryCode,
+    document_type: attempt.documentType,
+    used_fallback: attempt.initialBranch !== attempt.currentBranch,
+  });
+}
+
 export function completeOnboardingAttempt(
   selfClient: Pick<SelfClient, 'trackEvent'>,
   properties?: Record<string, unknown>,
 ): void {
-  if (!currentAttempt) return;
-  if (currentAttempt.firedSteps.has(OnboardingEvents.COMPLETED)) return;
-  currentAttempt.firedSteps.add(OnboardingEvents.COMPLETED);
-
-  if (currentAttempt.isMock) {
-    currentAttempt = null;
-    return;
-  }
-
-  selfClient.trackEvent(OnboardingEvents.COMPLETED, {
-    ...properties,
-    ...baseProperties(currentAttempt),
-    duration_seconds: durationSeconds(currentAttempt.startedAt),
-    country_code: currentAttempt.countryCode,
-    document_type: currentAttempt.documentType,
-    used_fallback: currentAttempt.initialBranch !== currentAttempt.currentBranch,
-  });
-
-  currentAttempt = null;
+  endOnboardingAttempt(selfClient, 'completed', properties);
 }
 
 export function recoverOnboardingAttempt(
   selfClient: Pick<SelfClient, 'trackEvent'>,
   properties?: Record<string, unknown>,
 ): void {
-  if (!currentAttempt) return;
-  if (currentAttempt.firedSteps.has(OnboardingEvents.RECOVERED)) return;
-  currentAttempt.firedSteps.add(OnboardingEvents.RECOVERED);
+  endOnboardingAttempt(selfClient, 'recovered', properties);
+}
 
-  if (currentAttempt.isMock) {
-    currentAttempt = null;
-    return;
-  }
-
-  selfClient.trackEvent(OnboardingEvents.RECOVERED, {
-    ...properties,
-    ...baseProperties(currentAttempt),
-    duration_seconds: durationSeconds(currentAttempt.startedAt),
-    country_code: currentAttempt.countryCode,
-    document_type: currentAttempt.documentType,
-    used_fallback: currentAttempt.initialBranch !== currentAttempt.currentBranch,
-  });
-
-  currentAttempt = null;
+export function moveOnboardingAttemptToRecovery(
+  selfClient: Pick<SelfClient, 'trackEvent'>,
+  properties?: Record<string, unknown>,
+): void {
+  endOnboardingAttempt(selfClient, 'moved_to_recovery', { stage: 'validating_document', ...properties });
 }
 
 export function failOnboardingAttempt(
@@ -137,20 +133,7 @@ export function failOnboardingAttempt(
   reason: string,
   properties?: Record<string, unknown>,
 ): void {
-  if (!currentAttempt) return;
-  const attempt = currentAttempt;
-  currentAttempt = null;
-
-  if (attempt.isMock) return;
-
-  selfClient.trackEvent(OnboardingEvents.FAILED, {
-    ...properties,
-    ...baseProperties(attempt),
-    stage,
-    reason,
-    duration_seconds: durationSeconds(attempt.startedAt),
-    used_fallback: attempt.initialBranch !== attempt.currentBranch,
-  });
+  endOnboardingAttempt(selfClient, 'failed', { ...properties, stage, reason });
 }
 
 export function markCurrentAttemptAsMock(_selfClient: Pick<SelfClient, 'trackEvent'>): void {
@@ -201,6 +184,14 @@ export function trackBranchEvent(
   selfClient.trackEvent(event, {
     ...properties,
     ...baseProperties(currentAttempt),
+  });
+}
+
+export function trackKycVerdict(selfClient: Pick<SelfClient, 'trackEvent'>, properties: Record<string, unknown>): void {
+  if (currentAttempt?.isMock) return;
+  selfClient.trackEvent(KycEvents.VERIFICATION_RESOLVED, {
+    ...properties,
+    ...(currentAttempt ? baseProperties(currentAttempt) : {}),
   });
 }
 

@@ -7,12 +7,12 @@ import { StyleSheet } from 'react-native';
 
 import type { DocumentCategory } from '@selfxyz/common/utils/types';
 
+import { failOnboardingAttempt } from '../../analytics/onboardingFunnel';
 import successAnimation from '../../animations/loading/success.json';
 import { PrimaryButton } from '../../components';
 import { DelayedLottieView } from '../../components/DelayedLottieView';
 import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
-import { ProofEvents } from '../../constants/analytics';
 import { black, white } from '../../constants/colors';
 import { useSelfClient } from '../../context';
 import { loadSelectedDocument } from '../../documents/utils';
@@ -110,11 +110,8 @@ async function onConfirm(selfClient: SelfClient) {
       signatureAlgorithm: documentMetadata.signatureAlgorithm,
       curveOrExponent: documentMetadata.curveOrExponent,
     });
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
-    selfClient.trackEvent(ProofEvents.PROVING_PROCESS_ERROR, {
-      error: message,
-    });
+  } catch {
+    failOnboardingAttempt(selfClient, 'scan_succeeded', 'confirm_identification_failed');
   }
 }
 

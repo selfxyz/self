@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ANA-17: Onboarding exit classification (dropoff vs redirect)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,500;0,600;0,700;1,500&display=swap" />
+<style>
+:root {
+  --p-yellow: #fce694;
+  --p-blue: #067bc2;
+  --p-green: #46aa44;
+  --p-ice: #d6edff;
+  --p-red: #f24236;
+  --bg: #fffdf6;
+  --surface: #ffffff;
+  --surface-alt: #f5f3ec;
+  --border: #ddd7cd;
+  --border-soft: #ece7de;
+  --text: #2a1f18;
+  --muted: #786c60;
+  --accent: var(--p-blue);
+  --accent-soft: var(--p-ice);
+  --accent-chip: var(--p-blue);
+  --done: var(--p-green);
+  --done-soft: #dcf3db;
+  --high: var(--p-red);
+  --high-soft: #fdddda;
+  --med: #8a6a1f;
+  --med-soft: var(--p-yellow);
+  --graph-bg: #f5f3ec;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Lato", system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+h1, h2, h3, h4 { font-family: "Lora", Georgia, serif; line-height: 1.25; }
+h1 { font-size: 1.35rem; margin: 0; }
+h2 { font-size: 1.15rem; margin: 0 0 10px; }
+h3 { font-size: 1rem; margin: 16px 0 6px; }
+
+code, pre, kbd { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+code { background: var(--surface-alt); padding: 1px 5px; border-radius: 4px; font-size: 0.86em; }
+pre.code { background: var(--surface-alt); border: 1px solid var(--border-soft); border-radius: 6px; padding: 10px 12px; overflow-x: auto; font-size: 0.84em; margin: 8px 0; }
+p { margin: 8px 0; }
+a { color: var(--accent); }
+
+.topbar {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 20px;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.03);
+  will-change: transform;
+}
+.topbar .pills { display: flex; gap: 6px; flex-wrap: wrap; }
+.eyebrow { font-size: 0.7rem; letter-spacing: 0.04em; color: var(--muted); }
+
+.pill { font-size: 0.72rem; padding: 2px 9px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface-alt); color: var(--muted); }
+.pill.accent { background: var(--accent-soft); border-color: var(--accent-soft); color: var(--accent); }
+
+.status { font-size: 0.72rem; padding: 2px 9px; border-radius: 999px; border: 1px solid var(--border); }
+.status.pending { background: var(--med-soft); border-color: var(--med-soft); color: var(--med); }
+.status.done { background: var(--done-soft); border-color: var(--done-soft); color: var(--done); }
+
+.wrap {
+  display: grid;
+  grid-template-columns: 160px minmax(0, 1fr);
+  gap: 24px;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 20px;
+}
+nav.toc { position: sticky; top: 56px; align-self: start; font-size: 0.82rem; }
+nav.toc a { display: block; color: var(--muted); text-decoration: none; padding: 3px 0; }
+nav.toc a:hover { color: var(--accent); }
+
+main { min-width: 0; }
+section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  margin: 0 0 16px;
+}
+
+.lead { color: var(--muted); }
+ul { margin: 8px 0; padding-left: 18px; }
+li { margin: 4px 0; }
+
+.kv { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; font-size: 0.9rem; margin-top: 6px; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; }
+
+table { border-collapse: collapse; width: 100%; font-size: 0.88rem; margin: 8px 0; }
+th, td { text-align: left; padding: 6px 9px; border-bottom: 1px solid var(--border-soft); vertical-align: top; }
+th { color: var(--muted); font-weight: 700; }
+
+.diagram { margin: 14px 0; }
+.diagram .label { font-size: 11.5px; color: var(--muted); padding: 0 2px 6px; }
+.diagram pre.mermaid {
+  background: var(--graph-bg) !important;
+  border: 1px solid var(--border-soft) !important;
+  padding: 6px 8px !important;
+  border-radius: 6px !important;
+  margin: 0 !important;
+}
+
+.callout { border-left: 3px solid var(--high); background: var(--high-soft); padding: 8px 12px; border-radius: 0 6px 6px 0; margin: 10px 0; }
+.callout.good { border-left-color: var(--done); background: var(--done-soft); }
+
+.legend { display: flex; flex-wrap: wrap; gap: 12px; margin: 4px 0 12px; font-size: 0.8rem; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); }
+.legend i { width: 12px; height: 12px; border-radius: 3px; border: 1px solid var(--border); display: inline-block; }
+.lg-canon { background: #46aa44; } .lg-add { background: #067bc2; } .lg-outside { background: #fce694; } .lg-gap { background: #f24236; } .lg-state { background: #ffffff; }
+
+/* one box per question: the section is the box, the oq card is flat inside it */
+.oq-card { background: transparent; border: 0; padding: 0; margin: 0; }
+.oq-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.oq-id { font-size: 0.72rem; font-weight: 700; color: var(--accent); }
+.oq-impact { font-size: 0.7rem; color: var(--muted); }
+.oq-q { font-family: "Lora", serif; font-size: 1.02rem; margin: 8px 0 2px; }
+.oq-desc { color: var(--muted); font-size: 0.9rem; margin: 0 0 10px; }
+.oq-opt { display: block; border: 1px solid var(--border-soft); border-radius: 6px; padding: 8px 11px; margin: 6px 0; cursor: pointer; transition: background 0.12s; }
+.oq-opt:hover { background: var(--accent-soft); }
+.oq-opt.selected { background: var(--accent-soft); box-shadow: inset 3px 0 0 var(--accent); }
+.oq-opt input { margin-right: 8px; }
+.oq-because { color: var(--muted); font-size: 0.85rem; margin: 4px 0 0 24px; }
+.oq-detail { color: var(--text); font-size: 0.86rem; margin: 2px 0 0 24px; }
+.oq-detail .pro { color: var(--done); font-weight: 700; }
+.oq-detail .con { color: var(--high); font-weight: 700; }
+.oq-optwrap { margin: 8px 0 12px; }
+.oq-opt-dia { margin: 8px 0 0 24px; max-width: 420px; }
+.oq-opt-dia pre.mermaid {
+  background: var(--graph-bg) !important;
+  border: 1px solid var(--border-soft) !important;
+  padding: 6px 8px !important;
+  border-radius: 6px !important;
+  margin: 0 !important;
+}
+.oq-rec-chip { font: inherit; color: var(--accent); background: transparent; border: 0; padding: 0; }
+.oq-rec-chip::before { content: '\00b7'; color: var(--muted); margin-right: 6px; font-weight: 400; }
+.oq-notes { width: 100%; margin-top: 8px; border: 1px solid var(--border-soft); border-radius: 6px; padding: 7px 9px; font-family: inherit; font-size: 0.88rem; resize: vertical; min-height: 38px; background: var(--bg); color: var(--text); }
+.oq-clear { margin-top: 6px; font-size: 0.78rem; background: none; border: 0; color: var(--muted); cursor: pointer; padding: 0; }
+.oq-clear:hover { color: var(--high); }
+
+.oq-summary { display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface-alt); font-size: 0.78rem; }
+.oq-bar { width: 100px; height: 5px; border-radius: 999px; background: var(--border); overflow: hidden; }
+.oq-bar > span { display: block; height: 100%; width: 0; background: var(--accent); transition: width 0.2s; }
+.oq-iconbtn { width: 22px; height: 22px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; color: var(--muted); }
+.oq-iconbtn:hover { color: var(--accent); border-color: var(--accent); }
+.oq-iconbtn svg { width: 12px; height: 12px; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div>
+    <div class="eyebrow">Analytics workstream / execution plan</div>
+    <h1>ANA-17: Onboarding exit classification (dropoff vs redirect)</h1>
+  </div>
+  <div class="pills">
+    <span class="pill accent">canonical funnel</span>
+    <span class="pill">no PII</span>
+    <span class="status done">Decided: B</span>
+  </div>
+</div>
+
+<div class="wrap">
+  <nav class="toc">
+    <a href="#context">Context</a>
+    <a href="#goal">What we learn</a>
+    <a href="#flow">Exit flow</a>
+    <a href="#change">Proposed change</a>
+    <a href="#dashboard">Dashboard impact</a>
+    <a href="#scope">Scope</a>
+    <a href="#decision">Decision</a>
+  </nav>
+
+  <main>
+    <section id="context">
+      <h2>Context: a redirect is being misread as dropoff</h2>
+      <p class="lead">A user whose document is already registered or nullified is deliberately routed to the recovery flow. The document is fine, nothing broke. But that exit fires no canonical terminal, so today it looks identical to silent dropoff (a crash, a rage-quit). It is not dropoff, it is a hand-off, and the funnel cannot tell the two apart.</p>
+      <dl class="kv">
+        <dt>Backlog ID</dt><dd>ANA-17</dd>
+        <dt>Workstream</dt><dd>analytics</dd>
+        <dt>Depends on</dt><dd>ANA-01 (canonical funnel), ANA-13 (observability migration)</dd>
+        <dt>Source file</dt><dd><code>packages/mobile-sdk-alpha/src/proving/provingMachine.ts</code></dd>
+        <dt>Constraint</dt><dd>No nullifier or document identifier in any analytics event. Categorical reasons only.</dd>
+      </dl>
+      <p>Verified in code: <code>validatingDocument()</code> has three register-branch exits. Two reach a canonical terminal; the third does not.</p>
+    </section>
+
+    <section id="goal">
+      <h2>What the dashboard should answer</h2>
+      <p>Framing first, before mechanics. The canonical onboarding dashboard answers one primary question:</p>
+      <p><strong>Where do users drop off on the path to a completed new registration?</strong></p>
+      <p>Everything else is in service of that. A non-completion has very different meanings, and the dashboard must separate them or the dropoff number lies:</p>
+      <ul>
+        <li><strong>Dropoff</strong> - user left or something broke in a preceding step. This is the number to drive down. Measured by the gap between consecutive funnel step events.</li>
+        <li><strong>Redirect</strong> - app handed the user to recovery (document already in use). Expected, not a leak. Must not count as dropoff to fix.</li>
+        <li><strong>Success</strong> - completed a new registration (or recovered a returning identity).</li>
+      </ul>
+      <p>So the terminal is not <code>Failed</code>. It is one <code>Onboarding: Ended</code> event carrying an <strong>outcome</strong>, where the outcome tells you success vs redirect vs genuine failure. Anything deeper about recovery (did the redirected user actually recover, how long it took) is a <strong>separate event suite and dashboard</strong>, not this one.</p>
+    </section>
+
+    <section id="flow">
+      <h2>Exit flow: three outcomes, one missing terminal</h2>
+      <div class="legend">
+        <span><i class="lg-canon"></i> Canonical event (firing today)</span>
+        <span><i class="lg-add"></i> ANA-17 adds</span>
+        <span><i class="lg-outside"></i> Outside the suite (Sentry / internal)</span>
+        <span><i class="lg-gap"></i> Gap or signal lost</span>
+        <span><i class="lg-state"></i> State or check</span>
+      </div>
+      <div class="diagram">
+        <div class="label">Register branch of validatingDocument, provingMachine.ts lines 1302-1360 and the completed / account_recovery_choice states. Same colors are used in the option diagrams below.</div>
+        <pre class="mermaid">
+flowchart TD
+  Scan[Document Scan Succeeded] --> Val[Validating document]
+  Val --> Q1{Registered with this secret}
+  Q1 -->|yes| AR[send ALREADY_REGISTERED]
+  AR --> Comp[completed state]
+  Comp --> Rec[Onboarding Ended outcome recovered]
+  Q1 -->|no| Q2{Nullifier already on-chain}
+  Q2 -->|no| PG[Proof Generation Started]
+  PG --> Done[Onboarding Ended outcome completed]
+  Q2 -->|yes| ARC[account_recovery_choice state]
+  ARC --> Bread[Sentry breadcrumb only]
+  ARC --> Gap[No canonical terminal today]
+  Gap -. ANA-17 .-> Fix[Onboarding Ended outcome moved_to_recovery]
+
+  classDef state fill:#FFFFFF,stroke:#DDD7CD,stroke-width:1px,color:#2A1F18
+  classDef canon fill:#46AA44,stroke:#DDD7CD,stroke-width:1px,color:#FFFFFF
+  classDef add fill:#067BC2,stroke:#DDD7CD,stroke-width:1px,color:#FFFFFF
+  classDef outside fill:#FCE694,stroke:#DDD7CD,stroke-width:1px,color:#2A1F18
+  classDef gap fill:#F24236,stroke:#DDD7CD,stroke-width:1px,color:#FFFFFF
+  class Val,Q1,Q2,AR,Comp,ARC state
+  class Scan,PG canon
+  class Rec,Done,Fix add
+  class Bread outside
+  class Gap gap
+        </pre>
+      </div>
+      <table>
+        <tr><th>Exit</th><th>Trigger (code)</th><th>Today</th></tr>
+        <tr><td>Already registered, this secret</td><td><code>isRegistered === true</code> (line 1328)</td><td><code>Onboarding: Recovered</code> fires. Benign returning-user case (~7/mo).</td></tr>
+        <tr><td>Passport nullified, other secret</td><td><code>isNullifierOnchain === true</code> (line 1350)</td><td><strong>Nothing.</strong> Emits internal <code>PROVING_ACCOUNT_RECOVERY_REQUIRED</code> only.</td></tr>
+        <tr><td>Server rejects mid-proving</td><td><code>REGISTERED_COMMITMENT</code> (statusHandlers.ts)</td><td><strong>Nothing.</strong> Same dead-end state.</td></tr>
+      </table>
+      <div class="callout">
+        <strong>The gap.</strong> <code>_handleAccountRecoveryChoice</code> (line 1727) is two lines: it emits a navigation event and returns. No <code>failOnboardingAttempt</code>, no terminal. Diagnostic detail went to Sentry in ANA-13 (correct), but the funnel <em>outcome</em> was never added. ANA-13 non-goal #4 deliberately left <code>OnboardingEvents</code> untouched, so this is net-new work, not a regression.
+      </div>
+    </section>
+
+    <section id="change">
+      <h2>Proposed change: one Onboarding: Ended event with an outcome property</h2>
+      <p>Decision B, locked in. Every attempt resolves to a single terminal event, <code>Onboarding: Ended</code>, carrying an <code>outcome</code> property. The funnel step events are unchanged. No nullifier, no document identifier.</p>
+      <pre class="code">// onboardingFunnel.ts — one terminal, outcome as a property
+type OnboardingOutcome = 'completed' | 'recovered' | 'moved_to_recovery' | 'failed';
+
+function endOnboardingAttempt(selfClient, outcome, properties?) {
+  const attempt = currentAttempt;
+  if (!attempt) return;            // fire-once: one terminal per attempt
+  currentAttempt = null;
+  if (attempt.isMock) return;
+  selfClient.trackEvent(OnboardingEvents.ENDED, {
+    ...properties,
+    ...baseProperties(attempt),
+    outcome,
+    duration_seconds: durationSeconds(attempt.startedAt),
+    country_code: attempt.countryCode,
+    document_type: attempt.documentType,
+    used_fallback: attempt.initialBranch !== attempt.currentBranch,
+  });
+}
+
+completeOnboardingAttempt        -> endOnboardingAttempt(_, 'completed')
+recoverOnboardingAttempt         -> endOnboardingAttempt(_, 'recovered')
+failOnboardingAttempt(stage, r)  -> endOnboardingAttempt(_, 'failed', { stage, reason: r })
+moveOnboardingAttemptToRecovery  -> endOnboardingAttempt(_, 'moved_to_recovery', { stage: 'validating_document' })
+
+// provingMachine.ts — fired once at the account_recovery_choice state, covering both
+// the device nullifier check and the server REGISTERED_COMMITMENT redirect
+moveOnboardingAttemptToRecovery(selfClient);</pre>
+
+      <h3>Why B</h3>
+      <p>Modularity. If tomorrow we stop counting some ending as "complete," it is an <code>outcome</code> value and a dashboard tweak, not a code change or a new event. Per Mixpanel guidance, variations of one terminal ride a property, not many events.</p>
+
+      <h3>Decided (not open)</h3>
+      <ul>
+        <li><strong>Single terminal event.</strong> <code>Onboarding: Ended</code> with <code>outcome</code> in {completed, recovered, moved_to_recovery, failed}. The retired <code>Completed</code> / <code>Recovered</code> / <code>Failed</code> constants are deleted in this PR.</li>
+        <li><strong>Redirect is not a failure.</strong> <code>outcome: 'moved_to_recovery'</code> is distinct from <code>failed</code>; the dashboard subtracts it from genuine dropoff.</li>
+        <li><strong>Benign recovery is not the tedious recovery.</strong> Already-registered-with-the-right-secret is <code>outcome: 'recovered'</code> (returning-user success, lands home). The nullified / other-secret redirect is <code>outcome: 'moved_to_recovery'</code>. The app already routes them to different screens.</li>
+        <li><strong>Detection source is a property, not an outcome.</strong> Device nullifier check vs server commitment rejection: stamp <code>detection_source</code> if free at the call site; do not split the outcome for it.</li>
+        <li><strong>Recovery is its own suite.</strong> Whether the redirected user recovers, and how long it takes, lives in a separate recovery event family and dashboard - a follow-up ANA item.</li>
+        <li><strong>Stage value:</strong> added a precise <code>validating_document</code> member to <code>OnboardingStage</code>.</li>
+      </ul>
+      <div class="callout good">
+        Every attempt resolves to exactly one terminal. This also closes a side leak: the Sentry cohort-tag clear in <code>app/src/services/analytics.ts</code> now keys off <code>Onboarding: Ended</code>, so the recovery-choice path clears tags too.
+      </div>
+    </section>
+
+    <section id="dashboard">
+      <h2>Dashboard impact</h2>
+      <ul>
+        <li><strong>New dashboard, legacy kept.</strong> A new canonical dashboard mirrors the old one but terminates on <code>Onboarding: Ended (outcome = completed)</code>. The pre-ANA-17 dashboard is renamed with a <code>[legacy]</code> tag and keeps its historical Completed/Recovered/Failed data.</li>
+        <li><strong>Outcome breakdown.</strong> Break <code>Onboarding: Ended</code> by <code>outcome</code> and <code>stage</code>, segmentable by <code>initial_branch</code>. Subtract <code>moved_to_recovery</code> from the dropoff number to see the true loss.</li>
+        <li><strong>Per-branch funnels</strong> are rebuilt to end on <code>Ended (outcome = completed)</code>; the step events themselves are unchanged.</li>
+      </ul>
+    </section>
+
+    <section id="scope">
+      <h2>Scope</h2>
+      <h3>In scope</h3>
+      <ul>
+        <li>Add <code>OnboardingEvents.ENDED</code>; route terminals through <code>endOnboardingAttempt(outcome)</code>; add <code>moveOnboardingAttemptToRecovery</code> at the account_recovery_choice state. Delete the retired <code>Completed</code> / <code>Recovered</code> / <code>Failed</code> constants.</li>
+        <li>Repoint the Sentry cohort-tag clear to <code>Onboarding: Ended</code>.</li>
+        <li>New canonical dashboard on <code>Ended</code>; legacy-tag the old one.</li>
+        <li>Unit tests: each terminal emits one <code>Ended</code> with the right <code>outcome</code>; the redirect branch emits <code>moved_to_recovery</code>; no PII in payload.</li>
+      </ul>
+      <h3>Out of scope</h3>
+      <ul>
+        <li>The recovery event suite and its dashboard (did the redirected user recover, latency, drop-in-recovery). Separate ANA item.</li>
+        <li>Any nullifier or commitment value in analytics. Stays out, permanently.</li>
+        <li>Backend / on-chain document-level dedup (different system).</li>
+      </ul>
+    </section>
+
+    <section id="decision">
+      <h2>Decision: B, locked in</h2>
+      <p>One <code>Onboarding: Ended</code> event with an <code>outcome</code> property, rather than separate <code>Completed</code> / <code>Exit</code> events. Chosen for modularity: re-triaging what counts as "complete" becomes a property and dashboard change, never a new event or code change. Implemented in this PR, bundled with ANA-16 (KYC verdict event) since the two are stacked and touch the same file.</p>
+    </section>
+  </main>
+</div>
+
+<script type="module">
+import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'base',
+  flowchart: { curve: 'basis', nodeSpacing: 40, rankSpacing: 60, padding: 18, htmlLabels: true, useMaxWidth: true },
+  themeVariables: {
+    fontFamily: 'Lato, system-ui, sans-serif',
+    fontSize: '13px',
+    lineColor: '#2A1F18',
+    primaryColor: '#FFFFFF',
+    primaryBorderColor: '#DDD7CD',
+    primaryTextColor: '#2A1F18',
+    clusterBkg: 'transparent',
+    clusterBorder: '#DDD7CD'
+  },
+  themeCSS: '.edgeLabel { text-transform: none !important; } .nodeLabel { text-transform: none !important; }'
+});
+mermaid.run({ querySelector: 'pre.mermaid' });
+</script>
+</body>
+</html>

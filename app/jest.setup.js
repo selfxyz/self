@@ -1006,9 +1006,7 @@ jest.mock('@selfxyz/mobile-sdk-alpha/constants/analytics', () => ({
     SCAN_SUCCEEDED: 'Onboarding: Document Scan Succeeded',
     PROOF_STARTED: 'Onboarding: Proof Generation Started',
     PROOF_SUCCEEDED: 'Onboarding: Proof Generation Succeeded',
-    COMPLETED: 'Onboarding: Completed',
-    RECOVERED: 'Onboarding: Recovered',
-    FAILED: 'Onboarding: Failed',
+    ENDED: 'Onboarding: Ended',
     STEP_RETRIED: 'Onboarding: Step Retried',
   },
   PointEvents: {
@@ -1101,11 +1099,6 @@ jest.mock('@selfxyz/mobile-sdk-alpha/constants/analytics', () => ({
     VIEWED: 'proof_request_picker_viewed',
     ID_SELECTED: 'proof_request_id_selected',
     INELIGIBLE_ID_TAPPED: 'proof_request_ineligible_id_tapped',
-  },
-  RegistrationPickerEvents: {
-    VIEWED: 'registration_id_picker_viewed',
-    SELECTED: 'registration_id_picker_selected',
-    UNSUPPORTED_TAPPED: 'registration_id_picker_unsupported_tapped',
   },
   SettingsEvents: {
     CONNECTION_MODAL_CLOSED: 'Settings: Connection Modal Closed',

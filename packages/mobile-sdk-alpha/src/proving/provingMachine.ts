@@ -45,6 +45,7 @@ import {
   completeOnboardingAttempt,
   failOnboardingAttempt,
   markCurrentAttemptAsMock,
+  moveOnboardingAttemptToRecovery,
   recoverOnboardingAttempt,
   trackBranchEvent,
   trackOnboardingStep,
@@ -541,6 +542,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       }
 
       if (state.value === 'account_recovery_choice') {
+        moveOnboardingAttemptToRecovery(selfClient);
         get()._handleAccountRecoveryChoice(selfClient);
       }
 
