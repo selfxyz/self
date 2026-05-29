@@ -13,7 +13,10 @@ Locked in. Google Fonts, both.
 ```html
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,500;0,600;0,700;1,500&display=swap" />
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,500;0,600;0,700;1,500&display=swap"
+/>
 ```
 
 - **Lora** (serif) for every heading (`h1`–`h6`) and for prominent decision text rendered as a paragraph (e.g. the OQ card question).
@@ -21,8 +24,23 @@ Locked in. Google Fonts, both.
 - `ui-monospace` for code, pre, kbd. Don't theme these.
 
 ```css
-body { font: 14.5px/1.6 "Lato", -apple-system, BlinkMacSystemFont, sans-serif; }
-h1, h2, h3, h4, h5, h6 { font-family: "Lora", Georgia, serif; font-weight: 600; letter-spacing: -0.005em; }
+body {
+  font:
+    14.5px/1.6 'Lato',
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: 'Lora', Georgia, serif;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
 ```
 
 ## Palette
@@ -31,34 +49,34 @@ Locked in. Drop this `:root` block into any new page.
 
 ```css
 :root {
-  --p-yellow: #FCE694;
-  --p-blue:   #067BC2;
-  --p-green:  #46AA44;
-  --p-ice:    #D6EDFF;
-  --p-red:    #F24236;
+  --p-yellow: #fce694;
+  --p-blue: #067bc2;
+  --p-green: #46aa44;
+  --p-ice: #d6edff;
+  --p-red: #f24236;
 
-  --bg:           #FFFDF6;
-  --surface:      #FFFFFF;
-  --surface-alt:  #F5F3EC;
-  --border:       #DDD7CD;
-  --border-soft:  #ECE7DE;
-  --text:         #2A1F18;
-  --muted:        #786C60;
+  --bg: #fffdf6;
+  --surface: #ffffff;
+  --surface-alt: #f5f3ec;
+  --border: #ddd7cd;
+  --border-soft: #ece7de;
+  --text: #2a1f18;
+  --muted: #786c60;
 
-  --accent:       var(--p-blue);
-  --accent-soft:  var(--p-ice);
-  --accent-chip:  var(--p-blue);
+  --accent: var(--p-blue);
+  --accent-soft: var(--p-ice);
+  --accent-chip: var(--p-blue);
 
-  --done:         var(--p-green);
-  --done-soft:    #DCF3DB;
+  --done: var(--p-green);
+  --done-soft: #dcf3db;
 
-  --high:         var(--p-red);
-  --high-soft:    #FDDDDA;
+  --high: var(--p-red);
+  --high-soft: #fdddda;
 
-  --med:          #8A6A1F;
-  --med-soft:     var(--p-yellow);
+  --med: #8a6a1f;
+  --med-soft: var(--p-yellow);
 
-  --graph-bg:     #F5F3EC;
+  --graph-bg: #f5f3ec;
 }
 ```
 
@@ -87,7 +105,12 @@ Locked in. Drop this `:root` block into any new page.
 The hardest rule to enforce and the most worth it. Trace from any chip (e.g. the OQ id pill) outward to the page background. It should pass **exactly one** white card. If you count two, you've nested a `.oq-card` or similar inside the `<section>` and need to flatten it.
 
 ```css
-.oq-card { background: transparent; border: 0; padding: 0; margin: 0; }
+.oq-card {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
 ```
 
 The section provides the box. The card is just a content wrapper for the JS renderer.
@@ -99,8 +122,19 @@ The section provides the box. The card is just a content wrapper for the JS rend
 - The **Recommended** chip is inline `·` separator text, not a pill. Inherits the answer label's font and color (`var(--accent)`), prefixed by a muted middot. Reads as `B. Import from self-sdk-swift · Recommended`.
 
 ```css
-.oq-rec-chip { font: inherit; color: var(--accent); background: transparent; border: 0; padding: 0; }
-.oq-rec-chip::before { content: "·"; color: var(--muted); margin-right: 6px; font-weight: 400; }
+.oq-rec-chip {
+  font: inherit;
+  color: var(--accent);
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
+.oq-rec-chip::before {
+  content: '·';
+  color: var(--muted);
+  margin-right: 6px;
+  font-weight: 400;
+}
 ```
 
 ## Diagrams
@@ -160,9 +194,16 @@ Same pass also: re-appends `g.edgeLabels` to the end of the SVG (so labels paint
 Caption sits on the section surface; only the rendered SVG carries the tinted graph background.
 
 ```css
-.diagram { margin: 14px 0; }
-.diagram .label { font-size: 11.5px; color: var(--muted); padding: 0 2px 6px; }
-.diagram pre.mermaid, .oq-option-diagram pre.mermaid {
+.diagram {
+  margin: 14px 0;
+}
+.diagram .label {
+  font-size: 11.5px;
+  color: var(--muted);
+  padding: 0 2px 6px;
+}
+.diagram pre.mermaid,
+.oq-option-diagram pre.mermaid {
   background: var(--graph-bg) !important;
   border: 1px solid var(--border-soft) !important;
   padding: 6px 8px !important;

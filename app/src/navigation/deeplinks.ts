@@ -16,9 +16,18 @@ import type { WebViewHostRequest } from '@/navigation/types';
 import useUserStore from '@/stores/userStore';
 import { useVerificationGateStore } from '@/stores/verificationGateStore';
 import { IS_DEV_MODE } from '@/utils/devUtils';
+import {
+  evaluateGoogleUsatGate,
+  isGoogleUsatForceEnabledForTesting,
+} from '@/utils/googleUsatGate';
 
-function selfAppToWebViewRequest(selfApp: Record<string, unknown>): WebViewHostRequest {
-  const disclosuresRecord = (selfApp.disclosures ?? {}) as Record<string, unknown>;
+function selfAppToWebViewRequest(
+  selfApp: Record<string, unknown>,
+): WebViewHostRequest {
+  const disclosuresRecord = (selfApp.disclosures ?? {}) as Record<
+    string,
+    unknown
+  >;
   const disclosures: string[] = [];
   for (const [key, value] of Object.entries(disclosuresRecord)) {
     if (key === 'minimumAge' && typeof value === 'number') {
@@ -34,16 +43,25 @@ function selfAppToWebViewRequest(selfApp: Record<string, unknown>): WebViewHostR
     scope: typeof selfApp.scope === 'string' ? selfApp.scope : undefined,
     disclosures: disclosures.length > 0 ? disclosures : undefined,
     appName: typeof selfApp.appName === 'string' ? selfApp.appName : undefined,
-    appEndpoint: typeof selfApp.endpoint === 'string' ? selfApp.endpoint : undefined,
+    appEndpoint:
+      typeof selfApp.endpoint === 'string' ? selfApp.endpoint : undefined,
     environment: selfApp.devMode === true ? 'stg' : 'prod',
-    endpointType: typeof selfApp.endpointType === 'string'
-      ? (selfApp.endpointType as WebViewHostRequest['endpointType'])
-      : undefined,
+    endpointType:
+      typeof selfApp.endpointType === 'string'
+        ? (selfApp.endpointType as WebViewHostRequest['endpointType'])
+        : undefined,
     version: typeof selfApp.version === 'number' ? selfApp.version : undefined,
     chainID: typeof selfApp.chainID === 'number' ? selfApp.chainID : undefined,
-    verificationId: typeof selfApp.sessionId === 'string' ? selfApp.sessionId : undefined,
-    userDefinedData: typeof selfApp.userDefinedData === 'string' ? selfApp.userDefinedData : undefined,
-    selfDefinedData: typeof selfApp.selfDefinedData === 'string' ? selfApp.selfDefinedData : undefined,
+    verificationId:
+      typeof selfApp.sessionId === 'string' ? selfApp.sessionId : undefined,
+    userDefinedData:
+      typeof selfApp.userDefinedData === 'string'
+        ? selfApp.userDefinedData
+        : undefined,
+    selfDefinedData:
+      typeof selfApp.selfDefinedData === 'string'
+        ? selfApp.selfDefinedData
+        : undefined,
     excludedCountries: Array.isArray(disclosuresRecord.excludedCountries)
       ? (disclosuresRecord.excludedCountries as string[])
       : undefined,
@@ -51,10 +69,6 @@ function selfAppToWebViewRequest(selfApp: Record<string, unknown>): WebViewHostR
     timestamp: Date.now(),
   };
 }
-import {
-  evaluateGoogleUsatGate,
-  isGoogleUsatForceEnabledForTesting,
-} from '@/utils/googleUsatGate';
 
 // Validation patterns for each expected parameter
 const VALIDATION_PATTERNS = {
@@ -196,11 +210,9 @@ export const handleUrl = async (selfClient: SelfClient, uri: string) => {
       selfClient.getSelfAppState().startAppListener(selfAppJson.sessionId);
 
       safeNavigate(
-        createDeeplinkNavigationState(
-          'WebViewHost',
-          correctParentScreen,
-          { request: selfAppToWebViewRequest(selfAppJson) },
-        ),
+        createDeeplinkNavigationState('WebViewHost', correctParentScreen, {
+          request: selfAppToWebViewRequest(selfAppJson),
+        }),
       );
 
       return;

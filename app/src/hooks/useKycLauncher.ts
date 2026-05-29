@@ -19,13 +19,14 @@ import {
 
 import {
   createKycSession,
+  KYC_PROVIDER,
   launchKycVerification as startKycVerification,
 } from '@/integrations/kyc';
 import type { KycVerificationResult } from '@/integrations/kyc/types';
 import type { RootStackParamList } from '@/navigation';
 import { useFeedback } from '@/providers/feedbackProvider';
-
-const KYC_PROVIDER = 'didit';
+import { getKycDocumentCount } from '@/providers/passportDataProvider';
+import { usePendingKycStore } from '@/stores/pendingKycStore';
 
 export interface UseKycLauncherOptions {
   /**
@@ -93,19 +94,68 @@ export const useKycLauncher = (options: UseKycLauncherOptions) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const launchKycVerification = useCallback(async () => {
+    const hasPendingOrProcessingKyc = () =>
+      usePendingKycStore
+        .getState()
+        .pendingVerifications.some(
+          verification =>
+            verification.status === 'pending' ||
+            verification.status === 'processing',
+        );
+
     setIsLoading(true);
     const sessionRequestedAt = Date.now();
     let providerOpenedAt: number | null = null;
     try {
-      trackOnboardingStep(selfClient, OnboardingEvents.SCAN_STARTED, {
-        branch: 'kyc',
-      });
+      if (hasPendingOrProcessingKyc()) {
+        showModal({
+          titleText: 'Verification in progress',
+          bodyText:
+            "You already have a KYC verification being processed. We'll notify you when it's ready.",
+          buttonText: 'Dismiss',
+          onButtonPress: () => {},
+        });
+        return;
+      }
+
+      let kycDocumentCount: number;
+      try {
+        kycDocumentCount = await getKycDocumentCount();
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+        const safeError = sanitizeErrorMessage(errorMessage);
+        console.error('Unable to verify KYC document count:', safeError);
+        showModal({
+          titleText: 'Unable to verify verification limit',
+          bodyText:
+            "We couldn't confirm how many verified IDs are stored. Please try again.",
+          buttonText: 'Dismiss',
+          onButtonPress: () => {},
+        });
+        return;
+      }
+
+      if (kycDocumentCount >= 3) {
+        showModal({
+          titleText: 'Maximum verifications reached',
+          bodyText:
+            'You can have up to 3 verified IDs. Remove one before starting a new verification.',
+          buttonText: 'Dismiss',
+          onButtonPress: () => {},
+        });
+        return;
+      }
+
       trackBranchEvent(selfClient, KycEvents.SESSION_REQUESTED, {
         provider: KYC_PROVIDER,
       });
       const session = await createKycSession({
         country: countryCode,
         nationality: countryCode,
+      });
+      trackOnboardingStep(selfClient, OnboardingEvents.SCAN_STARTED, {
+        branch: 'kyc',
       });
       trackBranchEvent(selfClient, KycEvents.SESSION_CREATED, {
         provider: KYC_PROVIDER,
@@ -196,7 +246,15 @@ export const useKycLauncher = (options: UseKycLauncherOptions) => {
     } finally {
       setIsLoading(false);
     }
-  }, [navigation, selfClient, countryCode, onSuccess, onCancel, onError]);
+  }, [
+    navigation,
+    selfClient,
+    countryCode,
+    onSuccess,
+    onCancel,
+    onError,
+    showModal,
+  ]);
 
   const showKycFallbackModal = useCallback(
     (onDismiss: () => void) => {

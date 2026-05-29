@@ -57,7 +57,9 @@ export type { MRZScanOptions } from './mrz';
 export type { OnboardingBranch, OnboardingFailureStage, OnboardingStage } from './analytics/onboardingFunnel';
 
 export type { PassportValidationCallbacks } from './validation/document';
+export type { Perk, PerkRailContent } from './flows/onboarding/perks';
 export type { PerkId, PerkRecord } from './data/perks';
+
 export type { ProvingStateType } from './proving/provingMachine';
 
 export type { RecoveryValidationResult } from './proving/recoveryValidation';
@@ -66,9 +68,10 @@ export type { SDKEvent, SDKEventMap } from './types/events';
 export type { SdkErrorCategory } from './errors';
 
 export type { provingMachineCircuitType } from './proving/provingMachine';
-export { DelayedLottieView } from './components/DelayedLottieView';
 
+export { DelayedLottieView } from './components/DelayedLottieView';
 export { ExpandableBottomLayout } from './layouts/ExpandableBottomLayout';
+
 export {
   GOOGLE_USAT_FAUCET_APP_NAME,
   GOOGLE_USAT_FAUCET_ENDPOINT,
@@ -87,16 +90,21 @@ export {
   notImplemented,
   sdkError,
 } from './errors';
-
 export { default as LogoConfirmationScreen } from './flows/onboarding/logo-confirmation-screen';
 export { NFCScannerScreen } from './components/screens/NFCScannerScreen';
+export {
+  PERKS,
+  getEligiblePerksForIdType,
+  getPerkRailContent,
+  getPerkRailLabel,
+  getPerksForIdType,
+} from './flows/onboarding/perks';
 export { QRCodeScreen } from './components/screens/QRCodeScreen';
 export { PERKS as SHARED_PERKS, getPerkRecordsForIdType } from './data/perks';
 export { SdkEvents } from './types/events';
-
 export { SelfClientContext, SelfClientProvider, useSelfClient } from './context';
-export { advercase, dinot, dinotBold, plexMono } from './constants/fonts';
 
+export { advercase, dinot, dinotBold, plexMono } from './constants/fonts';
 export {
   buttonTap,
   cancelTap,
@@ -165,7 +173,6 @@ export { extractNameFromMRZ, formatDateToYYMMDD, parseMRZBirthDate, parseMRZExpi
 export { finalizeRecoveredDocumentRegistration, validateRecoverySecretForDocument } from './proving/recoveryValidation';
 
 export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
-export { getEligiblePerksForIdType } from './flows/onboarding/perks';
 export { hasEligibleAlternativeDocumentForPolicy, isDocumentEligibleForPolicy } from './utils/restrictedApps';
 export { isGoogleUsatProofRequest } from './utils/googleUsat';
 

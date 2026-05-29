@@ -104,12 +104,6 @@
         android:theme="@style/Theme.AppCompat.Translucent"
         android:exported="false" />
 
-      <activity
-        android:name=".ui.SelfMRZScannerActivity"
-        android:theme="@style/Theme.AppCompat.NoActionBar"
-        android:exported="false"
-        android:screenOrientation="portrait" />
-
       <service android:name="com.google.android.gms.metadata.ModuleDependencies"
         android:enabled="false"
         android:exported="false"

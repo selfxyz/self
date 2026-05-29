@@ -10,6 +10,7 @@ import android.content.res.Configuration
 import android.os.Build
 import com.facebook.react.PackageList
 import com.facebook.react.ReactApplication
+import com.facebook.react.ReactHost
 import com.facebook.react.ReactNativeHost
 import com.facebook.react.ReactPackage
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint
@@ -17,21 +18,22 @@ import com.facebook.react.defaults.DefaultReactNativeHost
 import com.facebook.soloader.SoLoader
 import com.facebook.react.soloader.OpenSourceMergedSoMapping
 import expo.modules.ApplicationLifecycleDispatcher
-import expo.modules.ReactNativeHostWrapper
+import expo.modules.ExpoReactHostFactory
 
 class MainApplication : Application(), ReactApplication {
 
-  override val reactNativeHost: ReactNativeHost = ReactNativeHostWrapper(
-      this,
+  private fun createPackages(): MutableList<ReactPackage> =
+      PackageList(this).packages.apply {
+        add(CameraActivityPackage())
+        add(QRCodeScannerPackage())
+        add(BackupPackage())
+      }
+
+  private val packages by lazy { createPackages() }
+
+  override val reactNativeHost: ReactNativeHost =
       object : DefaultReactNativeHost(this) {
-        override fun getPackages(): MutableList<ReactPackage> =
-            PackageList(this).packages.apply {
-              add(CameraActivityPackage())
-              add(QRCodeScannerPackage())
-              add(BackupPackage())
-              add(SelfMRZScannerPackage())
-              // add(RNSelfPassportReaderPackage())
-            }
+        override fun getPackages(): MutableList<ReactPackage> = packages
 
         override fun getJSMainModuleName(): String = "index"
 
@@ -40,7 +42,10 @@ class MainApplication : Application(), ReactApplication {
         override val isNewArchEnabled: Boolean = BuildConfig.IS_NEW_ARCHITECTURE_ENABLED
         override val isHermesEnabled: Boolean = BuildConfig.IS_HERMES_ENABLED
       }
-  )
+
+  override val reactHost: ReactHost by lazy {
+    ExpoReactHostFactory.getDefaultReactHost(this, packages)
+  }
 
   override fun onCreate() {
     super.onCreate()

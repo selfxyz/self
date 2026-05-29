@@ -92,6 +92,12 @@ export const IDDataEvents = {
   PERK_OUTLINK_OPEN_FAILED: 'ID Data: Perk Outlink Open Failed',
 } as const;
 
+export const HomescreenEvents = {
+  ID_CARD_VIEWED: 'Homescreen: ID Card Viewed',
+  ID_CARD_PERK_TAPPED: 'Homescreen: ID Card Perk Tapped',
+  ID_CARD_PERK_OUTLINK_OPEN_FAILED: 'Homescreen: ID Card Perk Outlink Open Failed',
+} as const;
+
 export const MockDataEvents = {
   CANCEL_GENERATION: 'Mock Data: Cancel Generation',
   CREATE_DEEP_LINK: 'Mock Data: Create Deep Link',
@@ -218,6 +224,12 @@ export const RegistrationPickerEvents = {
   UNSUPPORTED_TAPPED: 'registration_id_picker_unsupported_tapped',
 } as const;
 
+export const ProofRequestPickerEvents = {
+  VIEWED: 'proof_request_picker_viewed',
+  ID_SELECTED: 'proof_request_id_selected',
+  INELIGIBLE_ID_TAPPED: 'proof_request_ineligible_id_tapped',
+} as const;
+
 export const SettingsEvents = {
   CONNECTION_MODAL_CLOSED: 'Settings: Connection Modal Closed',
   CONNECTION_MODAL_OPENED: 'Settings: Connection Modal Opened',
@@ -233,6 +245,7 @@ export type KnownEventName =
   | (typeof BackupEvents)[keyof typeof BackupEvents]
   | (typeof BiometricEvents)[keyof typeof BiometricEvents]
   | (typeof DocumentEvents)[keyof typeof DocumentEvents]
+  | (typeof HomescreenEvents)[keyof typeof HomescreenEvents]
   | (typeof IDDataEvents)[keyof typeof IDDataEvents]
   | (typeof KycEvents)[keyof typeof KycEvents]
   | (typeof MockDataEvents)[keyof typeof MockDataEvents]
@@ -241,4 +254,5 @@ export type KnownEventName =
   | (typeof PointEvents)[keyof typeof PointEvents]
   | (typeof ProofEvents)[keyof typeof ProofEvents]
   | (typeof RegistrationPickerEvents)[keyof typeof RegistrationPickerEvents]
+  | (typeof ProofRequestPickerEvents)[keyof typeof ProofRequestPickerEvents]
   | (typeof SettingsEvents)[keyof typeof SettingsEvents];

@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type LottieView from 'lottie-react-native';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import type { StaticScreenProps } from '@react-navigation/native';
 import { useFocusEffect, useIsFocused } from '@react-navigation/native';
@@ -29,7 +29,6 @@ import LoadingUI from '@/components/LoadingUI';
 import { loadingScreenProgress } from '@/integrations/haptics';
 import { getLoadingScreenText } from '@/proving/loadingScreenStateText';
 import { setupNotifications } from '@/services/notifications/notificationService';
-import { useSettingStore } from '@/stores/settingStore';
 
 type LoadingScreenParams = {
   documentCategory?: DocumentCategory;
@@ -54,24 +53,6 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
   // Track if we're initializing to show clean state
   const [isInitializing, setIsInitializing] = useState(false);
 
-  // Animation states
-  const [animationSource, setAnimationSource] = useState<
-    LottieView['props']['source']
-  >(proveLoadingAnimation);
-
-  // Loading text state
-  const [loadingText, setLoadingText] = useState<{
-    actionText: string;
-    actionSubText: string;
-    estimatedTime: string;
-    statusBarProgress: number;
-  }>({
-    actionText: '',
-    actionSubText: '',
-    estimatedTime: '',
-    statusBarProgress: 0,
-  });
-
   // Get document metadata from navigation params
   const {
     signatureAlgorithm: paramSignatureAlgorithm,
@@ -82,7 +63,6 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
   // Get proving store and self client
   const selfClient = useSelfClient();
   const currentState = useProvingStore(state => state.currentState) ?? 'idle';
-  const fcmToken = useSettingStore(state => state.fcmToken);
   const init = useProvingStore(state => state.init);
   const circuitType = useProvingStore(state => state.circuitType);
   const isFocused = useIsFocused();
@@ -95,11 +75,10 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
   useEffect(() => {
     if (!isFocused) return;
 
-    setIsInitializing(true);
-
     // Always initialize when screen becomes focused, regardless of current state
     // This ensures proper reset between proving sessions
     const initializeProving = async () => {
+      setIsInitializing(true);
       try {
         const selectedDocument = await loadSelectedDocument(selfClient);
         if (
@@ -135,70 +114,50 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
     };
   }, [isFocused]);
 
-  // Handle UI updates based on state changes
-  useEffect(() => {
-    // Stop haptics if screen is not focused
-    if (!isFocused) {
-      loadingScreenProgress(false);
-      return;
-    }
+  // Use clean initial state while re-initializing, otherwise the live state.
+  const displayState = (
+    isInitializing ? 'idle' : currentState
+  ) as ProvingStateType;
+  const displayCircuitType = isInitializing ? 'dsc' : circuitType || 'dsc';
+  const signatureAlgorithm =
+    paramSignatureAlgorithm && paramCurveOrExponent
+      ? paramSignatureAlgorithm
+      : 'rsa';
+  const curveOrExponent =
+    paramSignatureAlgorithm && paramCurveOrExponent
+      ? paramCurveOrExponent
+      : '65537';
 
-    // Use params from navigation or fallback to defaults
-    let signatureAlgorithm = 'rsa';
-    let curveOrExponent = '65537';
-
-    // Use provided params if available (only relevant for passport/id_card)
-    if (paramSignatureAlgorithm && paramCurveOrExponent) {
-      signatureAlgorithm = paramSignatureAlgorithm;
-      curveOrExponent = paramCurveOrExponent;
-    }
-
-    // Use clean initial state if we're initializing, otherwise use current state
-    const displayState = isInitializing ? 'idle' : currentState;
-    const displayCircuitType = isInitializing ? 'dsc' : circuitType || 'dsc';
-
-    const { actionText, actionSubText, estimatedTime, statusBarProgress } =
+  const loadingText = useMemo(
+    () =>
       getLoadingScreenText(
-        displayState as ProvingStateType,
+        displayState,
         signatureAlgorithm,
         curveOrExponent,
         displayCircuitType,
-      );
-    setLoadingText({
-      actionText,
-      actionSubText,
-      estimatedTime,
-      statusBarProgress,
-    });
+      ),
+    [displayState, signatureAlgorithm, curveOrExponent, displayCircuitType],
+  );
 
-    // Update animation based on state (use clean state if initializing)
-    const animationState = isInitializing ? 'idle' : currentState;
-    switch (animationState) {
-      case 'completed':
-        // setAnimationSource(successAnimation);
-        break;
+  const animationSource = useMemo<LottieView['props']['source']>(() => {
+    switch (displayState) {
       case 'error':
       case 'failure':
       case 'passport_not_supported':
-        setAnimationSource(failAnimation);
-        break;
       case 'account_recovery_choice':
       case 'passport_data_not_found':
-        setAnimationSource(failAnimation);
-        break;
+        return failAnimation;
       default:
-        setAnimationSource(proveLoadingAnimation);
-        break;
+        return proveLoadingAnimation;
     }
-  }, [
-    currentState,
-    fcmToken,
-    isInitializing,
-    circuitType,
-    paramCurveOrExponent,
-    paramSignatureAlgorithm,
-    isFocused,
-  ]);
+  }, [displayState]);
+
+  // Stop haptics when the screen loses focus while still mounted.
+  useEffect(() => {
+    if (!isFocused) {
+      loadingScreenProgress(false);
+    }
+  }, [isFocused]);
 
   // Handle haptic feedback using useFocusEffect for immediate response
   useFocusEffect(

@@ -143,15 +143,15 @@ const DocumentNFCScanScreen: React.FC = () => {
   const [nfcMessage, setNfcMessage] = useState<string | null>(null);
   const scanTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scanCancelledRef = useRef(false);
-  const sessionIdRef = useRef(uuidv4());
+  const [sessionId] = useState(() => uuidv4());
 
   const baseContext = useMemo(
     () => ({
-      sessionId: sessionIdRef.current,
+      sessionId,
       platform: Platform.OS as 'ios' | 'android',
       scanType: (route.params?.useCan ? 'can' : 'mrz') as 'mrz' | 'can',
     }),
-    [route.params?.useCan],
+    [route.params?.useCan, sessionId],
   );
 
   const animationRef = useRef<LottieView>(null);
@@ -377,7 +377,7 @@ const DocumentNFCScanScreen: React.FC = () => {
           skipCA,
           extendedMode,
           usePacePolling: isPacePolling,
-          sessionId: sessionIdRef.current,
+          sessionId,
           skipReselect,
         });
 
@@ -438,6 +438,7 @@ const DocumentNFCScanScreen: React.FC = () => {
           trackNfcEvent(BiometricEvents.NFC_RESPONSE_PARSE_FAILED, {
             error: errMsg,
           });
+          openErrorModal(errMsg);
           return;
         }
         if (passportData) {
@@ -507,6 +508,7 @@ const DocumentNFCScanScreen: React.FC = () => {
     navigation,
     openErrorModal,
     selfClient,
+    sessionId,
     shouldInjectError,
   ]);
 

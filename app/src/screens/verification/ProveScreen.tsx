@@ -81,6 +81,8 @@ const ProveScreen: React.FC = () => {
   const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
   const [scrollViewContentHeight, setScrollViewContentHeight] = useState(0);
   const [scrollViewHeight, setScrollViewHeight] = useState(0);
+  const scrollViewContentHeightRef = useRef(0);
+  const scrollViewHeightRef = useRef(0);
   const [isDocumentExpired, setIsDocumentExpired] = useState(false);
   const [documentType, setDocumentType] = useState('');
   const [walletModalOpen, setWalletModalOpen] = useState(false);
@@ -108,16 +110,17 @@ const ProveScreen: React.FC = () => {
   // Use window dimensions for dynamic scroll offset padding
   // This scales with viewport height rather than using hardcoded platform values
   const { height: windowHeight } = useWindowDimensions();
+  const routeScrollOffset = route.params?.scrollOffset;
 
   const initialScrollOffset = useMemo(() => {
-    if (route.params?.scrollOffset === undefined) {
+    if (routeScrollOffset === undefined) {
       return undefined;
     }
     // Use ~1.5% of window height as padding to account for minor layout differences
     // This scales appropriately across different device sizes
     const padding = windowHeight * 0.01;
-    return route.params.scrollOffset + padding;
-  }, [route.params?.scrollOffset, windowHeight]);
+    return routeScrollOffset + padding;
+  }, [routeScrollOffset, windowHeight]);
 
   const { addProofHistory } = useProofHistoryStore();
   const { loadDocumentCatalog } = usePassport();
@@ -214,34 +217,26 @@ const ProveScreen: React.FC = () => {
     hasCheckedForInactiveDocument,
   ]);
 
-  useEffect(() => {
-    if (!hasCheckedForInactiveDocument) {
-      return;
-    }
+  const initializeScrollStateIfReady = useCallback(
+    (contentHeight: number, layoutHeight: number) => {
+      if (
+        !hasCheckedForInactiveDocument ||
+        hasInitializedScrollStateRef.current ||
+        contentHeight <= 0 ||
+        layoutHeight <= 0
+      ) {
+        return;
+      }
 
-    // Wait for actual measurements before determining initial scroll state
-    // Both start at 0, causing false-positive on first render
-    const hasMeasurements = scrollViewContentHeight > 0 && scrollViewHeight > 0;
+      // Only auto-enable if content is short enough that no scrolling is needed.
+      if (contentHeight <= layoutHeight + 50) {
+        setHasScrolledToBottom(true);
+      }
 
-    if (!hasMeasurements || hasInitializedScrollStateRef.current) {
-      return;
-    }
-
-    // Only auto-enable if content is short enough that no scrolling is needed
-    if (isContentShorterThanScrollView) {
-      setHasScrolledToBottom(true);
-    }
-    // If content is long, leave hasScrolledToBottom as false (require scroll)
-    // Don't explicitly set to false to avoid resetting user's scroll progress
-
-    // Mark as initialized so we don't override user's scroll state later
-    hasInitializedScrollStateRef.current = true;
-  }, [
-    isContentShorterThanScrollView,
-    scrollViewContentHeight,
-    scrollViewHeight,
-    hasCheckedForInactiveDocument,
-  ]);
+      hasInitializedScrollStateRef.current = true;
+    },
+    [hasCheckedForInactiveDocument],
+  );
 
   useEffect(() => {
     if (!isFocused || !selectedApp || !hasCheckedForInactiveDocument) {
@@ -257,9 +252,10 @@ const ProveScreen: React.FC = () => {
       // Use setTimeout(0) to ensure we read values AFTER React processes the reset,
       // without adding measurements to dependencies (which causes race conditions).
       setTimeout(() => {
-        const hasMeasurements =
-          scrollViewContentHeight > 0 && scrollViewHeight > 0;
-        const isShort = scrollViewContentHeight <= scrollViewHeight + 50;
+        const contentHeight = scrollViewContentHeightRef.current;
+        const layoutHeight = scrollViewHeightRef.current;
+        const hasMeasurements = contentHeight > 0 && layoutHeight > 0;
+        const isShort = contentHeight <= layoutHeight + 50;
 
         if (hasMeasurements && isShort) {
           setHasScrolledToBottom(true);
@@ -427,15 +423,25 @@ const ProveScreen: React.FC = () => {
 
   const handleContentSizeChange = useCallback(
     (contentWidth: number, contentHeight: number) => {
+      scrollViewContentHeightRef.current = contentHeight;
       setScrollViewContentHeight(contentHeight);
+      initializeScrollStateIfReady(contentHeight, scrollViewHeightRef.current);
     },
-    [],
+    [initializeScrollStateIfReady],
   );
 
-  const handleScrollViewLayout = useCallback((event: LayoutChangeEvent) => {
-    const layoutHeight = event.nativeEvent.layout.height;
-    setScrollViewHeight(layoutHeight);
-  }, []);
+  const handleScrollViewLayout = useCallback(
+    (event: LayoutChangeEvent) => {
+      const layoutHeight = event.nativeEvent.layout.height;
+      scrollViewHeightRef.current = layoutHeight;
+      setScrollViewHeight(layoutHeight);
+      initializeScrollStateIfReady(
+        scrollViewContentHeightRef.current,
+        layoutHeight,
+      );
+    },
+    [initializeScrollStateIfReady],
+  );
 
   return (
     <View style={styles.container}>

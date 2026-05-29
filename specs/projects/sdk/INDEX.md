@@ -15,7 +15,7 @@ Status: Active (WebView-first; Self app adopts WebView as host via `webview-in-a
 | Workstream           | Entry                                                               | Focus                                                   |
 | -------------------- | ------------------------------------------------------------------- | ------------------------------------------------------- |
 | WebView UI           | [WebView Index](./workstreams/webview/INDEX.md)                     | Euclid screen migration, mocked flows, route coverage   |
-| WebView-in-App       | [WebView-in-App Spec](./workstreams/webview-in-app/SPEC.html)       | Self app RN app adopts WebView as its host           |
+| WebView-in-App       | [WebView-in-App Spec](./workstreams/webview-in-app/SPEC.html)       | Self app RN app adopts WebView as its host              |
 | SDK Core             | [SDK Core Spec](./workstreams/sdk-core/SPEC.md)                     | Browser-portable engine                                 |
 | Native Shells (Lite) | [Native Shells Lite Spec](./workstreams/native-shells-lite/SPEC.md) | Kotlin + Swift shells for external SDK consumers        |
 | Build Pipeline       | [Build Pipeline Spec](./workstreams/build-pipeline/SPEC.md)         | Bundle webview-app into native shells                   |

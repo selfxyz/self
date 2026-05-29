@@ -2,110 +2,205 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useMemo } from 'react';
-import {
-  ActivityIndicator,
-  Dimensions,
-  Pressable,
-  StyleSheet,
-} from 'react-native';
-import { Text, View, XStack } from 'tamagui';
+import React from 'react';
+import { ActivityIndicator, Pressable, StyleSheet } from 'react-native';
+import { Text, View, XStack, YStack } from 'tamagui';
 
+import { slate500 as trueSlate500 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
+import type { Perk } from '@selfxyz/mobile-sdk-alpha/onboarding/perks';
 
 import { proofRequestColors } from '@/components/proof-request/designTokens';
 import { ChevronUpDownIcon } from '@/components/proof-request/icons';
+import { PerkEligibilityRow } from '@/components/proof-request/PerkEligibilityRow';
+import { DocumentIdentityIcon } from '@/components/shared/DocumentIdentityIcon';
 
 export interface BottomActionBarProps {
   selectedDocumentName: string;
+  selectedDocumentNationalityCode?: string;
+  selectedDocumentIsMock?: boolean;
+  selectedDocumentSecurityLabel?: string;
   onDocumentSelectorPress: () => void;
   onApprovePress: () => void;
   approveDisabled?: boolean;
   approving?: boolean;
+  perks?: Perk[];
+  /** When true, replaces the security label with an "INELIGIBLE" pill and
+   *  surfaces a "Change ID" helper row under the disabled Approve. */
+  ineligible?: boolean;
+  /** Short reason copy shown in the helper row (e.g. "Needs an NFC-enabled
+   *  passport"). Falls back to a generic message when omitted. */
+  ineligibleReasonLabel?: string;
   testID?: string;
 }
 
+const INELIGIBLE_BG = '#FEF3C7';
+const INELIGIBLE_BORDER = '#FDE68A';
+const INELIGIBLE_FG = '#92400E';
+
+const ICON_SIZE = 32;
+
 /**
- * Bottom action bar with document selector and approve button.
- * Matches Figma design 15234:9322.
+ * Bottom action bar with stacked pill-shaped document selector and approve
+ * button. Matches Figma nodes 26164:20557 (selector) and 26164:20577 (approve).
  */
 export const BottomActionBar: React.FC<BottomActionBarProps> = ({
   selectedDocumentName,
+  selectedDocumentNationalityCode,
+  selectedDocumentIsMock,
+  selectedDocumentSecurityLabel,
   onDocumentSelectorPress,
   onApprovePress,
   approveDisabled = false,
   approving = false,
+  perks,
+  ineligible = false,
+  ineligibleReasonLabel,
   testID = 'bottom-action-bar',
 }) => {
-  // Reduce top padding to balance with safe area bottom padding
-  // The safe area hook adds significant padding on small screens for system UI
-  const topPadding = 8;
+  const hasPerks = !!perks && perks.length > 0;
+  const topPadding = 4;
 
-  // Calculate dynamic bottom padding based on screen height
-  // Scales proportionally to better center the select box beneath the disclosure list
-  const { height: screenHeight } = Dimensions.get('window');
-  const basePadding = 12;
-
-  // Get safe area padding (handles small screens < 900px with extra padding)
+  const basePadding = 4;
   const safeAreaPadding = useSafeBottomPadding(basePadding);
-
-  // Dynamic padding calculation:
-  // - Start with safe area padding (includes base + small screen adjustment)
-  // - Add additional padding that scales with screen height
-  // - Formula: safeAreaPadding + (screenHeight - 800) * 0.12
-  // - This provides base padding, safe area handling, plus 0-50px extra on larger screens
-  // - The multiplier (0.12) ensures smooth scaling across different screen sizes
-  const dynamicPadding = useMemo(() => {
-    const heightMultiplier = Math.max(0, (screenHeight - 800) * 0.12);
-    return Math.round(safeAreaPadding + heightMultiplier);
-  }, [screenHeight, safeAreaPadding]);
-
-  const bottomPadding = dynamicPadding;
+  const dynamicPadding = safeAreaPadding;
 
   return (
     <View
       backgroundColor={proofRequestColors.white}
       paddingHorizontal={16}
       paddingTop={topPadding}
-      paddingBottom={bottomPadding}
+      paddingBottom={dynamicPadding}
       testID={testID}
     >
-      <XStack gap={12}>
-        {/* Document Selector Button */}
-        <Pressable
-          onPress={onDocumentSelectorPress}
-          style={({ pressed }) => [
-            styles.documentButton,
-            pressed && styles.documentButtonPressed,
-          ]}
-          testID={`${testID}-document-selector`}
-        >
-          <XStack
-            alignItems="center"
-            justifyContent="space-between"
-            paddingHorizontal={12}
-            paddingVertical={12}
+      <YStack gap={10}>
+        <YStack>
+          {/* Document selector — always a rounded-60 pill per Figma 26164:20557 */}
+          <View
+            borderWidth={1}
+            borderColor={proofRequestColors.slate300}
+            borderRadius={60}
+            overflow="hidden"
+            backgroundColor={proofRequestColors.white}
+            zIndex={1}
+            style={styles.selectorShadow}
           >
-            <Text
-              fontFamily={dinot}
-              fontSize={18}
-              color={proofRequestColors.slate900}
-              numberOfLines={1}
-              allowFontScaling={false}
+            <Pressable
+              onPress={onDocumentSelectorPress}
+              style={({ pressed }) => [
+                styles.selectorPressable,
+                pressed && styles.selectorPressed,
+              ]}
+              testID={`${testID}-document-selector`}
             >
-              {selectedDocumentName}
-            </Text>
-            <View marginLeft={8}>
-              <ChevronUpDownIcon
-                size={20}
-                color={proofRequestColors.slate400}
+              <XStack
+                alignItems="center"
+                gap={10}
+                paddingLeft={8}
+                paddingRight={14}
+                paddingVertical={8}
+              >
+                <DocumentIdentityIcon
+                  nationalityCode={selectedDocumentNationalityCode}
+                  isMock={selectedDocumentIsMock}
+                  size={ICON_SIZE}
+                />
+
+                {/* Name + HI-SECURITY label */}
+                <YStack flex={1}>
+                  <Text
+                    fontFamily={dinot}
+                    fontSize={14}
+                    fontWeight="500"
+                    color={proofRequestColors.slate900}
+                    numberOfLines={1}
+                    allowFontScaling={false}
+                    testID={`${testID}-document-selector-name`}
+                  >
+                    {selectedDocumentName}
+                  </Text>
+                  {ineligible ? (
+                    <View
+                      alignSelf="flex-start"
+                      backgroundColor={INELIGIBLE_BG}
+                      borderColor={INELIGIBLE_BORDER}
+                      borderWidth={1}
+                      borderRadius={4}
+                      paddingHorizontal={6}
+                      paddingVertical={1}
+                      marginTop={2}
+                      testID={`${testID}-document-selector-ineligible`}
+                    >
+                      <Text
+                        fontFamily={dinot}
+                        fontSize={10}
+                        fontWeight="500"
+                        color={INELIGIBLE_FG}
+                        letterSpacing={0.6}
+                        textTransform="uppercase"
+                        allowFontScaling={false}
+                      >
+                        Ineligible
+                      </Text>
+                    </View>
+                  ) : selectedDocumentSecurityLabel ? (
+                    <Text
+                      fontFamily={dinot}
+                      fontSize={10}
+                      fontWeight="500"
+                      color={trueSlate500}
+                      letterSpacing={0.6}
+                      textTransform="uppercase"
+                      allowFontScaling={false}
+                      testID={`${testID}-document-selector-security`}
+                    >
+                      {selectedDocumentSecurityLabel}
+                    </Text>
+                  ) : null}
+                </YStack>
+
+                {/* Chevron */}
+                <View
+                  width={29}
+                  height={29}
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  <ChevronUpDownIcon
+                    size={20}
+                    color={proofRequestColors.slate900}
+                  />
+                </View>
+              </XStack>
+            </Pressable>
+          </View>
+          {hasPerks ? (
+            <View
+              marginTop={-12}
+              paddingTop={8}
+              borderLeftWidth={1}
+              borderRightWidth={1}
+              borderBottomWidth={1}
+              borderTopWidth={0}
+              borderColor={proofRequestColors.slate200}
+              borderTopLeftRadius={0}
+              borderTopRightRadius={0}
+              borderBottomLeftRadius={16}
+              borderBottomRightRadius={16}
+              overflow="hidden"
+              backgroundColor={proofRequestColors.white}
+            >
+              <PerkEligibilityRow
+                perks={perks ?? []}
+                variant="attached"
+                testID={`${testID}-perks`}
               />
             </View>
-          </XStack>
-        </Pressable>
+          ) : null}
+        </YStack>
 
-        {/* Select Button */}
+        {/* Approve button (full-width pill) */}
         <Pressable
           onPress={onApprovePress}
           disabled={approveDisabled || approving}
@@ -119,54 +214,95 @@ export const BottomActionBar: React.FC<BottomActionBarProps> = ({
           ]}
           testID={`${testID}-approve`}
         >
-          <View
-            alignItems="center"
-            justifyContent="center"
-            paddingHorizontal={12}
-            paddingVertical={12}
+          {approving ? (
+            <ActivityIndicator color={proofRequestColors.white} size="small" />
+          ) : (
+            <Text
+              fontFamily={dinot}
+              fontSize={16}
+              fontWeight="500"
+              color={proofRequestColors.white}
+              textAlign="center"
+              allowFontScaling={false}
+            >
+              Approve
+            </Text>
+          )}
+        </Pressable>
+
+        {ineligible && !approving ? (
+          <Pressable
+            onPress={onDocumentSelectorPress}
+            style={({ pressed }) => [
+              styles.ineligibleHelper,
+              pressed && styles.ineligibleHelperPressed,
+            ]}
+            testID={`${testID}-ineligible-helper`}
           >
-            {approving ? (
-              <ActivityIndicator
-                color={proofRequestColors.white}
-                size="small"
-              />
-            ) : (
+            <Text
+              fontFamily={dinot}
+              fontSize={13}
+              color={proofRequestColors.slate700}
+              textAlign="center"
+              allowFontScaling={false}
+            >
+              {ineligibleReasonLabel ?? "This ID isn't eligible for this perk."}{' '}
               <Text
                 fontFamily={dinot}
-                fontSize={18}
-                color={proofRequestColors.white}
-                textAlign="center"
+                fontSize={13}
+                fontWeight="600"
+                color={proofRequestColors.slate900}
+                textDecorationLine="underline"
                 allowFontScaling={false}
+                testID={`${testID}-ineligible-change-id`}
               >
-                Select
+                Change ID
               </Text>
-            )}
-          </View>
-        </Pressable>
-      </XStack>
+            </Text>
+          </Pressable>
+        ) : null}
+      </YStack>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  documentButton: {
-    backgroundColor: proofRequestColors.white,
-    borderWidth: 1,
-    borderColor: proofRequestColors.slate200,
-    borderRadius: 4,
+  selectorShadow: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 3,
   },
-  documentButtonPressed: {
+  selectorPressable: {
+    backgroundColor: proofRequestColors.white,
+  },
+  selectorPressed: {
     backgroundColor: proofRequestColors.slate100,
   },
   approveButton: {
-    flex: 1,
-    backgroundColor: proofRequestColors.blue600,
-    borderRadius: 4,
+    backgroundColor: '#000000',
+    borderColor: '#334155',
+    borderWidth: 1,
+    borderRadius: 60,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   approveButtonDisabled: {
     opacity: 0.5,
   },
   approveButtonPressed: {
-    backgroundColor: proofRequestColors.blue700,
+    opacity: 0.85,
+  },
+  ineligibleHelper: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ineligibleHelperPressed: {
+    opacity: 0.6,
   },
 });
