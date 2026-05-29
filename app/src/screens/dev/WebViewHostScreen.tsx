@@ -95,7 +95,7 @@ const WebViewHostScreen: React.FC = () => {
     <View style={{ flex: 1, backgroundColor: '#000' }}>
       <SelfVerification
         request={request}
-        mode="wallet"
+        mode="self-app"
         onSuccess={handleSuccess}
         onFailure={handleFailure}
         onCancelled={handleCancelled}

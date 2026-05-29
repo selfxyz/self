@@ -54,7 +54,12 @@ export type { KnownEventName } from './constants/analytics';
 
 export type { MRZScanOptions } from './mrz';
 
-export type { OnboardingBranch, OnboardingFailureStage, OnboardingStage } from './analytics/onboardingFunnel';
+export type {
+  OnboardingBranch,
+  OnboardingFailureStage,
+  OnboardingOutcome,
+  OnboardingStage,
+} from './analytics/onboardingFunnel';
 
 export type { PassportValidationCallbacks } from './validation/document';
 export type { Perk, PerkRailContent } from './flows/onboarding/perks';
@@ -143,10 +148,12 @@ export {
   completeOnboardingAttempt,
   failOnboardingAttempt,
   incrementAttemptRetryCount,
+  moveOnboardingAttemptToRecovery,
   recoverOnboardingAttempt,
   resolveOnboardingBranch,
   setOnboardingBranch,
   trackBranchEvent,
+  trackKycVerdict,
   trackOnboardingRetry,
   trackOnboardingStep,
 } from './analytics/onboardingFunnel';

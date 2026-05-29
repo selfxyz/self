@@ -17,7 +17,6 @@ export const AppEvents = {
   GET_STARTED: 'App: Get Started',
   GET_STARTED_AADHAAR: 'App: Get Started - Aadhaar',
   GET_STARTED_BIOMETRIC: 'App: Get Started - Biometric ID',
-  LOGO_CONFIRMATION_ANSWERED: 'App: Logo Confirmation Answered',
   SUPPORTED_BIOMETRIC_IDS: 'App: Supported Biometric IDs',
   UPDATE_MODAL_CLOSED: 'App: Update Modal Closed',
   UPDATE_MODAL_OPENED: 'App: Update Modal Opened',
@@ -63,7 +62,6 @@ export const BiometricEvents = {
 } as const;
 
 export const DocumentEvents = {
-  COUNTRY_HELP_TAPPED: 'Document: Country Help Tapped',
   ADD_NEW_AADHAAR_SELECTED: 'Document: Add Aadhaar',
   ADD_NEW_MOCK_SELECTED: 'Document: Add New Document via Mock',
   ADD_NEW_SCAN_SELECTED: 'Document: Add New Document via Scan',
@@ -84,6 +82,7 @@ export const KycEvents = {
   RETRY_TRIGGERED: 'KYC: Retry Triggered',
   SESSION_CREATED: 'KYC: Session Created',
   SESSION_REQUESTED: 'KYC: Session Requested',
+  VERIFICATION_RESOLVED: 'KYC: Verification Resolved',
 } as const;
 
 export const IDDataEvents = {
@@ -128,9 +127,7 @@ export const OnboardingEvents = {
   SCAN_SUCCEEDED: 'Onboarding: Document Scan Succeeded',
   PROOF_STARTED: 'Onboarding: Proof Generation Started',
   PROOF_SUCCEEDED: 'Onboarding: Proof Generation Succeeded',
-  COMPLETED: 'Onboarding: Completed',
-  RECOVERED: 'Onboarding: Recovered',
-  FAILED: 'Onboarding: Failed',
+  ENDED: 'Onboarding: Ended',
   STEP_RETRIED: 'Onboarding: Step Retried',
 } as const;
 
@@ -218,12 +215,6 @@ export const ProofEvents = {
   WS_HELLO_SENT: 'Proof: WS Hello Sent',
 } as const;
 
-export const RegistrationPickerEvents = {
-  VIEWED: 'registration_id_picker_viewed',
-  SELECTED: 'registration_id_picker_selected',
-  UNSUPPORTED_TAPPED: 'registration_id_picker_unsupported_tapped',
-} as const;
-
 export const ProofRequestPickerEvents = {
   VIEWED: 'proof_request_picker_viewed',
   ID_SELECTED: 'proof_request_id_selected',
@@ -253,6 +244,5 @@ export type KnownEventName =
   | (typeof OnboardingEvents)[keyof typeof OnboardingEvents]
   | (typeof PointEvents)[keyof typeof PointEvents]
   | (typeof ProofEvents)[keyof typeof ProofEvents]
-  | (typeof RegistrationPickerEvents)[keyof typeof RegistrationPickerEvents]
   | (typeof ProofRequestPickerEvents)[keyof typeof ProofRequestPickerEvents]
   | (typeof SettingsEvents)[keyof typeof SettingsEvents];
