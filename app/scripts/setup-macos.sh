@@ -152,8 +152,9 @@ inst_bundler() {
 inst_java()    { brew install openjdk@17; sudo ln -sfn "$(brew --prefix openjdk@17)/libexec/openjdk.jdk" /Library/Java/JavaVirtualMachines/openjdk-17.jdk 2>/dev/null || true; }
 inst_pnpm()    {
   if command -v corepack &>/dev/null; then
+    # Enable Corepack shims; the pinned pnpm version from the repo's
+    # packageManager field is resolved automatically when pnpm runs here.
     corepack enable
-    corepack prepare pnpm@latest --activate
   else
     err "corepack not available; ensure Node.js is installed and on PATH"
     return 1
