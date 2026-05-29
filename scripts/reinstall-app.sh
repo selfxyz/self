@@ -4,16 +4,16 @@ set -e
 REPO_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 cd "$REPO_DIR"
 
-yarn install
+pnpm install
 
 cd app
-yarn clean:build
-yarn clean:ios
-yarn clean:xcode
-yarn clean:android-deps
-yarn clean:ruby
-yarn clean:node
+pnpm clean:build
+pnpm clean:ios
+pnpm clean:xcode
+pnpm clean:android-deps
+pnpm clean:ruby
+pnpm clean:node
 cd ..
 
-yarn install
-yarn workspace @selfxyz/mobile-app run install-app
+pnpm install
+pnpm --filter @selfxyz/mobile-app run install-app

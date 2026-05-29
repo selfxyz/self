@@ -151,7 +151,8 @@ function main() {
   runCommand('xcrun', ['simctl', 'boot', simulator.udid]);
   runCommand('xcrun', ['simctl', 'bootstatus', simulator.udid, '-b']);
   sleep(5000);
-  runCommand('yarn', [
+  runCommand('pnpm', [
+    'exec',
     'react-native',
     'run-ios',
     '--scheme',

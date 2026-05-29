@@ -92,10 +92,10 @@ chk_studio()  { [[ -d "/Applications/Android Studio.app" ]] && echo "ok" || echo
 chk_sdk()     { [[ -d "${ANDROID_HOME:-$HOME/Library/Android/sdk}" ]] && echo "ok" || echo "missing"; }
 chk_ndk()     { [[ -d "${ANDROID_HOME:-$HOME/Library/Android/sdk}/ndk/28.0.13004108" ]] && echo "ok" || echo "missing"; }
 chk_shell()   { local rc=~/.zshrc; [[ "$SHELL" == *bash* ]] && rc=~/.bashrc; grep -q "ANDROID_HOME" "$rc" 2>/dev/null && echo "ok" || echo "missing"; }
-chk_yarn() {
-  command -v yarn &>/dev/null || { echo "missing"; return; }
-  v=$(yarn -v 2>/dev/null)
-  [[ -n "$v" && "${v%%.*}" -ge 4 ]] && echo "ok:$v" || echo "wrong:$v"
+chk_pnpm() {
+  command -v pnpm &>/dev/null || { echo "missing"; return; }
+  v=$(pnpm -v 2>/dev/null)
+  [[ -n "$v" && "${v%%.*}" -ge 9 ]] && echo "ok:$v" || echo "wrong:$v"
 }
 chk_swiftlint() { command -v swiftlint &>/dev/null && echo "ok:$(swiftlint version 2>/dev/null | head -1)" || echo "missing"; }
 
@@ -150,10 +150,10 @@ inst_bundler() {
   fi
 }
 inst_java()    { brew install openjdk@17; sudo ln -sfn "$(brew --prefix openjdk@17)/libexec/openjdk.jdk" /Library/Java/JavaVirtualMachines/openjdk-17.jdk 2>/dev/null || true; }
-inst_yarn()    {
+inst_pnpm()    {
   if command -v corepack &>/dev/null; then
     corepack enable
-    corepack prepare yarn@stable --activate
+    corepack prepare pnpm@latest --activate
   else
     err "corepack not available; ensure Node.js is installed and on PATH"
     return 1
@@ -215,7 +215,7 @@ DEPS=(
   "Homebrew|chk_brew|inst_brew|"
   "nvm|chk_nvm|inst_nvm|"
   "Node.js $NODE_VERSION|chk_node|inst_node|"
-  "Yarn|chk_yarn|inst_yarn|"
+  "pnpm|chk_pnpm|inst_pnpm|"
   "Watchman|chk_watch|inst_watch|"
   "rbenv|chk_rbenv|inst_rbenv|"
   "Ruby $RUBY_VERSION|chk_ruby|inst_ruby|"
@@ -283,24 +283,24 @@ fi
 # Manual instructions
 [[ ${#MANUAL[@]} -gt 0 ]] && { echo -e "\n${Y}Manual installs needed:${NC}"; for m in "${MANUAL[@]}"; do IFS='|' read -r n msg <<< "$m"; echo "  $n: $msg"; done; }
 
-# Yarn install
+# Dependency install
 echo ""
-if confirm "Run 'yarn install' in repo root?"; then
-  if ! command -v yarn &>/dev/null; then
-    err "yarn not available; run 'corepack enable && corepack prepare yarn@stable --activate' and retry"
+if confirm "Run 'pnpm install' in repo root?"; then
+  if ! command -v pnpm &>/dev/null; then
+    err "pnpm not available; run 'corepack enable' and retry"
   else
-    info "Running yarn install..."
+    info "Running pnpm install..."
     set +e  # Temporarily disable exit-on-error
-    cd "$REPO_ROOT" && yarn install
-    yarn_exit=$?
+    cd "$REPO_ROOT" && pnpm install
+    pnpm_exit=$?
     set -e  # Re-enable exit-on-error
 
-    if [[ $yarn_exit -eq 0 ]]; then
+    if [[ $pnpm_exit -eq 0 ]]; then
       ok "Done!"
     else
-      err "Yarn install failed (exit code: $yarn_exit)"
+      err "pnpm install failed (exit code: $pnpm_exit)"
       warn "This may be due to network issues or registry timeouts"
-      info "Try running manually: cd $REPO_ROOT && yarn install"
+      info "Try running manually: cd $REPO_ROOT && pnpm install"
     fi
   fi
 fi
@@ -314,6 +314,6 @@ fi
 echo -e "\n${G}${BOLD}Setup complete!${NC}"
 echo -e "Next steps:"
 echo -e "  1) Open a new terminal and run: source ~/.zshrc (or ~/.bashrc)"
-echo -e "  2) Install dependencies: cd $REPO_ROOT && yarn install"
-echo -e "  3) Run the app: cd $APP_DIR && yarn ios (or yarn android)"
-echo -e "  4) If Metro cache issues: cd $APP_DIR && yarn start:clean\n"
+echo -e "  2) Install dependencies: cd $REPO_ROOT && pnpm install"
+echo -e "  3) Run the app: cd $APP_DIR && pnpm ios (or pnpm android)"
+echo -e "  4) If Metro cache issues: cd $APP_DIR && pnpm start:clean\n"

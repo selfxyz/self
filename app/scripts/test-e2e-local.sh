@@ -97,7 +97,7 @@ check_metro_running() {
         echo "Please start Metro in another terminal before running e2e tests:"
         echo ""
         echo "  ${BLUE}cd $(pwd)${NC}"
-        echo "  ${BLUE}yarn start${NC}"
+        echo "  ${BLUE}pnpm start${NC}"
         echo ""
         echo "Wait for Metro to show 'Metro waiting on exp://localhost:8081' then re-run this script."
         echo ""
@@ -112,7 +112,7 @@ check_metro_running() {
 # Build dependencies (shared by both platforms)
 build_dependencies() {
     log_info "🔨 Building dependencies..."
-    if ! yarn build:deps; then
+    if ! pnpm build:deps; then
         log_error "Dependency build failed"
         exit 1
     fi
