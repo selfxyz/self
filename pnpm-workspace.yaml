@@ -56,6 +56,12 @@ overrides:
   # which makes TS error "TS2688: Cannot find type definition file for 'minimatch'"
   # whenever the @types directory gets scanned (e.g. ng-packagr in sdk/qrcode-angular).
   '@types/minimatch': 5.1.2
+  # Pin prettier to one version across the workspace. Mixed ^3.5.3/^3.8.3 ranges
+  # plus contracts' exact 3.5.3, under nodeLinker: hoisted, let CI and local
+  # resolve different prettier builds, which reformat .sol/.md differently →
+  # recurring format-check drift. prettier-plugin-solidity@2.3.1 peer is >=3.0.0,
+  # so 3.8.3 is safe.
+  prettier: 3.8.3
   # Ported from yarn `resolutions` during the pnpm migration. Without these,
   # pnpm allows multiple versions of these packages to co-exist (yarn dedupes
   # them via `resolutions`), which inflates Metro's bundle ~3x by bundling
