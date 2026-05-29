@@ -84,6 +84,7 @@ export const KycEvents = {
   RETRY_TRIGGERED: 'KYC: Retry Triggered',
   SESSION_CREATED: 'KYC: Session Created',
   SESSION_REQUESTED: 'KYC: Session Requested',
+  VERIFICATION_RESOLVED: 'KYC: Verification Resolved',
 } as const;
 
 export const IDDataEvents = {
@@ -128,9 +129,7 @@ export const OnboardingEvents = {
   SCAN_SUCCEEDED: 'Onboarding: Document Scan Succeeded',
   PROOF_STARTED: 'Onboarding: Proof Generation Started',
   PROOF_SUCCEEDED: 'Onboarding: Proof Generation Succeeded',
-  COMPLETED: 'Onboarding: Completed',
-  RECOVERED: 'Onboarding: Recovered',
-  FAILED: 'Onboarding: Failed',
+  ENDED: 'Onboarding: Ended',
   STEP_RETRIED: 'Onboarding: Step Retried',
 } as const;
 
