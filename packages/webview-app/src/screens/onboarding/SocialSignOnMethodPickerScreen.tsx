@@ -33,8 +33,8 @@ export const SocialSignOnMethodPickerScreen: React.FC = () => {
   const onSeedPhrase = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('social_sign_on_seed_phrase_pressed');
-    navigate('/coming-soon');
-  }, [navigate, haptic, analytics]);
+    navigate(`/onboarding/recovery-phrase${getPromptMockSearch(mock)}`);
+  }, [mock, navigate, haptic, analytics]);
 
   const onDismiss = useCallback(() => {
     haptic.trigger('selection');

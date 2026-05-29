@@ -344,8 +344,10 @@ export const ProviderLaunchScreen: React.FC = () => {
               animation: 'spin 0.8s linear infinite',
             }}
           />
-          <div style={{ marginTop: spacing.md }}>
-            <Title textAlign="center">Loading verification...</Title>
+          <div style={{ marginTop: spacing.md, textAlign: 'center' }}>
+            <Title textAlign="center" style={{ display: 'block' }}>
+              Loading verification...
+            </Title>
           </div>
         </div>
       )}

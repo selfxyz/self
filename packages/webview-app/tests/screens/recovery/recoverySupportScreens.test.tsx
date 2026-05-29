@@ -70,6 +70,9 @@ vi.mock('@selfxyz/webview-bridge/adapters', () => ({
 }));
 
 vi.mock('@selfxyz/euclid', () => ({
+  borderRadius: {
+    mdd: 14,
+  },
   colors: {
     black: '#000',
     red600: '#f00',
@@ -99,6 +102,7 @@ vi.mock('@selfxyz/euclid', () => ({
     mdLg: 16,
     xlLg: 24,
   },
+  RecoveryPhrase: () => <div>Recovery phrase grid</div>,
   ZapShieldIcon: () => null,
   SettingsViewScreen: ({ sections }: { sections: Array<{ items: Array<{ label: string; onPress: () => void }> }> }) => (
     <div>
@@ -320,17 +324,12 @@ describe('recovery support screens', () => {
     });
   });
 
-  it('carries returnTo through recovery success and resumes the caller route', async () => {
+  it('carries returnTo and resumes the caller route directly after recovery', async () => {
     renderRoutes(['/recovery/phrase-input?returnTo=%2Ftunnel%2Fproof%2Fgenerating']);
 
     fireEvent.click(screen.getByRole('button', { name: /fill valid phrase/i }));
     fireEvent.click(screen.getByRole('button', { name: /^continue$/i }));
 
-    await waitFor(() => {
-      expectLocation('/recovery/success');
-    });
-
-    fireEvent.click(screen.getByRole('button', { name: /finish recovery/i }));
     await waitFor(() => {
       expectLocation('/tunnel/proof/generating');
     });
@@ -450,11 +449,6 @@ describe('recovery support screens', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /fill valid phrase/i }));
     fireEvent.click(screen.getByRole('button', { name: /^continue$/i }));
-    await waitFor(() => {
-      expectLocation('/recovery/success');
-    });
-
-    fireEvent.click(screen.getByRole('button', { name: /finish recovery/i }));
     await waitFor(() => {
       expectLocation('/tunnel/proof/generating');
     });

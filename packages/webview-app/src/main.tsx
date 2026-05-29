@@ -17,7 +17,7 @@ globalThis.Buffer = Buffer;
 
 createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <div style={{ display: 'flex', flex: 1, height: '100vh', width: '100%', maxWidth: 430, margin: '0 auto' }}>
+    <div style={{ display: 'flex', flex: 1, height: '100vh', width: '100%' }}>
       <BridgeProvider>
         <App />
       </BridgeProvider>
