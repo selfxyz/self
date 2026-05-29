@@ -50,6 +50,7 @@ export const BackupEvents = {
 } as const;
 
 export const BiometricEvents = {
+  DATA_CONFIRMATION_CONFIRMED: 'Biometric: Data Confirmation Confirmed',
   DOCUMENT_PARSED: 'Biometric: Document Parsed',
   DOCUMENT_UNSUPPORTED: 'Biometric: Document Unsupported',
   MRZ_CAPTURED: 'Biometric: MRZ Captured',

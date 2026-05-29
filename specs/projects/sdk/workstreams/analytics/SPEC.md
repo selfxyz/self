@@ -109,6 +109,10 @@ On terminal events the helper additionally stamps `used_fallback: initial_branch
 
 The branch split tells you _what happened_ (initial intent vs final outcome) but not _how the decision unfolded_ at the fallback screen. ANA-05 will add `Onboarding: Fallback Offered/Accepted/Declined` to answer this.
 
+### Data-confirmation drop-off — gap
+
+The biometric data-confirmation screen (`DataConfirmationScreen`, where the user reviews parsed MRZ fields before NFC) fired no commit event, so abandonment there was invisible — it folded into a generic drop between `Biometric: MRZ Captured` and `Biometric: NFC Started`. ANA-19 adds `Biometric: Data Confirmation Confirmed`, carrying `edited` (whether the user corrected the parsed MRZ) and `edited_fields` (which of `document_number` / `date_of_birth` / `document_expiry_date` changed, to surface which MRZ field the parse gets wrong most); passport-vs-ID is already on the event as `current_branch`, so no `document_type` is duplicated. Per ANA-07, no screen-view event is added — `Biometric: MRZ Captured` is the denominator and abandonment is captured by Sentry breadcrumbs.
+
 ## Execution Model
 
 - This file is the durable workstream context. It owns the contract (event set, branch model, cross-branch flows, invariants).
@@ -128,6 +132,7 @@ The branch split tells you _what happened_ (initial intent vs final outcome) but
 | ANA-16 | KYC async verdict event (provider approve/reject over websocket)              | In Review   | High     | ANA-12                 | [plan](./plans/ANA-16-kyc-verdict-event.md) — PR #2117                     |
 | ANA-17 | Onboarding exit classification (single Onboarding: Ended + outcome)           | In Review   | High     | ANA-01, ANA-13         | [plan](./plans/ANA-17-classify-nullified-onboarding-exits.html) — PR #2117 |
 | ANA-18 | Remove non-funnel onboarding events                                           | In Review   | High     | ANA-13                 | [plan](./plans/ANA-18-onboarding-event-allowlist.md)                       |
+| ANA-19 | Instrument biometric data-confirmation (MRZ detail) screen                    | In Review   | Medium   | ANA-12                 | — PR #2119                                                                  |
 | ANA-05 | Fallback decision events and fallback-offer mini-funnel                       | Ready       | Medium   | ANA-01, ANA-12         | —                                                                          |
 | ANA-08 | Explicit abandonment events on app background                                 | Ready       | Low      | ANA-01                 | —                                                                          |
 | ANA-02 | Investigation: internal/TestFlight traffic filtering                          | Ready       | Medium   | —                      | —                                                                          |
