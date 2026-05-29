@@ -6,6 +6,8 @@ import * as mockReact from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 
+import { BiometricEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+
 import DataConfirmationScreen from '@/screens/documents/scanning/DataConfirmationScreen';
 
 const mockView = View;
@@ -13,6 +15,7 @@ const mockText = Text;
 const mockTouchableOpacity = TouchableOpacity;
 
 const mockSetMRZForNFC = jest.fn();
+const mockTrackBranchEvent = jest.fn();
 
 jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
   useSelfClient: () => ({
@@ -25,6 +28,9 @@ jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
       setMRZForNFC: mockSetMRZForNFC,
     }),
   }),
+  biometricDocumentType: (documentType: string | undefined) =>
+    documentType === 'i' || documentType === 'id_card' ? 'id_card' : 'passport',
+  trackBranchEvent: (...args: unknown[]) => mockTrackBranchEvent(...args),
 }));
 
 const mockInputFieldCallbacks: Record<
@@ -157,6 +163,43 @@ describe('DataConfirmationScreen', () => {
       fireEvent.press(screen.getByText('Continue'));
 
       expect(mockSetMRZForNFC).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('analytics', () => {
+    it('fires Data Confirmation Viewed on mount', () => {
+      render(<DataConfirmationScreen />);
+
+      expect(mockTrackBranchEvent).toHaveBeenCalledWith(
+        expect.anything(),
+        BiometricEvents.DATA_CONFIRMATION_VIEWED,
+        { document_type: 'passport', from_nfc_failure: false },
+      );
+    });
+
+    it('fires Data Confirmation Confirmed with edited=false when unchanged', () => {
+      render(<DataConfirmationScreen />);
+
+      fireEvent.press(screen.getByText('Continue'));
+
+      expect(mockTrackBranchEvent).toHaveBeenCalledWith(
+        expect.anything(),
+        BiometricEvents.DATA_CONFIRMATION_CONFIRMED,
+        { document_type: 'passport', edited: false },
+      );
+    });
+
+    it('fires Data Confirmation Confirmed with edited=true when a field changed', () => {
+      render(<DataConfirmationScreen />);
+
+      changeDocumentNumber('XY987654Z');
+      fireEvent.press(screen.getByText('Continue'));
+
+      expect(mockTrackBranchEvent).toHaveBeenCalledWith(
+        expect.anything(),
+        BiometricEvents.DATA_CONFIRMATION_CONFIRMED,
+        { document_type: 'passport', edited: true },
+      );
     });
   });
 

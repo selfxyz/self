@@ -10,6 +10,7 @@ import { useIsFocused, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import {
+  biometricDocumentType,
   DelayedLottieView,
   dinot,
   resolveOnboardingBranch,
@@ -72,7 +73,7 @@ const DocumentCameraScreen: React.FC = () => {
     const branch = resolveOnboardingBranch(selectedDocumentType ?? 'p');
     trackOnboardingStep(selfClient, OnboardingEvents.SCAN_STARTED, { branch });
     trackBranchEvent(selfClient, BiometricEvents.MRZ_STARTED, {
-      document_type: branch === 'biometric_id' ? 'id_card' : 'passport',
+      document_type: biometricDocumentType(selectedDocumentType),
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

@@ -27,6 +27,8 @@ jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
       setMRZForNFC: jest.fn(),
     }),
   }),
+  biometricDocumentType: () => 'passport',
+  trackBranchEvent: jest.fn(),
 }));
 
 jest.mock('@selfxyz/mobile-sdk-alpha/components', () => {
@@ -70,12 +72,6 @@ jest.mock('@/components/InputField', () => {
     },
   };
 });
-
-jest.mock('@selfxyz/mobile-sdk-alpha/constants/analytics', () => ({
-  PassportEvents: {
-    DATA_CONFIRMATION_COMPLETED: 'Passport: Data Confirmation Completed',
-  },
-}));
 
 const mockNavigate = jest.fn();
 

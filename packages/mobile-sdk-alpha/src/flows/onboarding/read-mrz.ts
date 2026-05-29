@@ -6,7 +6,7 @@ import type { RefObject } from 'react';
 import { useCallback } from 'react';
 import { Platform } from 'react-native';
 
-import { trackBranchEvent } from '../../analytics/onboardingFunnel';
+import { biometricDocumentType, trackBranchEvent } from '../../analytics/onboardingFunnel';
 import { BiometricEvents } from '../../constants/analytics';
 import { useSelfClient } from '../../context';
 import { checkScannedInfo, formatDateToYYMMDD } from '../../processing/mrz';
@@ -84,11 +84,8 @@ export function useReadMRZ(scanStartTimeRef: RefObject<number>) {
           countryCode: issuingCountry?.trim().toUpperCase() || '',
         });
 
-        const trimmedDocType = documentType?.trim().toLowerCase() ?? '';
-        const branchDocumentType = trimmedDocType === 'i' || trimmedDocType.startsWith('id') ? 'id_card' : 'passport';
-
         trackBranchEvent(selfClient, BiometricEvents.MRZ_CAPTURED, {
-          document_type: branchDocumentType,
+          document_type: biometricDocumentType(documentType),
           duration_seconds: parseFloat(scanDurationSeconds),
         });
 

@@ -55,6 +55,7 @@ export type { KnownEventName } from './constants/analytics';
 export type { MRZScanOptions } from './mrz';
 
 export type {
+  BiometricDocumentType,
   OnboardingBranch,
   OnboardingFailureStage,
   OnboardingOutcome,
@@ -145,6 +146,7 @@ export {
 } from './documents/utils';
 
 export {
+  biometricDocumentType,
   completeOnboardingAttempt,
   failOnboardingAttempt,
   incrementAttemptRetryCount,

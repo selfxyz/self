@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { YStack } from 'tamagui';
@@ -11,11 +11,16 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { colors, TopNavigationDialogue, XIcon } from '@selfxyz/euclid';
-import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import {
+  biometricDocumentType,
+  trackBranchEvent,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
 import {
   PrimaryButton,
   SecondaryButton,
 } from '@selfxyz/mobile-sdk-alpha/components';
+import { BiometricEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import { advercase } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import { InputField } from '@/components/InputField';
@@ -67,6 +72,16 @@ const DataConfirmationScreen: React.FC & {
     documentExpiryDate: originalDocumentExpiryDate,
   });
 
+  const branchDocumentType = biometricDocumentType(mrzData.documentType);
+
+  useEffect(() => {
+    trackBranchEvent(selfClient, BiometricEvents.DATA_CONFIRMATION_VIEWED, {
+      document_type: branchDocumentType,
+      from_nfc_failure: fromNfcFailure,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleFieldChange = (field: keyof DocumentData, value: string) => {
     setFields(prev => ({
       ...prev,
@@ -91,6 +106,11 @@ const DataConfirmationScreen: React.FC & {
         documentType: mrzData.documentType,
       });
     }
+
+    trackBranchEvent(selfClient, BiometricEvents.DATA_CONFIRMATION_CONFIRMED, {
+      document_type: branchDocumentType,
+      edited: hasChanges,
+    });
 
     navigation.navigate('DocumentNFCScan');
   };
