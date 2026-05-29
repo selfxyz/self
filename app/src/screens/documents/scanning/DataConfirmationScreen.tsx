@@ -11,11 +11,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { colors, TopNavigationDialogue, XIcon } from '@selfxyz/euclid';
-import {
-  biometricDocumentType,
-  trackBranchEvent,
-  useSelfClient,
-} from '@selfxyz/mobile-sdk-alpha';
+import { trackBranchEvent, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
   PrimaryButton,
   SecondaryButton,
@@ -72,8 +68,6 @@ const DataConfirmationScreen: React.FC & {
     documentExpiryDate: originalDocumentExpiryDate,
   });
 
-  const branchDocumentType = biometricDocumentType(mrzData.documentType);
-
   const handleFieldChange = (field: keyof DocumentData, value: string) => {
     setFields(prev => ({
       ...prev,
@@ -100,7 +94,6 @@ const DataConfirmationScreen: React.FC & {
     }
 
     trackBranchEvent(selfClient, BiometricEvents.DATA_CONFIRMATION_CONFIRMED, {
-      document_type: branchDocumentType,
       edited: hasChanges,
     });
 

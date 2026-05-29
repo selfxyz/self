@@ -28,8 +28,6 @@ jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
       setMRZForNFC: mockSetMRZForNFC,
     }),
   }),
-  biometricDocumentType: (documentType: string | undefined) =>
-    documentType === 'i' || documentType === 'id_card' ? 'id_card' : 'passport',
   trackBranchEvent: (...args: unknown[]) => mockTrackBranchEvent(...args),
 }));
 
@@ -175,7 +173,7 @@ describe('DataConfirmationScreen', () => {
       expect(mockTrackBranchEvent).toHaveBeenCalledWith(
         expect.anything(),
         BiometricEvents.DATA_CONFIRMATION_CONFIRMED,
-        { document_type: 'passport', edited: false },
+        { edited: false },
       );
     });
 
@@ -188,7 +186,7 @@ describe('DataConfirmationScreen', () => {
       expect(mockTrackBranchEvent).toHaveBeenCalledWith(
         expect.anything(),
         BiometricEvents.DATA_CONFIRMATION_CONFIRMED,
-        { document_type: 'passport', edited: true },
+        { edited: true },
       );
     });
   });

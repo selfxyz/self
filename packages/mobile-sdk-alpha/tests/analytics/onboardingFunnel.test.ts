@@ -7,7 +7,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   _getCurrentOnboardingAttempt,
   _resetOnboardingFunnelForTests,
-  biometricDocumentType,
   completeOnboardingAttempt,
   failOnboardingAttempt,
   incrementAttemptRetryCount,
@@ -46,22 +45,6 @@ describe('resolveOnboardingBranch', () => {
 
   it('defaults unknown document types to kyc', () => {
     expect(resolveOnboardingBranch('mystery')).toBe('kyc');
-  });
-});
-
-describe('biometricDocumentType', () => {
-  it.each([
-    ['i', 'id_card'],
-    ['I', 'id_card'],
-    ['id_card', 'id_card'],
-    [' ID_CARD ', 'id_card'],
-    ['p', 'passport'],
-    ['P', 'passport'],
-    ['passport', 'passport'],
-    ['mystery', 'passport'],
-    [undefined, 'passport'],
-  ])('maps %s to %s', (input, expected) => {
-    expect(biometricDocumentType(input)).toBe(expected);
   });
 });
 

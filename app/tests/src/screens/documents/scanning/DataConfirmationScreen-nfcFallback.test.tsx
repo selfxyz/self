@@ -27,7 +27,6 @@ jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
       setMRZForNFC: jest.fn(),
     }),
   }),
-  biometricDocumentType: () => 'passport',
   trackBranchEvent: jest.fn(),
 }));
 

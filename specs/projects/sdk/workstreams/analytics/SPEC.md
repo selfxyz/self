@@ -111,7 +111,7 @@ The branch split tells you _what happened_ (initial intent vs final outcome) but
 
 ### Data-confirmation drop-off — gap
 
-The biometric data-confirmation screen (`DataConfirmationScreen`, where the user reviews parsed MRZ fields before NFC) fired no commit event, so abandonment there was invisible — it folded into a generic drop between `Biometric: MRZ Captured` and `Biometric: NFC Started`. ANA-19 adds `Biometric: Data Confirmation Confirmed` (carries an `edited` flag for whether the user corrected the parsed MRZ). Per ANA-07, no screen-view event is added — `Biometric: MRZ Captured` is the denominator and abandonment is captured by Sentry breadcrumbs.
+The biometric data-confirmation screen (`DataConfirmationScreen`, where the user reviews parsed MRZ fields before NFC) fired no commit event, so abandonment there was invisible — it folded into a generic drop between `Biometric: MRZ Captured` and `Biometric: NFC Started`. ANA-19 adds `Biometric: Data Confirmation Confirmed`, carrying only an `edited` flag (whether the user corrected the parsed MRZ); passport-vs-ID is already on the event as `current_branch`, so no `document_type` is duplicated. Per ANA-07, no screen-view event is added — `Biometric: MRZ Captured` is the denominator and abandonment is captured by Sentry breadcrumbs.
 
 ## Execution Model
 

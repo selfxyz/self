@@ -170,14 +170,6 @@ export function resolveOnboardingBranch(documentType: string): OnboardingBranch 
   }
 }
 
-export type BiometricDocumentType = 'passport' | 'id_card';
-
-export function biometricDocumentType(documentType: string | undefined): BiometricDocumentType {
-  return resolveOnboardingBranch((documentType ?? '').trim().toLowerCase()) === 'biometric_id'
-    ? 'id_card'
-    : 'passport';
-}
-
 export function setOnboardingBranch(branch: OnboardingBranch): void {
   if (!currentAttempt) return;
   currentAttempt.currentBranch = branch;
