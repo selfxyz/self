@@ -397,7 +397,7 @@ describe('tunnel flow screens', () => {
     expectLocation('/tunnel/proof/receipt');
   });
 
-  it('routes proving failure close back to tunnel tour step 4', () => {
+  it('dismisses after sending failure result on proving-source close', async () => {
     renderResultRoute({
       pathname: '/tunnel/proof/result',
       state: { success: false, error: 'TEE down', source: 'proving' },
@@ -405,10 +405,19 @@ describe('tunnel flow screens', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /close/i }));
 
-    expectLocation('/tunnel/tour/4');
+    await waitFor(() => {
+      expect(lifecycle.setResult).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          error: expect.objectContaining({ message: 'TEE down' }),
+        }),
+      );
+    });
+    expect(analytics.trackEvent).toHaveBeenCalledWith('tunnel_result_cancelled', { source: 'proving' });
+    expect(lifecycle.dismiss).toHaveBeenCalled();
   });
 
-  it('keeps disclose failure close inside the tunnel disclose route', () => {
+  it('dismisses after sending failure result on disclose-source close', async () => {
     renderResultRoute({
       pathname: '/tunnel/proof/result',
       state: { success: false, error: 'TEE down', source: 'disclose' },
@@ -416,10 +425,19 @@ describe('tunnel flow screens', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /close/i }));
 
-    expectLocation('/tunnel/proof/disclose');
+    await waitFor(() => {
+      expect(lifecycle.setResult).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          error: expect.objectContaining({ message: 'TEE down' }),
+        }),
+      );
+    });
+    expect(analytics.trackEvent).toHaveBeenCalledWith('tunnel_result_cancelled', { source: 'disclose' });
+    expect(lifecycle.dismiss).toHaveBeenCalled();
   });
 
-  it('keeps kyc failure close inside the tunnel kyc route', () => {
+  it('dismisses after sending failure result on kyc-source close', async () => {
     renderResultRoute({
       pathname: '/tunnel/proof/result',
       state: { success: false, error: 'Provider cancelled', source: 'kyc' },
@@ -427,7 +445,16 @@ describe('tunnel flow screens', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /close/i }));
 
-    expectLocation('/tunnel/kyc');
+    await waitFor(() => {
+      expect(lifecycle.setResult).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          error: expect.objectContaining({ message: 'Provider cancelled' }),
+        }),
+      );
+    });
+    expect(analytics.trackEvent).toHaveBeenCalledWith('tunnel_result_cancelled', { source: 'kyc' });
+    expect(lifecycle.dismiss).toHaveBeenCalled();
   });
 
   it('routes account recovery choice to the recovery-required screen', async () => {
@@ -593,7 +620,7 @@ describe('tunnel flow screens', () => {
     expectLocation('/tunnel/proof/result');
   });
 
-  it('defaults missing failure source close to tunnel tour step 4', () => {
+  it('defaults missing failure source to proving when cancelling', async () => {
     renderResultRoute({
       pathname: '/tunnel/proof/result',
       state: { success: false, error: 'Unknown error' },
@@ -601,7 +628,10 @@ describe('tunnel flow screens', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /close/i }));
 
-    expectLocation('/tunnel/tour/4');
+    await waitFor(() => {
+      expect(analytics.trackEvent).toHaveBeenCalledWith('tunnel_result_cancelled', { source: 'proving' });
+    });
+    expect(lifecycle.dismiss).toHaveBeenCalled();
   });
 
   it('keeps tour restore back button inside the tunnel flow', () => {
@@ -663,7 +693,7 @@ describe('tunnel flow screens', () => {
     expect(screen.getByRole('button', { name: /close receipt/i })).toBeTruthy();
   });
 
-  it('shows confirm button on receipt when opened from success context', () => {
+  it('shows close-only controls on receipt when opened from success context', () => {
     render(
       <MemoryRouter
         initialEntries={[
@@ -680,7 +710,8 @@ describe('tunnel flow screens', () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByRole('button', { name: /confirm receipt/i })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /confirm receipt/i })).toBeNull();
+    expect(screen.getByRole('button', { name: /close receipt/i })).toBeTruthy();
   });
 
   it('routes to error result when disclose setup throws before init starts', async () => {

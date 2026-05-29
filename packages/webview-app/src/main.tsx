@@ -7,6 +7,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 
 import { App } from './App';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { BridgeProvider } from './providers/BridgeProvider';
 
 import './fonts.css';
@@ -19,7 +20,9 @@ createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <div style={{ display: 'flex', flex: 1, height: '100vh', width: '100%', maxWidth: 430, margin: '0 auto' }}>
       <BridgeProvider>
-        <App />
+        <ErrorBoundary>
+          <App />
+        </ErrorBoundary>
       </BridgeProvider>
     </div>
   </React.StrictMode>,
