@@ -404,7 +404,7 @@ class PassportCameraView(context: Context) : FrameLayout(context) {
             id,
             message,
             e::class.java.simpleName,
-            "",
+            e.stackTraceToString(),
         ))
   }
 }
