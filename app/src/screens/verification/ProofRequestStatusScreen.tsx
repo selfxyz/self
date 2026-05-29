@@ -160,8 +160,8 @@ const SuccessScreen: React.FC = () => {
 
   const handleDeeplinkRedirect = useCallback(() => {
     if (!deeplinkCallback) return;
-    Linking.openURL(deeplinkCallback).catch(err => {
-      console.error('Failed to open deep link:', err);
+    Linking.openURL(deeplinkCallback).catch(() => {
+      console.error('Failed to open deep link');
       onOkPress();
     });
   }, [deeplinkCallback, onOkPress]);

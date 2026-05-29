@@ -9,6 +9,7 @@ import android.graphics.Color
 import android.hardware.camera2.CameraCharacteristics
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.Surface
@@ -55,6 +56,7 @@ class PassportCameraView(context: Context) : FrameLayout(context) {
   private var mounted = false
   private var cameraStarted = false
   private val isDecoding = AtomicBoolean(false)
+  private val passportDispatched = AtomicBoolean(false)
   private var rotation: Int = 0
   private var mDist: Float = 0f
 
@@ -246,6 +248,9 @@ class PassportCameraView(context: Context) : FrameLayout(context) {
           if (!mounted || !isAttachedToWindow) {
             return
           }
+          if (!passportDispatched.compareAndSet(false, true)) {
+            return
+          }
           mainHandler.post {
             try {
               binding.statusViewBottom.setTextColor(ContextCompat.getColor(context, R.color.status_text))
@@ -390,6 +395,7 @@ class PassportCameraView(context: Context) : FrameLayout(context) {
   }
 
   private fun dispatchError(e: Throwable, message: String) {
+    Log.e("PassportCameraView", message, e)
     val reactContext = UIManagerHelper.getReactContext(this) as? ReactContext ?: return
     val dispatcher = UIManagerHelper.getEventDispatcherForReactTag(reactContext, id) ?: return
     dispatcher.dispatchEvent(
@@ -397,8 +403,8 @@ class PassportCameraView(context: Context) : FrameLayout(context) {
             UIManagerHelper.getSurfaceId(this),
             id,
             message,
-            e.toString(),
-            e.stackTraceToString(),
+            e::class.java.simpleName,
+            "",
         ))
   }
 }
