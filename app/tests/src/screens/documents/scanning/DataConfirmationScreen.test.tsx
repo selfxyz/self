@@ -6,6 +6,8 @@ import * as mockReact from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 
+import { BiometricEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+
 import DataConfirmationScreen from '@/screens/documents/scanning/DataConfirmationScreen';
 
 const mockView = View;
@@ -13,6 +15,7 @@ const mockText = Text;
 const mockTouchableOpacity = TouchableOpacity;
 
 const mockSetMRZForNFC = jest.fn();
+const mockTrackBranchEvent = jest.fn();
 
 jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
   useSelfClient: () => ({
@@ -25,6 +28,7 @@ jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
       setMRZForNFC: mockSetMRZForNFC,
     }),
   }),
+  trackBranchEvent: (...args: unknown[]) => mockTrackBranchEvent(...args),
 }));
 
 const mockInputFieldCallbacks: Record<
@@ -112,10 +116,14 @@ jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 44, bottom: 34, left: 0, right: 0 }),
 }));
 
-function changeDocumentNumber(value: string) {
-  const cb = mockInputFieldCallbacks['input-document-number']?.onChangeText;
-  if (!cb) throw new Error('Document number onChangeText not found');
+function changeField(testId: string, value: string) {
+  const cb = mockInputFieldCallbacks[testId]?.onChangeText;
+  if (!cb) throw new Error(`${testId} onChangeText not found`);
   act(() => cb(value));
+}
+
+function changeDocumentNumber(value: string) {
+  changeField('input-document-number', value);
 }
 
 describe('DataConfirmationScreen', () => {
@@ -157,6 +165,55 @@ describe('DataConfirmationScreen', () => {
       fireEvent.press(screen.getByText('Continue'));
 
       expect(mockSetMRZForNFC).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('analytics', () => {
+    it('fires Data Confirmation Confirmed with edited=false and no edited fields when unchanged', () => {
+      render(<DataConfirmationScreen />);
+
+      fireEvent.press(screen.getByText('Continue'));
+
+      expect(mockTrackBranchEvent).toHaveBeenCalledWith(
+        expect.anything(),
+        BiometricEvents.DATA_CONFIRMATION_CONFIRMED,
+        { edited: false, edited_fields: [] },
+      );
+    });
+
+    it('reports the single field that changed', () => {
+      render(<DataConfirmationScreen />);
+
+      changeDocumentNumber('XY987654Z');
+      fireEvent.press(screen.getByText('Continue'));
+
+      expect(mockTrackBranchEvent).toHaveBeenCalledWith(
+        expect.anything(),
+        BiometricEvents.DATA_CONFIRMATION_CONFIRMED,
+        { edited: true, edited_fields: ['document_number'] },
+      );
+    });
+
+    it('reports every field that changed', () => {
+      render(<DataConfirmationScreen />);
+
+      changeDocumentNumber('XY987654Z');
+      changeField('input-date-of-birth', '910202');
+      changeField('input-document-expiration-date', '350101');
+      fireEvent.press(screen.getByText('Continue'));
+
+      expect(mockTrackBranchEvent).toHaveBeenCalledWith(
+        expect.anything(),
+        BiometricEvents.DATA_CONFIRMATION_CONFIRMED,
+        {
+          edited: true,
+          edited_fields: [
+            'document_number',
+            'date_of_birth',
+            'document_expiry_date',
+          ],
+        },
+      );
     });
   });
 

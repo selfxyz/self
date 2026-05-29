@@ -17,7 +17,11 @@ env:
   MAESTRO_CLI_NO_ANALYTICS: true
   MAESTRO_VERSION: 1.41.0
   MAESTRO_CACHE_VERSION: v1 # Bump this to clear Maestro cache
-  # Disable Maestro recording/artifacts (keep for debugging - set to "true" to re-enable)
+  # Debug-only Didit native module bypass for E2E autolinking.
+  # Keep false by default; set true only when isolating Didit-specific build failures.
+  DIDIT_E2E_BYPASS: ${{ github.event.inputs.didit_e2e_bypass == 'true' && 'true' || 'false' }}
+  # Maestro recording/artifacts. Default off to reduce CI overhead.
+  # Enable only when debugging by setting ENABLE_MAESTRO_RECORDING=true.
   ENABLE_MAESTRO_RECORDING: false
 
 on:
@@ -32,19 +36,26 @@ on:
       - "patches/**"
       - ".github/workflows/mobile-e2e.yml"
   pull_request:
-    branches:
-      - dev
-      - staging
-      - main
+    types: [opened, synchronize, reopened, labeled]
     paths:
       - "app/**"
       - "packages/mobile-sdk-alpha/**"
       - "patches/**"
       - ".github/workflows/mobile-e2e.yml"
   workflow_dispatch:
+    inputs:
+      didit_e2e_bypass:
+        description: "Disable Didit RN native module autolinking for this run (debug only)"
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   e2e-android:
+    if: >
+      github.event_name != 'pull_request' ||
+      contains(fromJSON('["dev","staging","main"]'), github.base_ref) ||
+      contains(github.event.pull_request.labels.*.name, 'test-e2e')
     concurrency:
       group: ${{ github.workflow }}-android-${{ github.ref }}
       cancel-in-progress: true
@@ -345,12 +356,19 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: app/android/app/build/outputs/apk/debug/app-debug.apk
-          key: ${{ runner.os }}-apk-v1-${{ hashFiles('app/android/app/src/**', 'app/android/app/build.gradle', 'app/android/app/proguard-rules.pro', 'app/android/build.gradle', 'app/android/settings.gradle', 'app/android/gradle.properties', 'app/android/gradle/wrapper/**', 'app/android/gradlew', 'app/src/**', 'app/App.tsx', 'app/index.js', 'app/app.json', 'app/package.json', 'app/babel.config.cjs', 'app/metro.config.cjs', 'app/react-native.config.cjs', 'app/patches/**', 'patches/**', 'packages/mobile-sdk-alpha/src/**', 'packages/mobile-sdk-alpha/package.json', 'yarn.lock', '.nvmrc', '.apk-cache-inputs.txt') }}
+          key: ${{ runner.os }}-apk-v2-${{ hashFiles('app/android/app/src/**', 'app/android/app/build.gradle', 'app/android/app/proguard-rules.pro', 'app/android/build.gradle', 'app/android/settings.gradle', 'app/android/gradle.properties', 'app/android/gradle/wrapper/**', 'app/android/gradlew', 'app/src/**', 'app/App.tsx', 'app/index.js', 'app/app.json', 'app/package.json', 'app/babel.config.cjs', 'app/metro.config.cjs', 'app/react-native.config.cjs', 'app/patches/**', 'patches/**', 'packages/mobile-sdk-alpha/src/**', 'packages/mobile-sdk-alpha/package.json', 'yarn.lock', '.nvmrc', '.apk-cache-inputs.txt') }}
 
       - name: Build Android APK
         if: steps.apk-cache.outputs.cache-hit != 'true'
+        env:
+          # Keep Metro root behavior aligned with iOS E2E build in this monorepo.
+          # Without this, Gradle bundle tasks can resolve --entry-file from repo root
+          # instead of app/index.js and produce a bad JS bundle in the APK.
+          EXPO_NO_METRO_WORKSPACE_ROOT: 1
         run: |
           echo "Building Android APK..."
+          echo "DIDIT_E2E_BYPASS=${DIDIT_E2E_BYPASS}"
+          echo "EXPO_NO_METRO_WORKSPACE_ROOT=${EXPO_NO_METRO_WORKSPACE_ROOT}"
           chmod +x app/android/gradlew
 
           # Resource monitor so we have memory data if the build is killed
@@ -418,6 +436,57 @@ jobs:
           # Check APK size
           APK_SIZE=$(stat -f%z "$APK_PATH" 2>/dev/null || stat -c%s "$APK_PATH" 2>/dev/null || echo "unknown")
           echo "📱 APK size: $APK_SIZE bytes"
+
+          # Verify the JS bundle inside the APK is Hermes bytecode, not plain JS.
+          # A Hermes-enabled APK that ships a non-Hermes bundle will launch but
+          # fail to mount JS — exactly the failure mode where Maestro never sees
+          # `home-screen-root`. Use the installed Hermes compiler to parse the
+          # bundle instead of hard-coding bytecode header bytes; the bytecode
+          # version changes across Hermes releases.
+          echo "🔍 Inspecting JS bundle format in APK..."
+          BUNDLE_TMP=$(mktemp)
+          if unzip -p "$APK_PATH" assets/index.android.bundle > "$BUNDLE_TMP" 2>/dev/null && [ -s "$BUNDLE_TMP" ]; then
+            BUNDLE_SIZE=$(stat -f%z "$BUNDLE_TMP" 2>/dev/null || stat -c%s "$BUNDLE_TMP" 2>/dev/null || echo "unknown")
+            HERMESC_ROOT="app/node_modules/hermes-compiler/hermesc"
+            case "$(uname -s)" in
+              Darwin*) HERMESC="$HERMESC_ROOT/osx-bin/hermesc" ;;
+              MINGW*|MSYS*|CYGWIN*) HERMESC="$HERMESC_ROOT/win64-bin/hermesc.exe" ;;
+              *) HERMESC="$HERMESC_ROOT/linux64-bin/hermesc" ;;
+            esac
+            HERMES_DUMP_TMP=$(mktemp)
+            HERMES_ERROR_TMP=$(mktemp)
+            echo "📦 index.android.bundle size: $BUNDLE_SIZE bytes"
+            [ -x "$HERMESC" ] || {
+              echo "❌ Hermes compiler not found or not executable at $HERMESC"
+              echo "Cannot verify Android bundle bytecode format."
+              rm -f "$BUNDLE_TMP" "$HERMES_DUMP_TMP" "$HERMES_ERROR_TMP"
+              exit 1
+            }
+
+            if "$HERMESC" -b -dump-bytecode "$BUNDLE_TMP" > "$HERMES_DUMP_TMP" 2> "$HERMES_ERROR_TMP"; then
+              BYTECODE_VERSION=$(sed -n 's/^  Bytecode version number: //p' "$HERMES_DUMP_TMP" | head -1)
+              echo "✅ Bundle is Hermes bytecode${BYTECODE_VERSION:+ (version $BYTECODE_VERSION)}"
+            else
+              MAGIC=$(od -An -N8 -tx1 "$BUNDLE_TMP" | tr -d ' \n')
+              FIRST_LINE=$(head -c 200 "$BUNDLE_TMP" | tr -d '\0' | head -1)
+              echo "❌ Bundle is NOT valid Hermes bytecode for the installed compiler."
+              echo "Hermes parser output:"
+              sed 's/^/    /' "$HERMES_ERROR_TMP"
+              echo "First 8 bytes: $MAGIC"
+              echo "First 200 chars:"
+              echo "    $FIRST_LINE"
+              echo "This will cause JS to fail to mount on a Hermes-enabled APK."
+              rm -f "$BUNDLE_TMP" "$HERMES_DUMP_TMP" "$HERMES_ERROR_TMP"
+              exit 1
+            fi
+          else
+            echo "❌ No assets/index.android.bundle in APK."
+            echo "This job builds with E2E_BUILD=true and -PbundleInDebug=true,"
+            echo "so a missing bundle means the bundling task was skipped or failed."
+            rm -f "$BUNDLE_TMP"
+            exit 1
+          fi
+          rm -f "$BUNDLE_TMP" "$HERMES_DUMP_TMP" "$HERMES_ERROR_TMP"
 
           # Verify private modules were properly integrated (skip for forks)
           if [ -z "${SELFXYZ_APP_TOKEN:-}" ]; then
@@ -489,6 +558,7 @@ jobs:
           adb install -r "$APK_PATH" || { echo "❌ App installation failed"; exit 1; }
           adb shell pm clear "$APP_ID" >/dev/null 2>&1 || true
           echo "✅ App installed successfully"
+          adb logcat -c || true
           echo "⏰ Giving the emulator a moment to settle..."
           sleep 5
           echo "🎭 Running Maestro tests..."
@@ -497,7 +567,9 @@ jobs:
           if ! maestro test app/tests/e2e/launch.android.flow.yaml --format junit --output app/maestro-results.xml; then
             echo "❌ Maestro failed - dumping Android diagnostics"
             adb shell dumpsys activity activities | sed -n '1,240p' || true
-            adb logcat -d | tail -n 400 || true
+            adb logcat -d > app/maestro-android-logcat.log || true
+            grep -En "FATAL EXCEPTION|AndroidRuntime|ReactNativeJS|com.proofofpassportapp" app/maestro-android-logcat.log | tail -n 300 || true
+            adb exec-out screencap -p > app/maestro-android-failure.png || true
             exit 1
           fi
           EOF
@@ -522,10 +594,17 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: maestro-results-android
-          path: app/maestro-results.xml
+          path: |
+            app/maestro-results.xml
+            app/maestro-android-logcat.log
+            app/maestro-android-failure.png
           if-no-files-found: warn
 
   e2e-ios:
+    if: >
+      github.event_name != 'pull_request' ||
+      contains(fromJSON('["dev","staging","main"]'), github.base_ref) ||
+      contains(github.event.pull_request.labels.*.name, 'test-e2e')
     timeout-minutes: 120
     # runs-on: macos-latest-large
     runs-on: namespace-profile-apple-silicon-6cpu
@@ -746,6 +825,7 @@ jobs:
           retry_wait_seconds: 10
           command: |
             cd app/ios
+            echo "DIDIT_E2E_BYPASS=${DIDIT_E2E_BYPASS}"
             echo "📦 Installing pods via centralized script…"
             BUNDLE_GEMFILE=../Gemfile bundle exec bash scripts/pod-install-with-cache-fix.sh
         env:
@@ -824,6 +904,11 @@ jobs:
       - name: Build iOS App
         env:
           E2E_TESTING: 1
+          # Expo's metro-config sets Metro's serverRoot to the yarn workspace
+          # root by default. Under Xcode's bundle phase, --entry-file is then
+          # resolved against the repo root (self/self/index.js) instead of
+          # app/index.js. Opt out so Metro anchors to projectRoot.
+          EXPO_NO_METRO_WORKSPACE_ROOT: 1
         run: |
           echo "Building iOS app..."
           echo "Project: ${{ env.IOS_PROJECT_NAME }}, Scheme: ${{ env.IOS_PROJECT_SCHEME }}"
@@ -995,12 +1080,10 @@ jobs:
           echo "🔧 Maestro will manage its daemon automatically during test execution"
           echo ""
 
-          # Take a screenshot before running tests (if recording enabled)
-          if [ "${ENABLE_MAESTRO_RECORDING}" = "true" ]; then
-            echo "📸 Taking pre-test screenshot..."
-            xcrun simctl io "$SIMULATOR_ID" screenshot app/test-artifacts/pre-test-screenshot.png || echo "⚠️ Screenshot failed"
-            echo ""
-          fi
+          # Always take a pre-test screenshot — cheap, and essential when the app hangs on launch.
+          echo "📸 Taking pre-test screenshot..."
+          xcrun simctl io "$SIMULATOR_ID" screenshot app/test-artifacts/pre-test-screenshot.png || echo "⚠️ Screenshot failed"
+          echo ""
 
           echo "╔════════════════════════════════════════════════════════════════╗"
           echo "║                  🎭 STARTING MAESTRO TEST                      ║"
@@ -1056,12 +1139,10 @@ jobs:
             sleep 2  # Give time for video to finalize
           fi
 
-          # Take a screenshot after test (if recording enabled)
-          if [ "${ENABLE_MAESTRO_RECORDING}" = "true" ]; then
-            echo "📸 Taking post-test screenshot..."
-            xcrun simctl io "$SIMULATOR_ID" screenshot app/test-artifacts/post-test-screenshot.png || echo "⚠️ Screenshot failed"
-            echo ""
-          fi
+          # Always take a post-test screenshot — captures the final on-screen state for triage.
+          echo "📸 Taking post-test screenshot..."
+          xcrun simctl io "$SIMULATOR_ID" screenshot app/test-artifacts/post-test-screenshot.png || echo "⚠️ Screenshot failed"
+          echo ""
 
           # Save Maestro output to file for debugging
           echo "$MAESTRO_OUTPUT" > app/test-artifacts/maestro-output.log
@@ -1091,29 +1172,59 @@ jobs:
           fi
           echo ""
 
-          # Check simulator logs for any crashes
-          echo "🔍 Checking for crash logs..."
-          CRASH_LOGS=$(find ~/Library/Logs/DiagnosticReports -name "Self*.crash" -o -name "OpenPassport*.crash" -mmin -5 2>/dev/null | head -5)
-          if [ -n "$CRASH_LOGS" ]; then
-            echo "⚠️ Recent crash logs found:"
-            echo "$CRASH_LOGS"
-            # Copy crash logs to artifacts
-            for log in $CRASH_LOGS; do
-              cp "$log" app/test-artifacts/ 2>/dev/null || true
-            done
+          # Collect any recent crash / diagnostic reports from both host and simulator paths.
+          # Bundle id is com.warroom.proofofpassport; binary name is OpenPassport — match broadly.
+          echo "🔍 Collecting crash & diagnostic reports..."
+          mkdir -p app/test-artifacts/diagnostic-reports
+          CRASH_SEARCH_PATHS=(
+            "$HOME/Library/Logs/DiagnosticReports"
+            "$HOME/Library/Developer/CoreSimulator/Devices/$SIMULATOR_ID/data/Library/Logs/DiagnosticReports"
+            "$HOME/Library/Developer/CoreSimulator/Devices/$SIMULATOR_ID/data/Library/Logs/CrashReporter"
+          )
+          CRASH_FOUND=0
+          for p in "${CRASH_SEARCH_PATHS[@]}"; do
+            [ -d "$p" ] || continue
+            # Anything modified in the last 15 minutes — broader pattern catches .ips, .crash, .diag, .panic
+            while IFS= read -r f; do
+              [ -z "$f" ] && continue
+              cp "$f" app/test-artifacts/diagnostic-reports/ 2>/dev/null && CRASH_FOUND=$((CRASH_FOUND + 1))
+            done < <(find "$p" -type f -mmin -15 2>/dev/null \( -iname "OpenPassport*" -o -iname "Self*" -o -iname "*proofofpassport*" -o -iname "*.ips" -o -iname "*.crash" -o -iname "*.panic" \))
+          done
+          if [ "$CRASH_FOUND" -gt 0 ]; then
+            echo "⚠️ Copied $CRASH_FOUND diagnostic report(s) to app/test-artifacts/diagnostic-reports/"
+            ls -la app/test-artifacts/diagnostic-reports/
           else
-            echo "✅ No recent crash logs"
+            echo "✅ No recent diagnostic reports"
           fi
           echo ""
 
-          # Check system log for relevant messages
-          echo "📋 Recent simulator system logs (last 50 lines):"
-          xcrun simctl spawn "$SIMULATOR_ID" log show --predicate 'process == "Self" OR process == "OpenPassport"' --last 5m --style compact 2>/dev/null | tail -50 > app/test-artifacts/simulator-system.log || echo "⚠️ Could not retrieve system logs"
-          if [ -f app/test-artifacts/simulator-system.log ]; then
-            echo "✅ System logs saved to simulator-system.log"
-            echo "Last 20 lines:"
+          # Capture two views of the simulator system log:
+          # 1. A filtered text log scoped to our process — quick to grep in CI output.
+          # 2. A full .logarchive — the only reliable way to diagnose hangs / native crashes
+          #    when the process name predicate misses (e.g. early launch, jetsam, watchdog kills).
+          echo "📋 Capturing simulator system logs..."
+          xcrun simctl spawn "$SIMULATOR_ID" log show \
+            --predicate 'process == "OpenPassport" OR process == "Self" OR senderImagePath CONTAINS "OpenPassport" OR subsystem CONTAINS "proofofpassport"' \
+            --last 10m --style compact 2>/dev/null \
+            > app/test-artifacts/simulator-system.log \
+            || echo "⚠️ Filtered log show failed"
+          if [ -s app/test-artifacts/simulator-system.log ]; then
+            echo "✅ Filtered system log saved (last 20 lines):"
             tail -20 app/test-artifacts/simulator-system.log
+          else
+            echo "⚠️ Filtered log empty — process predicate may not have matched. The full archive below is the source of truth."
           fi
+          echo ""
+
+          echo "📦 Collecting full simulator log archive (sim.logarchive)..."
+          xcrun simctl spawn "$SIMULATOR_ID" log collect --output app/test-artifacts/sim.logarchive 2>/dev/null \
+            && echo "✅ Log archive saved to sim.logarchive" \
+            || echo "⚠️ log collect failed (sim may have shut down)"
+          # Also dump an unfiltered tail so CI viewers don't have to download the archive
+          # for quick triage. Bounded so it doesn't bloat artifacts.
+          xcrun simctl spawn "$SIMULATOR_ID" log show --last 5m --style compact 2>/dev/null \
+            | tail -2000 > app/test-artifacts/simulator-system-unfiltered.log \
+            || echo "⚠️ Unfiltered log show failed"
           echo ""
 
           # Check if video was created (if recording was enabled)
@@ -1182,10 +1293,14 @@ jobs:
           path: |
             app/test-artifacts/maestro-output.log
             app/test-artifacts/simulator-system.log
-            app/test-artifacts/*.crash
+            app/test-artifacts/simulator-system-unfiltered.log
+            app/test-artifacts/diagnostic-reports/**
           if-no-files-found: warn
-      - name: Upload test artifacts (video and screenshots)
-        if: always() && env.ENABLE_MAESTRO_RECORDING == 'true'
+      # Always upload the full artifacts bundle (video, screenshots, log archive,
+      # diagnostic reports). The archive is bounded by retention-days, and the
+      # diagnosability ROI on every failed run is higher than the storage cost.
+      - name: Upload test artifacts (video, screenshots, log archive)
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: maestro-artifacts-ios

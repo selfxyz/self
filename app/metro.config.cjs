@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
+const { getDefaultConfig } = require('expo/metro-config');
+const { mergeConfig } = require('metro-config');
 const path = require('node:path');
 const fs = require('node:fs');
 const findYarnWorkspaceRoot = require('find-yarn-workspace-root');
@@ -114,8 +115,11 @@ const config = {
       '@': path.join(__dirname, 'src'),
     },
 
-    // Support package exports with conditions
-    unstable_conditionNames: ['react-native', 'import', 'require'],
+    // Let Metro choose import vs require from the actual callsite.
+    // Forcing the global "import" condition makes @babel/runtime helpers
+    // resolve to ESM even when Babel emitted require(...), which crashes at
+    // runtime with "_interopRequireDefault is not a function".
+    unstable_conditionNames: ['react-native'],
 
     // SVG support
     assetExts: assetExts.filter(ext => ext !== 'svg'),

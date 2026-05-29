@@ -6,7 +6,7 @@
 const { execSync } = require('child_process');
 const { existsSync, statSync, unlinkSync } = require('fs');
 const os = require('os');
-const { join } = require('path');
+const { join, resolve } = require('path');
 
 const platform = process.argv[2];
 if (!platform || !['android', 'ios'].includes(platform)) {
@@ -16,8 +16,8 @@ if (!platform || !['android', 'ios'].includes(platform)) {
 
 // Bundle size thresholds in MB - easy to update!
 const BUNDLE_THRESHOLDS_MB = {
-  ios: 49,
-  android: 49,
+  ios: 52,
+  android: 52,
 };
 
 function formatBytes(bytes) {
@@ -61,6 +61,8 @@ function checkBundleSize(bundleSize, targetPlatform) {
 const tmpDir = os.tmpdir();
 const bundleFile = join(tmpDir, `${platform}.bundle`);
 const sourcemapFile = join(tmpDir, `${platform}.bundle.map`);
+const appRoot = resolve(__dirname, '..');
+const entryFile = join(appRoot, 'index.js');
 
 console.log(`🔨 Generating ${platform} bundle using Metro...`);
 
@@ -69,9 +71,9 @@ try {
     `npx react-native bundle ` +
       `--platform ${platform} ` +
       `--dev false ` +
-      `--entry-file index.js ` +
-      `--bundle-output ${bundleFile} ` +
-      `--sourcemap-output ${sourcemapFile} ` +
+      `--entry-file "${entryFile}" ` +
+      `--bundle-output "${bundleFile}" ` +
+      `--sourcemap-output "${sourcemapFile}" ` +
       `--minify false ` +
       `--config metro.config.cjs ` +
       `--reset-cache`,

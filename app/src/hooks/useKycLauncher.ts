@@ -147,15 +147,15 @@ export const useKycLauncher = (options: UseKycLauncherOptions) => {
         return;
       }
 
-      trackOnboardingStep(selfClient, OnboardingEvents.SCAN_STARTED, {
-        branch: 'kyc',
-      });
       trackBranchEvent(selfClient, KycEvents.SESSION_REQUESTED, {
         provider: KYC_PROVIDER,
       });
       const session = await createKycSession({
         country: countryCode,
         nationality: countryCode,
+      });
+      trackOnboardingStep(selfClient, OnboardingEvents.SCAN_STARTED, {
+        branch: 'kyc',
       });
       trackBranchEvent(selfClient, KycEvents.SESSION_CREATED, {
         provider: KYC_PROVIDER,

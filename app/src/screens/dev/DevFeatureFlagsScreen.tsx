@@ -49,8 +49,8 @@ const DevFeatureFlagsScreen: React.FC = () => {
 
   const loadFeatureFlags = useCallback(async () => {
     try {
-      setErrorState(null);
       const flags = await getAllFeatureFlags();
+      setErrorState(null);
       setFeatureFlags(flags);
       setLastRefresh(new Date());
 
@@ -185,7 +185,10 @@ const DevFeatureFlagsScreen: React.FC = () => {
   }, [loadFeatureFlags]);
 
   useEffect(() => {
-    loadFeatureFlags();
+    const run = async () => {
+      await loadFeatureFlags();
+    };
+    run();
   }, [loadFeatureFlags]);
 
   useEffect(() => {

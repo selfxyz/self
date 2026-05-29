@@ -293,9 +293,15 @@ describe('WebViewScreen URL sanitization and navigation interception', () => {
     });
     expect(result).toBe(false);
     await waitFor(() => expect(console.error).toHaveBeenCalled());
-    const [msg] = (console.error as jest.Mock).mock.calls[0];
-    expect(String(msg)).toContain('Failed to open externally');
-    expect(String(msg)).not.toMatch(/Failed to open URL externally/);
+    const errorMessages = (console.error as jest.Mock).mock.calls.map(([msg]) =>
+      String(msg),
+    );
+    expect(
+      errorMessages.some(msg => msg.includes('Failed to open externally')),
+    ).toBe(true);
+    expect(
+      errorMessages.some(msg => /Failed to open URL externally/.test(msg)),
+    ).toBe(false);
   });
 });
 

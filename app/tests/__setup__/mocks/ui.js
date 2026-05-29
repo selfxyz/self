@@ -186,17 +186,12 @@ jest.mock('tamagui', () => {
 
 // Mock Tamagui lucide icons to simple components to avoid theme context
 jest.mock('@tamagui/lucide-icons', () => {
-  // Avoid requiring React to prevent nested require memory issues
-  // Return mock components that can be queried by testID
+  const { jsx } = require('react/jsx-runtime');
+
+  // Return lightweight host elements that React 19 can render safely.
   const makeIcon = name => {
-    // Use a mock element tag that React can render
-    const Icon = props => ({
-      $$typeof: Symbol.for('react.element'),
-      type: `mock-icon-${name}`,
-      props: { testID: `icon-${name}`, ...props },
-      key: null,
-      ref: null,
-    });
+    const Icon = props =>
+      jsx(`mock-icon-${name}`, { testID: `icon-${name}`, ...props });
     Icon.displayName = `MockIcon(${name})`;
     return Icon;
   };
