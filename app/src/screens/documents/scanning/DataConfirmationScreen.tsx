@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { YStack } from 'tamagui';
@@ -73,14 +73,6 @@ const DataConfirmationScreen: React.FC & {
   });
 
   const branchDocumentType = biometricDocumentType(mrzData.documentType);
-
-  useEffect(() => {
-    trackBranchEvent(selfClient, BiometricEvents.DATA_CONFIRMATION_VIEWED, {
-      document_type: branchDocumentType,
-      from_nfc_failure: fromNfcFailure,
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const handleFieldChange = (field: keyof DocumentData, value: string) => {
     setFields(prev => ({

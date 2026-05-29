@@ -167,16 +167,6 @@ describe('DataConfirmationScreen', () => {
   });
 
   describe('analytics', () => {
-    it('fires Data Confirmation Viewed on mount', () => {
-      render(<DataConfirmationScreen />);
-
-      expect(mockTrackBranchEvent).toHaveBeenCalledWith(
-        expect.anything(),
-        BiometricEvents.DATA_CONFIRMATION_VIEWED,
-        { document_type: 'passport', from_nfc_failure: false },
-      );
-    });
-
     it('fires Data Confirmation Confirmed with edited=false when unchanged', () => {
       render(<DataConfirmationScreen />);
 
