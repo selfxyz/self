@@ -62,6 +62,11 @@ overrides:
   # recurring format-check drift. prettier-plugin-solidity@2.3.1 peer is >=3.0.0,
   # so 3.8.3 is safe.
   prettier: 3.8.3
+  # typechain@8 calls prettier.format() synchronously for codegen, but prettier 3
+  # made format() async (returns a Promise). Under the global pin above, typechain
+  # writes that Promise to disk and crashes with "The data argument ... Received an
+  # instance of Promise". Keep typechain on prettier 2.x, which has a sync format().
+  typechain>prettier: 2.8.8
   # Ported from yarn `resolutions` during the pnpm migration. Without these,
   # pnpm allows multiple versions of these packages to co-exist (yarn dedupes
   # them via `resolutions`), which inflates Metro's bundle ~3x by bundling
