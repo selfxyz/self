@@ -97,7 +97,10 @@ jobs:
         working-directory: ./app
 
   analyze-ios:
-    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'push' && contains(fromJSON('["refs/heads/staging","refs/heads/main"]'), github.ref)) ||
+      (github.event_name == 'pull_request' && contains(fromJSON('["staging","main"]'), github.base_ref))
     # runs-on: macos-latest-large
     runs-on: namespace-profile-apple-silicon-6cpu
     steps:

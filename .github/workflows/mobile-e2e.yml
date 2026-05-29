@@ -601,10 +601,11 @@ jobs:
           if-no-files-found: warn
 
   e2e-ios:
-    if: >
-      github.event_name != 'pull_request' ||
-      contains(fromJSON('["dev","staging","main"]'), github.base_ref) ||
-      contains(github.event.pull_request.labels.*.name, 'test-e2e')
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'push' && contains(fromJSON('["refs/heads/staging","refs/heads/main"]'), github.ref)) ||
+      (github.event_name == 'pull_request' && contains(fromJSON('["staging","main"]'), github.base_ref)) ||
+      (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'test-e2e'))
     timeout-minutes: 120
     # runs-on: macos-latest-large
     runs-on: namespace-profile-apple-silicon-6cpu

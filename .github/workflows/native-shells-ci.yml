@@ -70,7 +70,11 @@ jobs:
 
   native-shell-ios-tests:
     needs: changes
-    if: needs.changes.outputs.ios == 'true'
+    if: |
+      needs.changes.outputs.ios == 'true' &&
+      (github.event_name == 'workflow_dispatch' ||
+       (github.event_name == 'push' && contains(fromJSON('["refs/heads/staging","refs/heads/main"]'), github.ref)) ||
+       (github.event_name == 'pull_request' && contains(fromJSON('["staging","main"]'), github.base_ref)))
     runs-on: namespace-profile-apple-silicon-6cpu
     timeout-minutes: 30
     defaults:

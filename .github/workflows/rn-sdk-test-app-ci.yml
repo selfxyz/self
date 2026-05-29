@@ -86,6 +86,10 @@ jobs:
           cd packages/rn-sdk-test-app/android && ./gradlew assembleDebug --quiet --parallel --build-cache --no-configuration-cache
 
   ios-build:
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'push' && contains(fromJSON('["refs/heads/staging","refs/heads/main"]'), github.ref)) ||
+      (github.event_name == 'pull_request' && contains(fromJSON('["staging","main"]'), github.base_ref))
     runs-on: namespace-profile-apple-silicon-6cpu
     timeout-minutes: 45
     steps:
