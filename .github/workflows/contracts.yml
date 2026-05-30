@@ -68,7 +68,7 @@ jobs:
           echo "NODE_VERSION=$VERSION" >> "$GITHUB_ENV"
           echo "NODE_VERSION_SANITIZED=${VERSION//\//-}" >> "$GITHUB_ENV"
       - name: Set Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: Install Dependencies

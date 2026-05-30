@@ -100,7 +100,7 @@ jobs:
       - name: Configure git for HTTPS dependency fetch
         run: git config --global url."https://github.com/".insteadOf "git@github.com:"
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: .nvmrc
       - name: Install dependencies
