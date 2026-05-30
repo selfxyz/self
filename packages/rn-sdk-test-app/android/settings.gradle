@@ -5,7 +5,6 @@ extensions.configure(com.facebook.react.ReactSettingsExtension){ ex ->
 }
 rootProject.name = 'SelfRNSDKTestApp'
 include ':app'
-includeBuild('../node_modules/@react-native/gradle-plugin')
 includeBuild('../../kmp-sdk') {
   dependencySubstitution {
     substitute module('xyz.self.sdk:shared') using project(':shared')
