@@ -765,6 +765,15 @@ jobs:
               --verbose
           fi
 
+      - name: Upload iOS build logs on failure
+        if: failure() && inputs.platform != 'android'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-gym-buildlogs
+          path: ${{ env.APP_PATH }}/ios/build/gymlogs
+          if-no-files-found: warn
+          retention-days: 7
+
       - name: Verify iOS build output
         if: inputs.platform != 'android'
         run: |
