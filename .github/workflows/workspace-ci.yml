@@ -143,14 +143,20 @@ jobs:
             exit 1
           fi
           pnpm format
-          if ! git diff --quiet --exit-code; then
+          # Markdown is excluded from the CI gate: prettier aligns markdown
+          # tables by display width, which differs across OS for ambiguous-width
+          # glyphs (em-dash, arrows), producing spurious diffs on the Linux
+          # runner. `pnpm format` still formats .md locally; it just won't fail CI.
+          if ! git diff --quiet --exit-code -- ':!*.md'; then
             echo "❌ Code formatting issues found. The following files need formatting:"
-            git diff --name-only
-            echo "----- DEBUG: full content diff (temporary) -----"
-            git --no-pager diff | cat -A
-            echo "----- END DEBUG -----"
+            git diff --name-only -- ':!*.md'
             echo "Run 'pnpm format' to fix these issues."
             exit 1
+          fi
+          md_drift=$(git diff --name-only -- '*.md')
+          if [ -n "$md_drift" ]; then
+            echo "ℹ️ Markdown formatting drift (not failing CI):"
+            echo "$md_drift"
           fi
 
       - name: Verify formatting check passed
