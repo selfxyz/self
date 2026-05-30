@@ -30305,23 +30305,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lottie-react-native@npm:7.2.2":
-  version: 7.2.2
-  resolution: "lottie-react-native@npm:7.2.2"
-  peerDependencies:
-    "@lottiefiles/dotlottie-react": ^0.6.5
-    react: "*"
-    react-native: ">=0.46"
-    react-native-windows: ">=0.63.x"
-  peerDependenciesMeta:
-    "@lottiefiles/dotlottie-react":
-      optional: true
-    react-native-windows:
-      optional: true
-  checksum: 10c0/d0ee7c6ed639ad1b5cfe04dd3b704f3f968806c59a6361986fbb22ebd1b332d9cb13ee7d78ed49848f8d416d468ae2fdc9077815280023dac0b66e841b5ce840
-  languageName: node
-  linkType: hard
-
 "lottie-react-native@npm:7.3.6":
   version: 7.3.6
   resolution: "lottie-react-native@npm:7.3.6"
@@ -31808,7 +31791,7 @@ __metadata:
     find-yarn-workspace-root: "npm:^2.0.0"
     jsdom: "npm:^25.0.1"
     lottie-react: "npm:^2.4.1"
-    lottie-react-native: "npm:7.2.2"
+    lottie-react-native: "npm:7.3.6"
     prettier: "npm:^3.6.2"
     react: "npm:^19.2.0"
     react-dom: "npm:^19.2.0"

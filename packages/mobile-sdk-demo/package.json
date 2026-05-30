@@ -40,7 +40,7 @@
     "constants-browserify": "^1.0.0",
     "ethers": "^6.11.0",
     "lottie-react": "^2.4.1",
-    "lottie-react-native": "7.2.2",
+    "lottie-react-native": "7.3.6",
     "react": "^19.2.0",
     "react-native": "0.83.9",
     "react-native-blur-effect": "^1.1.3",
