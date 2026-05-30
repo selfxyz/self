@@ -146,6 +146,9 @@ jobs:
           if ! git diff --quiet --exit-code; then
             echo "❌ Code formatting issues found. The following files need formatting:"
             git diff --name-only
+            echo "----- DEBUG: full content diff (temporary) -----"
+            git --no-pager diff | cat -A
+            echo "----- END DEBUG -----"
             echo "Run 'pnpm format' to fix these issues."
             exit 1
           fi
