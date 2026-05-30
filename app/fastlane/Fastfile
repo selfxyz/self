@@ -229,6 +229,7 @@ platform :ios do
       scheme: PROJECT_SCHEME,
       export_method: "app-store",
       output_directory: "ios/build",
+      buildlog_path: "ios/build/gymlogs",
       clean: true,
       export_options: {
         method: "app-store",
