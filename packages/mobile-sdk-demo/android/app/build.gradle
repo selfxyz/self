@@ -56,9 +56,6 @@ apply from: file("../../node_modules/react-native-vector-icons/fonts.gradle")
 dependencies {
     implementation("com.facebook.react:react-android")
     implementation("com.facebook.react:hermes-android")
-    if (project.hasProperty('newArchEnabled') ? newArchEnabled.toBoolean() : false) {
-        implementation("com.facebook.react:react-android-codegen")
-    }
 
     // Use mobile-sdk-alpha with all dependencies via BOM
     apply from: '../../../mobile-sdk-alpha/android/mobile-sdk-alpha-bom.gradle'
