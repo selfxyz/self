@@ -33,17 +33,22 @@ describe('useReferralConfirmation', () => {
       goBack: jest.fn(),
     } as any);
 
-    // Reset user store state
-    useUserStore.getState().clearDeepLinkReferrer();
-    // Set a test referrer for tests that need it
-    useUserStore.getState().setDeepLinkReferrer(testReferrer);
+    // Reset user store state. Wrapped in act() because the store update can
+    // re-render a hook still mounted from a prior test before RNTL's cleanup runs.
+    act(() => {
+      useUserStore.getState().clearDeepLinkReferrer();
+      useUserStore.getState().setDeepLinkReferrer(testReferrer);
+    });
   });
 
   afterEach(() => {
     jest.runOnlyPendingTimers();
     jest.useRealTimers();
-    // Clean up store state to prevent leaks to other tests
-    useUserStore.getState().clearDeepLinkReferrer();
+    // Clean up store state to prevent leaks to other tests. Wrapped in act()
+    // because the mounted hook subscribes to deepLinkReferrer and re-renders.
+    act(() => {
+      useUserStore.getState().clearDeepLinkReferrer();
+    });
   });
 
   describe('Modal display', () => {

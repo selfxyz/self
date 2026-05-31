@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 
 import * as haptics from '@/integrations/haptics';
 import KYCVerifiedScreen from '@/screens/kyc/KYCVerifiedScreen';
@@ -147,13 +147,16 @@ describe('KYCVerifiedScreen', () => {
     expect(buttons[0].props.children).toBe('Generate proof');
   });
 
-  it('should trigger haptic feedback when "Generate proof" is pressed', () => {
+  it('should trigger haptic feedback when "Generate proof" is pressed', async () => {
     const { root } = render(<KYCVerifiedScreen />);
     const button = root.findAllByType('button')[0];
 
     fireEvent.press(button);
 
     expect(haptics.buttonTap).toHaveBeenCalledTimes(1);
+
+    // Let the async press handler settle so its trailing setState runs inside act().
+    await act(async () => {});
   });
 
   it('should emit DOCUMENT_OWNERSHIP_CONFIRMED when "Generate proof" is pressed', async () => {
