@@ -1410,10 +1410,12 @@ jobs:
       pull-requests: write
     needs: [bump-version, build-ios, build-android]
     # Skip when this is a per-PR preview build — preview builds must not mutate
-    # the repo's version lineage.
+    # the repo's version lineage. Also skip in test mode (no store upload) so test
+    # builds don't open a version bump PR.
     if: |
       always() &&
       inputs.pr_number == '' &&
+      inputs.test_mode != true &&
       (github.event_name != 'pull_request' ||
         (github.event.action == 'closed' && github.event.pull_request.merged == true)) &&
       (needs.build-ios.result == 'success' || needs.build-android.result == 'success')
