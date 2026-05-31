@@ -10,6 +10,14 @@ const { Buffer } = require('buffer');
 
 global.Buffer = Buffer;
 
+// Mirror the globals react-native/jest/setup.js sets, since this config doesn't use
+// the RN jest preset. IS_REACT_NATIVE_TEST_ENVIRONMENT suppresses React 19's
+// react-test-renderer deprecation warning; IS_REACT_ACT_ENVIRONMENT marks this as a
+// configured act() environment so direct react-test-renderer usage (and RNTL's
+// renderHook/act) don't warn "not configured to support act(...)".
+global.IS_REACT_NATIVE_TEST_ENVIRONMENT = true;
+global.IS_REACT_ACT_ENVIRONMENT = true;
+
 // Mock React Native PixelRatio globally before anything else loads
 const mockPixelRatio = {
   get: jest.fn(() => 2),
@@ -1006,9 +1014,7 @@ jest.mock('@selfxyz/mobile-sdk-alpha/constants/analytics', () => ({
     SCAN_SUCCEEDED: 'Onboarding: Document Scan Succeeded',
     PROOF_STARTED: 'Onboarding: Proof Generation Started',
     PROOF_SUCCEEDED: 'Onboarding: Proof Generation Succeeded',
-    COMPLETED: 'Onboarding: Completed',
-    RECOVERED: 'Onboarding: Recovered',
-    FAILED: 'Onboarding: Failed',
+    ENDED: 'Onboarding: Ended',
     STEP_RETRIED: 'Onboarding: Step Retried',
   },
   PointEvents: {

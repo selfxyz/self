@@ -188,11 +188,7 @@ function _track(
   }
 
   if (type === 'event') {
-    if (
-      eventName === OnboardingEvents.COMPLETED ||
-      eventName === OnboardingEvents.FAILED ||
-      eventName === OnboardingEvents.RECOVERED
-    ) {
+    if (eventName === OnboardingEvents.ENDED) {
       clearOnboardingTags();
     } else {
       const tagSnapshot = tagsFromAnalyticsEvent(eventName, properties);

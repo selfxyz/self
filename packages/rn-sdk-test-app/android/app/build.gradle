@@ -48,7 +48,7 @@ android {
 
     sourceSets {
         main {
-            assets.srcDirs += ["src/main/assets", "../../node_modules/@selfxyz/rn-sdk/assets"]
+            assets.srcDirs += ["src/main/assets", "../../../../node_modules/@selfxyz/rn-sdk/assets"]
         }
     }
 

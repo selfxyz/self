@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { flag } from 'country-emoji';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ScrollView, Text, XStack, YStack } from 'tamagui';
@@ -36,8 +36,6 @@ const CreateMockScreenDeepLink: React.FC = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
-  const [selectedCountry, setSelectedCountry] = useState('USA');
-
   const {
     deepLinkName,
     deepLinkSurname,
@@ -51,6 +49,8 @@ const CreateMockScreenDeepLink: React.FC = () => {
     deepLinkBirthDate: state.deepLinkBirthDate,
     deepLinkGender: state.deepLinkGender,
   }));
+
+  const selectedCountry = deepLinkNationality || 'USA';
 
   const handleGenerate = useCallback(async () => {
     const storeState = useUserStore.getState();
@@ -67,12 +67,6 @@ const CreateMockScreenDeepLink: React.FC = () => {
     navigation.navigate('ConfirmBelonging', {});
     useUserStore.getState().clearDeepLinkUserDetails();
   }, [navigation]);
-
-  useEffect(() => {
-    if (deepLinkNationality) {
-      setSelectedCountry(deepLinkNationality);
-    }
-  }, [deepLinkNationality]);
 
   useEffect(() => {
     if (

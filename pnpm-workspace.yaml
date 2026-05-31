@@ -40,7 +40,6 @@ allowBuilds:
 blockExoticSubdeps: false
 
 patchedDependencies:
-  lottie-react-native@7.2.2: pnpm-patches/lottie-react-native@7.2.2.patch
   react-native-svg@15.14.0: pnpm-patches/react-native-svg@15.14.0.patch
 
 # Pin jsdom to v25 across the workspace. jsdom v26+ uses cssstyle v5, which
