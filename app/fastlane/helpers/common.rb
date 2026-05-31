@@ -86,6 +86,27 @@ module Fastlane
         puts "Certificate name constructed by Fastlane: #{certificate_name}"
         puts "--- End Fastlane Diagnostics ---"
       end
+
+      # Retry a block on transient failures (network timeouts, App Store
+      # Connect 5xx) with exponential backoff. Re-raises the last error once
+      # attempts are exhausted so the lane still fails on persistent problems.
+      def with_retry(description:, max_attempts: 3, base_delay: 15)
+        attempt = 0
+        begin
+          attempt += 1
+          yield
+        rescue => e
+          if attempt < max_attempts
+            delay = base_delay * (2**(attempt - 1))
+            UI.important("⚠️  #{description} failed (attempt #{attempt}/#{max_attempts}): #{e.message}")
+            UI.message("⏳ Retrying in #{delay}s...")
+            sleep(delay)
+            retry
+          end
+          UI.error("❌ #{description} failed after #{max_attempts} attempts")
+          raise
+        end
+      end
     end
   end
 end
