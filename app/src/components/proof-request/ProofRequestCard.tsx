@@ -35,7 +35,7 @@ export interface ProofRequestCardProps {
   connectedWalletBadge?: React.ReactNode;
   testID?: string;
   onScroll?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
-  scrollViewRef?: React.RefObject<ScrollViewType>;
+  scrollViewRef?: React.RefObject<ScrollViewType | null>;
   onContentSizeChange?: (width: number, height: number) => void;
   onLayout?: (event: LayoutChangeEvent) => void;
   initialScrollOffset?: number;

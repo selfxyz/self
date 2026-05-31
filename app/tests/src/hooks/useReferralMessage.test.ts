@@ -26,12 +26,15 @@ describe('useReferralMessage', () => {
   });
 
   describe('initial state', () => {
-    it('should have loading state when no address is available', () => {
+    it('should have loading state when no address is available', async () => {
       const { result } = renderHook(() => useReferralMessage());
 
       expect(result.current.isLoading).toBe(true);
       expect(result.current.message).toBe('');
       expect(result.current.referralLink).toBe('');
+
+      // Flush the hook's fire-and-forget fetch so its setState settles inside act().
+      await act(async () => {});
     });
   });
 
@@ -329,7 +332,7 @@ describe('useReferralMessage', () => {
   });
 
   describe('edge cases', () => {
-    it('should handle empty string address in store', () => {
+    it('should handle empty string address in store', async () => {
       act(() => {
         useSettingStore.setState({ pointsAddress: '' });
       });
@@ -338,6 +341,9 @@ describe('useReferralMessage', () => {
 
       // Empty string is falsy, so it should trigger fetch
       expect(mockGetOrGeneratePointsAddress).toHaveBeenCalled();
+
+      // Flush the hook's fire-and-forget fetch so its setState settles inside act().
+      await act(async () => {});
     });
 
     it('should handle very long addresses', () => {

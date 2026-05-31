@@ -138,7 +138,7 @@ describe('funnel helper — mock suppression (ANA-14)', () => {
     const eventNames = client.trackEvent.mock.calls.map(call => call[0]);
     expect(eventNames).toContain(OnboardingEvents.STARTED);
     expect(eventNames).toContain(OnboardingEvents.COUNTRY_SELECTED);
-    expect(eventNames).toContain(OnboardingEvents.COMPLETED);
+    expect(eventNames).toContain(OnboardingEvents.ENDED);
   });
 });
 

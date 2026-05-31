@@ -2,7 +2,7 @@
 
 buildscript {
     ext {
-        buildToolsVersion = "35.0.0"
+        buildToolsVersion = "36.0.0"
         minSdkVersion = 24
         compileSdkVersion = 36
         targetSdkVersion = 36
@@ -35,12 +35,6 @@ allprojects {
         google()
         mavenCentral()
         jcenter()
-        maven {
-            url("$rootDir/../../node_modules/react-native/android")
-        }
-        maven {
-            url("$rootDir/../../node_modules/jsc-android/dist")
-        }
         maven { url 'https://jitpack.io' }
         maven { url "https://raw.githubusercontent.com/didit-protocol/sdk-android/main/repository" }
     }
@@ -65,13 +59,34 @@ subprojects {
             android {
                 def manifestFile = project.file('src/main/AndroidManifest.xml')
                 def buildGradleFile = project.file('build.gradle')
+                def buildGradleKtsFile = project.file('build.gradle.kts')
+
+                def isLikelyJavaPackage = { value ->
+                    value != null && (value ==~ /^[a-zA-Z_]\w*(\.[a-zA-Z_]\w*)+$/)
+                }
+
+                def extractNamespace = { text ->
+                    if (!text) return null
+                    def namespaceMatcher = text =~ /namespace\s*(?:=\s*)?['"](.+?)['"]/ 
+                    return namespaceMatcher.find() ? namespaceMatcher[0][1] : null
+                }
 
                 if (buildGradleFile.exists()) {
                     def buildGradleText = buildGradleFile.text
-                    def namespaceMatcher = buildGradleText =~ /namespace\s*['"](.+?)['"]/
-                    if (namespaceMatcher.find()) {
-                        namespace = namespaceMatcher[0][1]
+                    def detectedNamespace = extractNamespace(buildGradleText)
+                    if (detectedNamespace) {
+                        namespace = detectedNamespace
                         println "Set namespace for ${project.name} to ${namespace} from build.gradle"
+                        return
+                    }
+                }
+
+                if (buildGradleKtsFile.exists()) {
+                    def buildGradleKtsText = buildGradleKtsFile.text
+                    def detectedNamespace = extractNamespace(buildGradleKtsText)
+                    if (detectedNamespace) {
+                        namespace = detectedNamespace
+                        println "Set namespace for ${project.name} to ${namespace} from build.gradle.kts"
                         return
                     }
                 }
@@ -83,13 +98,17 @@ subprojects {
                         def packageName = packageMatcher[0][1]
                         namespace = packageName
                         println "Set namespace for ${project.name} to ${namespace} from AndroidManifest.xml"
-                    } else {
+                    } else if (isLikelyJavaPackage(project.group?.toString())) {
                         namespace = project.group
                         println "No 'package' attribute found. Set namespace for ${project.name} to ${namespace}"
+                    } else {
+                        println "No namespace inferred for ${project.name}; leaving existing Android plugin defaults unchanged"
                     }
-                } else {
+                } else if (isLikelyJavaPackage(project.group?.toString())) {
                     namespace = project.group
                     println "AndroidManifest.xml not found. Set namespace for ${project.name} to ${namespace}"
+                } else {
+                    println "AndroidManifest.xml not found and no valid namespace fallback for ${project.name}; leaving defaults unchanged"
                 }
             }
         }

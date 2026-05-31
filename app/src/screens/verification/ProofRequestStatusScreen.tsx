@@ -3,7 +3,13 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type { LottieViewProps } from 'lottie-react-native';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { Linking, Platform, StyleSheet, Text, View } from 'react-native';
 import { ScrollView, Spinner } from 'tamagui';
 import { useIsFocused, useNavigation } from '@react-navigation/native';
@@ -28,7 +34,9 @@ import {
 import failAnimation from '@/assets/animations/proof_failed.json';
 import succesAnimation from '@/assets/animations/proof_success.json';
 import { captureException } from '@/config/sentry';
+import { useDeeplinkRedirectCountdown } from '@/hooks/useDeeplinkRedirectCountdown';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
+import { useProvingStallTimeout } from '@/hooks/useProvingStallTimeout';
 import {
   buttonTap,
   notificationError,
@@ -80,26 +88,23 @@ const SuccessScreen: React.FC = () => {
 
   const isFocused = useIsFocused();
 
-  const [animationSource, setAnimationSource] =
-    useState<LottieViewProps['source']>(loadingAnimation);
-  const [countdown, setCountdown] = useState<number | null>(null);
-  const [countdownStarted, setCountdownStarted] = useState(false);
-  const [hasTimedOut, setHasTimedOut] = useState(false);
   const [isDismissingTimedOutProof, setIsDismissingTimedOutProof] =
     useState(false);
   const [whitelistedPoints, setWhitelistedPoints] = useState<
     number | null | undefined
   >(undefined);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const provingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const timedOutSessionIdRef = useRef<string | null>(null);
   const dismissingTimedOutProofRef = useRef(false);
   const timedOutAnalyticsTrackedRef = useRef(false);
 
-  const displayState = hasTimedOut ? 'failure' : currentState;
-  const displayReason = hasTimedOut
-    ? PROOF_TIMEOUT_REASON
-    : (reason ?? undefined);
+  const deeplinkCallback = selfApp?.deeplinkCallback;
+  const hasValidDeeplink = useMemo(() => {
+    if (!deeplinkCallback) return false;
+    try {
+      return Boolean(new URL(deeplinkCallback));
+    } catch {
+      return false;
+    }
+  }, [deeplinkCallback]);
 
   const onOkPress = useCallback(async () => {
     // The whitelistedPoints guard only applies to the success path — on
@@ -153,12 +158,43 @@ const SuccessScreen: React.FC = () => {
     useProvingStore,
   ]);
 
-  const clearProvingTimeout = useCallback(() => {
-    if (provingTimeoutRef.current) {
-      clearTimeout(provingTimeoutRef.current);
-      provingTimeoutRef.current = null;
+  const handleDeeplinkRedirect = useCallback(() => {
+    if (!deeplinkCallback) return;
+    Linking.openURL(deeplinkCallback).catch(err => {
+      console.error('Failed to open deep link:', err);
+      onOkPress();
+    });
+  }, [deeplinkCallback, onOkPress]);
+
+  const { hasTimedOut, timedOutSessionId } = useProvingStallTimeout({
+    currentState,
+    isFocused,
+    sessionId,
+    stallStates: STALL_TIMEOUT_STATES,
+    timeoutMs: PROVING_STALL_TIMEOUT_MS,
+  });
+
+  const { countdown, cancel: cancelCountdown } = useDeeplinkRedirectCountdown({
+    seconds: 5,
+    shouldStart: currentState === 'completed' && hasValidDeeplink,
+    isFocused,
+    resetKey: sessionId,
+    onRedirect: handleDeeplinkRedirect,
+  });
+
+  const displayState = hasTimedOut ? 'failure' : currentState;
+  const displayReason = hasTimedOut
+    ? PROOF_TIMEOUT_REASON
+    : (reason ?? undefined);
+
+  const animationSource = useMemo<LottieViewProps['source']>(() => {
+    if (hasTimedOut) return failAnimation;
+    if (currentState === 'completed') return succesAnimation;
+    if (currentState === 'failure' || currentState === 'error') {
+      return failAnimation;
     }
-  }, []);
+    return loadingAnimation;
+  }, [hasTimedOut, currentState]);
 
   const onTimedOutDismiss = useCallback(async () => {
     if (dismissingTimedOutProofRef.current) {
@@ -177,7 +213,7 @@ const SuccessScreen: React.FC = () => {
         {
           module: 'proof-request-status-screen',
           action: 'dismiss_timed_out_proof',
-          sessionId: timedOutSessionIdRef.current,
+          sessionId: timedOutSessionId,
         },
       );
     } finally {
@@ -186,36 +222,20 @@ const SuccessScreen: React.FC = () => {
       selfClient.getSelfAppState().cleanSelfApp();
       goHome();
     }
-  }, [goHome, selfClient, useProvingStore]);
-
-  function cancelDeeplinkCallbackRedirect() {
-    setCountdown(null);
-  }
-
-  function cancelCountdown() {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
-    setCountdown(null);
-  }
+  }, [goHome, selfClient, timedOutSessionId, useProvingStore]);
 
   useEffect(() => {
-    setHasTimedOut(false);
     timedOutAnalyticsTrackedRef.current = false;
-    setCountdownStarted(false);
-    setCountdown(null);
   }, [sessionId]);
 
   useEffect(() => {
     if (currentState !== 'completed') return;
 
-    if (!selfApp?.endpoint) {
-      setWhitelistedPoints(null);
-      return;
-    }
-
     const checkWhitelist = async () => {
+      if (!selfApp?.endpoint) {
+        setWhitelistedPoints(null);
+        return;
+      }
       try {
         const whitelistedContracts = await getWhiteListedDisclosureAddresses();
         const endpoint = selfApp.endpoint.toLowerCase();
@@ -236,8 +256,6 @@ const SuccessScreen: React.FC = () => {
 
   useEffect(() => {
     if (hasTimedOut) {
-      setAnimationSource(failAnimation);
-
       if (!timedOutAnalyticsTrackedRef.current) {
         timedOutAnalyticsTrackedRef.current = true;
         notificationError();
@@ -256,28 +274,12 @@ const SuccessScreen: React.FC = () => {
     } else if (currentState === 'completed') {
       timedOutAnalyticsTrackedRef.current = false;
       notificationSuccess();
-      setAnimationSource(succesAnimation);
       if (sessionId) {
         updateProofStatus(sessionId, ProofStatus.SUCCESS);
-      }
-
-      if (isFocused && !countdownStarted && selfApp?.deeplinkCallback) {
-        try {
-          const url = new URL(selfApp.deeplinkCallback);
-          if (url) {
-            setCountdown(5);
-            setCountdownStarted(true);
-          }
-        } catch {
-          console.warn(
-            'Invalid deep link URL provided (URL sanitized for security)',
-          );
-        }
       }
     } else if (currentState === 'failure' || currentState === 'error') {
       timedOutAnalyticsTrackedRef.current = false;
       notificationError();
-      setAnimationSource(failAnimation);
       if (sessionId) {
         updateProofStatus(
           sessionId,
@@ -288,74 +290,15 @@ const SuccessScreen: React.FC = () => {
       }
     } else {
       timedOutAnalyticsTrackedRef.current = false;
-      setAnimationSource(loadingAnimation);
     }
   }, [
     hasTimedOut,
     currentState,
-    isFocused,
-    appName,
     sessionId,
     errorCode,
     reason,
     updateProofStatus,
-    selfApp?.deeplinkCallback,
-    countdownStarted,
   ]);
-
-  useEffect(() => {
-    if (hasTimedOut) {
-      clearProvingTimeout();
-      return;
-    }
-
-    if (!isFocused || !STALL_TIMEOUT_STATES.has(currentState)) {
-      clearProvingTimeout();
-      return;
-    }
-
-    clearProvingTimeout();
-    provingTimeoutRef.current = setTimeout(() => {
-      timedOutSessionIdRef.current = sessionId;
-      setHasTimedOut(true);
-    }, PROVING_STALL_TIMEOUT_MS);
-
-    return () => {
-      clearProvingTimeout();
-    };
-  }, [clearProvingTimeout, currentState, hasTimedOut, isFocused, sessionId]);
-
-  useEffect(() => {
-    if (countdown === null) return;
-    if (countdown > 0) {
-      timerRef.current = setTimeout(() => {
-        setCountdown(prev => (prev !== null ? prev - 1 : null));
-      }, 1000);
-      return () => {
-        if (timerRef.current) {
-          clearTimeout(timerRef.current);
-        }
-      };
-    } else {
-      setCountdown(null);
-      if (selfApp?.deeplinkCallback) {
-        Linking.openURL(selfApp.deeplinkCallback).catch(err => {
-          console.error('Failed to open deep link:', err);
-          onOkPress();
-        });
-      }
-    }
-  }, [countdown, selfApp?.deeplinkCallback, onOkPress]);
-
-  useEffect(() => {
-    if (!isFocused) {
-      cancelCountdown();
-    }
-    return () => {
-      cancelCountdown();
-      clearProvingTimeout();
-    };
-  }, [clearProvingTimeout, isFocused]);
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={white}>
@@ -416,7 +359,7 @@ const SuccessScreen: React.FC = () => {
             hasTimedOut
               ? onTimedOutDismiss
               : countdown !== null && countdown > 0
-                ? cancelDeeplinkCallbackRedirect
+                ? cancelCountdown
                 : onOkPress
           }
         >

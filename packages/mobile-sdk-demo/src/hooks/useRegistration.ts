@@ -22,7 +22,7 @@ export function useRegistration() {
   const circuitType = useProvingStore(state => state.circuitType);
   const init = useProvingStore(state => state.init);
   const setUserConfirmed = useProvingStore(state => state.setUserConfirmed);
-  const autoConfirmTimer = useRef<NodeJS.Timeout>();
+  const autoConfirmTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const onCompleteRef = useRef<null | (() => void)>(null);
 
   const [registering, setRegistering] = useState(false);

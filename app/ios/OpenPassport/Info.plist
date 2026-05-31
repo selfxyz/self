@@ -21,7 +21,7 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>2.9.23</string>
+	<string>2.9.24</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleURLTypes</key>
@@ -58,7 +58,7 @@
 	<true/>
 	<key>NFCReaderUsageDescription</key>
 	<string>Need NFC to read Passport</string>
-  <!-- Do not change NSAllowsArbitraryLoads to true, or you will risk app rejection! -->
+	<!-- Do not change NSAllowsArbitraryLoads to true, or you will risk app rejection! -->
 	<key>NSAllowsArbitraryLoads</key>
 	<false/>
 	<key>NSAllowsLocalNetworking</key>
@@ -108,7 +108,7 @@
 		<string>UIInterfaceOrientationPortrait</string>
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
-	<false/>
+	<true/>
 	<key>com.apple.developer.nfc.readersession.iso7816.select-identifiers</key>
 	<array>
 		<string>A0000002471001</string>

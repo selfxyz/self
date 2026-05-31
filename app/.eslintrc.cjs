@@ -136,6 +136,14 @@ module.exports = {
     // React Hooks Rules
 
     'react-hooks/exhaustive-deps': 'warn',
+    // TODO(SELF-2802): React Compiler / new react-hooks plugin rules introduced
+    // by the RN upgrade (SELF-2798). Downgraded to warn until we fix the
+    // existing violations and restore them to error.
+    'react-hooks/set-state-in-effect': 'warn',
+    'react-hooks/preserve-manual-memoization': 'warn',
+    'react-hooks/immutability': 'warn',
+    'react-hooks/purity': 'warn',
+    'react-hooks/refs': 'warn',
 
     // General JavaScript Rules
     // Warn on common issues but don't block development
