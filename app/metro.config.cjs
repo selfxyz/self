@@ -27,6 +27,14 @@ const workspaceRoot =
 const config = {
   projectRoot,
 
+  // Pin Metro's server root to the app so bundle URLs like `/index.bundle`
+  // resolve to app/index.js. Otherwise Metro derives the server root from the
+  // common ancestor of projectRoot and watchFolders (the monorepo root), and
+  // `/index.bundle` resolves to <repo>/index, which does not exist.
+  server: {
+    unstable_serverRoot: projectRoot,
+  },
+
   watchFolders: [
     workspaceRoot, // Watch entire workspace root for changes
     path.resolve(workspaceRoot, 'common'),
