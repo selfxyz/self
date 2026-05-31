@@ -68,7 +68,7 @@ platform :ios do
       UI.success("✅ Build completed successfully!")
       UI.message("📦 IPA path: #{result[:ipa_path]}")
     else
-      Fastlane::Helpers.with_retry(description: "TestFlight upload") do
+      Fastlane::Helpers.with_retry(max_retries: 3, delay: 15) do
         upload_to_testflight(
           api_key: result[:api_key],
           distribute_external: true,
@@ -111,7 +111,7 @@ platform :ios do
       UI.important("🧪 TEST MODE: Skipping App Store upload")
       UI.success("✅ Build completed successfully!")
     elsif deployment_track == "internal"
-      Fastlane::Helpers.with_retry(description: "TestFlight upload") do
+      Fastlane::Helpers.with_retry(max_retries: 3, delay: 15) do
         upload_to_testflight(
           api_key: result[:api_key],
           distribute_external: false,
@@ -120,7 +120,7 @@ platform :ios do
       end if result[:should_upload]
     elsif deployment_track == "production"
       # For production, upload to TestFlight first, then promote
-      Fastlane::Helpers.with_retry(description: "TestFlight upload") do
+      Fastlane::Helpers.with_retry(max_retries: 3, delay: 15) do
         upload_to_testflight(
           api_key: result[:api_key],
           distribute_external: false,
