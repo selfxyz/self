@@ -710,8 +710,8 @@ jobs:
           IOS_CONNECT_ISSUER_ID: ${{ secrets.IOS_CONNECT_ISSUER_ID }}
           IOS_CONNECT_KEY_ID: ${{ secrets.IOS_CONNECT_KEY_ID }}
           IOS_P12_PASSWORD: ${{ secrets.IOS_P12_PASSWORD }}
-          IOS_PROJECT_NAME: ${{ secrets.IOS_PROJECT_NAME }}
-          IOS_PROJECT_SCHEME: ${{ secrets.IOS_PROJECT_SCHEME }}
+          IOS_PROJECT_NAME: "Self"
+          IOS_PROJECT_SCHEME: "Self"
           IOS_PROV_PROFILE_DIR: ${{ env.IOS_PROV_PROFILE_DIRECTORY }}
           IOS_PROV_PROFILE_NAME: ${{ secrets.IOS_PROV_PROFILE_NAME }}
           IOS_PROV_PROFILE_PATH: ${{ env.IOS_PROV_PROFILE_PATH }}
