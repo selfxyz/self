@@ -39,7 +39,7 @@ env:
   GH_CACHE_VERSION: v1 # Global cache version
   GH_YARN_CACHE_VERSION: v1 # Yarn-specific cache version
   GH_GEMS_CACHE_VERSION: v1 # Ruby gems cache version
-  GH_PODS_CACHE_VERSION: v1 # CocoaPods cache version
+  GH_PODS_CACHE_VERSION: v2 # CocoaPods cache version
   GH_GRADLE_CACHE_VERSION: v1 # Gradle cache version
 
   # Path configuration
