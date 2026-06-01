@@ -206,7 +206,7 @@ gh pr edit <number> --title "<title>" --body "<body>"
 
 Then show the updated title and link.
 
-**Exception:** If the PR already has a meaningful hand-written title and body (not a template or auto-generated slug), do NOT overwrite it automatically. Show both the current and newly generated versions and ask whether to replace it — hand-written descriptions are the one case worth confirming before clobbering.
+**Exception:** If *either* the existing title or body is meaningful and hand-written (not a template, empty, or an auto-generated slug), do NOT overwrite automatically — overwriting replaces both fields at once, so one hand-written field is enough to risk clobbering. Show the current and newly generated versions of both fields and ask whether to replace them. Hand-written content is the one case worth confirming before clobbering.
 
 **If no PR exists:**
 
@@ -225,7 +225,7 @@ In both cases, if there were uncommitted changes found in Step 2, warn the user 
 - Always diff against the base branch, not just the previous commit. The PR should describe ALL work on the branch.
 - Read the actual diff content — don't just summarize file names. Understand what changed semantically.
 - Keep the summary concise. The diff is available in the PR; the summary should help reviewers understand intent and scope quickly.
-- Create or update the PR directly once the summary is generated — don't ask for confirmation. The only exception is overwriting an existing meaningful, hand-written title/body (see Step 8), which should be confirmed first.
+- Create or update the PR directly once the summary is generated — don't ask for confirmation. The only exception is overwriting an existing PR whose title or body is meaningful and hand-written (see Step 8), which should be confirmed first.
 - Never run `git push`. The user handles pushing themselves. If the branch is not pushed, remind them to push first.
 
 ---
@@ -351,6 +351,6 @@ If no version tag is available, use the date range of the merged PRs (e.g., "Mar
 
 ### Changelog Step 7: Check for Existing PR
 
-Same as Step 8 in the normal flow — check for an existing PR, then create or update it directly without asking (the lone exception being an existing meaningful, hand-written description, which should be confirmed before overwriting). Use the changelog as the PR body instead of the normal summary format.
+Same as Step 8 in the normal flow — check for an existing PR, then create or update it directly without asking (the lone exception being an existing PR whose title or body is meaningful and hand-written, which should be confirmed before overwriting). Use the changelog as the PR body instead of the normal summary format.
 
 For the PR title in changelog mode, use: `Release: [version or date range summary]` (e.g., `Release: account recovery, nav fixes, platform renaming`).
