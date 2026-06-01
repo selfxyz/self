@@ -14,6 +14,7 @@ from pathlib import Path
 try:
     from google.oauth2 import service_account
     from googleapiclient.discovery import build
+    from googleapiclient.errors import HttpError
     from googleapiclient.http import MediaFileUpload
     from google.auth import default
 except ImportError:
@@ -72,17 +73,53 @@ def get_credentials():
 # applying exponential backoff to transient 5xx/socket errors.
 REQUEST_NUM_RETRIES = 5
 
+# Explicit resumable-upload chunk size. The client default is 100 MiB, large
+# enough that a single chunk can exceed the socket read timeout on a slow CI
+# link. A smaller chunk (a multiple of 256 KiB, as the resumable protocol
+# requires) lets REQUEST_NUM_RETRIES recover one chunk at a time instead of
+# restarting the whole transfer.
+UPLOAD_CHUNK_SIZE = 8 * 1024 * 1024
+
+
+def is_version_already_committed_error(exc):
+    """True if exc reports the AAB's version code as already used by Play.
+
+    Used only on a retry, where this most likely means a previous attempt's
+    commit landed server-side and only its response was lost (the version code
+    was already consumed). It is a heuristic, not a guarantee: we have not
+    confirmed against the API that an abandoned/uncommitted edit never consumes
+    a version code, so callers should treat a True result as "probably already
+    shipped." Scope it to retries only — on a first attempt the same error is a
+    genuine "version not bumped" misconfig and must fail loudly.
+    """
+    if not isinstance(exc, HttpError):
+        return False
+    status = getattr(getattr(exc, 'resp', None), 'status', None)
+    try:
+        content = exc.content.decode('utf-8', 'replace') if isinstance(exc.content, (bytes, bytearray)) else str(exc.content)
+    except Exception:
+        content = str(exc)
+    needle = content.lower()
+    markers = ('already been used', 'already used', 'apkupgradeversionconflict', 'bundleversioncodeused')
+    return status in (400, 403, 409) and any(m in needle for m in markers)
+
 
 def with_retry(description, fn, max_attempts=3, base_delay=15):
-    """Run fn(), retrying the whole operation on transient failures.
+    """Run fn(attempt), retrying the whole operation on transient failures.
 
-    Each Play Store upload starts from a fresh edit transaction, so retrying
-    the entire operation is safe. Re-raises the last error once attempts are
-    exhausted so persistent failures still fail the job.
+    fn receives the 1-based attempt number so it can distinguish a first run
+    from a retry. This matters because retrying a Play upload is NOT fully
+    idempotent: if a prior attempt committed the edit but its response was
+    lost, re-running starts a fresh edit and re-uploads the same version code,
+    which Play rejects. fn is expected to recognize that case on attempt > 1
+    (see is_version_already_committed_error) and treat it as success.
+
+    Re-raises the last error once attempts are exhausted so persistent
+    failures still fail the job.
     """
     for attempt in range(1, max_attempts + 1):
         try:
-            return fn()
+            return fn(attempt)
         except Exception as e:
             if attempt < max_attempts:
                 delay = base_delay * (2 ** (attempt - 1))
@@ -117,7 +154,12 @@ def upload_to_internal_app_sharing(aab_path, package_name, credentials):
 
     service = build('androidpublisher', 'v3', credentials=credentials)
 
-    media = MediaFileUpload(aab_path, mimetype='application/octet-stream', resumable=True)
+    media = MediaFileUpload(
+        aab_path,
+        mimetype='application/octet-stream',
+        resumable=True,
+        chunksize=UPLOAD_CHUNK_SIZE,
+    )
     request = service.internalappsharingartifacts().uploadbundle(
         packageName=package_name,
         media_body=media,
@@ -149,7 +191,7 @@ def upload_to_internal_app_sharing(aab_path, package_name, credentials):
     return True
 
 
-def upload_to_play_store(aab_path, package_name, track, credentials):
+def upload_to_play_store(aab_path, package_name, track, credentials, attempt=1):
     """Upload AAB to Google Play Store"""
     print(f"📤 Uploading {aab_path} to Play Store...")
 
@@ -165,13 +207,26 @@ def upload_to_play_store(aab_path, package_name, track, credentials):
 
     # Upload the AAB
     print("📦 Uploading AAB file...")
-    media = MediaFileUpload(aab_path, mimetype='application/octet-stream', resumable=True)
+    media = MediaFileUpload(
+        aab_path,
+        mimetype='application/octet-stream',
+        resumable=True,
+        chunksize=UPLOAD_CHUNK_SIZE,
+    )
     upload_request = service.edits().bundles().upload(
         packageName=package_name,
         editId=edit_id,
         media_body=media
     )
-    bundle_response = upload_request.execute(num_retries=REQUEST_NUM_RETRIES)
+    try:
+        bundle_response = upload_request.execute(num_retries=REQUEST_NUM_RETRIES)
+    except HttpError as e:
+        if attempt > 1 and is_version_already_committed_error(e):
+            print("ℹ️  Play reports this version code as already used. On a retry "
+                  "this most likely means a previous attempt's commit landed and "
+                  "only its response was lost; treating it as a successful release.")
+            return True
+        raise
     version_code = bundle_response['versionCode']
     print(f"✅ AAB uploaded. Version code: {version_code}")
 
@@ -251,12 +306,12 @@ def main():
         if args.mode == 'ias':
             success = with_retry(
                 "Internal App Sharing upload",
-                lambda: upload_to_internal_app_sharing(str(aab_path), args.package_name, credentials),
+                lambda attempt: upload_to_internal_app_sharing(str(aab_path), args.package_name, credentials),
             )
         else:
             success = with_retry(
                 "Play Store upload",
-                lambda: upload_to_play_store(str(aab_path), args.package_name, args.track, credentials),
+                lambda attempt: upload_to_play_store(str(aab_path), args.package_name, args.track, credentials, attempt=attempt),
             )
     except Exception as e:
         print(f"❌ Upload failed: {e}")
