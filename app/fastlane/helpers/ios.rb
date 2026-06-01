@@ -136,6 +136,42 @@ module Fastlane
         tmp_plist&.unlink
       end
 
+      # Detect the narrow "this exact binary was already uploaded" family of App
+      # Store Connect errors. A retry after a partially-succeeded upload re-submits
+      # the same binary, which the API rejects as a redundant upload — that
+      # rejection means the upload actually landed, so it must be treated as
+      # success rather than retried or failed.
+      #
+      # Only duplicate-binary signatures belong here. Errors like "bundle version
+      # must be higher" mean the build number was NOT bumped — a real failure that
+      # must surface, not be swallowed.
+      def ios_build_already_uploaded?(error)
+        needle = error.message.to_s.downcase
+        markers = [
+          "redundant binary upload",
+          "itms-4238",
+          "the binary you uploaded was invalid. the bundle is already present",
+          "this bundle is invalid. the value provided for the key cfbundleversion has already been used",
+        ]
+        markers.any? { |m| needle.include?(m) }
+      end
+
+      # Run a TestFlight upload block, retrying transient failures while treating
+      # an "already uploaded" rejection from a prior partial attempt as success.
+      def ios_upload_with_idempotent_retry(max_retries: 3, delay: 15)
+        already_uploaded = false
+        with_retry(max_retries: max_retries, delay: delay) do
+          begin
+            yield
+          rescue => e
+            raise e unless ios_build_already_uploaded?(e)
+            already_uploaded = true
+            UI.important("Build already present on App Store Connect; treating upload as successful: #{e.message}")
+          end
+        end
+        report_success("Build already on App Store Connect (skipped re-upload)") if already_uploaded
+      end
+
       # Ensure installed profile exists
       def ios_verify_provisioning_profile
         path = ENV["IOS_PROV_PROFILE_PATH"]

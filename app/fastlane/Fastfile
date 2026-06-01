@@ -69,7 +69,7 @@ platform :ios do
       UI.success("✅ Build completed successfully!")
       UI.message("📦 IPA path: #{result[:ipa_path]}")
     else
-      Fastlane::Helpers.with_retry(max_retries: 3, delay: 15) do
+      Fastlane::Helpers.ios_upload_with_idempotent_retry do
         upload_to_testflight(
           api_key: result[:api_key],
           distribute_external: true,
@@ -112,7 +112,7 @@ platform :ios do
       UI.important("🧪 TEST MODE: Skipping App Store upload")
       UI.success("✅ Build completed successfully!")
     elsif deployment_track == "internal"
-      Fastlane::Helpers.with_retry(max_retries: 3, delay: 15) do
+      Fastlane::Helpers.ios_upload_with_idempotent_retry do
         upload_to_testflight(
           api_key: result[:api_key],
           distribute_external: false,
@@ -120,17 +120,41 @@ platform :ios do
         )
       end if result[:should_upload]
     elsif deployment_track == "production"
-      # For production, upload to TestFlight first, then promote
-      Fastlane::Helpers.with_retry(max_retries: 3, delay: 15) do
+      # IOS_SUBMIT_FOR_REVIEW gates the auto-submit so a build can be staged
+      # without releasing; unset it to upload only and submit manually.
+      # Submission needs a processed build, so only wait when we'll submit.
+      submit_for_review = ENV["IOS_SUBMIT_FOR_REVIEW"] == "true"
+
+      Fastlane::Helpers.ios_upload_with_idempotent_retry do
         upload_to_testflight(
           api_key: result[:api_key],
           distribute_external: false,
-          skip_waiting_for_build_processing: true,
+          skip_waiting_for_build_processing: !submit_for_review,
         )
       end if result[:should_upload]
 
-      # TODO: Add app store submission when ready
-      UI.important("⚠️  Production deployment uploaded to TestFlight. Manual App Store submission required.")
+      if result[:should_upload] && submit_for_review
+        Fastlane::Helpers.with_retry(max_retries: 3, delay: 15) do
+          upload_to_app_store(
+            api_key: result[:api_key],
+            app_identifier: ENV["IOS_APP_IDENTIFIER"],
+            submit_for_review: true,
+            automatic_release: ENV["IOS_AUTOMATIC_RELEASE"] == "true",
+            force: true,
+            skip_binary_upload: true,
+            skip_screenshots: true,
+            skip_metadata: true,
+            precheck_include_in_app_purchases: false,
+            submission_information: {
+              add_id_info_uses_idfa: false,
+              export_compliance_uses_encryption: false,
+            },
+          )
+        end
+        UI.success("✅ Production build submitted for App Store review")
+      else
+        UI.important("⚠️  Production build uploaded to App Store Connect. Set IOS_SUBMIT_FOR_REVIEW=true to auto-submit for review.")
+      end
     end
 
     # Update deployment info
@@ -267,64 +291,23 @@ platform :android do
     UI.user_error!("sync_version lane is deprecated - use version-manager.cjs instead")
   end
 
-  desc "Push a new build to Google Play Internal Testing"
-  lane :internal_test do |options|
-    upload_android_build(track: "internal", test_mode: options[:test_mode])
-  end
-
-  desc "Push a new build to Google Play Store"
-  lane :deploy do
-    upload_android_build(track: "production")
-  end
-
-  desc "Build Android app without uploading"
+  # Play Store upload (and Internal App Sharing previews) is handled by
+  # scripts/upload_to_play_store.py — resumable, WIF-authenticated, and
+  # idempotent on the version code. Fastlane only builds the signed AAB.
+  desc "Build the Android release AAB"
   lane :build_only do |options|
     deployment_track = options[:deployment_track] || "internal"
     version_bump = options[:version_bump] || "build"
 
-    UI.message("🔨 Building Android app (build only)")
+    UI.message("🔨 Building Android release AAB")
     UI.message("  Track: #{deployment_track}")
     UI.message("  Version bump: #{version_bump}")
 
-    upload_android_build(options.merge(skip_upload: true))
+    build_android_aab(options)
   end
 
-  desc "Deploy Android app with automatic version management"
-  lane :deploy_auto do |options|
-    deployment_track = options[:deployment_track] || "internal"
+  private_lane :build_android_aab do |options|
     version_bump = options[:version_bump] || "build"
-    test_mode = options[:test_mode] == true || options[:test_mode] == "true"
-
-    UI.message("🚀 Starting Android deployment")
-    UI.message("  Track: #{deployment_track}")
-    UI.message("  Version bump: #{version_bump}")
-    UI.message("  Test mode: #{test_mode}")
-
-    # In CI, version should already be set by version-manager.cjs
-    # Verify it matches expected values
-    if is_ci && version_bump == "skip"
-      Fastlane::Helpers.verify_ci_version_match
-    end
-
-    # Map deployment track to Play Store track
-    play_store_track = deployment_track == "production" ? "production" : "internal"
-
-    # Build and deploy
-    upload_android_build(track: play_store_track, test_mode: test_mode, deployment_track: deployment_track, version_bump: version_bump)
-  end
-
-  private_lane :upload_android_build do |options|
-    test_mode = options[:test_mode] == true || options[:test_mode] == "true"
-    skip_upload = options[:skip_upload] == true || options[:skip_upload] == "true"
-    version_bump = options[:version_bump] || "build"
-
-    # Automatically skip uploads in local development (no local permissions for Play Store)
-    # Uploads must be done by CI/CD machines with proper authentication
-    if local_development && !skip_upload
-      skip_upload = true
-      UI.important("🏠 LOCAL DEVELOPMENT: Play Store uploads are disabled")
-      UI.important("   Upload the AAB manually in the Play Console after the build finishes")
-    end
 
     if local_development
       if ENV["ANDROID_KEYSTORE_PATH"].nil?
@@ -360,12 +343,6 @@ platform :android do
     android_release_architectures = ENV.fetch("ANDROID_RELEASE_ARCHITECTURES", "arm64-v8a,x86_64")
     UI.message("🏗️ Android release architectures: #{android_release_architectures}")
 
-    # TODO: uncomment when we have the permissions to run this action
-    # Fastlane::Helpers.android_verify_version_code(android_gradle_file_path)
-
-    target_platform = options[:track] == "production" ? "Google Play" : "Internal Testing"
-    should_upload = Fastlane::Helpers.should_upload_app(target_platform)
-
     Fastlane::Helpers.with_retry(max_retries: 3, delay: 10) do
       cxx_dir = File.expand_path("../android/app/.cxx", __dir__)
       if File.directory?(cxx_dir)
@@ -387,70 +364,7 @@ platform :android do
       )
     end
 
-    if test_mode || skip_upload
-      if skip_upload
-        UI.important("🔨 BUILD ONLY: Skipping Play Store upload")
-        if local_development
-          UI.important("📦 Manual upload required: #{android_aab_path}")
-        end
-      else
-        UI.important("🧪 TEST MODE: Skipping Play Store upload")
-      end
-      UI.success("✅ Build completed successfully!")
-      UI.message("📦 AAB path: #{android_aab_path}")
-    else
-      if should_upload
-        begin
-          upload_options = {
-            track: options[:track],
-            package_name: ENV["ANDROID_PACKAGE_NAME"],
-            skip_upload_changelogs: true,
-            skip_upload_images: true,
-            skip_upload_screenshots: true,
-            track_promote_release_status: "completed",
-            aab: android_aab_path,
-          }
-          # In local development, use the JSON key file; in CI rely on ADC
-          if local_development
-            upload_options[:json_key] = ENV["ANDROID_PLAY_STORE_JSON_KEY_PATH"]
-          else
-            # In CI, try to use ADC credentials file directly
-            adc_creds_path = ENV["GOOGLE_APPLICATION_CREDENTIALS"]
-            if adc_creds_path && File.exist?(adc_creds_path)
-              UI.message("🔑 Using ADC credentials file: #{adc_creds_path}")
-              begin
-                # Try passing the credentials file content as json_key_data
-                creds_content = File.read(adc_creds_path)
-                upload_options[:json_key_data] = creds_content
-              rescue => e
-                UI.error("Failed to read ADC credentials: #{e.message}")
-                # Fallback: let supply try to use ADC automatically
-                UI.message("🔄 Falling back to automatic ADC detection")
-              end
-            else
-              UI.error("❌ ADC credentials not found at: #{adc_creds_path}")
-            end
-          end
-
-          upload_to_play_store(upload_options)
-        rescue => e
-          if e.message.include?("forbidden") || e.message.include?("403") || e.message.include?("insufficientPermissions")
-            UI.error("❌ Play Store upload failed: Insufficient permissions")
-            UI.error("Please fix permissions in Google Play Console")
-            UI.important("Build saved at: #{android_aab_path}")
-          else
-            # Re-raise if it's a different error
-            raise e
-          end
-        end
-      else
-        UI.message("Skipping Play Store upload (should_upload: false)")
-      end
-    end
-
-    # Update deployment timestamp in version.json
-    if should_upload
-      Fastlane::Helpers.update_deployment_timestamp("android")
-    end
+    UI.success("✅ Build completed successfully!")
+    UI.message("📦 AAB path: #{android_aab_path}")
   end
 end
