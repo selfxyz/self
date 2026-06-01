@@ -107,6 +107,7 @@ def execute_resumable_upload(request, description):
         status, response = request.next_chunk(num_retries=REQUEST_NUM_RETRIES)
         if status:
             print(f"📶 {description}: {int(status.progress() * 100)}% uploaded", flush=True)
+    print(f"📶 {description}: 100% uploaded", flush=True)
     return response
 
 
@@ -332,28 +333,36 @@ def query_track(package_name, track, credentials):
     edit = edit_request.execute(num_retries=REQUEST_NUM_RETRIES)
     edit_id = edit['id']
 
-    track_request = service.edits().tracks().get(
-        packageName=package_name,
-        editId=edit_id,
-        track=track,
-    )
-    track_response = track_request.execute(num_retries=REQUEST_NUM_RETRIES)
+    try:
+        track_request = service.edits().tracks().get(
+            packageName=package_name,
+            editId=edit_id,
+            track=track,
+        )
+        track_response = track_request.execute(num_retries=REQUEST_NUM_RETRIES)
 
-    print(f"📍 Track: {track_response.get('track', track)}")
-    releases = track_response.get('releases', [])
-    if not releases:
-        print("No releases found.")
+        print(f"📍 Track: {track_response.get('track', track)}")
+        releases = track_response.get('releases', [])
+        if not releases:
+            print("No releases found.")
+            return True
+
+        for index, release in enumerate(releases, start=1):
+            version_codes = ', '.join(str(code) for code in release.get('versionCodes', []))
+            status = release.get('status', 'unknown')
+            name = release.get('name', '(unnamed)')
+            print(f"Release {index}: {name}")
+            print(f"  status: {status}")
+            print(f"  versionCodes: {version_codes or '(none)'}")
+
         return True
-
-    for index, release in enumerate(releases, start=1):
-        version_codes = ', '.join(str(code) for code in release.get('versionCodes', []))
-        status = release.get('status', 'unknown')
-        name = release.get('name', '(unnamed)')
-        print(f"Release {index}: {name}")
-        print(f"  status: {status}")
-        print(f"  versionCodes: {version_codes or '(none)'}")
-
-    return True
+    finally:
+        # query is read-only: discard the edit so it doesn't linger as an
+        # "active edit" in the Play Console (Google auto-expires after ~7 days).
+        try:
+            service.edits().delete(packageName=package_name, editId=edit_id).execute()
+        except Exception as cleanup_error:
+            print(f"⚠️  Could not delete query edit {edit_id}: {cleanup_error}", flush=True)
 
 
 def main():

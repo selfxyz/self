@@ -136,22 +136,22 @@ module Fastlane
         tmp_plist&.unlink
       end
 
-      # Detect the narrow "this exact binary was already uploaded" family of App
-      # Store Connect errors. A retry after a partially-succeeded upload re-submits
-      # the same binary, which the API rejects as a redundant upload — that
-      # rejection means the upload actually landed, so it must be treated as
-      # success rather than retried or failed.
+      # Detect the redundant-binary rejection from App Store Connect. A retry after
+      # a partially-succeeded upload re-submits the same binary, which the API
+      # rejects with ITMS-4238 ("Redundant Binary Upload") — that rejection proves
+      # this exact binary already landed, so it must be treated as success rather
+      # than retried or failed.
       #
-      # Only duplicate-binary signatures belong here. Errors like "bundle version
-      # must be higher" mean the build number was NOT bumped — a real failure that
-      # must surface, not be swallowed.
+      # Only ITMS-4238 belongs here. A "CFBundleVersion has already been used" /
+      # "bundle version must be higher" error is ambiguous: it also fires when this
+      # run failed to select a unique build number, in which case the new IPA never
+      # reached App Store Connect. Swallowing it would report a phantom success, so
+      # it must surface as a real failure.
       def ios_build_already_uploaded?(error)
         needle = error.message.to_s.downcase
         markers = [
           "redundant binary upload",
           "itms-4238",
-          "the binary you uploaded was invalid. the bundle is already present",
-          "this bundle is invalid. the value provided for the key cfbundleversion has already been used",
         ]
         markers.any? { |m| needle.include?(m) }
       end
