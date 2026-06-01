@@ -7,12 +7,14 @@ This script bypasses Fastlane and uses the Google Play Developer API directly
 import os
 import sys
 import json
+import time
 import argparse
 from pathlib import Path
 
 try:
     from google.oauth2 import service_account
     from googleapiclient.discovery import build
+    from googleapiclient.errors import HttpError
     from googleapiclient.http import MediaFileUpload
     from google.auth import default
 except ImportError:
@@ -67,6 +69,74 @@ def get_credentials():
         sys.exit(1)
 
 
+# Number of low-level retries googleapiclient performs on each request,
+# applying exponential backoff to transient 5xx/socket errors.
+REQUEST_NUM_RETRIES = 5
+
+# Explicit resumable-upload chunk size. The client default is 100 MiB, large
+# enough that a single chunk can exceed the socket read timeout on a slow CI
+# link. A smaller chunk (a multiple of 256 KiB, as the resumable protocol
+# requires) lets REQUEST_NUM_RETRIES recover one chunk at a time instead of
+# restarting the whole transfer.
+UPLOAD_CHUNK_SIZE = 8 * 1024 * 1024
+
+
+def is_version_already_committed_error(exc):
+    """True if exc reports the AAB's version code as already used by Play."""
+    if not isinstance(exc, HttpError):
+        return False
+    status = getattr(getattr(exc, 'resp', None), 'status', None)
+    try:
+        content = exc.content.decode('utf-8', 'replace') if isinstance(exc.content, (bytes, bytearray)) else str(exc.content)
+    except Exception:
+        content = str(exc)
+    needle = content.lower()
+    markers = ('already been used', 'already used', 'apkupgradeversionconflict', 'bundleversioncodeused')
+    return status in (400, 403, 409) and any(m in needle for m in markers)
+
+
+def track_contains_version_code(service, package_name, edit_id, track, version_code):
+    """Check whether the current edit view of a track contains version_code."""
+    track_request = service.edits().tracks().get(
+        packageName=package_name,
+        editId=edit_id,
+        track=track,
+    )
+    track_response = track_request.execute(num_retries=REQUEST_NUM_RETRIES)
+    expected = str(version_code)
+    for release in track_response.get('releases', []):
+        if expected in {str(code) for code in release.get('versionCodes', [])}:
+            return True
+    return False
+
+
+def with_retry(description, fn, max_attempts=3, base_delay=15):
+    """Run fn(attempt), retrying the whole operation on transient failures.
+
+    fn receives the 1-based attempt number so it can distinguish a first run
+    from a retry. This matters because retrying a Play upload is NOT fully
+    idempotent: if a prior attempt committed the edit but its response was
+    lost, re-running starts a fresh edit and re-uploads the same version code,
+    which Play rejects. fn is expected to recognize that case on attempt > 1,
+    verify the track state, and treat it as success only after verification.
+
+    Re-raises the last error once attempts are exhausted so persistent
+    failures still fail the job.
+    """
+    for attempt in range(1, max_attempts + 1):
+        try:
+            return fn(attempt)
+        except Exception as e:
+            if attempt < max_attempts:
+                delay = base_delay * (2 ** (attempt - 1))
+                print(f"⚠️  {description} failed (attempt {attempt}/{max_attempts}): {e}")
+                print(f"⏳ Retrying in {delay}s...")
+                time.sleep(delay)
+            else:
+                print(f"❌ {description} failed after {max_attempts} attempts: {e}")
+                raise
+
+
 def should_hold_for_manual_review(track):
     """
     Determine if changes should be held for manual review based on track type.
@@ -88,122 +158,143 @@ def upload_to_internal_app_sharing(aab_path, package_name, credentials):
     """
     print(f"📤 Uploading {aab_path} to Internal App Sharing...")
 
-    try:
-        service = build('androidpublisher', 'v3', credentials=credentials)
+    service = build('androidpublisher', 'v3', credentials=credentials)
 
-        media = MediaFileUpload(aab_path, mimetype='application/octet-stream')
-        request = service.internalappsharingartifacts().uploadbundle(
-            packageName=package_name,
-            media_body=media,
-        )
-        response = request.execute()
+    media = MediaFileUpload(
+        aab_path,
+        mimetype='application/octet-stream',
+        resumable=True,
+        chunksize=UPLOAD_CHUNK_SIZE,
+    )
+    request = service.internalappsharingartifacts().uploadbundle(
+        packageName=package_name,
+        media_body=media,
+    )
+    response = request.execute(num_retries=REQUEST_NUM_RETRIES)
 
-        download_url = response.get('downloadUrl')
-        sha256 = response.get('sha256')
-        cert_fingerprint = response.get('certificateFingerprint')
+    download_url = response.get('downloadUrl')
+    sha256 = response.get('sha256')
+    cert_fingerprint = response.get('certificateFingerprint')
 
-        if not download_url:
-            print("❌ IAS upload returned no downloadUrl")
-            print(f"Response: {response}")
-            return False
+    if not download_url:
+        raise RuntimeError(f"IAS upload returned no downloadUrl. Response: {response}")
 
-        print(f"✅ Uploaded to Internal App Sharing")
-        print(f"🔗 downloadUrl: {download_url}")
-        if sha256:
-            print(f"🔐 sha256: {sha256}")
-        if cert_fingerprint:
-            print(f"📜 certificateFingerprint: {cert_fingerprint}")
+    print(f"✅ Uploaded to Internal App Sharing")
+    print(f"🔗 downloadUrl: {download_url}")
+    if sha256:
+        print(f"🔐 sha256: {sha256}")
+    if cert_fingerprint:
+        print(f"📜 certificateFingerprint: {cert_fingerprint}")
 
-        # Expose the URL to GitHub Actions via $GITHUB_OUTPUT when available
-        github_output = os.environ.get('GITHUB_OUTPUT')
-        if github_output:
-            with open(github_output, 'a') as f:
-                f.write(f"download_url={download_url}\n")
-                if sha256:
-                    f.write(f"sha256={sha256}\n")
+    # Expose the URL to GitHub Actions via $GITHUB_OUTPUT when available
+    github_output = os.environ.get('GITHUB_OUTPUT')
+    if github_output:
+        with open(github_output, 'a') as f:
+            f.write(f"download_url={download_url}\n")
+            if sha256:
+                f.write(f"sha256={sha256}\n")
 
-        return True
-
-    except Exception as e:
-        print(f"❌ IAS upload failed: {e}")
-        return False
+    return True
 
 
-def upload_to_play_store(aab_path, package_name, track, credentials):
+def upload_to_play_store(aab_path, package_name, track, credentials, attempt=1, retry_state=None):
     """Upload AAB to Google Play Store"""
     print(f"📤 Uploading {aab_path} to Play Store...")
 
+    # Build the service
+    service = build('androidpublisher', 'v3', credentials=credentials)
+
+    # Create an edit
+    print("🚀 Creating edit transaction...")
+    edit_request = service.edits().insert(body={}, packageName=package_name)
+    edit = edit_request.execute(num_retries=REQUEST_NUM_RETRIES)
+    edit_id = edit['id']
+    print(f"✅ Edit created: {edit_id}")
+
+    # Upload the AAB
+    print("📦 Uploading AAB file...")
+    media = MediaFileUpload(
+        aab_path,
+        mimetype='application/octet-stream',
+        resumable=True,
+        chunksize=UPLOAD_CHUNK_SIZE,
+    )
+    upload_request = service.edits().bundles().upload(
+        packageName=package_name,
+        editId=edit_id,
+        media_body=media
+    )
     try:
-        # Build the service
-        service = build('androidpublisher', 'v3', credentials=credentials)
+        bundle_response = upload_request.execute(num_retries=REQUEST_NUM_RETRIES)
+    except HttpError as e:
+        if attempt > 1 and is_version_already_committed_error(e):
+            expected_version_code = (retry_state or {}).get('version_code')
+            if expected_version_code and track_contains_version_code(
+                service,
+                package_name,
+                edit_id,
+                track,
+                expected_version_code,
+            ):
+                print("ℹ️  Play reports this version code as already used, and "
+                      f"track {track} already contains version code "
+                      f"{expected_version_code}. Treating this retry as a "
+                      "successful release.")
+                return True
+            print("⚠️  Play reports this version code as already used, but the "
+                  f"expected version code {expected_version_code or 'unknown'} "
+                  f"was not found on track {track}. Failing instead of reporting "
+                  "an unverified release as successful.")
+        raise
+    version_code = bundle_response['versionCode']
+    if retry_state is not None:
+        retry_state['version_code'] = str(version_code)
+    print(f"✅ AAB uploaded. Version code: {version_code}")
 
-        # Create an edit
-        print("🚀 Creating edit transaction...")
-        edit_request = service.edits().insert(body={}, packageName=package_name)
-        edit = edit_request.execute()
-        edit_id = edit['id']
-        print(f"✅ Edit created: {edit_id}")
+    # Assign to track
+    print(f"🎯 Assigning to track: {track}")
+    track_request = service.edits().tracks().update(
+        packageName=package_name,
+        editId=edit_id,
+        track=track,
+        body={
+            'track': track,
+            'releases': [{
+                'versionCodes': [str(version_code)],
+                'status': 'completed'
+            }]
+        }
+    )
+    track_response = track_request.execute(num_retries=REQUEST_NUM_RETRIES)
+    print(f"✅ Assigned to track: {track_response['track']}")
 
-        # Upload the AAB
-        print("📦 Uploading AAB file...")
-        media = MediaFileUpload(aab_path, mimetype='application/octet-stream')
-        upload_request = service.edits().bundles().upload(
+    # Commit the edit
+    print("💾 Committing changes...")
+
+    # Determine if we should hold changes for manual review
+    hold_for_manual_review = should_hold_for_manual_review(track)
+
+    if hold_for_manual_review:
+        # For production or when manual review is needed
+        commit_request = service.edits().commit(
             packageName=package_name,
             editId=edit_id,
-            media_body=media
+            changesNotSentForReview=True
         )
-        bundle_response = upload_request.execute()
-        version_code = bundle_response['versionCode']
-        print(f"✅ AAB uploaded. Version code: {version_code}")
-
-        # Assign to track
-        print(f"🎯 Assigning to track: {track}")
-        track_request = service.edits().tracks().update(
+        commit_response = commit_request.execute(num_retries=REQUEST_NUM_RETRIES)
+        print(f"✅ Upload completed successfully! Edit ID: {commit_response['id']}")
+        print(f"📝 Note: Changes committed but held for manual review (production track)")
+    else:
+        # For internal, alpha, beta tracks - let changes go for automatic review
+        commit_request = service.edits().commit(
             packageName=package_name,
-            editId=edit_id,
-            track=track,
-            body={
-                'track': track,
-                'releases': [{
-                    'versionCodes': [str(version_code)],
-                    'status': 'completed'
-                }]
-            }
+            editId=edit_id
         )
-        track_response = track_request.execute()
-        print(f"✅ Assigned to track: {track_response['track']}")
+        commit_response = commit_request.execute(num_retries=REQUEST_NUM_RETRIES)
+        print(f"✅ Upload completed successfully! Edit ID: {commit_response['id']}")
+        print(f"📝 Note: Changes committed and sent for automatic review ({track} track)")
 
-        # Commit the edit
-        print("💾 Committing changes...")
-
-        # Determine if we should hold changes for manual review
-        hold_for_manual_review = should_hold_for_manual_review(track)
-
-        if hold_for_manual_review:
-            # For production or when manual review is needed
-            commit_request = service.edits().commit(
-                packageName=package_name,
-                editId=edit_id,
-                changesNotSentForReview=True
-            )
-            commit_response = commit_request.execute()
-            print(f"✅ Upload completed successfully! Edit ID: {commit_response['id']}")
-            print(f"📝 Note: Changes committed but held for manual review (production track)")
-        else:
-            # For internal, alpha, beta tracks - let changes go for automatic review
-            commit_request = service.edits().commit(
-                packageName=package_name,
-                editId=edit_id
-            )
-            commit_response = commit_request.execute()
-            print(f"✅ Upload completed successfully! Edit ID: {commit_response['id']}")
-            print(f"📝 Note: Changes committed and sent for automatic review ({track} track)")
-
-        return True
-
-    except Exception as e:
-        print(f"❌ Upload failed: {e}")
-        return False
+    return True
 
 
 def main():
@@ -232,10 +323,28 @@ def main():
 
     # Get credentials and upload
     credentials = get_credentials()
-    if args.mode == 'ias':
-        success = upload_to_internal_app_sharing(str(aab_path), args.package_name, credentials)
-    else:
-        success = upload_to_play_store(str(aab_path), args.package_name, args.track, credentials)
+    try:
+        if args.mode == 'ias':
+            success = with_retry(
+                "Internal App Sharing upload",
+                lambda attempt: upload_to_internal_app_sharing(str(aab_path), args.package_name, credentials),
+            )
+        else:
+            retry_state = {}
+            success = with_retry(
+                "Play Store upload",
+                lambda attempt: upload_to_play_store(
+                    str(aab_path),
+                    args.package_name,
+                    args.track,
+                    credentials,
+                    attempt=attempt,
+                    retry_state=retry_state,
+                ),
+            )
+    except Exception as e:
+        print(f"❌ Upload failed: {e}")
+        success = False
 
     if success:
         print("\n🎉 Upload completed successfully!")

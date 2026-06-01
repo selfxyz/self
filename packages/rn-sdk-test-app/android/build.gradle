@@ -13,9 +13,13 @@ buildscript {
     }
     dependencies {
         classpath('com.android.tools.build:gradle:8.11.2')
-        classpath("com.facebook.react:react-native-gradle-plugin")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
     }
+}
+
+plugins {
+    id("com.facebook.react") apply false
+    id("com.facebook.react.rootproject")
 }
 
 allprojects {
@@ -29,14 +33,12 @@ allprojects {
         mavenCentral()
         maven {
             // All of React Native (JS, Android binaries) is installed from npm
-            url("$rootDir/../../../node_modules/react-native/android")
+            url("$rootDir/../node_modules/react-native/android")
         }
         maven {
             // Android JSC is installed from npm
-            url("$rootDir/../../../node_modules/jsc-android/dist")
+            url("$rootDir/../node_modules/jsc-android/dist")
         }
         maven { url 'https://jitpack.io' }
     }
 }
-
-apply plugin: "com.facebook.react.rootproject"

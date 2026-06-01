@@ -8,12 +8,19 @@
 
 ---
 
-### Native Consolidation Checklist
+### Native code checklist
 
-<!-- Check items that apply to this PR. Delete section if not touching native code. -->
+<!-- Only if this PR touches Kotlin/Swift or the React Native module bridge. Delete this section otherwise. -->
 
-- [ ] CONTRACTS.md reviewed - no unintended contract changes
-- [ ] Layer 1 bridge contract tests pass (`cd app && yarn jest:run` / `yarn workspace @selfxyz/rn-sdk-test-app test`)
-- [ ] Layer 3 builds pass (app iOS, RN test app iOS, RN test app Android)
-- [ ] Layer 4 manual smoke test signed off (if consolidation PR)
-- [ ] No new native business logic added (logic belongs in TypeScript)
+Run each command and check the box only after it passes. Paste failures into the Test plan.
+
+- [ ] `yarn lint && yarn types` pass
+- [ ] Bridge contract tests pass: `cd app && yarn jest:run` and `yarn workspace @selfxyz/rn-sdk-test-app test`
+- [ ] If `packages/mobile-sdk-alpha` touched: `cd packages/mobile-sdk-alpha && yarn test && yarn types` pass
+- [ ] Diff of `.kt`/`.swift` reviewed — no business logic added (only hardware/OS access; logic lives in TypeScript)
+- [ ] NativeModules bridge contract (method names, payload keys, error codes) unchanged, or the change is intentional and described in the summary
+
+**Cannot be verified by an agent — flag for human QA:**
+
+- [ ] Native builds (app + RN test app, iOS + Android) — relying on CI, or needs a human local build
+- [ ] On-device smoke test of the affected flow (e.g. NFC passport read, MRZ camera scan) — **needs human**, or N/A if no runtime behavior changed

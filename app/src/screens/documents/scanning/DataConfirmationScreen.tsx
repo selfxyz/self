@@ -11,11 +11,12 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { colors, TopNavigationDialogue, XIcon } from '@selfxyz/euclid';
-import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { trackBranchEvent, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
   PrimaryButton,
   SecondaryButton,
 } from '@selfxyz/mobile-sdk-alpha/components';
+import { BiometricEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import { advercase } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import { InputField } from '@/components/InputField';
@@ -77,10 +78,13 @@ const DataConfirmationScreen: React.FC & {
   const handleConfirmPress = () => {
     const { documentNumber, dateOfBirth, documentExpiryDate } = fields;
 
-    const hasChanges =
-      documentNumber !== originalDocumentNumber ||
-      dateOfBirth !== originalDateOfBirth ||
-      documentExpiryDate !== originalDocumentExpiryDate;
+    const editedFields: string[] = [];
+    if (documentNumber !== originalDocumentNumber)
+      editedFields.push('document_number');
+    if (dateOfBirth !== originalDateOfBirth) editedFields.push('date_of_birth');
+    if (documentExpiryDate !== originalDocumentExpiryDate)
+      editedFields.push('document_expiry_date');
+    const hasChanges = editedFields.length > 0;
 
     if (hasChanges) {
       mrzData.setMRZForNFC({
@@ -91,6 +95,11 @@ const DataConfirmationScreen: React.FC & {
         documentType: mrzData.documentType,
       });
     }
+
+    trackBranchEvent(selfClient, BiometricEvents.DATA_CONFIRMATION_CONFIRMED, {
+      edited: hasChanges,
+      edited_fields: editedFields,
+    });
 
     navigation.navigate('DocumentNFCScan');
   };

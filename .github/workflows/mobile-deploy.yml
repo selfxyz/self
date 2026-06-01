@@ -39,7 +39,7 @@ env:
   GH_CACHE_VERSION: v1 # Global cache version
   GH_YARN_CACHE_VERSION: v1 # Yarn-specific cache version
   GH_GEMS_CACHE_VERSION: v1 # Ruby gems cache version
-  GH_PODS_CACHE_VERSION: v1 # CocoaPods cache version
+  GH_PODS_CACHE_VERSION: v2 # CocoaPods cache version
   GH_GRADLE_CACHE_VERSION: v1 # Gradle cache version
 
   # Path configuration
@@ -223,7 +223,7 @@ jobs:
           echo "📱 Platform to deploy: $PLATFORM"
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version-file: .nvmrc
 
@@ -764,6 +764,15 @@ jobs:
               version_bump:skip \
               --verbose
           fi
+
+      - name: Upload iOS build logs on failure
+        if: failure() && inputs.platform != 'android'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-gym-buildlogs
+          path: ${{ env.APP_PATH }}/ios/build/gymlogs
+          if-no-files-found: warn
+          retention-days: 7
 
       - name: Verify iOS build output
         if: inputs.platform != 'android'
@@ -1401,10 +1410,12 @@ jobs:
       pull-requests: write
     needs: [bump-version, build-ios, build-android]
     # Skip when this is a per-PR preview build — preview builds must not mutate
-    # the repo's version lineage.
+    # the repo's version lineage. Also skip in test mode (no store upload) so test
+    # builds don't open a version bump PR.
     if: |
       always() &&
       inputs.pr_number == '' &&
+      inputs.test_mode != true &&
       (github.event_name != 'pull_request' ||
         (github.event.action == 'closed' && github.event.pull_request.merged == true)) &&
       (needs.build-ios.result == 'success' || needs.build-android.result == 'success')
@@ -1418,7 +1429,7 @@ jobs:
           ref: "dev"
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version-file: .nvmrc
 
