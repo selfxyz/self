@@ -256,11 +256,14 @@ The project uses several custom Fastlane lanes to handle different build and dep
 
 #### Android Lanes
 
-| Lane            | Description                                                       | Usage                                        |
-| --------------- | ----------------------------------------------------------------- | -------------------------------------------- |
-| `internal_test` | Builds a beta version and uploads to Google Play Internal Testing | `bundle exec fastlane android internal_test` |
-| `deploy`        | Builds a production version and uploads to Google Play Production | `bundle exec fastlane android deploy`        |
-| `sync_version`  | Syncs version from package.json to build.gradle                   | `bundle exec fastlane android sync_version`  |
+| Lane           | Description                                       | Usage                                       |
+| -------------- | ------------------------------------------------- | ------------------------------------------- |
+| `build_only`   | Builds the signed release AAB (no upload)         | `bundle exec fastlane android build_only`   |
+| `sync_version` | Syncs version from package.json to build.gradle   | `bundle exec fastlane android sync_version` |
+
+> Android Play Store uploads are no longer done by Fastlane. Fastlane builds the
+> AAB; `scripts/upload_to_play_store.py` performs the resumable, WIF-authenticated
+> upload (and Internal App Sharing previews) from CI.
 
 ### Deployment Flow
 
@@ -290,8 +293,7 @@ Several scripts in `app/package.json` facilitate common Fastlane and versioning 
 
 For Android builds, use Fastlane directly:
 
-- `bundle exec fastlane android internal_test` - Build and upload to Google Play Internal Testing
-- `bundle exec fastlane android deploy` - Build and upload to Google Play Production
+- `bundle exec fastlane android build_only` - Build the signed release AAB (upload is handled in CI by `scripts/upload_to_play_store.py`)
 
 For iOS builds, you can also use Fastlane directly:
 
@@ -316,7 +318,6 @@ For iOS builds, you can also use Fastlane directly:
 For more control, you can run Fastlane directly with local development settings:
 
 - `FORCE_UPLOAD_LOCAL_DEV=true bundle exec fastlane ios internal_test` - Force local iOS testing
-- `FORCE_UPLOAD_LOCAL_DEV=true bundle exec fastlane android internal_test` - Force local Android testing
 
 ### Version Management 🏷️
 
@@ -501,7 +502,7 @@ Build numbers and version codes must be manually incremented before deployment u
      2. Sign in to the Google Play Console and create a new release
      3. Upload the downloaded AAB file and follow the console prompts
      4. Complete the release process in the Play Console UI
-   - The CI/CD pipeline uses `bundle exec fastlane android internal_test` directly
+   - The CI/CD pipeline builds with `bundle exec fastlane android build_only` and uploads via `scripts/upload_to_play_store.py`
 
 3. **Version Code Management:**
    - Version codes must be manually incremented using the `bump-version` scripts before deployment

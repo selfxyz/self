@@ -120,8 +120,8 @@ Set in workflow files:
 NODE_VERSION: 22
 RUBY_VERSION: 3.2
 JAVA_VERSION: 17
-ANDROID_API_LEVEL: 35
-ANDROID_NDK_VERSION: 27.0.12077973
+ANDROID_API_LEVEL: 36
+ANDROID_NDK_VERSION: 28.0.13004108
 ```
 
 The authoritative Node version is in `.nvmrc`; workflows may read it from there instead of a static env var.
