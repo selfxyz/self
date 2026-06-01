@@ -9,6 +9,7 @@ opt_out_usage
 
 require "bundler/setup"
 require "base64"
+require "fileutils"
 require "xcodeproj"
 require_relative "helpers"
 
@@ -356,6 +357,9 @@ platform :android do
       gradle_file_path: android_gradle_file_path.gsub("../", ""),
     )
 
+    android_release_architectures = ENV.fetch("ANDROID_RELEASE_ARCHITECTURES", "arm64-v8a,x86_64")
+    UI.message("🏗️ Android release architectures: #{android_release_architectures}")
+
     # TODO: uncomment when we have the permissions to run this action
     # Fastlane::Helpers.android_verify_version_code(android_gradle_file_path)
 
@@ -363,6 +367,12 @@ platform :android do
     should_upload = Fastlane::Helpers.should_upload_app(target_platform)
 
     Fastlane::Helpers.with_retry(max_retries: 3, delay: 10) do
+      cxx_dir = File.expand_path("../android/app/.cxx", __dir__)
+      if File.directory?(cxx_dir)
+        UI.message("🧹 Removing stale Android CMake cache: #{cxx_dir}")
+        FileUtils.rm_rf(cxx_dir)
+      end
+
       gradle(
         task: "clean bundleRelease --stacktrace --info",
         project_dir: "android/",
@@ -371,6 +381,8 @@ platform :android do
           "MYAPP_UPLOAD_STORE_PASSWORD" => ENV["ANDROID_KEYSTORE_PASSWORD"],
           "MYAPP_UPLOAD_KEY_ALIAS" => ENV["ANDROID_KEY_ALIAS"],
           "MYAPP_UPLOAD_KEY_PASSWORD" => ENV["ANDROID_KEY_PASSWORD"] == "EMPTY" ? "" : ENV["ANDROID_KEY_PASSWORD"],
+          "reactNativeArchitectures" => android_release_architectures,
+          "selfAppArchitectures" => android_release_architectures,
         },
       )
     end
