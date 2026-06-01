@@ -82,16 +82,7 @@ UPLOAD_CHUNK_SIZE = 8 * 1024 * 1024
 
 
 def is_version_already_committed_error(exc):
-    """True if exc reports the AAB's version code as already used by Play.
-
-    Used only on a retry, where this most likely means a previous attempt's
-    commit landed server-side and only its response was lost (the version code
-    was already consumed). It is a heuristic, not a guarantee: we have not
-    confirmed against the API that an abandoned/uncommitted edit never consumes
-    a version code, so callers should treat a True result as "probably already
-    shipped." Scope it to retries only — on a first attempt the same error is a
-    genuine "version not bumped" misconfig and must fail loudly.
-    """
+    """True if exc reports the AAB's version code as already used by Play."""
     if not isinstance(exc, HttpError):
         return False
     status = getattr(getattr(exc, 'resp', None), 'status', None)
@@ -104,6 +95,21 @@ def is_version_already_committed_error(exc):
     return status in (400, 403, 409) and any(m in needle for m in markers)
 
 
+def track_contains_version_code(service, package_name, edit_id, track, version_code):
+    """Check whether the current edit view of a track contains version_code."""
+    track_request = service.edits().tracks().get(
+        packageName=package_name,
+        editId=edit_id,
+        track=track,
+    )
+    track_response = track_request.execute(num_retries=REQUEST_NUM_RETRIES)
+    expected = str(version_code)
+    for release in track_response.get('releases', []):
+        if expected in {str(code) for code in release.get('versionCodes', [])}:
+            return True
+    return False
+
+
 def with_retry(description, fn, max_attempts=3, base_delay=15):
     """Run fn(attempt), retrying the whole operation on transient failures.
 
@@ -111,8 +117,8 @@ def with_retry(description, fn, max_attempts=3, base_delay=15):
     from a retry. This matters because retrying a Play upload is NOT fully
     idempotent: if a prior attempt committed the edit but its response was
     lost, re-running starts a fresh edit and re-uploads the same version code,
-    which Play rejects. fn is expected to recognize that case on attempt > 1
-    (see is_version_already_committed_error) and treat it as success.
+    which Play rejects. fn is expected to recognize that case on attempt > 1,
+    verify the track state, and treat it as success only after verification.
 
     Re-raises the last error once attempts are exhausted so persistent
     failures still fail the job.
@@ -191,7 +197,7 @@ def upload_to_internal_app_sharing(aab_path, package_name, credentials):
     return True
 
 
-def upload_to_play_store(aab_path, package_name, track, credentials, attempt=1):
+def upload_to_play_store(aab_path, package_name, track, credentials, attempt=1, retry_state=None):
     """Upload AAB to Google Play Store"""
     print(f"📤 Uploading {aab_path} to Play Store...")
 
@@ -222,12 +228,27 @@ def upload_to_play_store(aab_path, package_name, track, credentials, attempt=1):
         bundle_response = upload_request.execute(num_retries=REQUEST_NUM_RETRIES)
     except HttpError as e:
         if attempt > 1 and is_version_already_committed_error(e):
-            print("ℹ️  Play reports this version code as already used. On a retry "
-                  "this most likely means a previous attempt's commit landed and "
-                  "only its response was lost; treating it as a successful release.")
-            return True
+            expected_version_code = (retry_state or {}).get('version_code')
+            if expected_version_code and track_contains_version_code(
+                service,
+                package_name,
+                edit_id,
+                track,
+                expected_version_code,
+            ):
+                print("ℹ️  Play reports this version code as already used, and "
+                      f"track {track} already contains version code "
+                      f"{expected_version_code}. Treating this retry as a "
+                      "successful release.")
+                return True
+            print("⚠️  Play reports this version code as already used, but the "
+                  f"expected version code {expected_version_code or 'unknown'} "
+                  f"was not found on track {track}. Failing instead of reporting "
+                  "an unverified release as successful.")
         raise
     version_code = bundle_response['versionCode']
+    if retry_state is not None:
+        retry_state['version_code'] = str(version_code)
     print(f"✅ AAB uploaded. Version code: {version_code}")
 
     # Assign to track
@@ -309,9 +330,17 @@ def main():
                 lambda attempt: upload_to_internal_app_sharing(str(aab_path), args.package_name, credentials),
             )
         else:
+            retry_state = {}
             success = with_retry(
                 "Play Store upload",
-                lambda attempt: upload_to_play_store(str(aab_path), args.package_name, args.track, credentials, attempt=attempt),
+                lambda attempt: upload_to_play_store(
+                    str(aab_path),
+                    args.package_name,
+                    args.track,
+                    credentials,
+                    attempt=attempt,
+                    retry_state=retry_state,
+                ),
             )
     except Exception as e:
         print(f"❌ Upload failed: {e}")
