@@ -4,6 +4,10 @@ apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: 'kotlin-android'
 apply plugin: 'com.google.gms.google-services'
 
+def parseArchitectures = { value ->
+    value.toString().split(",").collect { it.trim() }.findAll { it }
+}
+
 
 /**
  * This is the configuration block to customize your React Native Android app.
@@ -170,6 +174,8 @@ android {
             ndk {
                 if (System.env.E2E_BUILD == "true") {
                     abiFilters "x86_64"
+                } else if (project.hasProperty("selfAppArchitectures")) {
+                    abiFilters(*parseArchitectures(project.getProperty("selfAppArchitectures")))
                 } else {
                     abiFilters "arm64-v8a", "x86_64"
                 }
