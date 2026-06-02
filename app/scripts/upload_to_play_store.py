@@ -74,13 +74,6 @@ def get_credentials():
 # applying exponential backoff to transient 5xx/socket errors.
 REQUEST_NUM_RETRIES = 5
 
-# Explicit resumable-upload chunk size. The client default is 100 MiB, large
-# enough that a single chunk can exceed the socket read timeout on a slow CI
-# link. A smaller chunk (a multiple of 256 KiB, as the resumable protocol
-# requires) lets REQUEST_NUM_RETRIES recover one chunk at a time instead of
-# restarting the whole transfer.
-UPLOAD_CHUNK_SIZE = 8 * 1024 * 1024
-
 # Play can take longer than the httplib2 default socket timeout to process a
 # larger bundle upload. Keep this above the observed failure window.
 HTTP_TIMEOUT_SECONDS = 600
@@ -98,17 +91,6 @@ def build_play_service(credentials):
         http=authorized_http,
         cache_discovery=False,
     )
-
-
-def execute_resumable_upload(request, description):
-    """Execute a resumable upload with per-chunk progress logging."""
-    response = None
-    while response is None:
-        status, response = request.next_chunk(num_retries=REQUEST_NUM_RETRIES)
-        if status:
-            print(f"📶 {description}: {int(status.progress() * 100)}% uploaded", flush=True)
-    print(f"📶 {description}: 100% uploaded", flush=True)
-    return response
 
 
 def is_version_already_committed_error(exc):
@@ -193,14 +175,12 @@ def upload_to_internal_app_sharing(aab_path, package_name, credentials):
     media = MediaFileUpload(
         aab_path,
         mimetype='application/octet-stream',
-        resumable=True,
-        chunksize=UPLOAD_CHUNK_SIZE,
     )
     request = service.internalappsharingartifacts().uploadbundle(
         packageName=package_name,
         media_body=media,
     )
-    response = execute_resumable_upload(request, "Internal App Sharing upload")
+    response = request.execute(num_retries=REQUEST_NUM_RETRIES)
 
     download_url = response.get('downloadUrl')
     sha256 = response.get('sha256')
@@ -245,8 +225,6 @@ def upload_to_play_store(aab_path, package_name, track, credentials, attempt=1, 
     media = MediaFileUpload(
         aab_path,
         mimetype='application/octet-stream',
-        resumable=True,
-        chunksize=UPLOAD_CHUNK_SIZE,
     )
     upload_request = service.edits().bundles().upload(
         packageName=package_name,
@@ -254,7 +232,7 @@ def upload_to_play_store(aab_path, package_name, track, credentials, attempt=1, 
         media_body=media
     )
     try:
-        bundle_response = execute_resumable_upload(upload_request, "Play Store AAB upload")
+        bundle_response = upload_request.execute(num_retries=REQUEST_NUM_RETRIES)
     except HttpError as e:
         if attempt > 1 and is_version_already_committed_error(e):
             expected_version_code = (retry_state or {}).get('version_code')
