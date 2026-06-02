@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import { BRIDGE_PROTOCOL_VERSION } from '@selfxyz/webview-bridge';
+
 import type { BridgeDomain, BridgeRequest, BridgeResponse, BridgeEvent } from './types';
 import { BridgeHandlerError } from './types';
 import type { BridgeHandler } from './types';
-
-const BRIDGE_PROTOCOL_VERSION = 1;
 
 function generateUuid(): string {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
@@ -29,6 +29,14 @@ function escapeForJs(jsonStr: string): string {
 interface RouterConfig {
   sendToWebView: (js: string) => void;
   debug?: boolean;
+  /**
+   * Fired when an inbound request carries a non-matching, missing, or
+   * non-numeric protocol version. The router stays policy-free: it reports
+   * the raw `received` value and lets the host decide the UX. `received` is
+   * the discriminator — a number means a definitive incompatibility, while
+   * undefined/non-number is most likely a transient malformed frame.
+   */
+  onVersionMismatch?: (info: { received: unknown; expected: number }) => void;
 }
 
 export class MessageRouter {
@@ -56,10 +64,11 @@ export class MessageRouter {
       return;
     }
 
-    if (
-      typeof request.version === 'number' &&
-      request.version !== BRIDGE_PROTOCOL_VERSION
-    ) {
+    if (request.version !== BRIDGE_PROTOCOL_VERSION) {
+      this.config.onVersionMismatch?.({
+        received: request.version,
+        expected: BRIDGE_PROTOCOL_VERSION,
+      });
       this.sendResponse({
         type: 'response',
         version: BRIDGE_PROTOCOL_VERSION,
@@ -69,7 +78,7 @@ export class MessageRouter {
         success: false,
         error: {
           code: 'UNSUPPORTED_VERSION',
-          message: `Bridge protocol version ${request.version} not supported; host expects ${BRIDGE_PROTOCOL_VERSION}`,
+          message: `Bridge protocol version ${String(request.version)} not supported; host expects ${BRIDGE_PROTOCOL_VERSION}`,
         },
         timestamp: Date.now(),
       });

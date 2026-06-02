@@ -44,6 +44,8 @@ const ALLOWED_TAG_KEYS = new Set([
   'signature_algorithm',
   'csca_hash_algorithm',
   'kyc_provider',
+  'runtime',
+  'webview_source',
 ]);
 
 export const captureException = (
@@ -55,6 +57,36 @@ export const captureException = (
   }
   sentryCaptureException(error, {
     extra: context,
+  });
+};
+
+type WebViewLoadDiagnosticKind = 'timeout' | 'load_error' | 'version_mismatch';
+
+/**
+ * Maps a SelfVerification load diagnostic to Sentry. A present-but-wrong
+ * protocol version (`version_mismatch`) is a definitive incompatibility →
+ * error; timeout / load_error are recoverable → warning. Tagged so these can
+ * be sliced out of the host runtime's noise.
+ */
+export const captureWebViewLoadDiagnostic = (
+  kind: WebViewLoadDiagnosticKind,
+  source: 'bundle' | 'dev-server',
+  detail?: Record<string, unknown>,
+) => {
+  if (isSentryDisabled) {
+    return;
+  }
+  withScope(scope => {
+    scope.setLevel(kind === 'version_mismatch' ? 'error' : 'warning');
+    scope.setTag('runtime', 'rn-host');
+    scope.setTag('webview_source', source);
+    scope.setTag('error_code', kind);
+    if (detail) {
+      Object.entries(detail).forEach(([key, value]) => {
+        scope.setExtra(key, value);
+      });
+    }
+    sentryCaptureException(new Error(`WebView load ${kind}`));
   });
 };
 

@@ -48,6 +48,7 @@
   .pill.high { color: var(--high); background: var(--high-soft); border-color: var(--high); }
   .pill.scope { color: var(--accent); background: var(--accent-soft); border-color: var(--accent); }
   .pill.active { color: var(--accent); background: var(--accent-soft); border-color: var(--accent); }
+  .pill.done { color: var(--done); background: var(--done-soft); border-color: var(--done); }
   .spacer { flex: 1; }
   .layout { display: grid; grid-template-columns: 220px 1fr; gap: 32px; max-width: 1100px; margin: 0 auto; padding: 24px; }
   nav.toc { position: sticky; top: 64px; align-self: start; font-size: 13px; }
@@ -79,7 +80,7 @@
 
 <header class="topbar">
   <h1>WIA-09 · Bundle Loading — Hardening Plan</h1>
-  <span class="pill active">In progress</span>
+  <span class="pill done">Implemented — validation green</span>
   <span class="pill scope">Scope: rn-sdk · webview-bridge</span>
   <span class="pill">2026-05-29</span>
   <span class="spacer"></span>
@@ -377,6 +378,26 @@
     with <code>{ kind, source }</code> and one terminal <code>webview_version_mismatch</code> event; refine
     against the funnel as you wire it.
   </div>
+  <div class="callout">
+    <strong>Finalized taxonomy (implemented):</strong> three events, named in the app's
+    <code>"Category: Title Case"</code> convention (snake_case proposal dropped — it would have been the only
+    parallel scheme). Defined once in <code>packages/rn-sdk/src/analytics-events.ts</code>
+    (<code>WebViewLoadEvents</code>, the firing source) and mirrored in the app keep-list as
+    <code>WebViewEvents</code> in <code>mobile-sdk-alpha/constants/analytics.ts</code> — the rn-sdk copy is
+    unavoidable (the SDK cannot import <code>mobile-sdk-alpha</code> per the one-dependency rule) and the
+    mobile-sdk copy is the lightweight string module the app's <code>KNOWN_EVENT_NAMES</code> validator reads
+    (importing the rn-sdk barrel would pull <code>react-native-webview</code> into the analytics graph).
+    <ul>
+      <li><code>WebView: Load Failed</code> — <code>{ kind: 'timeout' | 'load_error', source }</code></li>
+      <li><code>WebView: Version Mismatch</code> — <code>{ source, recoverable }</code>
+        (<code>recoverable=true</code> for a missing/non-numeric version, <code>false</code> for the terminal
+        present-but-wrong case)</li>
+      <li><code>WebView: Load Recovered</code> — <code>{ source }</code>, fired when a load that
+        <code>failed</code> reaches <code>ready</code> after retry</li>
+    </ul>
+    Funnel firing is wrapped so a throwing/slow sink can never block or break the load UI (true
+    fire-and-forget).
+  </div>
   <p><strong>Constraints:</strong></p>
   <ul>
     <li>No new analytics dependency — reuse the injected <code>AnalyticsSink</code>.</li>
@@ -412,6 +433,34 @@
   <pre>cd packages/rn-sdk &amp;&amp; yarn test &amp;&amp; yarn types
 cd packages/webview-bridge &amp;&amp; yarn build &amp;&amp; yarn test
 yarn lint &amp;&amp; yarn types</pre>
+  <p class="callout">
+    <strong>Run results:</strong> rn-sdk 145/145 + types pass; webview-bridge 68/68 + build pass; app jest
+    102 suites / 1117 tests pass (incl. the new <code>app/tests/src/sdk/SelfVerification.test.tsx</code>);
+    app <code>tsc --noEmit</code> and mobile-sdk-alpha typecheck pass; eslint clean on all changed files
+    (rn-sdk has no <code>lint</code> script, so it is not in the workspace lint set).
+  </p>
+  <p class="callout note">
+    <strong>Test harness + pre-existing build fixes (departures from the plan, required to make the suite
+    run):</strong>
+    <ul>
+      <li>SelfVerification behavior tests live in <code>app/tests/</code> (jest + RN preset + the global
+        <code>react-native-webview</code> mock — the OOM-guarded home), driving the captured WebView
+        <code>onMessage</code>/<code>onError</code>/<code>onHttpError</code> props and asserting the
+        render-prop contract. rn-sdk's own vitest has no RN/jsdom environment.</li>
+      <li><code>app/jest.config.cjs</code>: mapped <code>@selfxyz/rn-sdk</code> → its built
+        <code>dist/index.js</code>, and collapsed <code>react</code> / <code>react/jsx-runtime</code> /
+        <code>react-native</code> to the app's copies (rn-sdk ships its own React 18 + react-native; without
+        this the bundle's hooks hit a null dispatcher against the app's React 19 and the RN mock would not
+        apply). Same rationale as the existing <code>react-native-webview</code> single-resolution map.</li>
+      <li><code>app/tsconfig.json</code>: added a <code>@selfxyz/rn-sdk</code> path. The pre-existing
+        <code>WebViewHostScreen</code> import was unresolved (the package is not symlinked into
+        <code>app/node_modules</code>), so <code>app yarn types</code> was already failing before this PR;
+        the path fixes that broken build.</li>
+      <li>Rebuilt <code>mobile-sdk-alpha</code> dist so the new <code>WebViewEvents</code> reaches the app's
+        dist-resolved type + runtime paths; added the same group to the <code>jest.setup.js</code> analytics
+        mock so <code>KNOWN_EVENT_NAMES</code> does not <code>Object.values(undefined)</code>.</li>
+    </ul>
+  </p>
 </section>
 
 <section id="done">
