@@ -65,10 +65,14 @@ export class MessageRouter {
     }
 
     if (request.version !== BRIDGE_PROTOCOL_VERSION) {
-      this.config.onVersionMismatch?.({
-        received: request.version,
-        expected: BRIDGE_PROTOCOL_VERSION,
-      });
+      try {
+        this.config.onVersionMismatch?.({
+          received: request.version,
+          expected: BRIDGE_PROTOCOL_VERSION,
+        });
+      } catch {
+        /* observer errors must not suppress the UNSUPPORTED_VERSION response */
+      }
       this.sendResponse({
         type: 'response',
         version: BRIDGE_PROTOCOL_VERSION,

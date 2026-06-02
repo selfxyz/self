@@ -48,14 +48,15 @@ export const WebViewLoadingOverlay: React.FC<{ stage: 'loading' | 'slow' }> = ({
 export const WebViewErrorOverlay: React.FC<{ info: LoadErrorInfo }> = ({
   info,
 }) => {
-  const isVersionMismatch = info.kind === 'version_mismatch';
+  const isTerminalVersionMismatch =
+    info.kind === 'version_mismatch' && !info.canRetry;
   return (
     <YStack style={styles.fill} gap={12}>
       <Title style={{ textAlign: 'center' }}>
-        {isVersionMismatch ? 'Update required' : 'Something went wrong'}
+        {isTerminalVersionMismatch ? 'Update required' : 'Something went wrong'}
       </Title>
       <BodyText style={{ color: slate500, textAlign: 'center' }}>
-        {isVersionMismatch
+        {isTerminalVersionMismatch
           ? 'Please update the Self app to continue.'
           : "We couldn't load verification. Check your connection and try again."}
       </BodyText>

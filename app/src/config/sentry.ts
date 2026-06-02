@@ -63,10 +63,21 @@ export const captureException = (
 type WebViewLoadDiagnosticKind = 'timeout' | 'load_error' | 'version_mismatch';
 
 /**
- * Maps a SelfVerification load diagnostic to Sentry. A present-but-wrong
- * protocol version (`version_mismatch`) is a definitive incompatibility →
- * error; timeout / load_error are recoverable → warning. Tagged so these can
- * be sliced out of the host runtime's noise.
+ * A terminal `version_mismatch` (a present-but-wrong protocol version,
+ * `recoverable !== true`) is a definitive incompatibility → error; recoverable
+ * mismatches, timeout, and load_error are retryable → warning.
+ */
+export const webViewDiagnosticLevel = (
+  kind: WebViewLoadDiagnosticKind,
+  detail?: Record<string, unknown>,
+): 'error' | 'warning' =>
+  kind === 'version_mismatch' && detail?.recoverable !== true
+    ? 'error'
+    : 'warning';
+
+/**
+ * Maps a SelfVerification load diagnostic to Sentry. Tagged so these can be
+ * sliced out of the host runtime's noise.
  */
 export const captureWebViewLoadDiagnostic = (
   kind: WebViewLoadDiagnosticKind,
@@ -77,12 +88,14 @@ export const captureWebViewLoadDiagnostic = (
     return;
   }
   withScope(scope => {
-    scope.setLevel(kind === 'version_mismatch' ? 'error' : 'warning');
+    scope.setLevel(webViewDiagnosticLevel(kind, detail));
     scope.setTag('runtime', 'rn-host');
     scope.setTag('webview_source', source);
     scope.setTag('error_code', kind);
     if (detail) {
-      Object.entries(detail).forEach(([key, value]) => {
+      const redacted =
+        redactSensitiveFields({ extra: { ...detail } }).extra ?? {};
+      Object.entries(redacted).forEach(([key, value]) => {
         scope.setExtra(key, value);
       });
     }

@@ -337,9 +337,14 @@ export const SelfVerification: React.FC<SelfVerificationProps> = ({
         reportFailure('version_mismatch', 'version_mismatch', {
           received,
           expected,
+          recoverable: false,
         });
       } else {
-        reportFailure('version_mismatch', 'failed', { received, expected });
+        reportFailure('version_mismatch', 'failed', {
+          received,
+          expected,
+          recoverable: true,
+        });
       }
     },
     [reportFailure],

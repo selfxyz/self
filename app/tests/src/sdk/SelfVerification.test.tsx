@@ -81,7 +81,11 @@ describe('SelfVerification load hardening', () => {
       expect.objectContaining({
         kind: 'version_mismatch',
         source: 'bundle',
-        detail: expect.objectContaining({ received: 2, expected: 1 }),
+        detail: expect.objectContaining({
+          received: 2,
+          expected: 1,
+          recoverable: false,
+        }),
       }),
     );
     expect(trackEvent).toHaveBeenCalledWith(
@@ -103,7 +107,11 @@ describe('SelfVerification load hardening', () => {
     expect(onLoadDiagnostic).toHaveBeenCalledWith(
       expect.objectContaining({
         kind: 'version_mismatch',
-        detail: expect.objectContaining({ received: undefined, expected: 1 }),
+        detail: expect.objectContaining({
+          received: undefined,
+          expected: 1,
+          recoverable: true,
+        }),
       }),
     );
     expect(trackEvent).toHaveBeenCalledWith(

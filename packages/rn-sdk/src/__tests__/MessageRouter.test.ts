@@ -91,6 +91,26 @@ describe('MessageRouter', () => {
     expect(onVersionMismatch).toHaveBeenCalledWith({ received: 2, expected: 1 });
   });
 
+  it('still sends UNSUPPORTED_VERSION when onVersionMismatch throws', async () => {
+    const throwing = vi.fn(() => {
+      throw new Error('observer boom');
+    });
+    const localRouter = new MessageRouter({
+      sendToWebView,
+      onVersionMismatch: throwing,
+    });
+
+    expect(() => localRouter.onMessageReceived(makeRequest({ version: 2 }))).not.toThrow();
+    await vi.waitFor(() => expect(sendToWebView).toHaveBeenCalled());
+
+    const response = parseLastSentResponse();
+    expect(response.success).toBe(false);
+    expect(response.error).toEqual(
+      expect.objectContaining({ code: 'UNSUPPORTED_VERSION' }),
+    );
+    expect(throwing).toHaveBeenCalledOnce();
+  });
+
   it('fails closed when the inbound version is missing (default-deny, not fall-through)', async () => {
     // A missing `version` is most likely a malformed frame, not a stale binary.
     // The router still rejects it at dispatch — the message is never processed —
@@ -119,7 +139,7 @@ describe('MessageRouter', () => {
     );
     expect(handler.handle).not.toHaveBeenCalled();
     expect(onVersionMismatch).toHaveBeenCalledOnce();
-    expect(onVersionMismatch).toHaveBeenCalledWith({
+    expect(onVersionMismatch.mock.calls[0]?.[0]).toStrictEqual({
       received: undefined,
       expected: 1,
     });
