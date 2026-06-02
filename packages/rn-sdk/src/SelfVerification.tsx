@@ -28,6 +28,8 @@ import type { NavigationCallbacks } from './handlers/NavigationHandler';
 import type { DocumentsStore } from './handlers/DocumentsHandler';
 import type { SelfCryptoModule } from './handlers/CryptoHandler';
 import type { OperatingMode } from './handlers/LifecycleHandler';
+import { WebViewLoadEvents } from './analytics-events';
+import { COLORS } from './theme';
 
 // Resolve iOS main bundle path via react-native-fs (optional peerDep).
 // Falls back to a relative path when RNFS is not installed.
@@ -69,6 +71,27 @@ export interface VerificationResult {
 export interface SelfSdkError {
   code: string;
   message: string;
+}
+
+/**
+ * Why the WebView failed to load. `version_mismatch` covers both a
+ * present-but-wrong protocol version (terminal) and a missing/non-numeric one
+ * (recoverable) — the diagnostic records the cause; the UX stage records
+ * whether retry is offered. Shared, snake_case taxonomy across the diagnostic
+ * `kind` and the `renderError` literal.
+ */
+export type LoadDiagnosticKind = 'timeout' | 'load_error' | 'version_mismatch';
+
+export interface LoadDiagnosticEvent {
+  kind: LoadDiagnosticKind;
+  source: 'bundle' | 'dev-server';
+  detail?: Record<string, unknown>;
+}
+
+export interface LoadErrorInfo {
+  kind: LoadDiagnosticKind;
+  canRetry: boolean;
+  onRetry: () => void;
 }
 
 export interface SelfVerificationProps {
@@ -118,10 +141,28 @@ export interface SelfVerificationProps {
    * load and surfaces a recoverable error. Defaults to 10000ms.
    */
   loadTimeoutMs?: number;
+  /**
+   * Optional error-telemetry reporter, injected (never imported) so rn-sdk
+   * stays free of @sentry/react-native. The host maps each diagnostic to its
+   * own Sentry instance. Separate from `analytics` — diagnostics are error
+   * telemetry, analytics is the product funnel.
+   */
+  onLoadDiagnostic?: (event: LoadDiagnosticEvent) => void;
+  /**
+   * Consumer-supplied loading UI. When omitted, a built-in default backed by
+   * the local palette renders.
+   */
+  renderLoading?: (stage: 'loading' | 'slow') => React.ReactNode;
+  /**
+   * Consumer-supplied error UI. `canRetry` is false for a terminal version
+   * mismatch (the frozen bundle would mismatch identically on reload), true
+   * for recoverable failures. When omitted, a built-in default renders.
+   */
+  renderError?: (info: LoadErrorInfo) => React.ReactNode;
   style?: ViewStyle;
 }
 
-type LoadStage = 'loading' | 'slow' | 'failed' | 'ready';
+type LoadStage = 'loading' | 'slow' | 'failed' | 'ready' | 'version_mismatch';
 
 const DEFAULT_SPINNER_TIMEOUT_MS = 3000;
 const DEFAULT_LOAD_TIMEOUT_MS = 10_000;
@@ -183,16 +224,131 @@ export const SelfVerification: React.FC<SelfVerificationProps> = ({
   useKmpBridge = false,
   spinnerTimeoutMs = DEFAULT_SPINNER_TIMEOUT_MS,
   loadTimeoutMs = DEFAULT_LOAD_TIMEOUT_MS,
+  onLoadDiagnostic,
+  renderLoading,
+  renderError,
   style,
 }) => {
   const webViewRef = useRef<WebView>(null);
   const [loadStage, setLoadStage] = useState<LoadStage>('loading');
+  const [errorKind, setErrorKind] = useState<LoadDiagnosticKind | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
 
-  // Track WebView readiness via the lifecycle.ready bridge message.
+  const isDevServer = __DEV__ && Boolean(devServerUrl);
+  const diagnosticSource: LoadDiagnosticEvent['source'] = isDevServer
+    ? 'dev-server'
+    : 'bundle';
+
+  // Mirror loadStage into a ref so the fail/diagnostic helpers can read the
+  // current stage synchronously (avoids stale closures across timers and
+  // WebView events) and guard against regressing a terminal/ready stage.
+  const loadStageRef = useRef<LoadStage>('loading');
+  useEffect(() => {
+    loadStageRef.current = loadStage;
+  }, [loadStage]);
+
+  const onLoadDiagnosticRef = useRef(onLoadDiagnostic);
+  const analyticsRef = useRef(analytics);
+  const recoveryPendingRef = useRef(false);
+  useEffect(() => {
+    onLoadDiagnosticRef.current = onLoadDiagnostic;
+    analyticsRef.current = analytics;
+  }, [onLoadDiagnostic, analytics]);
+
+  // Funnel analytics are fire-and-forget: a throwing or slow sink must never
+  // block or break the load/error UI.
+  const trackFunnel = useCallback(
+    (name: string, properties: Record<string, unknown>) => {
+      try {
+        analyticsRef.current?.trackEvent(name, properties);
+      } catch {
+        /* swallow — analytics must not affect the load UI */
+      }
+    },
+    [],
+  );
+
+  // Drive a failure transition once: report the Sentry diagnostic and the
+  // analytics funnel event, then move the stage. A terminal version mismatch
+  // may upgrade a prior recoverable `failed`; nothing regresses `ready`.
+  const reportFailure = useCallback(
+    (
+      kind: LoadDiagnosticKind,
+      stage: 'failed' | 'version_mismatch',
+      detail?: Record<string, unknown>,
+      options?: { force?: boolean },
+    ) => {
+      const prev = loadStageRef.current;
+      if ((prev === 'ready' && !options?.force) || prev === 'version_mismatch') {
+        return;
+      }
+      if (prev === 'failed' && stage !== 'version_mismatch') return;
+
+      loadStageRef.current = stage;
+      setLoadStage(stage);
+      setErrorKind(kind);
+
+      try {
+        onLoadDiagnosticRef.current?.({
+          kind,
+          source: diagnosticSource,
+          detail,
+        });
+      } catch {
+        /* swallow — diagnostics must not affect the load UI */
+      }
+
+      if (kind === 'version_mismatch') {
+        trackFunnel(WebViewLoadEvents.VERSION_MISMATCH, {
+          source: diagnosticSource,
+          recoverable: stage === 'failed',
+        });
+      } else {
+        trackFunnel(WebViewLoadEvents.LOAD_FAILED, {
+          kind,
+          source: diagnosticSource,
+        });
+      }
+    },
+    [diagnosticSource, trackFunnel],
+  );
+
+  // Track WebView readiness via the lifecycle.ready bridge message. A ready
+  // that lands after a recoverable failure (retry succeeded) is a funnel
+  // recovery.
   const handleReady = useCallback(() => {
+    const prev = loadStageRef.current;
+    if (prev === 'version_mismatch') return;
+    if (prev === 'failed' && !recoveryPendingRef.current) return;
+
+    if (recoveryPendingRef.current) {
+      trackFunnel(WebViewLoadEvents.LOAD_RECOVERED, {
+        source: diagnosticSource,
+      });
+    }
+    recoveryPendingRef.current = false;
+    loadStageRef.current = 'ready';
     setLoadStage('ready');
-  }, []);
+  }, [diagnosticSource, trackFunnel]);
+
+  const handleVersionMismatch = useCallback(
+    ({ received, expected }: { received: unknown; expected: number }) => {
+      if (typeof received === 'number') {
+        reportFailure('version_mismatch', 'version_mismatch', {
+          received,
+          expected,
+          recoverable: false,
+        });
+      } else {
+        reportFailure('version_mismatch', 'failed', {
+          received,
+          expected,
+          recoverable: true,
+        });
+      }
+    },
+    [reportFailure],
+  );
 
   // We extend onGoBack so React Native's BackHandler can route through it.
   const navigationWithBack = useMemo<NavigationCallbacks>(() => {
@@ -209,8 +365,9 @@ export const SelfVerification: React.FC<SelfVerificationProps> = ({
           webViewRef.current?.injectJavaScript(js);
         },
         debug,
+        onVersionMismatch: handleVersionMismatch,
       }),
-    [debug],
+    [debug, handleVersionMismatch],
   );
 
   const kmpTransport = useMemo<KmpBridgeTransport | undefined>(() => {
@@ -290,20 +447,23 @@ export const SelfVerification: React.FC<SelfVerificationProps> = ({
     return () => sub.remove();
   }, [router]);
 
-  // Loading state machine: spinner → slow → failed.
+  // Loading state machine: spinner → slow → failed. `version_mismatch` is
+  // terminal — do not arm timers against it.
   useEffect(() => {
-    if (loadStage === 'ready') return undefined;
+    if (loadStage === 'ready' || loadStage === 'version_mismatch') {
+      return undefined;
+    }
     const slowTimer = setTimeout(() => {
       setLoadStage(stage => (stage === 'loading' ? 'slow' : stage));
     }, spinnerTimeoutMs);
     const failTimer = setTimeout(() => {
-      setLoadStage(stage => (stage === 'ready' ? stage : 'failed'));
+      reportFailure('timeout', 'failed');
     }, loadTimeoutMs);
     return () => {
       clearTimeout(slowTimer);
       clearTimeout(failTimer);
     };
-  }, [loadStage, reloadKey, spinnerTimeoutMs, loadTimeoutMs]);
+  }, [loadStage, reloadKey, spinnerTimeoutMs, loadTimeoutMs, reportFailure]);
 
   const onMessage = useCallback(
     (event: WebViewMessageEvent) => {
@@ -320,7 +480,7 @@ export const SelfVerification: React.FC<SelfVerificationProps> = ({
   const requestSearch = useMemo(() => buildRequestSearch(request), [request]);
 
   const source = useMemo(() => {
-    if (__DEV__ && devServerUrl) {
+    if (isDevServer && devServerUrl) {
       const sep = devServerUrl.includes('?') ? '&' : '?';
       const uri = requestSearch ? `${devServerUrl}${sep}${requestSearch}` : devServerUrl;
       return { uri };
@@ -337,21 +497,75 @@ export const SelfVerification: React.FC<SelfVerificationProps> = ({
         ),
       },
     });
-  }, [devServerUrl, requestSearch]);
+  }, [isDevServer, devServerUrl, requestSearch]);
 
   const retry = useCallback(() => {
+    recoveryPendingRef.current = loadStageRef.current === 'failed';
+    loadStageRef.current = 'loading';
+    setErrorKind(null);
     setLoadStage('loading');
     setReloadKey(k => k + 1);
     webViewRef.current?.reload();
   }, []);
 
+  // A hard WebView load error (missing/corrupt bundle, HTTP error) fails fast
+  // instead of waiting for the 10s timeout. Guarded so a late event after
+  // `ready` does not regress the stage.
+  const handleWebViewError = useCallback(
+    (detail: Record<string, unknown>) => {
+      reportFailure('load_error', 'failed', detail);
+    },
+    [reportFailure],
+  );
+
+  const handleRenderProcessGone = useCallback(
+    (detail: Record<string, unknown>) => {
+      reportFailure('load_error', 'failed', detail, { force: true });
+    },
+    [reportFailure],
+  );
+
+  const overlay = useMemo<React.ReactNode>(() => {
+    if (loadStage === 'ready') return null;
+    if (loadStage === 'loading' || loadStage === 'slow') {
+      return renderLoading
+        ? renderLoading(loadStage)
+        : <DefaultLoadingOverlay stage={loadStage} />;
+    }
+    const info: LoadErrorInfo =
+      loadStage === 'version_mismatch'
+        ? { kind: 'version_mismatch', canRetry: false, onRetry: retry }
+        : { kind: errorKind ?? 'load_error', canRetry: true, onRetry: retry };
+    return renderError ? renderError(info) : <DefaultErrorOverlay info={info} />;
+  }, [loadStage, errorKind, renderLoading, renderError, retry]);
+
   return (
-    <View style={[{ flex: 1, backgroundColor: '#000' }, style]}>
+    <View style={[{ flex: 1, backgroundColor: COLORS.bg }, style]}>
       <WebView
         key={reloadKey}
         ref={webViewRef}
         source={source!}
         onMessage={onMessage}
+        onError={({ nativeEvent }) =>
+          handleWebViewError({
+            phase: 'onError',
+            code: nativeEvent.code,
+            description: nativeEvent.description,
+          })
+        }
+        onHttpError={({ nativeEvent }) =>
+          handleWebViewError({
+            phase: 'onHttpError',
+            statusCode: nativeEvent.statusCode,
+            description: nativeEvent.description,
+          })
+        }
+        onRenderProcessGone={({ nativeEvent }) =>
+          handleRenderProcessGone({
+            phase: 'onRenderProcessGone',
+            didCrash: nativeEvent.didCrash,
+          })
+        }
         javaScriptEnabled
         domStorageEnabled
         allowFileAccess
@@ -361,56 +575,55 @@ export const SelfVerification: React.FC<SelfVerificationProps> = ({
         originWhitelist={['*']}
         style={{ flex: 1, opacity: loadStage === 'ready' ? 1 : 0 }}
       />
-      {loadStage !== 'ready' ? (
-        <LoadingOverlay stage={loadStage} onRetry={retry} />
-      ) : null}
+      {overlay}
     </View>
   );
 };
 
-interface LoadingOverlayProps {
-  stage: 'loading' | 'slow' | 'failed';
-  onRetry: () => void;
-}
-
-const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ stage, onRetry }) => {
-  const showRetry = stage !== 'loading';
-  return (
-    <View
-      style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: '#000',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
-      <ActivityIndicator size="large" color="#fff" />
-      {stage === 'slow' ? (
-        <Text style={{ color: '#fff', marginTop: 16 }}>Still loading…</Text>
-      ) : null}
-      {stage === 'failed' ? (
-        <Text style={{ color: '#fff', marginTop: 16 }}>Couldn't load Self.</Text>
-      ) : null}
-      {showRetry ? (
-        <TouchableOpacity
-          onPress={onRetry}
-          accessibilityRole="button"
-          style={{
-            marginTop: 24,
-            paddingHorizontal: 24,
-            paddingVertical: 12,
-            borderColor: '#fff',
-            borderWidth: 1,
-            borderRadius: 8,
-          }}
-        >
-          <Text style={{ color: '#fff' }}>Retry</Text>
-        </TouchableOpacity>
-      ) : null}
-    </View>
-  );
+const overlayContainerStyle: ViewStyle = {
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  backgroundColor: COLORS.bg,
+  alignItems: 'center',
+  justifyContent: 'center',
 };
+
+const DefaultLoadingOverlay: React.FC<{ stage: 'loading' | 'slow' }> = ({
+  stage,
+}) => (
+  <View style={overlayContainerStyle}>
+    <ActivityIndicator size="large" color={COLORS.fg} />
+    {stage === 'slow' ? (
+      <Text style={{ color: COLORS.fg, marginTop: 16 }}>Still loading…</Text>
+    ) : null}
+  </View>
+);
+
+const DefaultErrorOverlay: React.FC<{ info: LoadErrorInfo }> = ({ info }) => (
+  <View style={overlayContainerStyle}>
+    <Text style={{ color: COLORS.fg, marginTop: 16, textAlign: 'center' }}>
+      {info.kind === 'version_mismatch'
+        ? 'Please update Self app'
+        : "Couldn't load Self."}
+    </Text>
+    {info.canRetry ? (
+      <TouchableOpacity
+        onPress={info.onRetry}
+        accessibilityRole="button"
+        style={{
+          marginTop: 24,
+          paddingHorizontal: 24,
+          paddingVertical: 12,
+          borderColor: COLORS.fg,
+          borderWidth: 1,
+          borderRadius: 8,
+        }}
+      >
+        <Text style={{ color: COLORS.fg }}>Retry</Text>
+      </TouchableOpacity>
+    ) : null}
+  </View>
+);

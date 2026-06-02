@@ -1112,6 +1112,11 @@ jest.mock('@selfxyz/mobile-sdk-alpha/constants/analytics', () => ({
     CONNECTION_MODAL_OPENED: 'Settings: Connection Modal Opened',
     CONNECTION_SETTINGS_OPENED: 'Settings: Connection Settings Opened',
   },
+  WebViewEvents: {
+    LOAD_FAILED: 'WebView: Load Failed',
+    VERSION_MISMATCH: 'WebView: Version Mismatch',
+    LOAD_RECOVERED: 'WebView: Load Recovered',
+  },
 }));
 
 // Note: @selfxyz/mobile-sdk-alpha is NOT mocked to allow testing real package methods

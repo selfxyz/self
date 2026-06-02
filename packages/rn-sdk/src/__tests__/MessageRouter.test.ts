@@ -22,11 +22,13 @@ function makeRequest(overrides: Record<string, unknown> = {}): string {
 
 describe('MessageRouter', () => {
   let sendToWebView: ReturnType<typeof vi.fn>;
+  let onVersionMismatch: ReturnType<typeof vi.fn>;
   let router: MessageRouter;
 
   beforeEach(() => {
     sendToWebView = vi.fn();
-    router = new MessageRouter({ sendToWebView });
+    onVersionMismatch = vi.fn();
+    router = new MessageRouter({ sendToWebView, onVersionMismatch });
   });
 
   function parseLastSentResponse(): Record<string, unknown> {
@@ -74,8 +76,8 @@ describe('MessageRouter', () => {
     );
   });
 
-  it('should return UNSUPPORTED_VERSION when the inbound version mismatches', async () => {
-    router.onMessageReceived(makeRequest({ version: 99 }));
+  it('fails closed and fires onVersionMismatch when the inbound version mismatches', async () => {
+    router.onMessageReceived(makeRequest({ version: 2 }));
     await vi.waitFor(() => expect(sendToWebView).toHaveBeenCalled());
 
     const response = parseLastSentResponse();
@@ -85,11 +87,34 @@ describe('MessageRouter', () => {
         code: 'UNSUPPORTED_VERSION',
       }),
     );
+    expect(onVersionMismatch).toHaveBeenCalledOnce();
+    expect(onVersionMismatch).toHaveBeenCalledWith({ received: 2, expected: 1 });
   });
 
-  it('should accept inbound messages that omit the version field', async () => {
-    // Older WebView builds that do not stamp `version` should still route
-    // — the host falls back to its own protocol version.
+  it('still sends UNSUPPORTED_VERSION when onVersionMismatch throws', async () => {
+    const throwing = vi.fn(() => {
+      throw new Error('observer boom');
+    });
+    const localRouter = new MessageRouter({
+      sendToWebView,
+      onVersionMismatch: throwing,
+    });
+
+    expect(() => localRouter.onMessageReceived(makeRequest({ version: 2 }))).not.toThrow();
+    await vi.waitFor(() => expect(sendToWebView).toHaveBeenCalled());
+
+    const response = parseLastSentResponse();
+    expect(response.success).toBe(false);
+    expect(response.error).toEqual(
+      expect.objectContaining({ code: 'UNSUPPORTED_VERSION' }),
+    );
+    expect(throwing).toHaveBeenCalledOnce();
+  });
+
+  it('fails closed when the inbound version is missing (default-deny, not fall-through)', async () => {
+    // A missing `version` is most likely a malformed frame, not a stale binary.
+    // The router still rejects it at dispatch — the message is never processed —
+    // and reports `received: undefined` so the host can route it to recoverable UX.
     const handler: BridgeHandler = {
       domain: 'lifecycle',
       handle: vi.fn().mockResolvedValue(null),
@@ -108,7 +133,34 @@ describe('MessageRouter', () => {
     await vi.waitFor(() => expect(sendToWebView).toHaveBeenCalled());
 
     const response = parseLastSentResponse();
-    expect(response.success).toBe(true);
+    expect(response.success).toBe(false);
+    expect(response.error).toEqual(
+      expect.objectContaining({ code: 'UNSUPPORTED_VERSION' }),
+    );
+    expect(handler.handle).not.toHaveBeenCalled();
+    expect(onVersionMismatch).toHaveBeenCalledOnce();
+    expect(onVersionMismatch.mock.calls[0]?.[0]).toStrictEqual({
+      received: undefined,
+      expected: 1,
+    });
+  });
+
+  it('keeps the rejection message legible when the version is absent', async () => {
+    const payload = JSON.stringify({
+      type: 'request',
+      id: 'req-no-version',
+      domain: 'lifecycle',
+      method: 'ready',
+      params: {},
+      timestamp: Date.now(),
+    });
+    router.onMessageReceived(payload);
+    await vi.waitFor(() => expect(sendToWebView).toHaveBeenCalled());
+
+    const response = parseLastSentResponse();
+    const error = response.error as { message: string };
+    expect(error.message).toContain('version undefined not supported');
+    expect(error.message).not.toContain('${');
   });
 
   it('should handle BridgeHandlerError from handler', async () => {

@@ -44,6 +44,15 @@ module.exports = {
     // Force a single react-native-webview resolution so the global mock applies
     // even when imported from nested package node_modules (e.g. rn-sdk).
     '^react-native-webview$': '<rootDir>/node_modules/react-native-webview',
+    // Same rationale for react / react-native: rn-sdk ships its own React 18
+    // and react-native copies; collapse to the app's so hooks share one
+    // dispatcher and the global react-native mock applies to the SDK too.
+    '^react$': '<rootDir>/node_modules/react',
+    '^react/jsx-runtime$': '<rootDir>/node_modules/react/jsx-runtime',
+    '^react-native$': '<rootDir>/node_modules/react-native',
+    // Resolve the embeddable SDK to its built CJS bundle (it is not symlinked
+    // into app/node_modules under the workspace layout).
+    '^@selfxyz/rn-sdk$': '<rootDir>/../packages/rn-sdk/dist/index.js',
     '^@selfxyz/mobile-sdk-alpha$':
       '<rootDir>/../packages/mobile-sdk-alpha/dist/cjs/index.cjs',
     '^@selfxyz/mobile-sdk-alpha/components$':

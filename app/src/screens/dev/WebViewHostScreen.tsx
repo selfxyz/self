@@ -11,6 +11,8 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import {
   type AnalyticsSink,
   type DocumentsStore,
+  type LoadDiagnosticEvent,
+  type LoadErrorInfo,
   type NavigationCallbacks,
   type SelfSdkError,
   SelfVerification,
@@ -18,8 +20,13 @@ import {
   type VerificationResult,
 } from '@selfxyz/rn-sdk';
 
+import { captureWebViewLoadDiagnostic } from '@/config/sentry';
 import type { RootStackParamList } from '@/navigation';
 import { selfClientDocumentsAdapter } from '@/providers/passportDataProvider';
+import {
+  WebViewErrorOverlay,
+  WebViewLoadingOverlay,
+} from '@/screens/dev/WebViewHostOverlays';
 import { trackEvent, trackNfcEvent } from '@/services/analytics';
 
 const WEBVIEW_DEV_URL_ENV = process.env.WEBVIEW_DEV_URL;
@@ -91,6 +98,20 @@ const WebViewHostScreen: React.FC = () => {
     navigation.goBack();
   }, [navigation]);
 
+  const handleLoadDiagnostic = useCallback((event: LoadDiagnosticEvent) => {
+    captureWebViewLoadDiagnostic(event.kind, event.source, event.detail);
+  }, []);
+
+  const renderLoading = useCallback(
+    (stage: 'loading' | 'slow') => <WebViewLoadingOverlay stage={stage} />,
+    [],
+  );
+
+  const renderError = useCallback(
+    (info: LoadErrorInfo) => <WebViewErrorOverlay info={info} />,
+    [],
+  );
+
   return (
     <View style={{ flex: 1, backgroundColor: '#000' }}>
       <SelfVerification
@@ -104,6 +125,9 @@ const WebViewHostScreen: React.FC = () => {
         analytics={analytics}
         navigation={navigationCallbacks}
         documents={documents}
+        onLoadDiagnostic={handleLoadDiagnostic}
+        renderLoading={renderLoading}
+        renderError={renderError}
       />
     </View>
   );
