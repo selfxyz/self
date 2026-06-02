@@ -236,4 +236,50 @@ describe('SelfVerification load hardening', () => {
       expect.objectContaining({ source: 'bundle' }),
     );
   });
+
+  it('keeps late non-crash load errors from regressing a ready WebView', () => {
+    const { renderError, onLoadDiagnostic } = setup();
+
+    act(() => {
+      mockWebViewProps!.onMessage(bridgeRequest(1));
+    });
+    act(() => {
+      mockWebViewProps!.onError({
+        nativeEvent: { code: -2, description: 'late network error' },
+      });
+    });
+
+    expect(renderError).not.toHaveBeenCalled();
+    expect(onLoadDiagnostic).not.toHaveBeenCalled();
+  });
+
+  it('surfaces a recoverable error when the renderer dies after ready', () => {
+    const { renderError, onLoadDiagnostic, trackEvent } = setup();
+
+    act(() => {
+      mockWebViewProps!.onMessage(bridgeRequest(1));
+    });
+    act(() => {
+      mockWebViewProps!.onRenderProcessGone({
+        nativeEvent: { didCrash: true },
+      });
+    });
+
+    expect(renderError).toHaveBeenCalledWith(
+      expect.objectContaining({ kind: 'load_error', canRetry: true }),
+    );
+    expect(onLoadDiagnostic).toHaveBeenCalledWith(
+      expect.objectContaining({
+        kind: 'load_error',
+        detail: expect.objectContaining({
+          phase: 'onRenderProcessGone',
+          didCrash: true,
+        }),
+      }),
+    );
+    expect(trackEvent).toHaveBeenCalledWith(
+      WebViewLoadEvents.LOAD_FAILED,
+      expect.objectContaining({ kind: 'load_error', source: 'bundle' }),
+    );
+  });
 });

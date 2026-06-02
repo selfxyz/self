@@ -276,9 +276,12 @@ export const SelfVerification: React.FC<SelfVerificationProps> = ({
       kind: LoadDiagnosticKind,
       stage: 'failed' | 'version_mismatch',
       detail?: Record<string, unknown>,
+      options?: { force?: boolean },
     ) => {
       const prev = loadStageRef.current;
-      if (prev === 'ready' || prev === 'version_mismatch') return;
+      if ((prev === 'ready' && !options?.force) || prev === 'version_mismatch') {
+        return;
+      }
       if (prev === 'failed' && stage !== 'version_mismatch') return;
 
       loadStageRef.current = stage;
@@ -500,12 +503,19 @@ export const SelfVerification: React.FC<SelfVerificationProps> = ({
     webViewRef.current?.reload();
   }, []);
 
-  // A hard WebView load error (missing/corrupt bundle, HTTP error, renderer
-  // crash) fails fast instead of waiting for the 10s timeout. Guarded so a
-  // late event after `ready` does not regress the stage.
+  // A hard WebView load error (missing/corrupt bundle, HTTP error) fails fast
+  // instead of waiting for the 10s timeout. Guarded so a late event after
+  // `ready` does not regress the stage.
   const handleWebViewError = useCallback(
     (detail: Record<string, unknown>) => {
       reportFailure('load_error', 'failed', detail);
+    },
+    [reportFailure],
+  );
+
+  const handleRenderProcessGone = useCallback(
+    (detail: Record<string, unknown>) => {
+      reportFailure('load_error', 'failed', detail, { force: true });
     },
     [reportFailure],
   );
@@ -546,7 +556,7 @@ export const SelfVerification: React.FC<SelfVerificationProps> = ({
           })
         }
         onRenderProcessGone={({ nativeEvent }) =>
-          handleWebViewError({
+          handleRenderProcessGone({
             phase: 'onRenderProcessGone',
             didCrash: nativeEvent.didCrash,
           })

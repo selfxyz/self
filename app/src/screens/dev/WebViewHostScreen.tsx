@@ -23,12 +23,11 @@ import {
 import { captureWebViewLoadDiagnostic } from '@/config/sentry';
 import type { RootStackParamList } from '@/navigation';
 import { selfClientDocumentsAdapter } from '@/providers/passportDataProvider';
-import { trackEvent, trackNfcEvent } from '@/services/analytics';
-
 import {
   WebViewErrorOverlay,
   WebViewLoadingOverlay,
-} from './WebViewHostOverlays';
+} from '@/screens/dev/WebViewHostOverlays';
+import { trackEvent, trackNfcEvent } from '@/services/analytics';
 
 const WEBVIEW_DEV_URL_ENV = process.env.WEBVIEW_DEV_URL;
 
