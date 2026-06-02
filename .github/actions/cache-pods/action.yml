@@ -31,7 +31,8 @@ runs:
       uses: actions/cache@v4
       with:
         path: ${{ inputs.path }}
+        # No restore-keys: a Pods sandbox built against a different Podfile.lock
+        # carries a stale Pods/Local Podspecs (e.g. an old hermes-engine version),
+        # and `pod install --clean-install` aborts on the skew. Only reuse an exact
+        # lockfile match; a changed lock falls back to a clean cold install.
         key: ${{ runner.os }}-pods-${{ inputs.cache-version }}-${{ hashFiles(inputs.lockfile) }}
-        restore-keys: |
-          ${{ runner.os }}-pods-${{ inputs.cache-version }}-
-          ${{ runner.os }}-pods-
