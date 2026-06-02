@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>WIA-12 — WebView Sentry React SDK, cohort tags, and redact parity</title>
+<style>
+  :root {
+    --bg: #fafbfc;
+    --surface: #ffffff;
+    --surface-alt: #f6f8fa;
+    --border: #d1d9e0;
+    --border-soft: #e1e4e8;
+    --text: #1f2328;
+    --muted: #656d76;
+    --accent: #0969da;
+    --accent-soft: #ddf4ff;
+    --high: #cf222e;
+    --high-soft: #ffebe9;
+    --med: #9a6700;
+    --med-soft: #fff8c5;
+    --done: #1a7f37;
+    --done-soft: #dafbe1;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font: 14px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    color: var(--text);
+    background: var(--bg);
+  }
+  code, pre, kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.9em; }
+  code { background: var(--surface-alt); padding: 1px 5px; border-radius: 4px; border: 1px solid var(--border-soft); }
+  pre { background: var(--surface-alt); padding: 12px 14px; border-radius: 6px; border: 1px solid var(--border-soft); overflow: auto; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  header.topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 12px 24px;
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  }
+  header h1 { margin: 0; font-size: 16px; font-weight: 600; }
+  .pill {
+    font-size: 11px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface-alt);
+  }
+  .pill.draft { color: var(--med); background: var(--med-soft); border-color: var(--med); }
+  .pill.high { color: var(--high); background: var(--high-soft); border-color: var(--high); }
+  .pill.scope { color: var(--accent); background: var(--accent-soft); border-color: var(--accent); }
+  .pill.active { color: var(--accent); background: var(--accent-soft); border-color: var(--accent); }
+  .pill.done { color: var(--done); background: var(--done-soft); border-color: var(--done); }
+  .spacer { flex: 1; }
+  .layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 32px; max-width: 1100px; margin: 0 auto; padding: 24px; }
+  nav.toc { position: sticky; top: 64px; align-self: start; font-size: 13px; }
+  nav.toc h4 { margin: 0 0 6px 0; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  nav.toc a { display: block; padding: 3px 0; color: var(--text); }
+  main { min-width: 0; }
+  main section { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 18px 22px; margin-bottom: 16px; }
+  main h2 { margin: 0 0 10px 0; font-size: 16px; }
+  main h3 { margin: 16px 0 6px 0; font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  main p { margin: 6px 0 10px 0; }
+  main ul, main ol { margin: 6px 0 10px 18px; padding: 0; }
+  main li { margin: 3px 0; }
+  table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 13px; }
+  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--border-soft); }
+  th { background: var(--surface-alt); font-weight: 600; }
+  .status { font-size: 11px; padding: 2px 8px; border-radius: 999px; display: inline-block; white-space: nowrap; border: 1px solid var(--border); background: var(--surface-alt); color: var(--muted); }
+  .status.done { color: var(--done); background: var(--done-soft); border-color: var(--done); }
+  .status.active { color: var(--accent); background: var(--accent-soft); border-color: var(--accent); }
+  .status.pending { color: var(--muted); }
+  .callout { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 8px 12px; border-radius: 0 6px 6px 0; margin: 10px 0; }
+  .callout.warn { border-left-color: var(--high); background: var(--high-soft); }
+  .callout.note { border-left-color: var(--med); background: var(--med-soft); }
+  .arrow { color: var(--muted); }
+  .check { list-style: none; margin-left: 0; }
+  .check li::before { content: "☐ "; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <h1>WIA-12 · WebView Sentry React SDK, cohort tags, and redact parity</h1>
+  <span class="pill active">Ready</span>
+  <span class="pill high">Priority: High</span>
+  <span class="pill scope">Scope: mobile-sdk-alpha · app · webview-app</span>
+  <span class="pill">Target: &lt;1,500 LOC</span>
+  <span class="pill">2026-06-02</span>
+  <span class="spacer"></span>
+  <div>
+    <a href="../SPEC-OBSERVABILITY.html">↑ Observability Contract</a>
+  </div>
+</header>
+
+<div class="layout">
+
+<nav class="toc">
+  <h4>On this page</h4>
+  <a href="#context">Context</a>
+  <a href="#decisions">Decisions</a>
+  <a href="#files">Files modified</a>
+  <a href="#implementation">Implementation</a>
+  <a href="#tests">Tests</a>
+  <a href="#oos">Out of scope</a>
+  <a href="#validation">Validation</a>
+  <a href="#done">Done criteria</a>
+</nav>
+
+<main>
+
+<section id="context">
+  <h2>Context</h2>
+  <p>
+    <strong>You are adding the WebView-side Sentry surface.</strong> WIA-09 added RN-host load
+    diagnostics in <code>app/src/config/sentry.ts</code>, including <code>runtime: rn-host</code>,
+    <code>webview_source</code>, and the live PII key redaction pattern. <code>webview-app</code> still
+    has no Sentry dependency or cohort-tag wiring, so WebView errors cannot be searched by the same
+    <code>attempt_id</code> / document cohort tags as RN-host events.
+  </p>
+  <p>
+    You are extracting shared pure observability helpers into <code>mobile-sdk-alpha</code>. You are not
+    implementing Session Replay masking (<code>WIA-13</code>) or the attempt footer
+    (<code>WIA-14</code>).
+  </p>
+</section>
+
+<section id="decisions">
+  <h2>Decisions</h2>
+  <ol>
+    <li>Use <code>@sentry/react</code>, not <code>@sentry/browser</code>, in
+      <code>packages/webview-app</code>. This matches the React + Vite app shape and allows React
+      error-boundary/profiler integration.</li>
+    <li>Extract the live RN redaction pattern from <code>app/src/config/sentry.ts</code>; do not define
+      a new shorter regex. The current pattern is:</li>
+  </ol>
+  <pre>/passport|mrz|dg\d|chip|aadhaar|(?:first|last|full|given|family|holder|sur)_?name|name_?(?:first|last|of_?holder|holder)|date_?of_?birth|dob|birth|photo/i</pre>
+  <ol start="3">
+    <li>Split <code>app/src/observability/onboardingContext.ts</code> instead of moving it wholesale.
+      <code>packages/mobile-sdk-alpha/src/</code> must remain platform-agnostic and cannot import
+      <code>@sentry/react-native</code>.</li>
+    <li>Runtime-specific Sentry setters stay runtime-specific. RN uses
+      <code>@sentry/react-native</code>; WebView uses <code>@sentry/react</code>.</li>
+  </ol>
+</section>
+
+<section id="files">
+  <h2>Files Modified</h2>
+  <ul>
+    <li><code>packages/mobile-sdk-alpha/src/observability/onboardingContext.ts</code> (new) — pure
+      <code>OnboardingTagSnapshot</code>, cohort key list, <code>tagsFromAnalyticsEvent</code>,
+      <code>sanitizeTagValue</code>, <code>SENSITIVE_KEY_PATTERN</code>, <code>REDACTED</code>, and
+      redaction helper.</li>
+    <li><code>packages/mobile-sdk-alpha/src/index.ts</code> and the browser entrypoint if needed —
+      export the pure helpers needed by RN and WebView.</li>
+    <li><code>app/src/config/sentry.ts</code> — import the shared redaction pattern/helper instead of
+      owning the regex.</li>
+    <li><code>app/src/observability/onboardingContext.ts</code> — keep only RN-specific
+      <code>setOnboardingTags</code> / <code>clearOnboardingTags</code> wrappers plus re-exports if
+      existing app importers need them.</li>
+    <li><code>app/src/services/analytics.ts</code> — keep behavior identical; update imports only if
+      the split requires it.</li>
+    <li><code>app/src/screens/dev/sections/SentryTestSection.tsx</code> — update imports only if the
+      split requires it.</li>
+    <li><code>packages/webview-app/package.json</code> — add <code>@sentry/react</code>.</li>
+    <li><code>packages/webview-app/src/config/sentry.ts</code> (new) — initialize Sentry, set
+      <code>runtime: webview</code>, apply <code>beforeSend</code> redaction, expose runtime-local
+      cohort tag setters.</li>
+    <li><code>packages/webview-app/src/main.tsx</code> or equivalent app bootstrap — call
+      <code>initSentry()</code> and wrap the React app if needed.</li>
+    <li><code>packages/mobile-sdk-alpha/src/adapters/browser/analytics.ts</code> — add a pure optional
+      <code>onTrackEvent</code> hook if needed; do not import Sentry.</li>
+    <li><code>packages/webview-bridge/src/adapters/sdk-adapter-map.ts</code> — allow the WebView app to
+      pass the observed analytics adapter into SDK adapter assembly if the hardcoded adapter blocks
+      WIA-12 wiring.</li>
+    <li><code>packages/webview-app/src/providers/SelfClientProvider.tsx</code> — install the
+      WebView-local observed analytics adapter so UI calls and SDK calls both update Sentry cohort tags
+      before delegating to existing analytics delivery.</li>
+  </ul>
+</section>
+
+<section id="implementation">
+  <h2>Implementation</h2>
+
+  <h3>1 · Extract pure shared helpers</h3>
+  <p>Create a platform-agnostic observability module in <code>mobile-sdk-alpha</code>:</p>
+  <ul>
+    <li>Move <code>OnboardingTagSnapshot</code>, the cohort key list, and
+      <code>tagsFromAnalyticsEvent()</code> out of
+      <code>app/src/observability/onboardingContext.ts</code>.</li>
+    <li>Move <code>sanitizeTagValue</code> from <code>app/src/config/sentry.ts</code> if it is pure and
+      does not depend on RN/Sentry. If it has runtime coupling, create a pure SDK equivalent and update
+      RN to use it.</li>
+    <li>Move the live <code>SENSITIVE_KEY_PATTERN</code> from <code>app/src/config/sentry.ts</code>
+      exactly as-is.</li>
+    <li>Export a redaction helper that can redact breadcrumb/event <code>data</code>,
+      <code>contexts</code>, and <code>extra</code> without importing a Sentry SDK.</li>
+  </ul>
+  <p class="callout warn">
+    Required constraint: no imports from <code>react-native</code>, <code>@sentry/react-native</code>,
+    <code>@sentry/react</code>, browser globals, or app aliases in the SDK module.
+  </p>
+
+  <h3>2 · Preserve RN behavior</h3>
+  <p>
+    Update <code>app/src/config/sentry.ts</code> to use the shared redaction pattern/helper. Keep
+    <code>captureWebViewLoadDiagnostic()</code> behavior unchanged:
+  </p>
+  <ul>
+    <li><code>runtime: rn-host</code></li>
+    <li><code>webview_source: bundle | dev-server</code></li>
+    <li><code>error_code: timeout | load_error | version_mismatch</code></li>
+    <li>existing warning/error level semantics</li>
+  </ul>
+  <p>
+    Update <code>app/src/observability/onboardingContext.ts</code> so it still exports the names current
+    RN importers use, but the concrete <code>Sentry.setTag()</code> calls remain in <code>app/</code>.
+  </p>
+
+  <h3>3 · Add WebView Sentry config</h3>
+  <p>Install <code>@sentry/react</code> in <code>packages/webview-app</code>.</p>
+  <p>Create a WebView Sentry config that:</p>
+  <ul>
+    <li>Initializes only when a DSN is configured for the WebView app.</li>
+    <li>Sets <code>runtime: webview</code> at init and never clears it.</li>
+    <li>Applies the shared redaction helper in <code>beforeSend</code>.</li>
+    <li>Exposes <code>setOnboardingTags(snapshot)</code> and <code>clearOnboardingTags()</code>
+      wrappers around <code>@sentry/react</code> tag APIs.</li>
+    <li>Does not forward WebView exceptions over the RN bridge.</li>
+  </ul>
+  <p class="callout">Do not add Session Replay in this PR; <code>WIA-13</code> owns replay sample rates and mask wrappers.</p>
+
+  <h3>4 · Wire cohort tags from WebView analytics</h3>
+  <p>
+    Hook the existing WebView analytics path. <code>packages/mobile-sdk-alpha/src/adapters/browser/analytics.ts</code>
+    already has <code>trackEvent(event, payload)</code>, so the WebView side has a clean interception
+    point. The SDK adapter may expose a pure callback hook, but the Sentry call itself must be wired
+    from <code>webview-app</code>.
+  </p>
+  <p>For every tracked onboarding event:</p>
+  <ul>
+    <li>Build a snapshot via shared <code>tagsFromAnalyticsEvent(eventName, properties)</code>.</li>
+    <li>Call WebView <code>setOnboardingTags(snapshot)</code> for non-terminal onboarding events from a
+      <code>webview-app</code> wrapper/callback.</li>
+    <li>Call WebView <code>clearOnboardingTags()</code> when the event is terminal from the same
+      runtime-local wrapper/callback.</li>
+    <li>Keep Mixpanel/Segment delivery RN-host-only through the bridge; do not add Segment or Mixpanel
+      to <code>webview-app</code>.</li>
+  </ul>
+  <p>
+    Terminal clear semantics must match RN. The current RN code clears on
+    <code>OnboardingEvents.ENDED</code> (<code>Onboarding: Ended</code>), not on a hand-maintained list
+    of outcome strings.
+  </p>
+  <p class="callout warn">
+    Required constraint: neither <code>packages/mobile-sdk-alpha/src/adapters/browser/analytics.ts</code>
+    nor <code>packages/webview-bridge/src/</code> imports <code>@sentry/react</code> or
+    <code>packages/webview-app/src/config/sentry</code>. Those packages can accept callbacks/adapters;
+    only <code>webview-app</code> owns concrete Sentry wiring.
+  </p>
+</section>
+
+<section id="tests">
+  <h2>Tests</h2>
+  <ul>
+    <li><code>packages/mobile-sdk-alpha/tests/observability/onboardingContext.test.ts</code> — pure
+      mapping, sanitization, redaction pattern coverage for live name/DOB variants, and terminal-event
+      helper if added.</li>
+    <li><code>app/tests/src/config/sentry.test.ts</code> — still proves RN redaction covers breadcrumbs,
+      contexts, and extra.</li>
+    <li><code>app/tests/src/observability/onboardingContext.test.ts</code> — now focuses on RN wrappers
+      calling <code>Sentry.setTag</code> / clear with sanitized values.</li>
+    <li><code>packages/webview-app</code> tests for Sentry config if the app has an established test
+      harness; otherwise add coverage at the SDK pure-helper layer and document the WebView config
+      manual validation.</li>
+  </ul>
+  <p class="callout warn">Avoid nested <code>require('react-native')</code> in tests.</p>
+</section>
+
+<section id="oos">
+  <h2>Out of Scope</h2>
+  <ul>
+    <li>Session Replay setup, sample rates, and DOM mask wrappers (<code>WIA-13</code>).</li>
+    <li><code>getCurrentAttemptId()</code> and attempt footer UI (<code>WIA-14</code>).</li>
+    <li>New cohort tag names or terminal semantics.</li>
+    <li>Sentry tracing/performance instrumentation.</li>
+    <li>Cross-bridge exception forwarding.</li>
+    <li>Adding Segment or Mixpanel to the WebView bundle.</li>
+  </ul>
+</section>
+
+<section id="validation">
+  <h2>Validation</h2>
+  <pre>yarn workspace @selfxyz/mobile-sdk-alpha test
+yarn workspace @selfxyz/mobile-sdk-alpha types
+yarn workspace @selfxyz/mobile-app test src/config/sentry src/observability/onboardingContext src/services/analytics
+yarn workspace @selfxyz/mobile-app types
+yarn workspace @selfxyz/webview-app build</pre>
+
+  <h3>Manual validation</h3>
+  <ol>
+    <li>Configure the WebView app with the same Sentry DSN as the RN host.</li>
+    <li>Start an onboarding attempt inside the WebView runtime.</li>
+    <li>Trigger a synthetic WebView error after an onboarding event carrying <code>attempt_id</code>.</li>
+    <li>Confirm the Sentry event has <code>runtime:webview</code>, <code>attempt_id:&lt;uuid&gt;</code>,
+      and the expected document cohort tags.</li>
+    <li>Confirm sensitive keys matching the live regex are redacted in <code>breadcrumbs</code>,
+      <code>contexts</code>, and <code>extra</code>.</li>
+    <li>Force a terminal onboarding event and verify cohort tags clear before the next attempt.</li>
+  </ol>
+</section>
+
+<section id="done">
+  <h2>Done Criteria</h2>
+  <ul>
+    <li>WebView errors arrive in the shared Sentry project with <code>runtime:webview</code>.</li>
+    <li>RN-host WIA-09 load diagnostics keep <code>runtime:rn-host</code> and the same redaction behavior.</li>
+    <li>Cohort tag mapping and redaction pattern have one pure source of truth in <code>mobile-sdk-alpha</code>.</li>
+    <li>No Sentry package is imported from <code>mobile-sdk-alpha/src/</code> outside runtime adapters.</li>
+    <li>No package imports from <code>packages/webview-app/src/</code>; WebView-specific Sentry wiring is
+      passed in via callbacks/adapters.</li>
+    <li>WebView uses <code>@sentry/react</code>, not <code>@sentry/browser</code>.</li>
+    <li>Existing RN importers continue to compile.</li>
+  </ul>
+</section>
+
+</main>
+</div>
+
+</body>
+</html>
