@@ -1153,7 +1153,11 @@ jobs:
         if: inputs.platform != 'ios'
         run: |
           python -m pip install --upgrade pip
-          pip install google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client
+          python -m pip install --upgrade -r ${{ env.APP_PATH }}/scripts/requirements-play-store.txt
+
+      - name: Verify httplib2 version
+        if: inputs.platform != 'ios'
+        run: python -c "import httplib2; print('httplib2', httplib2.__version__, httplib2.__file__)"
 
       - name: Setup Android private modules
         if: inputs.platform != 'ios'

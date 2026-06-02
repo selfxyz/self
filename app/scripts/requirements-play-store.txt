@@ -1,0 +1,12 @@
+# Pinned deps for scripts/upload_to_play_store.py.
+#
+# httplib2 must be >= 0.22.0: the GitHub runner ships 0.20.4 as a system
+# package, which has a resumable-upload redirect regression that fails the
+# Play Store AAB upload with "Redirected but the response is missing a
+# Location: header". Pinning here (and installing with --upgrade) forces the
+# fixed version over the pre-installed one. Pin the rest for reproducible CI.
+httplib2==0.31.2
+google-auth==2.53.0
+google-auth-oauthlib==1.4.0
+google-auth-httplib2==0.4.0
+google-api-python-client==2.197.0
