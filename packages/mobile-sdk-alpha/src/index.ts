@@ -175,16 +175,17 @@ export { defaultOptions } from './haptic/shared';
 export { extractMRZInfo } from './mrz';
 
 export { extractNameFromDocument } from './documents/utils';
+
 export { extractNameFromMRZ, formatDateToYYMMDD, parseMRZBirthDate, parseMRZExpiryDate } from './mrz';
 
 export { finalizeRecoveredDocumentRegistration, validateRecoverySecretForDocument } from './proving/recoveryValidation';
-
 export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
 export { hasEligibleAlternativeDocumentForPolicy, isDocumentEligibleForPolicy } from './utils/restrictedApps';
-export { isGoogleUsatProofRequest } from './utils/googleUsat';
 
+export { isGoogleUsatProofRequest } from './utils/googleUsat';
 export { isPassportDataValid } from './validation/document';
 export { mergeConfig } from './config/merge';
+
 export { parseNFCResponse, scanNFC } from './nfc';
 
 export { reactNativeScannerAdapter } from './adapters/react-native/nfc-scanner';

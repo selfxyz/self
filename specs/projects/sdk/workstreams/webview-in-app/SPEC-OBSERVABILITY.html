@@ -98,12 +98,12 @@
 
   <h3>In scope</h3>
   <ul>
-    <li>Sentry browser SDK initialization inside <code>webview-app</code>.</li>
+    <li>Sentry React SDK initialization inside <code>webview-app</code> via <code>@sentry/react</code>.</li>
     <li>Cohort-tag continuity: same key set, same source mappings, same sanitization, same
       terminal-event clear semantics as ANA-13.</li>
     <li>PII masking inside the WebView DOM: equivalents to the RN-side <code>PrivacyMask</code> wrappers
       on biometric capture / NFC / data-confirmation / Aadhaar / KYC-verified screens.</li>
-    <li>Session Replay configuration in the browser SDK matching the RN baseline
+    <li>Session Replay configuration in the React SDK matching the RN baseline
       (<code>maskAllText</code>, <code>maskAllImages</code>, <code>maskAllVectors</code>).</li>
     <li><code>beforeSend</code> redact list parity with ANA-13.</li>
     <li>ANA-15's <code>attempt_id</code> footer ported to the webview-app screens that replace
@@ -133,9 +133,9 @@
   selfClient.trackEvent ─┬─→ bridge.analytics.trackEvent  ──→ RN Host: _track ──→ Segment / Mixpanel
                         │                                                  └──→ Sentry RN SDK
                         ├─→ setOnboardingTags · webview                    (cohort tags)
-                        │       └─→ Sentry browser SDK
+                        │       └─→ Sentry React SDK
                         └─→ Session Replay · web
-                                └─→ Sentry browser SDK
+                                └─→ Sentry React SDK
 
 RN Host · Self app                                          ──→ Mobile Session Replay
                                                                        └─→ Sentry project
@@ -146,8 +146,10 @@ Both SDKs → single Sentry project (correlation by attempt_id)</pre>
 <section id="decisions">
   <h2>Decisions</h2>
   <ol>
-    <li><strong>One Sentry project, two SDKs.</strong> The WebView runs <code>@sentry/browser</code>
-      with the same DSN as the RN host's <code>@sentry/react-native</code>. A <code>runtime</code> tag
+    <li><strong>One Sentry project, two SDKs.</strong> The WebView runs <code>@sentry/react</code>
+      with the same DSN as the RN host's <code>@sentry/react-native</code>. Use the React package,
+      not bare <code>@sentry/browser</code>, so the WebView can use the React error-boundary/profiler
+      integration and match the host web config package. A <code>runtime</code> tag
       (<code>rn-host</code> | <code>webview</code>) is set at SDK init on each side and is never
       cleared.</li>
     <li><strong>Mixpanel/Segment stay RN-host-only.</strong> The WebView's
@@ -156,16 +158,20 @@ Both SDKs → single Sentry project (correlation by attempt_id)</pre>
       Segment or Mixpanel.</li>
     <li><strong>Cohort tags are set on both sides, from one mapping module.</strong> The
       <code>OnboardingTagSnapshot</code> type, <code>tagsFromAnalyticsEvent</code> mapping, and
-      <code>setOnboardingTags</code>/<code>clearOnboardingTags</code> setters move from
-      <code>app/src/observability/onboardingContext.ts</code> to
-      <code>packages/mobile-sdk-alpha/</code>. The RN host and the WebView each import the mapping and
-      wire it to their respective Sentry SDK. Tag keys, mappings, sanitization, and the terminal-event
-      clear list (<code>Onboarding: Completed | Failed | Recovered</code>) are identical on both sides.</li>
-    <li><strong>PII redact list and <code>beforeSend</code> are duplicated, not shared.</strong> The
-      redact regex (<code>passport|mrz|dg\d|chip|aadhaar|name|dob|birth|photo</code>) is defined as a
-      constant exported from <code>packages/mobile-sdk-alpha/</code> and each side wires it into its
-      own <code>beforeSend</code>. The reason for duplicating the wiring (but not the constant) is that
-      browser and RN Sentry SDKs expose <code>beforeSend</code> differently.</li>
+      cohort key list move from <code>app/src/observability/onboardingContext.ts</code> to
+      <code>packages/mobile-sdk-alpha/</code>. Concrete setters do not move wholesale because
+      <code>packages/mobile-sdk-alpha/src/</code> cannot import <code>@sentry/react-native</code>.
+      The RN host keeps runtime-local <code>setOnboardingTags</code>/<code>clearOnboardingTags</code>
+      wrappers around <code>@sentry/react-native</code>; the WebView adds equivalent wrappers around
+      <code>@sentry/react</code>. Tag keys, mappings, sanitization, and the terminal-event clear
+      semantic (<code>Onboarding: Ended</code>) are identical on both sides.</li>
+    <li><strong>PII redact list is extracted from the live RN config.</strong> WIA-12 moves the current
+      <code>SENSITIVE_KEY_PATTERN</code> from <code>app/src/config/sentry.ts</code> into
+      <code>packages/mobile-sdk-alpha/</code> and imports it back into RN. Do not recreate the older
+      ANA-13 regex; the live pattern also covers name variants such as
+      <code>first_name</code>/<code>given_name</code>/<code>holder_name</code> and
+      <code>date_of_birth</code>. Each side still wires its own <code>beforeSend</code> because the RN
+      and React Sentry SDKs expose runtime-specific integration points.</li>
     <li><strong>WebView Session Replay matches RN baseline.</strong> <code>maskAllText: true</code>,
       <code>maskAllInputs: true</code>, replay sample rate matches the RN configuration (10% session,
       100% on error). DOM nodes carrying biometric content opt in to additional masking via a
@@ -176,13 +182,13 @@ Both SDKs → single Sentry project (correlation by attempt_id)</pre>
       Sentry by <code>attempt_id:&lt;uuid&gt;</code> to pull every event (RN host + WebView) for one
       attempt. No second correlation key is introduced.</li>
     <li><strong>No cross-bridge exception forwarding.</strong> A JS error inside the WebView is captured
-      by <code>@sentry/browser</code> directly; it is not serialized over the bridge to the RN host.
+      by <code>@sentry/react</code> directly; it is not serialized over the bridge to the RN host.
       The shared project + cohort tag taxonomy is enough to keep the forensic trail joined.</li>
     <li><strong>ANA-15's footer ports to webview-app, ANA-15 itself does not ship against RN.</strong>
       Per the umbrella's Cross-Workstream Dependencies note, ANA-15 is re-homed under
-      <code>WIA-14</code>. The shared <code>getCurrentAttemptId()</code> accessor in
-      <code>mobile-sdk-alpha</code> (added by ANA-15) is consumed; the React Native component is
-      rewritten as a webview-app component using Euclid tokens.</li>
+      <code>WIA-14</code>. The shared <code>getCurrentAttemptId()</code> accessor does not exist yet;
+      WIA-14 must add it to <code>mobile-sdk-alpha</code> before rendering the footer. The React Native
+      component is rewritten as a webview-app component using Euclid tokens.</li>
   </ol>
 </section>
 
@@ -196,11 +202,11 @@ Both SDKs → single Sentry project (correlation by attempt_id)</pre>
       new tag requires editing that module and is observable to both runtimes simultaneously.</li>
     <li>PII never enters a Sentry tag. Tag values pass through <code>sanitizeTagValue</code> on both
       sides. The redact regex applied in <code>beforeSend</code> matches on both sides.</li>
-    <li>Cohort tags clear on <code>Onboarding: Completed | Failed | Recovered</code> on both sides. A
-      long-lived session that completes one attempt and starts another does not leak tags from the prior
-      attempt.</li>
+    <li>Cohort tags clear on <code>Onboarding: Ended</code> on both sides. A long-lived session that
+      completes one attempt and starts another does not leak tags from the prior attempt.</li>
     <li>The WebView's <code>AnalyticsAdapter</code> has no path to Mixpanel/Segment when the WebView
-      runs inside the RN host. The only telemetry the WebView ships directly is Sentry (browser SDK).</li>
+      runs inside the RN host. The only telemetry the WebView ships directly is Sentry
+      (<code>@sentry/react</code>).</li>
     <li>Session Replay does not record screens between the WebView's <code>lifecycle.ready</code> and
       the first attempt-bootstrapping event unless <code>maskAllText</code>/<code>maskAllInputs</code>
       are on. The default is always-on masking; the WebView never disables it.</li>
@@ -212,15 +218,20 @@ Both SDKs → single Sentry project (correlation by attempt_id)</pre>
   <table>
     <thead><tr><th>ID</th><th>Title</th><th>Status</th></tr></thead>
     <tbody>
-      <tr><td>WIA-12</td><td>WebView Sentry browser SDK + cohort tags + redact list</td><td><span class="status pending">Pending</span></td></tr>
-      <tr><td>WIA-13</td><td>WebView Session Replay (web SDK) with mask wrappers</td><td><span class="status pending">Pending</span></td></tr>
-      <tr><td>WIA-14</td><td>Re-home ANA-15 <code>attempt_id</code> footer onto webview-app error screens</td><td><span class="status pending">Pending</span></td></tr>
+      <tr><td>WIA-12</td><td>WebView Sentry React SDK + cohort tags + redact list (<a href="./plans/WIA-12-webview-sentry-cohort-tags.html">plan</a>)</td><td><span class="status pending">Pending</span></td></tr>
+      <tr><td>WIA-13</td><td>WebView Session Replay (<code>@sentry/react</code>) with mask wrappers</td><td><span class="status pending">Pending</span></td></tr>
+      <tr><td>WIA-14</td><td>Re-home ANA-15 <code>attempt_id</code> footer; add missing <code>getCurrentAttemptId()</code> accessor first</td><td><span class="status pending">Pending</span></td></tr>
     </tbody>
   </table>
   <p>
     Migration of the cohort-tag mapping module into <code>mobile-sdk-alpha</code> ships with
     <code>WIA-12</code> (not a separate plan); the RN-side import path update is part of the same PR so
     there is no window where the two sides diverge.
+  </p>
+  <p>
+    <code>WIA-14</code> has a missing prerequisite: no <code>getCurrentAttemptId()</code> accessor
+    exists in <code>mobile-sdk-alpha</code> as of WIA-12 planning. The WIA-14 plan must add that
+    accessor before porting ANA-15's footer.
   </p>
 </section>
 

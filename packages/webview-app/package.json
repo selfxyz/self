@@ -26,6 +26,7 @@
     "@selfxyz/euclid-core": "1.4.6",
     "@selfxyz/mobile-sdk-alpha": "workspace:^",
     "@selfxyz/webview-bridge": "workspace:^",
+    "@sentry/react": "^9.32.0",
     "buffer": "^6.0.3",
     "elliptic": "^6.5.4",
     "lottie-react": "^2.4.0",

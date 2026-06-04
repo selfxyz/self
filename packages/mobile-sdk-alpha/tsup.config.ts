@@ -45,6 +45,7 @@ const entry = {
   'hooks/index': 'src/hooks/index.ts',
   'hooks/useSafeBottomPadding': 'src/hooks/useSafeBottomPadding.ts',
   stores: 'src/stores/index.ts',
+  observability: 'src/observability/onboardingContext.ts',
   'utils/utils': 'src/utils/utils.ts',
   'adapters/react-native/index': 'src/adapters/react-native/index.ts',
   ...flowEntries,

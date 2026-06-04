@@ -24,6 +24,12 @@ import type {
   NFCScanContext,
   ProofContext,
 } from '@selfxyz/mobile-sdk-alpha';
+import {
+  redactSensitiveFields,
+  sanitizeTagValue,
+} from '@selfxyz/mobile-sdk-alpha/observability';
+
+export { redactSensitiveFields, sanitizeTagValue };
 // Security: Whitelist of allowed tag keys to prevent XSS
 const ALLOWED_TAG_KEYS = new Set([
   'session_id',
@@ -101,24 +107,6 @@ export const captureWebViewLoadDiagnostic = (
     }
     sentryCaptureException(new Error(`WebView load ${kind}`));
   });
-};
-
-const SENSITIVE_KEY_PATTERN =
-  /passport|mrz|dg\d|chip|aadhaar|(?:first|last|full|given|family|holder|sur)_?name|name_?(?:first|last|of_?holder|holder)|date_?of_?birth|dob|birth|photo/i;
-const REDACTED = '[REDACTED]';
-
-const redactObjectInPlace = <T extends Record<string, unknown>>(obj: T): T => {
-  for (const key of Object.keys(obj)) {
-    if (SENSITIVE_KEY_PATTERN.test(key)) {
-      obj[key as keyof T] = REDACTED as T[keyof T];
-      continue;
-    }
-    const value = obj[key];
-    if (value && typeof value === 'object') {
-      redactObjectInPlace(value as Record<string, unknown>);
-    }
-  }
-  return obj;
 };
 
 export const captureFeedback = (
@@ -337,60 +325,6 @@ export const logAuthEvent = (
   context: BaseContext & Record<string, unknown>,
   extra?: Record<string, unknown>,
 ) => logEvent(level, 'auth', message, context, extra);
-
-export const redactSensitiveFields = <
-  T extends {
-    breadcrumbs?: Array<{ data?: Record<string, unknown> | undefined }>;
-    contexts?: Record<string, unknown>;
-    extra?: Record<string, unknown>;
-  },
->(
-  event: T,
-): T => {
-  if (event.breadcrumbs) {
-    for (const crumb of event.breadcrumbs) {
-      if (crumb.data) redactObjectInPlace(crumb.data);
-    }
-  }
-  if (event.contexts) {
-    redactObjectInPlace(event.contexts);
-  }
-  if (event.extra) {
-    redactObjectInPlace(event.extra);
-  }
-  return event;
-};
-
-export const sanitizeTagValue = (value: unknown): string => {
-  if (value == null) return '';
-
-  const stringValue = String(value);
-
-  const MAX_TAG_LENGTH = 200;
-  const truncated =
-    stringValue.length > MAX_TAG_LENGTH
-      ? stringValue.substring(0, MAX_TAG_LENGTH) + '...'
-      : stringValue;
-
-  return truncated
-    .replace(/[<>&"']/g, char => {
-      switch (char) {
-        case '<':
-          return '&lt;';
-        case '>':
-          return '&gt;';
-        case '&':
-          return '&amp;';
-        case '"':
-          return '&quot;';
-        case "'":
-          return '&#x27;';
-        default:
-          return char;
-      }
-    })
-    .replace(/[^\x20-\x7E]/g, '');
-};
 
 export const setSupportUuidInSentry = (
   supportUuid: string | null,
