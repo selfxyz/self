@@ -101,10 +101,15 @@
     <li>Sentry React SDK initialization inside <code>webview-app</code> via <code>@sentry/react</code>.</li>
     <li>Cohort-tag continuity: same key set, same source mappings, same sanitization, same
       terminal-event clear semantics as ANA-13.</li>
-    <li>PII masking inside the WebView DOM: equivalents to the RN-side <code>PrivacyMask</code> wrappers
-      on biometric capture / NFC / data-confirmation / Aadhaar / KYC-verified screens.</li>
-    <li>Session Replay configuration in the React SDK matching the RN baseline
-      (<code>maskAllText</code>, <code>maskAllImages</code>, <code>maskAllVectors</code>).</li>
+    <li>PII masking inside the WebView DOM via a web <code>PrivacyMask</code> wrapper (the
+      <code>sentry-mask</code> class) on the screens that actually render PII web-side:
+      <code>IDDataScreen</code> and the recovery mnemonic reveal/input screens. Camera (MRZ) and NFC are
+      native bridge calls — no frames or chip data enter the WebView DOM; MRZ fields transit WebView
+      state/bridge calls but are not displayed.</li>
+    <li>Session Replay configuration in the React SDK matching the RN baseline. The browser SDK has no
+      <code>maskAllImages</code>/<code>maskAllVectors</code>; the equivalent set is
+      <code>maskAllText: true</code>, <code>maskAllInputs: true</code>, <code>blockAllMedia: true</code>
+      (<code>blockAllMedia</code> covers <code>&lt;img&gt;</code> and <code>&lt;svg&gt;</code>).</li>
     <li><code>beforeSend</code> redact list parity with ANA-13.</li>
     <li>ANA-15's <code>attempt_id</code> footer ported to the webview-app screens that replace
       <code>KycFailureScreen</code>, <code>DocumentNFCTroubleScreen</code>,
@@ -173,11 +178,13 @@ Both SDKs → single Sentry project (correlation by attempt_id)</pre>
       <code>date_of_birth</code>. Each side still wires its own <code>beforeSend</code> because the RN
       and React Sentry SDKs expose runtime-specific integration points.</li>
     <li><strong>WebView Session Replay matches RN baseline.</strong> <code>maskAllText: true</code>,
-      <code>maskAllInputs: true</code>, replay sample rate matches the RN configuration (10% session,
-      100% on error). DOM nodes carrying biometric content opt in to additional masking via a
-      <code>data-sentry-mask</code> attribute on the wrapper element. The list of wrapper sites mirrors
-      the RN <code>PrivacyMask</code> list (biometric capture, NFC scan, data confirmation, Aadhaar
-      upload, KYC verified).</li>
+      <code>maskAllInputs: true</code>, <code>blockAllMedia: true</code> (the browser equivalent of the RN
+      <code>maskAllImages</code>/<code>maskAllVectors</code>); replay sample rate matches the RN
+      configuration (10% session, 100% on error). PII-bearing screens additionally opt in to masking via a
+      web <code>PrivacyMask</code> wrapper applying Sentry's default <code>sentry-mask</code> class (not a
+      <code>data-sentry-mask</code> attribute). The wrapper sites are the web-side PII renderers:
+      <code>IDDataScreen</code>, <code>RecoveryPhraseScreen</code>, and
+      <code>SecretPhraseInputScreen</code>.</li>
     <li><strong>Cross-runtime correlation is by <code>attempt_id</code>.</strong> Engineers search
       Sentry by <code>attempt_id:&lt;uuid&gt;</code> to pull every event (RN host + WebView) for one
       attempt. No second correlation key is introduced.</li>
@@ -219,7 +226,7 @@ Both SDKs → single Sentry project (correlation by attempt_id)</pre>
     <thead><tr><th>ID</th><th>Title</th><th>Status</th></tr></thead>
     <tbody>
       <tr><td>WIA-12</td><td>WebView Sentry React SDK + cohort tags + redact list (<a href="./plans/WIA-12-webview-sentry-cohort-tags.html">plan</a>)</td><td><span class="status pending">Pending</span></td></tr>
-      <tr><td>WIA-13</td><td>WebView Session Replay (<code>@sentry/react</code>) with mask wrappers</td><td><span class="status pending">Pending</span></td></tr>
+      <tr><td>WIA-13</td><td><a href="./plans/WIA-13-webview-session-replay.html">WebView Session Replay (<code>@sentry/react</code>) with mask wrappers</a></td><td><span class="status progress">In progress — replay + PrivacyMask + tests landed; manual TestFlight masking/CSP validation pending</span></td></tr>
       <tr><td>WIA-14</td><td>Re-home ANA-15 <code>attempt_id</code> footer; add missing <code>getCurrentAttemptId()</code> accessor first</td><td><span class="status pending">Pending</span></td></tr>
     </tbody>
   </table>
@@ -256,8 +263,8 @@ Both SDKs → single Sentry project (correlation by attempt_id)</pre>
       attempt.</li>
     <li>Force <code>Onboarding: Failed</code> and confirm cohort tags clear on both sides. Start a new
       attempt in the same session; confirm no leakage from the prior attempt.</li>
-    <li>Open Session Replay for a captured biometric-flow error. Confirm text and image content in the
-      biometric-capture / NFC scan / data confirmation regions are fully masked.</li>
+    <li>Open Session Replay for a captured error on the ID-data screen and the recovery mnemonic
+      reveal/input screens. Confirm all text is masked and the ID photo/artwork is blocked.</li>
     <li>Tap the <code>attempt_id</code> footer on a webview-app error screen; confirm it copies the
       same uuid that Sentry's <code>attempt_id</code> tag carries for the captured event.</li>
   </ul>
