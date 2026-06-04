@@ -149,8 +149,11 @@
       <code>OnboardingTagSnapshot</code>, cohort key list, <code>tagsFromAnalyticsEvent</code>,
       <code>sanitizeTagValue</code>, <code>SENSITIVE_KEY_PATTERN</code>, <code>REDACTED</code>, and
       redaction helper.</li>
-    <li><code>packages/mobile-sdk-alpha/src/index.ts</code> and the browser entrypoint if needed —
-      export the pure helpers needed by RN and WebView.</li>
+    <li>Pure helpers are exposed via dedicated subpath entrypoints rather than the package root:
+      <code>@selfxyz/mobile-sdk-alpha/observability</code> for the RN host and
+      <code>@selfxyz/mobile-sdk-alpha/browser</code> for the WebView app. The root
+      <code>src/index.ts</code> is intentionally left unchanged to keep the cohort helpers off the
+      main barrel.</li>
     <li><code>app/src/config/sentry.ts</code> — import the shared redaction pattern/helper instead of
       owning the regex.</li>
     <li><code>app/src/observability/onboardingContext.ts</code> — keep only RN-specific

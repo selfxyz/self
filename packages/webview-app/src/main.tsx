@@ -7,6 +7,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 
 import { App } from './App';
+import { initSentry } from './config/sentry';
 import { BridgeProvider } from './providers/BridgeProvider';
 import { installAssetPathShim } from './utils/assetPathShim';
 
@@ -14,6 +15,7 @@ import './fonts.css';
 import './recovery.css';
 import './reset.css';
 
+initSentry();
 installAssetPathShim();
 globalThis.Buffer = Buffer;
 

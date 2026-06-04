@@ -7,7 +7,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef } fr
 import { useNavigate } from 'react-router-dom';
 
 import type { DocumentsAdapter, SelfClient } from '@selfxyz/mobile-sdk-alpha/browser';
-import { createListenersMap, createSelfClient } from '@selfxyz/mobile-sdk-alpha/browser';
+import { createListenersMap, createSelfClient, createWebAnalyticsAdapter } from '@selfxyz/mobile-sdk-alpha/browser';
 import type {
   BridgeAnalyticsAdapter,
   BridgeBiometricsAdapter,
@@ -24,6 +24,7 @@ import {
   createSdkAdapters,
 } from '@selfxyz/webview-bridge/adapters';
 
+import { withCohortTags } from '../observability/observedAnalytics';
 import { ensureSecret } from '../utils/secretManager';
 import { useBridge } from './BridgeProvider';
 import { useVerificationRequest } from './VerificationRequestProvider';
@@ -57,6 +58,7 @@ export const SelfClientProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       bridge,
       navigate: stableNavigate,
       goBack: stableGoBack,
+      analytics: withCohortTags(createWebAnalyticsAdapter()),
     });
 
     const { map: listeners } = createListenersMap();
@@ -76,7 +78,7 @@ export const SelfClientProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       lifecycle: bridgeLifecycleAdapter(bridge),
       haptic: bridgeHapticAdapter(bridge),
       biometrics: bridgeBiometricsAdapter(bridge),
-      analytics: consoleAnalyticsAdapter(),
+      analytics: withCohortTags(consoleAnalyticsAdapter()),
       documents,
     };
   }, [bridge, stableNavigate, stableGoBack]);
