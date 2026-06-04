@@ -16,7 +16,7 @@ export { tagsFromAnalyticsEvent };
 
 export function clearOnboardingTags(): void {
   for (const key of COHORT_TAG_KEYS) {
-    Sentry.setTag(key, null);
+    Sentry.setTag(key, undefined);
   }
 }
 

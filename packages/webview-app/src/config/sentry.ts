@@ -45,6 +45,6 @@ export function setOnboardingTags(snapshot: OnboardingTagSnapshot): void {
 export function clearOnboardingTags(): void {
   if (!isSentryEnabled) return;
   for (const key of COHORT_TAG_KEYS) {
-    setTag(key, null);
+    setTag(key, undefined);
   }
 }

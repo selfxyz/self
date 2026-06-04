@@ -32,7 +32,7 @@ export const COHORT_TAG_KEYS: readonly (keyof OnboardingTagSnapshot)[] = [
 export const REDACTED = '[REDACTED]';
 
 export const SENSITIVE_KEY_PATTERN =
-  /passport|mrz|dg\d|chip|aadhaar|(?:first|last|full|given|family|holder|sur)_?name|name_?(?:first|last|of_?holder|holder)|date_?of_?birth|dob|birth|photo/i;
+  /passport|mrz|dg\d|chip|aadhaar|(?:first|last|full|given|family|holder|sur)_?name|name_?(?:first|last|of_?holder|holder)|date_?of_?birth|dob|birth|photo|email/i;
 
 function isOnboardingEvent(eventName: string): boolean {
   return (
@@ -73,13 +73,8 @@ export function tagsFromAnalyticsEvent(
 export function sanitizeTagValue(value: unknown): string {
   if (value == null) return '';
 
-  const stringValue = String(value);
-
   const MAX_TAG_LENGTH = 200;
-  const truncated =
-    stringValue.length > MAX_TAG_LENGTH ? stringValue.substring(0, MAX_TAG_LENGTH) + '...' : stringValue;
-
-  return truncated
+  const normalized = String(value)
     .replace(/[<>&"']/g, char => {
       switch (char) {
         case '<':
@@ -97,6 +92,8 @@ export function sanitizeTagValue(value: unknown): string {
       }
     })
     .replace(/[^\x20-\x7E]/g, '');
+
+  return normalized.length > MAX_TAG_LENGTH ? normalized.slice(0, MAX_TAG_LENGTH - 3) + '...' : normalized;
 }
 
 function redactObjectInPlace<T extends Record<string, unknown>>(obj: T): T {
@@ -115,15 +112,17 @@ function redactObjectInPlace<T extends Record<string, unknown>>(obj: T): T {
 
 /**
  * Redacts PII-keyed fields from a Sentry-shaped event's `breadcrumbs`,
- * `contexts`, and `extra` in place. SDK-agnostic: both the RN and browser
- * Sentry SDKs expose these properties on their event object, so each side wires
- * this into its own `beforeSend`.
+ * `contexts`, `extra`, and `user` in place. SDK-agnostic: both the RN and
+ * browser Sentry SDKs expose these properties on their event object, so each
+ * side wires this into its own `beforeSend`. `user` is included so feedback
+ * `contact_email` (contexts.feedback) and `user.email` cannot leak.
  */
 export function redactSensitiveFields<
   T extends {
     breadcrumbs?: Array<{ data?: Record<string, unknown> | undefined }>;
     contexts?: Record<string, unknown>;
     extra?: Record<string, unknown>;
+    user?: Record<string, unknown> | null;
   },
 >(event: T): T {
   if (event.breadcrumbs) {
@@ -136,6 +135,9 @@ export function redactSensitiveFields<
   }
   if (event.extra) {
     redactObjectInPlace(event.extra);
+  }
+  if (event.user) {
+    redactObjectInPlace(event.user);
   }
   return event;
 }
