@@ -358,6 +358,12 @@ jobs:
           path: app/android/app/build/outputs/apk/debug/app-debug.apk
           key: ${{ runner.os }}-apk-v2-${{ hashFiles('app/android/app/src/**', 'app/android/app/build.gradle', 'app/android/app/proguard-rules.pro', 'app/android/build.gradle', 'app/android/settings.gradle', 'app/android/gradle.properties', 'app/android/gradle/wrapper/**', 'app/android/gradlew', 'app/src/**', 'app/App.tsx', 'app/index.js', 'app/app.json', 'app/package.json', 'app/babel.config.cjs', 'app/metro.config.cjs', 'app/react-native.config.cjs', 'app/patches/**', 'patches/**', 'packages/mobile-sdk-alpha/src/**', 'packages/mobile-sdk-alpha/package.json', 'yarn.lock', '.nvmrc', '.apk-cache-inputs.txt') }}
 
+      - name: Publish KMP SDK to mavenLocal
+        if: steps.apk-cache.outputs.cache-hit != 'true'
+        run: |
+          chmod +x packages/kmp-sdk/gradlew
+          cd packages/kmp-sdk && ./gradlew :shared:publishToMavenLocal --quiet
+
       - name: Build Android APK
         if: steps.apk-cache.outputs.cache-hit != 'true'
         env:
