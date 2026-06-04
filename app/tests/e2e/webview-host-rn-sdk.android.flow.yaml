@@ -28,5 +28,5 @@ appId: com.proofofpassportapp
     notVisible: '^(Still loading…|Couldn''t load Self\.)$'
     timeout: 3000
 - extendedWaitUntil:
-    notVisible: '^Retry$'
+    notVisible: "^Retry$"
     timeout: 8000
