@@ -49,6 +49,18 @@ describe('LifecycleHandler', () => {
       expect(result.mode).toBe('self-app');
     });
 
+    it('returns the host-minted correlationId when provided', async () => {
+      const { handler } = createHandler({ correlationId: 'corr-123' });
+      const result = await handler.handle('getConfig', {}) as Record<string, unknown>;
+      expect(result.correlationId).toBe('corr-123');
+    });
+
+    it('omits correlationId when not provided', async () => {
+      const { handler } = createHandler();
+      const result = await handler.handle('getConfig', {}) as Record<string, unknown>;
+      expect(result.correlationId).toBeUndefined();
+    });
+
     it('returns empty request when none provided', async () => {
       const { handler } = createHandler({ request: {} });
       const result = await handler.handle('getConfig', {}) as Record<string, unknown>;

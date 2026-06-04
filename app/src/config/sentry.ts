@@ -52,6 +52,8 @@ const ALLOWED_TAG_KEYS = new Set([
   'kyc_provider',
   'runtime',
   'webview_source',
+  'correlation_id',
+  'verification_id',
 ]);
 
 export const captureException = (
@@ -148,6 +150,38 @@ const sanitizeTagKey = (key: string): string | null => {
   }
 
   return key;
+};
+
+// Durable per-session correlation tags for cross-runtime joins (RN host +
+// WebView). Set when a WebView session starts, cleared when it ends so a
+// failed session's id never leaks into a later session's events.
+export const setCorrelationTag = (
+  correlationId: string,
+  verificationId?: string,
+): void => {
+  if (isSentryDisabled) {
+    return;
+  }
+  const cid = sanitizeTagValue(correlationId);
+  if (sanitizeTagKey('correlation_id') && cid) {
+    setTag('correlation_id', cid);
+  }
+  if (verificationId) {
+    const vid = sanitizeTagValue(verificationId);
+    if (sanitizeTagKey('verification_id') && vid) {
+      setTag('verification_id', vid);
+    }
+  } else {
+    setTag('verification_id', undefined);
+  }
+};
+
+export const clearCorrelationTag = (): void => {
+  if (isSentryDisabled) {
+    return;
+  }
+  setTag('correlation_id', undefined);
+  setTag('verification_id', undefined);
 };
 
 export const captureMessage = (

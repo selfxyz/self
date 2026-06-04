@@ -9,6 +9,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { ProofFailureScreen, ProofSuccessScreen, SelfLogo } from '@selfxyz/euclid';
 import type { VerificationResult } from '@selfxyz/webview-bridge';
 
+import { CorrelationReference } from '../../components/CorrelationReference';
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { useVerificationRequest } from '../../providers/VerificationRequestProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
@@ -128,18 +129,21 @@ export const EmbedResultScreen: React.FC = () => {
   }
 
   return (
-    <ProofFailureScreen
-      {...WEB_SAFE_AREA}
-      appIcon={<SelfLogo size={40} />}
-      appName={appName}
-      appEndpoint={displayAppEndpoint}
-      documentType="passport"
-      timestamp={timestamp}
-      failureTitle="Verification Failed"
-      failureDescription={error ?? 'Something went wrong during verification. Please try again.'}
-      onRetry={handleRetry}
-      onViewDetails={onViewDetails}
-      onClose={handleClose}
-    />
+    <>
+      <ProofFailureScreen
+        {...WEB_SAFE_AREA}
+        appIcon={<SelfLogo size={40} />}
+        appName={appName}
+        appEndpoint={displayAppEndpoint}
+        documentType="passport"
+        timestamp={timestamp}
+        failureTitle="Verification Failed"
+        failureDescription={error ?? 'Something went wrong during verification. Please try again.'}
+        onRetry={handleRetry}
+        onViewDetails={onViewDetails}
+        onClose={handleClose}
+      />
+      <CorrelationReference />
+    </>
   );
 };

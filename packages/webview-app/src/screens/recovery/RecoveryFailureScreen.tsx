@@ -8,6 +8,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 import { RegistrationFailureScreen } from '@selfxyz/euclid';
 
+import { CorrelationReference } from '../../components/CorrelationReference';
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import type { NavState } from '../../types/navState';
 import { WEB_SAFE_AREA } from '../../utils/insets';
@@ -37,16 +38,19 @@ export const RecoveryFailureScreen: React.FC = () => {
   }, [analytics, haptic, navigate, nextPath]);
 
   return (
-    <RegistrationFailureScreen
-      {...WEB_SAFE_AREA}
-      onDismiss={handleClose}
-      onTryDifferentMethod={handleRetry}
-      copy={{
-        title: 'Recovery failed',
-        body: 'Something went wrong while restoring your account. You can try again or dismiss to return home.',
-        dismiss: 'Go home',
-        tryDifferentMethod: 'Try again',
-      }}
-    />
+    <>
+      <RegistrationFailureScreen
+        {...WEB_SAFE_AREA}
+        onDismiss={handleClose}
+        onTryDifferentMethod={handleRetry}
+        copy={{
+          title: 'Recovery failed',
+          body: 'Something went wrong while restoring your account. You can try again or dismiss to return home.',
+          dismiss: 'Go home',
+          tryDifferentMethod: 'Try again',
+        }}
+      />
+      <CorrelationReference />
+    </>
   );
 };

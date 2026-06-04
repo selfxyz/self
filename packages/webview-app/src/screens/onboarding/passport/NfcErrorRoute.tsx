@@ -8,6 +8,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 import { PassportNfcErrorScreen } from '@selfxyz/euclid';
 
+import { CorrelationReference } from '../../../components/CorrelationReference';
 import { useSelfClient } from '../../../providers/SelfClientProvider';
 import { WEB_SAFE_AREA } from '../../../utils/insets';
 
@@ -48,11 +49,14 @@ export const PassportNfcErrorRoute: React.FC = () => {
   }, [analytics, haptic, navigate, state.stage]);
 
   return (
-    <PassportNfcErrorScreen
-      insets={WEB_SAFE_AREA.insets}
-      onClose={handleClose}
-      onStartOver={onStartOver}
-      onTryDifferentMethod={onTryDifferentMethod}
-    />
+    <>
+      <PassportNfcErrorScreen
+        insets={WEB_SAFE_AREA.insets}
+        onClose={handleClose}
+        onStartOver={onStartOver}
+        onTryDifferentMethod={onTryDifferentMethod}
+      />
+      <CorrelationReference />
+    </>
   );
 };

@@ -58,6 +58,9 @@ export interface VerificationRequest {
   proofItems?: string[];
   userIdType?: 'hex' | 'uuid';
   timestamp?: number;
+  // Host-minted WebView correlation session id. When omitted, SelfVerification
+  // mints one per load so it is always present for RN-hosted WebViews.
+  correlationId?: string;
 }
 
 export interface VerificationResult {
@@ -100,6 +103,13 @@ export interface SelfVerificationProps {
   onFailure: (error: SelfSdkError) => void;
   onCancelled: () => void;
   debug?: boolean;
+  /**
+   * Fired once per load with the resolved host-minted correlation id (the one
+   * passed to the WebView). The host wires this to its Sentry `correlation_id`
+   * tag so RN-host and WebView events for the same session correlate. rn-sdk
+   * stays Sentry-agnostic; tagging lives in the host.
+   */
+  onCorrelationId?: (correlationId: string) => void;
   /**
    * Operating mode signaled to the WebView at boot via lifecycle.getConfig.
    * 'self-app' = persistent UI (Self app). 'embed' = one-shot
@@ -176,7 +186,14 @@ function isSecureStorageRequest(raw: string): boolean {
   }
 }
 
-function buildRequestSearch(request: VerificationRequest): string {
+function makeCorrelationId(): string {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return `corr-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function buildRequestSearch(request: VerificationRequest, correlationId: string): string {
   const params = new URLSearchParams();
   const set = (key: string, value: string | number | undefined) => {
     if (value === undefined || value === null) return;
@@ -184,6 +201,7 @@ function buildRequestSearch(request: VerificationRequest): string {
     if (!str) return;
     params.set(key, str);
   };
+  set('correlationId', correlationId);
   set('userId', request.userId);
   set('scope', request.scope);
   if (request.disclosures && request.disclosures.length > 0) {
@@ -215,6 +233,7 @@ export const SelfVerification: React.FC<SelfVerificationProps> = ({
   onFailure,
   onCancelled,
   debug = false,
+  onCorrelationId,
   mode,
   devServerUrl,
   analytics,
@@ -233,6 +252,14 @@ export const SelfVerification: React.FC<SelfVerificationProps> = ({
   const [loadStage, setLoadStage] = useState<LoadStage>('loading');
   const [errorKind, setErrorKind] = useState<LoadDiagnosticKind | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
+
+  // Resolve the host-minted correlation id once per load: use the caller's id
+  // if supplied, otherwise mint one so it is always present in the URL and
+  // lifecycle.getConfig. Surfaced to the host via onCorrelationId for Sentry.
+  const correlationId = useMemo(() => request.correlationId ?? makeCorrelationId(), [request.correlationId]);
+  useEffect(() => {
+    onCorrelationId?.(correlationId);
+  }, [correlationId, onCorrelationId]);
 
   const isDevServer = __DEV__ && Boolean(devServerUrl);
   const diagnosticSource: LoadDiagnosticEvent['source'] = isDevServer
@@ -405,6 +432,7 @@ export const SelfVerification: React.FC<SelfVerificationProps> = ({
       documents,
       crypto,
       mode,
+      correlationId,
     });
     // Wrap the lifecycle ready handler to mark the splash dismissed.
     const lifecycle = handlers.find(h => h.domain === 'lifecycle');
@@ -430,6 +458,7 @@ export const SelfVerification: React.FC<SelfVerificationProps> = ({
     documents,
     crypto,
     mode,
+    correlationId,
     handleReady,
   ]);
 
@@ -477,7 +506,7 @@ export const SelfVerification: React.FC<SelfVerificationProps> = ({
     [router, kmpTransport],
   );
 
-  const requestSearch = useMemo(() => buildRequestSearch(request), [request]);
+  const requestSearch = useMemo(() => buildRequestSearch(request, correlationId), [request, correlationId]);
 
   const source = useMemo(() => {
     if (isDevServer && devServerUrl) {

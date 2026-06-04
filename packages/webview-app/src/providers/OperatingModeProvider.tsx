@@ -13,6 +13,9 @@ export interface OperatingModeContextValue {
   mode: OperatingMode;
   verificationRequest: VerificationRequestPayload | null;
   isReady: boolean;
+  // Host-minted WebView correlation session id (Sentry `correlation_id`).
+  // Undefined for old hosts / standalone browser mode.
+  correlationId?: string;
 }
 
 export interface VerificationRequestPayload {
@@ -27,9 +30,17 @@ interface HostConfigResponse {
   verificationRequest?: VerificationRequestPayload | null;
   debug?: boolean;
   platform?: string;
+  correlationId?: string;
 }
 
 const GETCONFIG_TIMEOUT_MS = 800;
+
+// URL-param copy of the correlation id, used as a fallback when getConfig has
+// not resolved or the host omits it. The host appends it to the WebView URL.
+function correlationIdFromUrl(): string | undefined {
+  if (typeof window === 'undefined') return undefined;
+  return new URLSearchParams(window.location.search).get('correlationId') ?? undefined;
+}
 
 const Ctx = createContext<OperatingModeContextValue | null>(null);
 
@@ -53,6 +64,7 @@ export const OperatingModeProvider: React.FC<{ children: React.ReactNode }> = ({
           mode,
           verificationRequest: config?.verificationRequest ?? null,
           isReady: true,
+          correlationId: config?.correlationId ?? correlationIdFromUrl(),
         });
       } catch {
         // Browser-host fallback, missing transport, or a host that doesn't
@@ -63,6 +75,7 @@ export const OperatingModeProvider: React.FC<{ children: React.ReactNode }> = ({
           mode: 'self-app',
           verificationRequest: null,
           isReady: true,
+          correlationId: correlationIdFromUrl(),
         });
       }
     })();
@@ -83,6 +96,12 @@ export function useOperatingMode(): OperatingModeContextValue {
     throw new Error('useOperatingMode must be used within an OperatingModeProvider');
   }
   return ctx;
+}
+
+// Reactive selector for the host-minted correlation id. Reads from context so a
+// consumer re-renders if the id resolves after first paint (getConfig is async).
+export function useCorrelationId(): string | undefined {
+  return useOperatingMode().correlationId;
 }
 
 export function hasValidVerificationRequest(

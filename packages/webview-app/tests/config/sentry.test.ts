@@ -69,4 +69,35 @@ describe('webview-app Sentry config', () => {
     expect(sentryInit).not.toHaveBeenCalled();
     expect(replayIntegration).not.toHaveBeenCalled();
   });
+
+  describe('correlation tags', () => {
+    it('sets correlation_id and verification_id when both provided', async () => {
+      const { setCorrelationTag } = await import('../../src/config/sentry');
+      setCorrelationTag('corr-1', 'vid-1');
+      expect(setTag).toHaveBeenCalledWith('correlation_id', 'corr-1');
+      expect(setTag).toHaveBeenCalledWith('verification_id', 'vid-1');
+    });
+
+    it('sets correlation_id and clears verification_id when verificationId is absent', async () => {
+      const { setCorrelationTag } = await import('../../src/config/sentry');
+      setCorrelationTag('corr-2');
+      expect(setTag).toHaveBeenCalledWith('correlation_id', 'corr-2');
+      expect(setTag).toHaveBeenCalledWith('verification_id', undefined);
+    });
+
+    it('clears both tags', async () => {
+      const { clearCorrelationTag } = await import('../../src/config/sentry');
+      clearCorrelationTag();
+      expect(setTag).toHaveBeenCalledWith('correlation_id', undefined);
+      expect(setTag).toHaveBeenCalledWith('verification_id', undefined);
+    });
+
+    it('is a no-op without a DSN', async () => {
+      vi.stubEnv('VITE_SENTRY_DSN', '');
+      vi.resetModules();
+      const { setCorrelationTag } = await import('../../src/config/sentry');
+      setCorrelationTag('corr-3', 'vid-3');
+      expect(setTag).not.toHaveBeenCalled();
+    });
+  });
 });

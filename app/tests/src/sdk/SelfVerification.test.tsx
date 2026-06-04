@@ -290,4 +290,38 @@ describe('SelfVerification load hardening', () => {
       expect.objectContaining({ kind: 'load_error', source: 'bundle' }),
     );
   });
+
+  it('passes a provided correlation id to the host callback and WebView URL', () => {
+    const onCorrelationId = jest.fn();
+
+    setup({
+      request: {
+        correlationId: 'corr-provided',
+        verificationId: 'verification-1',
+      },
+      onCorrelationId,
+    });
+
+    expect(onCorrelationId).toHaveBeenCalledWith('corr-provided');
+    const uri = mockWebViewProps!.source.uri as string;
+    const query = new URLSearchParams(uri.split('?')[1]);
+    expect(query.get('correlationId')).toBe('corr-provided');
+    expect(query.get('verificationId')).toBe('verification-1');
+  });
+
+  it('mints one correlation id and uses the same value for callback and WebView URL', () => {
+    const onCorrelationId = jest.fn();
+
+    setup({ onCorrelationId });
+
+    expect(onCorrelationId).toHaveBeenCalledTimes(1);
+    const callbackId = onCorrelationId.mock.calls[0][0];
+    expect(callbackId).toEqual(
+      expect.stringMatching(/^corr-|^[0-9a-f-]{36}$/i),
+    );
+
+    const uri = mockWebViewProps!.source.uri as string;
+    const query = new URLSearchParams(uri.split('?')[1]);
+    expect(query.get('correlationId')).toBe(callbackId);
+  });
 });

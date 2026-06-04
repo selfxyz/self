@@ -16,6 +16,9 @@ interface LifecycleConfig {
   onCancelled: () => void;
   debug: boolean;
   mode?: OperatingMode;
+  // Host-minted WebView correlation session id surfaced to the WebView so both
+  // runtimes can tag Sentry `correlation_id` for the same session.
+  correlationId?: string;
 }
 
 export class LifecycleHandler implements BridgeHandler {
@@ -36,6 +39,7 @@ export class LifecycleHandler implements BridgeHandler {
           verificationRequest: this.config.request,
           debug: this.config.debug,
           platform: 'react-native',
+          correlationId: this.config.correlationId,
         };
       case 'setResult':
         return this.setResult(params);

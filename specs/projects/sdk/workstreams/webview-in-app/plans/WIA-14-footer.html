@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>WIA-14 · PR2 — correlationId reference footer on WebView error screens</title>
+<style>
+  :root {
+    --bg: #fafbfc; --surface: #ffffff; --surface-alt: #f6f8fa; --border: #d1d9e0; --border-soft: #e1e4e8;
+    --text: #1f2328; --muted: #656d76; --accent: #0969da; --accent-soft: #ddf4ff;
+    --high: #cf222e; --high-soft: #ffebe9; --med: #9a6700; --med-soft: #fff8c5; --done: #1a7f37; --done-soft: #dafbe1;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; color: var(--text); background: var(--bg); }
+  code, pre, kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.9em; }
+  code { background: var(--surface-alt); padding: 1px 5px; border-radius: 4px; border: 1px solid var(--border-soft); }
+  pre { background: var(--surface-alt); padding: 12px 14px; border-radius: 6px; border: 1px solid var(--border-soft); overflow: auto; }
+  a { color: var(--accent); text-decoration: none; } a:hover { text-decoration: underline; }
+  header.topbar { position: sticky; top: 0; z-index: 100; background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  header h1 { margin: 0; font-size: 16px; font-weight: 600; }
+  .pill { font-size: 11px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface-alt); }
+  .pill.scope { color: var(--accent); background: var(--accent-soft); border-color: var(--accent); }
+  .pill.active { color: var(--accent); background: var(--accent-soft); border-color: var(--accent); }
+  .pill.dep { color: var(--med); background: var(--med-soft); border-color: var(--med); }
+  .spacer { flex: 1; }
+  .layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 32px; max-width: 1100px; margin: 0 auto; padding: 24px; }
+  nav.toc { position: sticky; top: 64px; align-self: start; font-size: 13px; }
+  nav.toc h4 { margin: 0 0 6px 0; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  nav.toc a { display: block; padding: 3px 0; color: var(--text); }
+  main { min-width: 0; }
+  main section { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 18px 22px; margin-bottom: 16px; }
+  main h2 { margin: 0 0 10px 0; font-size: 16px; }
+  main h3 { margin: 16px 0 6px 0; font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  main p { margin: 6px 0 10px 0; }
+  main ul, main ol { margin: 6px 0 10px 18px; padding: 0; }
+  main li { margin: 3px 0; }
+  table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 13px; }
+  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--border-soft); vertical-align: top; }
+  th { background: var(--surface-alt); font-weight: 600; }
+  .callout { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 8px 12px; border-radius: 0 6px 6px 0; margin: 10px 0; }
+  .callout.warn { border-left-color: var(--high); background: var(--high-soft); }
+  .callout.note { border-left-color: var(--med); background: var(--med-soft); }
+  .yes { color: var(--done); font-weight: 600; } .no { color: var(--muted); }
+  .check { list-style: none; margin-left: 0; }
+  .check li::before { content: "☐ "; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <h1>WIA-14 · PR2 — <code>correlationId</code> reference footer on WebView error screens</h1>
+  <span class="pill active">Ready</span>
+  <span class="pill dep">Depends on PR1 (correlation-id)</span>
+  <span class="pill scope">Scope: webview-app</span>
+  <span class="pill">Target: &lt;350 LOC</span>
+  <span class="pill">2026-06-04</span>
+  <span class="spacer"></span>
+  <div><a href="../SPEC-OBSERVABILITY.html">↑ Observability Contract</a></div>
+</header>
+
+<div class="layout">
+
+<nav class="toc">
+  <h4>On this page</h4>
+  <a href="#context">Context</a>
+  <a href="#decisions">Decisions</a>
+  <a href="#routes">Route inventory</a>
+  <a href="#files">Files modified</a>
+  <a href="#implementation">Implementation</a>
+  <a href="#tests">Tests</a>
+  <a href="#oos">Out of scope</a>
+  <a href="#validation">Validation</a>
+  <a href="#done">Done criteria</a>
+</nav>
+
+<main>
+
+<section id="context">
+  <h2>Context</h2>
+  <p>
+    <strong>You are showing the host-minted <code>correlationId</code> as a copyable reference on WebView
+    error screens, completing the ANA-15 re-home.</strong> A user reporting a failure copies the reference;
+    an engineer searches Sentry <code>correlation_id:&lt;value&gt;</code> and pulls every event for that
+    session across both runtimes.
+    <a href="./WIA-14-correlation-id.html">PR1</a> minted <code>correlationId</code>, propagated it via URL +
+    <code>lifecycle.getConfig</code>, and exposed it through <code>useOperatingMode()</code> on
+    <code>OperatingModeContextValue.correlationId</code>. This PR consumes that — it adds no new source.
+  </p>
+  <p><strong>ANA-15 behavior:</strong> a small muted <code>Reference: &lt;id&gt;</code> line, shown only when
+    an id is available, tap-to-copy, ~1s confirmation. RN used <code>dinot</code>/<code>slate400</code>; the
+    web component uses Euclid <code>colors</code> tokens.</p>
+</section>
+
+<section id="decisions">
+  <h2>Decisions</h2>
+  <ol>
+    <li>
+      <strong>Source is the reactive context value, read through a hook.</strong> Add
+      <code>useCorrelationId()</code> returning <code>useOperatingMode().correlationId</code>. The component
+      reads it during render and re-renders when the context updates (the id can resolve <em>after</em> first
+      paint, once <code>getConfig</code> returns). Do <strong>not</strong> snapshot it into local state at
+      mount — that would freeze a <code>null</code>. React context already provides the subscription; no
+      <code>useSyncExternalStore</code> is needed because the value lives in
+      <code>OperatingModeProvider</code> state.
+    </li>
+    <li>
+      <strong>Net-new webview-app component, not Euclid.</strong>
+      <code>packages/webview-app/src/components/CorrelationReference.tsx</code> — runtime-specific (web DOM,
+      clipboard), like the web <code>PrivacyMask</code> (WIA-13). Use Euclid <code>colors</code> for the muted
+      text; no raw hex.
+    </li>
+    <li>
+      <strong>Compose around the Euclid result screens, never fork them.</strong> The failure surfaces render
+      Euclid components (<code>KycFailureScreen</code>, <code>ProofFailureScreen</code>,
+      <code>StatusState</code>) with no footer slot. Render <code>&lt;CorrelationReference /&gt;</code> as a
+      sibling pinned to the bottom of each screen container. If a layout can't host a sibling without overlap,
+      note it in the PR rather than restyling the Euclid screen.
+    </li>
+    <li>
+      <strong>Copy with graceful fallback; local confirmation.</strong>
+      <code>navigator.clipboard.writeText</code> when available, else hidden-textarea
+      <code>execCommand('copy')</code> (some WebView/CSP contexts block the async API). Confirmation is a ~1s
+      in-component state, not a global toast.
+    </li>
+    <li>
+      <strong>Render nothing when no id.</strong> <code>useCorrelationId()</code> null → component returns
+      <code>null</code> (no empty &ldquo;Reference:&rdquo;). This is also the old-host / browser-mode path
+      from PR1's Compatibility section.
+    </li>
+  </ol>
+</section>
+
+<section id="routes">
+  <h2>Route inventory</h2>
+  <p>Failure/error routes from <code>packages/webview-app/src/App.tsx</code>, with include/exclude decisions.
+    Self-app and embed variants of a path are dispatched by <code>ModeDispatch</code>; the footer is
+    mode-agnostic (it reads the same context), so mount it in the shared component where possible.</p>
+  <table>
+    <thead><tr><th>Route</th><th>Screen(s)</th><th>Footer?</th><th>Reason</th></tr></thead>
+    <tbody>
+      <tr><td><code>/disclose/result</code></td><td><code>DiscloseResultScreen</code> (self-app) / <code>EmbedResultScreen</code> (embed)</td><td class="yes">Yes — failure variant</td><td>Both branch success/failure; mount on the failure branch in each.</td></tr>
+      <tr><td><code>/disclose/kyc-failure</code></td><td><code>KycFailureScreen</code> (self-app) / <code>EmbedKycFailureScreen</code> (embed)</td><td class="yes">Yes — both</td><td><code>ModeDispatch</code> at <code>App.tsx:222</code>; cover both, not embed only.</td></tr>
+      <tr><td><code>/capture/passport/nfc-error</code></td><td><code>PassportNfcErrorRoute</code></td><td class="yes">Yes</td><td>Self-app onboarding failure.</td></tr>
+      <tr><td><code>/capture/eu-id/nfc-error</code></td><td><code>EuIdNfcErrorRoute</code></td><td class="yes">Yes</td><td>Self-app onboarding failure.</td></tr>
+      <tr><td><code>/capture/aadhaar/upload-error</code></td><td><code>AadhaarUploadErrorRoute</code></td><td class="yes">Yes</td><td><strong>Exists</strong> (<code>UploadErrorRoute.tsx</code>) — corrects the prior &ldquo;no web equivalent&rdquo; claim.</td></tr>
+      <tr><td><code>/register/failure</code></td><td><code>RegistrationFailureScreen</code></td><td class="yes">Yes</td><td>Shared registration failure.</td></tr>
+      <tr><td><code>/recover/failure</code></td><td><code>RecoveryFailureScreen</code></td><td class="yes">Yes</td><td>Self-app recovery failure.</td></tr>
+      <tr><td><code>/account/verified</code></td><td><code>VerificationResultScreen</code></td><td class="yes">Yes — failure variant</td><td>Mount on the failure/error state only.</td></tr>
+      <tr><td><code>/embed/error</code></td><td><code>EmbedErrorScreen</code></td><td class="yes">Yes</td><td>Terminal embed error.</td></tr>
+      <tr><td>success screens (<code>kyc-success</code>, <code>upload-success</code>, <code>recover/success</code>, success variants)</td><td>—</td><td class="no">No</td><td>Reference is a failure-reporting aid; success paths don't need it.</td></tr>
+    </tbody>
+  </table>
+  <div class="callout note">
+    Before mounting, confirm each screen's current structure; some routes are thin wrappers around Euclid
+    screens (e.g. <code>EmbedKycFailureScreen</code> renders Euclid <code>KycFailureScreen</code>). Mount the
+    footer in the wrapper, not the Euclid import.
+  </div>
+</section>
+
+<section id="files">
+  <h2>Files modified</h2>
+  <table>
+    <thead><tr><th>File</th><th>Change</th></tr></thead>
+    <tbody>
+      <tr><td><code>packages/webview-app/src/components/CorrelationReference.tsx</code></td><td><strong>New.</strong> The footer (Euclid <code>colors</code>, copy + 1s confirm, null when no id).</td></tr>
+      <tr><td><code>packages/webview-app/src/providers/OperatingModeProvider.tsx</code></td><td>Add <code>useCorrelationId()</code> hook (thin selector over context). <em>(Context field itself lands in PR1.)</em></td></tr>
+      <tr><td>The 9 failure screens in the <a href="#routes">route inventory</a></td><td>Render <code>&lt;CorrelationReference /&gt;</code> at the bottom; gate result/verification screens to the failure variant.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="implementation">
+  <h2>Implementation</h2>
+  <ol>
+    <li><strong>Hook.</strong> <code>export const useCorrelationId = () => useOperatingMode().correlationId</code>.</li>
+    <li><strong>Component.</strong> Read <code>useCorrelationId()</code>; if falsy return <code>null</code>;
+      else render a centered muted pressable <code>Reference: {id}</code> that copies and flips to a ~1s
+      &ldquo;Copied&rdquo; state. Euclid <code>colors</code> for text. Keep &lt;~70 LOC.</li>
+    <li><strong>Mount.</strong> In each inventory screen, render <code>&lt;CorrelationReference /&gt;</code> as
+      the last child of the screen container, on the failure branch for the result/verification screens.</li>
+    <li><strong>DRY check.</strong> No existing reference/support-id footer exists in webview-app
+      (RN's <code>SupportUuidRow</code> has no web port). If one appears, extend it.</li>
+  </ol>
+</section>
+
+<section id="tests">
+  <h2>Tests</h2>
+  <ul>
+    <li><strong>Renders null with no id; renders <code>Reference: &lt;id&gt;</code> when present.</strong></li>
+    <li><strong>Reactive:</strong> mount with context <code>correlationId = undefined</code>, then update the
+      provider value → the footer appears without remount. This guards Decision 1.</li>
+    <li><strong>Copy:</strong> click copies (mock <code>navigator.clipboard.writeText</code>) and shows the
+      confirm state; fallback path exercised when the async API is absent.</li>
+    <li><strong>Integration:</strong> render one failure route inside <code>OperatingModeProvider</code> with a
+      seeded <code>correlationId</code> and assert the footer shows it; render a success route and assert no
+      footer. Use the provider's seam to inject the id deterministically (see Validation).</li>
+  </ul>
+</section>
+
+<section id="oos">
+  <h2>Out of scope</h2>
+  <ul>
+    <li>Minting / propagating / tagging the correlation id — all in <a href="./WIA-14-correlation-id.html">PR1</a>.</li>
+    <li>Any RN component (ANA-15 does not ship against RN). No <code>app/src</code> changes.</li>
+    <li>New bridge calls. Footer reads existing context only.</li>
+    <li>Footer on success screens.</li>
+  </ul>
+</section>
+
+<section id="validation">
+  <h2>Validation</h2>
+  <pre>cd packages/webview-app &amp;&amp; yarn test &amp;&amp; yarn build</pre>
+  <ul>
+    <li><strong>Deterministic seeding:</strong> drive a target screen with a known id by passing
+      <code>?correlationId=test-123</code> in the WebView URL (PR1 parses it as the fallback), or by rendering
+      the screen inside a test <code>OperatingModeProvider</code> seeded with that id. Document the URL-param
+      route so manual validation is repeatable without a live RN host.</li>
+    <li>Trigger each failure route; confirm the footer renders the id, copies on tap, shows the ~1s confirm,
+      and that the copied value matches the <code>correlation_id</code> Sentry tag for the session.</li>
+    <li>Confirm success routes show no footer, and a screen reached with no id shows no footer.</li>
+  </ul>
+</section>
+
+<section id="done">
+  <h2>Done criteria</h2>
+  <ul class="check">
+    <li><code>CorrelationReference</code> renders <code>Reference: &lt;correlationId&gt;</code> with Euclid <code>colors</code>, copies to clipboard, shows a ~1s confirmation, and returns null when no id.</li>
+    <li>It reads the id reactively via <code>useCorrelationId()</code> and appears if the id resolves after first paint.</li>
+    <li>Mounted on every failure route in the inventory (embed + self-app + aadhaar + nfc + registration + recovery + embed-error), composed around Euclid screens; absent on success routes.</li>
+    <li>A documented <code>?correlationId=</code> URL-param path enables deterministic manual + automated validation.</li>
+    <li>No <code>app/src</code> change; no new bridge call; <code>webview-app</code> build + tests pass.</li>
+  </ul>
+</section>
+
+</main>
+</div>
+</body>
+</html>
