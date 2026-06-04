@@ -13,7 +13,8 @@ import { describe, expect, it } from 'vitest';
 // only pass pure helpers/callbacks across the boundary.
 const PACKAGES_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 const GUARDED_ROOTS = [join(PACKAGES_DIR, 'mobile-sdk-alpha', 'src'), join(PACKAGES_DIR, 'webview-bridge', 'src')];
-const SENTRY_IMPORT = /(?:import\s+[^'"]*from\s*|import\s*|export\s+[^'"]*from\s*|require\(\s*|import\(\s*)['"]@sentry\//;
+const SENTRY_IMPORT =
+  /(?:import\s+[^'"]*from\s*|import\s*|export\s+[^'"]*from\s*|require\(\s*|import\(\s*)['"]@sentry\//;
 
 function collectSourceFiles(dir: string): string[] {
   const files: string[] = [];
