@@ -20,6 +20,7 @@ import {
 } from '@selfxyz/euclid';
 import { bridgeStorageAdapter } from '@selfxyz/webview-bridge/adapters';
 
+import { PrivacyMask } from '../../observability/PrivacyMask';
 import { useBridge } from '../../providers/BridgeProvider';
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
@@ -225,16 +226,18 @@ const RecoveryPhraseScreenBase: React.FC<RecoveryPhraseScreenBaseProps> = ({
   }, [haptic, analytics, words]);
 
   return (
-    <EuclidRecoveryPhraseScreen
-      insets={WEB_SAFE_AREA.insets}
-      words={words}
-      variant={variant}
-      onBack={handleBack}
-      onReveal={onReveal}
-      onCopy={onCopy}
-      onAppleBackup={onAppleBackup}
-      onGoogleBackup={onGoogleBackup}
-    />
+    <PrivacyMask>
+      <EuclidRecoveryPhraseScreen
+        insets={WEB_SAFE_AREA.insets}
+        words={words}
+        variant={variant}
+        onBack={handleBack}
+        onReveal={onReveal}
+        onCopy={onCopy}
+        onAppleBackup={onAppleBackup}
+        onGoogleBackup={onGoogleBackup}
+      />
+    </PrivacyMask>
   );
 };
 
@@ -306,13 +309,15 @@ const SettingsRecoveryPhraseScreen: React.FC<{ onBack: () => void }> = ({ onBack
               </div>
             </div>
             <div style={settingsStyles.recoveryPhraseContainer}>
-              <RecoveryPhrase
-                variant={variant}
-                words={words || recoveryPhrasePlaceholderWords}
-                onReveal={onReveal}
-                onCopy={onCopy}
-                revealButtonText={copy.revealButtonLabel}
-              />
+              <PrivacyMask>
+                <RecoveryPhrase
+                  variant={variant}
+                  words={words || recoveryPhrasePlaceholderWords}
+                  onReveal={onReveal}
+                  onCopy={onCopy}
+                  revealButtonText={copy.revealButtonLabel}
+                />
+              </PrivacyMask>
             </div>
           </div>
         </div>

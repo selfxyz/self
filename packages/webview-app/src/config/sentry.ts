@@ -5,7 +5,7 @@
 import type { OnboardingTagSnapshot } from '@selfxyz/mobile-sdk-alpha/browser';
 import { COHORT_TAG_KEYS, redactSensitiveFields, sanitizeTagValue } from '@selfxyz/mobile-sdk-alpha/browser';
 
-import { breadcrumbsIntegration, init as sentryInit, setTag } from '@sentry/react';
+import { breadcrumbsIntegration, init as sentryInit, replayIntegration, setTag } from '@sentry/react';
 
 const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN as string | undefined;
 
@@ -17,11 +17,15 @@ export function initSentry(): void {
   sentryInit({
     dsn: SENTRY_DSN,
     environment: import.meta.env.MODE,
-    // Default integrations capture unhandled errors. Session Replay is NOT a
-    // default integration and is intentionally not added here — WIA-13 owns
-    // replay sample rates and DOM mask wrappers.
     // No tracing/performance instrumentation (parity with ANA-13).
     tracesSampleRate: 0,
+    // Session Replay parity with the RN host (mobileReplayIntegration): 10% of
+    // sessions, 100% of errored sessions. Browser replay has no maskAllImages/
+    // maskAllVectors — blockAllMedia is the equivalent (covers <img> and <svg>).
+    // These masking defaults are never disabled; the WebView's only PII render
+    // sites (ID data + recovery mnemonic) are additionally wrapped in PrivacyMask.
+    replaysSessionSampleRate: 0.1,
+    replaysOnErrorSampleRate: 1.0,
     // Drop the free-text breadcrumb sources: `dom` captures user input/labels
     // and `console` captures arbitrary logged strings, both of which can hold
     // PII that beforeSend cannot reliably scrub. URL-bearing crumbs (navigation/
@@ -29,6 +33,7 @@ export function initSentry(): void {
     integrations: defaults => [
       ...defaults.filter(integration => integration.name !== 'Breadcrumbs'),
       breadcrumbsIntegration({ console: false, dom: false }),
+      replayIntegration({ maskAllText: true, maskAllInputs: true, blockAllMedia: true }),
     ],
     // The runtime tag distinguishes WebView events from the RN host's
     // `runtime: rn-host` in the shared Sentry project. Set once, never cleared.

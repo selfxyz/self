@@ -24,6 +24,7 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/browser';
 import { bridgeStorageAdapter } from '@selfxyz/webview-bridge/adapters';
 
+import { PrivacyMask } from '../../observability/PrivacyMask';
 import { useBridge } from '../../providers/BridgeProvider';
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import type { NavState } from '../../types/navState';
@@ -304,13 +305,15 @@ export const SecretPhraseInputScreen: React.FC = () => {
 
       <div style={styles.content}>
         <span style={styles.instruction}>{instruction}</span>
-        <SecretPhraseInput
-          words={words}
-          onWordChange={handleWordChange}
-          onWordBlur={handleWordBlur}
-          errorIndices={errorIndices}
-          wordCount={WORD_COUNT}
-        />
+        <PrivacyMask>
+          <SecretPhraseInput
+            words={words}
+            onWordChange={handleWordChange}
+            onWordBlur={handleWordBlur}
+            errorIndices={errorIndices}
+            wordCount={WORD_COUNT}
+          />
+        </PrivacyMask>
         {errorMessage ? (
           <div aria-live="polite" role="alert" style={styles.errorMessage}>
             {isLocked && lockoutSecondsRemaining > 0
