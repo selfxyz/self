@@ -5,7 +5,7 @@
 import type { OnboardingTagSnapshot } from '@selfxyz/mobile-sdk-alpha/browser';
 import { COHORT_TAG_KEYS, redactSensitiveFields, sanitizeTagValue } from '@selfxyz/mobile-sdk-alpha/browser';
 
-import { init as sentryInit, setTag } from '@sentry/react';
+import { breadcrumbsIntegration, init as sentryInit, setTag } from '@sentry/react';
 
 const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN as string | undefined;
 
@@ -22,6 +22,14 @@ export function initSentry(): void {
     // replay sample rates and DOM mask wrappers.
     // No tracing/performance instrumentation (parity with ANA-13).
     tracesSampleRate: 0,
+    // Drop the free-text breadcrumb sources: `dom` captures user input/labels
+    // and `console` captures arbitrary logged strings, both of which can hold
+    // PII that beforeSend cannot reliably scrub. URL-bearing crumbs (navigation/
+    // fetch/xhr) stay on; their query strings are stripped in redactSensitiveFields.
+    integrations: defaults => [
+      ...defaults.filter(integration => integration.name !== 'Breadcrumbs'),
+      breadcrumbsIntegration({ console: false, dom: false }),
+    ],
     // The runtime tag distinguishes WebView events from the RN host's
     // `runtime: rn-host` in the shared Sentry project. Set once, never cleared.
     initialScope: { tags: { runtime: 'webview' } },

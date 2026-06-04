@@ -74,7 +74,7 @@ describe('clearOnboardingTags', () => {
     setTagMock.mockClear();
   });
 
-  it('nulls out every cohort tag key', () => {
+  it('clears every cohort tag key', () => {
     clearOnboardingTags();
 
     const cleared = setTagMock.mock.calls.map(([key]) => key);
@@ -91,7 +91,7 @@ describe('clearOnboardingTags', () => {
       ]),
     );
     for (const [, value] of setTagMock.mock.calls) {
-      expect(value).toBeNull();
+      expect(value).toBeUndefined();
     }
   });
 });

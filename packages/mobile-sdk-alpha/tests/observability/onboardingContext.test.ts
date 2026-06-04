@@ -175,6 +175,31 @@ describe('redactSensitiveFields', () => {
     expect((event.contexts!.feedback as Record<string, unknown>).message).toBe('hi');
   });
 
+  it('strips query strings from request.url and drops query_string/cookies/headers', () => {
+    const event = redactSensitiveFields({
+      request: {
+        url: 'https://app.self.xyz/verify?session=secret&token=abc',
+        query_string: 'session=secret',
+        cookies: { sid: 'secret' },
+        headers: { Referer: 'https://app.self.xyz/verify?session=secret' },
+      },
+    });
+    expect((event.request as Record<string, unknown>).url).toBe('https://app.self.xyz/verify');
+    expect((event.request as Record<string, unknown>).query_string).toBeUndefined();
+    expect((event.request as Record<string, unknown>).cookies).toBeUndefined();
+    expect((event.request as Record<string, unknown>).headers).toBeUndefined();
+  });
+
+  it('strips query strings from breadcrumb url/to/from fields', () => {
+    const event = redactSensitiveFields({
+      breadcrumbs: [{ data: { from: '/a?token=x', to: '/b#frag', url: 'https://x.io/p?q=1' } }],
+    });
+    const data = event.breadcrumbs![0].data!;
+    expect(data.from).toBe('/a');
+    expect(data.to).toBe('/b');
+    expect(data.url).toBe('https://x.io/p');
+  });
+
   it('does not throw on an empty event', () => {
     expect(() => redactSensitiveFields({})).not.toThrow();
   });

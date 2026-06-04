@@ -96,6 +96,13 @@ export function sanitizeTagValue(value: unknown): string {
   return normalized.length > MAX_TAG_LENGTH ? normalized.slice(0, MAX_TAG_LENGTH - 3) + '...' : normalized;
 }
 
+function stripUrlQuery(url: string): string {
+  const cut = url.search(/[?#]/);
+  return cut === -1 ? url : url.slice(0, cut);
+}
+
+const URL_BREADCRUMB_KEYS = ['url', 'to', 'from'] as const;
+
 function redactObjectInPlace<T extends Record<string, unknown>>(obj: T): T {
   for (const key of Object.keys(obj)) {
     if (SENSITIVE_KEY_PATTERN.test(key)) {
@@ -112,10 +119,12 @@ function redactObjectInPlace<T extends Record<string, unknown>>(obj: T): T {
 
 /**
  * Redacts PII-keyed fields from a Sentry-shaped event's `breadcrumbs`,
- * `contexts`, `extra`, and `user` in place. SDK-agnostic: both the RN and
- * browser Sentry SDKs expose these properties on their event object, so each
- * side wires this into its own `beforeSend`. `user` is included so feedback
- * `contact_email` (contexts.feedback) and `user.email` cannot leak.
+ * `contexts`, `extra`, `user`, and `request` in place. SDK-agnostic: both the
+ * RN and browser Sentry SDKs expose these properties on their event object, so
+ * each side wires this into its own `beforeSend`. `user` is included so feedback
+ * `contact_email` (contexts.feedback) and `user.email` cannot leak; `request`
+ * and breadcrumb URL fields are query-stripped so URL params from the browser
+ * `HttpContext`/`Breadcrumbs` integrations cannot carry sensitive values.
  */
 export function redactSensitiveFields<
   T extends {
@@ -123,11 +132,19 @@ export function redactSensitiveFields<
     contexts?: Record<string, unknown>;
     extra?: Record<string, unknown>;
     user?: Record<string, unknown> | null;
+    request?: { url?: string; query_string?: unknown; cookies?: unknown; headers?: unknown; data?: unknown } | null;
   },
 >(event: T): T {
   if (event.breadcrumbs) {
     for (const crumb of event.breadcrumbs) {
-      if (crumb.data) redactObjectInPlace(crumb.data);
+      if (crumb.data) {
+        redactObjectInPlace(crumb.data);
+        for (const key of URL_BREADCRUMB_KEYS) {
+          if (typeof crumb.data[key] === 'string') {
+            crumb.data[key] = stripUrlQuery(crumb.data[key] as string);
+          }
+        }
+      }
     }
   }
   if (event.contexts) {
@@ -138,6 +155,16 @@ export function redactSensitiveFields<
   }
   if (event.user) {
     redactObjectInPlace(event.user);
+  }
+  if (event.request) {
+    const request = event.request;
+    if (typeof request.url === 'string') request.url = stripUrlQuery(request.url);
+    delete request.query_string;
+    delete request.cookies;
+    delete request.headers;
+    if (request.data && typeof request.data === 'object') {
+      redactObjectInPlace(request.data as Record<string, unknown>);
+    }
   }
   return event;
 }
