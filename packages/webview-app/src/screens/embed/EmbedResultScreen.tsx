@@ -9,7 +9,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { ProofFailureScreen, ProofSuccessScreen, SelfLogo } from '@selfxyz/euclid';
 import type { VerificationResult } from '@selfxyz/webview-bridge';
 
-import { CorrelationReference } from '../../components/CorrelationReference';
+import { SupportReference } from '../../components/SupportReference';
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { useVerificationRequest } from '../../providers/VerificationRequestProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
@@ -143,7 +143,7 @@ export const EmbedResultScreen: React.FC = () => {
         onViewDetails={onViewDetails}
         onClose={handleClose}
       />
-      <CorrelationReference />
+      <SupportReference />
     </>
   );
 };

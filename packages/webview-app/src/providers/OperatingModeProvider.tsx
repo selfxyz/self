@@ -13,9 +13,9 @@ export interface OperatingModeContextValue {
   mode: OperatingMode;
   verificationRequest: VerificationRequestPayload | null;
   isReady: boolean;
-  // Host-minted WebView correlation session id (Sentry `correlation_id`).
+  // Host-minted WebView reference session id (Sentry `reference_id`).
   // Undefined for old hosts / standalone browser mode.
-  correlationId?: string;
+  referenceId?: string;
 }
 
 export interface VerificationRequestPayload {
@@ -30,16 +30,16 @@ interface HostConfigResponse {
   verificationRequest?: VerificationRequestPayload | null;
   debug?: boolean;
   platform?: string;
-  correlationId?: string;
+  referenceId?: string;
 }
 
 const GETCONFIG_TIMEOUT_MS = 800;
 
-// URL-param copy of the correlation id, used as a fallback when getConfig has
+// URL-param copy of the reference id, used as a fallback when getConfig has
 // not resolved or the host omits it. The host appends it to the WebView URL.
-function correlationIdFromUrl(): string | undefined {
+function referenceIdFromUrl(): string | undefined {
   if (typeof window === 'undefined') return undefined;
-  return new URLSearchParams(window.location.search).get('correlationId') ?? undefined;
+  return new URLSearchParams(window.location.search).get('referenceId') ?? undefined;
 }
 
 const Ctx = createContext<OperatingModeContextValue | null>(null);
@@ -64,7 +64,7 @@ export const OperatingModeProvider: React.FC<{ children: React.ReactNode }> = ({
           mode,
           verificationRequest: config?.verificationRequest ?? null,
           isReady: true,
-          correlationId: config?.correlationId ?? correlationIdFromUrl(),
+          referenceId: config?.referenceId ?? referenceIdFromUrl(),
         });
       } catch {
         // Browser-host fallback, missing transport, or a host that doesn't
@@ -75,7 +75,7 @@ export const OperatingModeProvider: React.FC<{ children: React.ReactNode }> = ({
           mode: 'self-app',
           verificationRequest: null,
           isReady: true,
-          correlationId: correlationIdFromUrl(),
+          referenceId: referenceIdFromUrl(),
         });
       }
     })();
@@ -98,10 +98,10 @@ export function useOperatingMode(): OperatingModeContextValue {
   return ctx;
 }
 
-// Reactive selector for the host-minted correlation id. Reads from context so a
+// Reactive selector for the host-minted reference id. Reads from context so a
 // consumer re-renders if the id resolves after first paint (getConfig is async).
-export function useCorrelationId(): string | undefined {
-  return useOperatingMode().correlationId;
+export function useReferenceId(): string | undefined {
+  return useOperatingMode().referenceId;
 }
 
 export function hasValidVerificationRequest(

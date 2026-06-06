@@ -24,7 +24,7 @@ import {
   createSdkAdapters,
 } from '@selfxyz/webview-bridge/adapters';
 
-import { clearCorrelationTag, setCorrelationTag } from '../config/sentry';
+import { clearReferenceTag, setReferenceTag } from '../config/sentry';
 import { withCohortTags } from '../observability/observedAnalytics';
 import { ensureSecret } from '../utils/secretManager';
 import { useBridge } from './BridgeProvider';
@@ -46,7 +46,7 @@ export const SelfClientProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const bridge = useBridge();
   const navigate = useNavigate();
   const { verificationId } = useVerificationRequest();
-  const { correlationId } = useOperatingMode();
+  const { referenceId } = useOperatingMode();
 
   const navigateRef = useRef(navigate);
   useEffect(() => {
@@ -117,10 +117,10 @@ export const SelfClientProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   // Durable Sentry session tag, set as soon as the host-minted id is known so
   // events outside the analytics path still correlate; cleared on unmount.
   useEffect(() => {
-    if (!correlationId) return undefined;
-    setCorrelationTag(correlationId, verificationId);
-    return () => clearCorrelationTag();
-  }, [correlationId, verificationId]);
+    if (!referenceId) return undefined;
+    setReferenceTag(referenceId, verificationId);
+    return () => clearReferenceTag();
+  }, [referenceId, verificationId]);
 
   return <SelfClientContext.Provider value={webViewAdapters}>{children}</SelfClientContext.Provider>;
 };

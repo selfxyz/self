@@ -9,7 +9,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { colors, StatusState, WarningOctagonIcon } from '@selfxyz/euclid';
 import type { VerificationResult } from '@selfxyz/webview-bridge';
 
-import { CorrelationReference } from '../../components/CorrelationReference';
+import { SupportReference } from '../../components/SupportReference';
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
 
@@ -72,7 +72,7 @@ export const VerificationResultScreen: React.FC = () => {
         onButtonPress={handleContinue}
         icon={success ? undefined : <WarningOctagonIcon size={64} color={colors.red500} />}
       />
-      {!success && <CorrelationReference />}
+      {!success && <SupportReference />}
     </div>
   );
 };

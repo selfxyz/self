@@ -22,8 +22,8 @@ import {
 
 import {
   captureWebViewLoadDiagnostic,
-  clearCorrelationTag,
-  setCorrelationTag,
+  clearReferenceTag,
+  setReferenceTag,
 } from '@/config/sentry';
 import type { RootStackParamList } from '@/navigation';
 import { selfClientDocumentsAdapter } from '@/providers/passportDataProvider';
@@ -116,13 +116,13 @@ const WebViewHostScreen: React.FC = () => {
     [],
   );
 
-  const handleCorrelationId = useCallback(
-    (correlationId: string) => {
-      setCorrelationTag(correlationId, request.verificationId);
+  const handleReferenceId = useCallback(
+    (referenceId: string) => {
+      setReferenceTag(referenceId, request.verificationId);
     },
     [request.verificationId],
   );
-  useEffect(() => () => clearCorrelationTag(), []);
+  useEffect(() => () => clearReferenceTag(), []);
 
   return (
     <View style={{ flex: 1, backgroundColor: '#000' }}>
@@ -132,7 +132,7 @@ const WebViewHostScreen: React.FC = () => {
         onSuccess={handleSuccess}
         onFailure={handleFailure}
         onCancelled={handleCancelled}
-        onCorrelationId={handleCorrelationId}
+        onReferenceId={handleReferenceId}
         debug={__DEV__}
         devServerUrl={__DEV__ ? WEBVIEW_DEV_URL_ENV : undefined}
         analytics={analytics}

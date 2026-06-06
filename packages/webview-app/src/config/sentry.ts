@@ -62,13 +62,13 @@ export function clearOnboardingTags(): void {
   }
 }
 
-// Durable per-session correlation tags, set as soon as the host-minted id is
+// Durable per-session reference tags, set as soon as the host-minted id is
 // known so Sentry events outside any analytics path still carry it. Mirrors the
-// RN host's setCorrelationTag; engineers join runtimes by `correlation_id`.
-export function setCorrelationTag(correlationId: string, verificationId?: string): void {
+// RN host's setReferenceTag; engineers join runtimes by `reference_id`.
+export function setReferenceTag(referenceId: string, verificationId?: string): void {
   if (!isSentryEnabled) return;
-  const cid = sanitizeTagValue(correlationId);
-  if (cid) setTag('correlation_id', cid);
+  const cid = sanitizeTagValue(referenceId);
+  if (cid) setTag('reference_id', cid);
   if (verificationId) {
     const vid = sanitizeTagValue(verificationId);
     if (vid) setTag('verification_id', vid);
@@ -77,8 +77,8 @@ export function setCorrelationTag(correlationId: string, verificationId?: string
   }
 }
 
-export function clearCorrelationTag(): void {
+export function clearReferenceTag(): void {
   if (!isSentryEnabled) return;
-  setTag('correlation_id', undefined);
+  setTag('reference_id', undefined);
   setTag('verification_id', undefined);
 }

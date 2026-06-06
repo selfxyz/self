@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>WIA-14 · PR2 — correlationId reference footer on WebView error screens</title>
+<title>WIA-14 · PR2 — referenceId reference footer on WebView error screens</title>
 <style>
   :root {
     --bg: #fafbfc; --surface: #ffffff; --surface-alt: #f6f8fa; --border: #d1d9e0; --border-soft: #e1e4e8;
@@ -48,9 +48,9 @@
 <body>
 
 <header class="topbar">
-  <h1>WIA-14 · PR2 — <code>correlationId</code> reference footer on WebView error screens</h1>
+  <h1>WIA-14 · PR2 — <code>referenceId</code> reference footer on WebView error screens</h1>
   <span class="pill active">Ready</span>
-  <span class="pill dep">Depends on PR1 (correlation-id)</span>
+  <span class="pill dep">Depends on PR1 (reference-id)</span>
   <span class="pill scope">Scope: webview-app</span>
   <span class="pill">Target: &lt;350 LOC</span>
   <span class="pill">2026-06-04</span>
@@ -78,13 +78,13 @@
 <section id="context">
   <h2>Context</h2>
   <p>
-    <strong>You are showing the host-minted <code>correlationId</code> as a copyable reference on WebView
+    <strong>You are showing the host-minted <code>referenceId</code> as a copyable reference on WebView
     error screens, completing the ANA-15 re-home.</strong> A user reporting a failure copies the reference;
-    an engineer searches Sentry <code>correlation_id:&lt;value&gt;</code> and pulls every event for that
+    an engineer searches Sentry <code>reference_id:&lt;value&gt;</code> and pulls every event for that
     session across both runtimes.
-    <a href="./WIA-14-correlation-id.html">PR1</a> minted <code>correlationId</code>, propagated it via URL +
+    <a href="./WIA-14-reference-id.html">PR1</a> minted <code>referenceId</code>, propagated it via URL +
     <code>lifecycle.getConfig</code>, and exposed it through <code>useOperatingMode()</code> on
-    <code>OperatingModeContextValue.correlationId</code>. This PR consumes that — it adds no new source.
+    <code>OperatingModeContextValue.referenceId</code>. This PR consumes that — it adds no new source.
   </p>
   <p><strong>ANA-15 behavior:</strong> a small muted <code>Reference: &lt;id&gt;</code> line, shown only when
     an id is available, tap-to-copy, ~1s confirmation. RN used <code>dinot</code>/<code>slate400</code>; the
@@ -96,7 +96,7 @@
   <ol>
     <li>
       <strong>Source is the reactive context value, read through a hook.</strong> Add
-      <code>useCorrelationId()</code> returning <code>useOperatingMode().correlationId</code>. The component
+      <code>useReferenceId()</code> returning <code>useOperatingMode().referenceId</code>. The component
       reads it during render and re-renders when the context updates (the id can resolve <em>after</em> first
       paint, once <code>getConfig</code> returns). Do <strong>not</strong> snapshot it into local state at
       mount — that would freeze a <code>null</code>. React context already provides the subscription; no
@@ -105,14 +105,14 @@
     </li>
     <li>
       <strong>Net-new webview-app component, not Euclid.</strong>
-      <code>packages/webview-app/src/components/CorrelationReference.tsx</code> — runtime-specific (web DOM,
+      <code>packages/webview-app/src/components/SupportReference.tsx</code> — runtime-specific (web DOM,
       clipboard), like the web <code>PrivacyMask</code> (WIA-13). Use Euclid <code>colors</code> for the muted
       text; no raw hex.
     </li>
     <li>
       <strong>Compose around the Euclid result screens, never fork them.</strong> The failure surfaces render
       Euclid components (<code>KycFailureScreen</code>, <code>ProofFailureScreen</code>,
-      <code>StatusState</code>) with no footer slot. Render <code>&lt;CorrelationReference /&gt;</code> as a
+      <code>StatusState</code>) with no footer slot. Render <code>&lt;SupportReference /&gt;</code> as a
       sibling pinned to the bottom of each screen container. If a layout can't host a sibling without overlap,
       note it in the PR rather than restyling the Euclid screen.
     </li>
@@ -123,7 +123,7 @@
       in-component state, not a global toast.
     </li>
     <li>
-      <strong>Render nothing when no id.</strong> <code>useCorrelationId()</code> null → component returns
+      <strong>Render nothing when no id.</strong> <code>useReferenceId()</code> null → component returns
       <code>null</code> (no empty &ldquo;Reference:&rdquo;). This is also the old-host / browser-mode path
       from PR1's Compatibility section.
     </li>
@@ -162,9 +162,9 @@
   <table>
     <thead><tr><th>File</th><th>Change</th></tr></thead>
     <tbody>
-      <tr><td><code>packages/webview-app/src/components/CorrelationReference.tsx</code></td><td><strong>New.</strong> The footer (Euclid <code>colors</code>, copy + 1s confirm, null when no id).</td></tr>
-      <tr><td><code>packages/webview-app/src/providers/OperatingModeProvider.tsx</code></td><td>Add <code>useCorrelationId()</code> hook (thin selector over context). <em>(Context field itself lands in PR1.)</em></td></tr>
-      <tr><td>The 9 failure screens in the <a href="#routes">route inventory</a></td><td>Render <code>&lt;CorrelationReference /&gt;</code> at the bottom; gate result/verification screens to the failure variant.</td></tr>
+      <tr><td><code>packages/webview-app/src/components/SupportReference.tsx</code></td><td><strong>New.</strong> The footer (Euclid <code>colors</code>, copy + 1s confirm, null when no id).</td></tr>
+      <tr><td><code>packages/webview-app/src/providers/OperatingModeProvider.tsx</code></td><td>Add <code>useReferenceId()</code> hook (thin selector over context). <em>(Context field itself lands in PR1.)</em></td></tr>
+      <tr><td>The 9 failure screens in the <a href="#routes">route inventory</a></td><td>Render <code>&lt;SupportReference /&gt;</code> at the bottom; gate result/verification screens to the failure variant.</td></tr>
     </tbody>
   </table>
 </section>
@@ -172,11 +172,11 @@
 <section id="implementation">
   <h2>Implementation</h2>
   <ol>
-    <li><strong>Hook.</strong> <code>export const useCorrelationId = () => useOperatingMode().correlationId</code>.</li>
-    <li><strong>Component.</strong> Read <code>useCorrelationId()</code>; if falsy return <code>null</code>;
+    <li><strong>Hook.</strong> <code>export const useReferenceId = () => useOperatingMode().referenceId</code>.</li>
+    <li><strong>Component.</strong> Read <code>useReferenceId()</code>; if falsy return <code>null</code>;
       else render a centered muted pressable <code>Reference: {id}</code> that copies and flips to a ~1s
       &ldquo;Copied&rdquo; state. Euclid <code>colors</code> for text. Keep &lt;~70 LOC.</li>
-    <li><strong>Mount.</strong> In each inventory screen, render <code>&lt;CorrelationReference /&gt;</code> as
+    <li><strong>Mount.</strong> In each inventory screen, render <code>&lt;SupportReference /&gt;</code> as
       the last child of the screen container, on the failure branch for the result/verification screens.</li>
     <li><strong>DRY check.</strong> No existing reference/support-id footer exists in webview-app
       (RN's <code>SupportUuidRow</code> has no web port). If one appears, extend it.</li>
@@ -187,12 +187,12 @@
   <h2>Tests</h2>
   <ul>
     <li><strong>Renders null with no id; renders <code>Reference: &lt;id&gt;</code> when present.</strong></li>
-    <li><strong>Reactive:</strong> mount with context <code>correlationId = undefined</code>, then update the
+    <li><strong>Reactive:</strong> mount with context <code>referenceId = undefined</code>, then update the
       provider value → the footer appears without remount. This guards Decision 1.</li>
     <li><strong>Copy:</strong> click copies (mock <code>navigator.clipboard.writeText</code>) and shows the
       confirm state; fallback path exercised when the async API is absent.</li>
     <li><strong>Integration:</strong> render one failure route inside <code>OperatingModeProvider</code> with a
-      seeded <code>correlationId</code> and assert the footer shows it; render a success route and assert no
+      seeded <code>referenceId</code> and assert the footer shows it; render a success route and assert no
       footer. Use the provider's seam to inject the id deterministically (see Validation).</li>
   </ul>
 </section>
@@ -200,7 +200,7 @@
 <section id="oos">
   <h2>Out of scope</h2>
   <ul>
-    <li>Minting / propagating / tagging the correlation id — all in <a href="./WIA-14-correlation-id.html">PR1</a>.</li>
+    <li>Minting / propagating / tagging the reference id — all in <a href="./WIA-14-reference-id.html">PR1</a>.</li>
     <li>Any RN component (ANA-15 does not ship against RN). No <code>app/src</code> changes.</li>
     <li>New bridge calls. Footer reads existing context only.</li>
     <li>Footer on success screens.</li>
@@ -212,11 +212,11 @@
   <pre>cd packages/webview-app &amp;&amp; yarn test &amp;&amp; yarn build</pre>
   <ul>
     <li><strong>Deterministic seeding:</strong> drive a target screen with a known id by passing
-      <code>?correlationId=test-123</code> in the WebView URL (PR1 parses it as the fallback), or by rendering
+      <code>?referenceId=test-123</code> in the WebView URL (PR1 parses it as the fallback), or by rendering
       the screen inside a test <code>OperatingModeProvider</code> seeded with that id. Document the URL-param
       route so manual validation is repeatable without a live RN host.</li>
     <li>Trigger each failure route; confirm the footer renders the id, copies on tap, shows the ~1s confirm,
-      and that the copied value matches the <code>correlation_id</code> Sentry tag for the session.</li>
+      and that the copied value matches the <code>reference_id</code> Sentry tag for the session.</li>
     <li>Confirm success routes show no footer, and a screen reached with no id shows no footer.</li>
   </ul>
 </section>
@@ -224,10 +224,10 @@
 <section id="done">
   <h2>Done criteria</h2>
   <ul class="check">
-    <li><code>CorrelationReference</code> renders <code>Reference: &lt;correlationId&gt;</code> with Euclid <code>colors</code>, copies to clipboard, shows a ~1s confirmation, and returns null when no id.</li>
-    <li>It reads the id reactively via <code>useCorrelationId()</code> and appears if the id resolves after first paint.</li>
+    <li><code>SupportReference</code> renders <code>Reference: &lt;referenceId&gt;</code> with Euclid <code>colors</code>, copies to clipboard, shows a ~1s confirmation, and returns null when no id.</li>
+    <li>It reads the id reactively via <code>useReferenceId()</code> and appears if the id resolves after first paint.</li>
     <li>Mounted on every failure route in the inventory (embed + self-app + aadhaar + nfc + registration + recovery + embed-error), composed around Euclid screens; absent on success routes.</li>
-    <li>A documented <code>?correlationId=</code> URL-param path enables deterministic manual + automated validation.</li>
+    <li>A documented <code>?referenceId=</code> URL-param path enables deterministic manual + automated validation.</li>
     <li>No <code>app/src</code> change; no new bridge call; <code>webview-app</code> build + tests pass.</li>
   </ul>
 </section>

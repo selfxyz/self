@@ -18,23 +18,23 @@ vi.mock('../../src/providers/BridgeProvider', () => ({
 }));
 
 const Probe: React.FC = () => {
-  const { correlationId, isReady } = useOperatingMode();
-  return <div data-testid="probe">{isReady ? (correlationId ?? 'none') : 'pending'}</div>;
+  const { referenceId, isReady } = useOperatingMode();
+  return <div data-testid="probe">{isReady ? (referenceId ?? 'none') : 'pending'}</div>;
 };
 
 function setUrl(search: string): void {
   window.history.replaceState({}, '', `/${search}`);
 }
 
-describe('OperatingModeProvider correlationId', () => {
+describe('OperatingModeProvider referenceId', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     setUrl('');
   });
   afterEach(cleanup);
 
-  it('exposes correlationId from the host getConfig response', async () => {
-    request.mockResolvedValue({ mode: 'self-app', correlationId: 'corr-config' });
+  it('exposes referenceId from the host getConfig response', async () => {
+    request.mockResolvedValue({ mode: 'self-app', referenceId: 'corr-config' });
     render(
       <OperatingModeProvider>
         <Probe />
@@ -44,7 +44,7 @@ describe('OperatingModeProvider correlationId', () => {
   });
 
   it('falls back to the URL param when getConfig omits it', async () => {
-    setUrl('?correlationId=corr-url');
+    setUrl('?referenceId=corr-url');
     request.mockResolvedValue({ mode: 'self-app' });
     render(
       <OperatingModeProvider>
@@ -55,7 +55,7 @@ describe('OperatingModeProvider correlationId', () => {
   });
 
   it('falls back to the URL param when getConfig rejects (browser-host)', async () => {
-    setUrl('?correlationId=corr-browser');
+    setUrl('?referenceId=corr-browser');
     request.mockRejectedValue(new Error('no transport'));
     render(
       <OperatingModeProvider>

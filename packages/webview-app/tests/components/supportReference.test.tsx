@@ -6,52 +6,52 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { CorrelationReference } from '../../src/components/CorrelationReference';
+import { SupportReference } from '../../src/components/SupportReference';
 
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 vi.mock('@selfxyz/euclid', () => ({ colors: { slate700: '#334155' } }));
 vi.mock('../../src/utils/insets', () => ({ WEB_SAFE_AREA: { insets: { top: 0, bottom: 16 } } }));
 
-const useCorrelationId = vi.fn<() => string | undefined>();
+const useReferenceId = vi.fn<() => string | undefined>();
 vi.mock('../../src/providers/OperatingModeProvider', () => ({
-  useCorrelationId: () => useCorrelationId(),
+  useReferenceId: () => useReferenceId(),
 }));
 
-describe('CorrelationReference', () => {
+describe('SupportReference', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
   afterEach(cleanup);
 
-  it('renders nothing when no correlation id is available', () => {
-    useCorrelationId.mockReturnValue(undefined);
-    render(<CorrelationReference />);
+  it('renders nothing when no reference id is available', () => {
+    useReferenceId.mockReturnValue(undefined);
+    render(<SupportReference />);
     expect(screen.queryByRole('button')).toBeNull();
   });
 
   it('renders the reference when an id is present', () => {
-    useCorrelationId.mockReturnValue('corr-1');
-    render(<CorrelationReference />);
+    useReferenceId.mockReturnValue('corr-1');
+    render(<SupportReference />);
     expect(screen.getByRole('button').textContent).toBe('Reference: corr-1');
   });
 
   it('appears on re-render once the id resolves (read during render, not snapshotted)', () => {
-    useCorrelationId.mockReturnValue(undefined);
-    const { rerender } = render(<CorrelationReference />);
+    useReferenceId.mockReturnValue(undefined);
+    const { rerender } = render(<SupportReference />);
     expect(screen.queryByRole('button')).toBeNull();
 
-    useCorrelationId.mockReturnValue('corr-late');
-    rerender(<CorrelationReference />);
+    useReferenceId.mockReturnValue('corr-late');
+    rerender(<SupportReference />);
     expect(screen.getByRole('button').textContent).toBe('Reference: corr-late');
   });
 
   it('copies the id and shows a confirmation on click', async () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
     vi.stubGlobal('navigator', { clipboard: { writeText } });
-    useCorrelationId.mockReturnValue('corr-copy');
+    useReferenceId.mockReturnValue('corr-copy');
 
-    render(<CorrelationReference />);
+    render(<SupportReference />);
     fireEvent.click(screen.getByRole('button'));
 
     expect(writeText).toHaveBeenCalledWith('corr-copy');
@@ -63,9 +63,9 @@ describe('CorrelationReference', () => {
     vi.useFakeTimers();
     const writeText = vi.fn().mockResolvedValue(undefined);
     vi.stubGlobal('navigator', { clipboard: { writeText } });
-    useCorrelationId.mockReturnValue('corr-copy');
+    useReferenceId.mockReturnValue('corr-copy');
 
-    const { unmount } = render(<CorrelationReference />);
+    const { unmount } = render(<SupportReference />);
     fireEvent.click(screen.getByRole('button'));
     await act(async () => {
       await Promise.resolve();

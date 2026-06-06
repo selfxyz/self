@@ -7,7 +7,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { colors } from '@selfxyz/euclid';
 
-import { useCorrelationId } from '../providers/OperatingModeProvider';
+import { useReferenceId } from '../providers/OperatingModeProvider';
 import { WEB_SAFE_AREA } from '../utils/insets';
 
 const CONFIRM_MS = 1000;
@@ -40,24 +40,24 @@ async function copyText(value: string): Promise<boolean> {
 
 /**
  * Copyable support reference shown on error screens. Renders the host-minted
- * correlation id so a user can report it and an engineer can pull every Sentry
- * event for the session (`correlation_id:<value>`). Renders nothing when no id
+ * reference id so a user can report it and an engineer can pull every Sentry
+ * event for the session (`reference_id:<value>`). Renders nothing when no id
  * is available (old host / standalone browser mode).
  */
-export const CorrelationReference: React.FC = () => {
-  const correlationId = useCorrelationId();
+export const SupportReference: React.FC = () => {
+  const referenceId = useReferenceId();
   const [copied, setCopied] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const onCopy = useCallback(() => {
-    if (!correlationId) return;
-    void copyText(correlationId).then(ok => {
+    if (!referenceId) return;
+    void copyText(referenceId).then(ok => {
       if (!ok) return;
       setCopied(true);
       if (timer.current) clearTimeout(timer.current);
       timer.current = setTimeout(() => setCopied(false), CONFIRM_MS);
     });
-  }, [correlationId]);
+  }, [referenceId]);
 
   useEffect(
     () => () => {
@@ -66,13 +66,13 @@ export const CorrelationReference: React.FC = () => {
     [],
   );
 
-  if (!correlationId) return null;
+  if (!referenceId) return null;
 
   return (
     <button
       type="button"
       onClick={onCopy}
-      aria-label={`Copy reference ${correlationId}`}
+      aria-label={`Copy reference ${referenceId}`}
       style={{
         position: 'fixed',
         left: 0,
@@ -95,7 +95,7 @@ export const CorrelationReference: React.FC = () => {
         overflowWrap: 'anywhere',
       }}
     >
-      {copied ? 'Copied' : `Reference: ${correlationId}`}
+      {copied ? 'Copied' : `Reference: ${referenceId}`}
     </button>
   );
 };

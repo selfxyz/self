@@ -8,7 +8,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 import { RegistrationFailureScreen } from '@selfxyz/euclid';
 
-import { CorrelationReference } from '../../components/CorrelationReference';
+import { SupportReference } from '../../components/SupportReference';
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import type { NavState } from '../../types/navState';
 import { WEB_SAFE_AREA } from '../../utils/insets';
@@ -50,7 +50,7 @@ export const RecoveryFailureScreen: React.FC = () => {
           tryDifferentMethod: 'Try again',
         }}
       />
-      <CorrelationReference />
+      <SupportReference />
     </>
   );
 };

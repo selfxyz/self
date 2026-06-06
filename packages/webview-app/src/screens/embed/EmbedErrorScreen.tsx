@@ -6,7 +6,7 @@ import type React from 'react';
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
-import { CorrelationReference } from '../../components/CorrelationReference';
+import { SupportReference } from '../../components/SupportReference';
 import { useBridge } from '../../providers/BridgeProvider';
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
@@ -79,7 +79,7 @@ export const EmbedErrorScreen: React.FC = () => {
       >
         Close
       </button>
-      <CorrelationReference />
+      <SupportReference />
     </div>
   );
 };

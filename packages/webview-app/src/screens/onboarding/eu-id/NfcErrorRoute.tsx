@@ -12,7 +12,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 // are already EU-ID-correct.
 import { PassportNfcErrorScreen } from '@selfxyz/euclid';
 
-import { CorrelationReference } from '../../../components/CorrelationReference';
+import { SupportReference } from '../../../components/SupportReference';
 import { useSelfClient } from '../../../providers/SelfClientProvider';
 import { WEB_SAFE_AREA } from '../../../utils/insets';
 
@@ -60,7 +60,7 @@ export const EuIdNfcErrorRoute: React.FC = () => {
         onStartOver={onStartOver}
         onTryDifferentMethod={onTryDifferentMethod}
       />
-      <CorrelationReference />
+      <SupportReference />
     </>
   );
 };

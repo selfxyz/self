@@ -8,8 +8,8 @@ import { useNavigate } from 'react-router-dom';
 
 import { RegistrationFailureScreen as EuclidRegistrationFailureScreen } from '@selfxyz/euclid';
 
-import { CorrelationReference } from '../../components/CorrelationReference';
 import { MockRegistrationFailureButton } from '../../components/MockRegistrationFailureButton';
+import { SupportReference } from '../../components/SupportReference';
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
 
@@ -38,7 +38,7 @@ export const RegistrationFailureScreen: React.FC = () => {
         onTryDifferentMethod={handleRetry}
         copy={{ tryDifferentMethod: 'Try again' }}
       />
-      <CorrelationReference />
+      <SupportReference />
     </>
   );
 };

@@ -291,37 +291,37 @@ describe('SelfVerification load hardening', () => {
     );
   });
 
-  it('passes a provided correlation id to the host callback and WebView URL', () => {
-    const onCorrelationId = jest.fn();
+  it('passes a provided reference id to the host callback and WebView URL', () => {
+    const onReferenceId = jest.fn();
 
     setup({
       request: {
-        correlationId: 'corr-provided',
+        referenceId: 'corr-provided',
         verificationId: 'verification-1',
       },
-      onCorrelationId,
+      onReferenceId,
     });
 
-    expect(onCorrelationId).toHaveBeenCalledWith('corr-provided');
+    expect(onReferenceId).toHaveBeenCalledWith('corr-provided');
     const uri = mockWebViewProps!.source.uri as string;
     const query = new URLSearchParams(uri.split('?')[1]);
-    expect(query.get('correlationId')).toBe('corr-provided');
+    expect(query.get('referenceId')).toBe('corr-provided');
     expect(query.get('verificationId')).toBe('verification-1');
   });
 
-  it('mints one correlation id and uses the same value for callback and WebView URL', () => {
-    const onCorrelationId = jest.fn();
+  it('mints one reference id and uses the same value for callback and WebView URL', () => {
+    const onReferenceId = jest.fn();
 
-    setup({ onCorrelationId });
+    setup({ onReferenceId });
 
-    expect(onCorrelationId).toHaveBeenCalledTimes(1);
-    const callbackId = onCorrelationId.mock.calls[0][0];
+    expect(onReferenceId).toHaveBeenCalledTimes(1);
+    const callbackId = onReferenceId.mock.calls[0][0];
     expect(callbackId).toEqual(
       expect.stringMatching(/^corr-|^[0-9a-f-]{36}$/i),
     );
 
     const uri = mockWebViewProps!.source.uri as string;
     const query = new URLSearchParams(uri.split('?')[1]);
-    expect(query.get('correlationId')).toBe(callbackId);
+    expect(query.get('referenceId')).toBe(callbackId);
   });
 });

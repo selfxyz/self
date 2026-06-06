@@ -24,7 +24,7 @@ const analytics = { trackEvent: vi.fn() };
 const haptic = { trigger: vi.fn() };
 const lifecycle = { dismiss: vi.fn(), setResult: vi.fn() };
 const client = { id: 'client' };
-let correlationId: string | undefined;
+let referenceId: string | undefined;
 
 const initMock = vi.fn();
 const loadSelectedDocumentMock = vi.fn();
@@ -56,7 +56,7 @@ vi.mock('../../../src/providers/SelfClientProvider', () => ({
 
 vi.mock('../../../src/providers/OperatingModeProvider', () => ({
   useOperatingMode: () => ({ mode: 'embed', verificationRequest: null, isReady: true }),
-  useCorrelationId: () => correlationId,
+  useReferenceId: () => referenceId,
 }));
 
 vi.mock('../../../src/providers/VerificationRequestProvider', () => ({
@@ -349,7 +349,7 @@ describe('tunnel flow screens', () => {
     loadSelectedDocumentMock.mockResolvedValue({
       data: { documentCategory: 'passport' },
     });
-    correlationId = undefined;
+    referenceId = undefined;
   });
 
   afterEach(() => {
@@ -394,8 +394,8 @@ describe('tunnel flow screens', () => {
     expectLocation('/receipts/current');
   });
 
-  it('shows the correlation reference on failure results only', () => {
-    correlationId = 'corr-route';
+  it('shows the support reference on failure results only', () => {
+    referenceId = 'corr-route';
 
     const { unmount } = renderResultRoute({
       pathname: '/disclose/result',

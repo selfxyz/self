@@ -8,7 +8,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 import { AadhaarUploadErrorScreen } from '@selfxyz/euclid';
 
-import { CorrelationReference } from '../../../components/CorrelationReference';
+import { SupportReference } from '../../../components/SupportReference';
 import { useSelfClient } from '../../../providers/SelfClientProvider';
 import { WEB_SAFE_AREA } from '../../../utils/insets';
 
@@ -43,7 +43,7 @@ export const AadhaarUploadErrorRoute: React.FC = () => {
         onTryDifferentMethod={onTryDifferentMethod}
         onUploadFromLibrary={onUploadFromLibrary}
       />
-      <CorrelationReference />
+      <SupportReference />
     </>
   );
 };

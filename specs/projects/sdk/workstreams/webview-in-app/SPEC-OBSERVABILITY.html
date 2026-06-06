@@ -111,8 +111,8 @@
       <code>maskAllText: true</code>, <code>maskAllInputs: true</code>, <code>blockAllMedia: true</code>
       (<code>blockAllMedia</code> covers <code>&lt;img&gt;</code> and <code>&lt;svg&gt;</code>).</li>
     <li><code>beforeSend</code> redact list parity with ANA-13.</li>
-    <li>A host-minted <code>correlationId</code> propagated to the WebView (bridge + URL), tagged
-      <code>correlation_id</code> on both runtimes, and shown as a copyable reference footer on the
+    <li>A host-minted <code>referenceId</code> propagated to the WebView (bridge + URL), tagged
+      <code>reference_id</code> on both runtimes, and shown as a copyable reference footer on the
       webview-app failure routes (disclose result, kyc-failure, passport/eu-id nfc-error, aadhaar
       upload-error, registration failure, recovery failure, embed error). See the
       <a href="./plans/WIA-14-footer.html">WIA-14 PR2</a> route inventory for the exact list.</li>
@@ -186,11 +186,11 @@ Both SDKs → single Sentry project (correlation by attempt_id)</pre>
       <code>data-sentry-mask</code> attribute). The wrapper sites are the web-side PII renderers:
       <code>IDDataScreen</code>, <code>RecoveryPhraseScreen</code>, and
       <code>SecretPhraseInputScreen</code>.</li>
-    <li><strong>Cross-runtime correlation is by <code>correlation_id</code></strong> (revised — see
-      <a href="./plans/WIA-14-correlation-id.html">WIA-14 PR1</a>). <code>attempt_id</code> was the original
+    <li><strong>Cross-runtime correlation is by <code>reference_id</code></strong> (revised — see
+      <a href="./plans/WIA-14-reference-id.html">WIA-14 PR1</a>). <code>attempt_id</code> was the original
       intent but is unreachable in the WebView runtime (the onboarding funnel is RN-host-driven; no bridge
-      carries it). The RN host mints a per-session <code>correlationId</code> and both runtimes tag
-      <code>correlation_id</code>; engineers search <code>correlation_id:&lt;uuid&gt;</code> to pull every
+      carries it). The RN host mints a per-session <code>referenceId</code> and both runtimes tag
+      <code>reference_id</code>; engineers search <code>reference_id:&lt;uuid&gt;</code> to pull every
       event for one WebView session. <code>verification_id</code> is tagged separately when a business
       verificationId is present. <code>attempt_id</code> remains the RN-host onboarding-funnel tag where the
       funnel runs.</li>
@@ -199,8 +199,8 @@ Both SDKs → single Sentry project (correlation by attempt_id)</pre>
       The shared project + cohort tag taxonomy is enough to keep the forensic trail joined.</li>
     <li><strong>ANA-15's footer ports to webview-app, ANA-15 itself does not ship against RN.</strong>
       Per the umbrella's Cross-Workstream Dependencies note, ANA-15 is re-homed under
-      <code>WIA-14</code>, delivered in two PRs: <a href="./plans/WIA-14-correlation-id.html">PR1</a> mints
-      and propagates a host <code>correlationId</code> and tags <code>correlation_id</code> on both runtimes;
+      <code>WIA-14</code>, delivered in two PRs: <a href="./plans/WIA-14-reference-id.html">PR1</a> mints
+      and propagates a host <code>referenceId</code> and tags <code>reference_id</code> on both runtimes;
       <a href="./plans/WIA-14-footer.html">PR2</a> renders the reference footer. The footer is a net-new
       webview-app component using Euclid tokens. <em>Superseded:</em> the
       <code>getCurrentAttemptId()</code> approach (the accessor is null in the WebView runtime — see PR1
@@ -236,7 +236,7 @@ Both SDKs → single Sentry project (correlation by attempt_id)</pre>
     <tbody>
       <tr><td>WIA-12</td><td>WebView Sentry React SDK + cohort tags + redact list (<a href="./plans/WIA-12-webview-sentry-cohort-tags.html">plan</a>)</td><td><span class="status pending">Pending</span></td></tr>
       <tr><td>WIA-13</td><td><a href="./plans/WIA-13-webview-session-replay.html">WebView Session Replay (<code>@sentry/react</code>) with mask wrappers</a></td><td><span class="status progress">In progress — replay + PrivacyMask + tests landed; manual TestFlight masking/CSP validation pending</span></td></tr>
-      <tr><td>WIA-14</td><td>WebView error-screen support reference (re-homes ANA-15). <a href="./plans/WIA-14-correlation-id.html">PR1</a> mints a host correlationId (bridge + Sentry <code>correlation_id</code>); <a href="./plans/WIA-14-footer.html">PR2</a> shows the footer. <strong>Note:</strong> <code>attempt_id</code> is unreachable in the WebView runtime — superseded by <code>correlationId</code>.</td><td><span class="status pending">Pending</span></td></tr>
+      <tr><td>WIA-14</td><td>WebView error-screen support reference (re-homes ANA-15). <a href="./plans/WIA-14-reference-id.html">PR1</a> mints a host referenceId (bridge + Sentry <code>reference_id</code>); <a href="./plans/WIA-14-footer.html">PR2</a> shows the footer. <strong>Note:</strong> <code>attempt_id</code> is unreachable in the WebView runtime — superseded by <code>referenceId</code>.</td><td><span class="status pending">Pending</span></td></tr>
     </tbody>
   </table>
   <p>

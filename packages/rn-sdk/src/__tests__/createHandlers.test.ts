@@ -29,7 +29,7 @@ describe('createHandlers', () => {
     expect(nfcHandler).toBeInstanceOf(NfcHandler);
   });
 
-  it('threads correlationId into the lifecycle handler getConfig', async () => {
+  it('threads referenceId into the lifecycle handler getConfig', async () => {
     const router = new MessageRouter({ sendToWebView: vi.fn() });
     const handlers = createHandlers({
       request: {},
@@ -38,12 +38,12 @@ describe('createHandlers', () => {
       onCancelled: vi.fn(),
       debug: false,
       router,
-      correlationId: 'corr-abc',
+      referenceId: 'corr-abc',
     });
 
     const lifecycle = handlers.find(h => h.domain === 'lifecycle');
     const config = (await lifecycle?.handle('getConfig', {})) as Record<string, unknown>;
-    expect(config.correlationId).toBe('corr-abc');
+    expect(config.referenceId).toBe('corr-abc');
   });
 
   it('returns handlers for all bridge domains', () => {
