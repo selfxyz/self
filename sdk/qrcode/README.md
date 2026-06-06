@@ -187,7 +187,8 @@ For a more comprehensive and interactive example, please refer to the [playgroun
 1. Your application displays the QR code to the user
 2. The user scans the QR code with the Self app
 3. The Self app guides the user through the passport verification process
-4. The proof is generated and sent to your verification endpoint
-5. Upon successful verification, the `onSuccess` callback is triggered
+4. The QR state enters a dedicated `Connecting...` phase while the secure session is established
+5. The proof is generated and sent to your verification endpoint
+6. Upon successful verification, the `onSuccess` callback is triggered
 
 The QR code component displays the current verification status with an LED indicator and changes its appearance based on the verification state.

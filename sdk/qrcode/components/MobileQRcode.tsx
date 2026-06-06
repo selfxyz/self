@@ -4,10 +4,6 @@ import React, { memo } from 'react';
 import phoneMockup from '../assets/phone-mockup.png';
 import selfLogo from '../assets/self-logo.svg';
 import {
-  desktopStepIconStyle,
-  desktopStepInnerStyle,
-  desktopStepStyle,
-  desktopStepTextStyle,
   mobileCardStyle,
   mobileCtaButtonStyle,
   mobileCtaLogoStyle,
@@ -19,7 +15,8 @@ import {
   mobilePhoneSectionWrapperStyle,
 } from '../utils/styles.js';
 import DesktopHeader from './DesktopHeader.js';
-import { ArrowReturnIcon, DownloadIcon, VerifyIcon } from './icons.js';
+import { ArrowReturnIcon, BoltIcon, DownloadIcon, VerifyIcon } from './icons.js';
+import InstructionList from './InstructionList.js';
 
 interface MobileQRcodeProps {
   proofStep: number;
@@ -31,6 +28,7 @@ interface MobileQRcodeProps {
 const MOBILE_STEPS = [
   { icon: DownloadIcon, text: 'Download the Self Mobile app' },
   { icon: VerifyIcon, text: 'Verify your identity' },
+  { icon: BoltIcon, text: 'Connecting to Self...' },
   { icon: ArrowReturnIcon, text: 'Return to this application and click on the button below' },
 ];
 
@@ -43,19 +41,7 @@ const MobileQRcode = memo(({ qrValue, selfApp, darkMode = false }: MobileQRcodeP
       </div>
     </div>
     <div style={mobileFooterStyle()}>
-      {MOBILE_STEPS.map((step, index) => {
-        const Icon = step.icon;
-        return (
-          <div key={index} style={desktopStepStyle(darkMode)}>
-            <div style={desktopStepInnerStyle()}>
-              <div style={desktopStepIconStyle(darkMode)}>
-                <Icon size={18} />
-              </div>
-              <span style={desktopStepTextStyle(darkMode)}>{step.text}</span>
-            </div>
-          </div>
-        );
-      })}
+      <InstructionList steps={MOBILE_STEPS} darkMode={darkMode} />
     </div>
     <div style={mobileCtaSectionStyle(darkMode)}>
       <a href={qrValue} style={mobileCtaButtonStyle()}>

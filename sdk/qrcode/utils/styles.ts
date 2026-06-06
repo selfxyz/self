@@ -214,6 +214,20 @@ export const desktopStepInnerStyle = (): React.CSSProperties => ({
   width: '100%',
 });
 
+export const desktopStepIndexStyle = (darkMode: boolean = false): React.CSSProperties => ({
+  width: '20px',
+  height: '20px',
+  borderRadius: '999px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  fontSize: '12px',
+  fontWeight: 700,
+  color: darkMode ? '#94A3B8' : '#334155',
+  backgroundColor: darkMode ? '#3A3A3A' : '#E2E8F0',
+  flexShrink: 0,
+});
+
 export const desktopStepStyle = (darkMode: boolean = false): React.CSSProperties => ({
   backgroundColor: darkMode ? '#2A2A2A' : '#F8FAFC',
   borderRadius: '5px',
