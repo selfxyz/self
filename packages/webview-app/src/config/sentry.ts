@@ -69,12 +69,8 @@ export function setReferenceTag(referenceId: string, verificationId?: string): v
   if (!isSentryEnabled) return;
   const cid = sanitizeTagValue(referenceId);
   if (cid) setTag('reference_id', cid);
-  if (verificationId) {
-    const vid = sanitizeTagValue(verificationId);
-    if (vid) setTag('verification_id', vid);
-  } else {
-    setTag('verification_id', undefined);
-  }
+  const vid = verificationId ? sanitizeTagValue(verificationId) : '';
+  setTag('verification_id', vid || undefined);
 }
 
 export function clearReferenceTag(): void {

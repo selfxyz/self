@@ -166,11 +166,9 @@ export const setReferenceTag = (
   if (sanitizeTagKey('reference_id') && cid) {
     setTag('reference_id', cid);
   }
-  if (verificationId) {
-    const vid = sanitizeTagValue(verificationId);
-    if (sanitizeTagKey('verification_id') && vid) {
-      setTag('verification_id', vid);
-    }
+  const vid = verificationId ? sanitizeTagValue(verificationId) : '';
+  if (sanitizeTagKey('verification_id') && vid) {
+    setTag('verification_id', vid);
   } else {
     setTag('verification_id', undefined);
   }

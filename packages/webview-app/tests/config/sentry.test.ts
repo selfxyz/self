@@ -19,7 +19,7 @@ vi.mock('@sentry/react', () => ({
 vi.mock('@selfxyz/mobile-sdk-alpha/browser', () => ({
   COHORT_TAG_KEYS: [],
   redactSensitiveFields: (event: unknown) => event,
-  sanitizeTagValue: (value: unknown) => String(value),
+  sanitizeTagValue: (value: unknown) => (value == null ? '' : String(value).replace(/[^\x20-\x7E]/g, '')),
 }));
 
 const DSN = 'https://examplePublicKey@o0.ingest.sentry.io/0';
@@ -82,6 +82,13 @@ describe('webview-app Sentry config', () => {
       const { setReferenceTag } = await import('../../src/config/sentry');
       setReferenceTag('corr-2');
       expect(setTag).toHaveBeenCalledWith('reference_id', 'corr-2');
+      expect(setTag).toHaveBeenCalledWith('verification_id', undefined);
+    });
+
+    it('clears verification_id when the provided value sanitizes to empty', async () => {
+      const { setReferenceTag } = await import('../../src/config/sentry');
+      setReferenceTag('corr-4', '\n\t\r');
+      expect(setTag).toHaveBeenCalledWith('reference_id', 'corr-4');
       expect(setTag).toHaveBeenCalledWith('verification_id', undefined);
     });
 
