@@ -324,4 +324,43 @@ describe('SelfVerification load hardening', () => {
     const query = new URLSearchParams(uri.split('?')[1]);
     expect(query.get('referenceId')).toBe(callbackId);
   });
+
+  it('re-mints a generated reference id when the request changes', () => {
+    const onReferenceId = jest.fn();
+    const baseProps = {
+      onSuccess: jest.fn(),
+      onFailure: jest.fn(),
+      onCancelled: jest.fn(),
+      onReferenceId,
+    };
+
+    const { rerender } = render(
+      <SelfVerification request={{ scope: 'a' }} {...baseProps} />,
+    );
+    const firstId = onReferenceId.mock.calls[0][0];
+
+    rerender(<SelfVerification request={{ scope: 'a' }} {...baseProps} />);
+    expect(onReferenceId).toHaveBeenCalledTimes(1);
+
+    rerender(<SelfVerification request={{ scope: 'b' }} {...baseProps} />);
+    expect(onReferenceId).toHaveBeenCalledTimes(2);
+    const secondId = onReferenceId.mock.calls[1][0];
+    expect(secondId).not.toBe(firstId);
+
+    const uri = mockWebViewProps!.source.uri as string;
+    const query = new URLSearchParams(uri.split('?')[1]);
+    expect(query.get('referenceId')).toBe(secondId);
+  });
+
+  it('treats a blank provided reference id as absent and mints one', () => {
+    const onReferenceId = jest.fn();
+
+    setup({ request: { referenceId: '   ' }, onReferenceId });
+
+    const id = onReferenceId.mock.calls[0][0];
+    expect(id.trim()).not.toBe('');
+    const uri = mockWebViewProps!.source.uri as string;
+    const query = new URLSearchParams(uri.split('?')[1]);
+    expect(query.get('referenceId')).toBe(id);
+  });
 });

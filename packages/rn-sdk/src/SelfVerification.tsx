@@ -253,13 +253,30 @@ export const SelfVerification: React.FC<SelfVerificationProps> = ({
   const [errorKind, setErrorKind] = useState<LoadDiagnosticKind | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
 
-  // Resolve the host-minted reference id once per load: use the caller's id
-  // if supplied, otherwise mint one so it is always present in the URL and
-  // lifecycle.getConfig. Surfaced to the host via onReferenceId for Sentry.
-  const referenceId = useMemo(() => request.referenceId ?? makeReferenceId(), [request.referenceId]);
+  // Resolve the host-minted reference id: a supplied id wins; otherwise mint one
+  // and cache it keyed by request identity so it stays stable across re-renders
+  // of the same request but re-mints for a new request — distinct verifications
+  // never share a reference_id. A blank supplied id is treated as absent.
+  const providedReferenceId = request.referenceId?.trim() || undefined;
+  const requestIdentity = useMemo(() => {
+    const { referenceId: _omitted, ...rest } = request;
+    return JSON.stringify(rest);
+  }, [request]);
+  const generatedReferenceRef = useRef<{ key: string; id: string } | null>(null);
+  let referenceId = providedReferenceId;
+  if (!referenceId) {
+    if (generatedReferenceRef.current?.key !== requestIdentity) {
+      generatedReferenceRef.current = { key: requestIdentity, id: makeReferenceId() };
+    }
+    referenceId = generatedReferenceRef.current.id;
+  }
+  const onReferenceIdRef = useRef(onReferenceId);
   useEffect(() => {
-    onReferenceId?.(referenceId);
-  }, [referenceId, onReferenceId]);
+    onReferenceIdRef.current = onReferenceId;
+  });
+  useEffect(() => {
+    onReferenceIdRef.current?.(referenceId);
+  }, [referenceId]);
 
   const isDevServer = __DEV__ && Boolean(devServerUrl);
   const diagnosticSource: LoadDiagnosticEvent['source'] = isDevServer
