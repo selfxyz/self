@@ -1,0 +1,50 @@
+name: Update Documentation
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+permissions:
+  contents: read
+  pull-requests: read
+concurrency:
+  group: docs-sync-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  docs-sync:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.head.repo.full_name == github.repository  # skip forks.
+    steps:
+      - name: Checkout docs-sync-agent
+        uses: actions/checkout@v4
+        with:
+          repository: kartikmehta8/flue-docs-sync-agent
+          ref: main
+          # token: ${{ secrets.AGENT_REPO_TOKEN }}   # ONLY if flue-docs-sync-agent is PRIVATE.
+
+      - name: Checkout docs repo
+        uses: actions/checkout@v4
+        with:
+          repository: kartikmehta8/self-docs
+          token: ${{ secrets.DOCS_REPO_PAT }}
+          path: docs-checkout
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - run: npm ci
+      - run: npm run build
+
+      - name: Run agent
+        env:
+          LLM_PROVIDER: ${{ vars.LLM_PROVIDER }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          DOCS_REPO: kartikmehta8/self-docs
+          DOCS_REPO_PAT: ${{ secrets.DOCS_REPO_PAT }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CODE_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          DOCS_REPO_DIR: docs-checkout
+        run: npm start
