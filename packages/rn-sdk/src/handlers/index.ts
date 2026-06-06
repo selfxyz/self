@@ -28,6 +28,7 @@ export interface HandlersConfig {
   documents?: DocumentsStore;
   crypto?: SelfCryptoModule;
   mode?: OperatingMode;
+  referenceId?: string;
 }
 
 export function createHandlers(config: HandlersConfig): BridgeHandler[] {
@@ -39,6 +40,7 @@ export function createHandlers(config: HandlersConfig): BridgeHandler[] {
       onCancelled: config.onCancelled,
       debug: config.debug,
       mode: config.mode,
+      referenceId: config.referenceId,
     }),
     new BiometricHandler(),
     new KeychainHandler(),

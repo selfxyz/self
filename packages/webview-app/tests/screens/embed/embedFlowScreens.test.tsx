@@ -24,6 +24,7 @@ const analytics = { trackEvent: vi.fn() };
 const haptic = { trigger: vi.fn() };
 const lifecycle = { dismiss: vi.fn(), setResult: vi.fn() };
 const client = { id: 'client' };
+let referenceId: string | undefined;
 
 const initMock = vi.fn();
 const loadSelectedDocumentMock = vi.fn();
@@ -55,6 +56,7 @@ vi.mock('../../../src/providers/SelfClientProvider', () => ({
 
 vi.mock('../../../src/providers/OperatingModeProvider', () => ({
   useOperatingMode: () => ({ mode: 'embed', verificationRequest: null, isReady: true }),
+  useReferenceId: () => referenceId,
 }));
 
 vi.mock('../../../src/providers/VerificationRequestProvider', () => ({
@@ -192,6 +194,7 @@ vi.mock('@selfxyz/euclid', () => ({
     </div>
   ),
   LeftArrowIcon: () => null,
+  colors: { slate700: '#334155' },
 }));
 
 const LocationDisplay: React.FC = () => {
@@ -346,6 +349,7 @@ describe('tunnel flow screens', () => {
     loadSelectedDocumentMock.mockResolvedValue({
       data: { documentCategory: 'passport' },
     });
+    referenceId = undefined;
   });
 
   afterEach(() => {
@@ -388,6 +392,23 @@ describe('tunnel flow screens', () => {
     fireEvent.click(screen.getByRole('button', { name: /view details/i }));
 
     expectLocation('/receipts/current');
+  });
+
+  it('shows the support reference on failure results only', () => {
+    referenceId = 'corr-route';
+
+    const { unmount } = renderResultRoute({
+      pathname: '/disclose/result',
+      state: { success: false, error: 'TEE down', source: 'proving' },
+    });
+    expect(screen.getByRole('button', { name: /copy reference corr-route/i })).toBeTruthy();
+    unmount();
+
+    renderResultRoute({
+      pathname: '/disclose/result',
+      state: { success: true },
+    });
+    expect(screen.queryByRole('button', { name: /copy reference corr-route/i })).toBeNull();
   });
 
   it('routes failure details to the proof receipt screen', () => {

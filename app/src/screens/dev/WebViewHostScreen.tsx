@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import { Alert, View } from 'react-native';
 import type { RouteProp } from '@react-navigation/native';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -20,7 +20,11 @@ import {
   type VerificationResult,
 } from '@selfxyz/rn-sdk';
 
-import { captureWebViewLoadDiagnostic } from '@/config/sentry';
+import {
+  captureWebViewLoadDiagnostic,
+  clearReferenceTag,
+  setReferenceTag,
+} from '@/config/sentry';
 import type { RootStackParamList } from '@/navigation';
 import { selfClientDocumentsAdapter } from '@/providers/passportDataProvider';
 import {
@@ -112,6 +116,14 @@ const WebViewHostScreen: React.FC = () => {
     [],
   );
 
+  const handleReferenceId = useCallback(
+    (referenceId: string) => {
+      setReferenceTag(referenceId, request.verificationId);
+    },
+    [request.verificationId],
+  );
+  useEffect(() => () => clearReferenceTag(), []);
+
   return (
     <View style={{ flex: 1, backgroundColor: '#000' }}>
       <SelfVerification
@@ -120,6 +132,7 @@ const WebViewHostScreen: React.FC = () => {
         onSuccess={handleSuccess}
         onFailure={handleFailure}
         onCancelled={handleCancelled}
+        onReferenceId={handleReferenceId}
         debug={__DEV__}
         devServerUrl={__DEV__ ? WEBVIEW_DEV_URL_ENV : undefined}
         analytics={analytics}

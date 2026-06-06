@@ -52,6 +52,8 @@ const ALLOWED_TAG_KEYS = new Set([
   'kyc_provider',
   'runtime',
   'webview_source',
+  'reference_id',
+  'verification_id',
 ]);
 
 export const captureException = (
@@ -148,6 +150,36 @@ const sanitizeTagKey = (key: string): string | null => {
   }
 
   return key;
+};
+
+// Durable per-session reference tags for cross-runtime joins (RN host +
+// WebView). Set when a WebView session starts, cleared when it ends so a
+// failed session's id never leaks into a later session's events.
+export const setReferenceTag = (
+  referenceId: string,
+  verificationId?: string,
+): void => {
+  if (isSentryDisabled) {
+    return;
+  }
+  const cid = sanitizeTagValue(referenceId);
+  if (sanitizeTagKey('reference_id') && cid) {
+    setTag('reference_id', cid);
+  }
+  const vid = verificationId ? sanitizeTagValue(verificationId) : '';
+  if (sanitizeTagKey('verification_id') && vid) {
+    setTag('verification_id', vid);
+  } else {
+    setTag('verification_id', undefined);
+  }
+};
+
+export const clearReferenceTag = (): void => {
+  if (isSentryDisabled) {
+    return;
+  }
+  setTag('reference_id', undefined);
+  setTag('verification_id', undefined);
 };
 
 export const captureMessage = (

@@ -61,3 +61,20 @@ export function clearOnboardingTags(): void {
     setTag(key, undefined);
   }
 }
+
+// Durable per-session reference tags, set as soon as the host-minted id is
+// known so Sentry events outside any analytics path still carry it. Mirrors the
+// RN host's setReferenceTag; engineers join runtimes by `reference_id`.
+export function setReferenceTag(referenceId: string, verificationId?: string): void {
+  if (!isSentryEnabled) return;
+  const cid = sanitizeTagValue(referenceId);
+  if (cid) setTag('reference_id', cid);
+  const vid = verificationId ? sanitizeTagValue(verificationId) : '';
+  setTag('verification_id', vid || undefined);
+}
+
+export function clearReferenceTag(): void {
+  if (!isSentryEnabled) return;
+  setTag('reference_id', undefined);
+  setTag('verification_id', undefined);
+}

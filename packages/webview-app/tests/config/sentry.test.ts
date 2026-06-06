@@ -19,7 +19,7 @@ vi.mock('@sentry/react', () => ({
 vi.mock('@selfxyz/mobile-sdk-alpha/browser', () => ({
   COHORT_TAG_KEYS: [],
   redactSensitiveFields: (event: unknown) => event,
-  sanitizeTagValue: (value: unknown) => String(value),
+  sanitizeTagValue: (value: unknown) => (value == null ? '' : String(value).replace(/[^\x20-\x7E]/g, '')),
 }));
 
 const DSN = 'https://examplePublicKey@o0.ingest.sentry.io/0';
@@ -68,5 +68,43 @@ describe('webview-app Sentry config', () => {
     expect(isSentryEnabled).toBe(false);
     expect(sentryInit).not.toHaveBeenCalled();
     expect(replayIntegration).not.toHaveBeenCalled();
+  });
+
+  describe('reference tags', () => {
+    it('sets reference_id and verification_id when both provided', async () => {
+      const { setReferenceTag } = await import('../../src/config/sentry');
+      setReferenceTag('corr-1', 'vid-1');
+      expect(setTag).toHaveBeenCalledWith('reference_id', 'corr-1');
+      expect(setTag).toHaveBeenCalledWith('verification_id', 'vid-1');
+    });
+
+    it('sets reference_id and clears verification_id when verificationId is absent', async () => {
+      const { setReferenceTag } = await import('../../src/config/sentry');
+      setReferenceTag('corr-2');
+      expect(setTag).toHaveBeenCalledWith('reference_id', 'corr-2');
+      expect(setTag).toHaveBeenCalledWith('verification_id', undefined);
+    });
+
+    it('clears verification_id when the provided value sanitizes to empty', async () => {
+      const { setReferenceTag } = await import('../../src/config/sentry');
+      setReferenceTag('corr-4', '\n\t\r');
+      expect(setTag).toHaveBeenCalledWith('reference_id', 'corr-4');
+      expect(setTag).toHaveBeenCalledWith('verification_id', undefined);
+    });
+
+    it('clears both tags', async () => {
+      const { clearReferenceTag } = await import('../../src/config/sentry');
+      clearReferenceTag();
+      expect(setTag).toHaveBeenCalledWith('reference_id', undefined);
+      expect(setTag).toHaveBeenCalledWith('verification_id', undefined);
+    });
+
+    it('is a no-op without a DSN', async () => {
+      vi.stubEnv('VITE_SENTRY_DSN', '');
+      vi.resetModules();
+      const { setReferenceTag } = await import('../../src/config/sentry');
+      setReferenceTag('corr-3', 'vid-3');
+      expect(setTag).not.toHaveBeenCalled();
+    });
   });
 });

@@ -9,6 +9,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { ProofFailureScreen, ProofSuccessScreen, SelfLogo } from '@selfxyz/euclid';
 import type { BridgeError, VerificationResult } from '@selfxyz/webview-bridge';
 
+import { SupportReference } from '../../components/SupportReference';
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { useVerificationRequest } from '../../providers/VerificationRequestProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
@@ -104,19 +105,22 @@ export const DiscloseResultScreen: React.FC = () => {
   }
 
   return (
-    <ProofFailureScreen
-      {...WEB_SAFE_AREA}
-      appIcon={<SelfLogo size={40} />}
-      appName={appName}
-      appEndpoint={displayAppEndpoint}
-      documentType="passport"
-      timestamp={timestamp}
-      walletAddress={walletAddress}
-      failureTitle="Proof Generation Failed"
-      failureDescription={normalizedError?.message ?? 'The proof request could not be completed. Please try again.'}
-      onClose={handleContinue}
-      onRetry={handleRetry}
-      onViewDetails={onViewDetails}
-    />
+    <>
+      <ProofFailureScreen
+        {...WEB_SAFE_AREA}
+        appIcon={<SelfLogo size={40} />}
+        appName={appName}
+        appEndpoint={displayAppEndpoint}
+        documentType="passport"
+        timestamp={timestamp}
+        walletAddress={walletAddress}
+        failureTitle="Proof Generation Failed"
+        failureDescription={normalizedError?.message ?? 'The proof request could not be completed. Please try again.'}
+        onClose={handleContinue}
+        onRetry={handleRetry}
+        onViewDetails={onViewDetails}
+      />
+      <SupportReference />
+    </>
   );
 };

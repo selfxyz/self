@@ -24,9 +24,11 @@ import {
   createSdkAdapters,
 } from '@selfxyz/webview-bridge/adapters';
 
+import { clearReferenceTag, setReferenceTag } from '../config/sentry';
 import { withCohortTags } from '../observability/observedAnalytics';
 import { ensureSecret } from '../utils/secretManager';
 import { useBridge } from './BridgeProvider';
+import { useOperatingMode } from './OperatingModeProvider';
 import { useVerificationRequest } from './VerificationRequestProvider';
 
 export interface WebViewAdapters {
@@ -44,6 +46,7 @@ export const SelfClientProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const bridge = useBridge();
   const navigate = useNavigate();
   const { verificationId } = useVerificationRequest();
+  const { referenceId } = useOperatingMode();
 
   const navigateRef = useRef(navigate);
   useEffect(() => {
@@ -110,6 +113,14 @@ export const SelfClientProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       navigate('/', { replace: true });
     });
   }, [bridge, navigate]);
+
+  // Durable Sentry session tag, set as soon as the host-minted id is known so
+  // events outside the analytics path still correlate; cleared on unmount.
+  useEffect(() => {
+    if (!referenceId) return undefined;
+    setReferenceTag(referenceId, verificationId);
+    return () => clearReferenceTag();
+  }, [referenceId, verificationId]);
 
   return <SelfClientContext.Provider value={webViewAdapters}>{children}</SelfClientContext.Provider>;
 };

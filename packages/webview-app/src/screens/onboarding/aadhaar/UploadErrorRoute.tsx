@@ -8,6 +8,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 import { AadhaarUploadErrorScreen } from '@selfxyz/euclid';
 
+import { SupportReference } from '../../../components/SupportReference';
 import { useSelfClient } from '../../../providers/SelfClientProvider';
 import { WEB_SAFE_AREA } from '../../../utils/insets';
 
@@ -35,11 +36,14 @@ export const AadhaarUploadErrorRoute: React.FC = () => {
   }, [analytics, haptic, navigate, state]);
 
   return (
-    <AadhaarUploadErrorScreen
-      insets={WEB_SAFE_AREA.insets}
-      onClose={handleClose}
-      onTryDifferentMethod={onTryDifferentMethod}
-      onUploadFromLibrary={onUploadFromLibrary}
-    />
+    <>
+      <AadhaarUploadErrorScreen
+        insets={WEB_SAFE_AREA.insets}
+        onClose={handleClose}
+        onTryDifferentMethod={onTryDifferentMethod}
+        onUploadFromLibrary={onUploadFromLibrary}
+      />
+      <SupportReference />
+    </>
   );
 };

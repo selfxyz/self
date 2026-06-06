@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { KycFailureScreen as EuclidKycFailureScreen } from '@selfxyz/euclid';
 
+import { SupportReference } from '../../components/SupportReference';
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
 
@@ -27,5 +28,10 @@ export const EmbedKycFailureScreen: React.FC = () => {
     navigate('/capture/kyc', { replace: true });
   }, [analytics, haptic, navigate]);
 
-  return <EuclidKycFailureScreen {...WEB_SAFE_AREA} onDismiss={handleClose} onTryAgain={handleRetry} />;
+  return (
+    <>
+      <EuclidKycFailureScreen {...WEB_SAFE_AREA} onDismiss={handleClose} onTryAgain={handleRetry} />
+      <SupportReference />
+    </>
+  );
 };
