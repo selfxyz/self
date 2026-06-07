@@ -150,7 +150,7 @@ See [KMP Revival Spec](./workstreams/kmp-revival/SPEC.md) for details.
    references (Lottie animations, background images) and safe-area inset
    props. Missing assets cause silent failures (blank animations, black
    backgrounds). See the **Euclid Screen Migration Checklist** in
-   `CLAUDE.md` for the full protocol.
+   `packages/webview-app/AGENTS.md` for the full protocol.
 
 ## Where To Work
 
