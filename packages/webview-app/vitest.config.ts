@@ -15,14 +15,5 @@ export default defineConfig({
     // RuleTester which assumes mocha/jest-style globals and is not
     // vitest-compatible.
     exclude: ['node_modules', 'dist', 'eslint-rules/**'],
-    // Flow tests mount the real App, which loads @selfxyz/common (ESM that
-    // imports the CommonJS `blakejs` via named exports). Inline these so Vite
-    // applies CJS↔ESM interop instead of Node's native ESM loader rejecting
-    // the named imports.
-    server: {
-      deps: {
-        inline: ['blakejs', '@zk-kit/eddsa-poseidon', '@selfxyz/common'],
-      },
-    },
   },
 });
