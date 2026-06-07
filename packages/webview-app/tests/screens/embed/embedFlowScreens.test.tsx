@@ -700,7 +700,7 @@ describe('tunnel flow screens', () => {
     expect(screen.getByRole('button', { name: /close receipt/i })).toBeTruthy();
   });
 
-  it('shows confirm button on receipt when opened from success context', () => {
+  it('returns to the originating result screen when the receipt is closed', () => {
     render(
       <MemoryRouter
         initialEntries={[
@@ -717,7 +717,8 @@ describe('tunnel flow screens', () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByRole('button', { name: /confirm receipt/i })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: /close receipt/i }));
+    expect(screen.getAllByTestId('location').at(-1)?.textContent).toBe('/disclose/result');
   });
 
   it('routes to error result when disclose setup throws before init starts', async () => {

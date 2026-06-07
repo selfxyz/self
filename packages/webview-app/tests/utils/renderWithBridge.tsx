@@ -3,18 +3,17 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type React from 'react';
-import { useLocation } from 'react-router-dom';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, useLocation } from 'react-router-dom';
 
-import { WebViewBridge } from '@selfxyz/webview-bridge';
 import type { BridgeDomain } from '@selfxyz/webview-bridge';
+import { WebViewBridge } from '@selfxyz/webview-bridge';
 import { MockNativeBridge } from '@selfxyz/webview-bridge/mock';
 
 import { App } from '../../src/App';
 import { BridgeProvider } from '../../src/providers/BridgeProvider';
 
-import { render } from '@testing-library/react';
 import type { RenderResult } from '@testing-library/react';
+import { render } from '@testing-library/react';
 
 type InitialEntry = string | { pathname: string; search?: string; state?: unknown };
 

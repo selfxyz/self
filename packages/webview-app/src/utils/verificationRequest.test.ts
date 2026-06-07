@@ -59,6 +59,7 @@ describe('verificationRequest utils', () => {
         displayLabels: ['Full Name', 'Date of Birth'],
         appName: 'Partner',
         appEndpoint: 'https://partner.example/request',
+        displayAppEndpoint: 'partner.example',
         timestamp: 123456789,
         requestType: 'documentOwnershipConfirmed',
         verificationId: 'verif-1',

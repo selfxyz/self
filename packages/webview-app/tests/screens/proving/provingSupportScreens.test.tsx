@@ -26,6 +26,16 @@ vi.mock('../../../src/providers/SelfClientProvider', () => ({
   }),
 }));
 
+vi.mock('../../../src/providers/VerificationRequestProvider', () => ({
+  useVerificationRequest: () => ({
+    request: { userId: 'user-1', scope: 'kyc', disclosures: [] },
+    displayLabels: [],
+    appName: undefined,
+    displayAppEndpoint: undefined,
+    timestamp: undefined,
+  }),
+}));
+
 vi.mock('@selfxyz/euclid', () => ({
   createSafeAreaProps: ({
     top,

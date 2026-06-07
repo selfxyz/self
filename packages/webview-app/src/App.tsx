@@ -93,204 +93,204 @@ export const AppRoutes: React.FC = () => (
     <VerificationRequestProvider>
       <SelfClientProvider>
         <BootDecision />
-            <Routes>
-              {ModeRoute({ mode: 'self-app', path: '/', element: <HomeScreen /> })}
+        <Routes>
+          {ModeRoute({ mode: 'self-app', path: '/', element: <HomeScreen /> })}
 
-              {ModeRoute({
-                mode: 'shared',
-                path: '/tour/:step',
-                element: <ModeDispatch selfApp={TourScreen} embed={EmbedTourScreen} />,
-              })}
-              {ModeRoute({ mode: 'shared', path: '/pick-country', element: <CountryPickerScreen /> })}
-              {ModeRoute({ mode: 'shared', path: '/pick-id-type', element: <IDSelectionScreen /> })}
-              {ModeRoute({ mode: 'shared', path: '/pick-provider', element: <ProviderLaunchScreen /> })}
-              {ModeRoute({ mode: 'shared', path: '/capture/provider-result', element: <ProviderResultScreen /> })}
-              {ModeRoute({ mode: 'shared', path: '/capture/confirm', element: <ConfirmIdentificationScreen /> })}
-              {ModeRoute({ mode: 'embed', path: '/capture/kyc', element: <EmbedKycWrapper /> })}
+          {ModeRoute({
+            mode: 'shared',
+            path: '/tour/:step',
+            element: <ModeDispatch selfApp={TourScreen} embed={EmbedTourScreen} />,
+          })}
+          {ModeRoute({ mode: 'shared', path: '/pick-country', element: <CountryPickerScreen /> })}
+          {ModeRoute({ mode: 'shared', path: '/pick-id-type', element: <IDSelectionScreen /> })}
+          {ModeRoute({ mode: 'shared', path: '/pick-provider', element: <ProviderLaunchScreen /> })}
+          {ModeRoute({ mode: 'shared', path: '/capture/provider-result', element: <ProviderResultScreen /> })}
+          {ModeRoute({ mode: 'shared', path: '/capture/confirm', element: <ConfirmIdentificationScreen /> })}
+          {ModeRoute({ mode: 'embed', path: '/capture/kyc', element: <EmbedKycWrapper /> })}
 
-              {ModeRoute({
-                mode: 'shared',
-                path: '/capture/passport/instructions',
-                element: <PassportInstructionsRoute />,
-              })}
-              {ModeRoute({
-                mode: 'shared',
-                path: '/capture/passport/code-scan-instructions',
-                element: <PassportCodeScanInstructionsRoute />,
-              })}
-              {ModeRoute({
-                mode: 'shared',
-                path: '/capture/passport/code-scan-viewfinder',
-                element: <PassportCodeScanViewfinderRoute />,
-              })}
-              {ModeRoute({
-                mode: 'shared',
-                path: '/capture/passport/nfc',
-                element: <PassportNfcRoute />,
-              })}
-              {ModeRoute({
-                mode: 'shared',
-                path: '/capture/passport/nfc-success',
-                element: <PassportNfcSuccessRoute />,
-              })}
-              {ModeRoute({
-                mode: 'shared',
-                path: '/capture/passport/nfc-error',
-                element: <PassportNfcErrorRoute />,
-              })}
+          {ModeRoute({
+            mode: 'shared',
+            path: '/capture/passport/instructions',
+            element: <PassportInstructionsRoute />,
+          })}
+          {ModeRoute({
+            mode: 'shared',
+            path: '/capture/passport/code-scan-instructions',
+            element: <PassportCodeScanInstructionsRoute />,
+          })}
+          {ModeRoute({
+            mode: 'shared',
+            path: '/capture/passport/code-scan-viewfinder',
+            element: <PassportCodeScanViewfinderRoute />,
+          })}
+          {ModeRoute({
+            mode: 'shared',
+            path: '/capture/passport/nfc',
+            element: <PassportNfcRoute />,
+          })}
+          {ModeRoute({
+            mode: 'shared',
+            path: '/capture/passport/nfc-success',
+            element: <PassportNfcSuccessRoute />,
+          })}
+          {ModeRoute({
+            mode: 'shared',
+            path: '/capture/passport/nfc-error',
+            element: <PassportNfcErrorRoute />,
+          })}
 
-              {ModeRoute({
-                mode: 'shared',
-                path: '/capture/eu-id/instructions',
-                element: <EuIdInstructionsRoute />,
-              })}
-              {ModeRoute({
-                mode: 'shared',
-                path: '/capture/eu-id/back-instructions',
-                element: <EuIdBackInstructionsRoute />,
-              })}
-              {ModeRoute({
-                mode: 'shared',
-                path: '/capture/eu-id/can-instructions',
-                element: <EuIdCanInstructionsRoute />,
-              })}
-              {ModeRoute({
-                mode: 'shared',
-                path: '/capture/eu-id/code-scan-viewfinder',
-                element: <EuIdViewfinderRoute />,
-              })}
-              {ModeRoute({
-                mode: 'shared',
-                path: '/capture/eu-id/nfc-instructions',
-                element: <EuIdNfcInstructionsRoute />,
-              })}
-              {ModeRoute({
-                mode: 'shared',
-                path: '/capture/eu-id/nfc-success',
-                element: <EuIdNfcSuccessRoute />,
-              })}
-              {ModeRoute({
-                mode: 'shared',
-                path: '/capture/eu-id/nfc-error',
-                element: <EuIdNfcErrorRoute />,
-              })}
+          {ModeRoute({
+            mode: 'shared',
+            path: '/capture/eu-id/instructions',
+            element: <EuIdInstructionsRoute />,
+          })}
+          {ModeRoute({
+            mode: 'shared',
+            path: '/capture/eu-id/back-instructions',
+            element: <EuIdBackInstructionsRoute />,
+          })}
+          {ModeRoute({
+            mode: 'shared',
+            path: '/capture/eu-id/can-instructions',
+            element: <EuIdCanInstructionsRoute />,
+          })}
+          {ModeRoute({
+            mode: 'shared',
+            path: '/capture/eu-id/code-scan-viewfinder',
+            element: <EuIdViewfinderRoute />,
+          })}
+          {ModeRoute({
+            mode: 'shared',
+            path: '/capture/eu-id/nfc-instructions',
+            element: <EuIdNfcInstructionsRoute />,
+          })}
+          {ModeRoute({
+            mode: 'shared',
+            path: '/capture/eu-id/nfc-success',
+            element: <EuIdNfcSuccessRoute />,
+          })}
+          {ModeRoute({
+            mode: 'shared',
+            path: '/capture/eu-id/nfc-error',
+            element: <EuIdNfcErrorRoute />,
+          })}
 
-              {ModeRoute({
-                mode: 'shared',
-                path: '/capture/aadhaar/instructions',
-                element: <AadhaarAppInstructionsRoute />,
-              })}
-              {ModeRoute({
-                mode: 'shared',
-                path: '/capture/aadhaar/upload-success',
-                element: <AadhaarUploadSuccessRoute />,
-              })}
-              {ModeRoute({
-                mode: 'shared',
-                path: '/capture/aadhaar/upload-error',
-                element: <AadhaarUploadErrorRoute />,
-              })}
+          {ModeRoute({
+            mode: 'shared',
+            path: '/capture/aadhaar/instructions',
+            element: <AadhaarAppInstructionsRoute />,
+          })}
+          {ModeRoute({
+            mode: 'shared',
+            path: '/capture/aadhaar/upload-success',
+            element: <AadhaarUploadSuccessRoute />,
+          })}
+          {ModeRoute({
+            mode: 'shared',
+            path: '/capture/aadhaar/upload-error',
+            element: <AadhaarUploadErrorRoute />,
+          })}
 
-              {ModeRoute({ mode: 'shared', path: '/capture/success', element: <ScanSuccessScreen /> })}
-              {ModeRoute({ mode: 'shared', path: '/register/generating', element: <RegisteringScreen /> })}
-              {ModeRoute({ mode: 'self-app', path: '/register/success', element: <ProofSuccessBackupScreen /> })}
-              {ModeRoute({ mode: 'shared', path: '/register/failure', element: <RegistrationFailureScreen /> })}
+          {ModeRoute({ mode: 'shared', path: '/capture/success', element: <ScanSuccessScreen /> })}
+          {ModeRoute({ mode: 'shared', path: '/register/generating', element: <RegisteringScreen /> })}
+          {ModeRoute({ mode: 'self-app', path: '/register/success', element: <ProofSuccessBackupScreen /> })}
+          {ModeRoute({ mode: 'shared', path: '/register/failure', element: <RegistrationFailureScreen /> })}
 
-              {ModeRoute({ mode: 'self-app', path: '/backup-phrase', element: <OnboardingRecoveryPhraseScreen /> })}
-              {ModeRoute({ mode: 'self-app', path: '/notify', element: <PushNotificationPromptScreen /> })}
+          {ModeRoute({ mode: 'self-app', path: '/backup-phrase', element: <OnboardingRecoveryPhraseScreen /> })}
+          {ModeRoute({ mode: 'self-app', path: '/notify', element: <PushNotificationPromptScreen /> })}
 
-              {ModeRoute({
-                mode: 'shared',
-                path: '/disclose/request',
-                element: <ModeDispatch selfApp={ProvingScreen} embed={EmbedDiscloseScreen} />,
-              })}
-              {ModeRoute({ mode: 'shared', path: '/disclose/qr-scan', element: <QRViewfinderScreen /> })}
-              {ModeRoute({
-                mode: 'shared',
-                path: '/disclose/generating',
-                element: <ModeDispatch selfApp={ProofGenerationRouteScreen} embed={EmbedProvingScreen} />,
-              })}
-              {ModeRoute({
-                mode: 'shared',
-                path: '/disclose/result',
-                element: <ModeDispatch selfApp={DiscloseResultScreen} embed={EmbedResultScreen} />,
-              })}
-              {ModeRoute({
-                mode: 'shared',
-                path: '/disclose/kyc-failure',
-                element: <ModeDispatch selfApp={KycFailureScreen} embed={EmbedKycFailureScreen} />,
-              })}
-              {ModeRoute({
-                mode: 'shared',
-                path: '/disclose/kyc-success',
-                element: <ModeDispatch selfApp={KycSuccessScreen} embed={EmbedKycSuccessScreen} />,
-              })}
-              {ModeRoute({
-                mode: 'shared',
-                path: '/disclose/kyc-pending',
-                element: import.meta.env.DEV ? (
-                  <ModeDispatch selfApp={KycPendingScreen} embed={EmbedKycPendingScreen} />
-                ) : (
-                  <KycPendingScreen />
-                ),
-              })}
+          {ModeRoute({
+            mode: 'shared',
+            path: '/disclose/request',
+            element: <ModeDispatch selfApp={ProvingScreen} embed={EmbedDiscloseScreen} />,
+          })}
+          {ModeRoute({ mode: 'shared', path: '/disclose/qr-scan', element: <QRViewfinderScreen /> })}
+          {ModeRoute({
+            mode: 'shared',
+            path: '/disclose/generating',
+            element: <ModeDispatch selfApp={ProofGenerationRouteScreen} embed={EmbedProvingScreen} />,
+          })}
+          {ModeRoute({
+            mode: 'shared',
+            path: '/disclose/result',
+            element: <ModeDispatch selfApp={DiscloseResultScreen} embed={EmbedResultScreen} />,
+          })}
+          {ModeRoute({
+            mode: 'shared',
+            path: '/disclose/kyc-failure',
+            element: <ModeDispatch selfApp={KycFailureScreen} embed={EmbedKycFailureScreen} />,
+          })}
+          {ModeRoute({
+            mode: 'shared',
+            path: '/disclose/kyc-success',
+            element: <ModeDispatch selfApp={KycSuccessScreen} embed={EmbedKycSuccessScreen} />,
+          })}
+          {ModeRoute({
+            mode: 'shared',
+            path: '/disclose/kyc-pending',
+            element: import.meta.env.DEV ? (
+              <ModeDispatch selfApp={KycPendingScreen} embed={EmbedKycPendingScreen} />
+            ) : (
+              <KycPendingScreen />
+            ),
+          })}
 
-              {ModeRoute({ mode: 'self-app', path: '/history', element: <ProofHistoryScreen /> })}
-              {ModeRoute({
-                mode: 'shared',
-                path: '/receipts/:id',
-                element: <ModeDispatch selfApp={ProofRequestReceiptScreen} embed={EmbedProofReceiptScreen} />,
-              })}
+          {ModeRoute({ mode: 'self-app', path: '/history', element: <ProofHistoryScreen /> })}
+          {ModeRoute({
+            mode: 'shared',
+            path: '/receipts/:id',
+            element: <ModeDispatch selfApp={ProofRequestReceiptScreen} embed={EmbedProofReceiptScreen} />,
+          })}
 
-              {ModeRoute({ mode: 'self-app', path: '/account/verified', element: <VerificationResultScreen /> })}
-              {ModeRoute({ mode: 'self-app', path: '/points', element: <PointsScreen /> })}
-              {ModeRoute({ mode: 'self-app', path: '/points/invite', element: <InviteScreen /> })}
-              {ModeRoute({ mode: 'self-app', path: '/docs', element: <ManageDocumentsScreen /> })}
-              {ModeRoute({ mode: 'self-app', path: '/docs/:id', element: <IDDataScreen /> })}
+          {ModeRoute({ mode: 'self-app', path: '/account/verified', element: <VerificationResultScreen /> })}
+          {ModeRoute({ mode: 'self-app', path: '/points', element: <PointsScreen /> })}
+          {ModeRoute({ mode: 'self-app', path: '/points/invite', element: <InviteScreen /> })}
+          {ModeRoute({ mode: 'self-app', path: '/docs', element: <ManageDocumentsScreen /> })}
+          {ModeRoute({ mode: 'self-app', path: '/docs/:id', element: <IDDataScreen /> })}
 
-              {ModeRoute({ mode: 'self-app', path: '/settings', element: <SettingsScreen /> })}
-              {ModeRoute({ mode: 'self-app', path: '/settings/security', element: <SecurityScreen /> })}
-              {ModeRoute({
-                mode: 'self-app',
-                path: '/settings/notifications',
-                element: <NotificationPreferencesScreen />,
-              })}
-              {ModeRoute({ mode: 'self-app', path: '/settings/dev-mode', element: <DevModeScreen /> })}
-              {ModeRoute({ mode: 'self-app', path: '/settings/backup', element: <BackupMethodPickerScreen /> })}
-              {ModeRoute({
-                mode: 'self-app',
-                path: '/settings/recovery-phrase',
-                element: <RecoveryPhraseScreen />,
-              })}
+          {ModeRoute({ mode: 'self-app', path: '/settings', element: <SettingsScreen /> })}
+          {ModeRoute({ mode: 'self-app', path: '/settings/security', element: <SecurityScreen /> })}
+          {ModeRoute({
+            mode: 'self-app',
+            path: '/settings/notifications',
+            element: <NotificationPreferencesScreen />,
+          })}
+          {ModeRoute({ mode: 'self-app', path: '/settings/dev-mode', element: <DevModeScreen /> })}
+          {ModeRoute({ mode: 'self-app', path: '/settings/backup', element: <BackupMethodPickerScreen /> })}
+          {ModeRoute({
+            mode: 'self-app',
+            path: '/settings/recovery-phrase',
+            element: <RecoveryPhraseScreen />,
+          })}
 
-              {ModeRoute({ mode: 'self-app', path: '/recover', element: <LaunchRecoveryScreen /> })}
-              {ModeRoute({ mode: 'self-app', path: '/recover/phrase-input', element: <SecretPhraseInputScreen /> })}
-              {ModeRoute({ mode: 'self-app', path: '/recover/failure', element: <RecoveryFailureScreen /> })}
-              {ModeRoute({ mode: 'self-app', path: '/recover/success', element: <RecoverySuccessScreen /> })}
-              {ModeRoute({ mode: 'embed', path: '/recover/required', element: <EmbedRecoveryRequiredScreen /> })}
+          {ModeRoute({ mode: 'self-app', path: '/recover', element: <LaunchRecoveryScreen /> })}
+          {ModeRoute({ mode: 'self-app', path: '/recover/phrase-input', element: <SecretPhraseInputScreen /> })}
+          {ModeRoute({ mode: 'self-app', path: '/recover/failure', element: <RecoveryFailureScreen /> })}
+          {ModeRoute({ mode: 'self-app', path: '/recover/success', element: <RecoverySuccessScreen /> })}
+          {ModeRoute({ mode: 'embed', path: '/recover/required', element: <EmbedRecoveryRequiredScreen /> })}
 
-              {ModeRoute({
-                mode: 'self-app',
-                path: '/onboarding/backup',
-                element: <SocialSignOnMethodPickerScreen />,
-              })}
-              {ModeRoute({
-                mode: 'self-app',
-                path: '/onboarding/signin',
-                element: <SocialSignOnPickerScreen />,
-              })}
-              {ModeRoute({
-                mode: 'self-app',
-                path: '/onboarding/conflict',
-                element: <ConflictDetectedScreen />,
-              })}
+          {ModeRoute({
+            mode: 'self-app',
+            path: '/onboarding/backup',
+            element: <SocialSignOnMethodPickerScreen />,
+          })}
+          {ModeRoute({
+            mode: 'self-app',
+            path: '/onboarding/signin',
+            element: <SocialSignOnPickerScreen />,
+          })}
+          {ModeRoute({
+            mode: 'self-app',
+            path: '/onboarding/conflict',
+            element: <ConflictDetectedScreen />,
+          })}
 
-              {ModeRoute({ mode: 'shared', path: '/coming-soon', element: <ComingSoonScreen /> })}
-              {ModeRoute({ mode: 'embed', path: '/embed/error', element: <EmbedErrorScreen /> })}
-              {import.meta.env.DEV && <Route path="/dev/keychain" element={<KeychainDebugScreen />} />}
+          {ModeRoute({ mode: 'shared', path: '/coming-soon', element: <ComingSoonScreen /> })}
+          {ModeRoute({ mode: 'embed', path: '/embed/error', element: <EmbedErrorScreen /> })}
+          {import.meta.env.DEV && <Route path="/dev/keychain" element={<KeychainDebugScreen />} />}
 
-              <Route path="*" element={<InitialRouteRedirect />} />
-            </Routes>
+          <Route path="*" element={<InitialRouteRedirect />} />
+        </Routes>
       </SelfClientProvider>
     </VerificationRequestProvider>
   </OperatingModeProvider>
