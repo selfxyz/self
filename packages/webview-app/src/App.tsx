@@ -88,13 +88,11 @@ import { OnboardingRecoveryPhraseScreen, RecoveryPhraseScreen } from './screens/
 import { RecoverySuccessScreen } from './screens/recovery/RecoverySuccessScreen';
 import { SecretPhraseInputScreen } from './screens/recovery/SecretPhraseInputScreen';
 
-export const App: React.FC = () => (
-  <PasswordGate>
-    <BrowserRouter>
-      <OperatingModeProvider>
-        <VerificationRequestProvider>
-          <SelfClientProvider>
-            <BootDecision />
+export const AppRoutes: React.FC = () => (
+  <OperatingModeProvider>
+    <VerificationRequestProvider>
+      <SelfClientProvider>
+        <BootDecision />
             <Routes>
               {ModeRoute({ mode: 'self-app', path: '/', element: <HomeScreen /> })}
 
@@ -293,9 +291,19 @@ export const App: React.FC = () => (
 
               <Route path="*" element={<InitialRouteRedirect />} />
             </Routes>
-          </SelfClientProvider>
-        </VerificationRequestProvider>
-      </OperatingModeProvider>
-    </BrowserRouter>
-  </PasswordGate>
+      </SelfClientProvider>
+    </VerificationRequestProvider>
+  </OperatingModeProvider>
+);
+
+const defaultRouter = (children: React.ReactNode): React.ReactNode => <BrowserRouter>{children}</BrowserRouter>;
+
+export interface AppProps {
+  // Router seam: production wraps the route table in BrowserRouter; tests pass a
+  // MemoryRouter wrapper to mount the real route table at a chosen entry.
+  renderRouter?: (children: React.ReactNode) => React.ReactNode;
+}
+
+export const App: React.FC<AppProps> = ({ renderRouter = defaultRouter }) => (
+  <PasswordGate>{renderRouter(<AppRoutes />)}</PasswordGate>
 );
