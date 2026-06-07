@@ -50,9 +50,9 @@
 <header class="topbar">
   <h1>WIA-18 — WebView flow integration tests (mock bridge); Maestro device-flow scope</h1>
   <span class="pill active">Ready</span>
-  <span class="pill dep">Validates WIA-12 / 13 / 14</span>
-  <span class="pill scope">Scope: webview-app tests + 1 provider seam</span>
-  <span class="pill">Target: &lt;500 LOC</span>
+  <span class="pill dep">Validates WIA-12 / 13 / 14 / 16</span>
+  <span class="pill scope">Scope: webview-app tests + router/provider seams</span>
+  <span class="pill">Target: &lt;900 LOC</span>
   <span class="pill">2026-06-06</span>
   <span class="spacer"></span>
   <div><a href="../SPEC.html">↑ WebView-in-App</a></div>
@@ -79,7 +79,8 @@
   <h2>Context</h2>
   <p>
     <strong>You are adding flow-level integration tests to <code>webview-app</code> that lock in the
-    WIA-12/13/14 observability work and the onboarding/failure routing, driven by an injected mock bridge.</strong>
+    WIA-12/13/14 observability work, WIA-16 mode routing, and the onboarding/failure routing, driven by an
+    injected mock bridge.</strong>
     Today's <code>webview-app</code> tests (<code>vitest</code> + <code>@testing-library/react</code>, jsdom)
     render screens in isolation and mock <code>useSelfClient</code> per file. What is <em>uncovered</em> is the
     router-driven sequence across screens and the bridge round-trips that connect them. These tests close that
@@ -93,9 +94,15 @@
     resolve or reject <code>camera.scanMRZ</code>, <code>nfc.scanPassport</code>, <code>secureStorage.*</code>,
     <code>lifecycle.getConfig</code>, etc. with fixed payloads.
   </p>
+  <p>
+    The tests must mount the real <code>App</code> route table. Do not recreate selected <code>Route</code>
+    entries inside the test helper; that would create a second routing contract and miss future route drift.
+    Add a narrow router injection seam to <code>App</code> so tests can use <code>MemoryRouter</code> while
+    production keeps <code>BrowserRouter</code>.
+  </p>
   <div class="callout note">
     <strong>This does not block merging <code>feat/webview-in-app</code>.</strong> It is an additive,
-    test-only PR (plus one backwards-compatible provider prop). The umbrella branch ships without it; this lands
+    test-only PR (plus narrow backwards-compatible test seams). The umbrella branch ships without it; this lands
     on the branch (or on <code>dev</code> after) to guard the observability work against regression.
   </div>
 </section>
@@ -114,16 +121,24 @@
       <strong>Add a test seam to <code>BridgeProvider</code>.</strong> It currently constructs its own
       <code>WebViewBridge</code> internally with no injection point. Add an optional
       <code>bridge?: WebViewBridge</code> prop — when provided, use it; otherwise build the default (current
-      behavior). This is the <em>only</em> production change and is backwards-compatible. Do <strong>not</strong>
-      export <code>BridgeContext</code> for tests; the prop is the seam.
+      behavior). Do <strong>not</strong> export <code>BridgeContext</code> for tests; the prop is the seam.
+      Keep the default bridge memoized exactly once for normal callers, then select
+      <code>injectedBridge ?? defaultBridge</code>; do not rebuild the default bridge when a test prop changes.
+    </li>
+    <li>
+      <strong>Add a router seam to <code>App</code>.</strong> Today <code>App</code> owns
+      <code>BrowserRouter</code>, which blocks <code>MemoryRouter initialEntries</code>. Extract the provider +
+      <code>Routes</code> body into an internal component (for example <code>AppRoutes</code>) and let
+      <code>App</code> accept an optional <code>router?: React.ReactNode</code> or equivalent wrapper prop.
+      Production still renders <code>BrowserRouter</code>; tests render the same <code>AppRoutes</code> inside
+      <code>MemoryRouter</code>. This is the only additional production seam allowed by WIA-18.
     </li>
     <li>
       <strong>One shared render helper.</strong> <code>tests/utils/renderWithBridge.tsx</code> mounts the full
-      provider stack (<code>BridgeProvider</code> &rarr; <code>OperatingModeProvider</code> &rarr;
-      <code>VerificationRequestProvider</code> &rarr; <code>SelfClientProvider</code>) inside a
+      app (<code>BridgeProvider bridge={...}</code> &rarr; <code>App</code> using the test router seam) inside a
       <code>MemoryRouter</code> at a given <code>initialEntries</code>, with a <code>MockNativeBridge</code> whose
-      handlers the test supplies. Returns the bridge + RTL utilities. Every flow test builds on it; no
-      per-file provider boilerplate.
+      handlers the test supplies. The helper must reuse the real provider stack and route table from
+      <code>App.tsx</code>; no per-file route/provider boilerplate.
     </li>
     <li>
       <strong>Drive flows through the router, assert on rendered screens.</strong> Start at the route under
@@ -136,6 +151,17 @@
       param on the <code>MemoryRouter</code> entry, or a mock <code>lifecycle.getConfig</code> response carrying
       <code>mode</code> + <code>referenceId</code>. No new seam.
     </li>
+    <li>
+      <strong>Register baseline bridge handlers in the helper.</strong> <code>SelfClientProvider</code> awaits
+      <code>lifecycle.getConfig</code> and <code>secureStorage.get/set/remove</code> during normal app
+      render/flows; document persistence in this app goes through
+      <code>createKeychainDocumentsAdapter</code>, so it also uses <code>secureStorage</code> keys such as
+      <code>self_document_catalog</code> and <code>self_doc_*</code>. The helper provides deterministic defaults
+      for awaited requests and lets individual tests override flow-specific handlers. Fire-and-forget bridge calls
+      (<code>analytics.*</code>, <code>haptic.trigger</code>, <code>lifecycle.ready</code>,
+      <code>lifecycle.dismiss</code>) can be asserted through <code>mock.messages</code> if needed but do not need
+      handlers just to keep the test running.
+    </li>
   </ol>
 </section>
 
@@ -145,44 +171,54 @@
     <thead><tr><th>Flow / assertion</th><th>Guards</th><th>Drive</th></tr></thead>
     <tbody>
       <tr>
-        <td><strong>Passport happy path.</strong> <code>/capture/passport</code> instructions &rarr; MRZ scan
+        <td><strong>Passport happy path.</strong> <code>/capture/passport/instructions</code> &rarr; MRZ scan
           &rarr; NFC &rarr; success.</td>
         <td>Onboarding routing + bridge round-trips (WIA-02/03/06/07)</td>
-        <td>Mock <code>camera/scanMRZ</code> &rarr; fixed <code>MRZInfo</code>; mock <code>nfc/scanPassport</code>
-          &rarr; fixed chip payload. Assert <code>PassportNfcSuccessRoute</code> renders.</td>
+        <td>Click through the instructions screens to
+          <code>/capture/passport/code-scan-viewfinder</code>; mock <code>camera/scanMRZ</code> &rarr; fixed
+          <code>MRZInfo</code>; mock <code>nfc/scanPassport</code> &rarr; fixed chip payload; mock document
+          storage. Assert the real route reaches <code>/capture/passport/nfc-success</code> and
+          <code>PassportNfcSuccessRoute</code> renders.</td>
       </tr>
       <tr>
         <td><strong>Passport NFC failure.</strong> Same flow, <code>nfc/scanPassport</code> rejects.</td>
         <td>Failure routing + WIA-14 footer</td>
-        <td>Mock handler rejects; assert <code>PassportNfcErrorRoute</code> renders and
-          <code>SupportReference</code> shows the seeded <code>referenceId</code>.</td>
+        <td>Start at <code>/capture/passport/nfc?referenceId=...</code> with route state carrying the MRZ if
+          clicking through the MRZ screen makes the test noisy; mock handler rejects; assert
+          <code>/capture/passport/nfc-error</code> renders and <code>SupportReference</code> shows the seeded
+          <code>referenceId</code>.</td>
       </tr>
       <tr>
         <td><strong>EU-ID NFC failure</strong> &rarr; <code>EuIdNfcErrorRoute</code> + footer.</td>
         <td>EU-ID failure routing + WIA-14</td>
-        <td>Mock <code>nfc/scanPassport</code> rejects on the eu-id entry path.</td>
+        <td>Start at <code>/capture/eu-id/nfc-instructions?referenceId=...</code> with route state carrying
+          CAN/MRZ data as needed; click the continue CTA; mock <code>nfc/scanPassport</code> rejects.</td>
       </tr>
       <tr>
         <td><strong>Aadhaar upload error</strong> &rarr; <code>UploadErrorRoute</code> + footer.</td>
         <td>Aadhaar placeholder-reject path + WIA-14</td>
-        <td>Mock <code>camera/aadhaarUploadFromLibrary</code> rejects with <code>METHOD_NOT_FOUND</code>
-          (matches the shipped placeholder).</td>
+        <td>Start at <code>/capture/aadhaar/instructions?referenceId=...</code>; click upload; either omit the
+          <code>camera/aadhaarUploadFromLibrary</code> handler and assert the bridge's <code>NO_HANDLER</code>
+          path, or register an explicit <code>METHOD_NOT_FOUND</code> error if the UI text needs a stable
+          message. Do not add a real native Aadhaar method.</td>
       </tr>
       <tr>
         <td><strong>WIA-14 footer matrix.</strong> Footer present on every failure route in the
           <a href="./WIA-14-footer.html">WIA-14 inventory</a>; absent on success routes; absent when no id.</td>
         <td>WIA-14 reference footer</td>
-        <td>Render each route via the helper; toggle seeded <code>referenceId</code> present/absent.</td>
+        <td>Render each route through the real <code>App</code> helper; toggle seeded <code>referenceId</code>
+          present/absent. Use route state only where the current screen requires it to avoid redirecting away.</td>
       </tr>
       <tr>
         <td><strong>WIA-13 masking presence.</strong> <code>sentry-mask</code> (the web <code>PrivacyMask</code>)
           wraps PII on <code>IDDataScreen</code>, <code>RecoveryPhraseScreen</code>,
           <code>SecretPhraseInputScreen</code>.</td>
         <td>WIA-13 Session Replay masking</td>
-        <td>Render each; assert the PII element is inside a node carrying the <code>sentry-mask</code> class.</td>
+        <td>Render each through the real route; provide storage/document fixtures required by the screen; assert
+          the PII element is inside a node carrying the <code>sentry-mask</code> class.</td>
       </tr>
       <tr>
-        <td><strong>WIA-14 mode routing.</strong> Self-app vs embed dispatch (<code>ModeRoute</code> /
+        <td><strong>WIA-16 mode routing.</strong> Self-app vs embed dispatch (<code>ModeRoute</code> /
           <code>ModeDispatch</code>) resolves the correct screen for a shared path.</td>
         <td>Operating-mode routing (WIA-16)</td>
         <td>Seed <code>mode</code> via mock <code>lifecycle/getConfig</code>; assert the mode-correct screen at a
@@ -202,11 +238,13 @@
   <table>
     <thead><tr><th>File</th><th>Change</th></tr></thead>
     <tbody>
-      <tr><td><code>packages/webview-app/src/providers/BridgeProvider.tsx</code></td><td><strong>Modify.</strong> Add optional <code>bridge?: WebViewBridge</code> prop; use it when provided, else construct the default. Only production change.</td></tr>
-      <tr><td><code>packages/webview-app/tests/utils/renderWithBridge.tsx</code></td><td><strong>New.</strong> Render helper: provider stack + <code>MemoryRouter</code> + <code>MockNativeBridge</code> with caller-supplied handlers. Returns bridge + RTL utils.</td></tr>
+      <tr><td><code>packages/webview-app/src/providers/BridgeProvider.tsx</code></td><td><strong>Modify.</strong> Add optional <code>bridge?: WebViewBridge</code> prop; use it when provided, else construct the default. Backwards-compatible test seam.</td></tr>
+      <tr><td><code>packages/webview-app/src/App.tsx</code></td><td><strong>Modify.</strong> Extract/reuse the real provider + route table behind a router injection seam so tests can supply <code>MemoryRouter</code> without duplicating routes. Production <code>BrowserRouter</code> behavior remains unchanged.</td></tr>
+      <tr><td><code>packages/webview-app/tests/utils/renderWithBridge.tsx</code></td><td><strong>New.</strong> Render helper: <code>BridgeProvider</code> + real <code>App</code> + <code>MemoryRouter</code> + <code>MockNativeBridge</code> with default boot/storage handlers and caller-supplied overrides. Returns native mock, bridge, storage map, and RTL utilities.</td></tr>
+      <tr><td><code>packages/webview-app/tests/fixtures/bridge.ts</code> or inline helpers in <code>renderWithBridge.tsx</code></td><td><strong>Optional.</strong> Small fixture builders for MRZ, chip payload, in-memory secure-storage map, document catalog JSON, and host config if they would otherwise be duplicated.</td></tr>
       <tr><td><code>packages/webview-app/tests/flows/onboarding.passport.test.tsx</code></td><td><strong>New.</strong> Passport happy path + NFC failure + footer.</td></tr>
       <tr><td><code>packages/webview-app/tests/flows/onboarding.euid-aadhaar.test.tsx</code></td><td><strong>New.</strong> EU-ID NFC failure + Aadhaar upload-error + footers.</td></tr>
-      <tr><td><code>packages/webview-app/tests/flows/observability.test.tsx</code></td><td><strong>New.</strong> WIA-14 footer matrix + WIA-13 mask presence + WIA-14 mode routing.</td></tr>
+      <tr><td><code>packages/webview-app/tests/flows/observability.test.tsx</code></td><td><strong>New.</strong> WIA-14 footer matrix + WIA-13 mask presence + WIA-16 mode routing.</td></tr>
     </tbody>
   </table>
 </section>
@@ -214,19 +252,32 @@
 <section id="implementation">
   <h2>Implementation</h2>
   <ol>
-    <li><strong>Seam.</strong> <code>BridgeProvider</code> gains <code>bridge?: WebViewBridge</code>;
-      <code>const bridge = useMemo(() =&gt; props.bridge ?? new WebViewBridge({...}), [props.bridge])</code>.
-      Existing callers pass nothing &rarr; unchanged.</li>
-    <li><strong>Helper.</strong> In <code>renderWithBridge</code>, construct
-      <code>new MockNativeBridge()</code>, register the test's handlers
-      (<code>mock.on('camera','scanMRZ', () =&gt; mrzFixture)</code> — match the real
-      <code>MockNativeBridge</code> registration API), build a <code>WebViewBridge</code> over that transport,
-      and pass it to <code>BridgeProvider bridge=&#123;...&#125;</code>. Wrap in <code>MemoryRouter
-      initialEntries=&#123;[path]&#125;</code> and the remaining providers, mirroring <code>App.tsx</code>'s
-      tree order.</li>
-    <li><strong>Flow tests.</strong> Start at the capture entry route, <code>fireEvent.click</code> the scan
-      CTA, <code>await waitFor</code> the success/error screen, assert by role/text. Use fixtures for MRZ + chip
-      payloads; keep them in the test file or a small <code>tests/fixtures/</code> module if shared.</li>
+    <li><strong>Bridge seam.</strong> <code>BridgeProvider</code> gains <code>bridge?: WebViewBridge</code>.
+      Build <code>defaultBridge</code> with the current <code>new WebViewBridge({...})</code> logic in a
+      zero-dependency <code>useMemo</code>, then provide <code>bridge ?? defaultBridge</code>. Existing callers
+      pass nothing &rarr; unchanged.</li>
+    <li><strong>Router seam.</strong> In <code>App.tsx</code>, extract the existing
+      <code>&lt;OperatingModeProvider&gt;...&lt;Routes&gt;...&lt;/Routes&gt;</code> subtree behind an exported
+      internal component or a wrapper prop. Tests must render that real subtree inside
+      <code>&lt;MemoryRouter initialEntries={...}&gt;</code>; they must not copy the <code>ModeRoute</code>
+      list into test files.</li>
+    <li><strong>Mock bridge wiring.</strong> In <code>renderWithBridge</code>, construct
+      <code>new MockNativeBridge()</code>, register default handlers with the real API
+      (<code>mock.handle(...)</code> / <code>mock.handleWith(...)</code> / <code>mock.handleWithError(...)</code>),
+      build <code>new WebViewBridge({ transport: mock })</code>, then call <code>mock.connect(bridge)</code>
+      before rendering <code>BridgeProvider bridge={bridge}</code>.</li>
+    <li><strong>Default handlers.</strong> Provide deterministic helper defaults for awaited requests:
+      <code>lifecycle.getConfig</code> (default <code>{ mode: 'self-app' }</code> plus caller overrides),
+      <code>lifecycle.setResult</code> if a tested close/result path awaits it, and
+      <code>secureStorage.get</code>/<code>secureStorage.set</code>/<code>secureStorage.remove</code>. Model secure
+      storage with a per-test <code>Map&lt;string, string&gt;</code>; this covers document catalog and document body
+      persistence because <code>createKeychainDocumentsAdapter</code> stores them under
+      <code>self_document_catalog</code> and <code>self_doc_*</code>. Let tests override any default by
+      registering their handler after defaults.</li>
+    <li><strong>Flow tests.</strong> Start at the real capture route, click through where that is the behavior
+      under test, and <code>await waitFor</code> the success/error screen. For flows whose previous screen is
+      already covered (for example NFC failure), it is acceptable to start at the NFC route with realistic
+      <code>location.state</code> so the assertion stays focused on the bridge failure and route outcome.</li>
     <li><strong>Footer + mask assertions.</strong> Reuse the seeding paths from
       <a href="./WIA-14-footer.html">WIA-14</a> and the <code>PrivacyMask</code> class contract from
       <a href="./WIA-13-webview-session-replay.html">WIA-13</a>. Do not duplicate the unit-level coverage those
@@ -238,12 +289,14 @@
 <section id="maestro">
   <h2>Deferred: Maestro device-flow expansion (scope only — do NOT implement now)</h2>
   <p>
-    The on-device end-to-end is the Maestro flow at
-    <code>app/tests/e2e/webview-host-rn-sdk.android.flow.yaml</code>, invoked by
-    <code>.github/workflows/mobile-e2e.yml</code>. It currently launches the dev-menu WebView host and asserts
-    the bundle loads. <strong>Expanding it is deferred until after WIA-11 (cutover)</strong> — until then the
-    WebView path is dev-menu-gated and the real chip/camera reads need physical hardware the CI runners don't
-    have. This section captures the target so the work is scoped, not lost.
+    The on-device WebView-host Maestro flow exists at
+    <code>app/tests/e2e/webview-host-rn-sdk.android.flow.yaml</code>, but
+    <code>.github/workflows/mobile-e2e.yml</code> currently runs only the baseline
+    <code>launch.android.flow.yaml</code> and <code>launch.ios.flow.yaml</code> flows. The WebView-host flow is
+    not wired into CI today. <strong>Wiring or expanding it is deferred until after WIA-11 (cutover)</strong> —
+    until then the WebView path is dev-menu-gated, <code>mobile-e2e.yml</code> does not trigger for
+    <code>packages/webview-app/**</code>-only changes, and the real chip/camera reads need physical hardware the
+    CI runners don't have. This section captures the target so the work is scoped, not lost.
   </p>
   <p><strong>Post-WIA-11 expansion targets</strong> (each a row to add to the Maestro flow, against a real or
     instrumented device):</p>
@@ -253,8 +306,8 @@
     <li>EU-ID: same shape through the ID-card route.</li>
     <li>Aadhaar: reach <code>UploadErrorRoute</code> via the placeholder reject (until a native handler ships).</li>
     <li>Reference footer: on a forced failure, assert the <code>Reference:</code> line renders (text match).</li>
-    <li>Wire any new flow file into <code>mobile-e2e.yml</code> alongside the existing
-      <code>webview-host-rn-sdk</code> job; respect the Namespace runner concurrency limits.</li>
+    <li>Wire <code>webview-host-rn-sdk.android.flow.yaml</code> or any successor flow into
+      <code>mobile-e2e.yml</code> as a post-WIA-11 follow-up; respect the Namespace runner concurrency limits.</li>
   </ul>
   <div class="callout warn">
     Real-device NFC/MRZ reads remain a manual hardware step regardless of Maestro — the emulator surfaces
@@ -270,8 +323,8 @@
       Maestro path. A headless browser would mock the bridge anyway — the vitest flow tests get that coverage
       without new CI infrastructure on a surface still churning toward cutover.</li>
     <li><strong>Implementing the Maestro expansion.</strong> Scoped above; deferred to post-WIA-11.</li>
-    <li><strong>Any <code>app/src</code> or native change.</strong> webview-app tests only, plus the one
-      <code>BridgeProvider</code> prop.</li>
+    <li><strong>Any <code>app/src</code> or native change.</strong> webview-app tests only, plus the
+      <code>BridgeProvider</code> and <code>App</code> seams described above.</li>
     <li><strong>New bridge methods or domains.</strong> Tests register mock handlers for existing methods only.</li>
     <li><strong>Re-testing the legacy RN NFC path.</strong> Untouched by this workstream; no regression surface.</li>
   </ul>
@@ -291,11 +344,12 @@
   <h2>Done criteria</h2>
   <ul class="check">
     <li><code>BridgeProvider</code> accepts an optional <code>bridge</code> prop; default behavior unchanged; existing tests green.</li>
-    <li><code>renderWithBridge</code> helper mounts the full provider tree over a <code>MockNativeBridge</code> with caller-supplied handlers.</li>
+    <li><code>App</code> exposes a router seam that lets tests mount the real route table inside <code>MemoryRouter</code>; production keeps <code>BrowserRouter</code>.</li>
+    <li><code>renderWithBridge</code> helper mounts the real app over a connected <code>MockNativeBridge</code> with baseline awaited-request handlers and caller-supplied overrides.</li>
     <li>Passport happy path and NFC-failure flows pass through real routing + bridge round-trips.</li>
     <li>EU-ID failure and Aadhaar upload-error flows reach their error routes; WIA-14 footer asserted on the failure-route matrix and absent on success / no-id.</li>
     <li>WIA-13 <code>sentry-mask</code> presence asserted on <code>IDDataScreen</code> and the two recovery screens via routing, not isolated render.</li>
-    <li>WIA-14 mode routing asserted at a dual-mode path with a seeded <code>mode</code>.</li>
+    <li>WIA-16 mode routing asserted at a dual-mode path with a seeded <code>mode</code>.</li>
     <li>Maestro expansion captured as scoped, deferred work (this plan, &sect; Deferred); nothing Maestro implemented.</li>
     <li>No <code>app/src</code>/native change; <code>yarn test &amp;&amp; yarn types</code> green in <code>packages/webview-app</code>.</li>
   </ul>
