@@ -45,6 +45,7 @@ Setup: `nvm use && corepack enable && yarn install`
 cd packages/mobile-sdk-alpha && yarn test && yarn types   # SDK core
 cd packages/webview-bridge && yarn build && yarn test      # Bridge
 cd packages/webview-app && yarn build                      # WebView app
+yarn kmp:test                                              # KMP SDK (Kotlin)
 yarn lint && yarn types && yarn build                      # Full repo
 ```
 
