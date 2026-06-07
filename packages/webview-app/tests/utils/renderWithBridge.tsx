@@ -94,7 +94,7 @@ export function renderWithBridge(options: RenderWithBridgeOptions): RenderWithBr
     <BridgeProvider bridge={bridge}>
       <App
         renderRouter={children => (
-          <MemoryRouter initialEntries={initialEntries as never}>
+          <MemoryRouter initialEntries={initialEntries}>
             {children}
             <LocationProbe />
           </MemoryRouter>

@@ -16,6 +16,10 @@ export const BridgeProvider: React.FC<{ children: React.ReactNode; bridge?: WebV
   bridge: injectedBridge,
 }) => {
   const defaultBridge = useMemo(() => {
+    if (injectedBridge) {
+      return null;
+    }
+
     const isDev = import.meta.env.DEV;
 
     return new WebViewBridge({
@@ -27,7 +31,7 @@ export const BridgeProvider: React.FC<{ children: React.ReactNode; bridge?: WebV
           }) ?? (isDev ? '*' : undefined),
       },
     });
-  }, []);
+  }, [injectedBridge]);
 
   return <BridgeContext.Provider value={injectedBridge ?? defaultBridge}>{children}</BridgeContext.Provider>;
 };
