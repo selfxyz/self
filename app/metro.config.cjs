@@ -27,13 +27,16 @@ const workspaceRoot =
 const config = {
   projectRoot,
 
-  // Pin Metro's server root to the app so bundle URLs like `/index.bundle`
-  // resolve to app/index.js. Otherwise Metro (via expo/metro-config) derives
-  // the server root from the common ancestor of projectRoot and watchFolders
-  // (the monorepo root), and `/index.bundle` resolves to <repo>/index, which
-  // does not exist.
+  // Pin Metro's server root to the workspace root. Expo SDK 55 boots the app via
+  // `.expo/.virtual-metro-entry`, whose entry target is computed relative to the
+  // workspace root (`./app/index`); resolving that requires the server root to be
+  // the workspace root, not app/. EXPO_USE_METRO_WORKSPACE_ROOT does not override
+  // this target in SDK 55.
+  // TODO(SELF-?): this re-breaks the legacy `/index.bundle` URL that #2137 pinned
+  // to projectRoot for iOS. Confirm iOS SDK 55 also uses the virtual entry (and
+  // drop the projectRoot pin entirely) or make the root platform-aware.
   server: {
-    unstable_serverRoot: projectRoot,
+    unstable_serverRoot: workspaceRoot,
   },
 
   watchFolders: [
