@@ -1,15 +1,8 @@
+# Launch smoke test: cold-start the app and prove it boots into the WebView-In-App
+# (WIA) onboarding without error. The launch readiness contract lives in the shared
+# subflow so a future onboarding change is a one-file fix.
 appId: com.proofofpassportapp
 ---
 - clearState
 - clearKeychain
-- launchApp
-- extendedWaitUntil:
-    visible:
-      id: "disclaimer-dismiss-button"
-    timeout: ${LAUNCH_WAIT_MS:120000}
-- tapOn:
-    id: "disclaimer-dismiss-button"
-- extendedWaitUntil:
-    visible:
-      id: "home-screen-root"
-    timeout: 30000
+- runFlow: subflows/launch-webview-host.android.yaml

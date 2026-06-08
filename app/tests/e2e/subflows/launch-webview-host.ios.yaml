@@ -1,0 +1,25 @@
+# Cold-launch readiness contract for the WebView-In-App (WIA) flow (iOS).
+#
+# SplashScreen routes the happy path into the native WebView host
+# (app/src/screens/dev/WebViewHostScreen.tsx), which mounts testID
+# "webview-host-root" and shows "webview-loading-overlay" until the embedded
+# webview-app finishes booting, or "webview-error-overlay" if it fails. Success =
+# host mounted, loading overlay gone, no error overlay. These testIDs are the
+# launch contract: copy- and layout-independent, unlike screen text or pixel taps.
+#
+# Maestro requires a subflow's appId to match its caller's, so the Android contract
+# lives in launch-webview-host.android.yaml. Keep the two in sync; the app-side
+# testIDs are the real shared contract. Update here when the WIA launch changes.
+appId: com.warroom.proofofpassport
+---
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: 'webview-host-root'
+    timeout: ${LAUNCH_WAIT_MS:120000}
+- extendedWaitUntil:
+    notVisible:
+      id: 'webview-loading-overlay'
+    timeout: 120000
+- assertNotVisible:
+    id: 'webview-error-overlay'

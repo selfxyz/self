@@ -125,7 +125,10 @@ const WebViewHostScreen: React.FC = () => {
   useEffect(() => () => clearReferenceTag(), []);
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#000' }}>
+    <View
+      testID="webview-host-root"
+      style={{ flex: 1, backgroundColor: '#000' }}
+    >
       <SelfVerification
         request={request}
         mode="self-app"

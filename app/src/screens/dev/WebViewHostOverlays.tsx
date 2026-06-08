@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
 export const WebViewLoadingOverlay: React.FC<{ stage: 'loading' | 'slow' }> = ({
   stage,
 }) => (
-  <YStack style={styles.fill} gap={16}>
+  <YStack testID="webview-loading-overlay" style={styles.fill} gap={16}>
     <ActivityIndicator size="large" color={black} />
     {stage === 'slow' ? (
       <BodyText style={{ color: slate500, textAlign: 'center' }}>
@@ -51,7 +51,7 @@ export const WebViewErrorOverlay: React.FC<{ info: LoadErrorInfo }> = ({
   const isTerminalVersionMismatch =
     info.kind === 'version_mismatch' && !info.canRetry;
   return (
-    <YStack style={styles.fill} gap={12}>
+    <YStack testID="webview-error-overlay" style={styles.fill} gap={12}>
       <Title style={{ textAlign: 'center' }}>
         {isTerminalVersionMismatch ? 'Update required' : 'Something went wrong'}
       </Title>
