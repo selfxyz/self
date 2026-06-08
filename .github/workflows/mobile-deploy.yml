@@ -1255,6 +1255,31 @@ jobs:
 
           echo "✅ Android build output verification passed"
 
+      - name: Upload signed Android AAB artifact
+        id: upload-android-aab
+        if: inputs.platform != 'ios'
+        uses: actions/upload-artifact@v4
+        with:
+          name: self-android-${{ needs.bump-version.outputs.version }}-${{ needs.bump-version.outputs.android_build }}-release-aab
+          path: ${{ env.APP_PATH }}/android/app/build/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Summarize Android AAB download
+        if: inputs.platform != 'ios'
+        run: |
+          {
+            echo "## Android release AAB"
+            echo ""
+            echo "Signed AAB artifact: [self-android-${{ needs.bump-version.outputs.version }}-${{ needs.bump-version.outputs.android_build }}-release-aab](${{ steps.upload-android-aab.outputs.artifact-url }})"
+            echo ""
+            echo "Use this URL to download the artifact ZIP, extract \`app-release.aab\`, and upload it manually in Play Console."
+            echo ""
+            echo "- Version: \`${{ needs.bump-version.outputs.version }}\`"
+            echo "- Android build: \`${{ needs.bump-version.outputs.android_build }}\`"
+            echo "- Retention: 7 days"
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Clean up Gradle build artifacts
         if: inputs.platform != 'ios'
         uses: ./.github/actions/cleanup-gradle-artifacts
