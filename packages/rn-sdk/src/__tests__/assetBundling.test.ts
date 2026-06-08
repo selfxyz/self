@@ -39,6 +39,9 @@ describe('Asset Bundling (Chunk 5D)', () => {
     mockOS = 'android';
   });
 
+  const toFileUri = (path: string) =>
+    path.startsWith('file://') ? path : `file://${path}`;
+
   describe('Platform.select', () => {
     it('Android source resolves to file:///android_asset/...', async () => {
       mockOS = 'android';
@@ -59,12 +62,12 @@ describe('Asset Bundling (Chunk 5D)', () => {
         android: { uri: 'file:///android_asset/self-wallet/index.html' },
         ios: {
           uri: mainBundlePath
-            ? `${mainBundlePath}/self-wallet/index.html`
+            ? toFileUri(`${mainBundlePath}/self-wallet/index.html`)
             : 'self-wallet/index.html',
         },
       });
       expect(source).toEqual({
-        uri: '/var/containers/Bundle/Application/ABC/MyApp.app/self-wallet/index.html',
+        uri: 'file:///var/containers/Bundle/Application/ABC/MyApp.app/self-wallet/index.html',
       });
     });
 

@@ -41,6 +41,9 @@ try {
   // react-native-fs not installed — iOS will use relative path
 }
 
+const toFileUri = (path: string) =>
+  path.startsWith('file://') ? path : `file://${path}`;
+
 export interface VerificationRequest {
   userId?: string;
   scope?: string;
@@ -538,7 +541,7 @@ export const SelfVerification: React.FC<SelfVerificationProps> = ({
       ios: {
         uri: appendSearch(
           mainBundlePath
-            ? `${mainBundlePath}/self-wallet/index.html`
+            ? toFileUri(`${mainBundlePath}/self-wallet/index.html`)
             : 'self-wallet/index.html',
         ),
       },
