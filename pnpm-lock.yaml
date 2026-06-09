@@ -1085,7 +1085,7 @@ importers:
         version: 0.6.1(041f29c2add7fbce191f8bc453119a0d)
       '@selfxyz/euclid-core':
         specifier: ^1.4.4
-        version: 1.4.4(react@19.2.6)
+        version: 1.4.6(react@19.2.6)
       '@xstate/react':
         specifier: ^5.0.5
         version: 5.0.5(@types/react@19.2.15)(react@19.2.6)(xstate@5.31.1)
@@ -6489,11 +6489,6 @@ packages:
 
   '@selfxyz/binary-merkle-root.circom@0.0.1':
     resolution: {integrity: sha512-yLWgwsqb84kMIdFsEMa2x0BqXZZ9/jpUD7oyr/A3lS2F7IKlpl3tOK/r6W2BdM5wpgykCi0oHzcopH/stVurjQ==}
-
-  '@selfxyz/euclid-core@1.4.4':
-    resolution: {integrity: sha512-qQsyhh3wr1Ay2o/gvR8BxUAVZ2b/88nFzyYrBGLXTEet9E8TskEDdBKHetu4IbGwcum0LnNeM26wrfhSH6FCKw==}
-    peerDependencies:
-      react: ^19.2.0
 
   '@selfxyz/euclid-core@1.4.6':
     resolution: {integrity: sha512-9D3K72y7vQhNyE1twIJJZCtsfgY+dhg9nKWrV7MOii0vsEpeiaL2q89FJSAiMEYLi305lgRxhLgUIkOrakdX7A==}
@@ -23018,10 +23013,6 @@ snapshots:
   '@selfxyz/binary-merkle-root.circom@0.0.1':
     dependencies:
       circomlib: 2.0.5
-
-  '@selfxyz/euclid-core@1.4.4(react@19.2.6)':
-    dependencies:
-      react: 19.2.6
 
   '@selfxyz/euclid-core@1.4.6(react@19.2.6)':
     dependencies:
