@@ -129,8 +129,8 @@ const renderRoutes = (initialEntries: string[]) =>
       <Routes>
         <Route path="/" element={<HomeScreen />} />
         <Route path="/settings" element={<SettingsScreen />} />
-        <Route path="/manage-documents" element={<ManageDocumentsScreen />} />
-        <Route path="/id-data" element={<IDDataScreen />} />
+        <Route path="/docs" element={<ManageDocumentsScreen />} />
+        <Route path="/docs/current" element={<IDDataScreen />} />
         <Route path="/settings/dev-mode" element={<LocationDisplay />} />
       </Routes>
       <DevRouteMenu />
@@ -171,13 +171,13 @@ describe('WV-14 support screens', () => {
     expect(screen.getByTestId('location').textContent).toBe('/settings');
 
     fireEvent.click(screen.getByRole('button', { name: /manage documents/i }));
-    expect(screen.getByTestId('location').textContent).toBe('/manage-documents');
+    expect(screen.getByTestId('location').textContent).toBe('/docs');
 
     fireEvent.click(screen.getByRole('button', { name: /passport/i }));
-    expect(screen.getByTestId('location').textContent).toBe('/id-data');
+    expect(screen.getByTestId('location').textContent).toBe('/docs/current');
 
     fireEvent.click(screen.getByRole('button', { name: /manage id/i }));
-    expect(screen.getByTestId('location').textContent).toBe('/manage-documents');
+    expect(screen.getByTestId('location').textContent).toBe('/docs');
   });
 
   it('exposes manage documents and ID data in the dev route menu', async () => {
@@ -193,6 +193,6 @@ describe('WV-14 support screens', () => {
     expect(screen.getByRole('button', { name: 'ID Data' })).toBeTruthy();
 
     fireEvent.click(screen.getByRole('button', { name: 'ID Data' }));
-    expect(screen.getByTestId('location').textContent).toBe('/id-data');
+    expect(screen.getByTestId('location').textContent).toBe('/docs/current');
   });
 });

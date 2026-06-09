@@ -100,7 +100,7 @@ You are making **`@selfxyz/mobile-sdk-alpha`** work cleanly inside a browser/Web
 
 Today the package is entangled with React Native. Your job is to sever those ties so the same core logic runs in both:
 
-- **React Native** (existing Self Wallet app — must not regress)
+- **React Native** (existing Self app app — must not regress)
 - **Browser/WebView** (`@selfxyz/webview-app` running inside a host WebView or browser surface)
 
 You are NOT building screens or native handlers. You are making the engine portable.
@@ -647,7 +647,7 @@ This chunk is **optional** — raw `WebSocket` works natively in the browser. Sk
 
 **You Will NOT:**
 
-- Remove Socket.IO dependency entirely (still needed for Self Wallet)
+- Remove Socket.IO dependency entirely (still needed for Self app)
 - Change the store's state shape
 - Modify other stores
 
@@ -790,7 +790,7 @@ cd packages/webview-app && npx vite build
 grep -r "NativeModules\|NativeEventEmitter\|requireNativeComponent" packages/webview-app/dist/ && echo "FAIL" || echo "PASS"
 
 # RN app still works (manual):
-# Run Self Wallet app, complete full onboarding + disclosure flow
+# Run Self app app, complete full onboarding + disclosure flow
 ```
 
 ## Coordination Notes

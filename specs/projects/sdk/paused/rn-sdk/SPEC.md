@@ -3,9 +3,11 @@
 > Last updated: 2026-03-05
 > Owner: Person 5 (RN SDK)
 > Project: [SDK Overview](../../OVERVIEW.md)
-> Status: Paused
+> Status: Superseded — see [webview-in-app](../../workstreams/webview-in-app/SPEC.html)
 
-> Pause note: As of 2026-03-11, the active SDK delivery scope is WebView-only with no custom native modules. This RN shell is retained for future reuse and should not drive current delivery.
+> **Revived 2026-05-19** under the `webview-in-app` workstream. The current canonical RN-host spec is [webview-in-app/SPEC](../../workstreams/webview-in-app/SPEC.html) plus its sub-specs ([Bridge Host](../../workstreams/webview-in-app/SPEC-BRIDGE-HOST.html), [Native Adapters](../../workstreams/webview-in-app/SPEC-NATIVE-ADAPTERS.html), [Hosted Loading](../../workstreams/webview-in-app/SPEC-HOSTED-LOADING.html), [Observability](../../workstreams/webview-in-app/SPEC-OBSERVABILITY.html)). The content below is retained as historical context for the original RN shell scope.
+
+> Original pause note: As of 2026-03-11, the active SDK delivery scope is WebView-only with no custom native modules. This RN shell is retained for future reuse and should not drive current delivery.
 
 ## North Star
 
@@ -54,14 +56,14 @@
 | ------------- | --------------------------- | -------------------------------------------------- | ----------- |
 | **You need**  | Person 1 (`webview-app`)    | Vite bundle (`dist/`)                              | Ready       |
 | **You need**  | Person 1 (`webview-bridge`) | Bridge protocol types                              | Ready       |
-| **Needs you** | Self Wallet app             | `SelfVerification` for verification flow (Phase 2) | Not started |
+| **Needs you** | Self app app                | `SelfVerification` for verification flow (Phase 2) | Not started |
 
 **Status:**
 
 - [x] Package scaffolded with `SelfVerification` component
 - [x] All 5 native handler bridges implemented (including APDU-capable NFC)
 - [x] Asset loading for iOS + Android implemented
-- [ ] Integration validation in Self Wallet app (follow-up)
+- [ ] Integration validation in Self app app (follow-up)
 - [ ] npm publish not completed
 
 ## Execution Model
@@ -74,7 +76,7 @@
 
 | ID    | Title                                                            | Status | Priority | Depends On | Plan                                                                                                     | PR    |
 | ----- | ---------------------------------------------------------------- | ------ | -------- | ---------- | -------------------------------------------------------------------------------------------------------- | ----- |
-| RN-01 | Self Wallet integration validation for `SelfVerification`        | Paused | High     | -          | [plans/RN-01-self-wallet-integration-validation.md](./plans/RN-01-self-wallet-integration-validation.md) | -     |
+| RN-01 | Self app integration validation for `SelfVerification`           | Paused | High     | -          | [plans/RN-01-self-wallet-integration-validation.md](./plans/RN-01-self-wallet-integration-validation.md) | -     |
 | RN-02 | npm publishing readiness and release path                        | Paused | Medium   | RN-01      | [plans/RN-02-npm-publishing-readiness.md](./plans/RN-02-npm-publishing-readiness.md)                     | -     |
 | RN-03 | APDU allowlist, timeout, and payload hardening in RN NFC handler | Done   | High     | -          | [plans/RN-03-nfc-hardening.md](./plans/RN-03-nfc-hardening.md)                                           | #1797 |
 
@@ -92,12 +94,12 @@ Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Paused`, `Done
 
 - [ ] Open RN follow-ups exist as backlog rows, not only prose
 - [ ] Active plan links are current
-- [ ] Self Wallet integration status is explicit
+- [ ] Self app integration status is explicit
 - [ ] Publish readiness is tracked independently from feature work
 
 ## Overview
 
-You are building the **React Native native shell** (`@selfxyz/rn-sdk`) — a thin `SelfVerification` component that wraps `react-native-webview` to embed the Self verification flow inside any React Native app. It shares the same WebView engine, bridge protocol, and UI as the Kotlin native shell. The only RN-specific code is ~200-300 LOC of native handler bridges and the component wrapper. This matters because React Native hosts (Self Wallet, third-party apps) need the same verification flow that Kotlin hosts (MiniPay) get, without duplicating any logic.
+You are building the **React Native native shell** (`@selfxyz/rn-sdk`) — a thin `SelfVerification` component that wraps `react-native-webview` to embed the Self verification flow inside any React Native app. It shares the same WebView engine, bridge protocol, and UI as the Kotlin native shell. The only RN-specific code is ~200-300 LOC of native handler bridges and the component wrapper. This matters because React Native hosts (Self app, third-party apps) need the same verification flow that Kotlin hosts (MiniPay) get, without duplicating any logic.
 
 ## Prerequisites
 
@@ -117,7 +119,7 @@ The RN SDK (`packages/rn-sdk/`) exists with the core implementation complete: `S
 | `SelfVerification` component   | Implemented — wraps `react-native-webview` with bridge wiring    |
 | Native handler bridges         | All 5 implemented (NFC, biometrics, keychain, camera, lifecycle) |
 | Asset bundling (iOS + Android) | Implemented for both platforms                                   |
-| Self Wallet integration        | Not validated — see RN-01                                        |
+| Self app integration           | Not validated — see RN-01                                        |
 | npm publishing                 | Not ready — see RN-02                                            |
 | NFC hardening                  | Completed — see RN-03                                            |
 
@@ -845,14 +847,14 @@ const source = useDevServer
 
 ## Files You Will NOT Modify
 
-| File                              | Why                                                                      |
-| --------------------------------- | ------------------------------------------------------------------------ |
-| `packages/webview-bridge/src/*`   | Owned by Person 1 -- bridge protocol already defined                     |
-| `packages/webview-app/src/*`      | Owned by Person 1 -- WebView UI screens                                  |
-| `packages/mobile-sdk-alpha/src/*` | Owned by Person 4 -- WebView engine core                                 |
-| `packages/kmp-sdk/shared/src/*`   | Owned by Person 2 -- Kotlin native shell (reference only)                |
-| `app/src/*`                       | Self Wallet app -- integration consumer, not modified by this workstream |
-| `common/src/*`                    | Shared utilities -- out of scope                                         |
+| File                              | Why                                                                   |
+| --------------------------------- | --------------------------------------------------------------------- |
+| `packages/webview-bridge/src/*`   | Owned by Person 1 -- bridge protocol already defined                  |
+| `packages/webview-app/src/*`      | Owned by Person 1 -- WebView UI screens                               |
+| `packages/mobile-sdk-alpha/src/*` | Owned by Person 4 -- WebView engine core                              |
+| `packages/kmp-sdk/shared/src/*`   | Owned by Person 2 -- Kotlin native shell (reference only)             |
+| `app/src/*`                       | Self app app -- integration consumer, not modified by this workstream |
+| `common/src/*`                    | Shared utilities -- out of scope                                      |
 
 ## Chunking Guide
 
@@ -1214,7 +1216,7 @@ ls packages/rn-sdk/assets/self-wallet/index.html  # Assets bundled
 
 | Item                                         | Discovered during | Suggested spec                                                                         |
 | -------------------------------------------- | ----------------- | -------------------------------------------------------------------------------------- |
-| Self Wallet migration to `SelfVerification`  | Spec writing      | Separate migration spec after SDK is stable                                            |
+| Self app migration to `SelfVerification`     | Spec writing      | Separate migration spec after SDK is stable                                            |
 | MiniPay RN sample integration                | Spec writing      | `integrations/SPEC.md` (already exists)                                                |
 | Camera library selection for MRZ scanning    | Chunk 5C planning | Depends on host app camera setup -- may need configurable adapter                      |
 | RN test app MRZ DRY consolidation            | Complete          | [MRZ Consolidation Spec (archived)](../../../../archive/sdk/SPEC-MRZ-CONSOLIDATION.md) |

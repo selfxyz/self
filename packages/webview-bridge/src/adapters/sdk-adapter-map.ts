@@ -4,6 +4,7 @@
 
 import type {
   Adapters,
+  AnalyticsAdapter,
   AuthAdapter,
   CryptoAdapter,
   NavigationAdapter,
@@ -24,10 +25,15 @@ export interface CreateSdkAdaptersOpts {
   bridge: WebViewBridge;
   navigate: (path: string) => void;
   goBack: () => void;
+  /**
+   * Optional analytics adapter override. The WebView app passes a cohort-tag
+   * observed adapter here (WIA-12); defaults to the console/endpoint adapter.
+   */
+  analytics?: AnalyticsAdapter;
 }
 
 export function createSdkAdapters(opts: CreateSdkAdaptersOpts): Adapters {
-  const { bridge, navigate, goBack } = opts;
+  const { bridge, navigate, goBack, analytics } = opts;
   const bridgeCrypto = bridgeCryptoAdapter(bridge);
 
   const crypto: CryptoAdapter = {
@@ -57,6 +63,6 @@ export function createSdkAdapters(opts: CreateSdkAdaptersOpts): Adapters {
     auth,
     documents: createKeychainDocumentsAdapter(bridge),
     navigation,
-    analytics: createWebAnalyticsAdapter(),
+    analytics: analytics ?? createWebAnalyticsAdapter(),
   };
 }

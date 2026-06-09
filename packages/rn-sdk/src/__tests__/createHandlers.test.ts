@@ -29,7 +29,24 @@ describe('createHandlers', () => {
     expect(nfcHandler).toBeInstanceOf(NfcHandler);
   });
 
-  it('returns handlers for all five domains', () => {
+  it('threads referenceId into the lifecycle handler getConfig', async () => {
+    const router = new MessageRouter({ sendToWebView: vi.fn() });
+    const handlers = createHandlers({
+      request: {},
+      onSuccess: vi.fn(),
+      onFailure: vi.fn(),
+      onCancelled: vi.fn(),
+      debug: false,
+      router,
+      referenceId: 'corr-abc',
+    });
+
+    const lifecycle = handlers.find(h => h.domain === 'lifecycle');
+    const config = (await lifecycle?.handle('getConfig', {})) as Record<string, unknown>;
+    expect(config.referenceId).toBe('corr-abc');
+  });
+
+  it('returns handlers for all bridge domains', () => {
     const router = new MessageRouter({ sendToWebView: vi.fn() });
     const handlers = createHandlers({
       request: {},
@@ -41,6 +58,17 @@ describe('createHandlers', () => {
     });
 
     const domains = handlers.map(h => h.domain).sort();
-    expect(domains).toEqual(['biometrics', 'camera', 'lifecycle', 'nfc', 'secureStorage']);
+    expect(domains).toEqual([
+      'analytics',
+      'biometrics',
+      'camera',
+      'crypto',
+      'documents',
+      'haptic',
+      'lifecycle',
+      'navigation',
+      'nfc',
+      'secureStorage',
+    ]);
   });
 });

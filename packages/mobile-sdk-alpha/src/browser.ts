@@ -36,18 +36,28 @@ export type {
 } from './types/public';
 export type { BaseContext, NFCScanContext, ProofContext } from './proving/internal/logging';
 export type { DG1, DG2, ParsedNFCResponse } from './nfc';
+export type { OnboardingTagSnapshot } from './observability/onboardingContext';
 export type { PassportValidationCallbacks } from './validation/document';
 export type { PerkId, PerkRecord } from './data/perks';
 export type { ProvingState, ProvingStateType, provingMachineCircuitType } from './proving/provingMachine';
-export type { RecoveryValidationResult } from './proving/recoveryValidation';
 
+export type { RecoveryValidationResult } from './proving/recoveryValidation';
 export type { SDKEvent, SDKEventMap } from './types/events';
+
 export type { SdkErrorCategory } from './errors';
 // Re-export common types needed for SelfApp context construction
 export type { SelfApp, SelfAppDisclosureConfig } from '@selfxyz/common';
-export type { SelfAppState } from './stores/selfAppStore';
 
+export type { SelfAppState } from './stores/selfAppStore';
 export type { WebAnalyticsOptions } from './adapters/browser';
+export {
+  COHORT_TAG_KEYS,
+  REDACTED,
+  SENSITIVE_KEY_PATTERN,
+  redactSensitiveFields,
+  sanitizeTagValue,
+  tagsFromAnalyticsEvent,
+} from './observability/onboardingContext';
 export {
   GOOGLE_USAT_FAUCET_APP_NAME,
   GOOGLE_USAT_FAUCET_ENDPOINT,
@@ -85,13 +95,14 @@ export {
   createWebCryptoAdapter,
   createWebNetworkAdapter,
 } from './adapters/browser';
+
 export { createListenersMap, createSelfClient } from './client';
 
 export { defaultConfig } from './config/defaults';
 /** @deprecated Use createSelfClient().extractMRZInfo or import from './mrz' */
 export { extractMRZInfo, extractNameFromMRZ, formatDateToYYMMDD } from './mrz';
-export { finalizeRecoveredDocumentRegistration, validateRecoverySecretForDocument } from './proving/recoveryValidation';
 
+export { finalizeRecoveredDocumentRegistration, validateRecoverySecretForDocument } from './proving/recoveryValidation';
 export { generateMockDocument, signatureAlgorithmToStrictSignatureAlgorithm } from './mock/generator';
 export { getPostVerificationRoute, useProvingStore } from './proving/provingMachine';
 export { hasEligibleAlternativeDocumentForPolicy, isDocumentEligibleForPolicy } from './utils/restrictedApps';

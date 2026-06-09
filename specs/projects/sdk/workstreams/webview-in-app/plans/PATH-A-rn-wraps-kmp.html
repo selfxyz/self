@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Path A — rn-sdk wraps kmp-sdk · Prototype Spec</title>
+<style>
+  :root {
+    --bg: #fafbfc;
+    --surface: #ffffff;
+    --surface-alt: #f6f8fa;
+    --border: #d1d9e0;
+    --border-soft: #e1e4e8;
+    --text: #1f2328;
+    --muted: #656d76;
+    --accent: #0969da;
+    --accent-soft: #ddf4ff;
+    --high: #cf222e;
+    --high-soft: #ffebe9;
+    --med: #9a6700;
+    --med-soft: #fff8c5;
+    --done: #1a7f37;
+    --done-soft: #dafbe1;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font: 14px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    color: var(--text);
+    background: var(--bg);
+  }
+  code, pre, kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.9em; }
+  code { background: var(--surface-alt); padding: 1px 5px; border-radius: 4px; border: 1px solid var(--border-soft); }
+  pre { background: var(--surface-alt); padding: 12px 14px; border-radius: 6px; border: 1px solid var(--border-soft); overflow: auto; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  header.topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 12px 24px;
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  }
+  header h1 { margin: 0; font-size: 16px; font-weight: 600; }
+  .pill {
+    font-size: 11px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface-alt);
+  }
+  .pill.draft { color: var(--med); background: var(--med-soft); border-color: var(--med); }
+  .pill.high { color: var(--high); background: var(--high-soft); border-color: var(--high); }
+  .pill.scope { color: var(--accent); background: var(--accent-soft); border-color: var(--accent); }
+  .spacer { flex: 1; }
+  .layout { display: grid; grid-template-columns: 220px 1fr; gap: 32px; max-width: 1100px; margin: 0 auto; padding: 24px; }
+  nav.toc { position: sticky; top: 64px; align-self: start; font-size: 13px; }
+  nav.toc h4 { margin: 0 0 6px 0; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  nav.toc a { display: block; padding: 3px 0; color: var(--text); }
+  main { min-width: 0; }
+  main section { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 18px 22px; margin-bottom: 16px; }
+  main h2 { margin: 0 0 10px 0; font-size: 16px; }
+  main h3 { margin: 16px 0 6px 0; font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  main p { margin: 6px 0 10px 0; }
+  main ul, main ol { margin: 6px 0 10px 18px; padding: 0; }
+  main li { margin: 3px 0; }
+  table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 13px; }
+  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--border-soft); }
+  th { background: var(--surface-alt); font-weight: 600; }
+  .callout { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 8px 12px; border-radius: 0 6px 6px 0; margin: 10px 0; }
+  .callout.warn { border-color: var(--high); background: var(--high-soft); }
+  .callout.note { border-color: var(--med); background: var(--med-soft); }
+  .arrow { color: var(--muted); }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <h1>Path A · <code>rn-sdk</code> wraps <code>kmp-sdk</code> — Prototype Spec</h1>
+  <span class="pill draft">Draft</span>
+  <span class="pill scope">Scope: secureStorage · Android only</span>
+  <span class="pill">2026-05-25</span>
+  <span class="spacer"></span>
+  <div>
+    <a href="../SPEC.html">↑ webview-in-app</a>
+    &nbsp;·&nbsp;
+    <a href="./SPIKE-rn-wraps-kmp.md">Research notes</a>
+  </div>
+</header>
+
+<div class="layout">
+
+<nav class="toc">
+  <h4>On this page</h4>
+  <a href="#why">Why</a>
+  <a href="#decision">Decision</a>
+  <a href="#scope">PR Scope</a>
+  <a href="#architecture">Architecture</a>
+  <a href="#files">Files Touched</a>
+  <a href="#oos">Out of Scope</a>
+  <a href="#abort">Abort Conditions</a>
+  <a href="#validation">Validation</a>
+  <a href="#risks">Open Risks</a>
+</nav>
+
+<main>
+
+<section id="why">
+  <h2>Why this PR exists</h2>
+  <p>
+    The webview-in-app workstream's <a href="../SPEC-NATIVE-ADAPTERS.html">Native Adapters spec</a> (Decision 1)
+    commits to building a new <code>SelfCrypto</code> native module inside <code>packages/rn-sdk/</code>. But
+    <code>packages/kmp-sdk/</code> already has Kotlin-side handlers for <code>secureStorage</code>, <code>crypto</code>, and
+    <code>lifecycle</code>, delegated through a Provider Registry pattern. Building them twice — once in
+    <code>kmp-sdk</code> for the native-Kotlin consumer, once in <code>rn-sdk</code> for Self app — is duplication
+    that grows linearly with every future bridge change.
+  </p>
+  <p>
+    A confirmed external native-Kotlin consumer exists, so <code>kmp-sdk</code> cannot be retired. The only
+    question is whether <code>rn-sdk</code> reuses <code>kmp-sdk</code>'s router and handlers or runs parallel.
+  </p>
+  <p class="callout">
+    Full research findings (two-repo split, KMP iOS provider model, publishing posture, router envelope drift)
+    are in <a href="./SPIKE-rn-wraps-kmp.md"><code>SPIKE-rn-wraps-kmp.md</code></a>. This page is the
+    one-page summary used to scope <em>this</em> PR.
+  </p>
+</section>
+
+<section id="decision">
+  <h2>Decision — Path A, prototype-first</h2>
+  <p>
+    <strong>You are proving the binding model on one domain, one platform.</strong> If the prototype works,
+    a follow-up workstream replaces the remaining TS handlers and retires the duplicated router. If the
+    prototype hits an abort condition, the work is discarded and the current webview-in-app SPEC stands.
+  </p>
+  <p>
+    The prototype lives behind a feature flag — existing TS handlers and the existing
+    <code>SelfVerification</code> behavior are untouched. The PR is mergeable to <code>feat/webview-in-app</code>
+    without changing default behavior for Self app or any existing consumer.
+  </p>
+</section>
+
+<section id="scope">
+  <h2>PR scope</h2>
+  <h3>In scope</h3>
+  <ul>
+    <li>Local-Maven publishing path for <code>packages/kmp-sdk/</code> validated via <code>./gradlew publishToMavenLocal</code>.</li>
+    <li>New Kotlin module <code>SelfBridgeModule</code> inside <code>packages/rn-sdk/android/</code> that consumes the KMP AAR, owns one <code>MessageRouter</code> instance, and registers <code>EncryptedSharedPreferencesProvider</code> + <code>SecureStorageBridgeHandler</code> at init.</li>
+    <li>Bridge entry point exposed to JS: <code>NativeModules.SelfBridge.routeMessage(rawJson)</code>; responses flow back via <code>DeviceEventEmitter</code> on channel <code>SelfBridge:response</code>.</li>
+    <li>A feature flag (<code>useKmpBridge</code> prop on <code>&lt;SelfVerification&gt;</code>, default <code>false</code>) that routes <em>only</em> <code>secureStorage.*</code> calls through the new path and leaves every other domain on the existing TS router.</li>
+    <li>Smoke validation in <code>packages/rn-sdk-test-app/</code>: round-trip <code>secureStorage.set('k','v')</code> → <code>secureStorage.get('k')</code> → <code>secureStorage.remove('k')</code> via a stub WebView page.</li>
+  </ul>
+  <h3>Not in scope (explicit non-goals)</h3>
+  <ul>
+    <li>iOS. Defer until Android proves the binding model — KMP iOS still has cinterop disabled and stub handlers, and adds a layer of unknown the prototype does not need.</li>
+    <li>Replacing or deleting existing TS handlers. They keep working as the default path.</li>
+    <li>Self app (<code>app/</code>) integration. The prototype is exercised from <code>rn-sdk-test-app</code>.</li>
+    <li>Remote publishing of KMP artifacts. SD-06 (<code>SELF-2534</code>) is already specced and owned by someone else; this PR uses <code>mavenLocal()</code>.</li>
+    <li>Convergence of the <code>selfxyz/self</code> ↔ <code>selfxyz/self-webview-sdk</code> <code>kmp-sdk</code> forks. This PR consumes <em>this</em> repo's <code>packages/kmp-sdk/</code> as-is.</li>
+    <li>Bridge protocol envelope cleanup (the small KMP vs TS drift documented in the research notes).</li>
+  </ul>
+</section>
+
+<section id="architecture">
+  <h2>Architecture</h2>
+  <h3>Before this PR (default path, unchanged)</h3>
+  <pre>WebView → onMessage → TS MessageRouter → TS handler (e.g. KeychainHandler.ts)
+                                   → react-native-keychain → Keystore</pre>
+  <h3>After this PR (only when <code>useKmpBridge</code> + domain = <code>secureStorage</code>)</h3>
+  <pre>WebView → onMessage → SelfBridgeModule (Kotlin)
+                       → kmp-sdk MessageRouter
+                       → SecureStorageBridgeHandler
+                       → EncryptedSharedPreferencesProvider
+                       → AndroidX EncryptedSharedPreferences</pre>
+  <p>
+    For every other domain (<code>nfc</code>, <code>camera</code>, <code>biometrics</code>, <code>crypto</code>,
+    <code>haptic</code>, <code>analytics</code>, <code>lifecycle</code>, <code>documents</code>, <code>navigation</code>),
+    the existing TS path runs even when <code>useKmpBridge</code> is on. The prototype is additive, not a swap.
+  </p>
+</section>
+
+<section id="files">
+  <h2>Files touched</h2>
+  <table>
+    <thead><tr><th>File</th><th>Change</th><th>Est. LOC</th></tr></thead>
+    <tbody>
+      <tr><td><code>packages/kmp-sdk/shared/build.gradle.kts</code></td><td>Add publishing block targeting <code>mavenLocal()</code> with <code>artifactId = "self-sdk-kmp-shared"</code>. No version bump.</td><td>~15</td></tr>
+      <tr><td><code>packages/rn-sdk/android/build.gradle</code></td><td>Add <code>mavenLocal()</code> repository, declare <code>compileOnly("xyz.self.sdk:shared-android:0.1.0")</code> + <code>compileOnly("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")</code>. <code>compileOnly</code> (not <code>implementation</code>) so consumers without the KMP AAR are not forced to publish it locally.</td><td>~10</td></tr>
+      <tr><td><code>packages/rn-sdk/android/src/main/java/xyz/self/rnsdk/SelfBridgeModule.kt</code></td><td>New file. Owns a <code>CoroutineScope</code>, passes it to KMP's <code>MessageRouter</code>, registers <code>SecureStorageBridgeHandler</code> with provider-registry init guarded by <code>synchronized(SdkProviderRegistry)</code>, exposes <code>routeMessage</code>, emits responses via <code>DeviceEventEmitter</code>. Overrides <code>invalidate()</code> to cancel the scope on bridge teardown.</td><td>~70</td></tr>
+      <tr><td><code>packages/rn-sdk/android/src/main/java/xyz/self/rnsdk/SelfCryptoPackage.kt</code></td><td>Modify the existing package to also register <code>SelfBridgeModule</code>. Wraps the instantiation in <code>try/catch (NoClassDefFoundError, ClassNotFoundException)</code> so consumers without the KMP AAR on the runtime classpath skip the bridge module rather than crashing on classload.</td><td>~15</td></tr>
+      <tr><td><code>packages/rn-sdk/src/bridge/KmpBridgeTransport.ts</code></td><td>New file. Thin TS shim: takes a raw JSON, calls the native module, returns a promise that resolves when the matching response event arrives. Wraps the asymmetric call → event pattern into a request/response abstraction.</td><td>~80</td></tr>
+      <tr><td><code>packages/rn-sdk/src/SelfVerification.tsx</code></td><td>Add <code>useKmpBridge?: boolean</code> prop. When true, route messages whose <code>domain === 'secureStorage'</code> through <code>KmpBridgeTransport</code> instead of the local router. All other domains continue to hit the existing router.</td><td>~30</td></tr>
+      <tr><td><code>packages/rn-sdk-test-app/</code> (one screen)</td><td>New smoke screen that hosts a tiny stub WebView (data URL) exercising <code>secureStorage.set/get/remove</code> with <code>useKmpBridge</code> on.</td><td>~80</td></tr>
+      <tr><td>This file + sibling spike spec</td><td>Decision record.</td><td>~0</td></tr>
+    </tbody>
+  </table>
+  <p class="callout note">
+    LOC estimates are budget, not target. The abort condition fires if the
+    <em>native glue</em> total (the two Kotlin files in <code>rn-sdk/android/</code>) exceeds ~250 LOC. The TS
+    shim and test app code don't count toward that budget — they're trivially deletable.
+  </p>
+</section>
+
+<section id="oos">
+  <h2>Out of scope (do not do)</h2>
+  <ul>
+    <li>Modify any existing TS handler. Touching <code>KeychainHandler.ts</code> defeats the "additive prototype" framing.</li>
+    <li>Change the bridge protocol shape. The router envelope drift (<code>DOMAIN_NOT_FOUND</code> vs <code>HANDLER_NOT_FOUND</code>, missing <code>type</code>/<code>version</code>/<code>timestamp</code> in KMP responses) is real and must be patched eventually, but not in this PR. The TS shim normalizes the response shape so the WebView never sees the drift.</li>
+    <li>Touch <code>packages/kmp-sdk/shared/src/iosMain/</code> or <code>packages/self-sdk-swift/</code>. iOS is deferred.</li>
+    <li>Set up CI for the KMP-publishing → rn-sdk-consuming build. Local-only validation is enough for the prototype.</li>
+    <li>Edit <code>SPEC-NATIVE-ADAPTERS.html</code>'s Decision 1. If the prototype succeeds, a follow-up PR amends that spec; if it fails, the spec stands.</li>
+    <li>Try to make this prototype work with a hosted Maven (GitHub Packages). SD-06 owns that infrastructure work.</li>
+  </ul>
+</section>
+
+<section id="abort">
+  <h2>Abort conditions</h2>
+  <p>Stop the prototype and write up findings without merging if any are true:</p>
+  <ol>
+    <li>KMP AAR cannot be consumed by <code>packages/rn-sdk/android/build.gradle</code> without making the <em>host app</em> add bespoke repositories (mavenLocal in particular doesn't propagate transitively the way mavenCentral does; if the only path is "Self app's <code>settings.gradle</code> must reference mavenLocal," that's an unacceptable consumer-side leak for a prototype). <strong>Mitigated:</strong> the KMP dep is declared <code>compileOnly</code> in <code>rn-sdk</code> and the package wraps <code>SelfBridgeModule</code> instantiation in <code>try/catch</code>. Consumers opt in by adding <code>xyz.self.sdk:shared-android</code> to their own host module.</li>
+    <li>Kotlin version conflicts between <code>rn-sdk/android</code>'s <code>1.9.24</code> and <code>kmp-sdk</code>'s Kotlin Multiplatform plugin can't be resolved without forcing the host app onto a specific Kotlin version.</li>
+    <li>The native glue total (the two new Kotlin files) exceeds ~250 LOC.</li>
+    <li>Round-tripping <code>secureStorage.set</code> takes longer than 50ms on a release build on a recent emulator.</li>
+    <li>The RN module instance lifecycle and the WebView lifecycle interact in a way that requires non-trivial cleanup logic (e.g. router coroutine scope leaks on RN reload). <strong>Mitigated:</strong> <code>SelfBridgeModule</code> owns the scope and cancels it in <code>invalidate()</code>.</li>
+    <li>Prototype runs longer than 5 working days from the start of implementation.</li>
+  </ol>
+</section>
+
+<section id="validation">
+  <h2>Validation</h2>
+  <pre>cd packages/kmp-sdk
+./gradlew :shared:publishToMavenLocal
+./gradlew :shared:jvmTest             # no regressions to existing KMP tests
+
+cd ../rn-sdk
+yarn build                            # tsup still passes
+yarn test                             # vitest still passes
+
+cd ../rn-sdk-test-app
+yarn android                          # smoke screen builds + runs</pre>
+  <p>Smoke acceptance:</p>
+  <ol>
+    <li>Toggle <code>useKmpBridge</code> on in the test screen.</li>
+    <li>Stub WebView posts <code>{ domain: "secureStorage", method: "set", params: { key: "self.test", value: "hello" } }</code>; response arrives with <code>success: true</code>.</li>
+    <li>Stub WebView posts <code>{ domain: "secureStorage", method: "get", params: { key: "self.test" } }</code>; response arrives with <code>data: { value: "hello" }</code>.</li>
+    <li>Stub WebView posts <code>{ domain: "secureStorage", method: "remove", params: { key: "self.test" } }</code>; subsequent <code>get</code> returns <code>data: { value: null }</code>.</li>
+    <li>Toggle <code>useKmpBridge</code> off; the same round-trip continues to work through the existing TS handler.</li>
+  </ol>
+</section>
+
+<section id="risks">
+  <h2>Open risks (not abort-worthy, but worth tracking)</h2>
+  <ul>
+    <li><strong>Two-repo split.</strong> <code>selfxyz/self-webview-sdk</code> holds a forked <code>kmp-sdk</code> where MOD-01/02/04 are landing. This PR uses <em>this</em> repo's <code>packages/kmp-sdk/</code>. If <code>self-webview-sdk</code> becomes canonical, this PR will need to re-target the artifact source before any follow-up. Convergence is a separate decision and is called out in the research notes.</li>
+    <li><strong>Bridge protocol envelope drift.</strong> KMP responses are missing <code>type</code>, <code>version</code>, and <code>timestamp</code> fields that the TS protocol includes. The TS shim in this PR normalizes responses before the WebView sees them. Converging the two envelopes is a follow-up that should happen before any other domain migrates.</li>
+    <li><strong>Path B is not closed by this PR.</strong> If the prototype passes, the next decision is "do we replace the remaining TS handlers and retire the duplicate router?" That's a workstream-level call, not a single PR.</li>
+  </ul>
+</section>
+
+</main>
+</div>
+
+</body>
+</html>

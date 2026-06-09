@@ -50,6 +50,7 @@ export const BackupEvents = {
 } as const;
 
 export const BiometricEvents = {
+  DATA_CONFIRMATION_CONFIRMED: 'Biometric: Data Confirmation Confirmed',
   DOCUMENT_PARSED: 'Biometric: Document Parsed',
   DOCUMENT_UNSUPPORTED: 'Biometric: Document Unsupported',
   MRZ_CAPTURED: 'Biometric: MRZ Captured',
@@ -227,6 +228,15 @@ export const SettingsEvents = {
   CONNECTION_SETTINGS_OPENED: 'Settings: Connection Settings Opened',
 } as const;
 
+// WebView load funnel — fired by @selfxyz/rn-sdk's SelfVerification through the
+// injected AnalyticsSink. Keep these strings in sync with
+// packages/rn-sdk/src/analytics-events.ts (WebViewLoadEvents).
+export const WebViewEvents = {
+  LOAD_FAILED: 'WebView: Load Failed',
+  VERSION_MISMATCH: 'WebView: Version Mismatch',
+  LOAD_RECOVERED: 'WebView: Load Recovered',
+} as const;
+
 // Union per-group so collisions on shared keys (e.g. STARTED, FAILED) across
 // groups can't silently drop event names from the cap.
 export type KnownEventName =
@@ -245,4 +255,5 @@ export type KnownEventName =
   | (typeof PointEvents)[keyof typeof PointEvents]
   | (typeof ProofEvents)[keyof typeof ProofEvents]
   | (typeof ProofRequestPickerEvents)[keyof typeof ProofRequestPickerEvents]
-  | (typeof SettingsEvents)[keyof typeof SettingsEvents];
+  | (typeof SettingsEvents)[keyof typeof SettingsEvents]
+  | (typeof WebViewEvents)[keyof typeof WebViewEvents];

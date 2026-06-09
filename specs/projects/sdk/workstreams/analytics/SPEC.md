@@ -1,7 +1,7 @@
 # Onboarding Analytics & Funnel — Implementation Spec
 
 > Last updated: 2026-05-07
-> Owner: Self Wallet / Product Analytics
+> Owner: Self app / Product Analytics
 > Project: [SDK Overview](../../OVERVIEW.md)
 > Status: Active
 
@@ -27,7 +27,7 @@ The workstream crosses the SDK/app boundary:
 
 ### Out of scope (workstream-wide)
 
-- WebView observability — WebView (`packages/webview-app/`) has no Sentry integration today; out of scope for this workstream.
+- WebView observability — WebView (`packages/webview-app/`) has no Sentry integration in this workstream's scope. Observability for the WebView is owned by `webview-in-app/` (see [Observability](../webview-in-app/SPEC-OBSERVABILITY.html)), which extends the ANA-13 surface into the WebView using the same cohort tag taxonomy, redact list, and terminal-event clear semantics.
 - Native NFC analytics channel cleanup — see ANA-04 investigation.
 - KYC provider interior steps (selfie / liveness / doc capture) — black-box; requires provider contract work.
 - Mixpanel ID-merge / cross-session funnel windows — dashboard configuration, not instrumentation.
@@ -109,6 +109,10 @@ On terminal events the helper additionally stamps `used_fallback: initial_branch
 
 The branch split tells you _what happened_ (initial intent vs final outcome) but not _how the decision unfolded_ at the fallback screen. ANA-05 will add `Onboarding: Fallback Offered/Accepted/Declined` to answer this.
 
+### Data-confirmation drop-off — gap
+
+The biometric data-confirmation screen (`DataConfirmationScreen`, where the user reviews parsed MRZ fields before NFC) fired no commit event, so abandonment there was invisible — it folded into a generic drop between `Biometric: MRZ Captured` and `Biometric: NFC Started`. ANA-19 adds `Biometric: Data Confirmation Confirmed`, carrying `edited` (whether the user corrected the parsed MRZ) and `edited_fields` (which of `document_number` / `date_of_birth` / `document_expiry_date` changed, to surface which MRZ field the parse gets wrong most); passport-vs-ID is already on the event as `current_branch`, so no `document_type` is duplicated. Per ANA-07, no screen-view event is added — `Biometric: MRZ Captured` is the denominator and abandonment is captured by Sentry breadcrumbs.
+
 ## Execution Model
 
 - This file is the durable workstream context. It owns the contract (event set, branch model, cross-branch flows, invariants).
@@ -117,21 +121,22 @@ The branch split tells you _what happened_ (initial intent vs final outcome) but
 
 ## Backlog
 
-| ID     | Title                                                                         | Status      | Priority | Depends on             | Plan                                                            |
-| ------ | ----------------------------------------------------------------------------- | ----------- | -------- | ---------------------- | --------------------------------------------------------------- |
-| ANA-01 | Canonical onboarding funnel events + dead-zone fixes                          | **Done**    | —        | —                      | [plan](./plans/ANA-01-canonical-onboarding-funnel.md)           |
-| ANA-11 | Canonical funnel bug fixes (post-ANA-01 production findings)                  | In Review   | High     | ANA-01                 | [plan](./plans/ANA-11-canonical-funnel-bug-fixes.md) — PR #2048 |
-| ANA-12 | Branch-specific funnel events (Biometric / KYC / Aadhaar)                     | Ready       | High     | ANA-01, ANA-11         | [plan](./plans/ANA-12-branch-specific-funnel-events.md)         |
-| ANA-13 | Observability migration — Mixpanel diet, Sentry breadcrumbs, Session Replay   | **Done**    | High     | ANA-01, ANA-11, ANA-12 | [plan](./plans/ANA-13-observability-migration.md) — PRs #2057, #2093 |
-| ANA-14 | Suppress all analytics events from mock passport flow                         | In Progress | High     | ANA-01                 | [plan](./plans/ANA-14-suppress-mock-analytics.md)               |
-| ANA-15 | Per-attempt support reference (attempt_id footer) on onboarding error screens | Ready       | Medium   | ANA-01, ANA-13         | [plan](./plans/ANA-15-attempt-id-on-error-screens.md)           |
-| ANA-16 | KYC async verdict event (provider approve/reject over websocket)              | In Review   | High     | ANA-12                 | [plan](./plans/ANA-16-kyc-verdict-event.md) — PR #2117          |
-| ANA-17 | Onboarding exit classification (single Onboarding: Ended + outcome)            | In Review   | High     | ANA-01, ANA-13         | [plan](./plans/ANA-17-classify-nullified-onboarding-exits.html) — PR #2117 |
-| ANA-18 | Remove non-funnel onboarding events                                            | In Review   | High     | ANA-13                 | [plan](./plans/ANA-18-onboarding-event-allowlist.md)            |
-| ANA-05 | Fallback decision events and fallback-offer mini-funnel                       | Ready       | Medium   | ANA-01, ANA-12         | —                                                               |
-| ANA-08 | Explicit abandonment events on app background                                 | Ready       | Low      | ANA-01                 | —                                                               |
-| ANA-02 | Investigation: internal/TestFlight traffic filtering                          | Ready       | Medium   | —                      | —                                                               |
-| ANA-04 | Investigation: native NFC analytics channel                                   | Ready       | Low      | ANA-13                 | —                                                               |
+| ID     | Title                                                                         | Status      | Priority | Depends on             | Plan                                                                       |
+| ------ | ----------------------------------------------------------------------------- | ----------- | -------- | ---------------------- | -------------------------------------------------------------------------- |
+| ANA-01 | Canonical onboarding funnel events + dead-zone fixes                          | **Done**    | —        | —                      | [plan](./plans/ANA-01-canonical-onboarding-funnel.md)                      |
+| ANA-11 | Canonical funnel bug fixes (post-ANA-01 production findings)                  | In Review   | High     | ANA-01                 | [plan](./plans/ANA-11-canonical-funnel-bug-fixes.md) — PR #2048            |
+| ANA-12 | Branch-specific funnel events (Biometric / KYC / Aadhaar)                     | Ready       | High     | ANA-01, ANA-11         | [plan](./plans/ANA-12-branch-specific-funnel-events.md)                    |
+| ANA-13 | Observability migration — Mixpanel diet, Sentry breadcrumbs, Session Replay   | **Done**    | High     | ANA-01, ANA-11, ANA-12 | [plan](./plans/ANA-13-observability-migration.md) — PRs #2057, #2093       |
+| ANA-14 | Suppress all analytics events from mock passport flow                         | In Progress | High     | ANA-01                 | [plan](./plans/ANA-14-suppress-mock-analytics.md)                          |
+| ANA-15 | Per-attempt support reference (attempt_id footer) on onboarding error screens | Ready       | Medium   | ANA-01, ANA-13         | [plan](./plans/ANA-15-attempt-id-on-error-screens.md)                      |
+| ANA-16 | KYC async verdict event (provider approve/reject over websocket)              | In Review   | High     | ANA-12                 | [plan](./plans/ANA-16-kyc-verdict-event.md) — PR #2117                     |
+| ANA-17 | Onboarding exit classification (single Onboarding: Ended + outcome)           | In Review   | High     | ANA-01, ANA-13         | [plan](./plans/ANA-17-classify-nullified-onboarding-exits.html) — PR #2117 |
+| ANA-18 | Remove non-funnel onboarding events                                           | In Review   | High     | ANA-13                 | [plan](./plans/ANA-18-onboarding-event-allowlist.md)                       |
+| ANA-19 | Instrument biometric data-confirmation (MRZ detail) screen                    | In Review   | Medium   | ANA-12                 | — PR #2119                                                                 |
+| ANA-05 | Fallback decision events and fallback-offer mini-funnel                       | Ready       | Medium   | ANA-01, ANA-12         | —                                                                          |
+| ANA-08 | Explicit abandonment events on app background                                 | Ready       | Low      | ANA-01                 | —                                                                          |
+| ANA-02 | Investigation: internal/TestFlight traffic filtering                          | Ready       | Medium   | —                      | —                                                                          |
+| ANA-04 | Investigation: native NFC analytics channel                                   | Ready       | Low      | ANA-13                 | —                                                                          |
 
 Allowed statuses: `Ready`, `In Progress`, `In Review`, `Blocked`, `Done`.
 

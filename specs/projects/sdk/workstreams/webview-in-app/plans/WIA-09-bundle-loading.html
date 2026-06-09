@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>WIA-09 — Bundle Loading Hardening · Execution Plan</title>
+<style>
+  :root {
+    --bg: #fafbfc;
+    --surface: #ffffff;
+    --surface-alt: #f6f8fa;
+    --border: #d1d9e0;
+    --border-soft: #e1e4e8;
+    --text: #1f2328;
+    --muted: #656d76;
+    --accent: #0969da;
+    --accent-soft: #ddf4ff;
+    --high: #cf222e;
+    --high-soft: #ffebe9;
+    --med: #9a6700;
+    --med-soft: #fff8c5;
+    --done: #1a7f37;
+    --done-soft: #dafbe1;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font: 14px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    color: var(--text);
+    background: var(--bg);
+  }
+  code, pre, kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.9em; }
+  code { background: var(--surface-alt); padding: 1px 5px; border-radius: 4px; border: 1px solid var(--border-soft); }
+  pre { background: var(--surface-alt); padding: 12px 14px; border-radius: 6px; border: 1px solid var(--border-soft); overflow: auto; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  header.topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 12px 24px;
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  }
+  header h1 { margin: 0; font-size: 16px; font-weight: 600; }
+  .pill {
+    font-size: 11px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface-alt);
+  }
+  .pill.draft { color: var(--med); background: var(--med-soft); border-color: var(--med); }
+  .pill.high { color: var(--high); background: var(--high-soft); border-color: var(--high); }
+  .pill.scope { color: var(--accent); background: var(--accent-soft); border-color: var(--accent); }
+  .pill.active { color: var(--accent); background: var(--accent-soft); border-color: var(--accent); }
+  .pill.done { color: var(--done); background: var(--done-soft); border-color: var(--done); }
+  .spacer { flex: 1; }
+  .layout { display: grid; grid-template-columns: 220px 1fr; gap: 32px; max-width: 1100px; margin: 0 auto; padding: 24px; }
+  nav.toc { position: sticky; top: 64px; align-self: start; font-size: 13px; }
+  nav.toc h4 { margin: 0 0 6px 0; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  nav.toc a { display: block; padding: 3px 0; color: var(--text); }
+  main { min-width: 0; }
+  main section { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 18px 22px; margin-bottom: 16px; }
+  main h2 { margin: 0 0 10px 0; font-size: 16px; }
+  main h3 { margin: 16px 0 6px 0; font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  main p { margin: 6px 0 10px 0; }
+  main ul, main ol { margin: 6px 0 10px 18px; padding: 0; }
+  main li { margin: 3px 0; }
+  table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 13px; }
+  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--border-soft); }
+  th { background: var(--surface-alt); font-weight: 600; }
+  .status { font-size: 11px; padding: 2px 8px; border-radius: 999px; display: inline-block; white-space: nowrap; border: 1px solid var(--border); background: var(--surface-alt); color: var(--muted); }
+  .status.done { color: var(--done); background: var(--done-soft); border-color: var(--done); }
+  .status.active { color: var(--accent); background: var(--accent-soft); border-color: var(--accent); }
+  .status.pending { color: var(--muted); }
+  .callout { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 8px 12px; border-radius: 0 6px 6px 0; margin: 10px 0; }
+  .callout.warn { border-left-color: var(--high); background: var(--high-soft); }
+  .callout.note { border-left-color: var(--med); background: var(--med-soft); }
+  .arrow { color: var(--muted); }
+  .check { list-style: none; margin-left: 0; }
+  .check li::before { content: "☐ "; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <h1>WIA-09 · Bundle Loading — Hardening Plan</h1>
+  <span class="pill done">Implemented — validation green</span>
+  <span class="pill scope">Scope: rn-sdk · webview-bridge</span>
+  <span class="pill">2026-05-29</span>
+  <span class="spacer"></span>
+  <div>
+    <a href="../SPEC.html">↑ webview-in-app</a>
+    &nbsp;·&nbsp;
+    <a href="../SPEC-HOSTED-LOADING.html">Contract: Bundle Loading &amp; Versioning</a>
+  </div>
+</header>
+
+<div class="layout">
+
+<nav class="toc">
+  <h4>On this page</h4>
+  <a href="#overview">Overview</a>
+  <a href="#decisions">Locked decisions</a>
+  <a href="#oos">Out of scope</a>
+  <a href="#task1">1 · Single version source</a>
+  <a href="#task2">2 · Fail closed + surface</a>
+  <a href="#task3">3 · Fast-fail on errors</a>
+  <a href="#task4">4 · Injected diagnostics</a>
+  <a href="#task5">5 · Render-prop UI</a>
+  <a href="#task6">6 · Wire the consumer</a>
+  <a href="#task7">7 · Analytics funnel</a>
+  <a href="#task8">8 · Tests</a>
+  <a href="#validation">Validation</a>
+  <a href="#done">Acceptance criteria</a>
+</nav>
+
+<main>
+
+<section id="overview">
+  <h2>Overview</h2>
+  <p>
+    <strong>You are finishing WIA-09.</strong> The embedded-bundle source, <code>__DEV__</code>-gated
+    <code>devServerUrl</code>, the <code>loading → slow → failed → ready</code> state machine, the
+    <code>lifecycle.ready</code> → splash-dismiss handoff, and retry already shipped in
+    <code>packages/rn-sdk/src/SelfVerification.tsx</code>. This plan covers only the <strong>remaining</strong>
+    work: the version handshake (terminal on a present-but-wrong version, recoverable on a missing one),
+    fast-fail on hard WebView errors, injected diagnostics, analytics funnel events, and replacing the
+    inline overlay with consumer-supplied (Euclid) UI.
+  </p>
+  <p class="callout">
+    Contract lives in <a href="./SPEC-HOSTED-LOADING.html">Bundle Loading &amp; Versioning</a> (the
+    <em>what</em> — decisions, invariants, backlog). This page is the <em>how</em> — file paths and fire
+    sites for one PR. Branch: <code>feat/webview-in-app</code>.
+  </p>
+</section>
+
+<section id="decisions">
+  <h2>Locked decisions (do not re-litigate)</h2>
+  <ul>
+    <li><strong>Version mismatch fails closed at dispatch; UX recovers when it can.</strong> Exact equality
+      against <code>BRIDGE_PROTOCOL_VERSION</code> — any non-matching or missing/non-numeric version is
+      rejected, never dispatched. A <em>present-but-wrong</em> number → terminal upgrade screen, no retry
+      (reloading the frozen bundle mismatches identically, so a retry button would be a dead button). A
+      <em>missing/non-numeric</em> version → the recoverable error state with retry (most likely a transient
+      malformed frame, not a stale binary). Don't trap the user behind a dead-end for something a retry
+      might fix.</li>
+    <li><strong>Diagnostics are injected, never imported.</strong> <code>rn-sdk</code> must NOT add
+      <code>@sentry/react-native</code>. The host fires an optional reporter callback; the Self app wires it
+      to Sentry. This matches the existing <code>analytics?: AnalyticsSink</code> injection.</li>
+    <li><strong>Error UI is a render-prop with a local-palette default.</strong> <code>rn-sdk</code> exposes
+      <code>renderLoading</code> / <code>renderError</code> slots; the Self app passes Euclid (0.x RN)
+      screens. <code>rn-sdk</code> has exactly one dependency (<code>@selfxyz/webview-bridge</code>) and no
+      design-token package, and must NOT add Euclid — so the built-in default cannot consume "shared"
+      tokens. Instead, the default reads from a single local palette constant defined in <code>rn-sdk</code>
+      (Task 5), replacing the scattered raw-hex strings. The render-prop is the path for branded/tokenized
+      UI; the local default exists only so consumers that pass nothing still get a non-broken screen.</li>
+  </ul>
+</section>
+
+<section id="oos">
+  <h2>Out of scope</h2>
+  <ul>
+    <li>You will NOT add <code>@sentry/react-native</code> or <code>@selfxyz/euclid</code> to
+      <code>packages/rn-sdk/package.json</code>.</li>
+    <li>You will NOT change the hosted-URL / OTA story (declined — see
+      <a href="./SPEC-HOSTED-LOADING.html">Bundle Loading spec</a> Decision 6 and the workstream
+      <code>sdk-distribution/</code>).</li>
+    <li>You will NOT touch the <code>webview-app</code> (WebView-side) error screens — the host overlay
+      renders when the WebView is unavailable and cannot use them.</li>
+    <li>You will NOT alter the 3s / 10s thresholds.</li>
+  </ul>
+</section>
+
+<section id="task1">
+  <h2>Task 1 — Single source of truth for the protocol version</h2>
+  <p>
+    <code>packages/rn-sdk/src/bridge/MessageRouter.ts:9</code> hardcodes a local
+    <code>const BRIDGE_PROTOCOL_VERSION = 1</code>, duplicating
+    <code>packages/webview-bridge/src/types.ts:152</code>. Reconcile:
+  </p>
+  <ul>
+    <li>Import <code>BRIDGE_PROTOCOL_VERSION</code> from <code>@selfxyz/webview-bridge</code> (re-exported at
+      <code>packages/webview-bridge/src/index.ts:37</code>) and delete the local constant.</li>
+    <li>Confirm <code>rn-sdk</code> already depends on <code>@selfxyz/webview-bridge</code> (it does —
+      <code>package.json</code> <code>dependencies</code>, <code>workspace:^</code>). No new dep.</li>
+  </ul>
+  <p class="callout note">
+    The constant is the single source of truth for the <em>number</em>, not the enforcement. Each side of the
+    bridge enforces independently against it: <code>webview-bridge/src/schema.ts:105</code> validates
+    host→WebView messages on the WebView side; <code>MessageRouter.ts:59</code> validates WebView→host
+    messages on the host side. Task 2 fixes the host side.
+  </p>
+</section>
+
+<section id="task2">
+  <h2>Task 2 — Fail closed on a missing version, and surface the mismatch to the host</h2>
+  <p>
+    In <code>MessageRouter.ts:59-77</code> the guard is
+    <code>typeof request.version === 'number' &amp;&amp; request.version !== BRIDGE_PROTOCOL_VERSION</code>.
+    This <strong>fails open</strong> when <code>version</code> is absent. Change it to treat a
+    missing/non-numeric version as a mismatch (default-deny).
+  </p>
+  <p class="callout note">
+    Precedent: <code>webview-bridge/src/schema.ts:105</code> already fails closed —
+    <code>assertNumber(parsed, 'version')</code> throws before the
+    <code>parsed.version !== BRIDGE_PROTOCOL_VERSION</code> check, so a missing version is rejected there.
+    <code>MessageRouter</code>'s <code>typeof === 'number' &amp;&amp;</code> is the inconsistent outlier;
+    this task aligns it.
+  </p>
+  <p>
+    The router currently only replies to the WebView with the <code>UNSUPPORTED_VERSION</code> error code and
+    returns — the host UI never learns. Add a notification channel:
+  </p>
+  <ul>
+    <li>Extend <code>RouterConfig</code> (<code>MessageRouter.ts:29-32</code>) with
+      <code>onVersionMismatch?: (info: { received: unknown; expected: number }) =&gt; void</code>.</li>
+    <li>Fire it inside the mismatch branch (<code>:59-77</code>) <strong>before</strong> returning, in
+      addition to the existing error response. The router stays policy-free — it reports
+      <code>received</code> and lets the host decide the UX.</li>
+    <li>Keep sending the <code>UNSUPPORTED_VERSION</code> response (the WebView still gets a clean
+      rejection).</li>
+    <li>Fix the now-stale error message at <code>MessageRouter.ts:72</code>: it interpolates
+      <code>${request.version}</code>, which renders as <code>"version undefined not supported"</code> once a
+      missing version reaches this branch. Make it tolerate a non-numeric/absent value (e.g.
+      <code>received ${String(request.version)}</code>) so the rejection log stays legible.</li>
+  </ul>
+  <p class="callout note">
+    The version gate is request-scoped — it sits after <code>if (request.type !== 'request') return;</code>
+    (<code>MessageRouter.ts:55-57</code>), so only inbound <code>request</code> messages are checked. That is
+    correct: the host only ever receives requests from the WebView (it pushes events / sends responses the
+    other way). Don't widen the gate to all message types.
+  </p>
+  <p>In <code>SelfVerification.tsx</code>:</p>
+  <ul>
+    <li>Add a terminal stage to the <code>LoadStage</code> union (<code>:124</code>):
+      <code>'loading' | 'slow' | 'failed' | 'ready' | 'version_mismatch'</code>.</li>
+    <li>Pass <code>onVersionMismatch</code> into the <code>MessageRouter</code> construction
+      (<code>:205-214</code>). In the callback, <strong>branch on <code>received</code></strong>:
+      <code>typeof received === 'number'</code> → <code>setLoadStage('version_mismatch')</code> (terminal —
+      definitive incompatibility); otherwise → <code>setLoadStage('failed')</code> (recoverable — a missing
+      or malformed version is most likely transient). Fire the diagnostics reporter (Task 4) in both
+      cases.</li>
+    <li>In the loading-timer effect (<code>:293-306</code>) and the render guard (<code>:364-366</code>),
+      treat <code>'version_mismatch'</code> as terminal: do not arm/keep timers, keep the overlay shown.
+      <code>'failed'</code> stays recoverable — retry re-arms timers, as today.</li>
+  </ul>
+  <div class="callout note">
+    <strong>Decision (UX-first):</strong> fail closed on <em>dispatch</em> for any non-matching or absent
+    version — the message is never processed (security). But the <em>user</em> only hits the terminal
+    "Please update Self app" dead-end when the version is <strong>present-but-wrong</strong> (a retry is
+    genuinely futile against the frozen bundle). A <strong>missing/non-numeric</strong> version routes to
+    the recoverable error with retry — don't trap the user behind a dead button for what is most likely a
+    transient frame. <code>onVersionMismatch</code>'s <code>received</code> is the discriminator (a number
+    → terminal; <code>undefined</code>/non-number → recoverable) and flows into the Sentry
+    <code>detail</code> either way.
+  </div>
+</section>
+
+<section id="task3">
+  <h2>Task 3 — Fast-fail on hard WebView load errors</h2>
+  <p>
+    Today a missing/corrupt bundle only surfaces via the 10s timeout. Wire the <code>WebView</code> element
+    (<code>:350-363</code>) to fail fast:
+  </p>
+  <ul>
+    <li><code>onError</code> and <code>onHttpError</code> → <code>setLoadStage('failed')</code> and fire the
+      diagnostics reporter with the platform error.</li>
+    <li>Android <code>onRenderProcessGone</code> → <code>setLoadStage('failed')</code> + reporter (renderer
+      crash).</li>
+    <li>Guard each so a late event after <code>ready</code> does not regress the stage (mirror the
+      <code>stage === 'ready' ? stage : …</code> pattern at <code>:299-301</code>).</li>
+  </ul>
+</section>
+
+<section id="task4">
+  <h2>Task 4 — Injected diagnostics reporter</h2>
+  <p>
+    Add an optional reporter prop to <code>SelfVerificationProps</code>, next to
+    <code>analytics?: AnalyticsSink</code> (<code>:99</code>):
+  </p>
+  <pre>onLoadDiagnostic?: (event: {
+  kind: 'timeout' | 'load_error' | 'version_mismatch';
+  source: 'bundle' | 'dev-server';
+  detail?: Record&lt;string, unknown&gt;;
+}) =&gt; void;</pre>
+  <ul>
+    <li>One taxonomy: diagnostic <code>kind</code> and the <code>LoadStage</code>/<code>renderError</code>
+      literal both use <code>version_mismatch</code> (snake_case, matching <code>load_error</code>). No more
+      <code>protocol_mismatch</code> vs <code>version-mismatch</code> drift.</li>
+    <li>Derive <code>source</code> from whether the <code>__DEV__</code> + <code>devServerUrl</code> branch
+      was taken (<code>:322-327</code>).</li>
+    <li>Fire it on: the 10s <code>failed</code> transition (<code>:299-301</code>), the Task 3 error
+      handlers, and the Task 2 mismatch callback. Note a <em>missing</em> version fires
+      <code>kind: 'version_mismatch'</code> with <code>detail.received</code> = <code>undefined</code> even
+      though its <em>stage</em> is the recoverable <code>failed</code> — the diagnostic records the cause,
+      the stage records the UX.</li>
+    <li>Do not import Sentry. The consumer (Task 6) maps <code>kind</code> →
+      <code>Sentry.captureException</code> with tags <code>runtime: rn-host</code> and
+      <code>webview_source: &lt;source&gt;</code>, per the spec invariants.</li>
+  </ul>
+</section>
+
+<section id="task5">
+  <h2>Task 5 — Render-prop slots + local-palette default, split recoverable vs terminal</h2>
+  <p>Replace the raw-hex inline <code>LoadingOverlay</code> (<code>:371-416</code>):</p>
+  <ul>
+    <li>Add <code>renderLoading?: (stage: 'loading' | 'slow') =&gt; React.ReactNode</code> and
+      <code>renderError?: (info: { kind: 'timeout' | 'load_error' | 'version_mismatch'; canRetry: boolean;
+      onRetry: () =&gt; void }) =&gt; React.ReactNode</code> to the props.</li>
+    <li>Map <code>loadStage</code> → render-prop: <code>loading</code>/<code>slow</code> →
+      <code>renderLoading</code>; <code>failed</code> →
+      <code>renderError({ kind: 'timeout' | 'load_error', canRetry: true, onRetry })</code>;
+      <code>version_mismatch</code> →
+      <code>renderError({ kind: 'version_mismatch', canRetry: false, onRetry })</code>.</li>
+    <li><strong>Token source.</strong> <code>rn-sdk</code> has no design-token package and must not add Euclid
+      (see Locked decisions), so there is no "shared" token module to import. Define a single local palette
+      constant in <code>rn-sdk</code> — a module-level <code>const COLORS = { bg: '#000', fg: '#fff', … }</code>
+      in a new <code>packages/rn-sdk/src/theme.ts</code> (or co-located at the top of
+      <code>SelfVerification.tsx</code> if you prefer one file) — and reference it everywhere a color is
+      needed. The goal is one source of truth, not scattered literals; this is the pragmatic reading of the
+      "design tokens over hex" rule for a near-zero-dependency embeddable shell.</li>
+    <li>When the consumer passes nothing, fall back to a built-in default that reads from that local palette
+      (no inline hex literals) and preserves the existing <code>accessibilityRole="button"</code> on retry.
+      The default for <code>version_mismatch</code> shows "Please update Self app" and <strong>renders no
+      retry button</strong>. Default copy is English-only — consumers localize via the render-prop.</li>
+    <li><strong>Cover every hex site, not just the overlay.</strong> The raw-hex strings to replace are the
+      overlay's (<code>:386</code> <code>backgroundColor</code>, <code>:391/393/396</code> spinner+text,
+      <code>:406</code> <code>borderColor</code>, <code>:411</code> retry text) <em>and</em> the WebView's
+      outer container at <code>:349</code> (<code>backgroundColor: '#000'</code>). Route all of them through
+      the local palette so no <code>#000</code>/<code>#fff</code> literal survives in
+      <code>SelfVerification.tsx</code>.</li>
+  </ul>
+</section>
+
+<section id="task6">
+  <h2>Task 6 — Wire the Self-app consumer</h2>
+  <p>
+    In <code>app/src/screens/dev/WebViewHostScreen.tsx</code> (passes props at <code>:96-107</code>) — the
+    <strong>only</strong> <code>SelfVerification</code> mount in <code>app/src</code>, reached in production
+    from <code>app/src/screens/app/SplashScreen.tsx:157/172</code> and
+    <code>app/src/navigation/deeplinks.ts:213</code> (not only the dev shortcut from
+    <code>app/src/screens/dev/sections/DebugShortcutsSection.tsx:126</code>):
+  </p>
+  <ul>
+    <li>Pass <code>onLoadDiagnostic</code> mapped to the app's Sentry instance:
+      <code>kind: 'version_mismatch'</code> → <code>captureException</code> (level error);
+      timeout/load_error → <code>captureException</code> (level warning). Add tags
+      <code>runtime: rn-host</code>, <code>webview_source</code>.</li>
+    <li>Pass <code>renderLoading</code> / <code>renderError</code> backed by Euclid (0.x RN) screens so the
+      host shows branded loading + error UI, including the "Please update Self app" terminal screen.</li>
+  </ul>
+  <p class="callout note">
+    Despite living under <code>screens/dev/</code>, this is the production verification host. Consider a
+    follow-up to move it out of <code>dev/</code> — out of scope for this PR.
+  </p>
+</section>
+
+<section id="task7">
+  <h2>Task 7 — Analytics funnel events (taxonomy decided during implementation)</h2>
+  <p>
+    The SDK already injects an analytics sink — <code>analytics?: AnalyticsSink</code> on
+    <code>SelfVerificationProps</code> (<code>:99</code>), forwarded to <code>createHandlers</code>
+    (<code>:246</code>) and available in the component body. This is a <strong>separate channel</strong>
+    from the Sentry diagnostics in Task 4: diagnostics are error telemetry; analytics is the product funnel
+    — how many users hit a load failure or the "update Self app" wall before verifying.
+  </p>
+  <p>Fire funnel events through the existing <code>analytics</code> sink (<em>not</em> Sentry) on the
+    failure / terminal transitions:</p>
+  <ul>
+    <li>the 10s timeout → <code>failed</code> (<code>:299-301</code>);</li>
+    <li>the Task 3 hard load errors (<code>onError</code> / <code>onHttpError</code> /
+      <code>onRenderProcessGone</code>);</li>
+    <li>the terminal <code>version_mismatch</code>;</li>
+    <li>consider the recovered case too — a load that <code>failed</code> then reached <code>ready</code>
+      after retry.</li>
+  </ul>
+  <div class="callout note">
+    <strong>Decision deferred (finalize while implementing — the funnel shape will be clearer then):</strong>
+    the exact event names, properties, and which transitions deserve an event. Follow the app's existing
+    analytics event-naming convention — do not invent a parallel scheme — and keep it funnel-shaped, not a
+    duplicate of the Sentry diagnostic stream. Starting proposal: one <code>webview_load_failed</code> event
+    with <code>{ kind, source }</code> and one terminal <code>webview_version_mismatch</code> event; refine
+    against the funnel as you wire it.
+  </div>
+  <div class="callout">
+    <strong>Finalized taxonomy (implemented):</strong> three events, named in the app's
+    <code>"Category: Title Case"</code> convention (snake_case proposal dropped — it would have been the only
+    parallel scheme). Defined once in <code>packages/rn-sdk/src/analytics-events.ts</code>
+    (<code>WebViewLoadEvents</code>, the firing source) and mirrored in the app keep-list as
+    <code>WebViewEvents</code> in <code>mobile-sdk-alpha/constants/analytics.ts</code> — the rn-sdk copy is
+    unavoidable (the SDK cannot import <code>mobile-sdk-alpha</code> per the one-dependency rule) and the
+    mobile-sdk copy is the lightweight string module the app's <code>KNOWN_EVENT_NAMES</code> validator reads
+    (importing the rn-sdk barrel would pull <code>react-native-webview</code> into the analytics graph).
+    <ul>
+      <li><code>WebView: Load Failed</code> — <code>{ kind: 'timeout' | 'load_error', source }</code></li>
+      <li><code>WebView: Version Mismatch</code> — <code>{ source, recoverable }</code>
+        (<code>recoverable=true</code> for a missing/non-numeric version, <code>false</code> for the terminal
+        present-but-wrong case)</li>
+      <li><code>WebView: Load Recovered</code> — <code>{ source }</code>, fired when a load that
+        <code>failed</code> reaches <code>ready</code> after retry</li>
+    </ul>
+    Funnel firing is wrapped so a throwing/slow sink can never block or break the load UI (true
+    fire-and-forget).
+  </div>
+  <p><strong>Constraints:</strong></p>
+  <ul>
+    <li>No new analytics dependency — reuse the injected <code>AnalyticsSink</code>.</li>
+    <li>Fire-and-forget — never block the load or error UI on an analytics call.</li>
+    <li>Keep diagnostics (Task 4, Sentry) and analytics (funnel) as distinct calls: same trigger points,
+      different sinks, different payloads.</li>
+  </ul>
+</section>
+
+<section id="task8">
+  <h2>Task 8 — Tests</h2>
+  <ul>
+    <li><code>MessageRouter</code> unit (<code>packages/rn-sdk/src/__tests__/MessageRouter.test.ts</code>): a
+      <code>request</code> with <code>version: 2</code> and a request with <strong>no</strong>
+      <code>version</code> both fire <code>onVersionMismatch</code> (with <code>received: 2</code> and
+      <code>received: undefined</code> respectively) and still emit an <code>UNSUPPORTED_VERSION</code>
+      response.</li>
+    <li><code>SelfVerification</code> behavior: a present-but-wrong version drives the
+      <code>version_mismatch</code> stage (terminal, <code>canRetry: false</code>); a
+      <strong>missing</strong> version drives the recoverable <code>failed</code> stage
+      (<code>canRetry: true</code>); <code>onError</code> transitions to <code>failed</code> without waiting
+      for the timeout; <code>onLoadDiagnostic</code> fires once per failure with the correct
+      <code>kind</code> + <code>source</code>. Follow the hoisted-mock pattern (no nested
+      <code>require('react-native')</code>) and place tests where the OOM guard covers them.</li>
+    <li>Analytics: a failure transition fires the funnel event through the injected
+      <code>AnalyticsSink</code> exactly once, with the agreed name/properties, and the load/error UI still
+      renders regardless of whether the analytics call resolves (fire-and-forget).</li>
+  </ul>
+</section>
+
+<section id="validation">
+  <h2>Validation</h2>
+  <pre>cd packages/rn-sdk &amp;&amp; yarn test &amp;&amp; yarn types
+cd packages/webview-bridge &amp;&amp; yarn build &amp;&amp; yarn test
+yarn lint &amp;&amp; yarn types</pre>
+  <p class="callout">
+    <strong>Run results:</strong> rn-sdk 145/145 + types pass; webview-bridge 68/68 + build pass; app jest
+    102 suites / 1117 tests pass (incl. the new <code>app/tests/src/sdk/SelfVerification.test.tsx</code>);
+    app <code>tsc --noEmit</code> and mobile-sdk-alpha typecheck pass; eslint clean on all changed files
+    (rn-sdk has no <code>lint</code> script, so it is not in the workspace lint set).
+  </p>
+  <p class="callout note">
+    <strong>Test harness + pre-existing build fixes (departures from the plan, required to make the suite
+    run):</strong>
+    <ul>
+      <li>SelfVerification behavior tests live in <code>app/tests/</code> (jest + RN preset + the global
+        <code>react-native-webview</code> mock — the OOM-guarded home), driving the captured WebView
+        <code>onMessage</code>/<code>onError</code>/<code>onHttpError</code> props and asserting the
+        render-prop contract. rn-sdk's own vitest has no RN/jsdom environment.</li>
+      <li><code>app/jest.config.cjs</code>: mapped <code>@selfxyz/rn-sdk</code> → its built
+        <code>dist/index.js</code>, and collapsed <code>react</code> / <code>react/jsx-runtime</code> /
+        <code>react-native</code> to the app's copies (rn-sdk ships its own React 18 + react-native; without
+        this the bundle's hooks hit a null dispatcher against the app's React 19 and the RN mock would not
+        apply). Same rationale as the existing <code>react-native-webview</code> single-resolution map.</li>
+      <li><code>app/tsconfig.json</code>: added a <code>@selfxyz/rn-sdk</code> path. The pre-existing
+        <code>WebViewHostScreen</code> import was unresolved (the package is not symlinked into
+        <code>app/node_modules</code>), so <code>app yarn types</code> was already failing before this PR;
+        the path fixes that broken build.</li>
+      <li>Rebuilt <code>mobile-sdk-alpha</code> dist so the new <code>WebViewEvents</code> reaches the app's
+        dist-resolved type + runtime paths; added the same group to the <code>jest.setup.js</code> analytics
+        mock so <code>KNOWN_EVENT_NAMES</code> does not <code>Object.values(undefined)</code>.</li>
+    </ul>
+  </p>
+</section>
+
+<section id="done">
+  <h2>Acceptance criteria</h2>
+  <ul class="check">
+    <li><code>MessageRouter</code> imports <code>BRIDGE_PROTOCOL_VERSION</code> from
+      <code>@selfxyz/webview-bridge</code>; no local copy remains.</li>
+    <li>A mismatched <strong>or missing</strong> envelope <code>version</code> fails closed at dispatch
+      (<code>onVersionMismatch</code> fires, message never processed). A <em>present-but-wrong</em> version
+      shows the terminal "Please update Self app" screen with no retry; a <em>missing/non-numeric</em>
+      version shows the recoverable error screen with retry.</li>
+    <li><code>onError</code> / <code>onHttpError</code> / <code>onRenderProcessGone</code> surface the
+      recoverable error screen without waiting 10s.</li>
+    <li><code>onLoadDiagnostic</code> fires for timeout, load_error, and version_mismatch with the correct
+      <code>source</code>; <code>rn-sdk</code> has no Sentry import.</li>
+    <li>The inline overlay is gone; render-props drive the UI with a default backed by a single local palette
+      constant (no <code>#000</code>/<code>#fff</code> literal left in <code>SelfVerification.tsx</code>,
+      including the outer container at <code>:349</code>); the app passes Euclid screens.</li>
+    <li>Failure transitions fire a funnel event through the injected <code>AnalyticsSink</code> (distinct
+      from the Sentry diagnostic); no new analytics dependency added. (Event taxonomy finalized during
+      implementation.)</li>
+    <li>All validation commands pass.</li>
+  </ul>
+</section>
+
+</main>
+</div>
+</body>
+</html>

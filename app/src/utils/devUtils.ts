@@ -18,6 +18,10 @@ import {
  */
 export const IS_DEV_MODE = typeof __DEV__ !== 'undefined' && __DEV__;
 export const IS_EUCLID_ENABLED = false; // Enabled for proof request UI redesign
+// WebView-in-app cutover. Keep false until WIA ships: store builds and the
+// launch e2e must exercise the legacy native onboarding flow. Flip to true only
+// for WIA development/testing.
+export const IS_WIA_ENABLED = false;
 
 /**
  * Test documents configuration for visual testing of ID card backgrounds.

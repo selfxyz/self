@@ -1,0 +1,23 @@
+# Cold-launch readiness contract for the legacy native onboarding flow (Android).
+#
+# WIA has not cut over (IS_WIA_ENABLED is false in app/src/utils/devUtils.ts), so
+# SplashScreen routes a fresh install into the native DisclaimerScreen. Dismissing
+# the disclaimer lands on the native HomeScreen. These testIDs are the launch
+# contract: copy- and layout-independent, unlike screen text or pixel taps.
+#
+# Maestro requires a subflow's appId to match its caller's, so the iOS contract
+# lives in launch-onboarding.ios.yaml. Keep the two in sync; the app-side testIDs
+# are the real shared contract. Update here when the native launch changes.
+appId: com.proofofpassportapp
+---
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "disclaimer-dismiss-button"
+    timeout: ${LAUNCH_WAIT_MS:120000}
+- tapOn:
+    id: "disclaimer-dismiss-button"
+- extendedWaitUntil:
+    visible:
+      id: "home-screen-root"
+    timeout: 30000

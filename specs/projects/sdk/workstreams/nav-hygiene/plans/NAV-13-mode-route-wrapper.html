@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>NAV-13 Plan — Declare Mode at Route Registration</title>
+<link rel="stylesheet" href="./_shared.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <h1>NAV-13 · Declare Mode at Route Registration</h1>
+  <span class="meta-pill status-Ready">Ready</span>
+  <span class="meta-pill prio-High">High</span>
+  <span class="meta-pill">Updated 2026-05-25</span>
+  <span class="spacer"></span>
+  <div class="links">
+    <a href="../SPEC.html">← Spec</a>
+    <a href="../AUDIT.html">Audit</a>
+  </div>
+</header>
+
+<div class="layout">
+
+<nav class="toc">
+  <h4>On this page</h4>
+  <a href="#why">Why</a>
+  <a href="#decisions">Decisions</a>
+  <a href="#meta">Meta</a>
+  <a href="#scope">Scope</a>
+  <a href="#out-of-scope">Out of Scope</a>
+  <a href="#required-files">Required Files</a>
+  <a href="#approach">Approach</a>
+  <a href="#validation">Validation</a>
+  <a href="#open-questions">Open Questions</a>
+  <a href="#hand-off">Hand-off</a>
+  <h4>Workstream</h4>
+  <a href="../SPEC.html">SPEC ↗</a>
+  <a href="../AUDIT.html">AUDIT ↗</a>
+</nav>
+
+<main>
+
+<section id="why" class="tldr">
+  <h2>Why</h2>
+  <p>
+    Per SPEC invariant #1: every route declares which mode(s) it belongs to. Today, mode coupling is implicit — <code>ModeBoot</code> redirects between mode roots, per-screen guards check <code>useOperatingMode()</code>, and the router itself can't reject an embed flow that tries to reach <code>/settings</code>. NAV-13 introduces a <code>ModeRoute</code> wrapper that hides routes not matching the current mode. Removes the scattered guards. Pairs with NAV-08 — routes get tagged the moment their paths change.
+  </p>
+</section>
+
+<section id="decisions" class="decisions-block">
+  <h2>Decisions</h2>
+  <p class="decisions-intro">Locked in on 2026-05-25. See <a href="../DECISIONS.md">DECISIONS.md</a>.</p>
+  <ul class="decisions-list">
+    <li class="decision">
+      <div class="d-head"><code>nav-13-q1-wrapper-shape</code> · Decided</div>
+      <p class="d-q">Wrapper API: <code>&lt;ModeRoute mode='…' path='…' element={…} /&gt;</code> or <code>&lt;Route element={&lt;ModeGuard mode='…'&gt;…&lt;/ModeGuard&gt;} /&gt;</code>?</p>
+      <p class="d-a"><strong><code>&lt;ModeRoute&gt;</code>.</strong> Single declaration; ~40 call sites stay as one-liners. Wrapper logic is non-trivial (must render a <code>&lt;Route&gt;</code> to satisfy react-router) — pay that cost once.</p>
+    </li>
+    <li class="decision">
+      <div class="d-head"><code>nav-13-q2-mismatch-behavior</code> · Decided</div>
+      <p class="d-q">On mode-mismatch (e.g. embed user hits <code>/settings</code>): 404, redirect home, or fail-closed?</p>
+      <p class="d-a"><strong>Mode-aware behavior.</strong> Self-app users → <code>&lt;Navigate to="/" replace /&gt;</code>. Embed users → <code>lifecycle.setResult({ success: false, errorCode: 'route_not_allowed' })</code> + <code>lifecycle.dismiss()</code>. Host gets a clean failure signal; self-app user lands somewhere sensible.</p>
+    </li>
+  </ul>
+</section>
+
+<section id="meta">
+  <h2>Meta</h2>
+  <div class="meta-grid">
+    <div class="item"><div class="label">Workstream</div><div class="value">nav-hygiene</div></div>
+    <div class="item"><div class="label">Linear</div><div class="value">TBD</div></div>
+    <div class="item"><div class="label">Owner</div><div class="value">TBD</div></div>
+    <div class="item"><div class="label">Branch</div><div class="value"><code>chore/nav-08-namespace</code> (paired with NAV-08)</div></div>
+    <div class="item"><div class="label">PR</div><div class="value">TBD (paired with NAV-08)</div></div>
+    <div class="item"><div class="label">Depends on</div><div class="value">NAV-01, NAV-12</div></div>
+  </div>
+</section>
+
+<section id="scope">
+  <h2>Scope</h2>
+  <ul class="scope">
+    <li>Implement the <code>ModeRoute</code> wrapper per <a href="#open-questions">Q1</a>. Two shapes:
+      <pre><code>// Option A: &lt;ModeRoute&gt; (recommended)
+&lt;ModeRoute mode="self-app" path="/settings" element={&lt;SettingsScreen /&gt;} /&gt;
+&lt;ModeRoute mode="embed" path="/disclose/request" element={&lt;DiscloseScreen /&gt;} /&gt;
+&lt;ModeRoute mode="shared" path="/disclose/kyc-pending" element={&lt;KycPendingScreen /&gt;} /&gt;
+&lt;ModeRoute mode="dev" path="/dev/keychain" element={&lt;KeychainDebugScreen /&gt;} /&gt;
+
+// Option B: &lt;ModeGuard&gt; inside &lt;Route&gt;
+&lt;Route path="/settings" element={&lt;ModeGuard mode="self-app"&gt;&lt;SettingsScreen /&gt;&lt;/ModeGuard&gt;} /&gt;</code></pre>
+    </li>
+    <li>Replace every <code>&lt;Route&gt;</code> in <code>App.tsx</code> with the wrapper. Each gets a <code>mode</code> declaration from the NAV-01 disposition table.</li>
+    <li>Implement mode-mismatch behavior per <a href="#open-questions">Q2</a>:
+      <ul>
+        <li><strong>mode-aware</strong> (recommended): self-app → redirect to <code>/</code>; embed → <code>setResult({success:false, error:'route_not_allowed'}) + dismiss</code>; dev/shared → render normally.</li>
+        <li><strong>always-home</strong>: redirect to <code>/</code> regardless. Wrong for embed.</li>
+        <li><strong>404</strong>: render a 404 component. Bad for embed UX.</li>
+      </ul>
+    </li>
+    <li>Remove the implicit mode coupling in <code>ModeBoot</code> — specifically the path-prefix checks (<code>path.startsWith('/tunnel')</code>) become unnecessary because <code>ModeRoute</code> enforces it route-by-route.</li>
+    <li>Add unit tests for <code>ModeRoute</code> behavior: each (mode, route-mode) pair → correct outcome.</li>
+  </ul>
+</section>
+
+<section id="out-of-scope">
+  <h2>Out of Scope</h2>
+  <ul class="scope">
+    <li><strong>Route path renames</strong> — owned by NAV-08 (shared PR).</li>
+    <li><strong>Per-screen guards</strong> like <code>HomeScreen</code>'s "no documents → onboarding" — that's a data-dependent redirect, not mode-based. Stays.</li>
+    <li><strong>Mode literal rename</strong> — NAV-12.</li>
+    <li><strong>DEV gating</strong> — <code>/dev/*</code> routes are still wrapped with <code>{import.meta.env.DEV && ...}</code>. <code>mode="dev"</code> in <code>ModeRoute</code> is additional metadata, not a replacement for the build-time gate.</li>
+  </ul>
+</section>
+
+<section id="required-files">
+  <h2>Required Files</h2>
+  <ul class="scope">
+    <li><code>packages/webview-app/src/components/ModeRoute.tsx</code> (new)</li>
+    <li><code>packages/webview-app/tests/components/ModeRoute.test.tsx</code> (new)</li>
+    <li><code>packages/webview-app/src/App.tsx</code> (every <code>&lt;Route&gt;</code> becomes <code>&lt;ModeRoute&gt;</code>)</li>
+    <li><code>packages/webview-app/src/components/ModeBoot.tsx</code> (simplify — remove path-prefix redirects)</li>
+  </ul>
+</section>
+
+<section id="approach">
+  <h2>Approach</h2>
+  <h3>Step 1 — Define the wrapper</h3>
+  <p>Per Q1 → mode-route (recommended):</p>
+  <pre><code>type RouteMode = 'self-app' | 'embed' | 'shared' | 'dev';
+
+export function ModeRoute({ mode, path, element }: {
+  mode: RouteMode;
+  path: string;
+  element: ReactNode;
+}) {
+  const { mode: currentMode } = useOperatingMode();
+  const lifecycle = useSelfClient().lifecycle;
+
+  // shared + dev always render
+  if (mode === 'shared' || mode === 'dev') {
+    return &lt;Route path={path} element={element} /&gt;;
+  }
+
+  // self-app route + self-app mode → render
+  // embed route + embed mode → render
+  const routeIsForCurrentMode =
+    (mode === 'self-app' &amp;&amp; currentMode === 'self-app') ||
+    (mode === 'embed' &amp;&amp; currentMode === 'embed');
+
+  if (routeIsForCurrentMode) return &lt;Route path={path} element={element} /&gt;;
+
+  // Mismatch — behavior per Q2
+  return &lt;Route path={path} element={&lt;ModeMismatchHandler routeMode={mode} /&gt;} /&gt;;
+}
+
+function ModeMismatchHandler({ routeMode }: { routeMode: RouteMode }) {
+  const { mode } = useOperatingMode();
+  const lifecycle = useSelfClient().lifecycle;
+  useEffect(() =&gt; {
+    if (mode === 'embed') {
+      lifecycle.setResult({ success: false, error: 'route_not_allowed' }).catch(() =&gt; {});
+      lifecycle.dismiss();
+    }
+  }, [mode]);
+  if (mode === 'self-app') return &lt;Navigate to="/" replace /&gt;;
+  return null;
+}</code></pre>
+
+  <h3>Step 2 — Tag every route</h3>
+  <p>Open <code>App.tsx</code> and walk every route. Read each row's classification from the NAV-01 disposition table. Wrap with <code>&lt;ModeRoute mode="..." ... /&gt;</code>.</p>
+
+  <h3>Step 3 — Simplify ModeBoot</h3>
+  <p>After NAV-13: <code>ModeBoot</code>'s "if path starts with /tunnel and mode is wallet, redirect to /" check is redundant — <code>ModeRoute</code> handles it. Delete those lines (lines 76–78 in current ModeBoot).</p>
+  <p>The fail-closed guard (lines 39–62) stays — it's about the verificationRequest validity, not route access.</p>
+
+  <h3>Step 4 — Unit tests</h3>
+  <p>Cases:</p>
+  <ul class="scope">
+    <li>mode='self-app' route, currentMode='self-app' → renders element</li>
+    <li>mode='self-app' route, currentMode='embed' → renders Navigate("/") (in self-app), or dismisses (in embed... wait, this case shouldn't happen — embed user shouldn't hit a self-app route. Test the handler dispatches per Q2.)</li>
+    <li>mode='shared' route, any mode → renders element</li>
+    <li>mode='dev' route, any mode → renders element (DEV-gated at registration is build-time concern)</li>
+  </ul>
+</section>
+
+<section id="validation">
+  <h2>Validation</h2>
+  <ul class="scope">
+    <li><code>yarn test components/ModeRoute</code> — passes.</li>
+    <li><code>yarn types &amp;&amp; yarn build &amp;&amp; yarn lint</code> — clean.</li>
+    <li>Manual self-app: every cluster reachable; embed-only routes (if any remain after NAV-08) return Navigate("/").</li>
+    <li>Manual embed: bridge receives a <code>setResult+dismiss</code> if user is tricked to a self-app-only path.</li>
+    <li><code>grep -n "&lt;Route " packages/webview-app/src/App.tsx</code> — zero hits (every route is <code>&lt;ModeRoute&gt;</code> or a Navigate redirect inside).</li>
+  </ul>
+</section>
+
+<section id="open-questions">
+  <h2>Open Questions</h2>
+  <p style="color:var(--muted);font-size:13px;margin-top:0">Answers persist to <code>localStorage</code>. Aggregate view in <a href="../SPEC.html#open-questions">SPEC.html</a>.</p>
+  <div id="oq-container"></div>
+</section>
+
+<section id="hand-off">
+  <h2>Hand-off</h2>
+  <ul class="scope">
+    <li><strong>Lands in the same PR as <span class="nav-link">NAV-08</span>.</strong> Routes get mode declarations the moment their paths change.</li>
+    <li><span class="nav-link">NAV-03</span>'s <code>decideBootRoute</code> can read from <code>ModeRoute</code>'s metadata if the API exposes a lookup helper; otherwise stays independent.</li>
+    <li><span class="nav-link">NAV-04</span>'s <code>useClusterClose</code> Q1 may select <code>route-metadata</code> as the cluster-detection strategy — if so, NAV-04 ships after NAV-13.</li>
+  </ul>
+</section>
+
+</main>
+</div>
+
+<script src="./_open-questions.js"></script>
+<script>
+  window.NavHygieneOQ.renderQuestionsForPlan('NAV-13', document.getElementById('oq-container'));
+
+  const sections = document.querySelectorAll('section[id]');
+  const tocLinks = document.querySelectorAll('nav.toc a[href^="#"]');
+  const obs = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (entry.isIntersecting) {
+        tocLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === `#${entry.target.id}`));
+      }
+    }
+  }, { rootMargin: '-50% 0px -45% 0px' });
+  sections.forEach(s => obs.observe(s));
+</script>
+
+</body>
+</html>

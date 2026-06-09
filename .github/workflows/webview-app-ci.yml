@@ -80,3 +80,19 @@ jobs:
         run: yarn workspace @selfxyz/webview-bridge build
       - name: Typecheck
         run: yarn workspace @selfxyz/webview-app types
+
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install dependencies
+        uses: ./.github/actions/yarn-install
+      - name: Build common
+        run: yarn workspace @selfxyz/common build
+      - name: Build mobile-sdk-alpha
+        run: yarn workspace @selfxyz/mobile-sdk-alpha build
+      - name: Build webview-bridge
+        run: yarn workspace @selfxyz/webview-bridge build
+      - name: Test
+        run: yarn workspace @selfxyz/webview-app test

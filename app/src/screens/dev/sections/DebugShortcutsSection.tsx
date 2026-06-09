@@ -121,6 +121,10 @@ export const DebugShortcutsSection: React.FC<DebugShortcutsSectionProps> = ({
             onPress={handleStartTestDscCircuit}
           />
         )}
+        <ShortcutRow
+          label="WebView Host (rn-sdk)"
+          onPress={() => navigation.navigate('WebViewHost')}
+        />
       </YStack>
     </ParameterSection>
   );
