@@ -1,0 +1,32 @@
+appId: com.proofofpassportapp
+---
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "home-screen-root"
+    timeout: 30000
+# Open Settings from the HomeNavBar cog (Pixel 6 1080x2400).
+- tapOn:
+    point: "989,232"
+- extendedWaitUntil:
+    visible: "^Share Self app$"
+    timeout: 30000
+- extendedWaitUntil:
+    visible: "^Debug menu$"
+    timeout: 10000
+- tapOn: "^Debug menu$"
+- extendedWaitUntil:
+    visible: "^Debug Shortcuts$"
+    timeout: 30000
+- scrollUntilVisible:
+    element:
+      text: "^WebView Host \\(rn-sdk\\)$"
+    direction: DOWN
+    timeout: 15000
+- tapOn: "^WebView Host \\(rn-sdk\\)$"
+- extendedWaitUntil:
+    notVisible: '^(Still loading…|Couldn''t load Self\.)$'
+    timeout: 3000
+- extendedWaitUntil:
+    notVisible: "^Retry$"
+    timeout: 8000

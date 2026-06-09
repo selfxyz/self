@@ -81,3 +81,47 @@ After wiring the screen, visually verify in the browser dev server (`pnpm dev`):
 - **`@selfxyz/euclid`** — external design system package providing screen components, icons, and tokens
 - **`@selfxyz/webview-bridge`** — communication layer to native shells; in standalone browser mode (no native shell), bridge requests reject immediately since there is no transport
 - **`@selfxyz/mobile-sdk-alpha`** — shared SDK logic consumed via the `/browser` entry point
+
+## Routes
+
+- **Dev-only routes register under `/dev/*`** and are gated on `import.meta.env.DEV` at the registration site. Production builds never include them. `DevRouteMenu` is the only allowed entry point.
+- The nav-hygiene workstream owns the routing contract — see [specs/projects/sdk/workstreams/nav-hygiene/SPEC.html](../../specs/projects/sdk/workstreams/nav-hygiene/SPEC.html).
+
+## Navigation state
+
+- Every `navigate(path, { state })` call passes a value typed as `Partial<NavState>` (see `src/types/navState.ts`). Do not invent one-off local interfaces for `location.state` — extend `NavState` if you need a new well-typed slot.
+- Forward target is `state.nextPath`. The legacy `returnTo` slot was renamed in NAV-09; the `?returnTo=` URL query param was dropped (state-only).
+- Back target is `state.backPath` when overriding `navigate(-1)`'s default.
+
+## Replace semantics (`navigate(path, { replace: true })`)
+
+Use `{ replace: true }` when the user must not be able to back into the screen they just left:
+
+1. **Terminal outcomes** — success, failure, kyc-pending, register-success. Pressing back from `/` should not return the user to a success/failure screen they already dismissed.
+2. **Invalid-state redirects** — e.g. `HomeScreen` sending no-document users to onboarding, or `BootDecision` redirecting cross-mode access.
+3. **Cluster-internal forward progressions** where the prior step is no longer meaningful (e.g. KYC success → proof generation).
+
+Default `replace: false` is correct for ordinary forward navigation inside a multi-step wizard where back-tracking IS expected.
+
+NAV-07 swept every terminal `navigate('/')` and the 5 named violations; future PRs are responsible for matching the convention in new code.
+
+## Cluster close
+
+- Terminal screens close their cluster via `useClusterClose()` (see `src/utils/clusterClose.ts`), never by hardcoding `navigate('/')` or inlining `lifecycle.setResult + dismiss`.
+- The hook is mode-aware: self-app users land on the cluster's entry path (with `state.nextPath` override); embed users get a `setResult({success:false, error:'user_cancelled'})` (when the cluster is mid-flow) then `dismiss({reason:'user_cancel'})`.
+- Cluster is inferred from `useLocation().pathname`'s first segment. After NAV-08, the live clusters are `tour`, `pick-country`, `pick-id-type`, `pick-provider`, `capture`, `register`, `disclose`, `receipts`, `history`, `notify`, `backup-phrase`, `recover`, `docs`, `settings`, `points`, `account`, `embed`, `onboarding` (NAV-11-deferred only), `dev`, `coming-soon`, and `home` (fallback). To add a new cluster, extend the `Cluster` union + `CLUSTER_CLOSE` registry in `src/utils/clusterCloseRegistry.ts`.
+
+## Handler naming
+
+Local handler declarations in `src/screens/**/*.tsx` use one of four canonical names so a reader can tell intent from the wire-up alone. The ESLint rule [`self-handlers/handler-names`](./eslint-rules/handler-names.js) enforces the ban list at lint time.
+
+| Canonical name   | Intent                               | Body shape                                                                                                                             |
+| ---------------- | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `handleClose`    | Exit this cluster                    | `useClusterClose()` (preferred), or `navigate('/', { replace: true })` / `lifecycle.dismiss(...)`                                      |
+| `handleBack`     | Walk one step back                   | `navigate(-1)` or `navigate(state.backPath ?? -1)`                                                                                     |
+| `handleRetry`    | Re-attempt the current step in place | `navigate(currentStepPath, { replace: true })`                                                                                         |
+| `handleContinue` | Advance to a forward target          | `navigate(nextStepPath)` — a more descriptive name is fine when the target is fixed (e.g. `handleStartProving`, `handleGenerateProof`) |
+
+**Banned local names** (lint error): `onDismiss`, `handleDismiss`, `onCancel`, `handleCancel`, `onEscape`. They overload meaning and hide whether the action closes the cluster, walks back, or skips.
+
+**Important — Euclid props are unaffected.** The ban applies to **local declarations only**. Euclid component props keep their existing names; the wire-up reads `<EuclidScreen onDismiss={handleClose}>`, which makes the intent clear at the call site.

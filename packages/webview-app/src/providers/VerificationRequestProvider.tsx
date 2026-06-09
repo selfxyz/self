@@ -4,6 +4,7 @@
 
 import type React from 'react';
 import { createContext, useContext, useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
 
 import type { ParsedVerificationRequestContext } from '../utils/verificationRequest';
 import { parseVerificationRequestContext } from '../utils/verificationRequest';
@@ -15,7 +16,8 @@ const Ctx = createContext<VerificationRequestContext | null>(null);
 export const VerificationRequestProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
-  const value = useMemo(() => parseVerificationRequestContext(window.location.search), []);
+  const { search } = useLocation();
+  const value = useMemo(() => parseVerificationRequestContext(search || window.location.search), [search]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 };

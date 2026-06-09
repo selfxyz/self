@@ -18,7 +18,7 @@ export const ProofSuccessBackupScreen: React.FC = () => {
   const onRemindLater = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('proof_success_backup_remind_later');
-    navigate('/');
+    navigate('/', { replace: true });
   }, [navigate, haptic, analytics]);
 
   const onBackupAccount = useCallback(() => {

@@ -13,21 +13,25 @@ import { NotificationPreferencesScreen } from '../../../src/screens/account/Noti
 import { SecurityScreen } from '../../../src/screens/account/SecurityScreen';
 import { SettingsScreen } from '../../../src/screens/account/SettingsScreen';
 
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 const analytics = { trackEvent: vi.fn() };
 const haptic = { trigger: vi.fn() };
 const lifecycle = { dismiss: vi.fn() };
+
+const client = { id: 'client' };
 
 vi.mock('../../../src/providers/SelfClientProvider', () => ({
   useSelfClient: () => ({
     analytics,
     haptic,
     lifecycle,
+    client,
   }),
 }));
 
-const { mockDocumentStore } = vi.hoisted(() => ({
+const { generateMockDocumentMock, mockDocumentStore, storePassportDataMock } = vi.hoisted(() => ({
+  generateMockDocumentMock: vi.fn(),
   mockDocumentStore: {
     addDocument: vi.fn(),
     clear: vi.fn(),
@@ -35,6 +39,12 @@ const { mockDocumentStore } = vi.hoisted(() => ({
     getCatalog: vi.fn().mockReturnValue({ documents: [] }),
     subscribe: vi.fn().mockReturnValue(() => {}),
   },
+  storePassportDataMock: vi.fn(),
+}));
+
+vi.mock('@selfxyz/mobile-sdk-alpha', () => ({
+  generateMockDocument: (...args: unknown[]) => generateMockDocumentMock(...args),
+  storePassportData: (...args: unknown[]) => storePassportDataMock(...args),
 }));
 
 vi.mock('../../../src/utils/mockDocumentStore', () => ({
@@ -170,12 +180,13 @@ const renderRoutes = (initialEntries: string[]) =>
         <Route path="/settings/security" element={<SecurityScreen />} />
         <Route path="/settings/notifications" element={<NotificationPreferencesScreen />} />
         <Route path="/settings/dev-mode" element={<DevModeScreen />} />
+        <Route path="/register/generating" element={<LocationDisplay />} />
         <Route path="/settings/backup" element={<LocationDisplay />} />
         <Route path="/settings/recovery-phrase" element={<LocationDisplay />} />
-        <Route path="/recovery" element={<LocationDisplay />} />
-        <Route path="/manage-documents" element={<LocationDisplay />} />
+        <Route path="/recover" element={<LocationDisplay />} />
+        <Route path="/docs" element={<LocationDisplay />} />
         <Route path="/coming-soon" element={<LocationDisplay />} />
-        <Route path="/tunnel/tour/1" element={<LocationDisplay />} />
+        <Route path="/tour/1" element={<LocationDisplay />} />
       </Routes>
       <LocationDisplay />
     </MemoryRouter>,
@@ -189,6 +200,8 @@ const expectLocation = (expected: string) => {
 describe('WV-16 settings screens', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    generateMockDocumentMock.mockResolvedValue({ documentCategory: 'passport', mock: true });
+    storePassportDataMock.mockResolvedValue(undefined);
   });
 
   afterEach(() => {
@@ -199,7 +212,7 @@ describe('WV-16 settings screens', () => {
     it('navigates to manage documents', () => {
       renderRoutes(['/settings']);
       fireEvent.click(screen.getByRole('button', { name: /manage documents/i }));
-      expectLocation('/manage-documents');
+      expectLocation('/docs');
       expect(haptic.trigger).toHaveBeenCalledWith('selection');
     });
 
@@ -224,7 +237,7 @@ describe('WV-16 settings screens', () => {
     it('navigates to tunnel flow', () => {
       renderRoutes(['/settings']);
       fireEvent.click(screen.getByRole('button', { name: /tunnel flow/i }));
-      expectLocation('/tunnel/tour/1');
+      expectLocation('/tour/1');
     });
 
     it('dismisses via lifecycle on close', () => {
@@ -253,7 +266,7 @@ describe('WV-16 settings screens', () => {
     it('navigates to restore account', () => {
       renderRoutes(['/settings/security']);
       fireEvent.click(screen.getByRole('button', { name: /restore account/i }));
-      expectLocation('/recovery');
+      expectLocation('/recover');
       expect(analytics.trackEvent).toHaveBeenCalledWith('security_restore_account_pressed');
     });
 
@@ -286,20 +299,22 @@ describe('WV-16 settings screens', () => {
       expectLocation('/settings');
     });
 
-    it('generates mock document and navigates home', () => {
+    it('generates a mock document and resumes registration', async () => {
       renderRoutes(['/settings/dev-mode']);
       fireEvent.click(screen.getByRole('button', { name: /generate mock document/i }));
-      expect(mockDocumentStore.addDocument).toHaveBeenCalledWith('US', 'p');
-      expect(haptic.trigger).toHaveBeenCalledWith('success');
+      await waitFor(() => {
+        expectLocation('/register/generating');
+      });
+      expect(generateMockDocumentMock).toHaveBeenCalled();
+      expect(storePassportDataMock).toHaveBeenCalledWith(client, expect.any(Object));
       expect(analytics.trackEvent).toHaveBeenCalledWith('dev_mode_generate_mock', expect.any(Object));
-      expectLocation('/');
     });
 
-    it('resets values and clears mock store', () => {
+    it('resets values to defaults', () => {
       renderRoutes(['/settings/dev-mode']);
       fireEvent.click(screen.getByRole('button', { name: /reset all values/i }));
-      expect(mockDocumentStore.clear).toHaveBeenCalled();
       expect(analytics.trackEvent).toHaveBeenCalledWith('dev_mode_reset');
+      expect(haptic.trigger).toHaveBeenCalledWith('selection');
     });
   });
 

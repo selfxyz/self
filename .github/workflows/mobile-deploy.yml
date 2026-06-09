@@ -31,14 +31,15 @@ env:
   RUBY_VERSION: 3.2
   NODE_ENV: "production"
   JAVA_VERSION: 17
-  ANDROID_API_LEVEL: 35
-  ANDROID_NDK_VERSION: 27.0.12077973
+  ANDROID_API_LEVEL: 36
+  ANDROID_NDK_VERSION: 28.0.13004108
+  ANDROID_RELEASE_ARCHITECTURES: arm64-v8a
   XCODE_VERSION: "26.3"
 
   # Cache versioning - increment these to bust caches when needed
   GH_CACHE_VERSION: v1 # Global cache version
   GH_GEMS_CACHE_VERSION: v1 # Ruby gems cache version
-  GH_PODS_CACHE_VERSION: v1 # CocoaPods cache version
+  GH_PODS_CACHE_VERSION: v2 # CocoaPods cache version
   GH_GRADLE_CACHE_VERSION: v1 # Gradle cache version
 
   # Path configuration
@@ -756,7 +757,7 @@ jobs:
 
       - name: Upload iOS build logs on failure
         if: failure() && inputs.platform != 'android'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4
         with:
           name: ios-gym-buildlogs
           path: ${{ env.APP_PATH }}/ios/build/gymlogs
@@ -1130,7 +1131,11 @@ jobs:
         if: inputs.platform != 'ios'
         run: |
           python -m pip install --upgrade pip
-          pip install google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client
+          python -m pip install --upgrade -r ${{ env.APP_PATH }}/scripts/requirements-play-store.txt
+
+      - name: Verify httplib2 version
+        if: inputs.platform != 'ios'
+        run: python -c "import httplib2; print('httplib2', httplib2.__version__, httplib2.__file__)"
 
       - name: Setup Android private modules
         if: inputs.platform != 'ios'
@@ -1189,6 +1194,7 @@ jobs:
           echo "  - Version: ${{ needs.bump-version.outputs.version }}"
           echo "  - Android Build: ${{ needs.bump-version.outputs.android_build }}"
           echo "  - Test Mode: $TEST_MODE"
+          echo "  - Android Architectures: $ANDROID_RELEASE_ARCHITECTURES"
 
           echo "🔨 Building AAB with Fastlane..."
           bundle exec fastlane android build_only \
@@ -1234,18 +1240,34 @@ jobs:
       - name: Upload to Play Store Internal App Sharing (PR preview)
         id: ias-upload
         if: inputs.platform != 'ios' && inputs.test_mode != true && inputs.pr_number != ''
-        timeout-minutes: 10
+        timeout-minutes: 30
         run: |
           cd ${{ env.APP_PATH }}
           echo "🧪 PR preview build for #${{ inputs.pr_number }} — uploading to Internal App Sharing..."
-          python scripts/upload_to_play_store.py \
+          python -u scripts/upload_to_play_store.py \
             --aab "android/app/build/outputs/bundle/release/app-release.aab" \
             --package-name "${{ secrets.ANDROID_PACKAGE_NAME }}" \
             --mode ias
 
+      - name: Query Google Play Store track using WIF
+        if: inputs.platform != 'ios' && inputs.test_mode != true && inputs.pr_number == ''
+        continue-on-error: true
+        timeout-minutes: 5
+        run: |
+          cd ${{ env.APP_PATH }}
+
+          # Determine deployment track
+          DEPLOYMENT_TRACK="${{ inputs.deployment_track || 'internal' }}"
+
+          echo "🔎 Querying Google Play Store track before upload..."
+          python -u scripts/upload_to_play_store.py \
+            --package-name "${{ secrets.ANDROID_PACKAGE_NAME }}" \
+            --track "$DEPLOYMENT_TRACK" \
+            --mode query
+
       - name: Upload to Google Play Store track using WIF
         if: inputs.platform != 'ios' && inputs.test_mode != true && inputs.pr_number == ''
-        timeout-minutes: 10
+        timeout-minutes: 30
         run: |
           cd ${{ env.APP_PATH }}
 
@@ -1253,7 +1275,7 @@ jobs:
           DEPLOYMENT_TRACK="${{ inputs.deployment_track || 'internal' }}"
 
           echo "🚀 Uploading to Google Play Store using Workload Identity Federation..."
-          python scripts/upload_to_play_store.py \
+          python -u scripts/upload_to_play_store.py \
             --aab "android/app/build/outputs/bundle/release/app-release.aab" \
             --package-name "${{ secrets.ANDROID_PACKAGE_NAME }}" \
             --track "$DEPLOYMENT_TRACK"
@@ -1347,6 +1369,15 @@ jobs:
             echo "- Version: \`$APP_VERSION ($BUILD_NUMBER)\`"
             echo "- Install URL: $DOWNLOAD_URL"
           } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload Android AAB artifact on failure
+        if: failure() && inputs.platform != 'ios'
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4
+        with:
+          name: android-release-aab
+          path: ${{ env.APP_PATH }}/android/app/build/outputs/bundle/release/app-release.aab
+          if-no-files-found: warn
+          retention-days: 7
 
       - name: Monitor cache usage
         if: always()

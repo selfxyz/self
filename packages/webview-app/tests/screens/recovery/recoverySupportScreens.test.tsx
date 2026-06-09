@@ -59,6 +59,11 @@ vi.mock('../../../src/providers/BridgeProvider', () => ({
   useBridge: () => ({}),
 }));
 
+vi.mock('../../../src/providers/OperatingModeProvider', () => ({
+  useReferenceId: () => undefined,
+  useOperatingMode: () => ({ mode: 'self-app', referenceId: undefined, isReady: true, verificationRequest: null }),
+}));
+
 vi.mock('@selfxyz/mobile-sdk-alpha/browser', () => ({
   loadSelectedDocument: (...args: unknown[]) => loadSelectedDocumentMock(...args),
   validateRecoverySecretForDocument: (...args: unknown[]) => validateRecoverySecretForDocumentMock(...args),
@@ -85,9 +90,6 @@ vi.mock('@selfxyz/euclid', () => ({
   fontWeight: {
     medium: 500,
   },
-  borderRadius: {
-    mdd: 14,
-  },
   ChatStrokeIcon: () => null,
   CloudKeyIcon: () => null,
   CodeIcon: () => null,
@@ -101,6 +103,9 @@ vi.mock('@selfxyz/euclid', () => ({
   spacing: {
     mdLg: 16,
     xlLg: 24,
+  },
+  borderRadius: {
+    mdd: 12,
   },
   ZapShieldIcon: () => null,
   SettingsViewScreen: ({ sections }: { sections: Array<{ items: Array<{ label: string; onPress: () => void }> }> }) => (
@@ -254,7 +259,7 @@ const LocationDisplay: React.FC = () => {
   return <div data-testid="location">{location.pathname}</div>;
 };
 
-const renderRoutes = (initialEntries: string[]) =>
+const renderRoutes = (initialEntries: Array<string | { pathname: string; search?: string; state?: unknown }>) =>
   render(
     <MemoryRouter initialEntries={initialEntries}>
       <Routes>
@@ -263,11 +268,11 @@ const renderRoutes = (initialEntries: string[]) =>
         <Route path="/settings/security" element={<SecurityScreen />} />
         <Route path="/settings/backup" element={<BackupMethodPickerScreen />} />
         <Route path="/settings/recovery-phrase" element={<RecoveryPhraseScreen />} />
-        <Route path="/recovery" element={<LaunchRecoveryScreen />} />
-        <Route path="/recovery/phrase-input" element={<SecretPhraseInputScreen />} />
-        <Route path="/recovery/failure" element={<RecoveryFailureScreen />} />
-        <Route path="/recovery/success" element={<RecoverySuccessScreen />} />
-        <Route path="/tunnel/proof/generating" element={<LocationDisplay />} />
+        <Route path="/recover" element={<LaunchRecoveryScreen />} />
+        <Route path="/recover/phrase-input" element={<SecretPhraseInputScreen />} />
+        <Route path="/recover/failure" element={<RecoveryFailureScreen />} />
+        <Route path="/recover/success" element={<RecoverySuccessScreen />} />
+        <Route path="/disclose/generating" element={<LocationDisplay />} />
         <Route path="/coming-soon" element={<LocationDisplay />} />
       </Routes>
       <LocationDisplay />
@@ -320,39 +325,41 @@ describe('recovery support screens', () => {
     expectLocation('/settings/security');
 
     fireEvent.click(screen.getByRole('button', { name: /restore account/i }));
-    expectLocation('/recovery');
+    expectLocation('/recover');
 
     fireEvent.click(screen.getByRole('button', { name: /enter recovery phrase/i }));
-    expectLocation('/recovery/phrase-input');
+    expectLocation('/recover/phrase-input');
 
     fireEvent.click(screen.getByRole('button', { name: /fill valid phrase/i }));
     fireEvent.click(screen.getByRole('button', { name: /^continue$/i }));
 
     await waitFor(() => {
-      expectLocation('/recovery/success');
+      expectLocation('/recover/success');
     });
   });
 
-  it('carries returnTo through recovery success and resumes the caller route', async () => {
-    renderRoutes(['/recovery/phrase-input?returnTo=%2Ftunnel%2Fproof%2Fgenerating']);
+  it('carries nextPath through recovery and resumes the caller route', async () => {
+    renderRoutes([{ pathname: '/recover/phrase-input', state: { nextPath: '/disclose/generating' } }]);
 
     fireEvent.click(screen.getByRole('button', { name: /fill valid phrase/i }));
     fireEvent.click(screen.getByRole('button', { name: /^continue$/i }));
 
+    // With a nextPath in route state the phrase screen resumes the caller route
+    // directly, bypassing the standalone /recover/success screen.
     await waitFor(() => {
-      expectLocation('/tunnel/proof/generating');
+      expectLocation('/disclose/generating');
     });
   });
 
   it('rejects an invalid mnemonic and stays on phrase input', async () => {
-    renderRoutes(['/recovery/phrase-input']);
-    expectLocation('/recovery/phrase-input');
+    renderRoutes(['/recover/phrase-input']);
+    expectLocation('/recover/phrase-input');
 
     fireEvent.click(screen.getByRole('button', { name: /fill invalid phrase/i }));
     fireEvent.click(screen.getByRole('button', { name: /^continue$/i }));
 
     await waitFor(() => {
-      expectLocation('/recovery/phrase-input');
+      expectLocation('/recover/phrase-input');
     });
 
     expect(haptic.trigger).toHaveBeenCalledWith('error');
@@ -364,8 +371,8 @@ describe('recovery support screens', () => {
   });
 
   it('launch recovery close returns to previous screen', () => {
-    renderRoutes(['/settings/security', '/recovery']);
-    expectLocation('/recovery');
+    renderRoutes(['/settings/security', '/recover']);
+    expectLocation('/recover');
 
     fireEvent.click(screen.getByRole('button', { name: /close recovery/i }));
     expectLocation('/settings/security');
@@ -376,13 +383,13 @@ describe('recovery support screens', () => {
       isRegistered: false,
     });
 
-    renderRoutes(['/recovery/phrase-input']);
+    renderRoutes(['/recover/phrase-input']);
 
     fireEvent.click(screen.getByRole('button', { name: /fill valid phrase/i }));
     fireEvent.click(screen.getByRole('button', { name: /^continue$/i }));
 
     await waitFor(() => {
-      expectLocation('/recovery/phrase-input');
+      expectLocation('/recover/phrase-input');
     });
 
     expect(screen.getByRole('alert').textContent).toMatch(/does not match this identity/i);
@@ -396,13 +403,13 @@ describe('recovery support screens', () => {
   it('navigates to recovery failure when no selected document exists', async () => {
     loadSelectedDocumentMock.mockResolvedValue(null);
 
-    renderRoutes(['/recovery/phrase-input']);
+    renderRoutes(['/recover/phrase-input']);
 
     fireEvent.click(screen.getByRole('button', { name: /fill valid phrase/i }));
     fireEvent.click(screen.getByRole('button', { name: /^continue$/i }));
 
     await waitFor(() => {
-      expectLocation('/recovery/failure');
+      expectLocation('/recover/failure');
     });
   });
 
@@ -414,13 +421,13 @@ describe('recovery support screens', () => {
       throw new Error('storage write failed');
     });
 
-    renderRoutes(['/recovery/phrase-input']);
+    renderRoutes(['/recover/phrase-input']);
 
     fireEvent.click(screen.getByRole('button', { name: /fill valid phrase/i }));
     fireEvent.click(screen.getByRole('button', { name: /^continue$/i }));
 
     await waitFor(() => {
-      expectLocation('/recovery/failure');
+      expectLocation('/recover/failure');
     });
 
     expect(storageState.get('self_mnemonic')).toBe(previousMnemonic);
@@ -433,13 +440,13 @@ describe('recovery support screens', () => {
       isRegistered: false,
     });
 
-    renderRoutes(['/recovery/phrase-input']);
+    renderRoutes(['/recover/phrase-input']);
 
     for (let attempt = 0; attempt < 5; attempt += 1) {
       fireEvent.click(screen.getByRole('button', { name: /fill valid phrase/i }));
       fireEvent.click(screen.getByRole('button', { name: /^continue$/i }));
       await waitFor(() => {
-        expectLocation('/recovery/phrase-input');
+        expectLocation('/recover/phrase-input');
       });
     }
 
@@ -449,20 +456,20 @@ describe('recovery support screens', () => {
   });
 
   it('lets the failure screen retry phrase entry or dismiss home', async () => {
-    renderRoutes(['/recovery/failure?returnTo=%2Ftunnel%2Fproof%2Fgenerating']);
+    renderRoutes([{ pathname: '/recover/failure', state: { nextPath: '/disclose/generating' } }]);
 
     fireEvent.click(screen.getByRole('button', { name: /try again/i }));
     await waitFor(() => {
-      expectLocation('/recovery/phrase-input');
+      expectLocation('/recover/phrase-input');
     });
 
     fireEvent.click(screen.getByRole('button', { name: /fill valid phrase/i }));
     fireEvent.click(screen.getByRole('button', { name: /^continue$/i }));
     await waitFor(() => {
-      expectLocation('/tunnel/proof/generating');
+      expectLocation('/disclose/generating');
     });
 
-    renderRoutes(['/recovery/failure']);
+    renderRoutes(['/recover/failure']);
     fireEvent.click(screen.getByRole('button', { name: /go home/i }));
     await waitFor(() => {
       expectLocation('/');
@@ -480,7 +487,7 @@ describe('recovery support screens', () => {
         }),
     );
 
-    const rendered = renderRoutes(['/recovery/phrase-input']);
+    const rendered = renderRoutes(['/recover/phrase-input']);
 
     fireEvent.click(screen.getByRole('button', { name: /fill valid phrase/i }));
     fireEvent.click(screen.getByRole('button', { name: /^continue$/i }));

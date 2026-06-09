@@ -1,256 +1,99 @@
 # AGENTS Instructions
 
-## Package Management
+## Repository Overview
 
-**Package Manager:** pnpm (pinned via `packageManager` in root `package.json`)
+Self is a pnpm monorepo for identity verification using passport NFC and zero-knowledge proofs.
 
-**Commands to use:** `pnpm install`, `pnpm add`, `pnpm remove`, `pnpm --filter <workspace>` for workspace-scoped commands.
+- `app/` (`@selfxyz/mobile-app`) - React Native Self Wallet.
+- `packages/` - SDK surfaces, including WebView engine and native shells.
+- `common/`, `circuits/`, `contracts`, `sdk/core`, `sdk/qrcode`, `noir` - shared utilities, circuits, contracts, and SDK packages.
 
-**Note:** Do not use `npm` or `yarn`.
+Setup: `nvm use && corepack enable && pnpm install`
 
-This repository is a pnpm monorepo (`pnpm-workspace.yaml`, `nodeLinker: hoisted`) with several workspaces:
+## Key Rules
 
-- `app` – mobile app (@selfxyz/mobile-app)
-- `circuits` – zk-SNARK circuits (@selfxyz/circuits)
-- `common` – shared utilities (@selfxyz/common)
-- `contracts` – solidity contracts (@selfxyz/contracts)
-- `sdk/core` – core TypeScript SDK (@selfxyz/core)
-- `sdk/qrcode` – qrcode SDK (@selfxyz/qrcode)
-- `packages/mobile-sdk-alpha` – alpha version of the SDK (@selfxyz/mobile-sdk-alpha)
-- `noir` – noir circuits
+- **Package manager:** pnpm only. Use `pnpm install`, `pnpm add`, `pnpm remove`, and `pnpm --filter <workspace>`; never use npm or yarn for dependency management.
+- **Respect nested instructions.** Read the nearest `AGENTS.md` before working under `app/`, `packages/mobile-sdk-alpha/`, `packages/webview-app/`, or `noir/`.
+- **DRY first.** Search for existing utilities/components/flows and reuse or refactor before adding new code.
+- **Extract repeated UI.** Same UI sub-structure in 2+ places becomes a shared component; broad primitives belong in a shared library such as `@selfxyz/euclid`.
+- **Keep files small.** Aim below 800 LOC; split modules as files approach that size.
+- **Move static data out of UI.** Large maps/lookups/constants belong in `utils/` or `data/`, not screens/components.
+- **Design tokens over hex.** Prefer shared color/font/spacing tokens.
+- **No slop comments.** Add comments only for non-obvious intent, temporary workarounds, `TODO:`/`FIXME:`, or invariants future readers would otherwise break.
+- **Signal over praise.** Docs, reviews, specs, and PR text should contain issues, risks, decisions, owners, next steps, and validation evidence.
+- **Test behavior.** Prefer tests that validate outcomes, not mock wiring.
+- **Do not commit generated artifacts** unless the build requires them for runtime or distribution.
 
-## Workflow
+## SDK Architecture Rules
 
-### Setup
+- **TypeScript is the primary surface.** Core logic, state machines, stores, proving flow, and UI live in TypeScript/WebView.
+- **Native handlers stay thin.** Kotlin/Swift are for hardware, OS APIs, lifecycle, keychain, and crypto signing/key-gen only.
+- **Keychain is native-managed.** No web fallback for secure storage.
+- **No `react-native` imports in SDK core.** `packages/mobile-sdk-alpha/src/` is platform-agnostic except `src/adapters/react-native/`.
+- **Reuse through `mobile-sdk-alpha`.** Types, interfaces, constants, parsing, validation, formatting, state machines, and stores belong in the SDK when shared.
+- **Bridge protocol is the only coupling.** Native shells and WebView share a JSON contract; no side channels, custom messaging, or platform-specific extensions.
+- **Adapter interfaces are the coupling layer.** WebView imports SDK adapter interfaces; native shells implement bridge handlers; code does not cross the bridge boundary.
+- **Fail closed on security boundaries.** Reject unknown protocol versions, block remote `devServerUrl` in production, and default-deny session lifecycle edge cases.
+- **No RN app regressions.** `mobile-sdk-alpha` changes must remain backwards-compatible with Self Wallet.
 
-- Ensure Node.js 22.x is installed (see `.nvmrc` for exact version), then:
-  - `nvm use`
-  - `corepack enable` (Corepack reads the pinned pnpm version from `packageManager` in root `package.json`)
-  - Verify: `node -v && pnpm -v`
-- Run `pnpm install` once before running any other commands. This installs root dependencies and sets up husky hooks.
+## Validation
 
-### Pre-PR Checklist
-
-Before creating a PR, ensure:
-
-#### Code Quality
-
-- [ ] `pnpm nice` (or equivalent) passes in affected workspaces
-- [ ] `pnpm types` passes across the repo
-- [ ] `pnpm test` passes in affected packages
-- [ ] `pnpm build` succeeds for all workspaces
-
-#### AI Review Preparation
-
-- [ ] Clear, imperative commit messages (e.g. `Fix address validation`)
-- [ ] PR description includes context for AI reviewers
-- [ ] Complex changes have inline comments explaining intent
-- [ ] Security-sensitive changes flagged for special review
-- [ ] Review/spec text is signal-only: remove non-actionable praise, back-patting, and generic commentary; keep concrete issues, risks, decisions, owners, next steps, and validation evidence
-
-#### Follow-up Planning
-
-- [ ] Identify any known issues that need separate PRs
-- [ ] Note any performance implications
-- [ ] Document any breaking changes
-
-### Post-PR Validation
-
-After PR creation:
-
-#### Automated Checks
-
-- [ ] CI pipeline passes all stages
-- [ ] No new linting/formatting issues introduced
-- [ ] Type checking passes in all affected workspaces
-- [ ] Build artifacts generated successfully
-
-#### Review Integration
-
-- [ ] Address CodeRabbitAI feedback (or document why not)
-- [ ] Resolve any security warnings
-- [ ] Verify performance benchmarks still pass
-- [ ] Confirm no sensitive data exposed in logs/comments
-
-### Commit Checks
-
-Before committing, run the following commands:
+Run the narrowest relevant checks first, then broaden before PR/commit.
 
 ```bash
-# Fix linting and formatting issues in workspaces changed since HEAD
 pnpm --filter '...[HEAD]' --if-present run nice
-
-# Lint all packages in parallel
 pnpm lint
-
-# Build all workspaces except `contracts`
-pnpm build
-
-# Compile Solidity contracts (may occasionally throw a Hardhat config error)
-pnpm --filter @selfxyz/contracts build
-
-# Run type-checking across the repo
 pnpm types
+pnpm build
+pnpm test
+pnpm --filter @selfxyz/contracts build
 ```
 
-### Workflow Commands
-
-#### Pre-PR Validation
+Workspace examples:
 
 ```bash
-# Run all checks before PR - only on changed workspaces since main
-# Format and lint changed workspaces (workspace-specific scripts first, then fallback to root)
-pnpm --filter '...[origin/main]' --if-present run nice
-
-# Run global checks across all workspaces
-pnpm lint && pnpm types && pnpm build && pnpm test
-
-# Alternative: Run workspace-specific checks for changed workspaces only
-# pnpm --filter '...[origin/main]' --if-present run lint
-# pnpm --filter '...[origin/main]' --if-present run types
-# pnpm --filter '...[origin/main]' --if-present run build
-# pnpm --filter '...[origin/main]' --if-present run test
+pnpm --filter @selfxyz/common test
+pnpm --filter @selfxyz/circuits test
+pnpm --filter @selfxyz/mobile-app test
+pnpm --filter @selfxyz/mobile-sdk-alpha test
 ```
 
-#### Post-PR Cleanup
+Notes:
 
-```bash
-# After addressing review feedback
-pnpm nice  # Fix any formatting issues in affected workspaces
-pnpm test  # Ensure tests still pass
-pnpm types # Verify type checking
-```
+- `@selfxyz/circuits` tests may fail locally if OpenSSL algorithms are missing.
+- `@selfxyz/contracts` tests are disabled in CI and may be skipped.
+- Mobile E2E tests run in CI; local E2E is optional unless the task specifically needs it.
+- In React Native tests, avoid nested/dynamic `require('react-native')`; prefer top-level ES imports to prevent CI OOM issues.
+- Use shared `.github/actions/cache-*` composite actions for workflow dependency caching; avoid direct `actions/cache`.
 
-### Tests
+## Specs
 
-- Run unit tests where available:
-  - `pnpm --filter @selfxyz/common test`
-  - `pnpm --filter @selfxyz/circuits test` # may fail if OpenSSL algorithms are missing
-  - `pnpm --filter @selfxyz/mobile-app test`
-  - `pnpm --filter @selfxyz/mobile-sdk-alpha test`
-  - For Noir circuits, run `nargo test -p <crate>` in each `noir/crates/*` directory.
-  - Tests for `@selfxyz/contracts` are currently disabled in CI and may be skipped.
+Before SDK work, read the Key Rules and SDK Architecture Rules above plus the relevant `specs/projects/sdk/workstreams/*/SPEC.md` constraints, validation commands, and ownership boundaries. For the planning protocol and spec-writing guidelines, see [SDK Contributing](./specs/projects/sdk/CONTRIBUTING.md).
 
-- E2E tests (mobile app) - **Run automatically in CI/CD, not required locally**:
-  - E2E tests execute automatically in GitHub Actions on PRs and main branch
-  - Local E2E testing is optional (see `app/AGENTS.md` for local setup if needed)
-  - Commands available: `pnpm --filter @selfxyz/mobile-app test:e2e:ios` / `test:e2e:android`
+Start at [specs/README.md](./specs/README.md). Key files:
 
-#### Test Memory Optimization
+- [SDK Index](./specs/projects/sdk/INDEX.md) - project entry point and workstream links.
+- [SDK Overview](./specs/projects/sdk/OVERVIEW.md) - architecture, bridge protocol, module table, execution status.
+- `specs/projects/sdk/workstreams/*/SPEC.md` - durable context, invariants, backlog.
+- `specs/projects/sdk/workstreams/*/plans/*.md` - PR-sized execution plans.
+- `specs/projects/sdk/paused/*/SPEC.md` - paused workstreams retained for reuse.
 
-**CRITICAL**: Never create nested `require('react-native')` calls in tests. This causes out-of-memory (OOM) errors in CI/CD pipelines.
+Spec rules:
 
-- Use ES6 `import` statements instead of `require()` when possible
-- Avoid dynamic `require()` calls in `beforeEach`/`afterEach` hooks
-- Prefer top-level imports over nested requires
-- See `.cursor/rules/test-memory-optimization.mdc` for detailed guidelines
-
-### CI Caching
-
-Use the shared composite actions in `.github/actions` when caching dependencies in GitHub workflows. They provide consistent cache paths and keys:
-
-- `cache-pnpm` for the pnpm content-addressable store (do not cache `node_modules`)
-
-### Forcing every workflow to run
-
-`.github/CI_FORCE_RUN` is a sentinel file included in the `paths:` filter
-of every path-filtered workflow. Edit it (add a dated entry to its log) to
-trigger every path-filtered PR/push workflow on the next push — useful
-before merging a large tooling migration or refactor. It does **not**
-trigger `workflow_dispatch`/`schedule`-only workflows, fork-gated jobs, or
-jobs hard-disabled with `if: false`; see the file's own header for the
-full scope. New workflows added later should include
-`.github/CI_FORCE_RUN` in their `paths:`; run
-`python3 scripts/ci/add-force-run-sentinel.py` to inject it, or
-`--check` to verify in CI (including internal `check_changes` diff
-allowlists).
-
-- `cache-bundler` for Ruby gems
-- `cache-gradle` for Gradle wrappers and caches
-- `cache-pods` for CocoaPods
-
-Each action accepts an optional `cache-version` input (often combined with `GH_CACHE_VERSION` and a tool-specific version). Avoid calling `actions/cache` directly so future workflows follow the same strategy.
-
-### Formatting
-
-- Use Prettier configuration from `.prettierrc` files.
-- Follow `.editorconfig` for line endings and indentation.
-
-### Commit Guidelines
-
-- Write short, imperative commit messages (e.g. `Fix address validation`).
-- The pull request body should summarize the changes and mention test results.
+- Use doc-type names (`INDEX.md`, `OVERVIEW.md`, `SPEC.md`, `PLAN.md`, `STATUS.md`, `HANDOFF.md`, `REVIEW.md`, `ARCHITECTURE.md`, `INITIATIVE.md`); do not repeat project names already present in folder context.
+- `INDEX.md` is navigation only; `OVERVIEW.md` is substantive context.
+- Do not create one-file folders.
+- Workstream docs use `workstreams/<scope>/SPEC.md`; PR plans use `workstreams/<scope>/plans/<BACKLOG-ID>-<slug>.md`.
+- If renaming/moving specs, update references in `specs/`, `AGENTS.md`, and `CLAUDE.md` in the same change.
+- Qualify coverage claims precisely: distinguish unit/shared-utility coverage from handler-level, integration, and E2E coverage.
+- Flag invariant departures explicitly, justify them, and list parent docs that need updates if accepted.
 
 ## Workspace-Specific Instructions
 
-Some workspaces have additional instructions in their own `AGENTS.md` files:
-
-- `app/AGENTS.md` - Mobile app development, E2E testing, deployment
-- `packages/mobile-sdk-alpha/AGENTS.md` - SDK development, testing guidelines, package validation
-- `noir/AGENTS.md` - Noir circuit development
-
-These workspace-specific files override or extend the root instructions for their respective areas.
-
-## Troubleshooting
-
-### Common Issues
-
-#### pnpm Install Fails
-
-- Ensure Node.js 22.x is installed: `nvm use`
-- Prune the pnpm store: `pnpm store prune`
-- Remove `node_modules` and reinstall: `rm -rf node_modules && pnpm install`
-
-#### Build Failures
-
-- Run `pnpm build:deps` in affected workspace first
-- Check workspace-specific `AGENTS.md` for platform requirements
-- For mobile app: ensure iOS/Android prerequisites are met (see `app/AGENTS.md`)
-
-#### Test Failures
-
-- Check workspace-specific test setup requirements
-- For mobile app tests: ensure native modules are properly mocked
-- See `.cursor/rules/test-memory-optimization.mdc` for test memory issues
-
-#### Type Errors
-
-- Run `pnpm types` to see all type errors across workspaces
-- Some packages may need to be built first: `pnpm build:deps`
-
-## SDK Specs
-
-The `specs/` folder contains architecture and implementation specs for the Self SDK project (WebView engine + native shells). These specs are designed to serve as both human documentation and AI agent prompts.
-
-### Spec Structure & Naming Rules
-
-- Do not create one-file folders. If a folder would contain only one markdown file, keep that file at the parent project level.
-- File names should describe doc type, not repeat project name when already inside the project folder.
-- Preferred project-level names: `INDEX.md`, `OVERVIEW.md`, `PLAN.md`, `STATUS.md`, `HANDOFF.md`, `REVIEW.md`, `ARCHITECTURE.md`, `INITIATIVE.md`.
-- `INDEX.md` is navigation only (entrypoint/table of contents for that folder).
-- `OVERVIEW.md` is substantive context (architecture/scope/status summary), not just a link list.
-- Do not use `INDEX.md` and `OVERVIEW.md` as synonyms for the same purpose.
-- Workstream docs under `workstreams/<scope>/` use `SPEC.md` (context + implementation in one file).
-- PR execution docs belong under `workstreams/<scope>/plans/<BACKLOG-ID>-<slug>.md`; use one plan file per PR.
-- Use suffixed variants (for example `SPEC-<TOPIC>.md`) only when multiple specs of the same type are required in the same folder.
-- When renaming/moving spec files, update all references in `specs/`, `AGENTS.md`, and `CLAUDE.md` in the same change.
-
-### Spec Writing Rules
-
-- Qualify coverage claims. Distinguish unit-tested/shared-utility coverage from handler-level, integration, or end-to-end coverage; do not say "tested" without naming the actual coverage level.
-- Flag invariant departures. If a spec intentionally departs from active architecture rules or repo invariants, call out the conflict explicitly, justify the departure, and list the docs that must be updated if the direction is accepted.
-
-**Start here:** [specs/README.md](./specs/README.md) — table of contents and reading order.
-
-Key files:
-
-- `specs/projects/sdk/INDEX.md` — SDK project entry point, workstream links
-- `specs/projects/sdk/OVERVIEW.md` — Architecture, bridge protocol, module table, execution status
-- `specs/projects/sdk/workstreams/*/SPEC.md` — Durable workstream context, invariants, backlog, active plan links
-- `specs/projects/sdk/workstreams/*/plans/*.md` — PR-sized execution plans
-- `specs/projects/sdk/paused/*/SPEC.md` — Paused workstreams retained for future reuse (native-shells, integrations, rn-sdk, native-consolidation)
-
-**Before implementing SDK work:** Read `CLAUDE.md` Key Rules and the relevant workstream `SPEC.md` under `specs/projects/sdk/workstreams/`. These specs contain explicit constraints ("You will NOT..."), validation commands, and file ownership boundaries that prevent common mistakes.
+- [app/AGENTS.md](./app/AGENTS.md) - mobile app development, E2E testing, deployment.
+- [packages/mobile-sdk-alpha/AGENTS.md](./packages/mobile-sdk-alpha/AGENTS.md) - SDK development, testing, package validation.
+- [packages/webview-app/AGENTS.md](./packages/webview-app/AGENTS.md) - WebView app development, Euclid migration, assets.
+- [noir/AGENTS.md](./noir/AGENTS.md) - Noir circuit development.
 
 ## Scope
 

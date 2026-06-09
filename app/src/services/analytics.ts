@@ -20,6 +20,7 @@ import {
   NotificationEvents,
   OnboardingEvents,
   PointEvents,
+  WebViewEvents,
 } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import { createSegmentClient } from '@/config/segment';
@@ -42,6 +43,7 @@ const KNOWN_EVENT_NAMES: ReadonlySet<string> = new Set(
     NotificationEvents,
     OnboardingEvents,
     PointEvents,
+    WebViewEvents,
   ].flatMap(group => Object.values(group)),
 );
 

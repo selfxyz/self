@@ -53,7 +53,7 @@ export const ConfirmIdentificationScreen: React.FC = () => {
       analytics.trackEvent('proving_process_error', { error: message });
     }
 
-    navigate('/');
+    navigate('/', { replace: true });
   }, [analytics, countryCode, documentType, haptic, lifecycle, navigate, nextPath, request.userId, verificationId]);
 
   return (

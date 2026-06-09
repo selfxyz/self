@@ -198,43 +198,34 @@ First, fetch the current PR title and body:
 gh pr view --json number,title,body,url
 ```
 
-If the PR body is empty/whitespace, the title matches the branch name, or the title is a generic default (slug-style text with slashes/hyphens, auto-generated patterns), note that it appears auto-generated.
-
-Show the generated title and body, then ask: "PR #NNN appears to have a template/auto-generated description. Update it?"
-
-If the PR has a meaningful hand-written title and body, show both the current and newly generated versions, then ask: "PR #NNN already has a custom title/description. Replace it?"
-
-If the user confirms, run:
+Update the PR directly — do not ask for confirmation. Run:
 
 ```bash
 gh pr edit <number> --title "<title>" --body "<body>"
 ```
 
+Then show the updated title and link.
+
+**Exception:** If *either* the existing title or body is meaningful and hand-written (not a template, empty, or an auto-generated slug), do NOT overwrite automatically — overwriting replaces both fields at once, so one hand-written field is enough to risk clobbering. Show the current and newly generated versions of both fields and ask whether to replace them. Hand-written content is the one case worth confirming before clobbering.
+
 **If no PR exists:**
 
-1. Show the generated title and body clearly:
-
-```
-Title: [the title]
-```
-
-Then the full body in a fenced code block.
-
-2. Ask the user: "Create this PR?"
-3. If the user confirms, run:
+Create the PR directly — do not ask for confirmation. Run:
 
 ```bash
 gh pr create --base <base-branch> --title "<title>" --body "<body>"
 ```
 
-In both cases, if there were uncommitted changes found in Step 2, warn the user about them before proceeding.
+Then show the new PR link.
+
+In both cases, if there were uncommitted changes found in Step 2, warn the user about them after acting so they know what isn't yet reflected in the PR.
 
 ## Important Notes
 
 - Always diff against the base branch, not just the previous commit. The PR should describe ALL work on the branch.
 - Read the actual diff content — don't just summarize file names. Understand what changed semantically.
 - Keep the summary concise. The diff is available in the PR; the summary should help reviewers understand intent and scope quickly.
-- Always ask before creating or updating a PR. Never run `gh pr create` or `gh pr edit` without user confirmation.
+- Create or update the PR directly once the summary is generated — don't ask for confirmation. The only exception is overwriting an existing PR whose title or body is meaningful and hand-written (see Step 8), which should be confirmed first.
 - Never run `git push`. The user handles pushing themselves. If the branch is not pushed, remind them to push first.
 
 ---
@@ -360,6 +351,6 @@ If no version tag is available, use the date range of the merged PRs (e.g., "Mar
 
 ### Changelog Step 7: Check for Existing PR
 
-Same as Step 8 in the normal flow — check for an existing PR, show the generated changelog, and ask the user before creating or updating. Use the changelog as the PR body instead of the normal summary format.
+Same as Step 8 in the normal flow — check for an existing PR, then create or update it directly without asking (the lone exception being an existing PR whose title or body is meaningful and hand-written, which should be confirmed before overwriting). Use the changelog as the PR body instead of the normal summary format.
 
 For the PR title in changelog mode, use: `Release: [version or date range summary]` (e.g., `Release: account recovery, nav fixes, platform renaming`).

@@ -82,3 +82,19 @@ jobs:
         run: pnpm --filter @selfxyz/webview-bridge build
       - name: Typecheck
         run: pnpm --filter @selfxyz/webview-app types
+
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install dependencies
+        uses: ./.github/actions/pnpm-install
+      - name: Build common
+        run: pnpm --filter @selfxyz/common build
+      - name: Build mobile-sdk-alpha
+        run: pnpm --filter @selfxyz/mobile-sdk-alpha build
+      - name: Build webview-bridge
+        run: pnpm --filter @selfxyz/webview-bridge build
+      - name: Test
+        run: pnpm --filter @selfxyz/webview-app test

@@ -51,6 +51,12 @@
       "import": "./dist/esm/stores.js",
       "require": "./dist/cjs/stores.cjs"
     },
+    "./observability": {
+      "types": "./dist/esm/observability.d.ts",
+      "react-native": "./dist/esm/observability.js",
+      "import": "./dist/esm/observability.js",
+      "require": "./dist/cjs/observability.cjs"
+    },
     "./constants/analytics": {
       "types": "./dist/esm/constants/analytics.d.ts",
       "react-native": "./dist/esm/constants/analytics.js",

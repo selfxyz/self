@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>NAV-07 Plan — replace:true Audit + Codify Rule</title>
+<link rel="stylesheet" href="./_shared.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <h1>NAV-07 · replace:true Audit + Codify Rule</h1>
+  <span class="meta-pill status-Ready">Ready</span>
+  <span class="meta-pill prio-Medium">Medium</span>
+  <span class="meta-pill">Updated 2026-05-25</span>
+  <span class="spacer"></span>
+  <div class="links">
+    <a href="../SPEC.html">← Spec</a>
+    <a href="../AUDIT.html">Audit</a>
+  </div>
+</header>
+
+<div class="layout">
+
+<nav class="toc">
+  <h4>On this page</h4>
+  <a href="#why">Why</a>
+  <a href="#decisions">Decisions</a>
+  <a href="#meta">Meta</a>
+  <a href="#findings">Findings</a>
+  <a href="#scope">Scope</a>
+  <a href="#out-of-scope">Out of Scope</a>
+  <a href="#required-files">Required Files</a>
+  <a href="#approach">Approach</a>
+  <a href="#validation">Validation</a>
+  <a href="#open-questions">Open Questions</a>
+  <a href="#hand-off">Hand-off</a>
+  <h4>Workstream</h4>
+  <a href="../SPEC.html">SPEC ↗</a>
+  <a href="../AUDIT.html">AUDIT ↗</a>
+</nav>
+
+<main>
+
+<section id="why" class="tldr">
+  <h2>Why</h2>
+  <p>
+    SPEC invariant #9: use <code>replace: true</code> when the user must not be able to back into the screen just left — after terminal outcomes, invalid-state redirects, and cluster-internal forward progressions. Today: 194 <code>navigate()</code> calls, 44 explicit <code>replace: true</code>, 150 default-replace. Audit identifies 5 specific violations (terminal handlers missing <code>replace: true</code>). NAV-07 fixes those, documents the rule, and decides on automation (custom ESLint rule vs. docs only).
+  </p>
+</section>
+
+<section id="decisions" class="decisions-block">
+  <h2>Decisions</h2>
+  <p class="decisions-intro">Locked in on 2026-05-25. See <a href="../DECISIONS.md">DECISIONS.md</a>.</p>
+  <ul class="decisions-list">
+    <li class="decision">
+      <div class="d-head"><code>nav-07-q1-eslint-rule</code> · Decided</div>
+      <p class="d-q">Custom ESLint rule, or AGENTS.md docs?</p>
+      <p class="d-a"><strong>AGENTS.md docs only</strong> for this rule. The "is this a terminal handler" signal is too heuristic to enforce mechanically without high false-positive noise. (NAV-05 ships an ESLint rule for handler-names — that rule is name-driven and much more reliable.)</p>
+    </li>
+    <li class="decision">
+      <div class="d-head"><code>nav-07-q2-audit-scope</code> · Decided — upgrades scope</div>
+      <p class="d-q">Fix only the 5 known violations, or full sweep of all 150 default-replace calls?</p>
+      <p class="d-a"><strong>Full sweep.</strong> Walk every <code>navigate()</code> call without an explicit <code>replace</code>. Classify each: terminal → add <code>replace:true</code>; forward progression → audit per case; modal/wizard → leave default. Estimate: 2–3 hours, ~5–10 additional violations beyond the named 5.</p>
+      <p class="d-note">
+        This is the non-recommended option — Scope below expands accordingly. If the sweep snowballs (>20 violations or unclear cases), split off a NAV-07-followup plan rather than blocking the named-5 fixes.
+      </p>
+    </li>
+  </ul>
+</section>
+
+<section id="meta">
+  <h2>Meta</h2>
+  <div class="meta-grid">
+    <div class="item"><div class="label">Workstream</div><div class="value">nav-hygiene</div></div>
+    <div class="item"><div class="label">Linear</div><div class="value">TBD</div></div>
+    <div class="item"><div class="label">Owner</div><div class="value">TBD</div></div>
+    <div class="item"><div class="label">Branch</div><div class="value"><code>chore/nav-07-replace-audit</code></div></div>
+    <div class="item"><div class="label">PR</div><div class="value">TBD</div></div>
+    <div class="item"><div class="label">Depends on</div><div class="value">—</div></div>
+  </div>
+</section>
+
+<section id="findings">
+  <h2>Findings</h2>
+  <h3>5 specific violations to fix</h3>
+  <table class="std">
+    <thead><tr><th>File:line</th><th>Current</th><th>Should be</th><th>Reason</th></tr></thead>
+    <tbody>
+      <tr><td><code>ProofGenerationSuccessScreen.tsx:21</code></td><td><code>navigate('/')</code></td><td><code>navigate('/', { replace: true })</code></td><td>Terminal success</td></tr>
+      <tr><td><code>RecoveryFailureScreen.tsx:33</code></td><td><code>navigate('/')</code></td><td><code>navigate('/', { replace: true })</code></td><td>Terminal failure (sibling line 44 does have replace: true on retry)</td></tr>
+      <tr><td><code>KycSuccessScreen.tsx:21</code></td><td><code>navigate('/proving')</code></td><td><code>navigate('/proving', { replace: true })</code></td><td>Terminal KYC success → next step</td></tr>
+      <tr><td><code>LaunchRecoveryScreen.tsx:22</code></td><td><code>navigate(backPath, { replace: true })</code></td><td>Audit: is this terminal? — likely keep but document why</td><td>Backward nav with replace is suspicious; confirm intent</td></tr>
+    </tbody>
+  </table>
+  <p style="font-size:12px;color:var(--muted)">Note: <code>TunnelDiscloseScreen.tsx</code> lines 36/164 were flagged in research as inconsistent on inspection but actually consistent. Skip.</p>
+
+  <h3>Counts by file (representative)</h3>
+  <table class="std">
+    <thead><tr><th>File</th><th>navigate() calls</th><th>with replace:true</th></tr></thead>
+    <tbody>
+      <tr><td><code>ProviderLaunchScreen.tsx</code></td><td>8</td><td>3</td></tr>
+      <tr><td><code>IDSelectionScreen.tsx</code></td><td>8</td><td>2</td></tr>
+      <tr><td><code>SettingsScreen.tsx</code></td><td>8</td><td>1</td></tr>
+      <tr><td><code>SecretPhraseInputScreen.tsx</code></td><td>5</td><td>4</td></tr>
+      <tr><td><code>ProofGenerationRouteScreen.tsx</code></td><td>5</td><td>2</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="scope">
+  <h2>Scope</h2>
+  <ul class="scope">
+    <li>Fix the 5 known violations (named in <a href="#findings">Findings</a>).</li>
+    <li><strong>Full sweep of the remaining 145 default-replace calls</strong> per decision <code>q2</code>. Produce a per-call classification table (terminal / invalid-state / forward / wizard / modal). Add <code>{ replace: true }</code> wherever the call matches a terminal, invalid-state, or cluster-internal forward pattern.</li>
+    <li>Document the rule in <code>packages/webview-app/AGENTS.md</code> (invariant #9 wording + 2–3 worked examples) per decision <code>q1</code>.</li>
+    <li>If the sweep surfaces &gt;20 ambiguous cases, split a follow-up plan (NAV-07b) and ship the unambiguous fixes in this PR.</li>
+  </ul>
+</section>
+
+<section id="out-of-scope">
+  <h2>Out of Scope</h2>
+  <ul class="scope">
+    <li><strong>No new tests.</strong> <code>replace: true</code> behavior is a router-internal property; unit-testing it screen-by-screen is not worth the toil.</li>
+    <li><strong>No changes to react-router or any provider.</strong></li>
+    <li><strong>No restructuring of navigate calls</strong> beyond adding the <code>{ replace: true }</code> option to the 5 (or 5-15) flagged calls.</li>
+  </ul>
+</section>
+
+<section id="required-files">
+  <h2>Required Files</h2>
+  <ul class="scope">
+    <li><code>packages/webview-app/src/screens/proving/ProofGenerationSuccessScreen.tsx</code></li>
+    <li><code>packages/webview-app/src/screens/recovery/RecoveryFailureScreen.tsx</code></li>
+    <li><code>packages/webview-app/src/screens/proving/KycSuccessScreen.tsx</code></li>
+    <li><code>packages/webview-app/src/screens/recovery/LaunchRecoveryScreen.tsx</code> (audit / document only)</li>
+    <li><code>packages/webview-app/AGENTS.md</code> (rule documentation per decision <code>q1</code>)</li>
+    <li>Additional screen files surfaced during the full sweep (~5–10 expected per decision <code>q2</code> — listed in the PR description once the sweep classifies them).</li>
+  </ul>
+</section>
+
+<section id="approach">
+  <h2>Approach</h2>
+  <h3>Step 1 — Fix the 5 named violations</h3>
+  <p>Mechanical edits. One line each. PR diff: ~5 LOC. Ship this even if Step 2 stalls.</p>
+
+  <h3>Step 2 — Full sweep (per decision <code>q2</code>)</h3>
+  <p>Walk every <code>navigate()</code> call in <code>packages/webview-app/src</code> that omits the <code>replace</code> option. For each, classify and act:</p>
+  <table class="std">
+    <thead><tr><th>Pattern</th><th>Action</th></tr></thead>
+    <tbody>
+      <tr><td>Terminal handler (<code>handleClose</code>, <code>onSuccess</code>, <code>onFailure</code>, etc.)</td><td>Add <code>{ replace: true }</code></td></tr>
+      <tr><td>Invalid-state redirect (effect bouncing users out of an inconsistent route)</td><td>Add <code>{ replace: true }</code></td></tr>
+      <tr><td>Cluster-internal forward progression where the prior step is no longer meaningful</td><td>Add <code>{ replace: true }</code></td></tr>
+      <tr><td>Wizard / multi-step where back-tracking IS expected</td><td>Leave default</td></tr>
+      <tr><td>Modal / detail navigation that the user may legitimately back out of</td><td>Leave default</td></tr>
+    </tbody>
+  </table>
+  <p>Track every call's classification in the PR description so reviewers can audit the judgments. If &gt;20 calls fall in an ambiguous bucket, defer them to a NAV-07b follow-up rather than guessing.</p>
+
+  <h3>Step 3 — Document the rule</h3>
+  <p>Add to <code>packages/webview-app/AGENTS.md</code>:</p>
+  <blockquote style="border-left:3px solid var(--accent); padding-left:12px; color:var(--muted); font-size:13px;">
+    <strong>Replace semantics.</strong> Use <code>navigate(path, { replace: true })</code> when the user must not be able to back into the screen they just left: (1) after terminal outcomes — success, failure, kyc-pending; (2) after invalid-state redirects — e.g. <code>HomeScreen</code> sending no-document users to onboarding; (3) on cluster-internal forward progressions where the prior step is no longer meaningful. Default <code>replace: false</code> is correct for ordinary forward navigation.
+  </blockquote>
+</section>
+
+<section id="validation">
+  <h2>Validation</h2>
+  <ul class="scope">
+    <li><code>cd packages/webview-app &amp;&amp; yarn build &amp;&amp; yarn lint &amp;&amp; yarn types</code> — clean.</li>
+    <li>Manual: from each of the 4 named-violation screens, complete the success path, then press the browser back button → the user is NOT returned to the success screen.</li>
+    <li>Manual spot-check of 3–5 randomly sampled screens from Step 2's classification table to confirm back behavior matches the classification.</li>
+    <li>Sweep audit table (in the PR description) covers every <code>navigate()</code> call without explicit <code>replace</code>; each row has a classification + decision.</li>
+  </ul>
+</section>
+
+<section id="open-questions">
+  <h2>Open Questions</h2>
+  <p style="color:var(--muted);font-size:13px;margin-top:0">Answers persist to <code>localStorage</code>. Aggregate view in <a href="../SPEC.html#open-questions">SPEC.html</a>.</p>
+  <div id="oq-container"></div>
+</section>
+
+<section id="hand-off">
+  <h2>Hand-off</h2>
+  <ul class="scope">
+    <li>NAV-07 is independent; can land any time.</li>
+    <li>If the full sweep is split, file NAV-07b explicitly with the deferred ambiguous calls. Don't let them rot.</li>
+  </ul>
+</section>
+
+</main>
+</div>
+
+<script src="./_open-questions.js"></script>
+<script>
+  window.NavHygieneOQ.renderQuestionsForPlan('NAV-07', document.getElementById('oq-container'));
+
+  const sections = document.querySelectorAll('section[id]');
+  const tocLinks = document.querySelectorAll('nav.toc a[href^="#"]');
+  const obs = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (entry.isIntersecting) {
+        tocLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === `#${entry.target.id}`));
+      }
+    }
+  }, { rootMargin: '-50% 0px -45% 0px' });
+  sections.forEach(s => obs.observe(s));
+</script>
+
+</body>
+</html>

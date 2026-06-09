@@ -504,7 +504,7 @@ function getFastlaneCommands(platform) {
   }
 
   if (platform === PLATFORMS.ANDROID || platform === PLATFORMS.BOTH) {
-    commands.push('cd .. && bundle exec fastlane android internal_test');
+    commands.push('cd .. && bundle exec fastlane android build_only');
   }
 
   return commands;
@@ -575,9 +575,16 @@ async function executeLocalFastlaneDeployment(platform) {
     console.log(
       `${CONSOLE_SYMBOLS.SUCCESS} Local fastlane deployment completed successfully!`,
     );
-    console.log(
-      `${CONSOLE_SYMBOLS.MOBILE} Check your app store dashboards for the new builds.`,
-    );
+    if (platform === PLATFORMS.IOS || platform === PLATFORMS.BOTH) {
+      console.log(
+        `${CONSOLE_SYMBOLS.MOBILE} iOS uploaded to TestFlight — check App Store Connect.`,
+      );
+    }
+    if (platform === PLATFORMS.ANDROID || platform === PLATFORMS.BOTH) {
+      console.log(
+        `${CONSOLE_SYMBOLS.MOBILE} Android AAB built locally (no upload) — upload it in the Play Console, or let CI deploy.`,
+      );
+    }
   } catch (error) {
     console.error(
       `${CONSOLE_SYMBOLS.ERROR} Local fastlane deployment failed:`,

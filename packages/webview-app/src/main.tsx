@@ -7,17 +7,30 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 
 import { App } from './App';
+import { initSentry } from './config/sentry';
 import { BridgeProvider } from './providers/BridgeProvider';
+import { installAssetPathShim } from './utils/assetPathShim';
 
 import './fonts.css';
 import './recovery.css';
 import './reset.css';
 
+initSentry();
+installAssetPathShim();
 globalThis.Buffer = Buffer;
 
 createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <div style={{ display: 'flex', flex: 1, height: '100vh', width: '100%', maxWidth: 430, margin: '0 auto' }}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100vh',
+        width: '100%',
+        maxWidth: 430,
+        margin: '0 auto',
+      }}
+    >
       <BridgeProvider>
         <App />
       </BridgeProvider>

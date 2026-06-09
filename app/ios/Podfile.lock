@@ -3502,6 +3502,8 @@ PODS:
   - SelfNFCPassportReader (2.1.1):
     - Mixpanel-swift (~> 5.0.0)
     - OpenSSL-Universal (= 1.1.1900)
+  - selfxyz-rn-sdk (0.0.1-alpha.1):
+    - React-Core
   - Sentry (9.13.0):
     - Sentry/Core (= 9.13.0)
   - Sentry/Core (9.13.0)
@@ -3646,6 +3648,7 @@ DEPENDENCIES:
   - "SdkReactNative (from `../../node_modules/@didit-protocol/sdk-react-native`)"
   - "segment-analytics-react-native (from `../../node_modules/@segment/analytics-react-native`)"
   - "SelfNFCPassportReader (from `git@github.com:selfxyz/NFCPassportReader.git`, commit `b478e1f1320e86f72c5755bc5adf156fff950585`)"
+  - "selfxyz-rn-sdk (from `../node_modules/@selfxyz/rn-sdk`)"
   - SocketRocket (~> 0.7.1)
   - "sovran-react-native (from `../../node_modules/@segment/sovran-react-native`)"
   - SwiftQRScanner (from `https://github.com/vinodiOS/SwiftQRScanner`)
@@ -3941,6 +3944,8 @@ EXTERNAL SOURCES:
   SelfNFCPassportReader:
     :commit: b478e1f1320e86f72c5755bc5adf156fff950585
     :git: "git@github.com:selfxyz/NFCPassportReader.git"
+  selfxyz-rn-sdk:
+    :path: "../node_modules/@selfxyz/rn-sdk"
   sovran-react-native:
     :path: "../../node_modules/@segment/sovran-react-native"
   SwiftQRScanner:
@@ -4110,6 +4115,7 @@ SPEC CHECKSUMS:
   SdkReactNative: 1bc6a7467202311b7ac795d84c9b1905c3c089c9
   segment-analytics-react-native: 5df85065a7cf2c07311ec5a4832d5d3092015c98
   SelfNFCPassportReader: 8b53f9d483e0dd1f1a275953e3dc6dfc733694c5
+  selfxyz-rn-sdk: 979043eba7cb1ca128d9e6bfbe970c5737be2a51
   Sentry: 5c3f67235d4c16fcfab43158a8c1502a18fece9a
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   sovran-react-native: a3ad3f8ff90c2002b2aa9790001a78b0b0a38594

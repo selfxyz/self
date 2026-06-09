@@ -57,7 +57,7 @@ function subresourceIntegrity(): Plugin {
 }
 
 export default defineConfig({
-  base: '/',
+  base: './',
   plugins: [
     react(),
     subresourceIntegrity(),

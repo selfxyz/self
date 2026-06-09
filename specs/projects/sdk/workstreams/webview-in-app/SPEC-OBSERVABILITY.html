@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SPEC — Observability (webview-in-app)</title>
+<style>
+  :root {
+    --bg: #fafbfc;
+    --surface: #ffffff;
+    --surface-alt: #f6f8fa;
+    --border: #d1d9e0;
+    --border-soft: #e1e4e8;
+    --text: #1f2328;
+    --muted: #656d76;
+    --accent: #0969da;
+    --accent-soft: #ddf4ff;
+    --high: #cf222e;
+    --high-soft: #ffebe9;
+    --med: #9a6700;
+    --med-soft: #fff8c5;
+    --done: #1a7f37;
+    --done-soft: #dafbe1;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; color: var(--text); background: var(--bg); }
+  code, pre, kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.9em; }
+  code { background: var(--surface-alt); padding: 1px 5px; border-radius: 4px; border: 1px solid var(--border-soft); }
+  pre { background: var(--surface-alt); padding: 12px 14px; border-radius: 6px; border: 1px solid var(--border-soft); overflow: auto; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  header.topbar { position: sticky; top: 0; z-index: 100; background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  header h1 { margin: 0; font-size: 16px; font-weight: 600; }
+  .pill { font-size: 11px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface-alt); }
+  .pill.active { color: var(--accent); background: var(--accent-soft); border-color: var(--accent); }
+  .spacer { flex: 1; }
+  .layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 32px; max-width: 1100px; margin: 0 auto; padding: 24px; }
+  nav.toc { position: sticky; top: 64px; align-self: start; font-size: 13px; }
+  nav.toc h4 { margin: 0 0 6px 0; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  nav.toc a { display: block; padding: 4px 6px; border-radius: 4px; color: var(--text); }
+  nav.toc a:hover { background: var(--surface-alt); text-decoration: none; }
+  main { min-width: 0; }
+  main section { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 18px 22px; margin-bottom: 16px; }
+  main h2 { margin: 0 0 10px 0; font-size: 16px; }
+  main h3 { margin: 16px 0 6px 0; font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  main p { margin: 6px 0 10px 0; }
+  main ul, main ol { margin: 6px 0 10px 18px; padding: 0; }
+  main li { margin: 3px 0; }
+  table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 13px; }
+  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--border-soft); vertical-align: top; }
+  th { background: var(--surface-alt); font-weight: 600; }
+  .status { font-size: 11px; padding: 2px 8px; border-radius: 999px; display: inline-block; white-space: nowrap; border: 1px solid var(--border); background: var(--surface-alt); color: var(--muted); }
+  .status.pending { color: var(--muted); }
+  .callout { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 8px 12px; border-radius: 0 6px 6px 0; margin: 10px 0; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <h1>SPEC — Observability (webview-in-app)</h1>
+  <span class="pill active">Active</span>
+  <span class="pill">2026-05-26</span>
+  <span class="spacer"></span>
+  <div>
+    <a href="./SPEC.html">↑ WebView-in-App</a>
+  </div>
+</header>
+
+<div class="layout">
+
+<nav class="toc">
+  <h4>On this page</h4>
+  <a href="#scope">Scope</a>
+  <a href="#architecture">Architecture</a>
+  <a href="#decisions">Decisions</a>
+  <a href="#invariants">Invariants</a>
+  <a href="#backlog">Backlog</a>
+  <a href="#coord">Cross-workstream</a>
+  <a href="#validation">Validation</a>
+</nav>
+
+<main>
+
+<section id="scope">
+  <h2>Scope</h2>
+  <p>
+    ANA-13 established a Sentry-first observability surface in the RN app: breadcrumbs replace ~80% of
+    Mixpanel events, a cohort-tag taxonomy stamps every captured event, Session Replay with PII masking
+    covers the onboarding screens, and a <code>beforeSend</code> redact list strips biometric property
+    names. ANA-13 explicitly carved the WebView out of scope.
+  </p>
+  <p>
+    This spec carries the same surface into the WebView so that cutover (<code>WIA-11</code>) does not
+    regress observability. It covers <code>WIA-12</code> (WebView Sentry integration),
+    <code>WIA-13</code> (WebView Session Replay), and <code>WIA-14</code> (re-homing ANA-15's
+    <code>attempt_id</code> footer onto webview-app screens).
+  </p>
+
+  <h3>In scope</h3>
+  <ul>
+    <li>Sentry React SDK initialization inside <code>webview-app</code> via <code>@sentry/react</code>.</li>
+    <li>Cohort-tag continuity: same key set, same source mappings, same sanitization, same
+      terminal-event clear semantics as ANA-13.</li>
+    <li>PII masking inside the WebView DOM via a web <code>PrivacyMask</code> wrapper (the
+      <code>sentry-mask</code> class) on the screens that actually render PII web-side:
+      <code>IDDataScreen</code> and the recovery mnemonic reveal/input screens. Camera (MRZ) and NFC are
+      native bridge calls — no frames or chip data enter the WebView DOM; MRZ fields transit WebView
+      state/bridge calls but are not displayed.</li>
+    <li>Session Replay configuration in the React SDK matching the RN baseline. The browser SDK has no
+      <code>maskAllImages</code>/<code>maskAllVectors</code>; the equivalent set is
+      <code>maskAllText: true</code>, <code>maskAllInputs: true</code>, <code>blockAllMedia: true</code>
+      (<code>blockAllMedia</code> covers <code>&lt;img&gt;</code> and <code>&lt;svg&gt;</code>).</li>
+    <li><code>beforeSend</code> redact list parity with ANA-13.</li>
+    <li>A host-minted <code>referenceId</code> propagated to the WebView (bridge + URL), tagged
+      <code>reference_id</code> on both runtimes, and shown as a copyable reference footer on the
+      webview-app failure routes (disclose result, kyc-failure, passport/eu-id nfc-error, aadhaar
+      upload-error, registration failure, recovery failure, embed error). See the
+      <a href="./plans/WIA-14-footer.html">WIA-14 PR2</a> route inventory for the exact list.</li>
+    <li>Migration of the cohort-tag mapping module from <code>app/src/observability/</code> into
+      <code>packages/mobile-sdk-alpha/</code> so both runtimes import from one source of truth.</li>
+  </ul>
+
+  <h3>Out of scope</h3>
+  <ul>
+    <li>Forking the Sentry project. Both runtimes ship to the same project; a <code>runtime</code> tag
+      (<code>rn-host</code> | <code>webview</code>) distinguishes origin.</li>
+    <li>Re-architecting the analytics pipeline. Mixpanel/Segment delivery stays single-sourced through
+      the RN host's <code>_track</code> pipe per <a href="./SPEC-BRIDGE-HOST.html">SPEC-BRIDGE-HOST</a>
+      Decision 3.</li>
+    <li>Performance/tracing instrumentation. Out for both runtimes per ANA-13.</li>
+    <li>Tag taxonomy changes. The ANA-13 set is canonical; additions require an
+      <code>analytics/</code> workstream spec, not a webview-in-app PR.</li>
+  </ul>
+</section>
+
+<section id="architecture">
+  <h2>Architecture</h2>
+  <pre>WebView · webview-app
+  selfClient.trackEvent ─┬─→ bridge.analytics.trackEvent  ──→ RN Host: _track ──→ Segment / Mixpanel
+                        │                                                  └──→ Sentry RN SDK
+                        ├─→ setOnboardingTags · webview                    (cohort tags)
+                        │       └─→ Sentry React SDK
+                        └─→ Session Replay · web
+                                └─→ Sentry React SDK
+
+RN Host · Self app                                          ──→ Mobile Session Replay
+                                                                       └─→ Sentry project
+
+Both SDKs → single Sentry project (correlation by attempt_id)</pre>
+</section>
+
+<section id="decisions">
+  <h2>Decisions</h2>
+  <ol>
+    <li><strong>One Sentry project, two SDKs.</strong> The WebView runs <code>@sentry/react</code>
+      with the same DSN as the RN host's <code>@sentry/react-native</code>. Use the React package,
+      not bare <code>@sentry/browser</code>, so the WebView can use the React error-boundary/profiler
+      integration and match the host web config package. A <code>runtime</code> tag
+      (<code>rn-host</code> | <code>webview</code>) is set at SDK init on each side and is never
+      cleared.</li>
+    <li><strong>Mixpanel/Segment stay RN-host-only.</strong> The WebView's
+      <code>AnalyticsAdapter</code> routes every <code>trackEvent</code> call over the bridge. The
+      bridge handler calls the existing <code>_track</code> pipe verbatim. The WebView does not bundle
+      Segment or Mixpanel.</li>
+    <li><strong>Cohort tags are set on both sides, from one mapping module.</strong> The
+      <code>OnboardingTagSnapshot</code> type, <code>tagsFromAnalyticsEvent</code> mapping, and
+      cohort key list move from <code>app/src/observability/onboardingContext.ts</code> to
+      <code>packages/mobile-sdk-alpha/</code>. Concrete setters do not move wholesale because
+      <code>packages/mobile-sdk-alpha/src/</code> cannot import <code>@sentry/react-native</code>.
+      The RN host keeps runtime-local <code>setOnboardingTags</code>/<code>clearOnboardingTags</code>
+      wrappers around <code>@sentry/react-native</code>; the WebView adds equivalent wrappers around
+      <code>@sentry/react</code>. Tag keys, mappings, sanitization, and the terminal-event clear
+      semantic (<code>Onboarding: Ended</code>) are identical on both sides.</li>
+    <li><strong>PII redact list is extracted from the live RN config.</strong> WIA-12 moves the current
+      <code>SENSITIVE_KEY_PATTERN</code> from <code>app/src/config/sentry.ts</code> into
+      <code>packages/mobile-sdk-alpha/</code> and imports it back into RN. Do not recreate the older
+      ANA-13 regex; the live pattern also covers name variants such as
+      <code>first_name</code>/<code>given_name</code>/<code>holder_name</code> and
+      <code>date_of_birth</code>. Each side still wires its own <code>beforeSend</code> because the RN
+      and React Sentry SDKs expose runtime-specific integration points.</li>
+    <li><strong>WebView Session Replay matches RN baseline.</strong> <code>maskAllText: true</code>,
+      <code>maskAllInputs: true</code>, <code>blockAllMedia: true</code> (the browser equivalent of the RN
+      <code>maskAllImages</code>/<code>maskAllVectors</code>); replay sample rate matches the RN
+      configuration (10% session, 100% on error). PII-bearing screens additionally opt in to masking via a
+      web <code>PrivacyMask</code> wrapper applying Sentry's default <code>sentry-mask</code> class (not a
+      <code>data-sentry-mask</code> attribute). The wrapper sites are the web-side PII renderers:
+      <code>IDDataScreen</code>, <code>RecoveryPhraseScreen</code>, and
+      <code>SecretPhraseInputScreen</code>.</li>
+    <li><strong>Cross-runtime correlation is by <code>reference_id</code></strong> (revised — see
+      <a href="./plans/WIA-14-reference-id.html">WIA-14 PR1</a>). <code>attempt_id</code> was the original
+      intent but is unreachable in the WebView runtime (the onboarding funnel is RN-host-driven; no bridge
+      carries it). The RN host mints a per-session <code>referenceId</code> and both runtimes tag
+      <code>reference_id</code>; engineers search <code>reference_id:&lt;uuid&gt;</code> to pull every
+      event for one WebView session. <code>verification_id</code> is tagged separately when a business
+      verificationId is present. <code>attempt_id</code> remains the RN-host onboarding-funnel tag where the
+      funnel runs.</li>
+    <li><strong>No cross-bridge exception forwarding.</strong> A JS error inside the WebView is captured
+      by <code>@sentry/react</code> directly; it is not serialized over the bridge to the RN host.
+      The shared project + cohort tag taxonomy is enough to keep the forensic trail joined.</li>
+    <li><strong>ANA-15's footer ports to webview-app, ANA-15 itself does not ship against RN.</strong>
+      Per the umbrella's Cross-Workstream Dependencies note, ANA-15 is re-homed under
+      <code>WIA-14</code>, delivered in two PRs: <a href="./plans/WIA-14-reference-id.html">PR1</a> mints
+      and propagates a host <code>referenceId</code> and tags <code>reference_id</code> on both runtimes;
+      <a href="./plans/WIA-14-footer.html">PR2</a> renders the reference footer. The footer is a net-new
+      webview-app component using Euclid tokens. <em>Superseded:</em> the
+      <code>getCurrentAttemptId()</code> approach (the accessor is null in the WebView runtime — see PR1
+      Context).</li>
+  </ol>
+</section>
+
+<section id="invariants">
+  <h2>Invariants</h2>
+  <ol>
+    <li>Every captured Sentry event carries <code>runtime</code> and (if an attempt is active) the full
+      ANA-13 cohort tag set. Missing <code>runtime</code> or missing <code>attempt_id</code> on an
+      in-flight attempt is a bug.</li>
+    <li>The mapping from event payload key to tag key has exactly one definition in the repo. Adding a
+      new tag requires editing that module and is observable to both runtimes simultaneously.</li>
+    <li>PII never enters a Sentry tag. Tag values pass through <code>sanitizeTagValue</code> on both
+      sides. The redact regex applied in <code>beforeSend</code> matches on both sides.</li>
+    <li>Cohort tags clear on <code>Onboarding: Ended</code> on both sides. A long-lived session that
+      completes one attempt and starts another does not leak tags from the prior attempt.</li>
+    <li>The WebView's <code>AnalyticsAdapter</code> has no path to Mixpanel/Segment when the WebView
+      runs inside the RN host. The only telemetry the WebView ships directly is Sentry
+      (<code>@sentry/react</code>).</li>
+    <li>Session Replay does not record screens between the WebView's <code>lifecycle.ready</code> and
+      the first attempt-bootstrapping event unless <code>maskAllText</code>/<code>maskAllInputs</code>
+      are on. The default is always-on masking; the WebView never disables it.</li>
+  </ol>
+</section>
+
+<section id="backlog">
+  <h2>Backlog (this topic)</h2>
+  <table>
+    <thead><tr><th>ID</th><th>Title</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>WIA-12</td><td>WebView Sentry React SDK + cohort tags + redact list (<a href="./plans/WIA-12-webview-sentry-cohort-tags.html">plan</a>)</td><td><span class="status pending">Pending</span></td></tr>
+      <tr><td>WIA-13</td><td><a href="./plans/WIA-13-webview-session-replay.html">WebView Session Replay (<code>@sentry/react</code>) with mask wrappers</a></td><td><span class="status progress">In progress — replay + PrivacyMask + tests landed; manual TestFlight masking/CSP validation pending</span></td></tr>
+      <tr><td>WIA-14</td><td>WebView error-screen support reference (re-homes ANA-15). <a href="./plans/WIA-14-reference-id.html">PR1</a> mints a host referenceId (bridge + Sentry <code>reference_id</code>); <a href="./plans/WIA-14-footer.html">PR2</a> shows the footer. <strong>Note:</strong> <code>attempt_id</code> is unreachable in the WebView runtime — superseded by <code>referenceId</code>.</td><td><span class="status pending">Pending</span></td></tr>
+    </tbody>
+  </table>
+  <p>
+    Migration of the cohort-tag mapping module into <code>mobile-sdk-alpha</code> ships with
+    <code>WIA-12</code> (not a separate plan); the RN-side import path update is part of the same PR so
+    there is no window where the two sides diverge.
+  </p>
+  <p>
+    <code>WIA-14</code> has a missing prerequisite: no <code>getCurrentAttemptId()</code> accessor
+    exists in <code>mobile-sdk-alpha</code> as of WIA-12 planning. The WIA-14 plan must add that
+    accessor before porting ANA-15's footer.
+  </p>
+</section>
+
+<section id="coord">
+  <h2>Cross-workstream coordination</h2>
+  <ul>
+    <li><strong><code>analytics/</code> workstream.</strong> Owns the ANA-13 taxonomy; any addition or
+      rename here requires a coordinated PR on both sides. Ping that workstream's owner before changing
+      tag keys, the redact regex, or the terminal-event clear list.</li>
+    <li><strong><code>webview/</code> workstream.</strong> Owns the screens that host the ANA-15 footer.
+      <code>WIA-14</code> lands as a webview-app PR; the <code>AttemptReference</code>-equivalent
+      component lives in <code>webview-app/src/</code> (Euclid tokens, not RN typography).</li>
+  </ul>
+</section>
+
+<section id="validation">
+  <h2>Validation</h2>
+  <ul>
+    <li>Trigger a synthetic error inside the WebView on a TestFlight build. Confirm Sentry captures it
+      with all expected cohort tags + the <code>runtime: webview</code> tag. The captured event is
+      reachable by <code>attempt_id:&lt;uuid&gt;</code> and groups with RN-host events from the same
+      attempt.</li>
+    <li>Force <code>Onboarding: Failed</code> and confirm cohort tags clear on both sides. Start a new
+      attempt in the same session; confirm no leakage from the prior attempt.</li>
+    <li>Open Session Replay for a captured error on the ID-data screen and the recovery mnemonic
+      reveal/input screens. Confirm all text is masked and the ID photo/artwork is blocked.</li>
+    <li>Tap the <code>attempt_id</code> footer on a webview-app error screen; confirm it copies the
+      same uuid that Sentry's <code>attempt_id</code> tag carries for the captured event.</li>
+  </ul>
+</section>
+
+</main>
+</div>
+
+</body>
+</html>

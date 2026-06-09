@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>NAV-09 Plan — State-Passing Convention Sweep</title>
+<link rel="stylesheet" href="./_shared.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <h1>NAV-09 · State-Passing Convention Sweep</h1>
+  <span class="meta-pill status-Ready">Ready</span>
+  <span class="meta-pill prio-Medium">Medium</span>
+  <span class="meta-pill">Updated 2026-05-25</span>
+  <span class="spacer"></span>
+  <div class="links">
+    <a href="../SPEC.html">← Spec</a>
+    <a href="../AUDIT.html">Audit</a>
+  </div>
+</header>
+
+<div class="layout">
+
+<nav class="toc">
+  <h4>On this page</h4>
+  <a href="#why">Why</a>
+  <a href="#decisions">Decisions</a>
+  <a href="#meta">Meta</a>
+  <a href="#findings">Findings</a>
+  <a href="#scope">Scope</a>
+  <a href="#out-of-scope">Out of Scope</a>
+  <a href="#required-files">Required Files</a>
+  <a href="#approach">Approach</a>
+  <a href="#validation">Validation</a>
+  <a href="#open-questions">Open Questions</a>
+  <a href="#hand-off">Hand-off</a>
+  <h4>Workstream</h4>
+  <a href="../SPEC.html">SPEC ↗</a>
+  <a href="../AUDIT.html">AUDIT ↗</a>
+</nav>
+
+<main>
+
+<section id="why" class="tldr">
+  <h2>Why</h2>
+  <p>
+    Screens pass forward/backward/return targets through <code>location.state</code> with inconsistent slot names. The same intent — "where to go after this" — is called <code>nextPath</code> in onboarding and <code>returnTo</code> in recovery. Recovery additionally encodes <code>returnTo</code> into the URL query string. 7 local TS interfaces describe overlapping shapes; no shared <code>NavState</code> type exists. NAV-09 standardizes slot names, introduces a shared type, and decides on URL vs state for return paths.
+  </p>
+</section>
+
+<section id="decisions" class="decisions-block">
+  <h2>Decisions</h2>
+  <p class="decisions-intro">Locked in on 2026-05-25. See <a href="../DECISIONS.md">DECISIONS.md</a>.</p>
+  <ul class="decisions-list">
+    <li class="decision">
+      <div class="d-head"><code>nav-09-q1-canonical-names</code> · Decided</div>
+      <p class="d-q">Single name for "forward target," or keep <code>nextPath</code> + <code>returnTo</code> with a semantic split?</p>
+      <p class="d-a"><strong>Single name: <code>nextPath</code>.</strong> Rename <code>returnTo</code> → <code>nextPath</code> in the ~4 recovery files. <code>NavState</code> exposes only <code>nextPath</code>.</p>
+    </li>
+    <li class="decision">
+      <div class="d-head"><code>nav-09-q2-url-returnto</code> · Decided</div>
+      <p class="d-q">Recovery's <code>?returnTo=</code> URL param: keep, deprecate, or migrate to state-only?</p>
+      <p class="d-a"><strong>Migrate to state-only.</strong> Drop the URL-param plumbing entirely. Page-reload survival is low-value in a webview.</p>
+    </li>
+  </ul>
+</section>
+
+<section id="meta">
+  <h2>Meta</h2>
+  <div class="meta-grid">
+    <div class="item"><div class="label">Workstream</div><div class="value">nav-hygiene</div></div>
+    <div class="item"><div class="label">Linear</div><div class="value">TBD</div></div>
+    <div class="item"><div class="label">Owner</div><div class="value">TBD</div></div>
+    <div class="item"><div class="label">Branch</div><div class="value"><code>chore/nav-09-nav-state</code></div></div>
+    <div class="item"><div class="label">PR</div><div class="value">TBD</div></div>
+    <div class="item"><div class="label">Depends on</div><div class="value">—</div></div>
+  </div>
+</section>
+
+<section id="findings">
+  <h2>Findings</h2>
+  <h3>Slot inventory (deduped)</h3>
+  <table class="std">
+    <thead><tr><th>Slot</th><th>Intent</th><th>Used in</th></tr></thead>
+    <tbody>
+      <tr><td><code>nextPath</code></td><td>Forward target</td><td>onboarding, tunnel-kyc</td></tr>
+      <tr><td><code>returnTo</code></td><td>Forward/return target after recovery</td><td>recovery</td></tr>
+      <tr><td><code>backPath</code></td><td>Back target (also forward in TunnelKycWrapper)</td><td>recovery, provider-launch, tunnel-kyc, tunnel-proof-receipt</td></tr>
+      <tr><td><code>backState</code></td><td>Full state snapshot for back-nav</td><td>tunnel-proof-receipt only</td></tr>
+      <tr><td><code>countryCode</code></td><td>Selected country</td><td>onboarding, passport, eu-id, aadhaar</td></tr>
+      <tr><td><code>documentType</code></td><td>Selected document</td><td>onboarding, passport routes</td></tr>
+      <tr><td><code>documentTypes</code></td><td>Allowed doc types (plural)</td><td>id-selection, tunnel-id-type</td></tr>
+      <tr><td><code>providerResult</code></td><td>KYC provider result</td><td>tunnel-kyc, provider-result</td></tr>
+      <tr><td><code>success</code> / <code>error</code> / <code>source</code></td><td>Tunnel result payload</td><td>tunnel-disclose, tunnel-result</td></tr>
+      <tr><td><code>resultSent</code></td><td>Whether bridge.setResult was already called</td><td>disclose-result</td></tr>
+      <tr><td><code>skipOnboardingRedirect</code></td><td>Home screen behavior flag</td><td>home, registration-failure, tour</td></tr>
+      <tr><td><code>canValue</code> / <code>useCan</code> / <code>mrz</code></td><td>EU-ID NFC inputs</td><td>eu-id NFC routes</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Per-screen local types (no shared NavState)</h3>
+  <ul class="scope">
+    <li><code>DiscloseResultLocationState</code> — <code>DiscloseResultScreen.tsx:17</code></li>
+    <li><code>TunnelResultState</code> — <code>TunnelResultScreen.tsx:13</code></li>
+    <li><code>ProviderLaunchState</code> — <code>ProviderLaunchScreen.tsx:27</code></li>
+    <li><code>RouteState</code> (passport) — <code>NfcRoute.tsx</code></li>
+    <li><code>RouteState</code> (eu-id) — <code>NfcInstructionsRoute.tsx</code></li>
+    <li><code>MockOnboardingNavigationState</code> — <code>utils/mockOnboardingFlow.ts:7</code></li>
+  </ul>
+</section>
+
+<section id="scope">
+  <h2>Scope</h2>
+  <ul class="scope">
+    <li>Resolve <a href="#open-questions">Q1</a> (single canonical name for forward target) and <a href="#open-questions">Q2</a> (URL param vs state for returnTo).</li>
+    <li>Introduce a shared <code>NavState</code> type in <code>packages/webview-app/src/types/navState.ts</code>:
+      <pre><code>export interface NavState {
+  /** Forward target after current screen completes. Successor of legacy `returnTo`/`nextPath`. */
+  nextPath?: string;
+  /** Back target if non-default. */
+  backPath?: string;
+  /** Document selection context, when forwarded through a flow. */
+  countryCode?: string;
+  documentType?: string;
+  documentTypes?: string[];
+  /** Tunnel/embed result payload — set only by tunnel screens. */
+  result?: { success: boolean; error?: string; source?: string };
+  /** Home-screen redirect suppression. */
+  skipOnboardingRedirect?: boolean;
+  /** EU-ID NFC inputs. */
+  canValue?: string;
+  useCan?: boolean;
+  mrz?: { documentNumber: string; dateOfBirth: string; dateOfExpiry: string };
+  /** Provider integration. */
+  providerResult?: KycProviderResult;
+}</code></pre>
+    </li>
+    <li>Migrate the 7 local types to <code>Partial&lt;NavState&gt;</code> + intersection for screen-specific extensions where needed.</li>
+    <li>Rename every <code>returnTo</code> read/write to <code>nextPath</code> per decision <code>q1</code>. Affects ~4 recovery files plus the URL-param encoding (which goes away in the next bullet).</li>
+    <li>Remove the <code>?returnTo=</code> URL-param plumbing per decision <code>q2</code>. Recovery screens read exclusively from <code>state.nextPath</code>.</li>
+    <li>Update <code>packages/webview-app/AGENTS.md</code> with a "Navigation state" section linking to <code>NavState</code> + describing the rules.</li>
+  </ul>
+</section>
+
+<section id="out-of-scope">
+  <h2>Out of Scope</h2>
+  <ul class="scope">
+    <li><strong>No new tests.</strong> Type-only changes; existing flow tests catch regressions.</li>
+    <li><strong>No bridge schema changes.</strong> <code>VerificationResult</code> stays unchanged.</li>
+    <li><strong>No URL-shape changes</strong> beyond removing <code>?returnTo=</code> (if Q2 → state-only).</li>
+    <li><strong>No <code>state.backState</code> generalization.</strong> It's a one-off in tunnel-proof-receipt; document it as such.</li>
+  </ul>
+</section>
+
+<section id="required-files">
+  <h2>Required Files</h2>
+  <ul class="scope">
+    <li><code>packages/webview-app/src/types/navState.ts</code> (new)</li>
+    <li>~18 screen files (renames + type imports)</li>
+    <li><code>packages/webview-app/src/utils/mockOnboardingFlow.ts</code> (extends NavState)</li>
+    <li>Recovery files (per decision <code>q2</code>): <code>LaunchRecoveryScreen.tsx</code>, <code>RecoveryFailureScreen.tsx</code>, <code>RecoverySuccessScreen.tsx</code>, <code>SecretPhraseInputScreen.tsx</code>, <code>TunnelRecoveryRequiredScreen.tsx</code></li>
+    <li><code>packages/webview-app/AGENTS.md</code></li>
+  </ul>
+</section>
+
+<section id="approach">
+  <h2>Approach</h2>
+  <h3>Step 1 — Author <code>NavState</code></h3>
+  <p>Single source of truth. Every <code>location.state</code> read/write across webview-app uses this type.</p>
+
+  <h3>Step 2 — Mechanical renames (decision <code>q1</code>)</h3>
+  <pre><code>// Before (recovery screens)
+const returnTo = searchParams.get('returnTo') ?? state?.returnTo;
+
+// After
+const nextPath = state?.nextPath; // URL param drops with q2 (next step)</code></pre>
+
+  <h3>Step 3 — Drop the URL param (decision <code>q2</code>)</h3>
+  <pre><code>// Before (LaunchRecoveryScreen, SecretPhraseInputScreen)
+function buildRecoveryTarget(path, returnTo) {
+  return returnTo ? `${path}?returnTo=${encodeURIComponent(returnTo)}` : path;
+}
+
+// After — no URL plumbing
+navigate(path, { state: { nextPath: returnTo } });</code></pre>
+
+  <h3>Step 4 — Migrate per-screen types</h3>
+  <p>Each local interface becomes:</p>
+  <pre><code>type ProviderLaunchState = Partial&lt;NavState&gt;;
+// or, if screen-specific extension needed:
+type DiscloseResultState = Partial&lt;NavState&gt; &amp; { resultSent?: boolean };</code></pre>
+
+  <h3>Step 5 — Document</h3>
+  <p>Add to <code>packages/webview-app/AGENTS.md</code>:</p>
+  <blockquote style="border-left:3px solid var(--accent); padding-left:12px; color:var(--muted); font-size:13px;">
+    <strong>Navigation state.</strong> Every <code>navigate(path, { state })</code> uses a value typed as <code>NavState</code> (see <code>src/types/navState.ts</code>). Forward target = <code>state.nextPath</code>. Back target = <code>state.backPath</code>. Do not invent new slot names; extend <code>NavState</code> if you need a new well-typed field.
+  </blockquote>
+</section>
+
+<section id="validation">
+  <h2>Validation</h2>
+  <ul class="scope">
+    <li><code>cd packages/webview-app &amp;&amp; yarn types</code> — clean.</li>
+    <li><code>grep -rn "returnTo" packages/webview-app/src</code> — zero hits (decision <code>q1</code> + <code>q2</code> drop both the slot and the URL param).</li>
+    <li><code>grep -rn "searchParams.get..returnTo" packages/webview-app/src</code> — zero hits (URL param removed).</li>
+    <li><code>grep -rn "as { [a-zA-Z]*Path" packages/webview-app/src</code> — zero hits (all reads go through <code>NavState</code>).</li>
+    <li>Manual: recovery flow (settings → backup → secret phrase input → success) returns the user to the originating screen, regardless of state-only or URL+state path.</li>
+  </ul>
+</section>
+
+<section id="open-questions">
+  <h2>Open Questions</h2>
+  <p style="color:var(--muted);font-size:13px;margin-top:0">Answers persist to <code>localStorage</code>. Aggregate view in <a href="../SPEC.html#open-questions">SPEC.html</a>.</p>
+  <div id="oq-container"></div>
+</section>
+
+<section id="hand-off">
+  <h2>Hand-off</h2>
+  <ul class="scope">
+    <li>Coordinates with <span class="nav-link">NAV-04</span> — if NAV-04 reads <code>state.returnTo</code> as a per-call close override (its Q3), the slot name updates with NAV-09.</li>
+    <li>Coordinates with <span class="nav-link">NAV-05</span> — <code>handleBack</code> / <code>handleContinue</code> bodies use the renamed slots.</li>
+  </ul>
+</section>
+
+</main>
+</div>
+
+<script src="./_open-questions.js"></script>
+<script>
+  window.NavHygieneOQ.renderQuestionsForPlan('NAV-09', document.getElementById('oq-container'));
+
+  const sections = document.querySelectorAll('section[id]');
+  const tocLinks = document.querySelectorAll('nav.toc a[href^="#"]');
+  const obs = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (entry.isIntersecting) {
+        tocLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === `#${entry.target.id}`));
+      }
+    }
+  }, { rootMargin: '-50% 0px -45% 0px' });
+  sections.forEach(s => obs.observe(s));
+</script>
+
+</body>
+</html>

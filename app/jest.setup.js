@@ -909,7 +909,6 @@ jest.mock('@selfxyz/mobile-sdk-alpha/constants/analytics', () => ({
     GET_STARTED: 'App: Get Started',
     GET_STARTED_AADHAAR: 'App: Get Started - Aadhaar',
     GET_STARTED_BIOMETRIC: 'App: Get Started - Biometric ID',
-    LOGO_CONFIRMATION_ANSWERED: 'App: Logo Confirmation Answered',
     SUPPORTED_BIOMETRIC_IDS: 'App: Supported Biometric IDs',
     UPDATE_MODAL_CLOSED: 'App: Update Modal Closed',
     UPDATE_MODAL_OPENED: 'App: Update Modal Opened',
@@ -952,7 +951,6 @@ jest.mock('@selfxyz/mobile-sdk-alpha/constants/analytics', () => ({
     NFC_SCAN_FAILED: 'Passport: NFC Scan Failed',
   },
   DocumentEvents: {
-    COUNTRY_HELP_TAPPED: 'Document: Country Help Tapped',
     ADD_NEW_AADHAAR_SELECTED: 'Document: Add Aadhaar',
     ADD_NEW_MOCK_SELECTED: 'Document: Add New Document via Mock',
     ADD_NEW_SCAN_SELECTED: 'Document: Add New Document via Scan',
@@ -983,6 +981,7 @@ jest.mock('@selfxyz/mobile-sdk-alpha/constants/analytics', () => ({
     RETRY_TRIGGERED: 'KYC: Retry Triggered',
     SESSION_CREATED: 'KYC: Session Created',
     SESSION_REQUESTED: 'KYC: Session Requested',
+    VERIFICATION_RESOLVED: 'KYC: Verification Resolved',
   },
   MockDataEvents: {
     CANCEL_GENERATION: 'Mock Data: Cancel Generation',
@@ -1108,15 +1107,15 @@ jest.mock('@selfxyz/mobile-sdk-alpha/constants/analytics', () => ({
     ID_SELECTED: 'proof_request_id_selected',
     INELIGIBLE_ID_TAPPED: 'proof_request_ineligible_id_tapped',
   },
-  RegistrationPickerEvents: {
-    VIEWED: 'registration_id_picker_viewed',
-    SELECTED: 'registration_id_picker_selected',
-    UNSUPPORTED_TAPPED: 'registration_id_picker_unsupported_tapped',
-  },
   SettingsEvents: {
     CONNECTION_MODAL_CLOSED: 'Settings: Connection Modal Closed',
     CONNECTION_MODAL_OPENED: 'Settings: Connection Modal Opened',
     CONNECTION_SETTINGS_OPENED: 'Settings: Connection Settings Opened',
+  },
+  WebViewEvents: {
+    LOAD_FAILED: 'WebView: Load Failed',
+    VERSION_MISMATCH: 'WebView: Version Mismatch',
+    LOAD_RECOVERED: 'WebView: Load Recovered',
   },
 }));
 

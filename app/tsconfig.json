@@ -11,6 +11,7 @@
     "paths": {
       "@env": ["./env.ts"],
       "@/package.json": ["./package.json"],
+      "@selfxyz/rn-sdk": ["../packages/rn-sdk/src", "../packages/rn-sdk/dist"],
       "@selfxyz/mobile-sdk-alpha": [
         "../packages/mobile-sdk-alpha/src",
         "../packages/mobile-sdk-alpha/dist"
