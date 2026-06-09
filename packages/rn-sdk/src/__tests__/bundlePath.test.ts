@@ -31,10 +31,10 @@ describe('resolveBundlePath', () => {
     ).toBe('/var/containers/Bundle/Application/ABC/X.app');
   });
 
-  it('strips scheme, trailing slashes, and percent-encoding from the expo uri', () => {
+  it('strips scheme and trailing slashes but preserves percent-encoding so the file:// URL stays valid', () => {
     expect(
       resolveBundlePath(undefined, 'file:///var/My%20App/Self.app///'),
-    ).toBe('/var/My App/Self.app');
+    ).toBe('/var/My%20App/Self.app');
   });
 
   it('returns undefined when neither provider supplies a path', () => {

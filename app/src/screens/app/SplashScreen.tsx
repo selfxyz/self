@@ -193,7 +193,11 @@ const SplashScreen: React.FC = ({}) => {
           ? 'Home'
           : 'Disclaimer';
         setDeeplinkParentScreen(fallbackScreen);
-        setNextScreen(fallbackScreen);
+        setNextScreen(
+          IS_WIA_ENABLED
+            ? ('WebViewHost' as keyof RootStackParamList)
+            : fallbackScreen,
+        );
       }, INIT_TIMEOUT_MS);
 
       loadDataAndDetermineNextScreen().finally(() => {

@@ -20,9 +20,11 @@ try {
   process.exit(1);
 }
 
+// Match both quoting styles: a silent no-op here means WKWebView fails the SRI
+// check on file:// and the embedded bundle never boots.
 const stripped = html
-  .replace(/\s+integrity="[^"]*"/g, '')
-  .replace(/\s+crossorigin(="[^"]*")?/g, '');
+  .replace(/\s+integrity=("[^"]*"|'[^']*')/g, '')
+  .replace(/\s+crossorigin(=("[^"]*"|'[^']*'))?/g, '');
 
 if (stripped !== html) {
   fs.writeFileSync(htmlPath, stripped);

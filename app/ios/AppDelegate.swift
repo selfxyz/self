@@ -103,9 +103,7 @@ class ReactNativeDelegate: ExpoReactNativeFactoryDelegate {
 
   override func bundleURL() -> URL? {
     #if DEBUG
-    // Metro's server root is the monorepo root (see app/metro.config.cjs), so the
-    // dev bundle lives at `<workspaceRoot>/app/index`, served as `/app/index.bundle`.
-    return RCTBundleURLProvider.sharedSettings().jsBundleURL(forBundleRoot: "app/index")
+    return RCTBundleURLProvider.sharedSettings().jsBundleURL(forBundleRoot: "index")
     #else
     return Bundle.main.url(forResource: "main", withExtension: "jsbundle")
     #endif

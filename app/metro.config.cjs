@@ -15,6 +15,14 @@ const projectRoot = __dirname;
 const workspaceRoot =
   findYarnWorkspaceRoot(__dirname) || path.resolve(__dirname, '..');
 
+// Expo's metro-config resolves the entry relative to the monorepo root, so it
+// rewrites Android's `/.expo/.virtual-metro-entry.bundle` to this segment
+// (e.g. `app/index`). We keep our server root at the app dir, so we strip it
+// back to `index` below. See the `server` block.
+const appDirFromWorkspace = path.relative(workspaceRoot, projectRoot);
+const expoRewriteRequestUrl =
+  defaultConfig.server && defaultConfig.server.rewriteRequestUrl;
+
 /**
  * Modern Metro configuration using native workspace capabilities
  * Eliminates need for manual symlink management through:
@@ -27,16 +35,29 @@ const workspaceRoot =
 const config = {
   projectRoot,
 
-  // Pin Metro's server root to the workspace root so it matches the path
-  // `@expo/metro-config`'s rewriteRequestUrl bakes into bundle URLs: it always
-  // resolves the entry relative to getMetroServerRoot (the monorepo root), so
-  // Android's `/.expo/.virtual-metro-entry.bundle` is rewritten to
-  // `<workspaceRoot>/app/index`. Pinning to projectRoot instead made Metro
-  // resolve that as `app/app/index` and 404. iOS doesn't use the virtual entry
-  // (it hardcodes a bundle root), so ios/AppDelegate.swift must request
-  // `app/index` to match this server root.
+  // Server root is the app dir so native `/index.bundle` and the embedded
+  // `--entry-file index.js` (iOS "Bundle React Native code and images" phase)
+  // both resolve to app/index.js. Without this, Metro derives the root from the
+  // common ancestor of projectRoot and watchFolders (the monorepo root) and
+  // those look for <repo>/index.js.
+  //
+  // Expo's rewriteRequestUrl resolves the entry relative to the monorepo root
+  // regardless, so Android's `/.expo/.virtual-metro-entry.bundle` becomes
+  // `/app/index.bundle`, which 404s as `app/app/index` against this root. Wrap
+  // Expo's rewrite and strip the workspace-relative app segment back to
+  // `/index.bundle`. iOS hardcodes bundle root "index" and never hits the
+  // virtual entry, so it's unaffected.
   server: {
-    unstable_serverRoot: workspaceRoot,
+    unstable_serverRoot: projectRoot,
+    rewriteRequestUrl: url => {
+      const rewritten = expoRewriteRequestUrl
+        ? expoRewriteRequestUrl(url)
+        : url;
+      return rewritten.replace(
+        `/${appDirFromWorkspace}/index.bundle`,
+        '/index.bundle',
+      );
+    },
   },
 
   watchFolders: [

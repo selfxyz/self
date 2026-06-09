@@ -22,9 +22,10 @@ export const resolveBundlePath = (
     return rnfsMainBundlePath;
   }
   if (typeof bundleRootUri === 'string' && bundleRootUri.length > 0) {
-    return decodeURIComponent(
-      bundleRootUri.replace(/^file:\/\//, '').replace(/\/+$/, ''),
-    );
+    // Keep percent-encoding intact: callers prepend `file://` to build the
+    // WebView source URL, so decoding here would turn `My%20App.app` into a
+    // literal space and yield a malformed file:// URL that WKWebView rejects.
+    return bundleRootUri.replace(/^file:\/\//, '').replace(/\/+$/, '');
   }
   return undefined;
 };
