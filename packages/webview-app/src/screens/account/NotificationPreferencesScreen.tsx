@@ -28,7 +28,7 @@ export const NotificationPreferencesScreen: React.FC = () => {
     id_status: false,
   });
 
-  const onBack = useCallback(() => {
+  const handleBack = useCallback(() => {
     haptic.trigger('selection');
     navigate('/settings');
   }, [navigate, haptic]);
@@ -48,7 +48,7 @@ export const NotificationPreferencesScreen: React.FC = () => {
     <EuclidNotificationPreferencesScreen
       {...WEB_SAFE_AREA}
       escapeIcon={({ size, color }) => <LeftArrowIcon size={size} color={color} />}
-      onBack={onBack}
+      onBack={handleBack}
       toggles={toggles}
     />
   );

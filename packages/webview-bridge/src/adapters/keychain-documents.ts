@@ -20,8 +20,10 @@ function safeParse<T>(raw: string, fallback: T): T {
 
 export function createKeychainDocumentsAdapter(bridge: WebViewBridge): DocumentsAdapter {
   async function storageGet(key: string): Promise<string | null> {
-    const result = await bridge.request<{ value: string | null }>('secureStorage', 'get', { key });
-    return result?.value ?? null;
+    const result = await bridge.request<string | { value: string | null } | null>('secureStorage', 'get', { key });
+    if (result == null) return null;
+    if (typeof result === 'string') return result;
+    return result.value ?? null;
   }
 
   async function storageSet(key: string, value: string): Promise<void> {

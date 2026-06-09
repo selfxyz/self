@@ -12,11 +12,13 @@ export function bridgeAuthAdapter(bridge: WebViewBridge): BridgeAuthAdapter {
   return {
     async getPrivateKey(): Promise<string | null> {
       try {
-        const result = await bridge.request<{ value: string | null }>('secureStorage', 'get', {
+        const result = await bridge.request<string | { value: string | null } | null>('secureStorage', 'get', {
           key: 'self_private_key',
           requireBiometric: true,
         });
-        return result?.value ?? null;
+        if (result == null) return null;
+        if (typeof result === 'string') return result;
+        return result.value ?? null;
       } catch {
         return null;
       }

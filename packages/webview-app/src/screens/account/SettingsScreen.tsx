@@ -25,12 +25,12 @@ export const SettingsScreen: React.FC = () => {
   const navigate = useNavigate();
   const { analytics, haptic, lifecycle } = useSelfClient();
 
-  const onBack = useCallback(() => {
+  const handleBack = useCallback(() => {
     haptic.trigger('selection');
-    navigate('/');
+    navigate('/', { replace: true });
   }, [navigate, haptic]);
 
-  const onDismiss = useCallback(async () => {
+  const handleClose = useCallback(async () => {
     haptic.trigger('selection');
     analytics.trackEvent('settings_dismiss_pressed');
     lifecycle.dismiss({ reason: 'user_cancel' });
@@ -41,7 +41,7 @@ export const SettingsScreen: React.FC = () => {
       {...WEB_SAFE_AREA}
       escapeIcon={({ size, color }) => <LeftArrowIcon size={size} color={color} />}
       infoIcon={({ size, color }) => <QuestionCircleStrokeIcon size={size} color={color} />}
-      onClose={onBack}
+      onClose={handleBack}
       showBackupInfoBox={false}
       isBackupEnabled={false}
       CTAs={[]}
@@ -55,7 +55,7 @@ export const SettingsScreen: React.FC = () => {
               description: 'Your registered passports and IDs',
               onPress: () => {
                 haptic.trigger('selection');
-                navigate('/manage-documents');
+                navigate('/docs');
               },
             },
             {
@@ -115,11 +115,22 @@ export const SettingsScreen: React.FC = () => {
             },
             {
               icon: CodeIcon,
+              label: 'Disclosure demo',
+              description: 'Mock disclosure request (name, nationality, age, DOB)',
+              onPress: () => {
+                haptic.trigger('selection');
+                navigate(
+                  '/disclose/request?disclosures=name,nationality,age_above_18,date_of_birth&appName=Playground&appEndpoint=https%3A%2F%2Fplayground.staging.self.xyz%2Fapi%2Fverify&environment=stg&endpointType=staging_https&userIdType=hex&userId=0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
+                );
+              },
+            },
+            {
+              icon: CodeIcon,
               label: 'Tunnel flow',
               description: 'Demo: register + disclose in one flow',
               onPress: () => {
                 haptic.trigger('selection');
-                navigate('/tunnel/tour/1');
+                navigate('/tour/1');
               },
             },
           ],
@@ -131,7 +142,7 @@ export const SettingsScreen: React.FC = () => {
       bottomSectionItems={[
         {
           label: 'Close Self',
-          onPress: onDismiss,
+          onPress: handleClose,
         },
       ]}
     />

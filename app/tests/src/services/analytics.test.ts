@@ -2,6 +2,9 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import { WebViewEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { WebViewLoadEvents } from '@selfxyz/rn-sdk';
+
 import * as segmentConfig from '@/config/segment';
 import {
   resetAnalyticsIdentityForSupportUuid,
@@ -43,6 +46,10 @@ const mockSegmentClient = (
 describe('analytics', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+  });
+
+  it('keeps WebView SDK funnel events aligned with the app allow-list', () => {
+    expect(WebViewLoadEvents).toEqual(WebViewEvents);
   });
 
   describe('trackEvent', () => {

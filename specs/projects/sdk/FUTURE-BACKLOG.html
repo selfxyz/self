@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SDK Future Backlog</title>
+<style>
+  :root {
+    --bg: #fafbfc;
+    --surface: #ffffff;
+    --surface-alt: #f6f8fa;
+    --border: #d1d9e0;
+    --border-soft: #e1e4e8;
+    --text: #1f2328;
+    --muted: #656d76;
+    --accent: #0969da;
+    --accent-soft: #ddf4ff;
+    --high: #cf222e;
+    --high-soft: #ffebe9;
+    --med: #9a6700;
+    --med-soft: #fff8c5;
+    --low: #0969da;
+    --low-soft: #ddf4ff;
+    --done: #1a7f37;
+    --done-soft: #dafbe1;
+    --draft: #6e7781;
+    --draft-soft: #eaeef2;
+    --deferred: #8a6b1c;
+    --deferred-soft: #fff1c8;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; color: var(--text); background: var(--bg); }
+  code, pre, kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.9em; }
+  code { background: var(--surface-alt); padding: 1px 5px; border-radius: 4px; border: 1px solid var(--border-soft); }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  header.topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 12px 24px;
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  }
+  header h1 { margin: 0; font-size: 16px; font-weight: 600; }
+  header .meta-pill {
+    font-size: 11px; color: var(--muted);
+    padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border);
+    background: var(--surface-alt);
+  }
+  header .spacer { flex: 1; }
+  header .links { display: flex; gap: 8px; flex-wrap: wrap; }
+  header .links a {
+    font-size: 12px; padding: 6px 12px; border-radius: 6px;
+    border: 1px solid var(--border); background: var(--surface); color: var(--text);
+  }
+  header .links a:hover { background: var(--accent-soft); border-color: var(--accent); text-decoration: none; }
+
+  .container { max-width: 1080px; margin: 0 auto; padding: 24px; }
+
+  .intro {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+  }
+  .intro h2 { margin: 0 0 6px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); }
+  .intro p { margin: 4px 0; color: var(--muted); }
+
+  .toolbar {
+    display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+    background: var(--surface); border: 1px solid var(--border-soft); border-radius: 8px;
+    padding: 10px 14px; margin-bottom: 14px;
+  }
+  .toolbar .stats { font-size: 13px; font-weight: 500; }
+  .toolbar select {
+    font-size: 12px; padding: 5px 10px; border-radius: 6px;
+    border: 1px solid var(--border); background: var(--surface); color: var(--text);
+  }
+  .toolbar .grow { flex: 1; }
+  .toolbar button {
+    font-size: 12px; padding: 6px 12px; border-radius: 6px;
+    border: 1px solid var(--border); background: var(--surface); color: var(--text);
+    cursor: pointer; font-weight: 500;
+  }
+  .toolbar button.primary { background: var(--accent); color: white; border-color: var(--accent); }
+  .toolbar button:hover { border-color: var(--accent); color: var(--accent); }
+  .toolbar button.primary:hover { background: #0860c4; color: white; }
+  .toolbar .filter-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+
+  .add-form {
+    display: none;
+    background: var(--surface);
+    border: 1px solid var(--accent); border-radius: 8px;
+    padding: 14px 16px; margin-bottom: 14px;
+  }
+  .add-form.open { display: block; }
+  .add-form h3 { margin: 0 0 10px; font-size: 14px; }
+  .add-form label { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); margin: 8px 0 4px; }
+  .add-form input, .add-form textarea, .add-form select {
+    width: 100%; padding: 8px 10px; font: inherit; font-size: 13px;
+    border: 1px solid var(--border-soft); border-radius: 6px;
+    background: var(--surface); color: var(--text); box-sizing: border-box;
+  }
+  .add-form textarea { resize: vertical; min-height: 64px; font-family: inherit; }
+  .add-form .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .add-form .actions { display: flex; gap: 8px; margin-top: 12px; }
+
+  .fb-list { display: grid; gap: 10px; }
+  .fb-card {
+    background: var(--surface); border: 1px solid var(--border-soft); border-radius: 8px;
+    padding: 14px 16px;
+    border-left: 3px solid var(--border);
+  }
+  .fb-card.status-idea { border-left-color: var(--draft); }
+  .fb-card.status-triaged { border-left-color: var(--med); }
+  .fb-card.status-planned { border-left-color: var(--accent); }
+  .fb-card.status-scheduled { border-left-color: var(--embed-soft, #8250df); border-left-color: #8250df; }
+  .fb-card.status-done { border-left-color: var(--done); }
+  .fb-card.status-dropped { border-left-color: var(--high); opacity: 0.6; }
+
+  .fb-card.is-draft { border-style: dashed; }
+
+  .fb-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+  .fb-id { font-family: ui-monospace, monospace; font-size: 10px; color: var(--muted); padding: 2px 6px; background: var(--surface-alt); border-radius: 4px; }
+  .fb-tracked-pill { font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; padding: 2px 6px; border-radius: 4px; background: var(--done-soft); color: var(--done); }
+  .fb-draft-pill { font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em; padding: 2px 6px; border-radius: 4px; background: var(--med-soft); color: var(--med); }
+  .fb-spacer { flex: 1; }
+
+  .fb-status-select, .fb-priority-select {
+    font-size: 11px; padding: 3px 8px; border-radius: 4px;
+    border: 1px solid var(--border); background: var(--surface-alt); color: var(--text);
+  }
+  .fb-delete, .fb-reset {
+    font-size: 11px; padding: 3px 8px; border-radius: 4px;
+    border: 1px solid var(--border); background: var(--surface); color: var(--muted);
+    cursor: pointer;
+  }
+  .fb-delete:hover { background: var(--high-soft); color: var(--high); border-color: var(--high); }
+  .fb-reset:hover { color: var(--accent); border-color: var(--accent); }
+
+  .fb-title { margin: 4px 0 6px; font-size: 15px; font-weight: 600; }
+  .fb-description { margin: 0 0 8px; color: var(--text); font-size: 13px; line-height: 1.5; }
+  .fb-meta-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 11px; color: var(--muted); }
+  .fb-surfaced { font-style: italic; }
+  .fb-tags-list { display: flex; gap: 4px; flex-wrap: wrap; }
+  .fb-tag {
+    font-family: ui-monospace, monospace; font-size: 10px;
+    padding: 1px 6px; border-radius: 4px;
+    background: var(--accent-soft); color: var(--accent);
+  }
+  .fb-empty {
+    padding: 30px; text-align: center; color: var(--muted); font-size: 13px;
+    background: var(--surface); border: 1px dashed var(--border); border-radius: 8px;
+  }
+  .export-area {
+    display: none; margin-top: 14px;
+    background: var(--surface); border: 1px solid var(--border-soft); border-radius: 8px;
+    padding: 12px;
+  }
+  .export-area.open { display: block; }
+  .export-area textarea {
+    width: 100%; min-height: 260px; font-family: ui-monospace, monospace; font-size: 12px;
+    padding: 8px; border: 1px solid var(--border-soft); border-radius: 4px;
+    background: var(--surface-alt); resize: vertical; box-sizing: border-box;
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <h1>SDK · Future Backlog</h1>
+  <span class="meta-pill">Cross-workstream</span>
+  <span class="meta-pill">Updated 2026-05-25</span>
+  <span class="spacer"></span>
+  <div class="links">
+    <a href="./OVERVIEW.md">SDK Overview</a>
+    <a href="./INDEX.md">Project Index</a>
+    <a href="./workstreams/nav-hygiene/SPEC.html">nav-hygiene ↗</a>
+  </div>
+</header>
+
+<div class="container">
+
+<section class="intro">
+  <h2>What this is</h2>
+  <p>
+    A parking lot for tangential ideas surfaced during day-to-day work. When you're deep in workstream X and notice something that's <strong>not part of X</strong> but should be worked on someday, capture it here instead of letting it slip.
+  </p>
+  <p>
+    <strong>Tracked items</strong> live in <code>specs/projects/sdk/_future-backlog.js</code> — version-controlled, visible to everyone. <strong>Drafts</strong> added via the form below live in your browser's <code>localStorage</code> only. Once you've decided a draft is real, paste its content into the JS file in a PR to promote it.
+  </p>
+  <p>
+    Status changes on tracked items are also stored in localStorage as personal overrides (e.g. "I think fb-002 is actually triaged now") — click <em>Reset</em> on a card to drop your override and fall back to the file's status. Promote durable status changes to the JS file in a PR.
+  </p>
+</section>
+
+<div class="toolbar">
+  <span class="stats" id="fb-stats">— items</span>
+  <span class="grow"></span>
+  <span class="filter-label">Status</span>
+  <select id="filter-status">
+    <option value="all">All</option>
+  </select>
+  <span class="filter-label">Priority</span>
+  <select id="filter-priority">
+    <option value="all">All</option>
+    <option value="high">high</option>
+    <option value="medium">medium</option>
+    <option value="low">low</option>
+  </select>
+  <span class="filter-label">Tag</span>
+  <select id="filter-tag">
+    <option value="all">All</option>
+  </select>
+  <button id="btn-add" class="primary">+ Add item</button>
+  <button id="btn-export">Export Markdown</button>
+</div>
+
+<div class="add-form" id="add-form">
+  <h3>New item</h3>
+  <label for="new-title">Title</label>
+  <input id="new-title" placeholder="Short, action-oriented title" />
+
+  <label for="new-description">Description</label>
+  <textarea id="new-description" placeholder="What is it? Where is it (file:line)? Why does it matter? Any concrete next step?"></textarea>
+
+  <div class="row2">
+    <div>
+      <label for="new-surfaced">Surfaced during</label>
+      <input id="new-surfaced" placeholder="e.g. nav-hygiene investigation" />
+    </div>
+    <div>
+      <label for="new-tags">Tags (comma-separated)</label>
+      <input id="new-tags" placeholder="e.g. webview-app, tech-debt, euclid" />
+    </div>
+  </div>
+
+  <div class="row2">
+    <div>
+      <label for="new-priority">Priority</label>
+      <select id="new-priority">
+        <option value="medium" selected>medium</option>
+        <option value="high">high</option>
+        <option value="low">low</option>
+      </select>
+    </div>
+    <div>
+      <label for="new-status">Status</label>
+      <select id="new-status">
+        <option value="idea" selected>idea</option>
+        <option value="triaged">triaged</option>
+        <option value="planned">planned</option>
+        <option value="scheduled">scheduled</option>
+        <option value="done">done</option>
+        <option value="dropped">dropped</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button id="btn-save" class="primary">Save draft</button>
+    <button id="btn-cancel">Cancel</button>
+  </div>
+</div>
+
+<div class="fb-list" id="fb-list"></div>
+
+<div class="export-area" id="export-area">
+  <textarea id="export-output" readonly></textarea>
+  <div style="margin-top:8px;display:flex;gap:8px;">
+    <button id="btn-copy" class="primary">Copy to clipboard</button>
+    <button id="btn-close-export">Close</button>
+  </div>
+</div>
+
+</div>
+
+<script src="./_future-backlog.js"></script>
+<script>
+(function() {
+  const list = document.getElementById('fb-list');
+  const statsEl = document.getElementById('fb-stats');
+  const filterStatus = document.getElementById('filter-status');
+  const filterPriority = document.getElementById('filter-priority');
+  const filterTag = document.getElementById('filter-tag');
+  const addForm = document.getElementById('add-form');
+  const exportArea = document.getElementById('export-area');
+  const exportOutput = document.getElementById('export-output');
+
+  function populateStatusOptions() {
+    const current = filterStatus.value;
+    filterStatus.innerHTML = '<option value="all">All</option>';
+    window.SdkFutureBacklog.STATUSES.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s; opt.textContent = s;
+      filterStatus.appendChild(opt);
+    });
+    filterStatus.value = current || 'all';
+  }
+  function populateTagOptions() {
+    const current = filterTag.value;
+    filterTag.innerHTML = '<option value="all">All</option>';
+    window.SdkFutureBacklog.getAllTags().forEach(t => {
+      const opt = document.createElement('option');
+      opt.value = t; opt.textContent = t;
+      filterTag.appendChild(opt);
+    });
+    filterTag.value = current || 'all';
+  }
+
+  function refresh() {
+    const stats = window.SdkFutureBacklog.getStats();
+    statsEl.textContent = `${stats.total} items (${stats.drafts} drafts) · ${stats.byStatus.idea || 0} idea · ${stats.byStatus.triaged || 0} triaged · ${stats.byStatus.planned || 0} planned · ${stats.byStatus.done || 0} done`;
+    populateTagOptions();
+    window.SdkFutureBacklog.renderAll(list, {
+      filters: {
+        status: filterStatus.value,
+        priority: filterPriority.value,
+        tag: filterTag.value
+      }
+    });
+  }
+
+  populateStatusOptions();
+  refresh();
+
+  filterStatus.addEventListener('change', refresh);
+  filterPriority.addEventListener('change', refresh);
+  filterTag.addEventListener('change', refresh);
+  document.addEventListener('fb-changed', refresh);
+
+  document.getElementById('btn-add').addEventListener('click', () => {
+    addForm.classList.toggle('open');
+    if (addForm.classList.contains('open')) document.getElementById('new-title').focus();
+  });
+  document.getElementById('btn-cancel').addEventListener('click', () => {
+    addForm.classList.remove('open');
+    ['new-title','new-description','new-surfaced','new-tags'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('new-priority').value = 'medium';
+    document.getElementById('new-status').value = 'idea';
+  });
+  document.getElementById('btn-save').addEventListener('click', () => {
+    const title = document.getElementById('new-title').value.trim();
+    if (!title) { alert('Title required.'); return; }
+    const description = document.getElementById('new-description').value.trim();
+    const surfaced = document.getElementById('new-surfaced').value.trim();
+    const tags = document.getElementById('new-tags').value.split(',').map(t => t.trim()).filter(Boolean);
+    const priority = document.getElementById('new-priority').value;
+    const status = document.getElementById('new-status').value;
+    window.SdkFutureBacklog.addDraft({ title, description, surfaced, tags, priority, status });
+    document.getElementById('btn-cancel').click();
+    refresh();
+  });
+
+  document.getElementById('btn-export').addEventListener('click', () => {
+    exportOutput.value = window.SdkFutureBacklog.exportMarkdown();
+    exportArea.classList.add('open');
+  });
+  document.getElementById('btn-copy').addEventListener('click', () => {
+    navigator.clipboard.writeText(exportOutput.value).then(() => {
+      const btn = document.getElementById('btn-copy');
+      const orig = btn.textContent;
+      btn.textContent = 'Copied';
+      setTimeout(() => { btn.textContent = orig; }, 1200);
+    });
+  });
+  document.getElementById('btn-close-export').addEventListener('click', () => {
+    exportArea.classList.remove('open');
+  });
+})();
+</script>
+
+</body>
+</html>

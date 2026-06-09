@@ -170,10 +170,10 @@ const renderWithRoutes = (
       <Routes>
         <Route path={routePath} element={element} />
         <Route path="/onboarding/backup" element={<LocationDisplay />} />
-        <Route path="/onboarding/recovery-phrase" element={<LocationDisplay />} />
+        <Route path="/backup-phrase" element={<LocationDisplay />} />
         <Route path="/onboarding/signin" element={<LocationDisplay />} />
-        <Route path="/onboarding/notifications" element={<LocationDisplay />} />
-        <Route path="/onboarding/success" element={<LocationDisplay />} />
+        <Route path="/notify" element={<LocationDisplay />} />
+        <Route path="/capture/success" element={<LocationDisplay />} />
         <Route path="/" element={<LocationDisplay />} />
       </Routes>
     </MemoryRouter>,
@@ -194,47 +194,35 @@ describe('registration prompt screens', () => {
   };
 
   it('routes scan success finish into the backup prompt chain', () => {
-    renderWithRoutes(['/onboarding/success'], '/onboarding/success', <ScanSuccessScreen />);
+    renderWithRoutes(['/capture/success'], '/capture/success', <ScanSuccessScreen />);
 
     fireEvent.click(screen.getByRole('button', { name: /finish success/i }));
 
-    expectLocation('/onboarding/recovery-phrase?mock=default');
+    expectLocation('/backup-phrase?mock=default');
   });
 
   it('advances onboarding recovery phrase actions into notifications', () => {
-    renderWithRoutes(
-      ['/onboarding/recovery-phrase?mock=existing-account'],
-      '/onboarding/recovery-phrase',
-      <OnboardingRecoveryPhraseScreen />,
-    );
+    renderWithRoutes(['/backup-phrase?mock=existing-account'], '/backup-phrase', <OnboardingRecoveryPhraseScreen />);
 
     fireEvent.click(screen.getByRole('button', { name: /continue with apple/i }));
 
-    expectLocation('/onboarding/notifications?mock=existing-account');
+    expectLocation('/notify?mock=existing-account');
   });
 
   it('routes the google onboarding recovery phrase action into notifications', () => {
-    renderWithRoutes(
-      ['/onboarding/recovery-phrase?mock=default'],
-      '/onboarding/recovery-phrase',
-      <OnboardingRecoveryPhraseScreen />,
-    );
+    renderWithRoutes(['/backup-phrase?mock=default'], '/backup-phrase', <OnboardingRecoveryPhraseScreen />);
 
     fireEvent.click(screen.getByRole('button', { name: /continue with google/i }));
 
-    expectLocation('/onboarding/notifications?mock=default');
+    expectLocation('/notify?mock=default');
   });
 
   it('falls back to scan success when closing onboarding recovery phrase without history', () => {
-    renderWithRoutes(
-      ['/onboarding/recovery-phrase?mock=default'],
-      '/onboarding/recovery-phrase',
-      <OnboardingRecoveryPhraseScreen />,
-    );
+    renderWithRoutes(['/backup-phrase?mock=default'], '/backup-phrase', <OnboardingRecoveryPhraseScreen />);
 
     fireEvent.click(screen.getByRole('button', { name: /back recovery phrase/i }));
 
-    expectLocation('/onboarding/success?mock=default');
+    expectLocation('/capture/success?mock=default');
   });
 
   it('preserves prompt mock state when dismissing the backup method picker', () => {
@@ -246,7 +234,7 @@ describe('registration prompt screens', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /dismiss backup/i }));
 
-    expectLocation('/onboarding/notifications?mock=existing-account');
+    expectLocation('/notify?mock=existing-account');
   });
 
   it('continues the conflict placeholder flow through sign-in on the primary action', () => {
@@ -274,11 +262,7 @@ describe('registration prompt screens', () => {
   });
 
   it('returns home when dismissing the push notification prompt', () => {
-    renderWithRoutes(
-      ['/onboarding/notifications?mock=default'],
-      '/onboarding/notifications',
-      <PushNotificationPromptScreen />,
-    );
+    renderWithRoutes(['/notify?mock=default'], '/notify', <PushNotificationPromptScreen />);
 
     fireEvent.click(screen.getByRole('button', { name: /dismiss notifications/i }));
 
@@ -286,14 +270,10 @@ describe('registration prompt screens', () => {
   });
 
   it('closes notifications screen to the recovery phrase screen', () => {
-    renderWithRoutes(
-      ['/onboarding/notifications?mock=default'],
-      '/onboarding/notifications',
-      <PushNotificationPromptScreen />,
-    );
+    renderWithRoutes(['/notify?mock=default'], '/notify', <PushNotificationPromptScreen />);
 
     fireEvent.click(screen.getByRole('button', { name: /close notifications/i }));
 
-    expectLocation('/onboarding/recovery-phrase?mock=default');
+    expectLocation('/backup-phrase?mock=default');
   });
 });

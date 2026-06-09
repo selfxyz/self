@@ -6,12 +6,12 @@ import type React from 'react';
 import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import type { IDCardVariant } from '@selfxyz/euclid';
 import { GearIcon, HomeScreen as EuclidHomeScreen } from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
 import { mockDocumentStore } from '../../utils/mockDocumentStore';
+import { getIdCardProps } from '../../utils/provingUtils';
 
 interface DocumentEntry {
   id: string;
@@ -26,32 +26,6 @@ interface DocumentCatalog {
   documents: DocumentEntry[];
   selectedDocumentId?: string;
 }
-
-const docCategoryToVariant = (category: string): IDCardVariant => {
-  switch (category) {
-    case 'passport':
-      return 'passport';
-    case 'id_card':
-      return 'id-card';
-    case 'aadhaar':
-      return 'aadhaar';
-    default:
-      return 'unverified-id';
-  }
-};
-
-const docCategoryToTitle = (category: string): string => {
-  switch (category) {
-    case 'passport':
-      return 'Passport';
-    case 'id_card':
-      return 'ID Card';
-    case 'aadhaar':
-      return 'Aadhaar';
-    default:
-      return category;
-  }
-};
 
 export const HomeScreen: React.FC = () => {
   const navigate = useNavigate();
@@ -85,14 +59,14 @@ export const HomeScreen: React.FC = () => {
 
   useEffect(() => {
     if (!loading && !hasDocuments && !skipOnboardingRedirect) {
-      navigate('/onboarding/tour/1', { replace: true });
+      navigate('/tour/1', { replace: true });
     }
   }, [hasDocuments, loading, navigate, skipOnboardingRedirect]);
 
   const onAddDocument = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('home_add_document_pressed');
-    navigate('/onboarding/tour/1');
+    navigate('/tour/1');
   }, [navigate, haptic, analytics]);
 
   const onSettings = useCallback(() => {
@@ -103,7 +77,7 @@ export const HomeScreen: React.FC = () => {
   const onRestartOnboarding = useCallback(() => {
     haptic.trigger('selection');
     mockDocumentStore.clear();
-    navigate('/onboarding/tour/1');
+    navigate('/tour/1');
   }, [haptic, navigate]);
 
   if (loading || (!hasDocuments && !skipOnboardingRedirect)) {
@@ -162,8 +136,7 @@ export const HomeScreen: React.FC = () => {
         idCard={
           firstDoc
             ? {
-                variant: docCategoryToVariant(firstDoc.documentCategory),
-                title: docCategoryToTitle(firstDoc.documentCategory),
+                ...getIdCardProps(firstDoc.documentCategory, firstDoc.mock),
                 subtitle: firstDoc.isRegistered ? 'Registered' : 'Pending registration',
               }
             : undefined

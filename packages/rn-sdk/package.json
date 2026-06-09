@@ -16,11 +16,15 @@
   "types": "./dist/index.d.ts",
   "files": [
     "dist",
-    "assets"
+    "assets",
+    "android",
+    "ios",
+    "selfxyz-rn-sdk.podspec",
+    "react-native.config.cjs"
   ],
   "scripts": {
-    "build": "yarn copy-assets && tsup",
-    "copy-assets": "mkdir -p ./assets/self-wallet && cp -r ../webview-app/dist/. ./assets/self-wallet/",
+    "build": "yarn workspace @selfxyz/webview-app run build && yarn copy-assets && tsup",
+    "copy-assets": "mkdir -p ./assets/self-wallet && cp -r ../webview-app/dist/. ./assets/self-wallet/ && node scripts/strip-embedded-sri.cjs",
     "prepublishOnly": "yarn build",
     "test": "yarn copy-assets && tsup && vitest run",
     "typecheck": "tsc --noEmit",

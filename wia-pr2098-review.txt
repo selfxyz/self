@@ -1,0 +1,188 @@
+WIA PR #2098 Review Notes
+=========================
+
+Source checked: https://github.com/selfxyz/self/pull/2098
+Branch checked: feat/webview-in-app
+Primary spec: specs/projects/sdk/workstreams/webview-in-app/SPEC.html
+
+Short version
+-------------
+
+I mostly concur with the earlier summary, but it is now stale in one important
+way: the current PR has moved from "RN SDK implements bridge handlers in
+TypeScript/native glue" to WIA-17, where rn-sdk wraps kmp-sdk and retires
+duplicated TS handlers domain by domain.
+
+The takeover story should lead with WIA-17 / Path A.
+
+What WIA is
+-----------
+
+WIA means WebView-in-App. The Self app becomes a native shell around a single
+bundled WebView UI. The RN app still owns native/hardware capabilities like NFC,
+MRZ camera, keychain, crypto, biometrics, lifecycle, and analytics routing, but
+the product UI moves into packages/webview-app.
+
+Self app is consumer #1 of @selfxyz/rn-sdk. Future third-party RN apps should
+consume the same package.
+
+Current architecture
+--------------------
+
+The active architecture is Path A:
+
+  webview-app
+    -> bridge JSON
+    -> packages/rn-sdk WebView shell
+    -> SelfBridgeModule
+    -> packages/kmp-sdk router/handlers
+    -> platform providers
+
+This means KMP becomes the source of truth for bridge behavior. The intended end
+state is not "RN TS bridge handlers forever." The TS handlers that landed
+earlier are now marked Done but superseded by WIA-17 for secureStorage, crypto,
+NFC, camera, and documents.
+
+Why this matters
+----------------
+
+Today the same bridge protocol has multiple implementations:
+
+- rn-sdk TypeScript handlers
+- native-shells-lite Kotlin/Swift handlers
+- kmp-sdk shared handlers/router
+
+That creates drift risk. WIA-17 collapses RN onto KMP first. The architecture
+deep-dive also recommends a future WIA-18-style effort to move native-shells
+onto KMP too, so the system has one bridge implementation and multiple thin
+shells.
+
+Major points to explain
+-----------------------
+
+1. Self app becomes a WebView-hosted app.
+   The RN app keeps splash/error boundary/native capabilities, but regular app
+   surfaces should render from webview-app after cutover.
+
+2. rn-sdk is the RN host package.
+   app/ consumes @selfxyz/rn-sdk as a workspace dependency. Later, external RN
+   consumers should install the same package.
+
+3. KMP is becoming canonical.
+   WIA-17 replaces the earlier TS handler approach with SelfBridgeModule plus
+   KMP BridgeHandler registrations.
+
+4. Rollout is per domain.
+   SecureStorage Android was proven by PR #2108. The planned domain order is
+   roughly: crypto Android, secureStorage iOS, crypto iOS, lifecycle, then
+   biometrics, NFC, camera, documents.
+
+5. Modes are locked.
+   Mode comes from lifecycle.getConfig(), not URL routing. Wallet mode is
+   persistent. Embed mode is one-shot verification and exits with result/dismiss.
+   Earlier docs/summaries may still say "tunnel"; current direction/code is
+   "embed."
+
+6. No new bridge domains.
+   The fixed domains remain: nfc, biometrics, secureStorage, camera, crypto,
+   haptic, analytics, lifecycle, documents, navigation.
+
+7. Cutover is still future work.
+   WIA-11 is the cutover PR that deletes legacy RN screens. PR #2098 is the
+   umbrella branch and preparation work, not the final replacement.
+
+Where the pasted summary is still useful
+----------------------------------------
+
+The earlier summary is broadly accurate for WIA-00 through WIA-16:
+
+- WebView host is mounted through the dev menu.
+- Embedded bundle is the Self app v1 path.
+- lifecycle.getConfig() carries mode/config.
+- Crypto parity matters.
+- Android MRZ scanner wrapper was added.
+- Aadhaar native handling is still intentionally incomplete.
+- Real NFC needs physical-device validation.
+- Asset bundling and Vite base './' are load-bearing.
+- Metro blocklist prevents duplicate React issues.
+
+The main correction is that those TS/native bridge handlers are no longer the
+target final architecture. They are transitional and being replaced by KMP.
+
+Potential confusions
+--------------------
+
+1. Hosted URL vs embedded bundle.
+   SPEC.html still has some older "hosted URL" north-star language, while the
+   WIA-17 architecture page says embedded bundle is settled for Self app v1 and
+   hosted URL is post-v1/sdk-distribution territory. If asked, say embedded is
+   v1 for Self app; hosted remains future distribution work.
+
+2. "Done" vs "superseded."
+   Several WIA items are done in the earlier TS-handler sense, but the active
+   WIA-17 plan supersedes them. Do not present the TS handlers as the final
+   design.
+
+3. Tunnel vs embed.
+   Older docs and commits use "tunnel." Current nav hygiene renamed this toward
+   "embed." In explanations, use embed and mention tunnel only as old terminology.
+
+4. KMP iOS shape.
+   KMP iOS cinterop is disabled. The plan is Swift providers via
+   IosProviderRegistry, not direct KMP calls into iOS APIs.
+
+5. Native-shells-lite is not yet solved.
+   Path A collapses RN onto KMP. It does not automatically remove duplicate
+   native-shell bridge implementations. That is called out as future work.
+
+6. Bridge envelope drift.
+   KMP and TS routers differ in missing-handler error codes, response envelope
+   fields, trust-source handling, and malformed-message behavior. The spec says
+   to defer convergence until at least three domains have migrated, then make
+   KMP canonical.
+
+Major roadblocks
+----------------
+
+1. MOD handler source for NFC/camera/biometrics.
+   This repo's kmp-sdk only has the public core domains. The optional MOD
+   handlers live in private self-webview-sdk. The WIA-17 architecture recommends
+   merging them back into selfxyz/self behind Gradle flags, but that needs owner
+   agreement.
+
+2. SD-06 hosted Maven publishing.
+   Before cutover, app/ needs to consume KMP artifacts without every builder
+   running publishToMavenLocal. This is not needed for the first few WIA-17
+   domains but becomes required before WIA-11.
+
+3. iOS scaffolding.
+   The iOS path needs SelfBridgeModule.swift/m, Swift provider registration,
+   podspec/XCFramework work, and release-variant XCFramework support.
+
+4. Hardware validation.
+   NFC, camera/MRZ, biometrics, keychain persistence, and disclose return paths
+   need real-device smoke. Emulator validation is not enough for cutover.
+
+5. WebView app parity.
+   Legacy RN screens cannot be deleted until webview-app covers registration,
+   disclose, proof history, settings, recovery, and document management well
+   enough for production.
+
+Recommended read order
+----------------------
+
+1. specs/projects/sdk/workstreams/webview-in-app/SPEC.html
+2. specs/projects/sdk/workstreams/webview-in-app/plans/WIA-17-path-a-migration.html
+3. specs/projects/sdk/workstreams/webview-in-app/plans/WIA-17-architecture-options.html
+4. specs/projects/sdk/workstreams/webview-in-app/SPEC-MODES.html
+5. specs/projects/sdk/workstreams/webview-in-app/SPEC-BRIDGE-HOST.html
+6. specs/projects/sdk/workstreams/webview-in-app/SPEC-NATIVE-ADAPTERS.html
+
+One-sentence handoff framing
+----------------------------
+
+"PR #2098 is the WIA umbrella branch that turns Self app into the first RN
+consumer of the WebView app, but the active architecture has pivoted to Path A:
+rn-sdk should become thin WebView/native glue around kmp-sdk, with KMP owning
+the bridge contract and TS handlers retired one domain at a time before the
+final WIA-11 cutover."
