@@ -16,7 +16,7 @@ module.exports = {
     'node',
   ],
   transformIgnorePatterns: [
-    'node_modules/(?!(react-native|@react-native|@react-navigation|@react-native-community|@segment/analytics-react-native|@openpassport|react-native-keychain|react-native-check-version|react-native-nfc-manager|react-native-passport-reader|react-native-gesture-handler|uuid|@stablelib|@react-native-google-signin|react-native-cloud-storage|@react-native-clipboard|@react-native-firebase|@selfxyz|@sentry|@anon-aadhaar|react-native-svg|react-native-svg-circle-country-flags|react-native-blur-effect|react-native-permissions|@didit-protocol|react-native-date-picker|react-native-webview)/)',
+    'node_modules/(?!(react-native|@react-native|@react-navigation|@react-native-community|@segment/analytics-react-native|@openpassport|react-native-keychain|react-native-check-version|react-native-nfc-manager|react-native-passport-reader|react-native-gesture-handler|uuid|@stablelib|@react-native-google-signin|react-native-cloud-storage|@react-native-clipboard|@react-native-firebase|@selfxyz|@sentry|@anon-aadhaar|react-native-svg|react-native-svg-circle-country-flags|react-native-blur-effect|react-native-permissions|@didit-protocol|react-native-date-picker|react-native-webview|expo|expo-.*|@expo/.*|@expo-google-fonts/.*)/)',
   ],
   setupFiles: ['<rootDir>/jest.setup.js'],
   testMatch: [
@@ -39,6 +39,7 @@ module.exports = {
     '^@tests$': '<rootDir>/tests/src',
     '^expo-camera$': '<rootDir>/tests/__setup__/expoCameraMock.js',
     '^expo-application$': '<rootDir>/tests/__setup__/expoApplicationMock.js',
+    '^expo-file-system$': '<rootDir>/tests/__setup__/expoFileSystemMock.js',
     // Map react-native-svg to app's node_modules for all packages
     '^react-native-svg$': '<rootDir>/node_modules/react-native-svg',
     // Force a single react-native-webview resolution so the global mock applies
