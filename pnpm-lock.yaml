@@ -1586,8 +1586,8 @@ importers:
         specifier: ^7.37.5
         version: 7.37.5(eslint@8.57.1)
       eslint-plugin-self-handlers:
-        specifier: portal:./eslint-rules
-        version: link:portal:./eslint-rules
+        specifier: link:./eslint-rules
+        version: link:eslint-rules
       eslint-plugin-simple-import-sort:
         specifier: ^12.1.1
         version: 12.1.1(eslint@8.57.1)
