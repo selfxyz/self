@@ -307,23 +307,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		B7A8C9D0E1F2031425364758 /* Copy self-wallet assets */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"$(PROJECT_DIR)/../node_modules/@selfxyz/rn-sdk/assets/self-wallet",
-			);
-			name = "Copy self-wallet assets";
-			outputPaths = (
-				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/self-wallet",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "set -e\nSRC=\"${PROJECT_DIR}/../node_modules/@selfxyz/rn-sdk/assets/self-wallet\"\nDST=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/self-wallet\"\nrm -rf \"$DST\"\nmkdir -p \"$DST\"\ncp -R \"$SRC\"/. \"$DST\"\n";
-		};
 		00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -402,6 +385,23 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-Self/expo-configure-project.sh\"\n";
+		};
+		B7A8C9D0E1F2031425364758 /* Copy self-wallet assets */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(PROJECT_DIR)/../node_modules/@selfxyz/rn-sdk/assets/self-wallet",
+			);
+			name = "Copy self-wallet assets";
+			outputPaths = (
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/self-wallet",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -e\nSRC=\"${PROJECT_DIR}/../node_modules/@selfxyz/rn-sdk/assets/self-wallet\"\nDST=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/self-wallet\"\nrm -rf \"$DST\"\nmkdir -p \"$DST\"\ncp -R \"$SRC\"/. \"$DST\"\n";
 		};
 		E88323604DFAAA92032925C9 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;

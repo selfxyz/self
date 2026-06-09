@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import { Paths } from 'expo-file-system';
 import React, { useCallback, useEffect, useMemo } from 'react';
-import { Alert, View } from 'react-native';
+import { Alert, Platform, View } from 'react-native';
 import type { RouteProp } from '@react-navigation/native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -43,6 +44,15 @@ const WebViewHostScreen: React.FC = () => {
     () => (route.params?.request ?? {}) as VerificationRequest,
     [route.params?.request],
   );
+
+  const bundleRootUri = useMemo(() => {
+    if (Platform.OS !== 'ios') return undefined;
+    try {
+      return Paths.bundle.uri;
+    } catch {
+      return undefined;
+    }
+  }, []);
 
   const analytics = useMemo<AnalyticsSink>(
     () => ({
@@ -125,7 +135,10 @@ const WebViewHostScreen: React.FC = () => {
   useEffect(() => () => clearReferenceTag(), []);
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#000' }}>
+    <View
+      testID="webview-host-root"
+      style={{ flex: 1, backgroundColor: '#000' }}
+    >
       <SelfVerification
         request={request}
         mode="self-app"
@@ -135,6 +148,7 @@ const WebViewHostScreen: React.FC = () => {
         onReferenceId={handleReferenceId}
         debug={__DEV__}
         devServerUrl={__DEV__ ? WEBVIEW_DEV_URL_ENV : undefined}
+        bundleRootUri={bundleRootUri}
         analytics={analytics}
         navigation={navigationCallbacks}
         documents={documents}
