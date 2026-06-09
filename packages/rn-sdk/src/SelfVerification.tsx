@@ -29,16 +29,19 @@ import type { DocumentsStore } from './handlers/DocumentsHandler';
 import type { SelfCryptoModule } from './handlers/CryptoHandler';
 import type { OperatingMode } from './handlers/LifecycleHandler';
 import { WebViewLoadEvents } from './analytics-events';
+import { resolveBundlePath } from './bundlePath';
 import { COLORS } from './theme';
 
-// Resolve iOS main bundle path via react-native-fs (optional peerDep).
-// Falls back to a relative path when RNFS is not installed.
-let mainBundlePath: string | undefined;
+// iOS main-bundle path provider for native hosts (KMP, partner wallets) that
+// install react-native-fs. The Expo-based Self app instead injects the bundle
+// URI via the `bundleRootUri` prop — the SDK must not statically require an
+// Expo module, since bundlers (Metro) resolve literal require() at build time
+// even inside try/catch, which would break non-Expo hosts.
+let rnfsMainBundlePath: unknown;
 try {
-  const RNFS = require('react-native-fs');
-  mainBundlePath = RNFS.MainBundlePath;
+  rnfsMainBundlePath = require('react-native-fs').MainBundlePath;
 } catch {
-  // react-native-fs not installed — iOS will use relative path
+  // react-native-fs not installed; host may inject bundleRootUri instead.
 }
 
 const toFileUri = (path: string) =>
@@ -126,6 +129,14 @@ export interface SelfVerificationProps {
    * ignored even if a malicious caller passes it in production.
    */
   devServerUrl?: string;
+  /**
+   * iOS only: absolute `file://` URI of the native bundle root that contains
+   * the embedded `self-wallet/` assets. Expo hosts pass `Paths.bundle.uri`
+   * (from expo-file-system); native hosts can omit it and rely on
+   * react-native-fs. Ignored on Android (assets load from `android_asset`).
+   * Without either provider on iOS the load fails, so one must be present.
+   */
+  bundleRootUri?: string;
   /**
    * Bridge handler injection points. Each is optional; omitting leaves the
    * handler with default behavior (analytics is silent, navigation reports
@@ -239,6 +250,7 @@ export const SelfVerification: React.FC<SelfVerificationProps> = ({
   onReferenceId,
   mode,
   devServerUrl,
+  bundleRootUri,
   analytics,
   navigation,
   documents,
@@ -536,6 +548,7 @@ export const SelfVerification: React.FC<SelfVerificationProps> = ({
     }
     const appendSearch = (uri: string) =>
       requestSearch ? `${uri}?${requestSearch}` : uri;
+    const mainBundlePath = resolveBundlePath(rnfsMainBundlePath, bundleRootUri);
     return Platform.select({
       android: { uri: appendSearch('file:///android_asset/self-wallet/index.html') },
       ios: {
@@ -546,7 +559,7 @@ export const SelfVerification: React.FC<SelfVerificationProps> = ({
         ),
       },
     });
-  }, [isDevServer, devServerUrl, requestSearch]);
+  }, [isDevServer, devServerUrl, requestSearch, bundleRootUri]);
 
   const retry = useCallback(() => {
     recoveryPendingRef.current = loadStageRef.current === 'failed';

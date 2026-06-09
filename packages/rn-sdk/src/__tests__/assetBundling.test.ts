@@ -4,6 +4,9 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as fs from 'node:fs';
+import { Platform } from 'react-native';
+
+import { resolveBundlePath } from '../bundlePath';
 
 // Mock react-native Platform module
 let mockOS = 'android';
@@ -53,12 +56,12 @@ describe('Asset Bundling (Chunk 5D)', () => {
       expect(source).toEqual({ uri: 'file:///android_asset/self-wallet/index.html' });
     });
 
-    it('iOS source resolves to RNFS absolute path when available', async () => {
-      mockOS = 'ios';
-      const RNFS = await import('react-native-fs');
-      const { Platform } = await import('react-native');
-      const mainBundlePath = RNFS.MainBundlePath;
-      const source = Platform.select({
+    const iosSource = (
+      rnfsMainBundlePath?: unknown,
+      bundleRootUri?: unknown,
+    ) => {
+      const mainBundlePath = resolveBundlePath(rnfsMainBundlePath, bundleRootUri);
+      return Platform.select({
         android: { uri: 'file:///android_asset/self-wallet/index.html' },
         ios: {
           uri: mainBundlePath
@@ -66,25 +69,36 @@ describe('Asset Bundling (Chunk 5D)', () => {
             : 'self-wallet/index.html',
         },
       });
-      expect(source).toEqual({
+    };
+
+    it('iOS source resolves to RNFS absolute path when available', () => {
+      mockOS = 'ios';
+      expect(
+        iosSource('/var/containers/Bundle/Application/ABC/MyApp.app'),
+      ).toEqual({
         uri: 'file:///var/containers/Bundle/Application/ABC/MyApp.app/self-wallet/index.html',
       });
     });
 
-    it('iOS source falls back to relative path when RNFS is not installed', async () => {
+    it('iOS source resolves to host-injected bundleRootUri when RNFS native is unlinked', () => {
       mockOS = 'ios';
-      const { Platform } = await import('react-native');
-      // Simulate RNFS not being available
-      const mainBundlePath: string | undefined = undefined;
-      const source = Platform.select({
-        android: { uri: 'file:///android_asset/self-wallet/index.html' },
-        ios: {
-          uri: mainBundlePath
-            ? `${mainBundlePath}/self-wallet/index.html`
-            : 'self-wallet/index.html',
-        },
+      // RNFS JS resolves but the native MainBundlePath constant is undefined;
+      // the Expo host injects bundleRootUri instead.
+      expect(
+        iosSource(
+          undefined,
+          'file:///var/containers/Bundle/Application/ABC/MyApp.app/',
+        ),
+      ).toEqual({
+        uri: 'file:///var/containers/Bundle/Application/ABC/MyApp.app/self-wallet/index.html',
       });
-      expect(source).toEqual({ uri: 'self-wallet/index.html' });
+    });
+
+    it('iOS source falls back to relative path when no provider supplies a bundle path', () => {
+      mockOS = 'ios';
+      expect(iosSource(undefined, undefined)).toEqual({
+        uri: 'self-wallet/index.html',
+      });
     });
   });
 

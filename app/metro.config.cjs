@@ -27,12 +27,16 @@ const workspaceRoot =
 const config = {
   projectRoot,
 
-  // Pin Metro's server root to the app so native bundle URLs like
-  // `/index.bundle` resolve to app/index.js. Otherwise Metro derives the server
-  // root from the common ancestor of projectRoot and watchFolders (the monorepo
-  // root), and native iOS builds look for <repo>/index.js.
+  // Pin Metro's server root to the workspace root so it matches the path
+  // `@expo/metro-config`'s rewriteRequestUrl bakes into bundle URLs: it always
+  // resolves the entry relative to getMetroServerRoot (the monorepo root), so
+  // Android's `/.expo/.virtual-metro-entry.bundle` is rewritten to
+  // `<workspaceRoot>/app/index`. Pinning to projectRoot instead made Metro
+  // resolve that as `app/app/index` and 404. iOS doesn't use the virtual entry
+  // (it hardcodes a bundle root), so ios/AppDelegate.swift must request
+  // `app/index` to match this server root.
   server: {
-    unstable_serverRoot: projectRoot,
+    unstable_serverRoot: workspaceRoot,
   },
 
   watchFolders: [
@@ -148,6 +152,12 @@ const config = {
       const appLevelModules = {
         'react-native-gesture-handler':
           'react-native-gesture-handler/lib/commonjs/index.js',
+        // Pin to the app's copy (under unstable_serverRoot). The SDK dynamically
+        // imports this from packages/mobile-sdk-alpha/dist, which would otherwise
+        // resolve to packages/.../node_modules/.../src/index.ts — outside the
+        // server root, so the async chunk path can't be serialized and iOS crashes.
+        'react-native-haptic-feedback':
+          'react-native-haptic-feedback/lib/commonjs/index.js',
       };
       const sdkAlphaPath = path.resolve(
         workspaceRoot,

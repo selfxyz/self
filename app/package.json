@@ -137,6 +137,7 @@
     "expo": "55.0.20",
     "expo-application": "55.0.14",
     "expo-camera": "55.0.17",
+    "expo-file-system": "55.0.22",
     "lottie-react-native": "7.3.6",
     "node-forge": "^1.4.0",
     "pkijs": "^3.4.0",
