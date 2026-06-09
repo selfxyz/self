@@ -38,7 +38,7 @@ class Paths {
 class File {
   constructor(...uris) {
     this.uri = uris
-      .map(u => (typeof u === 'string' ? u : u?.uri ?? ''))
+      .map(u => (typeof u === 'string' ? u : (u?.uri ?? '')))
       .join('/');
     this.exists = false;
   }
@@ -53,7 +53,7 @@ class File {
 class Directory {
   constructor(...uris) {
     this.uri = uris
-      .map(u => (typeof u === 'string' ? u : u?.uri ?? ''))
+      .map(u => (typeof u === 'string' ? u : (u?.uri ?? '')))
       .join('/');
     this.exists = false;
   }
