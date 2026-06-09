@@ -43,7 +43,7 @@ import {
   useSettingStore,
   waitForSettingStoreHydration,
 } from '@/stores/settingStore';
-import { IS_DEV_MODE } from '@/utils/devUtils';
+import { IS_DEV_MODE, IS_WIA_ENABLED } from '@/utils/devUtils';
 
 const INIT_TIMEOUT_MS = 30_000;
 
@@ -154,7 +154,11 @@ const SplashScreen: React.FC = ({}) => {
             }
             setQueuedDeepLink(queuedUrl);
           } else {
-            setNextScreen('WebViewHost' as keyof RootStackParamList);
+            setNextScreen(
+              IS_WIA_ENABLED
+                ? ('WebViewHost' as keyof RootStackParamList)
+                : parentScreen,
+            );
           }
         } catch (error) {
           if (settledRef.current) return;
@@ -169,7 +173,11 @@ const SplashScreen: React.FC = ({}) => {
             ? 'Home'
             : 'Disclaimer';
           setDeeplinkParentScreen(fallbackScreen);
-          setNextScreen('WebViewHost' as keyof RootStackParamList);
+          setNextScreen(
+            IS_WIA_ENABLED
+              ? ('WebViewHost' as keyof RootStackParamList)
+              : fallbackScreen,
+          );
         }
       };
 
