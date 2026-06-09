@@ -13,11 +13,11 @@ appId: com.proofofpassportapp
 - launchApp
 - extendedWaitUntil:
     visible:
-      id: 'disclaimer-dismiss-button'
+      id: "disclaimer-dismiss-button"
     timeout: ${LAUNCH_WAIT_MS:120000}
 - tapOn:
-    id: 'disclaimer-dismiss-button'
+    id: "disclaimer-dismiss-button"
 - extendedWaitUntil:
     visible:
-      id: 'home-screen-root'
+      id: "home-screen-root"
     timeout: 30000

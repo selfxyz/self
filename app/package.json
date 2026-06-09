@@ -36,7 +36,7 @@
     "find:type-imports": "node scripts/find-type-import-issues.mjs",
     "fmt": "yarn prettier --check --cache .",
     "fmt:fix": "yarn prettier --write --cache .",
-    "format": "yarn nice",
+    "format": "yarn nice && yarn fmt:fix",
     "ia": "yarn install-app",
     "imports:fix": "node ./scripts/alias-imports.cjs",
     "postinstall": "npx patch-package --patch-dir ../patches || true",
