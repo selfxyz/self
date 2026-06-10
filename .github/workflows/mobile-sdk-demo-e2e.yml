@@ -1,5 +1,8 @@
 name: Mobile SDK Demo E2E
 
+permissions:
+  contents: read
+
 env:
   # Build environment versions
   JAVA_VERSION: 17
@@ -30,6 +33,7 @@ on:
       - ".github/workflows/mobile-sdk-demo-e2e.yml"
       - ".github/CI_FORCE_RUN"
   pull_request:
+    types: [opened, synchronize, reopened, labeled]
     branches:
       - dev
       - staging
@@ -152,7 +156,9 @@ jobs:
     runs-on: namespace-profile-apple-silicon-6cpu
     if: |
       github.event_name == 'workflow_dispatch' ||
-      github.event_name == 'push'
+      (github.event_name == 'push' && contains(fromJSON('["refs/heads/staging","refs/heads/main"]'), github.ref)) ||
+      (github.event_name == 'pull_request' && contains(fromJSON('["staging","main"]'), github.base_ref)) ||
+      (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'test-ios'))
     name: iOS E2E Tests Demo App
     concurrency:
       group: ${{ github.workflow }}-ios-${{ github.ref }}

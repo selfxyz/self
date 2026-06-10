@@ -15,12 +15,11 @@ To skip deployment, add `[skip-deploy]` to your PR title or add the `no-deploy` 
 
 ### Manual Deployments
 
-1. Go to [Actions](../../../actions) → "Mobile App Deployments"
+1. Go to [Actions](../../../actions) → "Mobile Deploy"
 2. Click "Run workflow"
 3. Select options:
    - Platform: ios / android / both
-   - Test mode: Check to build without uploading
-   - Deployment track: internal / production
+   - Upload: internal / production (store track), or none (build only, no upload, no version bump PR)
    - Version bump: build / patch / minor / major
 
 ## 📋 How It Works
@@ -55,15 +54,12 @@ Versions are controlled by PR labels:
 
 ### Workflows
 
-1. **`mobile-deploy.yml`** - Main deployment workflow
-   - Handles both manual and automated deployments
-   - Builds and uploads to app stores
-   - Creates git tags for production releases
+**`mobile-deploy.yml`** - Deployment workflow
 
-2. **`mobile-deploy-auto.yml`** - PR merge trigger
-   - Detects merged PRs
-   - Determines deployment parameters
-   - Calls main deployment workflow
+- Triggers on manual dispatch or PR merges to staging
+- Determines deployment parameters from PR labels
+- Builds and uploads to app stores
+- Creates git tags for production releases
 
 ### Version Storage
 
@@ -208,7 +204,7 @@ View all deployments:
 
 ### Updating Workflows
 
-1. Test changes with `test_mode: true`
+1. Test changes with `upload: none`
 2. Use `workflow_dispatch` for manual testing
 3. Monitor first automated run carefully
 

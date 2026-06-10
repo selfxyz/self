@@ -5,6 +5,7 @@ permissions:
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, labeled]
     paths:
       - "packages/kmp-sdk/**"
       - "packages/kmp-sdk-test-app/**"
@@ -67,6 +68,11 @@ jobs:
       - run: ./gradlew :shared:assembleDebug
 
   kmp-sdk-ios-framework:
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'push' && contains(fromJSON('["refs/heads/staging","refs/heads/main"]'), github.ref)) ||
+      (github.event_name == 'pull_request' && contains(fromJSON('["staging","main"]'), github.base_ref)) ||
+      (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'test-ios'))
     runs-on: namespace-profile-apple-silicon-6cpu
     timeout-minutes: 60
     defaults:
@@ -85,6 +91,11 @@ jobs:
       - run: ./gradlew :shared:linkDebugFrameworkIosSimulatorArm64
 
   kmp-sdk-ios-test:
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'push' && contains(fromJSON('["refs/heads/staging","refs/heads/main"]'), github.ref)) ||
+      (github.event_name == 'pull_request' && contains(fromJSON('["staging","main"]'), github.base_ref)) ||
+      (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'test-ios'))
     runs-on: namespace-profile-apple-silicon-6cpu
     timeout-minutes: 60
     defaults:
@@ -146,6 +157,11 @@ jobs:
       - run: ./gradlew :composeApp:assembleDebug
 
   kmp-test-app-ios-build:
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'push' && contains(fromJSON('["refs/heads/staging","refs/heads/main"]'), github.ref)) ||
+      (github.event_name == 'pull_request' && contains(fromJSON('["staging","main"]'), github.base_ref)) ||
+      (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'test-ios'))
     runs-on: namespace-profile-apple-silicon-6cpu
     timeout-minutes: 60
     defaults:
@@ -210,6 +226,11 @@ jobs:
       - run: ./gradlew :composeApp:assembleDebug
 
   kmp-minipay-ios-build:
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'push' && contains(fromJSON('["refs/heads/staging","refs/heads/main"]'), github.ref)) ||
+      (github.event_name == 'pull_request' && contains(fromJSON('["staging","main"]'), github.base_ref)) ||
+      (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'test-ios'))
     runs-on: namespace-profile-apple-silicon-6cpu
     timeout-minutes: 60
     defaults:

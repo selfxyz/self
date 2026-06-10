@@ -1,4 +1,8 @@
 name: Mobile CI
+
+permissions:
+  contents: read
+
 env:
   # Build environment versions
   # Node version is read from .nvmrc during workflow execution
