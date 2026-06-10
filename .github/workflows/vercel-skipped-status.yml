@@ -24,6 +24,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 2
+          persist-credentials: false
 
       - name: Check whether Vercel will build this commit
         id: paths
@@ -48,7 +49,7 @@ jobs:
           # status, so ours lands after it and wins.
           sleep 30
           state=$(gh api "repos/$GITHUB_REPOSITORY/commits/$SHA/status" \
-            --jq ".statuses[] | select(.context == \"$STATUS_CONTEXT\") | .state" || true)
+            --jq "first(.statuses[] | select(.context == \"$STATUS_CONTEXT\") | .state) // empty" || true)
           if [ -n "$state" ] && [ "$state" != "pending" ]; then
             echo "Vercel reported state '$state' itself; leaving it alone."
             exit 0
