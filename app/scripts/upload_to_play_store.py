@@ -366,7 +366,8 @@ def main():
 
     print("🚀 Starting Google Play upload with Workload Identity Federation")
     if aab_path:
-        print(f"📦 AAB: {aab_path}")
+        aab_mib = aab_path.stat().st_size / (1024 * 1024)
+        print(f"📦 AAB: {aab_path} ({aab_mib:.1f} MiB)")
     print(f"📱 Package: {args.package_name}")
     print(f"🧭 Mode: {args.mode}")
     if args.mode in ('track', 'query'):
