@@ -201,6 +201,13 @@ def upload_to_play_store(aab_path, package_name, track, credentials, attempt=1, 
                       f"track {track} already contains version code "
                       f"{expected_version_code}. Treating this retry as a "
                       "successful release.")
+                # Discard this retry's edit: Play allows only one active edit
+                # per app, so leaving it open would block every upload until
+                # Google auto-expires it (~7 days).
+                try:
+                    service.edits().delete(packageName=package_name, editId=edit_id).execute()
+                except Exception as cleanup_error:
+                    print(f"⚠️  Could not delete retry edit {edit_id}: {cleanup_error}", flush=True)
                 return True
             print("⚠️  Play reports this version code as already used, but the "
                   f"expected version code {expected_version_code or 'unknown'} "

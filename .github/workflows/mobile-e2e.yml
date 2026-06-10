@@ -1,5 +1,8 @@
 name: Mobile E2E
 
+permissions:
+  contents: read
+
 env:
   # Build environment versions
   JAVA_VERSION: 17
