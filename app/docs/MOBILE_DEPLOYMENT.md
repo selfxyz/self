@@ -19,30 +19,8 @@ To skip deployment, add `[skip-deploy]` to your PR title or add the `no-deploy` 
 2. Click "Run workflow"
 3. Select options:
    - Platform: ios / android / both
-   - Test mode: Check to build without uploading
-   - Manual store upload: Check to publish a signed artifact for manual store upload (see below)
-   - Deployment track: internal / production
+   - Upload: internal / production (store track), or none (build only, no upload, no version bump PR)
    - Version bump: build / patch / minor / major
-
-### Build for Manual Store Upload
-
-Use this when the automated store upload is blocked but you do not want to build locally or manage local environment variables.
-
-> **Security:** this repo is public, so workflow artifacts are downloadable by anyone with a GitHub account while they exist. Build artifacts are only published on manual runs with "Manual store upload" checked, expire after 1 day, and **must be deleted as soon as you have downloaded them** — the run summary includes the exact `gh api -X DELETE` command.
-
-1. Go to [Actions](../../../actions) → "Mobile Deploy"
-2. Click "Run workflow"
-3. Select:
-   - Platform: `android` or `ios`
-   - Manual store upload: checked (required — the artifact is not published otherwise; do **not** use test mode, which skips the version bump PR and would let the next deploy reuse the build number you uploaded)
-   - Deployment track: the track you plan to upload to
-   - Version bump: usually `build` unless you need a semantic version bump
-4. Open the completed run summary and click the signed artifact link (AAB or IPA).
-5. Download the artifact ZIP and extract it:
-   - **Android:** upload `app-release.aab` manually in Play Console.
-   - **iOS:** upload the `.ipa` to App Store Connect with [Transporter](https://apps.apple.com/app/transporter/id1450874784) or `xcrun altool --upload-app`.
-6. Delete the artifact using the command shown in the run summary.
-7. **Merge the version bump PR the run created** so the repo records the build number you uploaded.
 
 ## 📋 How It Works
 
@@ -226,7 +204,7 @@ View all deployments:
 
 ### Updating Workflows
 
-1. Test changes with `test_mode: true`
+1. Test changes with `upload: none`
 2. Use `workflow_dispatch` for manual testing
 3. Monitor first automated run carefully
 
