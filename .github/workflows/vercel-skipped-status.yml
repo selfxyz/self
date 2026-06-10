@@ -1,0 +1,60 @@
+# Vercel's Ignored Build Step cancels webview-app deployments for commits that
+# don't touch webview paths, but never updates the GitHub commit status it set
+# to pending — so the PR merge box shows "1 pending check" forever. This
+# workflow mirrors Vercel's path check and overwrites the stale pending status
+# with success. Commits that do touch webview paths are left alone so the real
+# Vercel deployment status flows through.
+name: Vercel Skipped Status
+
+permissions:
+  contents: read
+  statuses: write
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  patch-skipped-vercel-status:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: Check whether Vercel will build this commit
+        id: paths
+        # Must mirror the Vercel project's Ignored Build Step:
+        # git diff HEAD^ HEAD --quiet -- . ../../common ../../packages/mobile-sdk-alpha ../../packages/webview-bridge
+        # (run from packages/webview-app, so "." is packages/webview-app)
+        run: |
+          if git diff HEAD^ HEAD --quiet -- packages/webview-app common packages/mobile-sdk-alpha packages/webview-bridge; then
+            echo "skipped=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skipped=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Overwrite the stale pending Vercel status
+        if: steps.paths.outputs.skipped == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+          STATUS_CONTEXT: Vercel – self-webview-app
+        run: |
+          # Give Vercel time to create the deployment and set its pending
+          # status, so ours lands after it and wins.
+          sleep 30
+          state=$(gh api "repos/$GITHUB_REPOSITORY/commits/$SHA/status" \
+            --jq "first(.statuses[] | select(.context == \"$STATUS_CONTEXT\") | .state) // empty" || true)
+          if [ -n "$state" ] && [ "$state" != "pending" ]; then
+            echo "Vercel reported state '$state' itself; leaving it alone."
+            exit 0
+          fi
+          gh api "repos/$GITHUB_REPOSITORY/statuses/$SHA" \
+            -f state=success \
+            -f context="$STATUS_CONTEXT" \
+            -f description='Deployment skipped — no webview-app changes in this commit'

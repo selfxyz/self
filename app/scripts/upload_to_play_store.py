@@ -161,52 +161,6 @@ def should_hold_for_manual_review(track):
     return track == 'production'
 
 
-def upload_to_internal_app_sharing(aab_path, package_name, credentials):
-    """Upload AAB to Google Play Internal App Sharing.
-
-    Returns a unique downloadUrl per upload. Designed for per-PR/per-build
-    preview distribution: does NOT advance any track, does NOT require a
-    unique versionCode, and does NOT go through review.
-    """
-    print(f"📤 Uploading {aab_path} to Internal App Sharing...")
-
-    service = build_play_service(credentials)
-
-    media = MediaFileUpload(
-        aab_path,
-        mimetype='application/octet-stream',
-    )
-    request = service.internalappsharingartifacts().uploadbundle(
-        packageName=package_name,
-        media_body=media,
-    )
-    response = request.execute(num_retries=REQUEST_NUM_RETRIES)
-
-    download_url = response.get('downloadUrl')
-    sha256 = response.get('sha256')
-    cert_fingerprint = response.get('certificateFingerprint')
-
-    if not download_url:
-        raise RuntimeError(f"IAS upload returned no downloadUrl. Response: {response}")
-
-    print(f"✅ Uploaded to Internal App Sharing")
-    print(f"🔗 downloadUrl: {download_url}")
-    if sha256:
-        print(f"🔐 sha256: {sha256}")
-    if cert_fingerprint:
-        print(f"📜 certificateFingerprint: {cert_fingerprint}")
-
-    # Expose the URL to GitHub Actions via $GITHUB_OUTPUT when available
-    github_output = os.environ.get('GITHUB_OUTPUT')
-    if github_output:
-        with open(github_output, 'a') as f:
-            f.write(f"download_url={download_url}\n")
-            if sha256:
-                f.write(f"sha256={sha256}\n")
-
-    return True
-
-
 def upload_to_play_store(aab_path, package_name, track, credentials, attempt=1, retry_state=None):
     """Upload AAB to Google Play Store"""
     print(f"📤 Uploading {aab_path} to Play Store...")
@@ -247,6 +201,13 @@ def upload_to_play_store(aab_path, package_name, track, credentials, attempt=1, 
                       f"track {track} already contains version code "
                       f"{expected_version_code}. Treating this retry as a "
                       "successful release.")
+                # Discard this retry's edit: Play allows only one active edit
+                # per app, so leaving it open would block every upload until
+                # Google auto-expires it (~7 days).
+                try:
+                    service.edits().delete(packageName=package_name, editId=edit_id).execute()
+                except Exception as cleanup_error:
+                    print(f"⚠️  Could not delete retry edit {edit_id}: {cleanup_error}", flush=True)
                 return True
             print("⚠️  Play reports this version code as already used, but the "
                   f"expected version code {expected_version_code or 'unknown'} "
@@ -347,9 +308,9 @@ def main():
     parser = argparse.ArgumentParser(description='Upload Android AAB to Google Play Store using WIF')
     parser.add_argument('--aab', help='Path to the AAB file. Required unless --mode=query.')
     parser.add_argument('--package-name', required=True, help='Android package name')
-    parser.add_argument('--track', default='internal', help='Release track (internal, alpha, beta, production). Ignored when --mode=ias.')
-    parser.add_argument('--mode', default='track', choices=['track', 'ias', 'query'],
-                        help='Mode: "track" promotes to a Play Store track; "ias" uploads to Internal App Sharing; "query" prints current track releases.')
+    parser.add_argument('--track', default='internal', help='Release track (internal, alpha, beta, production)')
+    parser.add_argument('--mode', default='track', choices=['track', 'query'],
+                        help='Mode: "track" promotes to a Play Store track; "query" prints current track releases.')
 
     args = parser.parse_args()
 
@@ -370,19 +331,13 @@ def main():
         print(f"📦 AAB: {aab_path} ({aab_mib:.1f} MiB)")
     print(f"📱 Package: {args.package_name}")
     print(f"🧭 Mode: {args.mode}")
-    if args.mode in ('track', 'query'):
-        print(f"🎯 Track: {args.track}")
+    print(f"🎯 Track: {args.track}")
     print()
 
     # Get credentials and upload
     credentials = get_credentials()
     try:
-        if args.mode == 'ias':
-            success = with_retry(
-                "Internal App Sharing upload",
-                lambda attempt: upload_to_internal_app_sharing(str(aab_path), args.package_name, credentials),
-            )
-        elif args.mode == 'query':
+        if args.mode == 'query':
             success = query_track(args.package_name, args.track, credentials)
         else:
             retry_state = {}
