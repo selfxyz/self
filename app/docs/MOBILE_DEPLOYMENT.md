@@ -76,15 +76,12 @@ Versions are controlled by PR labels:
 
 ### Workflows
 
-1. **`mobile-deploy.yml`** - Main deployment workflow
-   - Handles both manual and automated deployments
-   - Builds and uploads to app stores
-   - Creates git tags for production releases
+**`mobile-deploy.yml`** - Deployment workflow
 
-2. **`mobile-deploy-auto.yml`** - PR merge trigger
-   - Detects merged PRs
-   - Determines deployment parameters
-   - Calls main deployment workflow
+- Triggers on manual dispatch or PR merges to staging
+- Determines deployment parameters from PR labels
+- Builds and uploads to app stores
+- Creates git tags for production releases
 
 ### Version Storage
 
