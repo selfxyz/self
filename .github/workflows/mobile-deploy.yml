@@ -62,7 +62,7 @@ on:
   workflow_dispatch:
     inputs:
       platform:
-        description: "Select platform to build"
+        description: "Platform"
         required: true
         default: "both"
         type: choice
@@ -70,26 +70,18 @@ on:
           - ios
           - android
           - both
-      test_mode:
-        description: "Test mode (skip upload to stores)"
-        required: false
-        type: boolean
-        default: false
-      manual_store_upload:
-        description: "Publish a signed artifact for manual store upload (skips automated upload, still creates the version bump PR)"
-        required: false
-        type: boolean
-        default: false
-      deployment_track:
-        description: "Deployment track (internal/production)"
+      upload:
+        description: "Upload to a store track, artifact-only (signed build to upload by hand), or none (build only, no version bump PR)"
         required: false
         type: choice
         default: "internal"
         options:
           - internal
           - production
+          - artifact-only
+          - none
       version_bump:
-        description: "Version bump type"
+        description: "Version bump"
         required: false
         type: choice
         default: "build"
@@ -98,13 +90,8 @@ on:
           - patch
           - minor
           - major
-      dry_run:
-        description: "Do not commit/push or create PR/tags"
-        required: false
-        type: boolean
-        default: false
       pr_number:
-        description: "PR number for per-PR preview build. When set (Android only), uploads to Play Store Internal App Sharing and posts a Slack message with the install URL. Skips the version-bump PR."
+        description: "Android PR preview: PR number to upload to Internal App Sharing and post the install link to Slack"
         required: false
         type: string
         default: ""
@@ -146,7 +133,7 @@ concurrency:
   # otherwise by deployment track or ref name to allow different tracks to run in parallel.
   # cancel-in-progress: false ensures we don't cancel ongoing deployments.
   # Branch-locking in create-version-bump-pr prevents duplicate PRs for same version.
-  group: mobile-deploy-${{ inputs.pr_number != '' && format('pr-{0}', inputs.pr_number) || inputs.deployment_track || github.ref_name }}
+  group: mobile-deploy-${{ inputs.pr_number != '' && format('pr-{0}', inputs.pr_number) || inputs.upload || github.ref_name }}
   cancel-in-progress: false
 
 jobs:
@@ -289,7 +276,7 @@ jobs:
         run: |
           echo "🚀 Mobile deployment is enabled - proceeding with iOS build"
           echo "📱 Platform: ${{ inputs.platform || 'both' }}"
-          echo "🎯 Track: ${{ inputs.deployment_track || 'internal' }}"
+          echo "🎯 Upload: ${{ inputs.upload || 'internal' }}"
           echo "📦 Version bump: ${{ inputs.version_bump || 'build' }}"
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             echo "🔀 Triggered by PR merge: #${{ github.event.pull_request.number }} - ${{ github.event.pull_request.title }}"
@@ -745,11 +732,11 @@ jobs:
           echo "--- Starting Fastlane ---"
 
           # Determine deployment track and version bump
-          DEPLOYMENT_TRACK="${{ inputs.deployment_track || 'internal' }}"
+          DEPLOYMENT_TRACK="${{ inputs.upload == 'production' && 'production' || 'internal' }}"
           VERSION_BUMP="${{ needs.bump-version.outputs.version_bump_type }}"
-          # manual_store_upload also skips the automated upload — the IPA is
+          # artifact-only also skips the automated upload — the IPA is
           # published as an artifact and uploaded by hand instead
-          TEST_MODE="${{ inputs.test_mode || inputs.manual_store_upload || false }}"
+          TEST_MODE="${{ inputs.upload == 'none' || inputs.upload == 'artifact-only' }}"
 
           echo "📱 Deployment Configuration:"
           echo "  - Track: $DEPLOYMENT_TRACK"
@@ -813,14 +800,14 @@ jobs:
 
           echo "✅ iOS build output verification passed"
 
-      # Only published for manual_store_upload runs: the repo is public, so artifacts
-      # are downloadable by anyone with a GitHub account. Unlike test_mode, these
+      # Only published for artifact-only runs: the repo is public, so artifacts
+      # are downloadable by anyone with a GitHub account. Unlike upload=none, these
       # runs still create the version bump PR — the build number uploaded by hand
       # must be recorded in the repo or the next deploy reuses it and the store
       # rejects it.
       - name: Upload signed iOS IPA artifact
         id: upload-ios-ipa
-        if: github.event_name == 'workflow_dispatch' && inputs.manual_store_upload == true && inputs.platform != 'android'
+        if: github.event_name == 'workflow_dispatch' && inputs.upload == 'artifact-only' && inputs.platform != 'android'
         uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4
         with:
           name: self-ios-${{ needs.bump-version.outputs.version }}-${{ needs.bump-version.outputs.ios_build }}-release-ipa
@@ -829,7 +816,7 @@ jobs:
           retention-days: 1
 
       - name: Summarize iOS IPA download
-        if: github.event_name == 'workflow_dispatch' && inputs.manual_store_upload == true && inputs.platform != 'android'
+        if: github.event_name == 'workflow_dispatch' && inputs.upload == 'artifact-only' && inputs.platform != 'android'
         run: |
           {
             echo "## iOS release IPA"
@@ -936,7 +923,7 @@ jobs:
         run: |
           echo "🚀 Mobile deployment is enabled - proceeding with Android build"
           echo "📱 Platform: ${{ inputs.platform || 'both' }}"
-          echo "🎯 Track: ${{ inputs.deployment_track || 'internal' }}"
+          echo "🎯 Upload: ${{ inputs.upload || 'internal' }}"
           echo "📦 Version bump: ${{ inputs.version_bump || 'build' }}"
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             echo "🔀 Triggered by PR merge: #${{ github.event.pull_request.number }} - ${{ github.event.pull_request.title }}"
@@ -1256,9 +1243,9 @@ jobs:
           cd ${{ env.APP_PATH }}
 
           # Determine deployment track and version bump
-          DEPLOYMENT_TRACK="${{ inputs.deployment_track || 'internal' }}"
+          DEPLOYMENT_TRACK="${{ inputs.upload == 'production' && 'production' || 'internal' }}"
           VERSION_BUMP="${{ needs.bump-version.outputs.version_bump_type }}"
-          TEST_MODE="${{ inputs.test_mode || inputs.manual_store_upload || false }}"
+          TEST_MODE="${{ inputs.upload == 'none' || inputs.upload == 'artifact-only' }}"
 
           echo "🤖 Build Configuration:"
           echo "  - Track: $DEPLOYMENT_TRACK"
@@ -1305,14 +1292,14 @@ jobs:
 
           echo "✅ Android build output verification passed"
 
-      # Only published for manual_store_upload runs: the repo is public, so artifacts
-      # are downloadable by anyone with a GitHub account. Unlike test_mode, these
+      # Only published for artifact-only runs: the repo is public, so artifacts
+      # are downloadable by anyone with a GitHub account. Unlike upload=none, these
       # runs still create the version bump PR — the build number uploaded by hand
       # must be recorded in the repo or the next deploy reuses it and the store
       # rejects it.
       - name: Upload signed Android AAB artifact
         id: upload-android-aab
-        if: github.event_name == 'workflow_dispatch' && inputs.manual_store_upload == true && inputs.platform != 'ios'
+        if: github.event_name == 'workflow_dispatch' && inputs.upload == 'artifact-only' && inputs.platform != 'ios'
         uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4
         with:
           name: self-android-${{ needs.bump-version.outputs.version }}-${{ needs.bump-version.outputs.android_build }}-release-aab
@@ -1321,7 +1308,7 @@ jobs:
           retention-days: 1
 
       - name: Summarize Android AAB download
-        if: github.event_name == 'workflow_dispatch' && inputs.manual_store_upload == true && inputs.platform != 'ios'
+        if: github.event_name == 'workflow_dispatch' && inputs.upload == 'artifact-only' && inputs.platform != 'ios'
         run: |
           {
             echo "## Android release AAB"
@@ -1347,7 +1334,7 @@ jobs:
 
       - name: Upload to Play Store Internal App Sharing (PR preview)
         id: ias-upload
-        if: inputs.platform != 'ios' && inputs.test_mode != true && inputs.manual_store_upload != true && inputs.pr_number != ''
+        if: inputs.platform != 'ios' && inputs.upload != 'none' && inputs.upload != 'artifact-only' && inputs.pr_number != ''
         timeout-minutes: 30
         run: |
           cd ${{ env.APP_PATH }}
@@ -1358,14 +1345,14 @@ jobs:
             --mode ias
 
       - name: Query Google Play Store track using WIF
-        if: inputs.platform != 'ios' && inputs.test_mode != true && inputs.manual_store_upload != true && inputs.pr_number == ''
+        if: inputs.platform != 'ios' && inputs.upload != 'none' && inputs.upload != 'artifact-only' && inputs.pr_number == ''
         continue-on-error: true
         timeout-minutes: 5
         run: |
           cd ${{ env.APP_PATH }}
 
           # Determine deployment track
-          DEPLOYMENT_TRACK="${{ inputs.deployment_track || 'internal' }}"
+          DEPLOYMENT_TRACK="${{ inputs.upload == 'production' && 'production' || 'internal' }}"
 
           echo "🔎 Querying Google Play Store track before upload..."
           python -u scripts/upload_to_play_store.py \
@@ -1374,13 +1361,13 @@ jobs:
             --mode query
 
       - name: Upload to Google Play Store track using WIF
-        if: inputs.platform != 'ios' && inputs.test_mode != true && inputs.manual_store_upload != true && inputs.pr_number == ''
+        if: inputs.platform != 'ios' && inputs.upload != 'none' && inputs.upload != 'artifact-only' && inputs.pr_number == ''
         timeout-minutes: 30
         run: |
           cd ${{ env.APP_PATH }}
 
           # Determine deployment track
-          DEPLOYMENT_TRACK="${{ inputs.deployment_track || 'internal' }}"
+          DEPLOYMENT_TRACK="${{ inputs.upload == 'production' && 'production' || 'internal' }}"
 
           echo "🚀 Uploading to Google Play Store using Workload Identity Federation..."
           python -u scripts/upload_to_play_store.py \
@@ -1389,7 +1376,7 @@ jobs:
             --track "$DEPLOYMENT_TRACK"
 
       - name: Post PR preview build link to Slack
-        if: inputs.platform != 'ios' && inputs.test_mode != true && inputs.manual_store_upload != true && inputs.pr_number != '' && steps.ias-upload.outputs.download_url != ''
+        if: inputs.platform != 'ios' && inputs.upload != 'none' && inputs.upload != 'artifact-only' && inputs.pr_number != '' && steps.ias-upload.outputs.download_url != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_QA_BUILDS }}
@@ -1527,14 +1514,14 @@ jobs:
       pull-requests: write
     needs: [bump-version, build-ios, build-android]
     # Skip when this is a per-PR preview build — preview builds must not mutate
-    # the repo's version lineage. Also skip in test mode (no store upload) so test
-    # builds don't open a version bump PR. manual_store_upload runs are NOT
-    # skipped: their build number reaches the store by hand, so it must be
-    # persisted or the next deploy reuses it and the store rejects it.
+    # the repo's version lineage. Also skip for upload=none builds so they
+    # don't open a version bump PR. artifact-only runs are NOT skipped: their
+    # build number reaches the store by hand, so it must be persisted or the
+    # next deploy reuses it and the store rejects it.
     if: |
       always() &&
       inputs.pr_number == '' &&
-      inputs.test_mode != true &&
+      inputs.upload != 'none' &&
       (github.event_name != 'pull_request' ||
         (github.event.action == 'closed' && github.event.pull_request.merged == true)) &&
       (needs.build-ios.result == 'success' || needs.build-android.result == 'success')
@@ -1645,7 +1632,6 @@ jobs:
           echo "📝 PR title: $PR_TITLE"
 
       - name: Create version bump PR
-        if: inputs.dry_run != true
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -1719,10 +1705,9 @@ jobs:
     needs: [bump-version, build-ios, build-android, create-version-bump-pr]
     if: |
       always() &&
-      (inputs.dry_run != true) &&
       needs.create-version-bump-pr.result == 'success' &&
       (needs.build-ios.result == 'success' || needs.build-android.result == 'success') &&
-      (inputs.deployment_track == 'production')
+      (inputs.upload == 'production')
     steps:
       - uses: actions/checkout@v6
         with:
