@@ -2,7 +2,7 @@
 
 //
 //  ScannerHostingController.swift
-//  OpenPassport
+//  Self
 //
 //  Created by Rémi Colin on 27/02/2024.
 //

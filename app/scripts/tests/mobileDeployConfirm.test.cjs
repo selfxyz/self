@@ -163,7 +163,7 @@ describe('Mobile Deploy Confirm - File Parsing', () => {
 
   describe('Real File Integration Tests', () => {
     it('should parse actual iOS Info.plist if it exists', () => {
-      const infoPlistPath = join(__dirname, '../ios/OpenPassport/Info.plist');
+      const infoPlistPath = join(__dirname, '../ios/Self/Info.plist');
 
       if (existsSync(infoPlistPath)) {
         const content = readFileSync(infoPlistPath, 'utf8');

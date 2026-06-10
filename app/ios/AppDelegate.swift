@@ -33,7 +33,7 @@ class AppDelegate: ExpoAppDelegate, UNUserNotificationCenterDelegate {
 
     window = UIWindow(frame: UIScreen.main.bounds)
     factory.startReactNative(
-      withModuleName: "OpenPassport",
+      withModuleName: "Self",
       in: window,
       launchOptions: launchOptions
     )

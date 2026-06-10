@@ -146,7 +146,7 @@ function analyzeReactNativeBundle(platform) {
       require('os').tmpdir(),
       'react-native-bundle-visualizer',
     );
-    const reportPath = join(tmpDir, 'OpenPassport', 'output', 'explorer.html');
+    const reportPath = join(tmpDir, 'Self', 'output', 'explorer.html');
 
     if (existsSync(reportPath)) {
       console.log(`\n📊 Detailed bundle report: ${reportPath}`);

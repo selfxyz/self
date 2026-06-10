@@ -613,10 +613,9 @@ jobs:
       cancel-in-progress: true
     env:
       # iOS project configuration - hardcoded for E2E testing stability
-      # Note: During migration, project name is "Self" but scheme is still "OpenPassport"
       # mobile-deploy.yml uses secrets for production deployment
       IOS_PROJECT_NAME: "Self"
-      IOS_PROJECT_SCHEME: "OpenPassport"
+      IOS_PROJECT_SCHEME: "Self"
       IOS_SIMULATOR_DEVICE: "iPhone SE (3rd generation)"
       IOS_SIMULATOR_RUNTIME: "18.4"
     steps:
@@ -833,15 +832,7 @@ jobs:
           E2E_TESTING: 1
       - name: Resolve iOS workspace
         run: |
-          WORKSPACE_OPEN="app/ios/OpenPassport.xcworkspace"
-          WORKSPACE_SELF="app/ios/Self.xcworkspace"
-
-          if xcodebuild -list -workspace "$WORKSPACE_OPEN" 2>/dev/null | grep -q "OpenPassport"; then
-            WORKSPACE_PATH="$WORKSPACE_OPEN"
-          else
-            WORKSPACE_PATH="$WORKSPACE_SELF"
-          fi
-
+          WORKSPACE_PATH="app/ios/Self.xcworkspace"
           echo "WORKSPACE_PATH=$WORKSPACE_PATH" >> "$GITHUB_ENV"
           echo "Resolved workspace: $WORKSPACE_PATH"
       - name: Find iOS Simulator

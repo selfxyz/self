@@ -7,7 +7,7 @@ const os = require('os');
 const path = require('path');
 const { execFileSync } = require('child_process');
 
-const APP_NAME = process.env.IOS_CRASH_CAPTURE_APP_NAME || 'OpenPassport';
+const APP_NAME = process.env.IOS_CRASH_CAPTURE_APP_NAME || 'Self';
 const WINDOW_MINUTES = process.env.IOS_CRASH_CAPTURE_WINDOW_MINUTES || '5';
 const OUTPUT_ROOT =
   process.env.IOS_CRASH_CAPTURE_OUTPUT_DIR ||
