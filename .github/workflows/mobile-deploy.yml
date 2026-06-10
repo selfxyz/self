@@ -70,14 +70,13 @@ on:
           - android
           - both
       upload:
-        description: "Upload to a store track, artifact-only (signed build to upload by hand), or none (build only, no version bump PR)"
+        description: "Upload to a store track, or none (build only, no version bump PR)"
         required: false
         type: choice
         default: "internal"
         options:
           - internal
           - production
-          - artifact-only
           - none
       version_bump:
         description: "Version bump"
@@ -109,8 +108,7 @@ concurrency:
   # Group by PR number (when set) so multiple PR preview builds run in parallel,
   # otherwise by deployment track or ref name to allow different tracks to run in parallel.
   # cancel-in-progress: false ensures we don't cancel ongoing deployments.
-  # Branch-locking in create-version-bump-pr prevents duplicate PRs for same version.
-  group: mobile-deploy-${{ inputs.pr_number != '' && format('pr-{0}', inputs.pr_number) || inputs.upload || github.ref_name }}
+  group: mobile-deploy-${{ inputs.pr_number != '' && format('pr-{0}', inputs.pr_number) || (inputs.upload == 'production' && 'production') || (inputs.upload != '' && 'internal') || github.ref_name }}
   cancel-in-progress: false
 
 jobs:
@@ -711,9 +709,7 @@ jobs:
           # Determine deployment track and version bump
           DEPLOYMENT_TRACK="${{ inputs.upload == 'production' && 'production' || 'internal' }}"
           VERSION_BUMP="${{ needs.bump-version.outputs.version_bump_type }}"
-          # artifact-only also skips the automated upload — the IPA is
-          # published as an artifact and uploaded by hand instead
-          TEST_MODE="${{ inputs.upload == 'none' || inputs.upload == 'artifact-only' }}"
+          TEST_MODE="${{ inputs.upload == 'none' }}"
 
           echo "📱 Deployment Configuration:"
           echo "  - Track: $DEPLOYMENT_TRACK"
@@ -776,42 +772,6 @@ jobs:
           fi
 
           echo "✅ iOS build output verification passed"
-
-      # Only published for artifact-only runs: the repo is public, so artifacts
-      # are downloadable by anyone with a GitHub account. Unlike upload=none, these
-      # runs still create the version bump PR — the build number uploaded by hand
-      # must be recorded in the repo or the next deploy reuses it and the store
-      # rejects it.
-      - name: Upload signed iOS IPA artifact
-        id: upload-ios-ipa
-        if: github.event_name == 'workflow_dispatch' && inputs.upload == 'artifact-only' && inputs.platform != 'android'
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4
-        with:
-          name: self-ios-${{ needs.bump-version.outputs.version }}-${{ needs.bump-version.outputs.ios_build }}-release-ipa
-          path: ${{ env.APP_PATH }}/ios/build/*.ipa
-          if-no-files-found: error
-          retention-days: 1
-
-      - name: Summarize iOS IPA download
-        if: github.event_name == 'workflow_dispatch' && inputs.upload == 'artifact-only' && inputs.platform != 'android'
-        run: |
-          {
-            echo "## iOS release IPA"
-            echo ""
-            echo "Signed IPA artifact: [self-ios-${{ needs.bump-version.outputs.version }}-${{ needs.bump-version.outputs.ios_build }}-release-ipa](${{ steps.upload-ios-ipa.outputs.artifact-url }})"
-            echo ""
-            echo "Download the artifact ZIP, extract the \`.ipa\`, and upload it to App Store Connect with Transporter or \`xcrun altool --upload-app\`."
-            echo ""
-            echo "**Merge the version bump PR created by this run** — it records the build number you are uploading; without it the next deploy reuses the same build number and App Store Connect rejects it."
-            echo ""
-            echo "- Version: \`${{ needs.bump-version.outputs.version }}\`"
-            echo "- iOS build: \`${{ needs.bump-version.outputs.ios_build }}\`"
-            echo "- Retention: 1 day — delete it as soon as you have downloaded it:"
-            echo ""
-            echo '```'
-            echo "gh api -X DELETE repos/${{ github.repository }}/actions/artifacts/${{ steps.upload-ios-ipa.outputs.artifact-id }}"
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
 
       # Version updates moved to separate job to avoid race conditions
 
@@ -1222,7 +1182,7 @@ jobs:
           # Determine deployment track and version bump
           DEPLOYMENT_TRACK="${{ inputs.upload == 'production' && 'production' || 'internal' }}"
           VERSION_BUMP="${{ needs.bump-version.outputs.version_bump_type }}"
-          TEST_MODE="${{ inputs.upload == 'none' || inputs.upload == 'artifact-only' }}"
+          TEST_MODE="${{ inputs.upload == 'none' }}"
 
           echo "🤖 Build Configuration:"
           echo "  - Track: $DEPLOYMENT_TRACK"
@@ -1269,49 +1229,13 @@ jobs:
 
           echo "✅ Android build output verification passed"
 
-      # Only published for artifact-only runs: the repo is public, so artifacts
-      # are downloadable by anyone with a GitHub account. Unlike upload=none, these
-      # runs still create the version bump PR — the build number uploaded by hand
-      # must be recorded in the repo or the next deploy reuses it and the store
-      # rejects it.
-      - name: Upload signed Android AAB artifact
-        id: upload-android-aab
-        if: github.event_name == 'workflow_dispatch' && inputs.upload == 'artifact-only' && inputs.platform != 'ios'
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4
-        with:
-          name: self-android-${{ needs.bump-version.outputs.version }}-${{ needs.bump-version.outputs.android_build }}-release-aab
-          path: ${{ env.APP_PATH }}/android/app/build/outputs/bundle/release/app-release.aab
-          if-no-files-found: error
-          retention-days: 1
-
-      - name: Summarize Android AAB download
-        if: github.event_name == 'workflow_dispatch' && inputs.upload == 'artifact-only' && inputs.platform != 'ios'
-        run: |
-          {
-            echo "## Android release AAB"
-            echo ""
-            echo "Signed AAB artifact: [self-android-${{ needs.bump-version.outputs.version }}-${{ needs.bump-version.outputs.android_build }}-release-aab](${{ steps.upload-android-aab.outputs.artifact-url }})"
-            echo ""
-            echo "Use this URL to download the artifact ZIP, extract \`app-release.aab\`, and upload it manually in Play Console."
-            echo ""
-            echo "**Merge the version bump PR created by this run** — it records the versionCode you are uploading; without it the next deploy reuses the same versionCode and Play rejects it."
-            echo ""
-            echo "- Version: \`${{ needs.bump-version.outputs.version }}\`"
-            echo "- Android build: \`${{ needs.bump-version.outputs.android_build }}\`"
-            echo "- Retention: 1 day — delete it as soon as you have downloaded it:"
-            echo ""
-            echo '```'
-            echo "gh api -X DELETE repos/${{ github.repository }}/actions/artifacts/${{ steps.upload-android-aab.outputs.artifact-id }}"
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
-
       - name: Clean up Gradle build artifacts
         if: inputs.platform != 'ios'
         uses: ./.github/actions/cleanup-gradle-artifacts
 
       - name: Upload to Play Store Internal App Sharing (PR preview)
         id: ias-upload
-        if: inputs.platform != 'ios' && inputs.upload != 'none' && inputs.upload != 'artifact-only' && inputs.pr_number != ''
+        if: inputs.platform != 'ios' && inputs.upload != 'none' && inputs.pr_number != ''
         timeout-minutes: 30
         run: |
           cd ${{ env.APP_PATH }}
@@ -1322,7 +1246,7 @@ jobs:
             --mode ias
 
       - name: Query Google Play Store track using WIF
-        if: inputs.platform != 'ios' && inputs.upload != 'none' && inputs.upload != 'artifact-only' && inputs.pr_number == ''
+        if: inputs.platform != 'ios' && inputs.upload != 'none' && inputs.pr_number == ''
         continue-on-error: true
         timeout-minutes: 5
         run: |
@@ -1338,7 +1262,7 @@ jobs:
             --mode query
 
       - name: Upload to Google Play Store track using WIF
-        if: inputs.platform != 'ios' && inputs.upload != 'none' && inputs.upload != 'artifact-only' && inputs.pr_number == ''
+        if: inputs.platform != 'ios' && inputs.upload != 'none' && inputs.pr_number == ''
         timeout-minutes: 30
         run: |
           cd ${{ env.APP_PATH }}
@@ -1353,7 +1277,7 @@ jobs:
             --track "$DEPLOYMENT_TRACK"
 
       - name: Post PR preview build link to Slack
-        if: inputs.platform != 'ios' && inputs.upload != 'none' && inputs.upload != 'artifact-only' && inputs.pr_number != '' && steps.ias-upload.outputs.download_url != ''
+        if: inputs.platform != 'ios' && inputs.upload != 'none' && inputs.pr_number != '' && steps.ias-upload.outputs.download_url != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_QA_BUILDS }}
@@ -1442,15 +1366,6 @@ jobs:
             echo "- Install URL: $DOWNLOAD_URL"
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Upload Android AAB artifact on failure
-        if: failure() && inputs.platform != 'ios'
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4
-        with:
-          name: android-release-aab
-          path: ${{ env.APP_PATH }}/android/app/build/outputs/bundle/release/app-release.aab
-          if-no-files-found: warn
-          retention-days: 7
-
       - name: Monitor cache usage
         if: always()
         run: |
@@ -1492,9 +1407,7 @@ jobs:
     needs: [bump-version, build-ios, build-android]
     # Skip when this is a per-PR preview build — preview builds must not mutate
     # the repo's version lineage. Also skip for upload=none builds so they
-    # don't open a version bump PR. artifact-only runs are NOT skipped: their
-    # build number reaches the store by hand, so it must be persisted or the
-    # next deploy reuses it and the store rejects it.
+    # don't open a version bump PR.
     if: |
       always() &&
       inputs.pr_number == '' &&
