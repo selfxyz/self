@@ -23,7 +23,7 @@ export const SecurityScreen: React.FC = () => {
   const [isBackupEnabled, setIsBackupEnabled] = useState(false);
   const [showDisableDialogue, setShowDisableDialogue] = useState(false);
 
-  const onBack = useCallback(() => {
+  const handleBack = useCallback(() => {
     haptic.trigger('selection');
     navigate('/settings');
   }, [navigate, haptic]);
@@ -43,7 +43,7 @@ export const SecurityScreen: React.FC = () => {
   const onRestoreAccount = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('security_restore_account_pressed');
-    navigate('/recovery');
+    navigate('/recover');
   }, [navigate, haptic, analytics]);
 
   const onDisableBackups = useCallback(() => {
@@ -71,7 +71,7 @@ export const SecurityScreen: React.FC = () => {
       lockIcon={LockIcon}
       zapShieldIcon={ZapShieldIcon}
       isBackupEnabled={isBackupEnabled}
-      onBack={onBack}
+      onBack={handleBack}
       onBackupAccount={onBackupAccount}
       onRevealRecoveryPhrase={onRevealRecoveryPhrase}
       onRestoreAccount={onRestoreAccount}

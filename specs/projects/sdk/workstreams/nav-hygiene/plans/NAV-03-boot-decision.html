@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>NAV-03 Plan — Boot Decision Consolidation</title>
+<link rel="stylesheet" href="./_shared.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <h1>NAV-03 · Boot Decision Consolidation</h1>
+  <span class="meta-pill status-Ready">Ready</span>
+  <span class="meta-pill prio-High">High</span>
+  <span class="meta-pill">Updated 2026-05-25</span>
+  <span class="spacer"></span>
+  <div class="links">
+    <a href="../SPEC.html">← Spec</a>
+    <a href="../AUDIT.html">Audit</a>
+  </div>
+</header>
+
+<div class="layout">
+
+<nav class="toc">
+  <h4>On this page</h4>
+  <a href="#why">Why</a>
+  <a href="#decisions">Decisions</a>
+  <a href="#action-items">Action Items</a>
+  <a href="#meta">Meta</a>
+  <a href="#current-state">Current State</a>
+  <a href="#scope">Scope</a>
+  <a href="#out-of-scope">Out of Scope</a>
+  <a href="#required-files">Required Files</a>
+  <a href="#approach">Approach</a>
+  <a href="#validation">Validation</a>
+  <a href="#open-questions">Open Questions</a>
+  <a href="#hand-off">Hand-off</a>
+  <h4>Workstream</h4>
+  <a href="../SPEC.html">SPEC ↗</a>
+  <a href="../AUDIT.html">AUDIT ↗</a>
+</nav>
+
+<main>
+
+<section id="why" class="tldr">
+  <h2>Why</h2>
+  <p>
+    AUDIT identifies "two boot deciders" — <code>ModeBoot</code> and <code>InitialRouteRedirect</code>. Investigation reveals only <code>ModeBoot</code> exists; <code>InitialRouteRedirect</code> does not. <strong>The actual problem is different:</strong> <code>ModeBoot</code> has two separate <code>useEffect</code> hooks — one for the fail-closed guard, one for route sync — that read overlapping state and fire on the same boot. The decision tree is split across them. NAV-03 collapses both into a single documented decision function with an explicit decision tree, fail-closed semantics, and unit tests.
+  </p>
+</section>
+
+<section id="decisions" class="decisions-block">
+  <h2>Decisions</h2>
+  <p class="decisions-intro">
+    Locked in on 2026-05-25. See <a href="../DECISIONS.md">DECISIONS.md</a> for the workstream-wide record.
+  </p>
+  <ul class="decisions-list">
+    <li class="decision">
+      <div class="d-head"><code>nav-03-q1-return-vs-navigate</code> · Decided</div>
+      <p class="d-q">Pure function returning an action, or side-effecting function?</p>
+      <p class="d-a"><strong>Pure function.</strong> Returns <code>BootAction = wait | navigate{to,replace} | fail-closed{error} | noop</code>. <code>BootDecision</code>'s single effect dispatches.</p>
+    </li>
+    <li class="decision">
+      <div class="d-head"><code>nav-03-q2-where-to-place</code> · Decided</div>
+      <p class="d-q">Rename ModeBoot, or keep the name?</p>
+      <p class="d-a"><strong>Rename <code>ModeBoot</code> → <code>BootDecision</code>.</strong> Signals the broader role; one import site in <code>App.tsx</code>.</p>
+    </li>
+    <li class="decision">
+      <div class="d-head"><code>nav-03-q3-fail-closed-page</code> · Decided · ⚠ Creates new screen requirement</div>
+      <p class="d-q">On invalid embed-mode request — just dismiss, or navigate to a generic error page first?</p>
+      <p class="d-a"><strong>Navigate to <code>/embed/error</code> before <code>setResult</code> + <code>dismiss</code>.</strong> Resilient if the bridge call is slow or fails. See <a href="#action-items">Action Items</a> for the screen spec — needs team sign-off and an Euclid (or local) component.</p>
+    </li>
+  </ul>
+</section>
+
+<section id="action-items" class="action-items">
+  <h2>Action Items — Needs Team Sign-off</h2>
+  <p style="margin-top:0;color:var(--muted);font-size:13px">
+    Decisions in this plan that require coordination outside the workstream. Surface these in design + engineering syncs <strong>before</strong> the implementation PR opens.
+  </p>
+
+  <div class="ai-card">
+    <div class="ai-meta">
+      <span>Owner: TBD</span>
+      <span>Source: <code>nav-03-q3-fail-closed-page</code></span>
+      <span>Blocking: NAV-03 implementation</span>
+    </div>
+    <h3>New screen — <code>/embed/error</code> (generic embed-mode failure)</h3>
+    <p style="font-size:13px;margin:6px 0">A persistent fallback rendered when the embed-mode boot guard fires (invalid <code>verificationRequest</code>, bridge errors, etc.). Shown for the brief window before <code>lifecycle.dismiss()</code> takes effect, and as a stable surface if <code>dismiss()</code> never succeeds.</p>
+
+    <strong style="font-size:11px;text-transform:uppercase;letter-spacing:0.04em;color:var(--med)">Screen spec</strong>
+    <ul class="ai-checklist">
+      <li><strong>Path:</strong> <code>/embed/error</code>. Mode metadata: <code>embed</code> (per NAV-13).</li>
+      <li><strong>Trigger:</strong> <code>BootDecision</code> dispatches <code>navigate('/embed/error', { replace: true, state: { code, message } })</code>, then asynchronously calls <code>lifecycle.setResult({ success: false, errorCode: code, errorMessage }).catch(() =&gt; {})</code> followed by <code>lifecycle.dismiss({ reason: 'invalid_request' })</code>.</li>
+      <li><strong>Layout:</strong> centered title + body + (optional) "Close" button that calls <code>lifecycle.dismiss</code> again. Reuse Euclid's existing <code>ErrorScreen</code> if it accepts a generic title/body; otherwise add a local thin wrapper and file an Euclid follow-up.</li>
+      <li><strong>Copy (draft, needs UX review):</strong>
+        <pre>Title: Verification couldn't start
+Body:  The verification request was invalid or
+       could not be completed. Please return to
+       the app that opened this view.
+CTA:   Close</pre>
+      </li>
+      <li><strong>Analytics:</strong> emit <code>embed_error_shown</code> with <code>{ code, message }</code> on mount.</li>
+      <li><strong>Telemetry:</strong> add a Mixpanel event so we can detect how often this surface is reached in production.</li>
+    </ul>
+
+    <strong style="font-size:11px;text-transform:uppercase;letter-spacing:0.04em;color:var(--med)">Coordination checklist</strong>
+    <ul class="ai-checklist">
+      <li>UX: confirm the copy and approve a layout (or point at an existing Euclid screen we can reuse).</li>
+      <li>Euclid: if a generic <code>ErrorScreen</code> isn't already exported, file an issue to add one. Track the version bump.</li>
+      <li>Bridge contract: confirm the host expects <code>setResult({success:false, errorCode:'INVALID_REQUEST'})</code> on this path; document <code>errorCode</code> enum if more codes are needed.</li>
+      <li>Mobile app: the wallet shell ignores <code>/embed/*</code> routes today; verify mounting one doesn't trigger an unintended state change.</li>
+    </ul>
+  </div>
+</section>
+
+<section id="meta">
+  <h2>Meta</h2>
+  <div class="meta-grid">
+    <div class="item"><div class="label">Workstream</div><div class="value">nav-hygiene</div></div>
+    <div class="item"><div class="label">Linear</div><div class="value">TBD</div></div>
+    <div class="item"><div class="label">Owner</div><div class="value">TBD</div></div>
+    <div class="item"><div class="label">Branch</div><div class="value"><code>chore/nav-03-boot-decision</code></div></div>
+    <div class="item"><div class="label">PR</div><div class="value">TBD</div></div>
+    <div class="item"><div class="label">Depends on</div><div class="value">—</div></div>
+  </div>
+  <div class="note">
+    <strong>Spec correction needed.</strong> SPEC.html backlog row NAV-03 currently reads "Collapse ModeBoot + InitialRouteRedirect into one boot decision function." <code>InitialRouteRedirect</code> does not exist; the true problem is the two <code>useEffect</code> hooks inside ModeBoot. Update the SPEC row as part of this PR.
+  </div>
+</section>
+
+<section id="current-state">
+  <h2>Current State</h2>
+  <p>File: <code>packages/webview-app/src/components/ModeBoot.tsx</code></p>
+
+  <h3>Provider tree (App.tsx:90–96)</h3>
+  <pre><code>PasswordGate
+  BrowserRouter
+    OperatingModeProvider     // resolves mode + verificationRequest via bridge.getConfig
+      VerificationRequestProvider  // parses URL search params
+        SelfClientProvider
+          ModeBoot               // ← this file
+          Routes</code></pre>
+  <p>By the time ModeBoot mounts, <code>useOperatingMode()</code> returns <code>{ mode, verificationRequest, isReady }</code>. <code>isReady</code> flips true after the bridge response.</p>
+
+  <h3>Effect 1 — Fail-closed guard (lines 39–62)</h3>
+  <pre><code>useEffect(() =&gt; {
+  if (!isReady) return;
+  if (mode !== 'tunnel') return;
+  if (tunnelGuardFiredRef.current) return;
+  if (hasValidVerificationRequest(verificationRequest)) return;
+
+  tunnelGuardFiredRef.current = true;
+  // best-effort bridge calls, each wrapped in try/catch:
+  await lifecycle.setResult({ success: false, errorCode: 'INVALID_REQUEST', ... });
+  lifecycle.dismiss();
+}, [isReady, mode, verificationRequest]);</code></pre>
+
+  <h3>Effect 2 — Route sync (lines 64–79)</h3>
+  <pre><code>useEffect(() =&gt; {
+  if (!isReady) return;
+  const path = location.pathname;
+  if (mode === 'tunnel') {
+    if (!hasValidVerificationRequest(verificationRequest)) return; // guard handles it
+    if (!path.startsWith('/tunnel')) navigate('/tunnel/tour/1', { replace: true });
+    return;
+  }
+  if (path.startsWith('/tunnel')) navigate('/', { replace: true });
+}, [isReady, mode, verificationRequest, location.pathname]);</code></pre>
+
+  <h3>Why this is a problem</h3>
+  <ul class="scope">
+    <li><strong>Decision tree split.</strong> Reading the file you can't see the full boot decision in one place.</li>
+    <li><strong>No tests.</strong> <code>tests/screens/tunnel/tunnelFlowScreens.test.tsx</code> mocks <code>OperatingModeProvider</code> but doesn't cover ModeBoot's decision logic.</li>
+    <li><strong>Implicit ordering.</strong> Effect 1 must fire before Effect 2 sees an invalid tunnel request. Currently relies on React effect ordering; fragile under future provider changes.</li>
+  </ul>
+</section>
+
+<section id="scope">
+  <h2>Scope</h2>
+  <ul class="scope">
+    <li>Rename <code>ModeBoot</code> → <code>BootDecision</code> (per decision <code>q2</code>). Update the single import site in <code>App.tsx</code>.</li>
+    <li>Extract the decision logic into a pure function <code>decideBootRoute(state)</code> that returns a typed action (per decision <code>q1</code>):
+      <pre><code>type BootAction =
+  | { type: 'wait' }                          // not ready
+  | { type: 'fail-closed', error: ErrorCode } // tunnel + invalid request
+  | { type: 'navigate', to: string }          // route change required
+  | { type: 'noop' };                         // already on a valid path</code></pre>
+    </li>
+    <li>Make the function pure: takes <code>{ mode, verificationRequest, isReady, pathname }</code>, returns <code>BootAction</code>. No side effects.</li>
+    <li>Rewrite the component as a single <code>useEffect</code> that calls <code>decideBootRoute</code> and dispatches the action. On <code>fail-closed</code> in embed mode: navigate to <code>/embed/error</code> first, then call <code>lifecycle.setResult</code> + <code>lifecycle.dismiss</code> asynchronously (per decision <code>q3</code>; see <a href="#action-items">Action Items</a> for the screen spec).</li>
+    <li>Add unit tests covering every branch of the decision tree:
+      <ul>
+        <li><code>isReady === false</code> → wait</li>
+        <li><code>mode === 'wallet'</code>, path = <code>/</code> → noop</li>
+        <li><code>mode === 'wallet'</code>, path = <code>/tunnel/foo</code> → navigate to <code>/</code></li>
+        <li><code>mode === 'tunnel'</code>, valid request, path = <code>/</code> → navigate to <code>/tunnel/tour/1</code></li>
+        <li><code>mode === 'tunnel'</code>, valid request, path = <code>/tunnel/foo</code> → noop</li>
+        <li><code>mode === 'tunnel'</code>, invalid request → fail-closed (navigate to <code>/embed/error</code> + bridge calls)</li>
+      </ul>
+    </li>
+    <li>Register the new <code>/embed/error</code> route (depends on the Action-Items screen landing or a local stub).</li>
+    <li>Update SPEC.html backlog row NAV-03 to reflect the actual problem (no <code>InitialRouteRedirect</code>) and the rename.</li>
+  </ul>
+</section>
+
+<section id="out-of-scope">
+  <h2>Out of Scope</h2>
+  <ul class="scope">
+    <li><strong>No changes to <code>OperatingModeProvider</code> or <code>VerificationRequestProvider</code>.</strong> They feed the new function unchanged.</li>
+    <li><strong>No changes to per-screen redirects</strong> (e.g. <code>HomeScreen</code>'s "no documents → onboarding" redirect, <code>TunnelKycPendingScreen</code>'s demo-mode auto-advance). These are reactive, not boot-time.</li>
+    <li><strong>No mode-renaming.</strong> The <code>'tunnel'</code> literal stays until NAV-12.</li>
+    <li><strong>No route-namespace changes.</strong> <code>/tunnel/tour/1</code> remains until NAV-08.</li>
+  </ul>
+</section>
+
+<section id="required-files">
+  <h2>Required Files</h2>
+  <ul class="scope">
+    <li><code>packages/webview-app/src/components/ModeBoot.tsx</code> → renamed to <code>BootDecision.tsx</code> (use <code>git mv</code>)</li>
+    <li><code>packages/webview-app/src/components/bootDecision.ts</code> (new — pure function + types)</li>
+    <li><code>packages/webview-app/src/App.tsx</code> (update import + register <code>/embed/error</code> route)</li>
+    <li><code>packages/webview-app/src/screens/embed/EmbedErrorScreen.tsx</code> (new — local wrapper or Euclid pass-through per Action Items)</li>
+    <li><code>packages/webview-app/src/providers/OperatingModeProvider.tsx</code> (only if extracting <code>hasValidVerificationRequest</code> into a shared file)</li>
+    <li><code>packages/webview-app/tests/components/bootDecision.test.ts</code> (new — pure function tests, no React tree)</li>
+    <li><code>specs/projects/sdk/workstreams/nav-hygiene/SPEC.html</code> (correct NAV-03 backlog row + rename)</li>
+  </ul>
+</section>
+
+<section id="approach">
+  <h2>Approach</h2>
+  <h3>Step 1 — Extract the pure decision function</h3>
+  <p>Create <code>decideBootRoute</code> in a new <code>bootDecision.ts</code> alongside the (renamed) <code>BootDecision.tsx</code>:</p>
+  <pre><code>export type BootInputs = {
+  isReady: boolean;
+  mode: OperatingMode;
+  verificationRequest: VerificationRequestContext | null;
+  pathname: string;
+};
+
+export type BootAction =
+  | { type: 'wait' }
+  | { type: 'fail-closed', error: 'INVALID_REQUEST' }
+  | { type: 'navigate', to: string, replace: true }
+  | { type: 'noop' };
+
+export function decideBootRoute(input: BootInputs): BootAction { ... }</code></pre>
+
+  <h3>Step 2 — Rewrite <code>BootDecision</code> as a single effect</h3>
+  <p>The effect dispatches on the action. <strong>Fail-closed</strong> navigates to <code>/embed/error</code> first, then asynchronously calls the bridge so the user always has a stable surface while <code>dismiss()</code> resolves:</p>
+  <pre><code>useEffect(() =&gt; {
+  const action = decideBootRoute({ isReady, mode, verificationRequest, pathname: location.pathname });
+  switch (action.type) {
+    case 'wait':
+    case 'noop':
+      return;
+    case 'navigate':
+      navigate(action.to, { replace: action.replace });
+      return;
+    case 'fail-closed':
+      if (failClosedFiredRef.current) return;
+      failClosedFiredRef.current = true;
+      navigate('/embed/error', { replace: true, state: { code: action.error } });
+      lifecycle.setResult({ success: false, errorCode: action.error, errorMessage: 'Verification could not start.' }).catch(() =&gt; {});
+      lifecycle.dismiss({ reason: 'invalid_request' });
+      return;
+  }
+}, [isReady, mode, verificationRequest, location.pathname]);</code></pre>
+
+  <h3>Step 3 — Register <code>/embed/error</code></h3>
+  <p>Add the new route in <code>App.tsx</code>. If the Euclid screen from <a href="#action-items">Action Items</a> hasn't shipped, ship a local wrapper that reads <code>location.state.code</code> and renders the draft copy. Either way: this route must exist before NAV-03 ships, otherwise the fail-closed navigate dead-ends on the catch-all.</p>
+
+  <h3>Step 4 — Unit tests</h3>
+  <p>Six test cases mirroring the branches in <a href="#scope">Scope</a>. No React tree needed — the function is pure. Snapshot the new fail-closed branch: action shape must include the error code so the component can pass it through to the bridge call.</p>
+
+  <h3>Step 5 — Spec correction</h3>
+  <p>Update <code>SPEC.html</code> backlog row NAV-03 title from "Collapse ModeBoot + InitialRouteRedirect into one boot decision function" to "<code>BootDecision</code> — single documented boot decision function with fail-closed UX" and rewrite the notes accordingly.</p>
+</section>
+
+<section id="validation">
+  <h2>Validation</h2>
+  <ul class="scope">
+    <li><code>cd packages/webview-app &amp;&amp; yarn test components/bootDecision</code> — all 6 unit tests pass.</li>
+    <li><code>yarn types</code> — clean.</li>
+    <li><code>yarn build</code> — clean.</li>
+    <li>Manual: launch the dev server with no <code>?mode=</code> param → lands on <code>/</code> (self-app mode).</li>
+    <li>Manual: launch with <code>?mode=tunnel</code> + valid verification request → lands on <code>/tunnel/tour/1</code>.</li>
+    <li>Manual: launch with <code>?mode=tunnel</code> + malformed request → <em>(1)</em> the page renders <code>/embed/error</code> with the generic copy; <em>(2)</em> bridge receives <code>setResult({success:false, errorCode:'INVALID_REQUEST'})</code> + <code>dismiss</code>. Confirm via bridge inspector / log.</li>
+    <li><code>grep -rn "ModeBoot" packages/webview-app/src</code> — zero hits (rename complete).</li>
+  </ul>
+</section>
+
+<section id="open-questions">
+  <h2>Open Questions</h2>
+  <p style="color:var(--muted);font-size:13px;margin-top:0">Answers persist to <code>localStorage</code>. Aggregate view in <a href="../SPEC.html#open-questions">SPEC.html</a>.</p>
+  <div id="oq-container"></div>
+</section>
+
+<section id="hand-off">
+  <h2>Hand-off</h2>
+  <ul class="scope">
+    <li>NAV-03 is independent — does not block or get blocked by other items.</li>
+    <li><span class="nav-link">NAV-13</span> (ModeRoute wrapper) reads similar inputs (mode, pathname). The decision function written here can be reused by ModeRoute to enforce mode-aware route access.</li>
+    <li><span class="nav-link">NAV-12</span> will rename <code>'tunnel'</code> → <code>'embed'</code> in the OperatingMode literal; the decision function will need a one-line update at that time.</li>
+  </ul>
+</section>
+
+</main>
+</div>
+
+<script src="./_open-questions.js"></script>
+<script>
+  window.NavHygieneOQ.renderQuestionsForPlan('NAV-03', document.getElementById('oq-container'));
+
+  const sections = document.querySelectorAll('section[id]');
+  const tocLinks = document.querySelectorAll('nav.toc a[href^="#"]');
+  const obs = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (entry.isIntersecting) {
+        tocLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === `#${entry.target.id}`));
+      }
+    }
+  }, { rootMargin: '-50% 0px -45% 0px' });
+  sections.forEach(s => obs.observe(s));
+</script>
+
+</body>
+</html>

@@ -1,0 +1,721 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>WIA-17 · Architecture deep-dive: target topology + open decisions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Allura&family=Lato:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,500;0,600;0,700;1,500&display=swap" />
+<style>
+  :root {
+    /* Palette · WIA-17 trial v3 */
+    --p-yellow: #FCE694;
+    --p-blue:   #067BC2;
+    --p-green:  #46AA44;
+    --p-ice:    #D6EDFF;
+    --p-red:    #F24236;
+
+    /* Neutrals (warm / coffee-toned) */
+    --bg:           #FFFDF6;
+    --surface:      #FFFFFF;
+    --surface-alt:  #F5F3EC;
+    --border:       #DDD7CD;
+    --border-soft:  #ECE7DE;
+    --text:         #2A1F18;
+    --muted:        #786C60;
+
+    /* Accent (saturated blue, AA contrast on white) */
+    --accent:       var(--p-blue);
+    --accent-soft:  var(--p-ice);
+    --accent-chip:  var(--p-blue);
+
+    /* Done = real green */
+    --done:         var(--p-green);
+    --done-soft:    #DCF3DB;
+
+    /* Danger = real red */
+    --high:         var(--p-red);
+    --high-soft:    #FDDDDA;
+
+    /* Warning = yellow */
+    --med:          #8A6A1F;
+    --med-soft:     var(--p-yellow);
+    --med-chip:     var(--p-yellow);
+
+    /* Graph surface — distinct from the white section, labels match this so
+       they cleanly erase the arrow / cluster border behind them. */
+    --graph-bg:     #F5F3EC;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font: 14.5px/1.6 "Lato", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    font-weight: 400;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: "Lora", Georgia, "Times New Roman", serif;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+  }
+  code, pre, kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.9em; }
+  code { background: var(--surface-alt); padding: 1px 5px; border-radius: 4px; border: 1px solid var(--border-soft); }
+  pre { background: var(--surface-alt); padding: 12px 14px; border-radius: 6px; border: 1px solid var(--border-soft); overflow: auto; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  header.topbar { position: sticky; top: 0; z-index: 100; background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; will-change: transform; box-shadow: 0 1px 0 rgba(0,0,0,0.02); }
+  header h1 { margin: 0; font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
+  .pill { font-size: 11px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface-alt); }
+  .pill.active { color: var(--accent); background: var(--accent-soft); border-color: var(--accent); }
+  .pill.done   { color: var(--done);   background: var(--done-soft);   border-color: var(--done); }
+  .pill.warn   { color: var(--high);   background: var(--high-soft);   border-color: var(--high); }
+  .spacer { flex: 1; }
+
+  .layout { display: grid; grid-template-columns: 160px minmax(0, 1fr); gap: 24px; max-width: 1180px; margin: 0 auto; padding: 24px; }
+  nav.toc { position: sticky; top: 64px; align-self: start; max-height: calc(100vh - 80px); overflow-y: auto; font-size: 12.5px; }
+  nav.toc h4 { margin: 12px 0 4px 0; font-size: 10px; color: var(--muted);  letter-spacing: 0.04em; }
+  nav.toc h4:first-child { margin-top: 0; }
+  nav.toc a { display: block; padding: 3px 6px; border-radius: 4px; color: var(--text); }
+  nav.toc a:hover { background: var(--surface-alt); text-decoration: none; }
+
+  main { min-width: 0; }
+  main section { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 18px 22px; margin-bottom: 16px; }
+  main h2 { margin: 0 0 12px 0; font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
+  main h3 { margin: 16px 0 6px 0; font-size: 11px; color: var(--muted);  letter-spacing: 0.08em; font-family: "Lato", -apple-system, sans-serif; font-weight: 700; }
+  main p { margin: 6px 0 10px 0; }
+  main ul, main ol { margin: 6px 0 10px 18px; padding: 0; }
+  main li { margin: 3px 0; }
+
+  table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 13px; }
+  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--border-soft); vertical-align: top; }
+  th { background: var(--surface-alt); font-weight: 600; }
+
+  .callout { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 10px 14px; border-radius: 0 6px 6px 0; margin: 10px 0; }
+  .callout.warn { border-left-color: var(--high); background: var(--high-soft); }
+  .callout.note { border-left-color: var(--med); background: var(--med-soft); }
+  .callout.win  { border-left-color: var(--done); background: var(--done-soft); }
+
+  /* Diagram wrapper has no chrome — caption sits on the parent surface;
+     only the rendered SVG carries the tinted graph background. */
+  .diagram {
+    margin: 14px 0;
+  }
+  .diagram .label {
+    font-size: 11.5px;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    text-align: left;
+    padding: 0 2px 6px;
+    margin: 0;
+  }
+  .diagram pre.mermaid,
+  .oq-option-diagram pre.mermaid {
+    background: var(--graph-bg) !important;
+    border: 1px solid var(--border-soft) !important;
+    padding: 6px 8px !important;
+    border-radius: 6px !important;
+    margin: 0 !important;
+    text-align: center;
+    overflow-x: auto;
+    /* Snug to the SVG: mermaid sets the pre's content area to fit the SVG */
+    display: block;
+  }
+  .mermaid { font-family: "Lato", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+
+  /* Open Question card content sits flat inside the parent <section>'s
+     own box — no extra background, border, or padding. The section IS
+     the card. */
+  .oq-card {
+    background: transparent;
+    border: 0;
+    padding: 0;
+    margin: 0;
+  }
+  .oq-card .oq-head {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+  .oq-card .oq-id {
+    font-family: ui-monospace, monospace; font-size: 10px;
+    color: var(--muted); padding: 2px 6px;
+    background: var(--surface-alt); border-radius: 4px;
+  }
+  .oq-card .oq-impact {
+    font-size: 10px;  letter-spacing: 0.04em;
+    padding: 2px 6px; border-radius: 4px;
+    background: var(--med-soft); color: var(--med);
+  }
+  .oq-card .oq-question {
+    font-family: "Lora", Georgia, serif;
+    font-weight: 600;
+    font-size: 17px;
+    line-height: 1.35;
+    letter-spacing: -0.005em;
+    margin: 0;
+  }
+  .oq-card .oq-context {
+    font-size: 12.5px;
+    color: var(--muted);
+    margin: 8px 0 12px;
+    padding: 0;
+  }
+  .oq-card .oq-context p { margin: 0 0 6px; }
+  .oq-card .oq-context p:last-child { margin-bottom: 0; }
+  .oq-card .oq-context strong { color: var(--text); font-weight: 600; }
+
+  .oq-card .oq-status {
+    font-size: 10px;  letter-spacing: 0.06em;
+    padding: 2px 8px; border-radius: 4px; font-weight: 600;
+    margin-left: auto;
+  }
+  .oq-card.status-answered .oq-status  { background: var(--done-soft); color: var(--done); }
+  .oq-card.status-open .oq-status      { background: var(--surface-alt); color: var(--muted); border: 1px solid var(--border); }
+  .oq-card.status-needs-text .oq-status { background: var(--med-soft); color: var(--med); }
+
+  .oq-options { display: grid; gap: 8px; }
+  /* Option is just a radio + text — no card chrome. Selected state still
+     paints a soft accent background so the user sees their pick clearly.
+     The graph inside an option keeps its own tinted background. */
+  .oq-option {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 8px 10px; border-radius: 6px;
+    border: 1px solid var(--border-soft);
+    background: transparent;
+    cursor: pointer;
+    transition: background .12s, border-color .12s;
+  }
+  .oq-option:hover { background: var(--accent-soft); border-color: var(--accent); }
+  .oq-option.selected {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    box-shadow: inset 3px 0 0 var(--accent);
+  }
+  .oq-option input[type="radio"] { margin-top: 3px; cursor: pointer; flex-shrink: 0; }
+  .oq-option-body { flex: 1; min-width: 0; }
+  .oq-option .option-label {
+    font-weight: 600;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 4px;
+  }
+  .oq-option .option-note { color: var(--text); font-size: 12.5px; }
+  .oq-option.oq-option-other {
+    color: var(--muted);
+  }
+  .oq-rec-chip {
+    font: inherit;
+    color: var(--accent);
+    background: transparent;
+    border: 0;
+    padding: 0;
+    letter-spacing: normal;
+  }
+  .oq-rec-chip::before {
+    content: "·";
+    color: var(--muted);
+    margin-right: 6px;
+    font-weight: 400;
+  }
+  .oq-rec-because {
+    margin-top: 8px;
+    padding-top: 6px;
+    border-top: 1px dashed var(--accent);
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: 500;
+  }
+  .oq-option-diagram {
+    margin-top: 10px;
+    /* No chrome — only the inner pre.mermaid (styled higher up) carries the graph-bg */
+  }
+
+  .oq-notes { margin-top: 12px; }
+  .oq-notes-required .oq-notes-label { color: var(--accent); font-weight: 600; }
+  .oq-notes-required .oq-notes-input { border-color: var(--accent); background: var(--accent-soft); }
+  .oq-notes-label {
+    display: block;
+    font-size: 11px;
+    
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .oq-notes-input {
+    width: 100%;
+    min-height: 56px;
+    padding: 8px 10px;
+    font: inherit;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: 6px;
+    resize: vertical;
+    box-sizing: border-box;
+    font-family: inherit;
+  }
+  .oq-notes-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-soft);
+  }
+  .oq-notes-input::placeholder { color: var(--muted); opacity: 0.7; }
+
+  .oq-actions { margin-top: 10px; display: flex; gap: 8px; justify-content: flex-end; }
+  .oq-clear-btn {
+    font: inherit; font-size: 11px; color: var(--muted);
+    padding: 4px 10px; border-radius: 4px;
+    background: transparent; border: 1px solid var(--border);
+    cursor: pointer;
+  }
+  .oq-clear-btn:hover { color: var(--high); border-color: var(--high); background: var(--high-soft); }
+
+  .oq-summary-wrap {
+    position: sticky; top: 56px; z-index: 50;
+    display: flex; justify-content: center;
+    margin-bottom: 16px;
+    pointer-events: none;
+  }
+  .oq-summary {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 5px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    pointer-events: auto;
+    font-size: 12px;
+    line-height: 1;
+  }
+  .oq-summary-count {
+    font-size: 12px; font-weight: 600; color: var(--text);
+    white-space: nowrap;
+  }
+  .oq-summary-bar {
+    width: 100px; height: 5px;
+    background: var(--surface-alt);
+    border-radius: 999px; overflow: hidden;
+    border: 1px solid var(--border-soft);
+  }
+  .oq-summary-fill {
+    display: block; height: 100%;
+    background: var(--accent);
+    transition: width .25s;
+  }
+  .oq-icon-btn {
+    width: 22px; height: 22px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 999px;
+    background: var(--surface-alt);
+    color: var(--accent);
+    border: 1px solid var(--border-soft);
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+  }
+  /* First icon button gets extra left margin to push the icon group right
+     and detach it visually from the progress bar. */
+  #oq-export-btn { margin-left: 10px; }
+  .oq-icon-btn svg { display: block; }
+  .oq-icon-btn:hover { background: var(--accent); color: white; border-color: var(--accent); }
+  .oq-icon-btn-danger { color: var(--muted); }
+  .oq-icon-btn-danger:hover { background: var(--high); border-color: var(--high); color: white; }
+
+  .page-signature {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 8px 24px 24px;
+    text-align: right;
+    color: var(--muted);
+    user-select: none;
+  }
+  .page-signature .by {
+    font-family: "Lora", Georgia, serif;
+    font-style: italic;
+    font-size: 14px;
+    margin-right: 10px;
+    vertical-align: middle;
+  }
+  .page-signature .name {
+    font-family: "Allura", cursive;
+    font-size: 34px;
+    line-height: 1;
+    vertical-align: middle;
+  }
+  .legend {
+    font-size: 12px;
+    color: var(--muted);
+    background: var(--surface-alt);
+    border: 1px solid var(--border-soft);
+    border-radius: 6px;
+    padding: 10px 16px;
+    margin: 8px 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 28px;
+  }
+  .legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+  }
+  .legend .swatch {
+    display: inline-block;
+    width: 12px; height: 12px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <h1>WIA-17 · Architecture deep-dive</h1>
+  <span class="pill active">Decision pack</span>
+  <span class="pill">2026-05-26</span>
+  <span class="spacer"></span>
+  <div>
+    <a href="./WIA-17-path-a-migration.html">↑ WIA-17 plan</a>
+    &nbsp;·&nbsp;
+    <a href="../SPEC.html">↑↑ SPEC</a>
+  </div>
+</header>
+
+<div class="layout">
+
+<nav class="toc">
+  <h4>Topology</h4>
+  <a href="#today">Today: three implementations</a>
+  <a href="#target">Target: one source of truth</a>
+  <a href="#full-system">Full system view</a>
+
+  <h4>Open decisions</h4>
+  <a href="#oq-1">OQ-1 · Provider distribution</a>
+  <a href="#oq-2">OQ-2 · MOD-handler delivery</a>
+  <a href="#oq-3">OQ-3 · iOS XCFramework variant</a>
+  <a href="#oq-4">OQ-4 · Native-shell consolidation</a>
+  <a href="#oq-5">OQ-5 · Envelope drift</a>
+  <a href="#oq-6">OQ-6 · useKmpBridge flag</a>
+  <a href="#oq-7">OQ-7 · Documents androidMain</a>
+  <a href="#oq-8">OQ-8 · KMP iOS cinterop</a>
+
+  <h4>Out of scope</h4>
+  <a href="#non-questions">Settled, not asking</a>
+</nav>
+
+<main>
+
+<div class="oq-summary-wrap">
+  <div id="oq-summary" class="oq-summary"></div>
+</div>
+
+<section id="intro">
+  <h2>What this page is</h2>
+  <p>
+    This is the technical-decisions companion to the <a href="./WIA-17-path-a-migration.html">WIA-17 plan</a>.
+    The plan lists <em>what</em> ships per domain; this page argues the <em>shape</em> of the SDK once it
+    does, with diagrams and a recommended answer for every open architectural question. Your selections
+    are saved locally in this browser — click <em>Export as markdown</em> when ready to commit them.
+  </p>
+  <p class="callout win">
+    <strong>The frame.</strong> Today the same bridge protocol is implemented in <strong>three places</strong>:
+    KMP shared, the RN-side TS handlers, and the native-shells-lite Kotlin/Swift packages. Every protocol
+    change has to land three times. Path A retires one of them (RN). The CTO call captured here is to
+    retire the other one too (native-shells-lite) once Path A is stable, leaving <strong>kmp-sdk as the
+    single bridge implementation</strong> for every shell.
+  </p>
+  <div class="legend">
+    <span class="legend-item"><span class="swatch" style="background:var(--high)"></span>red fill = duplicate / drift risk</span>
+    <span class="legend-item"><span class="swatch" style="background:var(--done)"></span>green fill = single source of truth</span>
+    <span class="legend-item"><span class="swatch" style="background:#FFFFFF;border:1px solid var(--border-soft)"></span>plain = thin shell / glue</span>
+  </div>
+</section>
+
+<section id="today">
+  <h2>Today: three parallel bridge implementations</h2>
+  <p>
+    Every consumer (Self app RN, the external native-Kotlin partner, the OSS native-shell-ios sample)
+    speaks the same JSON bridge protocol to the same WebView. But each one ships its own
+    <code>MessageRouter</code> + handlers. Drift between them shows up as bugs the WebView can't tell
+    apart (e.g. KMP returns <code>DOMAIN_NOT_FOUND</code> where TS returns <code>HANDLER_NOT_FOUND</code>).
+  </p>
+  <div class="diagram">
+    <div class="label">Current state · 3 bridge implementations · 1 protocol</div>
+    <pre class="mermaid">
+flowchart TB
+  WV([WebView])
+
+  subgraph RN[packages/rn-sdk]
+    direction TB
+    RN_R[TS MessageRouter]
+    RN_H[8x TS Handlers]
+    RN_N[RN native modules]
+    RN_R --> RN_H --> RN_N
+  end
+
+  subgraph NS[packages/native-shell-lite]
+    direction TB
+    NS_R[Kotlin/Swift Router]
+    NS_H[Kotlin/Swift Handlers]
+    NS_OS[OS APIs]
+    NS_R --> NS_H --> NS_OS
+  end
+
+  subgraph KMP[packages/kmp-sdk]
+    direction TB
+    KMP_R[KMP MessageRouter]
+    KMP_H[KMP BridgeHandlers]
+    KMP_P[Provider Registry]
+    KMP_R --> KMP_H --> KMP_P
+  end
+
+  WV -. bridge JSON .-> RN_R
+  WV -. bridge JSON .-> NS_R
+  WV -. bridge JSON .-> KMP_R
+
+  classDef dup fill:#F24236,stroke:#DDD7CD,stroke-width:1px,color:#FFFFFF
+  classDef plain fill:#FFFFFF,stroke:#DDD7CD,stroke-width:1px,color:#2A1F18
+  class RN_R,NS_R,KMP_R dup
+  class WV,RN_H,RN_N,NS_H,NS_OS,KMP_H,KMP_P plain
+    </pre>
+  </div>
+  <p class="callout warn">
+    Every bridge protocol change must be made <strong>three times</strong>. Every error-vocabulary tweak,
+    every envelope-shape adjustment, every new method. The "WebView can't tell which shell" invariant in
+    <a href="../SPEC.html#invariants">SPEC §Invariants</a> is enforced by code review, not by construction.
+  </p>
+</section>
+
+<section id="target">
+  <h2>Target: one bridge implementation, three thin shells</h2>
+  <p>
+    Path A collapses RN onto KMP. The follow-on (OQ-4) collapses native-shells-lite onto KMP too. End
+    state: <strong>one MessageRouter, one set of handlers, one provider registry</strong>, with
+    platform-specific provider impls injected at boot per host.
+  </p>
+  <div class="diagram">
+    <div class="label">Target state · 1 bridge implementation · platform providers via registry</div>
+    <pre class="mermaid">
+flowchart TB
+  WV([WebView])
+
+  subgraph SHELL_RN[rn-sdk SelfBridgeModule]
+    direction TB
+    RN_GLUE[JS native marshalling]
+  end
+  subgraph SHELL_KOT[native-shell-android]
+    direction TB
+    KOT_GLUE[Activity wraps WebView]
+  end
+  subgraph SHELL_IOS[native-shell-ios]
+    direction TB
+    IOS_GLUE[ViewController wraps WKWebView]
+  end
+
+  subgraph KMP[kmp-sdk single bridge implementation]
+    direction TB
+    KMP_R[MessageRouter]
+    KMP_H[All BridgeHandlers]
+    REG[SdkProviderRegistry]
+    KMP_R --> KMP_H --> REG
+  end
+
+  subgraph PROV[Per-platform providers]
+    direction LR
+    AND[Android impls in KMP]
+    SWIFT[iOS impls in self-sdk-swift]
+  end
+
+  WV -. bridge JSON .-> RN_GLUE
+  WV -. bridge JSON .-> KOT_GLUE
+  WV -. bridge JSON .-> IOS_GLUE
+  RN_GLUE --> KMP_R
+  KOT_GLUE --> KMP_R
+  IOS_GLUE --> KMP_R
+  REG --> AND
+  REG --> SWIFT
+
+  classDef src fill:#46AA44,stroke:#DDD7CD,stroke-width:1px,color:#FFFFFF
+  classDef plain fill:#FFFFFF,stroke:#DDD7CD,stroke-width:1px,color:#2A1F18
+  class KMP_R,KMP_H src
+  class WV,RN_GLUE,KOT_GLUE,IOS_GLUE,REG,AND,SWIFT plain
+    </pre>
+  </div>
+  <p class="callout win">
+    <strong>What this buys.</strong> Bridge protocol change = one PR in <code>kmp-sdk</code>. Error
+    vocabulary = one file. The invariant becomes structural: the WebView <em>can't</em> tell which shell
+    it's in because they all share the same router class. Drift becomes a compile error, not a code
+    review concern.
+  </p>
+</section>
+
+<section id="full-system">
+  <h2>Full system view (consumers + shells + providers)</h2>
+  <p>
+    A wider lens including all known consumers — Self app (RN), the external partner (native Kotlin),
+    OSS sample consumers (Swift), and future third-party RN apps.
+  </p>
+  <div class="diagram">
+    <div class="label">Three consumer surfaces · all bridge to the same KMP core</div>
+    <pre class="mermaid">
+flowchart LR
+  subgraph CONSUMERS[Consumers]
+    direction TB
+    SELF[Self app]
+    PARTNER[External partner Kotlin]
+    THIRD[3rd-party RN apps]
+    SAMPLE[OSS Swift sample]
+  end
+
+  subgraph PACKAGES[Packages]
+    direction TB
+    RN_SDK[packages/rn-sdk]
+    NS_AND[packages/native-shell-android]
+    NS_IOS[packages/native-shell-ios]
+  end
+
+  subgraph CORE[Single bridge core]
+    direction TB
+    KMP[packages/kmp-sdk]
+    SWIFT[packages/self-sdk-swift]
+  end
+
+  SELF --> RN_SDK
+  THIRD --> RN_SDK
+  PARTNER --> NS_AND
+  SAMPLE --> NS_IOS
+
+  RN_SDK --> KMP
+  NS_AND --> KMP
+  NS_IOS --> KMP
+  KMP --> SWIFT
+
+  classDef core fill:#46AA44,stroke:#DDD7CD,stroke-width:1px,color:#FFFFFF
+  classDef plain fill:#FFFFFF,stroke:#DDD7CD,stroke-width:1px,color:#2A1F18
+  class KMP,SWIFT core
+  class SELF,PARTNER,THIRD,SAMPLE,RN_SDK,NS_AND,NS_IOS plain
+    </pre>
+  </div>
+</section>
+
+<!-- =========== OPEN QUESTIONS =========== -->
+
+<section id="oq-1">
+  <div data-oq-slot="oq-1"></div>
+</section>
+
+<section id="oq-2">
+  <div data-oq-slot="oq-2"></div>
+</section>
+
+<section id="oq-3">
+  <div data-oq-slot="oq-3"></div>
+</section>
+
+<section id="oq-4">
+  <div data-oq-slot="oq-4"></div>
+</section>
+
+<section id="oq-5">
+  <div data-oq-slot="oq-5"></div>
+</section>
+
+<section id="oq-6">
+  <div data-oq-slot="oq-6"></div>
+</section>
+
+<section id="oq-7">
+  <div data-oq-slot="oq-7"></div>
+</section>
+
+<section id="oq-8">
+  <div data-oq-slot="oq-8"></div>
+</section>
+
+<section id="non-questions">
+  <h2>Settled: not asking</h2>
+  <p>
+    The following are <em>not</em> open questions. The plan treats them as decided.
+  </p>
+  <ul>
+    <li><strong>Path A vs Path B</strong> · Path A confirmed by PR #2108's smoke pass and the resulting merge.</li>
+    <li><strong>Per-domain PRs vs one big sweep</strong> · per-domain. Smaller revert windows; one of the durable preferences captured in <code>CLAUDE.md</code>.</li>
+    <li><strong>TS handler retirement timing</strong> · same PR as each domain's migration, not a sweep at the end. Matches the "delete legacy in-PR" preference.</li>
+    <li><strong>SD-06 for #1–#4</strong> · not blocking; <code>mavenLocal()</code> sufficient for the rollout.</li>
+    <li><strong>Hosted URL vs embedded bundle for Self app v1</strong> · embedded bundle, per <a href="../SPEC-HOSTED-LOADING.html">SPEC-HOSTED-LOADING</a>. Hosted is a post-v1 evolution.</li>
+    <li><strong>Bridge protocol version</strong> · stays at 1 throughout this rollout. Envelope shape changes (OQ-5) are non-version-breaking.</li>
+  </ul>
+</section>
+
+</main>
+</div>
+
+<div class="page-signature"><span class="name">Michelangelo</span></div>
+
+<script src="./WIA-17-open-questions.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+  // startOnLoad: false — open-questions.js drives the render + post-process
+  // (cluster label repositioning, viewBox expansion) for both static and
+  // dynamic diagrams uniformly.
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: 'base',
+    securityLevel: 'loose',
+    flowchart: { curve: 'basis', padding: 18, nodeSpacing: 40, rankSpacing: 60, htmlLabels: true, useMaxWidth: true },
+    themeCSS: `
+      .cluster rect { stroke-dasharray: 3 3 !important; stroke-width: 1px !important; rx: 8px !important; ry: 8px !important; }
+      .edgePath .path { stroke-width: 1.5px !important; }
+      .arrowheadPath { fill: #2A1F18 !important; }
+      /* Edge labels overlay arrows: graph-bg patch erases the line under text */
+      .edgeLabels { z-index: 2; }
+      .edgeLabel { background: transparent !important; padding: 0 !important; text-transform: none !important; }
+      .edgeLabel foreignObject > div {
+        background: #F5F3EC !important;
+        padding: 0 4px !important;
+        display: inline-block !important;
+        text-transform: none !important;
+      }
+      /* Suppress the empty edge-label rect that mermaid renders for every edge
+         (visible as a small fill patch at the SVG origin before layout). */
+      .edgeLabel rect { fill: transparent !important; stroke: none !important; }
+      .cluster-label foreignObject > div {
+        font-size: 12.5px !important;
+        color: #786C60 !important;
+        font-weight: 400 !important;
+        text-align: left !important;
+        text-transform: none !important;
+        background: #F5F3EC !important;
+        padding: 0 5px !important;
+        display: inline-block !important;
+      }
+      .nodeLabel, .edgeLabel, foreignObject > div { text-transform: none !important; }
+    `,
+    themeVariables: {
+      fontFamily: '"Lato", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      fontSize: '13px',
+      primaryColor:       '#FFFFFF',
+      primaryBorderColor: '#ECE7DE',
+      primaryTextColor:   '#2A1F18',
+      lineColor:          '#2A1F18',
+      secondaryColor:     '#F5F3EC',
+      tertiaryColor:      '#F5F3EC',
+      mainBkg:            '#FFFFFF',
+      clusterBkg:         'transparent',
+      clusterBorder:      '#DDD7CD',
+      edgeLabelBackground:'#F5F3EC'
+    }
+  });
+</script>
+
+</body>
+</html>

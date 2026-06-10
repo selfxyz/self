@@ -30,7 +30,7 @@ export const CountryPickerScreen: React.FC = () => {
       const docTypes = countryData[countryCode];
       if (docTypes && docTypes.length > 0) {
         analytics.trackEvent('document_country_selected', { countryCode });
-        navigate('/onboarding/id-type', {
+        navigate('/pick-id-type', {
           state: { countryCode, documentTypes: docTypes },
         });
       } else {

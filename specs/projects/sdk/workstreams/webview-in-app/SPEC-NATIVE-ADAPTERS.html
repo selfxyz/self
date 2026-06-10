@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SPEC — Native Adapters</title>
+<style>
+  :root {
+    --bg: #fafbfc;
+    --surface: #ffffff;
+    --surface-alt: #f6f8fa;
+    --border: #d1d9e0;
+    --border-soft: #e1e4e8;
+    --text: #1f2328;
+    --muted: #656d76;
+    --accent: #0969da;
+    --accent-soft: #ddf4ff;
+    --high: #cf222e;
+    --high-soft: #ffebe9;
+    --med: #9a6700;
+    --med-soft: #fff8c5;
+    --done: #1a7f37;
+    --done-soft: #dafbe1;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; color: var(--text); background: var(--bg); }
+  code, pre, kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.9em; }
+  code { background: var(--surface-alt); padding: 1px 5px; border-radius: 4px; border: 1px solid var(--border-soft); }
+  pre { background: var(--surface-alt); padding: 12px 14px; border-radius: 6px; border: 1px solid var(--border-soft); overflow: auto; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  header.topbar { position: sticky; top: 0; z-index: 100; background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  header h1 { margin: 0; font-size: 16px; font-weight: 600; }
+  .pill { font-size: 11px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface-alt); }
+  .pill.active { color: var(--accent); background: var(--accent-soft); border-color: var(--accent); }
+  .pill.progress { color: var(--accent); background: var(--accent-soft); border-color: var(--accent); }
+  .spacer { flex: 1; }
+  .layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 32px; max-width: 1100px; margin: 0 auto; padding: 24px; }
+  nav.toc { position: sticky; top: 64px; align-self: start; font-size: 13px; }
+  nav.toc h4 { margin: 0 0 6px 0; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  nav.toc a { display: block; padding: 4px 6px; border-radius: 4px; color: var(--text); }
+  nav.toc a:hover { background: var(--surface-alt); text-decoration: none; }
+  main { min-width: 0; }
+  main section { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 18px 22px; margin-bottom: 16px; }
+  main h2 { margin: 0 0 10px 0; font-size: 16px; }
+  main h3 { margin: 16px 0 6px 0; font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  main p { margin: 6px 0 10px 0; }
+  main ul, main ol { margin: 6px 0 10px 18px; padding: 0; }
+  main li { margin: 3px 0; }
+  table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 13px; }
+  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--border-soft); vertical-align: top; }
+  th { background: var(--surface-alt); font-weight: 600; }
+  .status { font-size: 11px; padding: 2px 8px; border-radius: 999px; display: inline-block; white-space: nowrap; border: 1px solid var(--border); background: var(--surface-alt); color: var(--muted); }
+  .status.done { color: var(--done); background: var(--done-soft); border-color: var(--done); }
+  .status.progress { color: var(--accent); background: var(--accent-soft); border-color: var(--accent); }
+  .status.pending { color: var(--muted); }
+  .status.superseded { color: var(--med); background: var(--med-soft); border-color: var(--med); }
+  .status.blocked { color: var(--high); background: var(--high-soft); border-color: var(--high); }
+  .callout { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 8px 12px; border-radius: 0 6px 6px 0; margin: 10px 0; }
+  .callout.warn { border-left-color: var(--high); background: var(--high-soft); }
+  .callout.note { border-left-color: var(--med); background: var(--med-soft); }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <h1>SPEC — Native Adapters</h1>
+  <span class="pill progress">In progress · Path A (WIA-17)</span>
+  <span class="pill">2026-05-26</span>
+  <span class="spacer"></span>
+  <div>
+    <a href="./SPEC.html">↑ WebView-in-App</a>
+    &nbsp;·&nbsp;
+    <a href="./plans/WIA-17-path-a-migration.html">WIA-17 plan</a>
+    &nbsp;·&nbsp;
+    <a href="./plans/PATH-A-rn-wraps-kmp.html">Path A prototype</a>
+  </div>
+</header>
+
+<div class="layout">
+
+<nav class="toc">
+  <h4>On this page</h4>
+  <a href="#scope">Scope</a>
+  <a href="#handler-map">Handler map</a>
+  <a href="#architecture">Architecture</a>
+  <a href="#decisions">Decisions</a>
+  <a href="#ios-scaffolding">iOS scaffolding</a>
+  <a href="#per-handler">Per-handler notes</a>
+  <a href="#invariants">Invariants</a>
+  <a href="#backlog">Backlog</a>
+  <a href="#gaps">Known gaps</a>
+  <a href="#validation">Validation</a>
+</nav>
+
+<main>
+
+<section id="scope">
+  <h2>Scope</h2>
+  <p>
+    The RN app already owns the hardware: NFC, MRZ optical capture, QR scanning, keychain, biometric
+    prompts, and a document database. None of those modules speak the bridge protocol today; they ship
+    bespoke signatures with positional args (iOS) or option objects (Android) and return raw promises
+    rather than the bridge's success/error envelope.
+  </p>
+  <p>
+    This spec defines how each bridge domain that requires a native capability is wired in the RN host.
+    It covers <code>WIA-04</code> (<code>secureStorage</code>), <code>WIA-05</code> (<code>crypto</code>),
+    <code>WIA-06</code> (<code>nfc</code>), <code>WIA-07</code> (<code>camera</code>/MRZ),
+    <code>WIA-08</code> (<code>biometrics</code>), <code>WIA-15</code> (<code>documents</code>), and is
+    being migrated under <a href="./plans/WIA-17-path-a-migration.html">WIA-17</a> to the Path A pattern
+    (<code>rn-sdk</code> wraps <code>kmp-sdk</code>).
+  </p>
+
+  <h3>In scope</h3>
+  <ul>
+    <li>Mapping each bridge domain to the KMP <code>*BridgeHandler</code> and the RN-side provider that
+      satisfies it.</li>
+    <li>The signature, response, and error normalizations each handler must perform — inherited from KMP.</li>
+    <li>Per-platform notes where iOS and Android providers differ.</li>
+    <li>iOS Swift-provider scaffolding (cinterop disabled — providers via <code>IosProviderRegistry</code>).</li>
+  </ul>
+
+  <h3>Out of scope</h3>
+  <ul>
+    <li>The router that dispatches inbound messages to these handlers — see
+      <a href="./SPEC-BRIDGE-HOST.html">SPEC-BRIDGE-HOST</a>.</li>
+    <li>The bundle / URL the WebView loads from — see <a href="./SPEC-HOSTED-LOADING.html">SPEC-HOSTED-LOADING</a>.</li>
+    <li>Sentry integration on either side — see <a href="./SPEC-OBSERVABILITY.html">SPEC-OBSERVABILITY</a>.</li>
+    <li>New bridge domains or protocol changes. The 10 existing domains are fixed; this spec only wires
+      their handlers.</li>
+  </ul>
+</section>
+
+<section id="handler-map">
+  <h2>Handler map</h2>
+  <p>
+    Each bridge domain is handled by a KMP <code>*BridgeHandler</code> registered into
+    <code>MessageRouter</code> from <code>SelfBridgeModule</code>. The RN-side "wrapper" effort is
+    consumer-supplied <strong>providers</strong> plugged into the KMP <code>SdkProviderRegistry</code>,
+    not new TS handlers or new RN-only native modules.
+  </p>
+  <table>
+    <thead><tr><th>Bridge domain</th><th>KMP handler</th><th>RN-side provider implementation</th></tr></thead>
+    <tbody>
+      <tr><td><code>secureStorage</code></td><td><code>SecureStorageBridgeHandler</code></td><td>Android: <code>EncryptedSharedPreferencesProvider</code> (already in KMP <code>androidMain</code>). iOS: Swift <code>SecureStorageProvider</code> wrapping <code>react-native-keychain</code>.</td></tr>
+      <tr><td><code>crypto</code></td><td><code>CryptoBridgeHandler</code></td><td>Android: <code>AndroidKeystoreCryptoProvider</code> (already in KMP <code>androidMain</code>). iOS: <code>CryptoProviderImpl.swift</code> (already in <code>self-sdk-swift</code>).</td></tr>
+      <tr><td><code>nfc</code></td><td><code>NfcBridgeHandler</code> (MOD-01/02)</td><td>Android: <code>AndroidNfcProvider</code> wrapping <code>react-native-passport-reader</code>. iOS: provider via <code>SelfSdkNfc</code> SPM target wrapping <code>PassportReader</code>.</td></tr>
+      <tr><td><code>camera</code></td><td><code>CameraMrzBridgeHandler</code> (MOD-03)</td><td>Android: provider wrapping existing <code>MRZScannerModule</code>. iOS: provider via <code>SelfSdkOcr</code> SPM target (MOD-05).</td></tr>
+      <tr><td><code>biometrics</code></td><td><code>BiometricBridgeHandler</code></td><td>Android + iOS: provider wrapping <code>react-native-biometrics</code>.</td></tr>
+      <tr><td><code>documents</code></td><td><code>DocumentsBridgeHandler</code></td><td>Provider delegates to the existing <code>databaseProvider</code> flow.</td></tr>
+    </tbody>
+  </table>
+  <p>
+    <code>haptic</code>, <code>analytics</code>, <code>lifecycle</code>, and <code>navigation</code> do
+    not require native code and are covered in <a href="./SPEC-BRIDGE-HOST.html">SPEC-BRIDGE-HOST</a>.
+  </p>
+</section>
+
+<section id="architecture">
+  <h2>Architecture</h2>
+  <pre>MessageRouter (KMP)
+   → *BridgeHandler (KMP, commonMain)
+       → *Provider interface (KMP, commonMain)
+            → Android: provider impl (KMP androidMain OR rn-sdk-supplied)
+            → iOS:     provider impl (Swift, registered via IosProviderRegistry)
+                            → wraps existing RN module / OS API</pre>
+  <p>
+    Handlers translate, they do not re-implement. The OS-level work already exists either in the KMP
+    providers (Android) or in the existing RN modules + <code>self-sdk-swift</code> providers (iOS);
+    <code>rn-sdk</code> only registers them.
+  </p>
+</section>
+
+<section id="decisions">
+  <h2>Decisions</h2>
+  <ol>
+    <li><strong><code>rn-sdk</code> wraps <code>kmp-sdk</code> — no net-new SDK-side native module.</strong>
+      The KMP shared module already implements every bridge handler we need, with platform-specific
+      providers it delegates to via <code>SdkProviderRegistry</code>. <code>packages/rn-sdk/android/</code>
+      ships a thin <code>SelfBridgeModule</code> (Kotlin) that constructs a KMP <code>MessageRouter</code>,
+      registers the handlers, and bridges incoming JSON / outgoing JS-injection to React Native's bus.
+      iOS gets an analogous Swift shim that registers providers into <code>IosProviderRegistry</code>
+      before mounting the WebView. The build-side prototype for <code>secureStorage</code> on Android
+      landed in PR #2108 — see <a href="./plans/PATH-A-rn-wraps-kmp.html">PATH-A prototype spec</a>.
+      Multi-domain rollout under <a href="./plans/WIA-17-path-a-migration.html">WIA-17</a>. This
+      supersedes earlier guidance that called for a net-new <code>SelfCrypto</code> RN module in
+      <code>packages/rn-sdk/{android,ios}/</code>.</li>
+    <li><strong>Crypto algorithm matches the Kotlin/Swift shells exactly.</strong> EC/secp256r1 keys,
+      SHA256withECDSA signatures. The KMP <code>AndroidKeystoreCryptoProvider</code> and
+      <code>self-sdk-swift</code>'s <code>CryptoProviderImpl</code> already encode the same algorithm
+      identifiers as <code>packages/native-shell-android/</code> and <code>packages/native-shell-ios/</code>.
+      By piggybacking on those, RN gets algorithm parity by construction — no separate algorithm
+      specification on the RN side.</li>
+    <li><strong>Keychain stays native-managed.</strong> <code>secureStorage</code> delegates to a
+      provider that binds SecureEnclave/Keystore (Android: KMP's EncryptedSharedPreferences; iOS:
+      Keychain Services via the Swift provider). No JS-side fallback path is permitted in the handler.</li>
+    <li><strong>NFC handler reshapes RNPassportReader's signature.</strong> Android's
+      <code>RNPassportReader.scan({options})</code> accepts an options object; iOS's
+      <code>PassportReader.scanPassport(passportNumber, dateOfBirth, ...)</code> accepts positional args.
+      The KMP handler accepts the bridge's <code>{ params: Record&lt;string, unknown&gt; }</code> shape;
+      the platform provider maps to its native call shape. The bridge protocol does not learn about
+      positional args.</li>
+    <li><strong>NFC progress events route through the bridge events channel, not custom callbacks.</strong>
+      Scan progress (<code>reading dg1</code>, <code>chip authenticated</code>, etc.) emits bridge events
+      on a <code>nfc:progress</code> channel. The WebView subscribes via
+      <code>bridge.on('nfc', 'progress', handler)</code>. No per-handler callback registration.</li>
+    <li><strong>Documents handler delegates, doesn't own.</strong> Sensitive payloads (passport,
+      Aadhaar) continue to be keychain-backed in the existing <code>databaseProvider</code> flow; catalog
+      metadata continues to live in the existing TS-side database. The KMP handler is a thin re-export
+      of those operations; it does not re-design the storage layer.</li>
+    <li><strong>Every handler returns the bridge error vocabulary.</strong> Native errors are mapped to
+      one of <code>INVALID_PARAMS</code>, <code>HANDLER_ERROR</code>, <code>TIMEOUT</code>, or the
+      domain-specific codes already defined in the bridge protocol. Raw RN error objects never reach the
+      WebView. PII never enters <code>error.message</code> or <code>error.details</code> — diagnostic
+      payload goes to a Sentry breadcrumb (see <a href="./SPEC-OBSERVABILITY.html">SPEC-OBSERVABILITY</a>).</li>
+    <li><strong>Per-platform forks are confined to providers.</strong> A provider may branch on its
+      platform to call the right native API. The bridge protocol and the KMP handler do not see
+      platform.</li>
+    <li><strong>No handler holds long-lived state.</strong> NFC scan state, camera session state,
+      biometric prompt state all live inside the RN module the provider wraps. Re-entry is the WebView's
+      responsibility (one in-flight scan at a time; the WebView gates concurrent requests).</li>
+  </ol>
+</section>
+
+<section id="ios-scaffolding">
+  <h2>iOS scaffolding (cross-cutting)</h2>
+  <p>
+    KMP iOS handlers are <code>NotImplementedError</code> stubs that delegate to
+    <code>IosProviderRegistry</code> (cinterop is disabled in
+    <code>packages/kmp-sdk/shared/build.gradle.kts</code>). Re-enabling cinterop is a separate, larger
+    decision owned by Seshanth. For the WIA rollout, the iOS path is: the RN consumer registers Swift
+    providers into <code>IosProviderRegistry</code> before mounting the WebView.
+  </p>
+  <p>The first iOS domain PR (WIA-17 domain #2 — <code>secureStorage</code> on iOS) introduces:</p>
+  <ul>
+    <li><code>packages/rn-sdk/ios/SelfBridgeModule.swift</code> — RCT module exposing
+      <code>routeMessage(_:)</code> to JS, forwarding to a long-lived <code>MessageRouter</code> from
+      the KMP XCFramework. Constructs and registers <code>SecureStorageBridgeHandler</code> on init.</li>
+    <li><code>packages/rn-sdk/ios/SelfBridgeModule.m</code> — RCT bridge glue
+      (<code>RCT_EXTERN_MODULE</code> + method exports).</li>
+    <li>Swift <code>SecureStorageProvider</code> wrapping Keychain Services with the same key
+      namespacing as the Android provider.</li>
+    <li><code>selfxyz-rn-sdk.podspec</code> updates to vendor <code>SelfSdk.xcframework</code> and ensure
+      autolinking picks it up.</li>
+  </ul>
+  <p class="callout warn">
+    <strong>Open question — Seshanth.</strong> KMP's <code>createXCFramework</code> task currently
+    produces <em>debug</em> variants only. SD-06's DoD includes switching to release; the iOS PR needs
+    release variants to ship in a podspec. Either WIA-17 domain #2 fixes that task or it gates on SD-06
+    progress.
+  </p>
+</section>
+
+<section id="per-handler">
+  <h2>Per-handler notes</h2>
+  <ul>
+    <li><strong><code>secureStorage</code></strong> on Android is satisfied entirely by KMP's
+      <code>EncryptedSharedPreferencesProvider</code> (already shipped in
+      <code>kmp-sdk/shared/src/androidMain/</code>) — see <a href="./plans/PATH-A-rn-wraps-kmp.html">Path A
+      prototype</a> (PR #2108). On iOS, the host registers a Swift <code>SecureStorageProvider</code>
+      that wraps <code>react-native-keychain</code>'s underlying SecureEnclave-backed APIs. The TS-side
+      <code>KeychainHandler.ts</code> is retained behind the <code>useKmpBridge=false</code> default
+      until the WIA-17 retirement commit promotes the KMP path and deletes it. Keys are namespaced with
+      a <code>self.</code> prefix to avoid collision with any RN-app-level keychain usage that survives
+      cutover.</li>
+    <li><strong><code>crypto</code></strong> uses KMP's <code>CryptoBridgeHandler</code> with
+      <code>AndroidKeystoreCryptoProvider</code> (Android) and Swift's <code>CryptoProviderImpl</code>
+      (iOS, from <code>self-sdk-swift</code>). Keys generated by <code>crypto.generateKey</code> are
+      stored in the hardware-backed keystore. The public key returned by <code>crypto.getPublicKey</code>
+      is the X.509 SubjectPublicKeyInfo form (uncompressed SEC1 inside). The signature returned by
+      <code>crypto.sign</code> is DER-encoded ECDSA over the SHA-256 of the input bytes — the existing
+      shape both KMP providers emit today.</li>
+    <li><strong><code>nfc</code></strong> distinguishes a <code>scan</code> from a <code>cancelScan</code>.
+      <code>cancelScan</code> is idempotent and never errors if no scan is in flight.
+      <code>isSupported</code> returns the union of "the hardware exists" and "the OS gave us NFC
+      permission".</li>
+    <li><strong><code>camera</code></strong> owns lifecycle (<code>scanMRZ</code> opens the capture
+      session, closes on success or cancel). Background → foreground transitions while a scan is in
+      flight cancel the scan; the handler returns a <code>HANDLER_ERROR</code> with code
+      <code>SCAN_INTERRUPTED</code>.</li>
+    <li><strong><code>biometrics</code></strong> maps <code>authenticate</code> to a prompt with a
+      one-shot result. <code>getBiometryType</code> returns one of
+      <code>FaceID | TouchID | Fingerprint | None</code>. <code>isAvailable</code> returns the OS
+      capability, not user enrollment status — enrollment is implicit in <code>authenticate</code>'s
+      failure modes.</li>
+    <li><strong><code>documents</code></strong> maps the five bridge methods (<code>loadCatalog</code>,
+      <code>saveCatalog</code>, <code>loadById</code>, <code>save</code>, <code>delete</code>) to the
+      existing database operations. Sensitive document payloads remain keychain-backed via the existing
+      <code>databaseProvider</code> flow.</li>
+  </ul>
+</section>
+
+<section id="invariants">
+  <h2>Invariants</h2>
+  <ol>
+    <li>No business logic in Swift or Kotlin. New native code in the bridge module + providers contains
+      only OS-API calls and serialization — no parsing, validation, or decision logic.</li>
+    <li>Providers do not import from <code>packages/webview-app/</code> or call back into the WebView
+      except via the bridge response envelope.</li>
+    <li>The signature, response, and error shape exposed to the bridge are identical to what
+      <code>native-shell-android/</code> and <code>native-shell-ios/</code> expose. A handler that drifts
+      breaks the "WebView does not know which shell it runs inside" invariant.</li>
+    <li>Argument normalization is one-way. The provider accepts the bridge's shape and translates to the
+      native module's shape; it does not expose the native module's shape back to the WebView.</li>
+    <li>NFC scan progress payloads carry no PII. The chip data goes back in the final <code>scan</code>
+      response; in-flight events carry only stage names.</li>
+  </ol>
+</section>
+
+<section id="backlog">
+  <h2>Backlog (this topic)</h2>
+  <table>
+    <thead><tr><th>ID</th><th>Title</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>WIA-04</td><td><code>secureStorage</code> handler — wrap <code>react-native-keychain</code></td><td><span class="status superseded">Done (TS); superseded by WIA-17</span></td></tr>
+      <tr><td>WIA-05</td><td><code>crypto</code> handler — new <code>SelfCrypto</code> native module</td><td><span class="status superseded">Done (TS); superseded by WIA-17</span></td></tr>
+      <tr><td>WIA-06</td><td><code>nfc</code> handler — normalize RNPassportReader signatures</td><td><span class="status superseded">Done (TS); superseded by WIA-17</span></td></tr>
+      <tr><td>WIA-07</td><td><code>camera</code> handler — MRZ scan session</td><td><span class="status superseded">Done (TS); superseded by WIA-17</span></td></tr>
+      <tr><td>WIA-08</td><td><code>biometrics</code> handler</td><td><span class="status pending">Pending — implement directly under WIA-17</span></td></tr>
+      <tr><td>WIA-15</td><td><code>documents</code> handler — delegate to <code>databaseProvider</code></td><td><span class="status superseded">Done (TS); superseded by WIA-17</span></td></tr>
+      <tr><td>WIA-17</td><td><a href="./plans/WIA-17-path-a-migration.html">Path A migration</a> — per-domain rollout</td><td><span class="status progress">In progress · Android secureStorage shipped (PR #2108)</span></td></tr>
+    </tbody>
+  </table>
+  <p>
+    Domain rollout order, blockers, and per-domain validation are in the
+    <a href="./plans/WIA-17-path-a-migration.html">WIA-17 plan</a>.
+  </p>
+</section>
+
+<section id="gaps">
+  <h2>Known gaps</h2>
+  <p>
+    These are not in this spec's scope but will need to be resolved before cutover
+    (<code>WIA-11</code>):
+  </p>
+  <ul>
+    <li><strong>Cloud backup.</strong> The RN app's <code>CloudBackupScreen</code> triggers iCloud (iOS)
+      / Google Drive (Android) flows. None of the 10 bridge domains cover this. Options: extend
+      <code>secureStorage</code> with backup methods, or add a new bridge domain (which violates the
+      umbrella's "no new domains" out-of-scope). Settle in an addendum spec or in <code>WIA-04</code>'s
+      plan, whichever the implementer prefers.</li>
+    <li><strong>Push notification token registration.</strong> Today the RN app handles APNs / FCM
+      registration directly. The WebView needs to know about taps (handled in
+      <a href="./SPEC-BRIDGE-HOST.html">SPEC-BRIDGE-HOST</a> as deep-link bridging) but not necessarily
+      about token lifecycle. Confirm whether token registration needs a bridge surface or can stay
+      RN-only.</li>
+  </ul>
+</section>
+
+<section id="validation">
+  <h2>Validation</h2>
+  <p>
+    Each handler's PR ships with unit tests against a mocked native module plus an integration test
+    driving the handler from a stub message router. Real-hardware tests for <code>nfc</code>,
+    <code>camera</code>, <code>biometrics</code>, and <code>crypto</code> run on a TestFlight + Play
+    internal build before the cutover PR (<code>WIA-11</code>) merges. <code>secureStorage</code> and
+    <code>documents</code> are covered by the existing RN test infrastructure (no real-hardware path).
+    See the <a href="./plans/WIA-17-path-a-migration.html#validation">WIA-17 validation matrix</a> for
+    the per-domain checks each migration PR must show.
+  </p>
+</section>
+
+</main>
+</div>
+
+</body>
+</html>

@@ -48,7 +48,7 @@ export const SocialSignOnPickerScreen: React.FC = () => {
     navigate('/coming-soon');
   }, [navigate, haptic, analytics]);
 
-  const onDismiss = useCallback(() => {
+  const handleContinue = useCallback(() => {
     haptic.trigger('selection');
     // TODO(WV-12): Replace this placeholder dismiss route when the real conflict/sign-in branch behavior is defined.
     navigate(`/onboarding/conflict${getPromptMockSearch(mock === 'existing-account' ? mock : 'default')}`);
@@ -62,7 +62,7 @@ export const SocialSignOnPickerScreen: React.FC = () => {
       onICloud={onICloud}
       onGoogleCloud={onGoogleCloud}
       onSeedPhrase={onSeedPhrase}
-      onDismiss={onDismiss}
+      onDismiss={handleContinue}
     />
   );
 };

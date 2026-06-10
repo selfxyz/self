@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>NAV-04 Plan — useClusterClose() Hook</title>
+<link rel="stylesheet" href="./_shared.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <h1>NAV-04 · useClusterClose() Hook + Registry</h1>
+  <span class="meta-pill status-Ready">Ready</span>
+  <span class="meta-pill prio-High">High</span>
+  <span class="meta-pill">Updated 2026-05-25</span>
+  <span class="spacer"></span>
+  <div class="links">
+    <a href="../SPEC.html">← Spec</a>
+    <a href="../AUDIT.html">Audit</a>
+  </div>
+</header>
+
+<div class="layout">
+
+<nav class="toc">
+  <h4>On this page</h4>
+  <a href="#why">Why</a>
+  <a href="#decisions">Decisions</a>
+  <a href="#meta">Meta</a>
+  <a href="#current-state">Current State</a>
+  <a href="#scope">Scope</a>
+  <a href="#out-of-scope">Out of Scope</a>
+  <a href="#required-files">Required Files</a>
+  <a href="#approach">Approach</a>
+  <a href="#validation">Validation</a>
+  <a href="#open-questions">Open Questions</a>
+  <a href="#hand-off">Hand-off</a>
+  <h4>Workstream</h4>
+  <a href="../SPEC.html">SPEC ↗</a>
+  <a href="../AUDIT.html">AUDIT ↗</a>
+</nav>
+
+<main>
+
+<section id="why" class="tldr">
+  <h2>Why</h2>
+  <p>
+    "Close" means different things in different clusters and different modes. In self-app mode, closing the proving flow lands on home; in embed mode, the same action must call <code>bridge.setResult</code> + <code>bridge.dismiss</code>. Today this is ad-hoc: 6 screens hardcode <code>navigate('/')</code>, 8 screens call <code>lifecycle.dismiss()</code> directly, recovery uses <code>state.returnTo</code>. NAV-04 introduces a single <code>useClusterClose()</code> hook backed by a per-cluster registry that handles mode-aware close in one place.
+  </p>
+</section>
+
+<section id="decisions" class="decisions-block">
+  <h2>Decisions</h2>
+  <p class="decisions-intro">
+    Locked in on 2026-05-25. See <a href="../DECISIONS.md">DECISIONS.md</a> for the workstream-wide record.
+  </p>
+  <ul class="decisions-list">
+    <li class="decision">
+      <div class="d-head"><code>nav-04-q1-cluster-detection</code> · Decided · Plus follow-up</div>
+      <p class="d-q">How does <code>useClusterClose()</code> know which cluster the caller belongs to?</p>
+      <p class="d-a"><strong>Infer from <code>useLocation().pathname</code>'s first segment.</strong> Plus: state-of-the-art review + a test that proves no screen is reachable through two paths (see <a href="#approach">Approach Step 1.5</a>).</p>
+      <p class="d-note">
+        <span class="d-note-quote">"I picked A, but can you investigate what the state of the art is? wouldnt that be possible to do A and to make sure in the tests or somewhere that none of the screens are going to be reachable through 2 paths?"</span>
+        Approach grows a sub-step: brief react-router-dom v6 / Next-app-router segment-API survey, plus a registered-routes invariant test that fails if any screen component is the <code>element</code> of more than one <code>&lt;Route&gt;</code>, or if any path's first segment maps to multiple clusters.
+      </p>
+    </li>
+    <li class="decision">
+      <div class="d-head"><code>nav-04-q2-default-close-target</code> · Decided</div>
+      <p class="d-q">Default self-app close target: always <code>navigate('/')</code>, or per-cluster entry points?</p>
+      <p class="d-a"><strong>Per-cluster entry point in the registry.</strong> Each cluster declares its own "close lands here" path; <code>/</code> stays the default only for clusters that genuinely have nowhere better to land.</p>
+    </li>
+    <li class="decision">
+      <div class="d-head"><code>nav-04-q3-overrides</code> · Decided</div>
+      <p class="d-q">Should screens override the close target at call time (via <code>state.returnTo</code>), or only via the registry?</p>
+      <p class="d-a"><strong>Hook respects <code>state.returnTo</code></strong> (will become <code>state.nextPath</code> after NAV-09). Matches the existing recovery pattern.</p>
+    </li>
+  </ul>
+</section>
+
+<section id="meta">
+  <h2>Meta</h2>
+  <div class="meta-grid">
+    <div class="item"><div class="label">Workstream</div><div class="value">nav-hygiene</div></div>
+    <div class="item"><div class="label">Linear</div><div class="value">TBD</div></div>
+    <div class="item"><div class="label">Owner</div><div class="value">TBD</div></div>
+    <div class="item"><div class="label">Branch</div><div class="value"><code>chore/nav-04-cluster-close</code></div></div>
+    <div class="item"><div class="label">PR</div><div class="value">TBD</div></div>
+    <div class="item"><div class="label">Depends on</div><div class="value">—</div></div>
+  </div>
+</section>
+
+<section id="current-state">
+  <h2>Current State</h2>
+  <h3>Bridge lifecycle (already plumbed)</h3>
+  <p>File: <code>packages/webview-bridge/src/adapters/lifecycle.ts</code></p>
+  <pre><code>interface BridgeLifecycleAdapter {
+  ready(payload?: Record&lt;string, unknown&gt;): void;
+  dismiss(payload?: VerificationDismissPayload): void;
+  setResult(result: VerificationResult): Promise&lt;void&gt;;
+}</code></pre>
+  <p>Accessed via <code>useSelfClient().lifecycle</code> in 8 screens today.</p>
+
+  <h3>Current close patterns (sampled)</h3>
+  <table class="std">
+    <thead><tr><th>Cluster</th><th>Screen</th><th>File:line</th><th>Current close</th></tr></thead>
+    <tbody>
+      <tr><td>onboarding</td><td>KycFailureScreen</td><td><code>screens/onboarding/KycFailureScreen.tsx:26</code></td><td><code>navigate('/')</code></td></tr>
+      <tr><td>proving</td><td>VerificationResultScreen</td><td><code>screens/proving/VerificationResultScreen.tsx:46</code></td><td><code>navigate('/')</code> after setResult/dismiss</td></tr>
+      <tr><td>proving</td><td>DiscloseResultScreen</td><td><code>screens/proving/DiscloseResultScreen.tsx:63</code></td><td><code>lifecycle.setResult() + lifecycle.dismiss()</code></td></tr>
+      <tr><td>recovery</td><td>RecoverySuccessScreen</td><td><code>screens/recovery/RecoverySuccessScreen.tsx:31</code></td><td><code>navigate(returnTo ?? '/')</code></td></tr>
+      <tr><td>account</td><td>SettingsScreen</td><td><code>screens/account/SettingsScreen.tsx:36</code></td><td><code>lifecycle.dismiss({ reason: 'user_cancel' })</code></td></tr>
+      <tr><td>tunnel</td><td>TunnelResultScreen</td><td><code>screens/tunnel/TunnelResultScreen.tsx:58,71,102</code></td><td><code>lifecycle.setResult() + lifecycle.dismiss()</code></td></tr>
+    </tbody>
+  </table>
+  <p style="font-size:12px;color:var(--muted);margin-top:4px">Full list in <a href="../AUDIT.html">AUDIT.html</a>. No shared header/close-button component exists; each screen wires its own.</p>
+</section>
+
+<section id="scope">
+  <h2>Scope</h2>
+  <ul class="scope">
+    <li>Introduce a per-cluster close registry in <code>packages/webview-app/src/utils/clusterClose.ts</code>:
+      <pre><code>type Cluster = 'home' | 'onboarding' | 'docs' | 'proving' | 'disclose' | 'recovery' | 'settings' | 'points' | 'account' | 'link-social' | 'register' | 'kyc';
+
+type CloseTarget = {
+  selfApp: string;                              // path to navigate
+  embed: { result: VerificationResult } | 'dismiss-only';
+};
+
+const CLUSTER_CLOSE: Record&lt;Cluster, CloseTarget&gt; = { ... };</code></pre>
+    </li>
+    <li>Implement <code>useClusterClose(cluster?: Cluster)</code> hook. Behavior follows <a href="#open-questions">Q1</a> (how cluster is identified) and <a href="#open-questions">Q3</a> (whether state.returnTo overrides).
+      <pre><code>function useClusterClose(cluster?: Cluster): () =&gt; void { ... }</code></pre>
+    </li>
+    <li>Migrate the 6 most prominent terminal screens to the hook. Pick screens whose current close is unambiguously cluster-exit (not back). Sample list:
+      <ul>
+        <li><code>VerificationResultScreen</code> (proving)</li>
+        <li><code>DiscloseResultScreen</code> (disclose)</li>
+        <li><code>RecoverySuccessScreen</code> (recovery)</li>
+        <li><code>SettingsScreen</code> (settings)</li>
+        <li><code>TunnelResultScreen</code> (proving in embed mode)</li>
+        <li><code>KycFailureScreen</code> (onboarding/kyc)</li>
+      </ul>
+    </li>
+    <li>Add unit tests for the registry + hook behavior in both modes.</li>
+  </ul>
+</section>
+
+<section id="out-of-scope">
+  <h2>Out of Scope</h2>
+  <ul class="scope">
+    <li><strong>Not every terminal screen.</strong> Only the 6 above. NAV-05 sweeps the rest as part of the back-vs-close terminology audit.</li>
+    <li><strong>No back-button changes.</strong> Back semantics are NAV-05's territory; NAV-04 is only about close.</li>
+    <li><strong>No state-slot rename.</strong> If <a href="#open-questions">Q3</a> says "respect state.returnTo," the hook reads it under the current name. NAV-09 renames slots.</li>
+    <li><strong>No bridge changes.</strong> <code>lifecycle.setResult</code> + <code>lifecycle.dismiss</code> are used unchanged.</li>
+  </ul>
+</section>
+
+<section id="required-files">
+  <h2>Required Files</h2>
+  <ul class="scope">
+    <li><code>packages/webview-app/src/utils/clusterClose.ts</code> (new — registry + hook + <code>inferClusterFromPath</code>)</li>
+    <li><code>packages/webview-app/src/utils/clusterClose.test.ts</code> (new — registry × mode coverage)</li>
+    <li><code>packages/webview-app/src/routes.tsx</code> (new — extract the route table from App.tsx so the invariant test can introspect it)</li>
+    <li><code>packages/webview-app/tests/routes/clusterInvariant.test.tsx</code> (new — dual-path invariant per decision <code>q1</code>)</li>
+    <li>6 screens listed above (migration)</li>
+    <li><code>packages/webview-app/AGENTS.md</code> (document: "terminal screens use useClusterClose; never hardcode navigate('/')" + the cluster-detection state-of-the-art note from Step 1.5)</li>
+  </ul>
+</section>
+
+<section id="approach">
+  <h2>Approach</h2>
+  <h3>Step 1 — Define the cluster enum and registry (with per-cluster entry points)</h3>
+  <p>Enumerate every cluster currently in <code>screens/</code>. Each gets a <code>CloseTarget</code> entry with a meaningful self-app landing path (per decision <code>q2</code>):</p>
+  <pre><code>const CLUSTER_CLOSE: Record&lt;Cluster, CloseTarget&gt; = {
+  home:       { selfApp: '/',         embed: 'dismiss-only' },
+  onboarding: { selfApp: '/',         embed: { result: { success: false, error: 'user_cancelled' } } },
+  docs:       { selfApp: '/docs',     embed: 'dismiss-only' },
+  proving:    { selfApp: '/',         embed: { result: { success: false, error: 'user_cancelled' } } },
+  disclose:   { selfApp: '/history',  embed: { result: { success: false, error: 'user_cancelled' } } },
+  recovery:   { selfApp: '/settings/security', embed: 'dismiss-only' },
+  settings:   { selfApp: '/',         embed: 'dismiss-only' },
+  points:     { selfApp: '/',         embed: 'dismiss-only' },
+  account:    { selfApp: '/',         embed: 'dismiss-only' },
+  ...
+};</code></pre>
+  <p>The per-cluster landing paths are the canonical answer to "where does the user expect to be after closing this flow?". Recovery successes land back on the security settings page; document closes land on the document list; everything else falls back to home.</p>
+
+  <h3>Step 1.5 — Cluster-detection state-of-the-art + dual-path invariant test</h3>
+  <p>Decision <code>q1</code> chose path-segment inference plus a guarantee that no screen is reachable via two paths. The plan adds:</p>
+  <ul class="scope">
+    <li><strong>State-of-the-art brief.</strong> Document the survey in <code>packages/webview-app/AGENTS.md</code> ("Cluster detection") so future contributors don't re-explore this:
+      <ul>
+        <li><em>react-router-dom v6</em> exposes no first-class cluster API. The common patterns are: (a) inspect <code>useLocation().pathname.split('/')[1]</code> like we do; (b) wrap every route in a context provider that injects the cluster name; (c) use <code>useMatches()</code> after defining a typed handle on each route. (a) is the smallest hammer.</li>
+        <li><em>Next.js app-router</em> has <code>useSelectedLayoutSegment()</code> / <code>useSelectedLayoutSegments()</code> — which is precisely "first path segment" plus pre-defined parallel-route boundaries. Confirms that path-segment is the canonical signal.</li>
+        <li><em>NAV-13's <code>ModeRoute</code></em> already needs a per-route metadata pass; if a cluster slot were added there (<code>&lt;ModeRoute cluster="recovery" ... /&gt;</code>), <code>useClusterClose</code> could read it instead. Deferred — only needed if path-segment inference ever fails the invariant test below.</li>
+      </ul>
+    </li>
+    <li><strong>Dual-path invariant test.</strong> Add <code>packages/webview-app/tests/routes/clusterInvariant.test.tsx</code> that imports the route table from <code>App.tsx</code> (after extracting it into <code>src/routes.tsx</code> if needed) and asserts:
+      <ol style="font-size:13px">
+        <li>Every screen component appears as the <code>element</code> of <strong>at most one</strong> <code>&lt;Route&gt;</code>. Failing test ⇒ two paths render the same component ⇒ the cluster-segment trick can be wrong.</li>
+        <li>For every registered path, <code>pathname.split('/')[1]</code> maps to <strong>at most one</strong> cluster (per the <code>CLUSTER_CLOSE</code> keys). Failing test ⇒ two clusters share a first segment ⇒ ambiguity.</li>
+      </ol>
+    </li>
+    <li>Extract the registered routes into <code>src/routes.tsx</code> (a typed array) so the test can introspect them without rendering. <code>App.tsx</code> maps the array to JSX.</li>
+  </ul>
+
+  <h3>Step 2 — Implement the hook</h3>
+  <pre><code>function useClusterClose(overrideCluster?: Cluster): () =&gt; void {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { mode } = useOperatingMode();
+  const { lifecycle } = useSelfClient();
+
+  return useCallback(() =&gt; {
+    const cluster = overrideCluster ?? inferClusterFromPath(location.pathname);
+    const target = CLUSTER_CLOSE[cluster];
+
+    if (mode === 'tunnel') {
+      if (target.embed !== 'dismiss-only') {
+        lifecycle.setResult(target.embed.result).catch(() =&gt; {});
+      }
+      lifecycle.dismiss({ reason: 'user_cancel' });
+      return;
+    }
+
+    // self-app: state.returnTo overrides the registry entry (decision q3)
+    const stateReturn = (location.state as { returnTo?: string } | null)?.returnTo;
+    navigate(stateReturn ?? target.selfApp, { replace: true });
+  }, [mode, location.pathname, location.state, lifecycle, navigate, overrideCluster]);
+}</code></pre>
+
+  <h3>Step 3 — Migrate the 6 screens</h3>
+  <p>For each: replace the inline close handler with <code>const onClose = useClusterClose();</code> then wire to the Euclid component's <code>onClose</code> prop. Diff size: ~5-10 LOC per screen.</p>
+
+  <h3>Step 4 — Unit tests</h3>
+  <p>Coverage:</p>
+  <ul class="scope">
+    <li>Each cluster × each mode (self-app, tunnel) — verify the right action fires.</li>
+    <li><code>state.returnTo</code> override path (if Q3 → state-returnto).</li>
+    <li>Unknown cluster → falls back to <code>'home'</code> safely.</li>
+  </ul>
+
+  <h3>Step 5 — Document</h3>
+  <p>Add to <code>packages/webview-app/AGENTS.md</code>:</p>
+  <blockquote style="border-left:3px solid var(--accent); padding-left:12px; color:var(--muted); font-size:13px;">Terminal screens close the cluster via <code>useClusterClose()</code>, never <code>navigate('/')</code>. The hook handles mode-aware behavior (self-app: navigate; embed: setResult + dismiss). New clusters add a <code>CloseTarget</code> entry in <code>utils/clusterClose.ts</code>.</blockquote>
+</section>
+
+<section id="validation">
+  <h2>Validation</h2>
+  <ul class="scope">
+    <li><code>cd packages/webview-app &amp;&amp; yarn test utils/clusterClose</code> — passes.</li>
+    <li><code>yarn test routes/clusterInvariant</code> — passes. (Dual-path / dual-cluster invariant per decision <code>q1</code>.)</li>
+    <li><code>yarn types &amp;&amp; yarn build</code> — clean.</li>
+    <li>Manual self-app: from each of the 6 migrated screens, click close → land on <code>/</code> (or cluster entry per Q2).</li>
+    <li>Manual embed mode (<code>?mode=tunnel</code> + verification request): close from terminal screens → bridge receives <code>setResult</code> + <code>dismiss</code>.</li>
+    <li><code>grep -rn "navigate('/')" packages/webview-app/src/screens</code> — count drops by at least 4 (the 6 migrated screens, minus a couple that did setResult+dismiss instead of navigate).</li>
+  </ul>
+</section>
+
+<section id="open-questions">
+  <h2>Open Questions</h2>
+  <p style="color:var(--muted);font-size:13px;margin-top:0">Answers persist to <code>localStorage</code>. Aggregate view in <a href="../SPEC.html#open-questions">SPEC.html</a>.</p>
+  <div id="oq-container"></div>
+</section>
+
+<section id="hand-off">
+  <h2>Hand-off</h2>
+  <ul class="scope">
+    <li><span class="nav-link">NAV-05</span> sweeps the remaining ~30 terminal screens for back-vs-close terminology, using <code>useClusterClose</code> as the canonical close.</li>
+    <li><span class="nav-link">NAV-09</span> standardizes the <code>state.returnTo</code> slot name; if this plan reads <code>state.returnTo</code> (Q3 → state-returnto), update the slot name when NAV-09 lands.</li>
+    <li><span class="nav-link">NAV-13</span> declares cluster as route metadata; if Q1 → route-metadata, NAV-04 ships <em>after</em> NAV-13.</li>
+  </ul>
+</section>
+
+</main>
+</div>
+
+<script src="./_open-questions.js"></script>
+<script>
+  window.NavHygieneOQ.renderQuestionsForPlan('NAV-04', document.getElementById('oq-container'));
+
+  const sections = document.querySelectorAll('section[id]');
+  const tocLinks = document.querySelectorAll('nav.toc a[href^="#"]');
+  const obs = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (entry.isIntersecting) {
+        tocLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === `#${entry.target.id}`));
+      }
+    }
+  }, { rootMargin: '-50% 0px -45% 0px' });
+  sections.forEach(s => obs.observe(s));
+</script>
+
+</body>
+</html>

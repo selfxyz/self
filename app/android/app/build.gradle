@@ -148,6 +148,14 @@ android {
         viewBinding = true
     }
 
+    sourceSets {
+        main {
+            assets.srcDirs += [
+                "../../node_modules/@selfxyz/rn-sdk/assets",
+            ]
+        }
+    }
+
     defaultConfig {
         applicationId "com.proofofpassportapp"
         minSdkVersion rootProject.ext.minSdkVersion

@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { RegistrationFailureScreen as EuclidRegistrationFailureScreen } from '@selfxyz/euclid';
 
 import { MockRegistrationFailureButton } from '../../components/MockRegistrationFailureButton';
+import { SupportReference } from '../../components/SupportReference';
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
 
@@ -16,16 +17,16 @@ export const RegistrationFailureScreen: React.FC = () => {
   const navigate = useNavigate();
   const { analytics, haptic } = useSelfClient();
 
-  const handleDismiss = useCallback(() => {
+  const handleClose = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('registration_failure_dismissed');
     navigate('/', { state: { skipOnboardingRedirect: true } });
   }, [analytics, haptic, navigate]);
 
-  const handleTryDifferentMethod = useCallback(() => {
+  const handleRetry = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('registration_failure_try_again');
-    navigate('/onboarding/tour/1');
+    navigate('/tour/1');
   }, [analytics, haptic, navigate]);
 
   return (
@@ -33,10 +34,11 @@ export const RegistrationFailureScreen: React.FC = () => {
       <MockRegistrationFailureButton />
       <EuclidRegistrationFailureScreen
         {...WEB_SAFE_AREA}
-        onDismiss={handleDismiss}
-        onTryDifferentMethod={handleTryDifferentMethod}
+        onDismiss={handleClose}
+        onTryDifferentMethod={handleRetry}
         copy={{ tryDifferentMethod: 'Try again' }}
       />
+      <SupportReference />
     </>
   );
 };

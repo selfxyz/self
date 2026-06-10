@@ -18,7 +18,7 @@
 **What you own:**
 
 - **MiniPay sample app** (`packages/kmp-minipay-sample/`) — Kotlin/Compose Multiplatform reference integration
-- **Future integration samples** — Self Wallet migration sample, other third-party app examples
+- **Future integration samples** — Self app migration sample, other third-party app examples
 
 **Architecture context:**
 
@@ -579,7 +579,7 @@ The `nfc_tech_filter.xml` resource (in `res/xml/`) should list `android.nfc.tech
 | `packages/webview-bridge/src/**`   | Bridge protocol — owned by Person 1 webview workstream         |
 | `packages/webview-app/src/**`      | WebView UI — owned by Person 1 webview workstream              |
 | `packages/mobile-sdk-alpha/src/**` | SDK core — owned by Person 4 sdk core workstream               |
-| `app/src/**`                       | Self Wallet — out of scope, separate app                       |
+| `app/src/**`                       | Self app — out of scope, separate app                          |
 | `packages/kmp-sdk-test-app/**`     | Test app — separate from integration sample, different purpose |
 | `common/src/**`                    | Shared utilities — stable, no changes needed                   |
 
@@ -920,10 +920,10 @@ rg -n "\\bverified\\s*=|disclosedClaims" packages/kmp-minipay-sample/composeApp/
 
 ## Follow-Up (Out of Scope)
 
-| Item                                        | Discovered during | Suggested spec               |
-| ------------------------------------------- | ----------------- | ---------------------------- |
-| Production publishing (AAR + XCFramework)   | —                 | New spec: SPEC-PUBLISHING.md |
-| Self Wallet migration to `SelfVerification` | —                 | rn-sdk/SPEC.md               |
+| Item                                      | Discovered during | Suggested spec               |
+| ----------------------------------------- | ----------------- | ---------------------------- |
+| Production publishing (AAR + XCFramework) | —                 | New spec: SPEC-PUBLISHING.md |
+| Self app migration to `SelfVerification`  | —                 | rn-sdk/SPEC.md               |
 
 ## Spec Deviations
 

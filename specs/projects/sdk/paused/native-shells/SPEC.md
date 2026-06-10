@@ -5,7 +5,7 @@
 > Project: [SDK Overview](../../OVERVIEW.md)
 > Status: Paused
 
-> Pause note: As of 2026-03-11, the active SDK delivery scope is WebView-only with no custom native modules. This workstream is retained for future Self Wallet or mobile-native reuse and should not drive current delivery.
+> Pause note: As of 2026-03-11, the active SDK delivery scope is WebView-only with no custom native modules. This workstream is retained for future Self app or mobile-native reuse and should not drive current delivery.
 
 ## North Star
 
@@ -28,7 +28,7 @@
 ```
 ┌──────────────────────────────────────────────────┐
 │                   HOST APP                        │
-│          (MiniPay / Self Wallet / etc.)           │
+│          (MiniPay / Self app / etc.)           │
 └────────────────────┬─────────────────────────────┘
                      │
     ┌────────────────▼────────────────┐
@@ -137,7 +137,7 @@ You are building the native side of the Self Mobile SDK — the Kotlin Multiplat
 
 ## The Problem
 
-The Self Wallet is a monolithic React Native app where all logic, NFC, proving, and UI are tangled together. To ship an embeddable SDK:
+The Self app is a monolithic React Native app where all logic, NFC, proving, and UI are tangled together. To ship an embeddable SDK:
 
 | Problem area                               | Issue                                                                                                                                                                   |
 | ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -1635,7 +1635,7 @@ Pure Kotlin, already correct in the prototype. ICAO 9303 check digit computation
 | `packages/webview-app/src/*`      | Owned by Person 1. Vite bundle is consumed as-is.                                                  |
 | `packages/mobile-sdk-alpha/src/*` | Owned by Person 4 (SDK Core). Adapter interfaces are read-only reference.                          |
 | `common/src/*`                    | Shared utilities -- stable, no changes needed.                                                     |
-| `app/`                            | Self Wallet app -- out of scope for SDK work.                                                      |
+| `app/`                            | Self app app -- out of scope for SDK work.                                                         |
 | `packages/rn-sdk/`                | Owned by Person 5 (RN Native Shell). Does not exist yet.                                           |
 
 ---

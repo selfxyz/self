@@ -768,7 +768,7 @@ jobs:
 
       - name: Upload iOS build logs on failure
         if: failure() && inputs.platform != 'android'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4
         with:
           name: ios-gym-buildlogs
           path: ${{ env.APP_PATH }}/ios/build/gymlogs
@@ -1419,7 +1419,7 @@ jobs:
 
       - name: Upload Android AAB artifact on failure
         if: failure() && inputs.platform != 'ios'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4
         with:
           name: android-release-aab
           path: ${{ env.APP_PATH }}/android/app/build/outputs/bundle/release/app-release.aab
