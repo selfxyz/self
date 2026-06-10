@@ -737,7 +737,8 @@ flowchart TD
         const { svg } = await mermaid.render(id, code);
         block.outerHTML = `<div class="mermaid-rendered">${svg}</div>`;
       } catch (e) {
-        block.innerHTML = `<div style="color:var(--high);padding:8px">Mermaid render failed. Open this file in a browser, or paste the block into <a href="https://mermaid.live">mermaid.live</a>.<br/><small>${e.message}</small></div>`;
+        block.innerHTML = `<div style="color:var(--high);padding:8px">Mermaid render failed. Open this file in a browser, or paste the block into <a href="https://mermaid.live">mermaid.live</a>.<br/><small></small></div>`;
+        block.querySelector('small').textContent = e.message;
       }
     }
     pane.dataset.rendered = '1';

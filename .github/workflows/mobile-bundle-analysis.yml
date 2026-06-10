@@ -1,5 +1,8 @@
 name: Mobile Bundle Analysis
 
+permissions:
+  contents: read
+
 env:
   RUBY_VERSION: 3.2
   JAVA_VERSION: 17
