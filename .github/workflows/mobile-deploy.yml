@@ -99,9 +99,11 @@ on:
       - ".github/workflows/mobile-deploy.yml"
 
 concurrency:
-  # Group by deployment track or ref name to allow different tracks to run in parallel.
+  # Group by deployment track so production and internal can run in parallel but
+  # runs publishing to the same track are serialized. PR merges have no inputs and
+  # deploy to internal, so they must share the internal group with manual runs.
   # cancel-in-progress: false ensures we don't cancel ongoing deployments.
-  group: mobile-deploy-${{ (inputs.upload == 'production' && 'production') || (inputs.upload != '' && 'internal') || github.ref_name }}
+  group: mobile-deploy-${{ inputs.upload == 'production' && 'production' || 'internal' }}
   cancel-in-progress: false
 
 jobs:
