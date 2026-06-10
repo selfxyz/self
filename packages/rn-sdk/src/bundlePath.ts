@@ -25,7 +25,11 @@ export const resolveBundlePath = (
     // Keep percent-encoding intact: callers prepend `file://` to build the
     // WebView source URL, so decoding here would turn `My%20App.app` into a
     // literal space and yield a malformed file:// URL that WKWebView rejects.
-    return bundleRootUri.replace(/^file:\/\//, '').replace(/\/+$/, '');
+    let path = bundleRootUri.replace(/^file:\/\//, '');
+    while (path.endsWith('/')) {
+      path = path.slice(0, -1);
+    }
+    return path;
   }
   return undefined;
 };
