@@ -456,7 +456,12 @@ jobs:
           BUNDLE_TMP=$(mktemp)
           if unzip -p "$APK_PATH" assets/index.android.bundle > "$BUNDLE_TMP" 2>/dev/null && [ -s "$BUNDLE_TMP" ]; then
             BUNDLE_SIZE=$(stat -f%z "$BUNDLE_TMP" 2>/dev/null || stat -c%s "$BUNDLE_TMP" 2>/dev/null || echo "unknown")
-            HERMESC_ROOT="app/node_modules/hermes-compiler/hermesc"
+            # hermes-compiler is a react-native transitive dep, so yarn
+            # hoisting decides where it materializes (app/node_modules vs the
+            # repo root, shifting as other workspaces change RN versions).
+            # Resolve it from the app workspace instead of hardcoding a path.
+            HERMESC_PKG="$(node -e "console.log(require('path').dirname(require.resolve('hermes-compiler/package.json', {paths: [require('path').resolve('app')]})))" 2>/dev/null || true)"
+            HERMESC_ROOT="${HERMESC_PKG:-app/node_modules/hermes-compiler}/hermesc"
             case "$(uname -s)" in
               Darwin*) HERMESC="$HERMESC_ROOT/osx-bin/hermesc" ;;
               MINGW*|MSYS*|CYGWIN*) HERMESC="$HERMESC_ROOT/win64-bin/hermesc.exe" ;;
