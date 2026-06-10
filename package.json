@@ -61,6 +61,7 @@
     "@types/node": "^22.18.3",
     "@types/react": "^19.1.1",
     "@types/react-dom": "^19.1.1",
+    "@types/react-native-web/react-native": "0.83.9",
     "ethereum-cryptography": "3.2.0",
     "hermes-compiler": "0.14.1",
     "punycode": "npm:punycode.js@^2.3.1",
