@@ -1,4 +1,5 @@
-## fastlane documentation
+fastlane documentation
+----
 
 # Installation
 
@@ -38,7 +39,8 @@ Push a new build to TestFlight Internal Testing
 
 Deploy iOS app with automatic version management
 
----
+----
+
 
 ## Android
 
@@ -50,39 +52,15 @@ Deploy iOS app with automatic version management
 
 Sync android version (DEPRECATED)
 
-### android internal_test
-
-```sh
-[bundle exec] fastlane android internal_test
-```
-
-Push a new build to Google Play Internal Testing
-
-### android deploy
-
-```sh
-[bundle exec] fastlane android deploy
-```
-
-Push a new build to Google Play Store
-
 ### android build_only
 
 ```sh
 [bundle exec] fastlane android build_only
 ```
 
-Build Android app without uploading
+Build the Android release AAB
 
-### android deploy_auto
-
-```sh
-[bundle exec] fastlane android deploy_auto
-```
-
-Deploy Android app with automatic version management
-
----
+----
 
 This README.md is auto-generated and will be re-generated every time [_fastlane_](https://fastlane.tools) is run.
 

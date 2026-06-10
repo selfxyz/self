@@ -1,0 +1,6 @@
+# Pinned deps for scripts/upload_to_play_store.py, for reproducible CI.
+httplib2==0.31.2
+google-auth==2.53.0
+google-auth-oauthlib==1.4.0
+google-auth-httplib2==0.4.0
+google-api-python-client==2.197.0

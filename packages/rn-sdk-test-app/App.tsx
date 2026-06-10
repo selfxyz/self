@@ -16,6 +16,8 @@ import {
 
 import { SelfVerification, type SelfSdkError, type VerificationResult } from '@selfxyz/rn-sdk';
 
+import { KmpBridgeSmokeScreen } from './KmpBridgeSmokeScreen';
+
 type CallbackState =
   | { status: 'Idle' }
   | { status: 'Launching verification...' }
@@ -25,6 +27,7 @@ type CallbackState =
 
 function App(): React.JSX.Element {
   const [isVerifying, setIsVerifying] = useState(false);
+  const [showSmoke, setShowSmoke] = useState(false);
   const [userId, setUserId] = useState('test-user');
   const [scope, setScope] = useState('identity');
   const [callback, setCallback] = useState<CallbackState>({ status: 'Idle' });
@@ -59,6 +62,10 @@ function App(): React.JSX.Element {
     setCallback({ status: 'Cancelled' });
     setIsVerifying(false);
   };
+
+  if (showSmoke) {
+    return <KmpBridgeSmokeScreen onBack={() => setShowSmoke(false)} />;
+  }
 
   if (isVerifying) {
     return (
@@ -115,6 +122,13 @@ function App(): React.JSX.Element {
           }}
         >
           <Text style={styles.primaryButtonText}>Launch Verification</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.secondaryButton}
+          onPress={() => setShowSmoke(true)}
+        >
+          <Text style={styles.secondaryButtonText}>Open KMP Bridge Smoke Screen</Text>
         </TouchableOpacity>
 
         <View style={styles.callbackCard}>
@@ -184,6 +198,19 @@ const styles = StyleSheet.create({
   primaryButtonText: {
     color: '#ffffff',
     fontSize: 16,
+    fontWeight: '600',
+  },
+  secondaryButton: {
+    backgroundColor: '#ffffff',
+    borderColor: '#0969da',
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  secondaryButtonText: {
+    color: '#0969da',
+    fontSize: 15,
     fontWeight: '600',
   },
   callbackCard: {

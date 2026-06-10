@@ -31,15 +31,16 @@ env:
   RUBY_VERSION: 3.2
   NODE_ENV: "production"
   JAVA_VERSION: 17
-  ANDROID_API_LEVEL: 35
-  ANDROID_NDK_VERSION: 27.0.12077973
+  ANDROID_API_LEVEL: 36
+  ANDROID_NDK_VERSION: 28.0.13004108
+  ANDROID_RELEASE_ARCHITECTURES: arm64-v8a
   XCODE_VERSION: "26.3"
 
   # Cache versioning - increment these to bust caches when needed
   GH_CACHE_VERSION: v1 # Global cache version
   GH_YARN_CACHE_VERSION: v1 # Yarn-specific cache version
   GH_GEMS_CACHE_VERSION: v1 # Ruby gems cache version
-  GH_PODS_CACHE_VERSION: v1 # CocoaPods cache version
+  GH_PODS_CACHE_VERSION: v2 # CocoaPods cache version
   GH_GRADLE_CACHE_VERSION: v1 # Gradle cache version
 
   # Path configuration
@@ -71,6 +72,11 @@ on:
           - both
       test_mode:
         description: "Test mode (skip upload to stores)"
+        required: false
+        type: boolean
+        default: false
+      manual_store_upload:
+        description: "Publish a signed artifact for manual store upload (skips automated upload, still creates the version bump PR)"
         required: false
         type: boolean
         default: false
@@ -687,7 +693,7 @@ jobs:
         run: |
           echo "🏗️ Building SDK dependencies..."
           cd ${{ env.APP_PATH }}
-          yarn workspace @selfxyz/mobile-app run build:deps --silent || { echo "❌ Dependency build failed"; exit 1; }
+          yarn workspace @selfxyz/mobile-app run build:deps || { echo "❌ Dependency build failed"; exit 1; }
           echo "✅ Dependencies built successfully"
 
       # act won't work with macos, but you can test with `bundle exec fastlane ios ...`
@@ -741,7 +747,9 @@ jobs:
           # Determine deployment track and version bump
           DEPLOYMENT_TRACK="${{ inputs.deployment_track || 'internal' }}"
           VERSION_BUMP="${{ needs.bump-version.outputs.version_bump_type }}"
-          TEST_MODE="${{ inputs.test_mode || false }}"
+          # manual_store_upload also skips the automated upload — the IPA is
+          # published as an artifact and uploaded by hand instead
+          TEST_MODE="${{ inputs.test_mode || inputs.manual_store_upload || false }}"
 
           echo "📱 Deployment Configuration:"
           echo "  - Track: $DEPLOYMENT_TRACK"
@@ -767,7 +775,7 @@ jobs:
 
       - name: Upload iOS build logs on failure
         if: failure() && inputs.platform != 'android'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4
         with:
           name: ios-gym-buildlogs
           path: ${{ env.APP_PATH }}/ios/build/gymlogs
@@ -804,6 +812,42 @@ jobs:
           fi
 
           echo "✅ iOS build output verification passed"
+
+      # Only published for manual_store_upload runs: the repo is public, so artifacts
+      # are downloadable by anyone with a GitHub account. Unlike test_mode, these
+      # runs still create the version bump PR — the build number uploaded by hand
+      # must be recorded in the repo or the next deploy reuses it and the store
+      # rejects it.
+      - name: Upload signed iOS IPA artifact
+        id: upload-ios-ipa
+        if: github.event_name == 'workflow_dispatch' && inputs.manual_store_upload == true && inputs.platform != 'android'
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4
+        with:
+          name: self-ios-${{ needs.bump-version.outputs.version }}-${{ needs.bump-version.outputs.ios_build }}-release-ipa
+          path: ${{ env.APP_PATH }}/ios/build/*.ipa
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Summarize iOS IPA download
+        if: github.event_name == 'workflow_dispatch' && inputs.manual_store_upload == true && inputs.platform != 'android'
+        run: |
+          {
+            echo "## iOS release IPA"
+            echo ""
+            echo "Signed IPA artifact: [self-ios-${{ needs.bump-version.outputs.version }}-${{ needs.bump-version.outputs.ios_build }}-release-ipa](${{ steps.upload-ios-ipa.outputs.artifact-url }})"
+            echo ""
+            echo "Download the artifact ZIP, extract the \`.ipa\`, and upload it to App Store Connect with Transporter or \`xcrun altool --upload-app\`."
+            echo ""
+            echo "**Merge the version bump PR created by this run** — it records the build number you are uploading; without it the next deploy reuses the same build number and App Store Connect rejects it."
+            echo ""
+            echo "- Version: \`${{ needs.bump-version.outputs.version }}\`"
+            echo "- iOS build: \`${{ needs.bump-version.outputs.ios_build }}\`"
+            echo "- Retention: 1 day — delete it as soon as you have downloaded it:"
+            echo ""
+            echo '```'
+            echo "gh api -X DELETE repos/${{ github.repository }}/actions/artifacts/${{ steps.upload-ios-ipa.outputs.artifact-id }}"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
 
       # Version updates moved to separate job to avoid race conditions
 
@@ -1152,7 +1196,7 @@ jobs:
         if: inputs.platform != 'ios'
         run: |
           python -m pip install --upgrade pip
-          pip install google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client
+          python -m pip install --upgrade -r ${{ env.APP_PATH }}/scripts/requirements-play-store.txt
 
       - name: Setup Android private modules
         if: inputs.platform != 'ios'
@@ -1168,8 +1212,19 @@ jobs:
         run: |
           echo "🏗️ Building SDK dependencies..."
           cd ${{ env.APP_PATH }}
-          yarn workspace @selfxyz/mobile-app run build:deps --silent || { echo "❌ Dependency build failed"; exit 1; }
+          yarn workspace @selfxyz/mobile-app run build:deps || { echo "❌ Dependency build failed"; exit 1; }
           echo "✅ Dependencies built successfully"
+
+      # rn-sdk's Android module declares compileOnly xyz.self.sdk:shared-android,
+      # which only exists in mavenLocal. The script publishes only the Android
+      # publication — the aggregate publishToMavenLocal task pulls in the iOS
+      # metadata path, which fails an unrelated Gradle task-dependency check.
+      - name: Publish KMP SDK to mavenLocal
+        if: inputs.platform != 'ios'
+        run: |
+          chmod +x packages/kmp-sdk/gradlew
+          cd ${{ env.APP_PATH }}
+          node scripts/publish-kmp-local.cjs
 
       - name: Build AAB with Fastlane
         if: inputs.platform != 'ios'
@@ -1203,7 +1258,7 @@ jobs:
           # Determine deployment track and version bump
           DEPLOYMENT_TRACK="${{ inputs.deployment_track || 'internal' }}"
           VERSION_BUMP="${{ needs.bump-version.outputs.version_bump_type }}"
-          TEST_MODE="${{ inputs.test_mode || false }}"
+          TEST_MODE="${{ inputs.test_mode || inputs.manual_store_upload || false }}"
 
           echo "🤖 Build Configuration:"
           echo "  - Track: $DEPLOYMENT_TRACK"
@@ -1211,6 +1266,7 @@ jobs:
           echo "  - Version: ${{ needs.bump-version.outputs.version }}"
           echo "  - Android Build: ${{ needs.bump-version.outputs.android_build }}"
           echo "  - Test Mode: $TEST_MODE"
+          echo "  - Android Architectures: $ANDROID_RELEASE_ARCHITECTURES"
 
           echo "🔨 Building AAB with Fastlane..."
           bundle exec fastlane android build_only \
@@ -1249,25 +1305,77 @@ jobs:
 
           echo "✅ Android build output verification passed"
 
+      # Only published for manual_store_upload runs: the repo is public, so artifacts
+      # are downloadable by anyone with a GitHub account. Unlike test_mode, these
+      # runs still create the version bump PR — the build number uploaded by hand
+      # must be recorded in the repo or the next deploy reuses it and the store
+      # rejects it.
+      - name: Upload signed Android AAB artifact
+        id: upload-android-aab
+        if: github.event_name == 'workflow_dispatch' && inputs.manual_store_upload == true && inputs.platform != 'ios'
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4
+        with:
+          name: self-android-${{ needs.bump-version.outputs.version }}-${{ needs.bump-version.outputs.android_build }}-release-aab
+          path: ${{ env.APP_PATH }}/android/app/build/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Summarize Android AAB download
+        if: github.event_name == 'workflow_dispatch' && inputs.manual_store_upload == true && inputs.platform != 'ios'
+        run: |
+          {
+            echo "## Android release AAB"
+            echo ""
+            echo "Signed AAB artifact: [self-android-${{ needs.bump-version.outputs.version }}-${{ needs.bump-version.outputs.android_build }}-release-aab](${{ steps.upload-android-aab.outputs.artifact-url }})"
+            echo ""
+            echo "Use this URL to download the artifact ZIP, extract \`app-release.aab\`, and upload it manually in Play Console."
+            echo ""
+            echo "**Merge the version bump PR created by this run** — it records the versionCode you are uploading; without it the next deploy reuses the same versionCode and Play rejects it."
+            echo ""
+            echo "- Version: \`${{ needs.bump-version.outputs.version }}\`"
+            echo "- Android build: \`${{ needs.bump-version.outputs.android_build }}\`"
+            echo "- Retention: 1 day — delete it as soon as you have downloaded it:"
+            echo ""
+            echo '```'
+            echo "gh api -X DELETE repos/${{ github.repository }}/actions/artifacts/${{ steps.upload-android-aab.outputs.artifact-id }}"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Clean up Gradle build artifacts
         if: inputs.platform != 'ios'
         uses: ./.github/actions/cleanup-gradle-artifacts
 
       - name: Upload to Play Store Internal App Sharing (PR preview)
         id: ias-upload
-        if: inputs.platform != 'ios' && inputs.test_mode != true && inputs.pr_number != ''
-        timeout-minutes: 10
+        if: inputs.platform != 'ios' && inputs.test_mode != true && inputs.manual_store_upload != true && inputs.pr_number != ''
+        timeout-minutes: 30
         run: |
           cd ${{ env.APP_PATH }}
           echo "🧪 PR preview build for #${{ inputs.pr_number }} — uploading to Internal App Sharing..."
-          python scripts/upload_to_play_store.py \
+          python -u scripts/upload_to_play_store.py \
             --aab "android/app/build/outputs/bundle/release/app-release.aab" \
             --package-name "${{ secrets.ANDROID_PACKAGE_NAME }}" \
             --mode ias
 
+      - name: Query Google Play Store track using WIF
+        if: inputs.platform != 'ios' && inputs.test_mode != true && inputs.manual_store_upload != true && inputs.pr_number == ''
+        continue-on-error: true
+        timeout-minutes: 5
+        run: |
+          cd ${{ env.APP_PATH }}
+
+          # Determine deployment track
+          DEPLOYMENT_TRACK="${{ inputs.deployment_track || 'internal' }}"
+
+          echo "🔎 Querying Google Play Store track before upload..."
+          python -u scripts/upload_to_play_store.py \
+            --package-name "${{ secrets.ANDROID_PACKAGE_NAME }}" \
+            --track "$DEPLOYMENT_TRACK" \
+            --mode query
+
       - name: Upload to Google Play Store track using WIF
-        if: inputs.platform != 'ios' && inputs.test_mode != true && inputs.pr_number == ''
-        timeout-minutes: 10
+        if: inputs.platform != 'ios' && inputs.test_mode != true && inputs.manual_store_upload != true && inputs.pr_number == ''
+        timeout-minutes: 30
         run: |
           cd ${{ env.APP_PATH }}
 
@@ -1275,13 +1383,13 @@ jobs:
           DEPLOYMENT_TRACK="${{ inputs.deployment_track || 'internal' }}"
 
           echo "🚀 Uploading to Google Play Store using Workload Identity Federation..."
-          python scripts/upload_to_play_store.py \
+          python -u scripts/upload_to_play_store.py \
             --aab "android/app/build/outputs/bundle/release/app-release.aab" \
             --package-name "${{ secrets.ANDROID_PACKAGE_NAME }}" \
             --track "$DEPLOYMENT_TRACK"
 
       - name: Post PR preview build link to Slack
-        if: inputs.platform != 'ios' && inputs.test_mode != true && inputs.pr_number != '' && steps.ias-upload.outputs.download_url != ''
+        if: inputs.platform != 'ios' && inputs.test_mode != true && inputs.manual_store_upload != true && inputs.pr_number != '' && steps.ias-upload.outputs.download_url != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_QA_BUILDS }}
@@ -1370,6 +1478,15 @@ jobs:
             echo "- Install URL: $DOWNLOAD_URL"
           } >> "$GITHUB_STEP_SUMMARY"
 
+      - name: Upload Android AAB artifact on failure
+        if: failure() && inputs.platform != 'ios'
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4
+        with:
+          name: android-release-aab
+          path: ${{ env.APP_PATH }}/android/app/build/outputs/bundle/release/app-release.aab
+          if-no-files-found: warn
+          retention-days: 7
+
       - name: Monitor cache usage
         if: always()
         run: |
@@ -1410,10 +1527,14 @@ jobs:
       pull-requests: write
     needs: [bump-version, build-ios, build-android]
     # Skip when this is a per-PR preview build — preview builds must not mutate
-    # the repo's version lineage.
+    # the repo's version lineage. Also skip in test mode (no store upload) so test
+    # builds don't open a version bump PR. manual_store_upload runs are NOT
+    # skipped: their build number reaches the store by hand, so it must be
+    # persisted or the next deploy reuses it and the store rejects it.
     if: |
       always() &&
       inputs.pr_number == '' &&
+      inputs.test_mode != true &&
       (github.event_name != 'pull_request' ||
         (github.event.action == 'closed' && github.event.pull_request.merged == true)) &&
       (needs.build-ios.result == 'success' || needs.build-android.result == 'success')

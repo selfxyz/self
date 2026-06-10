@@ -15,13 +15,34 @@ To skip deployment, add `[skip-deploy]` to your PR title or add the `no-deploy` 
 
 ### Manual Deployments
 
-1. Go to [Actions](../../../actions) → "Mobile App Deployments"
+1. Go to [Actions](../../../actions) → "Mobile Deploy"
 2. Click "Run workflow"
 3. Select options:
    - Platform: ios / android / both
    - Test mode: Check to build without uploading
+   - Manual store upload: Check to publish a signed artifact for manual store upload (see below)
    - Deployment track: internal / production
    - Version bump: build / patch / minor / major
+
+### Build for Manual Store Upload
+
+Use this when the automated store upload is blocked but you do not want to build locally or manage local environment variables.
+
+> **Security:** this repo is public, so workflow artifacts are downloadable by anyone with a GitHub account while they exist. Build artifacts are only published on manual runs with "Manual store upload" checked, expire after 1 day, and **must be deleted as soon as you have downloaded them** — the run summary includes the exact `gh api -X DELETE` command.
+
+1. Go to [Actions](../../../actions) → "Mobile Deploy"
+2. Click "Run workflow"
+3. Select:
+   - Platform: `android` or `ios`
+   - Manual store upload: checked (required — the artifact is not published otherwise; do **not** use test mode, which skips the version bump PR and would let the next deploy reuse the build number you uploaded)
+   - Deployment track: the track you plan to upload to
+   - Version bump: usually `build` unless you need a semantic version bump
+4. Open the completed run summary and click the signed artifact link (AAB or IPA).
+5. Download the artifact ZIP and extract it:
+   - **Android:** upload `app-release.aab` manually in Play Console.
+   - **iOS:** upload the `.ipa` to App Store Connect with [Transporter](https://apps.apple.com/app/transporter/id1450874784) or `xcrun altool --upload-app`.
+6. Delete the artifact using the command shown in the run summary.
+7. **Merge the version bump PR the run created** so the repo records the build number you uploaded.
 
 ## 📋 How It Works
 
@@ -120,8 +141,8 @@ Set in workflow files:
 NODE_VERSION: 22
 RUBY_VERSION: 3.2
 JAVA_VERSION: 17
-ANDROID_API_LEVEL: 35
-ANDROID_NDK_VERSION: 27.0.12077973
+ANDROID_API_LEVEL: 36
+ANDROID_NDK_VERSION: 28.0.13004108
 ```
 
 The authoritative Node version is in `.nvmrc`; workflows may read it from there instead of a static env var.

@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SPEC — Bridge Host (RN side)</title>
+<style>
+  :root {
+    --bg: #fafbfc;
+    --surface: #ffffff;
+    --surface-alt: #f6f8fa;
+    --border: #d1d9e0;
+    --border-soft: #e1e4e8;
+    --text: #1f2328;
+    --muted: #656d76;
+    --accent: #0969da;
+    --accent-soft: #ddf4ff;
+    --high: #cf222e;
+    --high-soft: #ffebe9;
+    --med: #9a6700;
+    --med-soft: #fff8c5;
+    --done: #1a7f37;
+    --done-soft: #dafbe1;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; color: var(--text); background: var(--bg); }
+  code, pre, kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.9em; }
+  code { background: var(--surface-alt); padding: 1px 5px; border-radius: 4px; border: 1px solid var(--border-soft); }
+  pre { background: var(--surface-alt); padding: 12px 14px; border-radius: 6px; border: 1px solid var(--border-soft); overflow: auto; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  header.topbar { position: sticky; top: 0; z-index: 100; background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  header h1 { margin: 0; font-size: 16px; font-weight: 600; }
+  .pill { font-size: 11px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface-alt); }
+  .pill.active { color: var(--accent); background: var(--accent-soft); border-color: var(--accent); }
+  .pill.done   { color: var(--done);   background: var(--done-soft);   border-color: var(--done); }
+  .spacer { flex: 1; }
+  .layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 32px; max-width: 1100px; margin: 0 auto; padding: 24px; }
+  nav.toc { position: sticky; top: 64px; align-self: start; font-size: 13px; }
+  nav.toc h4 { margin: 0 0 6px 0; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  nav.toc a { display: block; padding: 4px 6px; border-radius: 4px; color: var(--text); }
+  nav.toc a:hover { background: var(--surface-alt); text-decoration: none; }
+  main { min-width: 0; }
+  main section { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 18px 22px; margin-bottom: 16px; }
+  main h2 { margin: 0 0 10px 0; font-size: 16px; }
+  main h3 { margin: 16px 0 6px 0; font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  main p { margin: 6px 0 10px 0; }
+  main ul, main ol { margin: 6px 0 10px 18px; padding: 0; }
+  main li { margin: 3px 0; }
+  table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 13px; }
+  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--border-soft); vertical-align: top; }
+  th { background: var(--surface-alt); font-weight: 600; }
+  .status { font-size: 11px; padding: 2px 8px; border-radius: 999px; display: inline-block; white-space: nowrap; border: 1px solid var(--border); background: var(--surface-alt); color: var(--muted); }
+  .status.done { color: var(--done); background: var(--done-soft); border-color: var(--done); }
+  .callout { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 8px 12px; border-radius: 0 6px 6px 0; margin: 10px 0; }
+  .callout.warn { border-left-color: var(--high); background: var(--high-soft); }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <h1>SPEC — Bridge Host (RN side)</h1>
+  <span class="pill done">Implementation complete</span>
+  <span class="pill">2026-05-26</span>
+  <span class="spacer"></span>
+  <div>
+    <a href="./SPEC.html">↑ WebView-in-App</a>
+    &nbsp;·&nbsp;
+    <a href="./SPEC-NATIVE-ADAPTERS.html">Native adapters</a>
+  </div>
+</header>
+
+<div class="layout">
+
+<nav class="toc">
+  <h4>On this page</h4>
+  <a href="#scope">Scope</a>
+  <a href="#architecture">Architecture</a>
+  <a href="#lifecycle">Message lifecycle</a>
+  <a href="#decisions">Decisions</a>
+  <a href="#error-envelope">Error envelope</a>
+  <a href="#invariants">Invariants</a>
+  <a href="#backlog">Backlog</a>
+  <a href="#validation">Validation</a>
+</nav>
+
+<main>
+
+<section id="scope">
+  <h2>Scope</h2>
+  <p>
+    <code>packages/rn-sdk/</code> (revived from paused) implements the host side of the bridge protocol
+    that the WebView already speaks. <code>app/</code> consumes it as a workspace dependency. The JSON
+    contract in <code>packages/webview-bridge/</code> is fixed; this spec defines what runs in the RN-side
+    package to satisfy it.
+  </p>
+  <p>This spec covers <code>WIA-02</code> (host shell + message router) and <code>WIA-03</code> (the
+    no-native handlers: lifecycle, navigation, analytics, haptic).</p>
+
+  <h3>In scope</h3>
+  <ul>
+    <li>One WebView screen at the root of the navigation graph. It is the only rendered surface in
+      production besides splash and the top-level error boundary.</li>
+    <li><code>onMessage</code> parsing, schema validation, domain/method dispatch, and response envelope
+      synthesis.</li>
+    <li>The four no-native handlers: <code>lifecycle</code>, <code>navigation</code>, <code>analytics</code>,
+      <code>haptic</code>.</li>
+    <li>Hardware-back wiring (Android), deep-link and push-notification forwarding into the WebView via
+      bridge events.</li>
+    <li>Error envelopes for unknown methods, unsupported versions, and handler failures.</li>
+  </ul>
+
+  <h3>Out of scope</h3>
+  <ul>
+    <li>Native handler implementations (<code>nfc</code>, <code>crypto</code>, <code>secureStorage</code>,
+      <code>camera</code>, <code>biometrics</code>, <code>documents</code>) — see
+      <a href="./SPEC-NATIVE-ADAPTERS.html">SPEC-NATIVE-ADAPTERS</a>.</li>
+    <li>Where the bundle URL comes from — see <a href="./SPEC-HOSTED-LOADING.html">SPEC-HOSTED-LOADING</a>.</li>
+    <li>Sentry integration inside the WebView — see <a href="./SPEC-OBSERVABILITY.html">SPEC-OBSERVABILITY</a>.</li>
+    <li>WebView-internal routes and screen logic — <code>webview/</code> workstream.</li>
+  </ul>
+</section>
+
+<section id="architecture">
+  <h2>Architecture</h2>
+  <pre>RN Host (Self app)
+  ├─ Splash / Init
+  ├─ Error Boundary
+  └─ WebView Shell
+       └─ Message Router
+            ├─ lifecycle       (no-native)
+            ├─ navigation      (no-native)
+            ├─ analytics       (no-native)
+            ├─ haptic          (no-native)
+            └─ native handlers (secureStorage, crypto, nfc, camera, biometrics, documents)
+
+WebView (webview-app)
+  ↔ postMessage / injectJavaScript via the Shell</pre>
+  <p>
+    The host shell mounts exactly once per app session. It is not unmounted across attempts; the WebView
+    decides what to render after a terminal result.
+  </p>
+</section>
+
+<section id="lifecycle">
+  <h2>Message lifecycle</h2>
+  <ol>
+    <li>WebView <code>postMessage</code>: <code>{ id, version, domain, method, params }</code></li>
+    <li>Shell parses + validates version. On version mismatch / unknown domain or method, router returns
+      <code>{ success:false, error:{ code, message } }</code>.</li>
+    <li>Otherwise router dispatches to the handler. Native handlers invoke their native module; result
+      / error returns.</li>
+    <li>Router synthesizes the response envelope (with <code>requestId</code>).</li>
+    <li>Shell injects JavaScript to resolve the promise on the WebView side:
+      <code>injectJavaScript(resolve(id, envelope))</code>.</li>
+  </ol>
+</section>
+
+<section id="decisions">
+  <h2>Decisions</h2>
+  <ol>
+    <li><strong>The WebView component is owned by <code>@selfxyz/rn-sdk</code>.</strong> The package
+      imports the bridge transport adapter from <code>@selfxyz/webview-bridge</code> and wires it to a
+      <code>react-native-webview</code> ref. Consumer apps (Self app today, 3rd-party RN apps later)
+      mount the exported component and pass in only the host-app concerns (splash, error boundary,
+      deep-link payload). The shell itself is library code.</li>
+    <li><strong>One message router, ten domains, no extensions.</strong> The router accepts only the
+      domains defined in the current bridge protocol. Unknown domains fail closed with
+      <code>UNKNOWN_DOMAIN</code>. Adding a domain requires a bridge protocol bump, not a host-side patch.</li>
+    <li><strong><code>analytics.trackEvent</code> over the bridge feeds the existing RN-side
+      <code>_track</code> pipe in <code>app/src/services/analytics.ts</code> verbatim.</strong> Cohort
+      tags continue to flow into the RN-host Sentry scope via the existing <code>setOnboardingTags</code>
+      / <code>clearOnboardingTags</code> calls. The bridge handler does not re-implement tag logic.</li>
+    <li><strong><code>navigation.goBack</code> and <code>navigation.goTo</code> are WebView-internal.</strong>
+      The RN host's React Navigation stack contains splash and the error boundary only; there is nowhere
+      for the WebView to navigate to in RN-land. Hardware-back maps to a <code>navigation:back</code>
+      bridge event the WebView consumes; if the WebView signals "no further back", the host treats it as
+      an attempt-quit and shows a confirm dialog.</li>
+    <li><strong>Deep links and push notifications bridge in, not route in.</strong> When the RN host
+      receives a deep link (<code>self://...</code>) or notification tap, it emits a
+      <code>navigation:deeplink</code> bridge event with the parsed payload. The WebView decides what to
+      do — no URL reload, no host-side route table.</li>
+    <li><strong><code>lifecycle.setResult</code> is host-observable but not host-acted-upon.</strong> The
+      host logs the terminal result and emits a Sentry breadcrumb. The WebView is responsible for what
+      renders next (next attempt, home, wait state); the host does not pop screens or swap stacks.</li>
+    <li><strong><code>haptic.trigger</code> calls <code>react-native-haptic-feedback</code> directly.</strong>
+      No wrapping, no per-platform branching beyond what the library already does.</li>
+    <li><strong>Bridge protocol version is pinned in the host.</strong> The host declares a single
+      supported protocol version constant. The router rejects any incoming version that does not match
+      exactly. Cross-version migrations bump the constant and the bridge protocol together.</li>
+  </ol>
+</section>
+
+<section id="error-envelope">
+  <h2>Error envelope</h2>
+  <p>Every error path produces the same envelope shape:</p>
+  <pre>{
+  success: false,
+  requestId: &lt;id from inbound message&gt;,
+  error: {
+    code: 'UNKNOWN_DOMAIN' | 'UNKNOWN_METHOD' | 'UNSUPPORTED_VERSION'
+        | 'INVALID_PARAMS' | 'HANDLER_ERROR' | 'TIMEOUT',
+    message: &lt;human-readable, no PII&gt;,
+    details: &lt;optional, no PII&gt;
+  }
+}</pre>
+  <p>
+    The bridge protocol's existing error codes are the entire vocabulary. Handlers do not invent new
+    codes. PII never enters <code>message</code> or <code>details</code> — diagnostic context goes to
+    Sentry breadcrumbs via <a href="./SPEC-OBSERVABILITY.html">SPEC-OBSERVABILITY</a>.
+  </p>
+</section>
+
+<section id="invariants">
+  <h2>Invariants</h2>
+  <ol>
+    <li>The host shell does not import from <code>packages/webview-app/</code> or
+      <code>packages/mobile-sdk-alpha/</code>. The only contract between host and WebView is the bridge JSON.</li>
+    <li>The message router never throws. Handler failures, schema failures, version failures all return
+      error envelopes.</li>
+    <li>No bridge message is processed before the WebView's <code>lifecycle.ready</code> has been
+      received. Messages received earlier are dropped silently and logged as a Sentry breadcrumb.</li>
+    <li>The host emits no analytics events of its own once the WebView is the active UI. Anything the
+      host wants tracked goes through the WebView via a bridge event the WebView elects to forward.</li>
+    <li>The shell renders a non-interactive fallback (spinner + brand mark) for at most 3 seconds while
+      the WebView is loading. After 3s without <code>lifecycle.ready</code>, the shell shows a recoverable
+      error state and captures a Sentry exception.</li>
+  </ol>
+</section>
+
+<section id="backlog">
+  <h2>Backlog (this topic)</h2>
+  <table>
+    <thead><tr><th>ID</th><th>Title</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>WIA-02</td><td>RN WebView host shell + message router</td><td><span class="status done">Done</span></td></tr>
+      <tr><td>WIA-03</td><td>Lifecycle, navigation, analytics, haptic handlers</td><td><span class="status done">Done</span></td></tr>
+    </tbody>
+  </table>
+  <p>
+    Each ID landed as one PR on <code>feat/webview-in-app</code>. Execution detail (file paths, component
+    layout, library imports) lives in those PRs' diffs.
+  </p>
+</section>
+
+<section id="validation">
+  <h2>Validation</h2>
+  <p>
+    The shell + router PR ships with end-to-end tests that load a stub HTML page into the WebView, drive
+    a representative message of each domain across the bridge, and assert the host's response envelope
+    shape. The no-native handlers ship with unit tests against the router. Hardware-back and deep-link
+    wiring is verified on a TestFlight + Play internal build before the cutover PR
+    (<code>WIA-11</code>) merges.
+  </p>
+</section>
+
+</main>
+</div>
+
+</body>
+</html>

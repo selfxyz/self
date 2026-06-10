@@ -8,23 +8,37 @@ import { useNavigate } from 'react-router-dom';
 
 import type { IDCardProps } from '@selfxyz/euclid';
 import { DevModeScreen as EuclidDevModeScreen, LeftArrowIcon } from '@selfxyz/euclid';
+import { generateMockDocument, storePassportData } from '@selfxyz/mobile-sdk-alpha';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
-import { mockDocumentStore } from '../../utils/mockDocumentStore';
 
-const ageOptions = ['18 or older', '21 or older', '25 or older', '30 or older'];
-const expiryOptions = ['1 year', '2 years', '5 years', '10 years'];
+const ageOptions = [18, 21, 25, 30, 35, 42];
+const expiryYearsOptions = [1, 2, 5, 10];
+
+const documentTypeMap: Record<string, 'mock_passport' | 'mock_id_card' | 'mock_aadhaar'> = {
+  passport: 'mock_passport',
+  id_card: 'mock_id_card',
+  aadhaar: 'mock_aadhaar',
+};
+
+const nationalityMap: Record<string, string> = {
+  'united states of america': 'USA',
+  germany: 'DEU',
+  france: 'FRA',
+  india: 'IND',
+};
 
 export const DevModeScreen: React.FC = () => {
   const navigate = useNavigate();
-  const { analytics, haptic } = useSelfClient();
+  const { client, analytics, haptic } = useSelfClient();
 
-  const [documentType, setDocumentType] = useState('passport');
-  const [nationality, setNationality] = useState('united states of america');
+  const [documentType, setDocumentType] = useState<keyof typeof documentTypeMap>('passport');
+  const [nationality, setNationality] = useState<keyof typeof nationalityMap>('united states of america');
   const [ageIndex, setAgeIndex] = useState(1);
   const [expiryIndex, setExpiryIndex] = useState(2);
   const [ofacCheck, setOfacCheck] = useState(true);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const idCard: IDCardProps = {
     variant: 'dev-passport',
@@ -32,7 +46,7 @@ export const DevModeScreen: React.FC = () => {
     subtitle: 'Digital credential for developers',
   };
 
-  const onBack = useCallback(() => {
+  const handleBack = useCallback(() => {
     haptic.trigger('selection');
     navigate('/settings');
   }, [navigate, haptic]);
@@ -40,7 +54,6 @@ export const DevModeScreen: React.FC = () => {
   const onResetAllValues = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('dev_mode_reset');
-    mockDocumentStore.clear();
     setDocumentType('passport');
     setNationality('united states of america');
     setAgeIndex(1);
@@ -48,40 +61,73 @@ export const DevModeScreen: React.FC = () => {
     setOfacCheck(true);
   }, [haptic, analytics]);
 
-  const onGenerateMockDocument = useCallback(() => {
-    const countryCode = nationality === 'united states of america' ? 'US' : 'DE';
-    const docTypeCode = documentType === 'passport' ? 'p' : 'i';
-    mockDocumentStore.addDocument(countryCode, docTypeCode);
-    haptic.trigger('success');
-    analytics.trackEvent('dev_mode_generate_mock', {
-      documentType,
-      nationality,
-      age: ageOptions[ageIndex],
-      expiresIn: expiryOptions[expiryIndex],
-      ofacCheck,
-    });
-    navigate('/');
-  }, [navigate, haptic, analytics, documentType, nationality, ageIndex, expiryIndex, ofacCheck]);
+  const onGenerateMockDocument = useCallback(async () => {
+    if (isGenerating) return;
+    setIsGenerating(true);
+    try {
+      const selectedDocumentType = documentTypeMap[documentType];
+      const selectedCountry = nationalityMap[nationality];
+      const mockDoc = await generateMockDocument({
+        age: ageOptions[ageIndex],
+        expiryYears: expiryYearsOptions[expiryIndex],
+        isInOfacList: !ofacCheck,
+        selectedAlgorithm: 'sha256 rsa 65537 2048',
+        selectedCountry,
+        selectedDocumentType,
+      });
+      await storePassportData(client, mockDoc);
+      haptic.trigger('selection');
+      analytics.trackEvent('dev_mode_generate_mock', {
+        documentType: selectedDocumentType,
+        country: selectedCountry,
+        age: ageOptions[ageIndex],
+        expiryYears: expiryYearsOptions[expiryIndex],
+        isInOfacList: !ofacCheck,
+      });
+      // Pass the document identity through state so RegisteringScreen renders
+      // the correct IDCard variant on first paint (avoids a passport →
+      // dev-passport flicker while loadSelectedDocument resolves async).
+      navigate('/register/generating', {
+        replace: true,
+        state: { documentCategory: mockDoc.documentCategory, mock: true },
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'mock generation failed';
+      console.error('[DevMode] generateMockDocument failed:', err);
+      analytics.trackEvent('dev_mode_generate_mock_failed', { error: message });
+      haptic.trigger('warning');
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [analytics, ageIndex, client, documentType, expiryIndex, haptic, isGenerating, nationality, navigate, ofacCheck]);
 
   return (
     <EuclidDevModeScreen
       {...WEB_SAFE_AREA}
       escapeIcon={({ size, color }) => <LeftArrowIcon size={size} color={color} />}
-      onBack={onBack}
+      onBack={handleBack}
       idCard={idCard}
       documentType={documentType}
       onDocumentTypePress={() => {
-        setDocumentType(prev => (prev === 'passport' ? 'id_card' : 'passport'));
+        haptic.trigger('selection');
+        setDocumentType(prev => {
+          const order: Array<keyof typeof documentTypeMap> = ['passport', 'id_card', 'aadhaar'];
+          return order[(order.indexOf(prev) + 1) % order.length];
+        });
       }}
       nationality={nationality}
       onNationalityPress={() => {
-        setNationality(prev => (prev === 'united states of america' ? 'germany' : 'united states of america'));
+        haptic.trigger('selection');
+        setNationality(prev => {
+          const order: Array<keyof typeof nationalityMap> = ['united states of america', 'germany', 'france', 'india'];
+          return order[(order.indexOf(prev) + 1) % order.length];
+        });
       }}
-      age={ageOptions[ageIndex]}
+      age={`${ageOptions[ageIndex]} or older`}
       onAgeIncrement={() => setAgeIndex(prev => Math.min(prev + 1, ageOptions.length - 1))}
       onAgeDecrement={() => setAgeIndex(prev => Math.max(prev - 1, 0))}
-      documentExpiresIn={expiryOptions[expiryIndex]}
-      onDocumentExpiresIncrement={() => setExpiryIndex(prev => Math.min(prev + 1, expiryOptions.length - 1))}
+      documentExpiresIn={`${expiryYearsOptions[expiryIndex]} year${expiryYearsOptions[expiryIndex] === 1 ? '' : 's'}`}
+      onDocumentExpiresIncrement={() => setExpiryIndex(prev => Math.min(prev + 1, expiryYearsOptions.length - 1))}
       onDocumentExpiresDecrement={() => setExpiryIndex(prev => Math.max(prev - 1, 0))}
       ofacCheck={ofacCheck}
       onOfacCheckChange={value => {

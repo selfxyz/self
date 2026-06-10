@@ -37,7 +37,39 @@ export function getGenerationStep(currentState: string): GenerationStep {
   }
 }
 
-export function getIdCardProps(documentCategory?: string): IDCardProps {
+export function getDiscloseStep(currentState: string | null): GenerationStep {
+  if (!currentState) return 'readingRegistry';
+  switch (currentState) {
+    case 'idle':
+    case 'parsing_id_document':
+    case 'fetching_data':
+    case 'validating_document':
+      return 'readingRegistry';
+    case 'init_tee_connexion':
+    case 'ready_to_prove':
+    case 'proving':
+      return 'generatingProof';
+    case 'post_proving':
+      return 'awaitingVerification';
+    case 'completed':
+      return 'finishingUp';
+    default:
+      return 'readingRegistry';
+  }
+}
+
+export function getIdCardProps(documentCategory?: string, mock?: boolean): IDCardProps {
+  if (mock && (!documentCategory || documentCategory === 'passport')) {
+    // dev-passport variant needs cardMoire: 'dev' for the distinct developer
+    // moire visual; without it, the IDCard falls back to a plain dark card
+    // indistinguishable from a real passport.
+    return {
+      variant: 'dev-passport',
+      title: 'Mock Passport',
+      subtitle: 'Developer test passport',
+      cardMoire: 'dev',
+    };
+  }
   switch (documentCategory) {
     case 'id_card':
       return { variant: 'id-card', title: 'ID Card', subtitle: 'Biometric Identification Card' };

@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>WIA-14 · PR1 — Host-minted referenceId across bridge + Sentry</title>
+<style>
+  :root {
+    --bg: #fafbfc; --surface: #ffffff; --surface-alt: #f6f8fa; --border: #d1d9e0; --border-soft: #e1e4e8;
+    --text: #1f2328; --muted: #656d76; --accent: #0969da; --accent-soft: #ddf4ff;
+    --high: #cf222e; --high-soft: #ffebe9; --med: #9a6700; --med-soft: #fff8c5; --done: #1a7f37; --done-soft: #dafbe1;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; color: var(--text); background: var(--bg); }
+  code, pre, kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.9em; }
+  code { background: var(--surface-alt); padding: 1px 5px; border-radius: 4px; border: 1px solid var(--border-soft); }
+  pre { background: var(--surface-alt); padding: 12px 14px; border-radius: 6px; border: 1px solid var(--border-soft); overflow: auto; }
+  a { color: var(--accent); text-decoration: none; } a:hover { text-decoration: underline; }
+  header.topbar { position: sticky; top: 0; z-index: 100; background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  header h1 { margin: 0; font-size: 16px; font-weight: 600; }
+  .pill { font-size: 11px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface-alt); }
+  .pill.high { color: var(--high); background: var(--high-soft); border-color: var(--high); }
+  .pill.scope { color: var(--accent); background: var(--accent-soft); border-color: var(--accent); }
+  .pill.active { color: var(--accent); background: var(--accent-soft); border-color: var(--accent); }
+  .spacer { flex: 1; }
+  .layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 32px; max-width: 1100px; margin: 0 auto; padding: 24px; }
+  nav.toc { position: sticky; top: 64px; align-self: start; font-size: 13px; }
+  nav.toc h4 { margin: 0 0 6px 0; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  nav.toc a { display: block; padding: 3px 0; color: var(--text); }
+  main { min-width: 0; }
+  main section { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 18px 22px; margin-bottom: 16px; }
+  main h2 { margin: 0 0 10px 0; font-size: 16px; }
+  main h3 { margin: 16px 0 6px 0; font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  main p { margin: 6px 0 10px 0; }
+  main ul, main ol { margin: 6px 0 10px 18px; padding: 0; }
+  main li { margin: 3px 0; }
+  table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 13px; }
+  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--border-soft); vertical-align: top; }
+  th { background: var(--surface-alt); font-weight: 600; }
+  .callout { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 8px 12px; border-radius: 0 6px 6px 0; margin: 10px 0; }
+  .callout.warn { border-left-color: var(--high); background: var(--high-soft); }
+  .callout.note { border-left-color: var(--med); background: var(--med-soft); }
+  .check { list-style: none; margin-left: 0; }
+  .check li::before { content: "☐ "; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <h1>WIA-14 · PR1 — Host-minted <code>referenceId</code> across bridge + Sentry</h1>
+  <span class="pill active">Ready</span>
+  <span class="pill">Priority: Medium</span>
+  <span class="pill scope">Scope: rn-sdk + webview-bridge + webview-app + app</span>
+  <span class="pill">Target: &lt;500 LOC</span>
+  <span class="pill">2026-06-04</span>
+  <span class="spacer"></span>
+  <div><a href="../SPEC-OBSERVABILITY.html">↑ Observability Contract</a></div>
+</header>
+
+<div class="layout">
+
+<nav class="toc">
+  <h4>On this page</h4>
+  <a href="#context">Context</a>
+  <a href="#decisions">Decisions</a>
+  <a href="#naming">Naming &amp; casing</a>
+  <a href="#files">Files modified</a>
+  <a href="#implementation">Implementation</a>
+  <a href="#lifecycle">Tag lifecycle</a>
+  <a href="#compat">Compatibility</a>
+  <a href="#tests">Tests</a>
+  <a href="#oos">Out of scope</a>
+  <a href="#validation">Validation</a>
+  <a href="#done">Done criteria</a>
+</nav>
+
+<main>
+
+<section id="context">
+  <h2>Context</h2>
+  <p>
+    <strong>You are adding a host-minted reference id that lets an engineer join every Sentry event from
+    one WebView session — across the RN host and the WebView runtime.</strong> This is PR1 of WIA-14; PR2
+    (<a href="./WIA-14-footer.html">the footer</a>) displays this id on error screens. Cross-runtime
+    correlation is the whole point of the ANA-15 re-home, and it has no working key today.
+  </p>
+  <div class="callout warn">
+    <strong>Why a new id (verified in code).</strong> The original WIA-14/SPEC-OBSERVABILITY plan assumed
+    <code>attempt_id</code>. That id is generated by the onboarding funnel
+    (<code>packages/mobile-sdk-alpha/src/analytics/onboardingFunnel.ts:38</code>), which is driven
+    <em>exclusively by the RN app</em> — <code>webview-app</code> calls none of its functions, no bridge
+    message carries it, and <code>getCurrentAttemptId()</code> is always <code>null</code> in the WebView
+    runtime. The only id the WebView has is <code>verificationId</code>, which is <em>absent in self-app
+    onboarding mode</em> (the code already synthesizes <code>verificationId ?? webview-${'{'}Date.now(){'}'}</code>
+    at <code>packages/webview-app/src/utils/selfAppContext.ts:65</code>). So neither existing id correlates
+    across runtimes for every failure screen. PR1 introduces one that does.
+  </p>
+</section>
+
+<section id="decisions">
+  <h2>Decisions</h2>
+  <ol>
+    <li>
+      <strong>The RN host mints <code>referenceId</code> once per <code>SelfVerification</code> load.</strong>
+      A UUID (<code>crypto.randomUUID()</code> with the same fallback as
+      <code>packages/rn-sdk/src/bridge/MessageRouter.ts:11</code>). It is the durable identity of one
+      WebView session and is always present for RN-hosted WebViews, including self-app onboarding.
+      <strong>Not</strong> a WebView-side fallback — the
+      <code>verificationId ?? webview-${'{'}Date.now(){'}'}</code> shape is runtime-local, timestamp-derived,
+      and can diverge from the RN host; it is not a correlation key.
+    </li>
+    <li>
+      <strong>It propagates two ways, redundantly:</strong> appended to the WebView URL query string
+      (<code>buildRequestSearch</code>) <em>and</em> returned from <code>lifecycle.getConfig</code>. The URL
+      copy lets the WebView tag Sentry before the bridge handshake resolves; the config copy is the
+      authoritative source. The WebView prefers the config value and falls back to the URL param.
+    </li>
+    <li>
+      <strong>Both runtimes set a durable Sentry tag <code>reference_id</code> as soon as the id is known
+      — outside any analytics path.</strong> The RN analytics handler only forwards WebView event payloads
+      (<code>packages/rn-sdk/src/handlers/AnalyticsHandler.ts:32</code>) and
+      <code>tagsFromAnalyticsEvent()</code> only emits tags for onboarding-prefixed event names, so an event
+      payload is <em>not</em> a reliable propagation path: a Sentry error thrown outside an analytics call
+      would miss the tag. Set it via <code>Sentry.setTag</code> on the scope at session start on each side.
+    </li>
+    <li>
+      <strong><code>verificationId</code> stays a separate business id.</strong> It is tagged
+      <code>verification_id</code> only when present. It is never aliased to <code>reference_id</code> —
+      aliasing reintroduces the onboarding-mode ambiguity this PR removes.
+    </li>
+    <li>
+      <strong>No bridge protocol version bump.</strong> <code>referenceId</code> is an optional field on
+      the existing <code>getConfig</code> response (and an optional URL param). Older hosts that omit it and
+      standalone browser mode degrade gracefully (see Compatibility). Protocol stays
+      <code>BRIDGE_PROTOCOL_VERSION = 1</code> (<code>packages/webview-bridge/src/types.ts:152</code>).
+    </li>
+  </ol>
+</section>
+
+<section id="naming">
+  <h2>Naming &amp; casing</h2>
+  <p>
+    <strong>camelCase in code, snake_case at the Sentry/analytics boundary, mapped in exactly one place per
+    runtime</strong> — the existing repo pattern (<code>tagsFromAnalyticsEvent</code> maps
+    <code>country_code</code> → <code>document_country</code> at
+    <code>packages/mobile-sdk-alpha/src/observability/onboardingContext.ts:47</code>). Do not standardize
+    casing globally.
+  </p>
+  <table>
+    <thead><tr><th>Concept</th><th>TS / bridge field</th><th>Sentry tag</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>Host-minted WebView correlation session id</td><td><code>referenceId</code></td><td><code>reference_id</code></td><td><strong>New.</strong> Chosen over <code>sessionId</code> to avoid collision with the existing <code>NfcScanParams.sessionId</code> bridge field (<code>webview-bridge/src/types.ts</code>) and the proof/relay <code>session_id</code> tag the RN host already emits from <code>logEvent</code> (<code>app/src/config/sentry.ts:266,277</code>).</td></tr>
+      <tr><td>Business verification request id</td><td><code>verificationId</code></td><td><code>verification_id</code></td><td>Unchanged field; new tag, set only when present.</td></tr>
+    </tbody>
+  </table>
+  <div class="callout note">
+    Define <code>reference_id</code> as &ldquo;host-minted WebView correlation session id&rdquo; in a code
+    comment at the mint site only (a non-obvious invariant). Do not reuse it for proof/KYC/NFC sessions.
+  </div>
+</section>
+
+<section id="files">
+  <h2>Files modified</h2>
+  <table>
+    <thead><tr><th>File</th><th>Change</th></tr></thead>
+    <tbody>
+      <tr><td><code>packages/rn-sdk/src/SelfVerification.tsx</code></td><td>Add <code>referenceId?: string</code> to <code>VerificationRequest</code>; mint a resolved id once (<code>useMemo</code>); append in <code>buildRequestSearch</code> (<code>set('referenceId', …)</code>); pass into the <code>LifecycleHandler</code> config; call the RN <code>setReferenceTag</code> on mount and clear on unmount.</td></tr>
+      <tr><td><code>packages/rn-sdk/src/handlers/LifecycleHandler.ts</code></td><td>Add <code>referenceId?: string</code> to <code>LifecycleConfig</code>; return it from <code>getConfig</code>.</td></tr>
+      <tr><td><code>app/src/config/sentry.ts</code></td><td>Add <code>reference_id</code> and <code>verification_id</code> to <code>ALLOWED_TAG_KEYS</code> (line 34); export <code>setReferenceTag(referenceId, verificationId?)</code> and <code>clearReferenceTag()</code> wrapping the allowlist-guarded <code>setTag</code>.</td></tr>
+      <tr><td><code>packages/webview-app/src/providers/OperatingModeProvider.tsx</code></td><td>Add <code>referenceId?: string</code> to <code>HostConfigResponse</code> and <code>OperatingModeContextValue</code>; read from config, fall back to the URL param; expose via <code>useOperatingMode()</code>.</td></tr>
+      <tr><td><code>packages/webview-app/src/utils/verificationRequest.ts</code></td><td>Parse <code>referenceId</code> from the URL query param into <code>ParsedVerificationRequestContext</code>.</td></tr>
+      <tr><td><code>packages/webview-app/src/config/sentry.ts</code></td><td>Export <code>setReferenceTag(referenceId, verificationId?)</code> and <code>clearReferenceTag()</code> using the existing <code>setTag</code> import + <code>sanitizeTagValue</code>.</td></tr>
+      <tr><td><code>packages/webview-app/src/providers/SelfClientProvider.tsx</code></td><td>Effect: when <code>referenceId</code> (and <code>verificationId</code>) are known, call <code>setReferenceTag</code>; clear on unmount.</td></tr>
+    </tbody>
+  </table>
+  <p>No <code>BRIDGE_PROTOCOL_VERSION</code> change. No new dependency.</p>
+</section>
+
+<section id="implementation">
+  <h2>Implementation</h2>
+  <ol>
+    <li><strong>rn-sdk type + mint.</strong> Add the field to <code>VerificationRequest</code>. In the
+      component body, <code>const referenceId = useMemo(() => request.referenceId ?? makeUuid(), [request.referenceId])</code>
+      where <code>makeUuid</code> matches MessageRouter's <code>crypto.randomUUID()</code>-with-fallback.
+      Thread <code>referenceId</code> into <code>buildRequestSearch(request, referenceId)</code> and the
+      <code>LifecycleHandler</code> config object built at <code>SelfVerification.tsx:~407,432</code>.</li>
+    <li><strong>rn-sdk getConfig.</strong> Add <code>referenceId</code> to <code>LifecycleConfig</code> and
+      return it alongside <code>mode</code>/<code>verificationRequest</code>.</li>
+    <li><strong>RN Sentry helpers.</strong> In <code>app/src/config/sentry.ts</code> add the two allowlist
+      keys and export <code>setReferenceTag</code> (guards through the existing allowlist check at line 142)
+      / <code>clearReferenceTag</code>. The dev host (<code>app/src/screens/dev/WebViewHostScreen.tsx:117</code>)
+      and any production consumer wire these through <code>SelfVerification</code>'s mount/unmount, so callers
+      do nothing.</li>
+    <li><strong>WebView config read.</strong> Add <code>referenceId</code> to <code>HostConfigResponse</code>
+      and <code>OperatingModeContextValue</code>; in the success branch set
+      <code>referenceId: config?.referenceId ?? urlReferenceId</code>; in the catch (browser-host)
+      branch set the URL value (or undefined). Parse the URL param in
+      <code>verificationRequest.ts</code>.</li>
+    <li><strong>WebView Sentry helper + wiring.</strong> Add <code>setReferenceTag</code>/<code>clearReferenceTag</code>
+      to <code>webview-app/src/config/sentry.ts</code>. In <code>SelfClientProvider</code>, an effect keyed on
+      <code>[referenceId, verificationId]</code> calls <code>setReferenceTag</code> when
+      <code>referenceId</code> is set and returns a cleanup that clears it.</li>
+  </ol>
+</section>
+
+<section id="lifecycle">
+  <h2>Tag lifecycle</h2>
+  <ul>
+    <li><strong>Set:</strong> on each runtime as soon as the id is known — RN on <code>SelfVerification</code>
+      mount, WebView when config/URL resolves.</li>
+    <li><strong>Clear:</strong> RN on <code>SelfVerification</code> unmount and on <code>dismiss</code>/terminal
+      <code>setResult</code>; WebView on provider unmount. A new load mints a new id and overwrites the tag.
+      This prevents one failed session's <code>reference_id</code> leaking into a later session's events.</li>
+    <li><strong><code>verification_id</code> tracks <code>referenceId</code>.</strong>
+      <code>setReferenceTag(referenceId, verificationId?)</code> clears <code>verification_id</code>
+      when called without a <code>verificationId</code>, so a self-app onboarding session that follows an
+      embed session does not inherit the prior session's <code>verification_id</code>. Both runtimes do this.</li>
+    <li><strong>Invariant:</strong> <code>reference_id</code> and <code>verification_id</code> reflect the
+      current WebView session or are absent — never stale.</li>
+  </ul>
+</section>
+
+<section id="compat">
+  <h2>Compatibility</h2>
+  <ul>
+    <li><strong>Old host, new WebView:</strong> <code>getConfig</code> omits <code>referenceId</code> and
+      no URL param is present → the WebView has no reference id; the footer (PR2) renders nothing. No error.</li>
+    <li><strong>Standalone browser mode:</strong> no RN host. The WebView MAY synthesize a dev-only local id
+      so local testing has a value, but it is <strong>not cross-runtime correlatable</strong> and must be
+      documented as such (and gated to non-production). Default: render nothing rather than a misleading id.</li>
+    <li><strong>New host, old WebView:</strong> extra config field + URL param ignored. RN still tags its own
+      events. No regression to the existing Self Wallet app.</li>
+  </ul>
+</section>
+
+<section id="tests">
+  <h2>Tests</h2>
+  <ul>
+    <li><strong>rn-sdk.</strong> <code>buildRequestSearch</code> includes <code>referenceId</code> when set;
+      a provided <code>request.referenceId</code> is used verbatim; absent → a UUID is minted and stable
+      across re-renders. <code>LifecycleHandler.getConfig</code> returns <code>referenceId</code>.</li>
+    <li><strong>RN Sentry helper.</strong> <code>setReferenceTag</code> sets <code>reference_id</code>
+      (and <code>verification_id</code> when provided; clears <code>verification_id</code> when absent);
+      a non-allowlisted key is rejected; <code>clearReferenceTag</code> removes both.</li>
+    <li><strong>WebView config.</strong> <code>OperatingModeProvider</code> exposes <code>referenceId</code>
+      from config; falls back to the URL param when config omits it; undefined when neither is present.</li>
+    <li><strong>WebView Sentry helper.</strong> <code>setReferenceTag</code> tags <code>reference_id</code>
+      via the mocked <code>@sentry/react</code> <code>setTag</code>; sanitizes the value; clears
+      <code>verification_id</code> when absent; clears both on cleanup.</li>
+  </ul>
+</section>
+
+<section id="oos">
+  <h2>Out of scope</h2>
+  <ul>
+    <li>The footer UI (PR2 — <a href="./WIA-14-footer.html">WIA-14-footer</a>).</li>
+    <li>Bridge protocol version changes or new domains/methods.</li>
+    <li>Aliasing or removing <code>verificationId</code>; touching <code>attempt_id</code> / the onboarding funnel.</li>
+    <li>Tag taxonomy changes owned by the <code>analytics/</code> workstream (you add only <code>reference_id</code> + <code>verification_id</code>, the keys this feature requires).</li>
+  </ul>
+</section>
+
+<section id="validation">
+  <h2>Validation</h2>
+  <pre>cd packages/webview-bridge &amp;&amp; yarn build &amp;&amp; yarn test
+cd packages/rn-sdk &amp;&amp; yarn test &amp;&amp; yarn types
+cd packages/webview-app &amp;&amp; yarn test &amp;&amp; yarn build
+cd packages/mobile-sdk-alpha &amp;&amp; yarn test &amp;&amp; yarn types</pre>
+  <ul>
+    <li>Launch the dev WebView host; confirm RN and WebView Sentry events for the same load share one <code>reference_id</code>, and that <code>verification_id</code> appears only when a verificationId is supplied.</li>
+    <li>Reload the host; confirm the tag value changes and no event carries the prior id.</li>
+    <li>Confirm the existing Self Wallet app still builds and its existing Sentry tags are unchanged.</li>
+  </ul>
+</section>
+
+<section id="done">
+  <h2>Done criteria</h2>
+  <ul class="check">
+    <li>RN host mints <code>referenceId</code> once per <code>SelfVerification</code> load; always present for RN-hosted WebViews.</li>
+    <li>It reaches the WebView via both the URL param and <code>lifecycle.getConfig</code>; the WebView prefers config, falls back to URL.</li>
+    <li>Both runtimes set a durable <code>reference_id</code> Sentry tag at session start, independent of analytics events, and clear it per the lifecycle section.</li>
+    <li><code>verificationId</code> remains separate; tagged <code>verification_id</code> only when present; never aliased.</li>
+    <li><code>reference_id</code> + <code>verification_id</code> added to the RN allowlist; web side tags pass <code>redactSensitiveFields</code>.</li>
+    <li>No protocol version bump; old hosts and browser mode degrade without error; the Self Wallet app does not regress.</li>
+    <li>All four package validation commands pass.</li>
+  </ul>
+</section>
+
+</main>
+</div>
+</body>
+</html>

@@ -8,7 +8,11 @@ export interface ParsedVerificationRequestContext {
   request: VerificationRequest;
   displayLabels: string[] | null;
   appName: string;
+  /** Full endpoint URL (with protocol and path) — used for proof submission. */
   appEndpoint: string;
+  /** Endpoint formatted for UI display: protocol stripped, path stripped.
+   *  Mirrors @selfxyz/common/utils/scope#formatEndpoint used by the native app. */
+  displayAppEndpoint: string;
   timestamp: number;
   requestType: string;
   verificationId?: string;
@@ -59,6 +63,7 @@ export function parseVerificationRequestContext(search: string): ParsedVerificat
   const version = Number.isFinite(parsedVersion) ? parsedVersion : 1;
 
   const endpointType = params.get('endpointType') ?? undefined;
+  const appEndpoint = normalizeEndpoint(params.get('appEndpoint'), endpointType);
   const userIdType = params.get('userIdType') ?? undefined;
   const rawChainID = params.get('chainID');
   const chainID = rawChainID === '42220' || rawChainID === '11142220' ? Number(rawChainID) : undefined;
@@ -69,7 +74,8 @@ export function parseVerificationRequestContext(search: string): ParsedVerificat
     request,
     displayLabels: parseDisplayLabels(params),
     appName: params.get('appName') ?? 'Verification',
-    appEndpoint: normalizeEndpoint(params.get('appEndpoint'), endpointType),
+    appEndpoint,
+    displayAppEndpoint: formatEndpointForDisplay(appEndpoint),
     timestamp: Number.isFinite(parsedTimestamp) ? parsedTimestamp : Date.now(),
     requestType: normalizeRequestType(params.get('resultType')),
     verificationId: params.get('verificationId') ?? undefined,
@@ -87,6 +93,16 @@ export function parseVerificationRequestContext(search: string): ParsedVerificat
 function normalizeRequestType(value: string | null | undefined): string {
   if (!value) return DEFAULT_REQUEST_TYPE;
   return ALLOWED_REQUEST_TYPES.has(value) ? value : DEFAULT_REQUEST_TYPE;
+}
+
+/** Strip protocol + path so 'https://playground.staging.self.xyz/api/verify'
+ *  renders as 'playground.staging.self.xyz' — matches what the native app
+ *  passes to its proof-request card via @selfxyz/common's formatEndpoint. */
+export function formatEndpointForDisplay(endpoint: string): string {
+  if (!endpoint) return '';
+  // Contract addresses (0x…) display as-is.
+  if (endpoint.startsWith('0x')) return endpoint.toLowerCase();
+  return endpoint.replace(/^https?:\/\//, '').split('/')[0];
 }
 
 function normalizeEndpoint(value: string | null | undefined, endpointType?: string): string {
