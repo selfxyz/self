@@ -113,7 +113,8 @@ yarn types # Verify type checking
 ### Development Tips
 
 - Use `yarn build:deps` to build all workspace dependencies before running the app
-- For iOS: Ensure Xcode scheme is set to "OpenPassport" (see memory)
+- For iOS: Ensure Xcode scheme is set to "Self"
+- For iOS device builds: the project pins `DEVELOPMENT_TEAM` to the Self team (`5B29R5LYHQ`); contributors outside that team must override it locally in Xcode (Signing & Capabilities) — simulator builds are unaffected
 - For Android: Ensure emulator is running or device is connected before `yarn android`
 - Metro bundler starts automatically; use `yarn start` to run it separately
 

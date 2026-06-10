@@ -155,7 +155,7 @@ function main() {
     'react-native',
     'run-ios',
     '--scheme',
-    'OpenPassport',
+    'Self',
     '--udid',
     simulator.udid,
   ]);

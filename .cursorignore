@@ -42,7 +42,7 @@ circuits/scripts/server/*.sh
 
 # Test wallets and mock data
 app/ios/passport.json
-app/ios/OpenPassport/passport.json
+app/ios/Self/passport.json
 
 # Environment sample files
 app/env.sample

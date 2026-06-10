@@ -192,7 +192,7 @@ To view the Android logs, use the Logcat feature in Android Studio, or use the `
 > :warning: To run the app on iOS, you will need a paying Apple Developer account. Free accounts can't run apps that use NFC reading.<br/>
 > Contact us if you need it to contribute.
 
-Open the ios project in Xcode and add your provisioning profile in Targets > OpenPassport > Signing and Capabilities.
+Open the ios project in Xcode and add your provisioning profile in Targets > Self > Signing and Capabilities.
 
 Then, install Ruby dependencies and CocoaPods:
 
@@ -313,7 +313,7 @@ yarn android --mode release
 bundle exec fastlane ios build_local
 
 # Or using Xcode
-# 1. Open ios/OpenPassport.xcworkspace
+# 1. Open ios/Self.xcworkspace
 # 2. Product → Archive
 # 3. Follow the wizard
 ```

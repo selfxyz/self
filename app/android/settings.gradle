@@ -12,7 +12,7 @@ plugins {
 extensions.configure(com.facebook.react.ReactSettingsExtension){ ex ->
   ex.autolinkLibrariesFromCommand(['yarn','exec','react-native','config'])
 }
-rootProject.name = 'OpenPassport'
+rootProject.name = 'Self'
 
 expoAutolinking.exclude = ['@sentry/react-native']
 expoAutolinking.useExpoModules()
