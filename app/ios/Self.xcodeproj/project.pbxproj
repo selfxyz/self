@@ -264,8 +264,8 @@
 				LastUpgradeCheck = 2620;
 				TargetAttributes = {
 					13B07F861A680F5B00A75B9A = {
+						DevelopmentTeam = 5B29R5LYHQ;
 						LastSwiftMigration = 1430;
-						DevelopmentTeam = "5B29R5LYHQ";
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -504,6 +504,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 230;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 5B29R5LYHQ;
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_BITCODE = NO;
 				ENABLE_RESOURCE_ACCESS_CAMERA = YES;
@@ -635,7 +636,6 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 				VERSIONING_SYSTEM = "apple-generic";
-				DEVELOPMENT_TEAM = "5B29R5LYHQ";
 			};
 			name = Debug;
 		};
@@ -646,8 +646,11 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = OpenPassport/OpenPassport.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 230;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 5B29R5LYHQ;
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_RESOURCE_ACCESS_CAMERA = YES;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -776,9 +779,6 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 				VERSIONING_SYSTEM = "apple-generic";
-				DEVELOPMENT_TEAM = "5B29R5LYHQ";
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
 			};
 			name = Release;
 		};
