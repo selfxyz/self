@@ -688,7 +688,7 @@ jobs:
         run: |
           echo "🏗️ Building SDK dependencies..."
           cd ${{ env.APP_PATH }}
-          yarn workspace @selfxyz/mobile-app run build:deps --silent || { echo "❌ Dependency build failed"; exit 1; }
+          yarn workspace @selfxyz/mobile-app run build:deps || { echo "❌ Dependency build failed"; exit 1; }
           echo "✅ Dependencies built successfully"
 
       # act won't work with macos, but you can test with `bundle exec fastlane ios ...`
@@ -1173,7 +1173,7 @@ jobs:
         run: |
           echo "🏗️ Building SDK dependencies..."
           cd ${{ env.APP_PATH }}
-          yarn workspace @selfxyz/mobile-app run build:deps --silent || { echo "❌ Dependency build failed"; exit 1; }
+          yarn workspace @selfxyz/mobile-app run build:deps || { echo "❌ Dependency build failed"; exit 1; }
           echo "✅ Dependencies built successfully"
 
       - name: Build AAB with Fastlane
