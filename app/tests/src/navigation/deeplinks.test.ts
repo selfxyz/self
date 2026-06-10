@@ -126,7 +126,17 @@ describe('deeplinks', () => {
         index: 1,
         routes: [
           { name: 'Home' },
-          { name: 'ProvingScreenRouter', params: { entryPoint: 'deeplink' } },
+          {
+            name: 'WebViewHost',
+            params: {
+              request: expect.objectContaining({
+                verificationId: 'abc',
+                environment: 'prod',
+                userIdType: 'uuid',
+                timestamp: expect.any(Number),
+              }),
+            },
+          },
         ],
       });
     });

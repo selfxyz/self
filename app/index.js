@@ -23,11 +23,11 @@ import tamaguiConfig from './tamagui.config';
 import './src/utils/crypto/ethers';
 import 'react-native-gesture-handler';
 
-LogBox.ignoreLogs([
-  /bad setState/,
-  'Warning, duplicate ID for input',
-  /Warning, duplicate ID for input/,
-]);
+// Suppress all in-app LogBox toasts. We're running a debug build for the
+// demo orchestrator, but the "Open debugger to view warnings" overlay
+// breaks the recording's aesthetics. Real warnings still go to logcat
+// (which the orchestrator scans and posts to Slack on demand).
+LogBox.ignoreAllLogs(true);
 
 const Root = () => (
   <TamaguiProvider config={tamaguiConfig}>

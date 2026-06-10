@@ -1606,6 +1606,8 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - selfxyz-rn-sdk (0.0.1-alpha.1):
+    - React-Core
   - SocketRocket (0.7.1)
   - Yoga (0.0.0)
 
@@ -1680,6 +1682,7 @@ DEPENDENCIES:
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - RNFS (from `../node_modules/react-native-fs`)
   - RNKeychain (from `../node_modules/react-native-keychain`)
+  - "selfxyz-rn-sdk (from `../node_modules/@selfxyz/rn-sdk`)"
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
@@ -1824,6 +1827,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-fs"
   RNKeychain:
     :path: "../node_modules/react-native-keychain"
+  selfxyz-rn-sdk:
+    :path: "../node_modules/@selfxyz/rn-sdk"
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
@@ -1896,6 +1901,7 @@ SPEC CHECKSUMS:
   ReactCommon: bfd3600989d79bc3acbe7704161b171a1480b9fd
   RNFS: 4ac0f0ea233904cb798630b3c077808c06931688
   RNKeychain: ac53793d4a52be6286c1da065b2fa2ce20daa522
+  selfxyz-rn-sdk: 10a6f99e70be61f7b9f7f2a3b2975dbf0ad9f351
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Yoga: feb4910aba9742cfedc059e2b2902e22ffe9954a
 

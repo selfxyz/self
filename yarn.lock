@@ -11424,7 +11424,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@selfxyz/euclid-core@npm:1.4.4, @selfxyz/euclid-core@npm:^1.4.4":
+"@selfxyz/euclid-core@npm:1.4.6, @selfxyz/euclid-core@npm:^1.4.6":
+  version: 1.4.6
+  resolution: "@selfxyz/euclid-core@npm:1.4.6"
+  peerDependencies:
+    react: ">=18.2.0"
+  checksum: 10c0/bb873e3a054e42a06f9973c86b540d53d6ecf6ca9ce18732ff1d3b284eb060ab1849a2eed326d8a35e5da3bc3f88b398672748b709d1d1eed47df484c637ac54
+  languageName: node
+  linkType: hard
+
+"@selfxyz/euclid-core@npm:^1.4.4":
   version: 1.4.4
   resolution: "@selfxyz/euclid-core@npm:1.4.4"
   peerDependencies:
@@ -11433,26 +11442,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@selfxyz/euclid-core@npm:^1.4.2":
-  version: 1.4.2
-  resolution: "@selfxyz/euclid-core@npm:1.4.2"
-  peerDependencies:
-    react: ">=18.2.0"
-  checksum: 10c0/0e69b12647dedf65a633fe3f7ec2b81de9370555e31fbb4bc8d7119a2e7b230df9c899501fc890caeff46ce94fc8b3e33122088cc252e5ce8ee46fe9a36087b7
-  languageName: node
-  linkType: hard
-
-"@selfxyz/euclid@npm:1.4.2":
-  version: 1.4.2
-  resolution: "@selfxyz/euclid@npm:1.4.2"
+"@selfxyz/euclid@npm:1.4.6":
+  version: 1.4.6
+  resolution: "@selfxyz/euclid@npm:1.4.6"
   dependencies:
     "@lottiefiles/dotlottie-react": "npm:^0.18.4"
-    "@selfxyz/euclid-core": "npm:^1.4.2"
+    "@selfxyz/euclid-core": "npm:^1.4.6"
     lottie-react: "npm:^2.4.1"
   peerDependencies:
     react: ">=18.2.0"
     react-dom: ">=18.2.0"
-  checksum: 10c0/48f235b520d2d19c1a0755e4c858972fc648935a3b4a18532859d2a56e0416a3ab236b7185adf53ee3af79b02ec81171104eb31e258d27ba5df677141d5c4fde
+  checksum: 10c0/31f7a4aef95ad5c12083390ab51f07a52e4cfe739f32be98ac0a6933655c5595bcf6fb27657e181c998130ac91072d381cec4eaf70a2170069664de2e9ef7ab6
   languageName: node
   linkType: hard
 
@@ -11523,6 +11523,7 @@ __metadata:
     "@selfxyz/common": "workspace:^"
     "@selfxyz/euclid": "npm:^0.6.1"
     "@selfxyz/mobile-sdk-alpha": "workspace:^"
+    "@selfxyz/rn-sdk": "workspace:^"
     "@sentry/react": "npm:^9.32.0"
     "@sentry/react-native": "npm:8.11.1"
     "@stablelib/cbor": "npm:^2.0.4"
@@ -11576,6 +11577,7 @@ __metadata:
     expo: "npm:55.0.20"
     expo-application: "npm:55.0.14"
     expo-camera: "npm:55.0.17"
+    expo-file-system: "npm:55.0.22"
     hermes-eslint: "npm:^0.33.3"
     jest: "npm:^30.3.0"
     lottie-react-native: "npm:7.3.6"
@@ -11855,7 +11857,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@selfxyz/rn-sdk@workspace:*, @selfxyz/rn-sdk@workspace:packages/rn-sdk":
+"@selfxyz/rn-sdk@workspace:*, @selfxyz/rn-sdk@workspace:^, @selfxyz/rn-sdk@workspace:packages/rn-sdk":
   version: 0.0.0-use.local
   resolution: "@selfxyz/rn-sdk@workspace:packages/rn-sdk"
   dependencies:
@@ -11914,10 +11916,11 @@ __metadata:
     "@didit-protocol/sdk-web": "npm:^0.2.0"
     "@scure/bip32": "npm:^2.0.1"
     "@scure/bip39": "npm:^1.6.0"
-    "@selfxyz/euclid": "npm:1.4.2"
-    "@selfxyz/euclid-core": "npm:1.4.4"
+    "@selfxyz/euclid": "npm:1.4.6"
+    "@selfxyz/euclid-core": "npm:1.4.6"
     "@selfxyz/mobile-sdk-alpha": "workspace:^"
     "@selfxyz/webview-bridge": "workspace:^"
+    "@sentry/react": "npm:^9.32.0"
     "@testing-library/react": "npm:^14.1.2"
     "@types/react": "npm:^18.3.4"
     "@types/react-dom": "npm:^18.3.0"
@@ -11932,6 +11935,7 @@ __metadata:
     eslint-plugin-import: "npm:^2.31.0"
     eslint-plugin-prettier: "npm:^5.5.4"
     eslint-plugin-react: "npm:^7.37.5"
+    eslint-plugin-self-handlers: "portal:./eslint-rules"
     eslint-plugin-simple-import-sort: "npm:^12.1.1"
     eslint-plugin-sort-exports: "npm:^0.9.1"
     jsdom: "npm:^29.0.1"
@@ -24317,6 +24321,14 @@ __metadata:
   languageName: node
   linkType: hard
 
+"eslint-plugin-self-handlers@portal:./eslint-rules::locator=%40selfxyz%2Fwebview-app%40workspace%3Apackages%2Fwebview-app":
+  version: 0.0.0-use.local
+  resolution: "eslint-plugin-self-handlers@portal:./eslint-rules::locator=%40selfxyz%2Fwebview-app%40workspace%3Apackages%2Fwebview-app"
+  peerDependencies:
+    eslint: ">=8"
+  languageName: node
+  linkType: soft
+
 "eslint-plugin-simple-import-sort@npm:^12.1.1":
   version: 12.1.1
   resolution: "eslint-plugin-simple-import-sort@npm:12.1.1"
@@ -24880,7 +24892,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expo-file-system@npm:~55.0.17":
+"expo-file-system@npm:55.0.22, expo-file-system@npm:~55.0.17":
   version: 55.0.22
   resolution: "expo-file-system@npm:55.0.22"
   peerDependencies:

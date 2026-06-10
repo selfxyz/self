@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>NAV-02 Plan — Dev-only Route Namespace + DEV Gating</title>
+<link rel="stylesheet" href="./_shared.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <h1>NAV-02 · Dev-only Route Namespace + DEV Gating</h1>
+  <span class="meta-pill status-Ready">Ready</span>
+  <span class="meta-pill prio-High">High</span>
+  <span class="meta-pill">Updated 2026-05-25</span>
+  <span class="spacer"></span>
+  <div class="links">
+    <a href="../SPEC.html">← Spec</a>
+    <a href="../AUDIT.html">Audit</a>
+  </div>
+</header>
+
+<div class="layout">
+
+<nav class="toc">
+  <h4>On this page</h4>
+  <a href="#why">Why</a>
+  <a href="#decisions">Decisions</a>
+  <a href="#meta">Meta</a>
+  <a href="#scope">Scope</a>
+  <a href="#out-of-scope">Out of Scope</a>
+  <a href="#required-files">Required Files</a>
+  <a href="#approach">Approach</a>
+  <a href="#validation">Validation</a>
+  <a href="#open-questions">Open Questions</a>
+  <a href="#hand-off">Hand-off</a>
+  <h4>Workstream</h4>
+  <a href="../SPEC.html">SPEC ↗</a>
+  <a href="../AUDIT.html">AUDIT ↗</a>
+</nav>
+
+<main>
+
+<section id="why" class="tldr">
+  <h2>Why</h2>
+  <p>
+    Dev-only routes are scattered. <code>/debug/keychain</code> is correctly gated on <code>import.meta.env.DEV</code> at registration. <code>/tunnel/kyc-pending</code> is also DEV-gated but lives under the tunnel namespace. The three <code>/proving/dialogue*</code> routes are reachable only via DevRouteMenu but have no DEV gate. NAV-02 standardizes: every dev-only route moves under <code>/dev/*</code> and is gated on <code>import.meta.env.DEV</code> at the registration site.
+  </p>
+  <p>
+    Depends on NAV-01 (classification). Consumes the <span class="disp-pill dev">dev</span> and <span class="disp-pill component">component</span> rows from the disposition table.
+  </p>
+</section>
+
+<section id="decisions" class="decisions-block">
+  <h2>Decisions</h2>
+  <p class="decisions-intro">
+    Locked in on 2026-05-25. The widget at <a href="#open-questions">Open Questions</a> remains the editing surface; this block plus <a href="../DECISIONS.md">DECISIONS.md</a> are the durable record.
+  </p>
+  <ul class="decisions-list">
+    <li class="decision custom">
+      <div class="d-head"><code>nav-02-q1-dialogue-move</code> · Custom decision</div>
+      <p class="d-q">Should the three <code>/proving/dialogue*</code> routes move to <code>/dev/*</code> or stay at <code>/proving/*</code> as component-showcase routes?</p>
+      <p class="d-a"><strong>Decision: neither — discard the three dialogue screens.</strong> Clunky, unused by any production flow (the only entry point is DevRouteMenu), not worth namespace surgery. Delete the routes + screen files + DevRouteMenu entries in this PR. Re-introducing a polished version is tracked in the SDK future backlog.</p>
+      <p class="d-note">
+        <span class="d-note-quote">"I looked into the dialog, but it seems very clunky. I think that for now we can discard that screen unless it is used in the app. and put in the backlogs that we'll have to improve it."</span>
+        Confirmed: no production <code>navigate()</code> calls target these paths — only <code>App.tsx</code> registrations and <code>DevRouteMenu</code>.
+      </p>
+    </li>
+    <li class="decision">
+      <div class="d-head"><code>nav-02-q2-tunnel-kyc-pending</code> · Decided</div>
+      <p class="d-q">Move <code>/tunnel/kyc-pending</code> to <code>/dev/*</code> or keep at <code>/tunnel/*</code> (subject to NAV-08 rename)?</p>
+      <p class="d-a"><strong>Decision: keep at <code>/tunnel/kyc-pending</code> until NAV-08.</strong> NAV-08's namespace rewrite will sweep it to <code>/disclose/kyc-pending</code>; it never enters <code>/dev/*</code> at all.</p>
+      <p class="d-note">
+        <span class="d-note-quote">"I don't really understand your question, the <code>/dev/</code> seems to not be used anywhere else in the docs. so why should we have this stuff only for that screen which is actually not only for devs. there has to be a misunderstanding somewhere."</span>
+        Reconciliation: <strong>NAV-02 <em>creates</em> the <code>/dev/*</code> namespace</strong> — it does not exist anywhere else today. The framing of the original question implied <code>/dev/*</code> was already an established home for dev fixtures; it isn't. With the decision above, kyc-pending sidesteps the question entirely.
+      </p>
+    </li>
+  </ul>
+</section>
+
+<section id="meta">
+  <h2>Meta</h2>
+  <div class="meta-grid">
+    <div class="item"><div class="label">Workstream</div><div class="value">nav-hygiene</div></div>
+    <div class="item"><div class="label">Linear</div><div class="value">TBD</div></div>
+    <div class="item"><div class="label">Owner</div><div class="value">TBD</div></div>
+    <div class="item"><div class="label">Branch</div><div class="value"><code>chore/nav-02-dev-routes</code></div></div>
+    <div class="item"><div class="label">PR</div><div class="value">TBD</div></div>
+    <div class="item"><div class="label">Depends on</div><div class="value">NAV-01</div></div>
+  </div>
+</section>
+
+<section id="scope">
+  <h2>Scope</h2>
+  <ul class="scope">
+    <li>Move <code>/debug/keychain</code> → <code>/dev/keychain</code>. Keep the existing <code>{import.meta.env.DEV && &lt;Route ... /&gt;}</code> wrapping pattern.</li>
+    <li><strong>Delete</strong> the three <code>/proving/dialogue*</code> routes — and the screen files <code>SimpleDialogueScreen.tsx</code>, <code>DialogueWithCtaScreen.tsx</code>, <code>ProofGenerationDialogueScreen.tsx</code>. Remove their three entries from <code>DevRouteMenu.tsx</code>. Confirm with grep that no <code>navigate()</code> call targets these paths.</li>
+    <li><strong>Leave <code>/tunnel/kyc-pending</code> alone</strong> in this PR — NAV-08 sweeps it to <code>/disclose/kyc-pending</code>.</li>
+    <li>Update <code>DevRouteMenu.tsx</code> to add a "Dev" group at the top of the menu containing every <code>/dev/*</code> entry (currently just <code>/dev/keychain</code> after this PR).</li>
+    <li>Document the gating pattern in <code>packages/webview-app/AGENTS.md</code> — one paragraph: "dev-only routes register under <code>/dev/*</code> with <code>{import.meta.env.DEV && ...}</code>. NAV-02 is the workstream that established this namespace."</li>
+  </ul>
+</section>
+
+<section id="out-of-scope">
+  <h2>Out of Scope</h2>
+  <ul class="scope">
+    <li><strong>No changes to <code>isDemoMode()</code> or any <code>?mock=...</code> URL-param logic.</strong> That mechanism is orthogonal (runtime data injection, not registration gating).</li>
+    <li><strong>No changes to component-level DEV gates</strong> (HomeScreen restart button, MockRegistrationFailureButton, etc.). Those stay as-is.</li>
+    <li><strong>No <code>process.env</code> or <code>__DEV__</code> rewrites.</strong> Webview-app already standardizes on <code>import.meta.env.DEV</code>.</li>
+    <li>NAV-12 (rename <code>tunnel</code> → <code>embed</code>) is separate; this plan touches <code>/tunnel/kyc-pending</code> only if Q2 says "move to <code>/dev/*</code>."</li>
+  </ul>
+</section>
+
+<section id="required-files">
+  <h2>Required Files</h2>
+  <ul class="scope">
+    <li><code>packages/webview-app/src/App.tsx</code> (route registrations at lines ~130, 156, ~143–145)</li>
+    <li><code>packages/webview-app/src/components/DevRouteMenu.tsx</code> (entry list)</li>
+    <li><code>packages/webview-app/AGENTS.md</code> (one-paragraph rule documentation)</li>
+  </ul>
+</section>
+
+<section id="approach">
+  <h2>Approach</h2>
+  <h3>Step 1 — Move <code>/debug/keychain</code></h3>
+  <p>In <code>App.tsx</code> line 130, change:</p>
+  <pre><code>{import.meta.env.DEV &amp;&amp; &lt;Route path="/debug/keychain" element={&lt;KeychainDebugScreen /&gt;} /&gt;}</code></pre>
+  <p>to:</p>
+  <pre><code>{import.meta.env.DEV &amp;&amp; &lt;Route path="/dev/keychain" element={&lt;KeychainDebugScreen /&gt;} /&gt;}</code></pre>
+  <p>In <code>DevRouteMenu.tsx</code>, update the matching entry's <code>href</code>.</p>
+
+  <h3>Step 2 — Delete the dialogue routes</h3>
+  <p>In <code>App.tsx</code> (lines 151–153), remove the three dialogue route registrations. Delete the screen files (<code>SimpleDialogueScreen.tsx</code>, <code>DialogueWithCtaScreen.tsx</code>, <code>ProofGenerationDialogueScreen.tsx</code>) and their imports. Remove the three entries from <code>DevRouteMenu.tsx</code> (lines 75–77).</p>
+  <p>The follow-up to re-introduce a polished dialogue showcase is tracked in <a href="../../../FUTURE-BACKLOG.html">FUTURE-BACKLOG.html</a> (item <code>fb-006</code>).</p>
+
+  <h3>Step 3 — <code>/tunnel/kyc-pending</code> is not in scope</h3>
+  <p>The screen stays on its current path until NAV-08 renames the entire <code>/tunnel/*</code> namespace. No code change in this PR.</p>
+
+  <h3>Step 4 — DevRouteMenu reorganization</h3>
+  <p>Add a "Dev" group as the first group in <code>DevRouteMenu.tsx</code>'s <code>GROUPS</code> array containing every <code>/dev/*</code> route. Audit existing groups and remove duplicates.</p>
+
+  <h3>Step 5 — Document the rule</h3>
+  <p>Add to <code>packages/webview-app/AGENTS.md</code> under a "Routes" or "Conventions" heading:</p>
+  <blockquote style="border-left:3px solid var(--accent); padding-left:12px; color:var(--muted); font-size:13px;">Dev-only routes register under <code>/dev/*</code> and are gated on <code>import.meta.env.DEV</code> at the registration site. Production builds never include them. DevRouteMenu is the only allowed entry point.</blockquote>
+</section>
+
+<section id="validation">
+  <h2>Validation</h2>
+  <ul class="scope">
+    <li><code>cd packages/webview-app &amp;&amp; yarn build</code> — clean build.</li>
+    <li>Run dev server (<code>yarn dev</code>). Verify:
+      <ul>
+        <li>DevRouteMenu shows a "Dev" group with every <code>/dev/*</code> route.</li>
+        <li>Clicking each <code>/dev/*</code> entry lands on the right screen.</li>
+        <li>Navigating directly to the old paths (<code>/debug/keychain</code>) returns the catch-all redirect to <code>/</code>.</li>
+      </ul>
+    </li>
+    <li>Run a production-style build (<code>yarn build</code> then serve <code>dist/</code>). Verify <code>/dev/*</code> routes return the catch-all redirect (DEV gate stripped them).</li>
+    <li><code>grep -r "/debug/keychain" packages/webview-app/src</code> returns no hits.</li>
+    <li><code>grep -r "/proving/dialogue" packages/webview-app/src</code> returns no hits.</li>
+    <li><code>grep -rn "SimpleDialogueScreen\|DialogueWithCtaScreen\|ProofGenerationDialogueScreen" packages/webview-app/src</code> returns no hits.</li>
+  </ul>
+</section>
+
+<section id="open-questions">
+  <h2>Open Questions</h2>
+  <p style="color:var(--muted);font-size:13px;margin-top:0">Answers persist to <code>localStorage</code>. The aggregate view lives in <a href="../SPEC.html#open-questions">SPEC.html</a>.</p>
+  <div id="oq-container"></div>
+</section>
+
+<section id="hand-off">
+  <h2>Hand-off</h2>
+  <p>After NAV-02 lands:</p>
+  <ul class="scope">
+    <li><span class="nav-link">NAV-08</span> renames <code>/tunnel/kyc-pending</code> → <code>/disclose/kyc-pending</code> (NAV-02 leaves it untouched).</li>
+    <li><span class="nav-link">NAV-13</span> wraps every route in App.tsx with mode metadata. <code>/dev/*</code> routes get a <code>mode="dev"</code> declaration.</li>
+    <li><a href="../../../FUTURE-BACKLOG.html">SDK Future Backlog</a> tracks the "rebuild a polished dialogue showcase" follow-up (item <code>fb-006</code>).</li>
+  </ul>
+</section>
+
+</main>
+</div>
+
+<script src="./_open-questions.js"></script>
+<script>
+  window.NavHygieneOQ.renderQuestionsForPlan('NAV-02', document.getElementById('oq-container'));
+
+  const sections = document.querySelectorAll('section[id]');
+  const tocLinks = document.querySelectorAll('nav.toc a[href^="#"]');
+  const obs = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (entry.isIntersecting) {
+        tocLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === `#${entry.target.id}`));
+      }
+    }
+  }, { rootMargin: '-50% 0px -45% 0px' });
+  sections.forEach(s => obs.observe(s));
+</script>
+
+</body>
+</html>

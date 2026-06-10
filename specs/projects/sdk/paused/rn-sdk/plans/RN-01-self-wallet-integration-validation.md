@@ -1,4 +1,4 @@
-# Self Wallet Integration Validation for `SelfVerification`
+# Self app Integration Validation for `SelfVerification`
 
 > Last updated: 2026-03-10
 > Status: Ready
@@ -11,12 +11,12 @@
 
 ## Why
 
-- The RN SDK is implemented, but Self Wallet integration validation is still open.
+- The RN SDK is implemented, but Self app integration validation is still open.
 - This is the clearest remaining product-level confidence gap for the RN host path.
 
 ## Scope
 
-- Validate `SelfVerification` inside the Self Wallet app.
+- Validate `SelfVerification` inside the Self app app.
 - Confirm launch, callback, asset loading, and core native bridge flows work in the host app.
 - Record any integration-specific incompatibilities.
 
@@ -48,7 +48,7 @@ cd app && yarn test
 
 ## Definition of Done
 
-- [ ] Self Wallet integration path validated
+- [ ] Self app integration path validated
 - [ ] Required fixes split or landed
 - [ ] Backlog row updated
 

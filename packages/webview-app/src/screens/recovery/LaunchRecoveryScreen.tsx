@@ -8,37 +8,40 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 import { LaunchRecoveryScreen as EuclidLaunchRecoveryScreen, LeftArrowIcon } from '@selfxyz/euclid';
 
+import { useOperatingMode } from '../../providers/OperatingModeProvider';
 import { useSelfClient } from '../../providers/SelfClientProvider';
+import type { NavState } from '../../types/navState';
 import { WEB_SAFE_AREA } from '../../utils/insets';
 
 export const LaunchRecoveryScreen: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { analytics, haptic } = useSelfClient();
-  const backPath = (location.state as { backPath?: string } | null)?.backPath ?? '/settings/security';
+  const { mode } = useOperatingMode();
+  const backPath = (location.state as Partial<NavState> | null)?.backPath ?? '/settings/security';
 
-  const onClose = useCallback(() => {
+  const handleBack = useCallback(() => {
     haptic.trigger('selection');
     navigate(backPath, { replace: true });
   }, [backPath, navigate, haptic]);
 
-  const isTunnelFlow = backPath.startsWith('/tunnel/');
+  const isEmbedFlow = mode === 'embed';
 
   const onEnterRecoveryPhrase = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('recovery_enter_phrase_pressed');
-    const target = isTunnelFlow
-      ? `/recovery/phrase-input?returnTo=${encodeURIComponent(backPath)}`
-      : '/recovery/phrase-input';
-    navigate(target);
-  }, [backPath, isTunnelFlow, navigate, haptic, analytics]);
+    navigate(
+      '/recover/phrase-input',
+      isEmbedFlow ? { state: { nextPath: backPath } satisfies Partial<NavState> } : undefined,
+    );
+  }, [backPath, isEmbedFlow, navigate, haptic, analytics]);
 
   return (
     <div className="launch-recovery-screen">
       <EuclidLaunchRecoveryScreen
         insets={WEB_SAFE_AREA.insets}
         escapeIcon={({ size, color }) => <LeftArrowIcon size={size} color={color} />}
-        onClose={onClose}
+        onClose={handleBack}
         onAppleBackup={() => navigate('/coming-soon')}
         onGoogleBackup={() => navigate('/coming-soon')}
         onEnterRecoveryPhrase={onEnterRecoveryPhrase}

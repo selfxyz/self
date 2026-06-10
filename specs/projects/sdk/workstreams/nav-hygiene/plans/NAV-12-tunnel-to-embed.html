@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>NAV-12 Plan — Rename tunnel → embed</title>
+<link rel="stylesheet" href="./_shared.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <h1>NAV-12 · Rename tunnel → embed (Mode Terminology)</h1>
+  <span class="meta-pill status-Ready">Ready</span>
+  <span class="meta-pill prio-Low">Low</span>
+  <span class="meta-pill">Updated 2026-05-25</span>
+  <span class="spacer"></span>
+  <div class="links">
+    <a href="../SPEC.html">← Spec</a>
+    <a href="../AUDIT.html">Audit</a>
+  </div>
+</header>
+
+<div class="layout">
+
+<nav class="toc">
+  <h4>On this page</h4>
+  <a href="#why">Why</a>
+  <a href="#decisions">Decisions</a>
+  <a href="#meta">Meta</a>
+  <a href="#findings">Findings</a>
+  <a href="#scope">Scope</a>
+  <a href="#out-of-scope">Out of Scope</a>
+  <a href="#required-files">Required Files</a>
+  <a href="#approach">Approach</a>
+  <a href="#validation">Validation</a>
+  <a href="#open-questions">Open Questions</a>
+  <a href="#hand-off">Hand-off</a>
+  <h4>Workstream</h4>
+  <a href="../SPEC.html">SPEC ↗</a>
+  <a href="../AUDIT.html">AUDIT ↗</a>
+</nav>
+
+<main>
+
+<section id="why" class="tldr">
+  <h2>Why</h2>
+  <p>
+    The embed operating mode is called <code>'tunnel'</code> in code. Docs, AUDIT, and product conversations all say <strong>embed</strong>. The mismatch makes onboarding harder and forces every new contributor to learn the translation. NAV-12 renames the operating-mode literal, the screen files, and the bridge-protocol mode value. The bridge does NOT send <code>'tunnel'</code> across the boundary, so no backwards-compat shim is required for hosts.
+  </p>
+</section>
+
+<section id="decisions" class="decisions-block">
+  <h2>Decisions</h2>
+  <p class="decisions-intro">Locked in on 2026-05-25. See <a href="../DECISIONS.md">DECISIONS.md</a>.</p>
+  <ul class="decisions-list">
+    <li class="decision">
+      <div class="d-head"><code>nav-12-q1-mode-literal</code> · Decided</div>
+      <p class="d-q">Rename the literal to <code>'self-app' | 'embed'</code> or <code>'wallet' | 'embed'</code>?</p>
+      <p class="d-a"><strong><code>'self-app' | 'embed'</code>.</strong> Matches every doc + AUDIT. Larger diff (every <code>'wallet'</code> usage updates) but the cleanest end state — no doc/code mismatch.</p>
+    </li>
+    <li class="decision">
+      <div class="d-head"><code>nav-12-q2-folder-rename</code> · Decided</div>
+      <p class="d-q">Rename screens/tunnel/ folder + <code>Tunnel*</code> file/class names in this PR, or split?</p>
+      <p class="d-a"><strong>All in one PR.</strong> Folder rename + every file/class + every importer. Single coherent diff, no inconsistent intermediate window.</p>
+    </li>
+  </ul>
+</section>
+
+<section id="meta">
+  <h2>Meta</h2>
+  <div class="meta-grid">
+    <div class="item"><div class="label">Workstream</div><div class="value">nav-hygiene</div></div>
+    <div class="item"><div class="label">Linear</div><div class="value">TBD</div></div>
+    <div class="item"><div class="label">Owner</div><div class="value">TBD</div></div>
+    <div class="item"><div class="label">Branch</div><div class="value"><code>chore/nav-12-tunnel-rename</code></div></div>
+    <div class="item"><div class="label">PR</div><div class="value">TBD</div></div>
+    <div class="item"><div class="label">Depends on</div><div class="value">—</div></div>
+  </div>
+</section>
+
+<section id="findings">
+  <h2>Findings</h2>
+  <h3>Distribution (research summary)</h3>
+  <table class="std">
+    <thead><tr><th>Surface</th><th>Count</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>String literal <code>'tunnel'</code></td><td>11</td><td>5 in webview-app, 5 in rn-sdk, 1 in tests</td></tr>
+      <tr><td>Route prefix <code>/tunnel/</code></td><td>43</td><td>15 route registrations + 28 navigate() calls + DevRouteMenu links. <strong>Owned by NAV-08, not this plan.</strong></td></tr>
+      <tr><td>Screen / file names <code>Tunnel*</code></td><td>11 files, ~910 LOC</td><td><code>screens/tunnel/</code> folder + 11 files</td></tr>
+      <tr><td>Bridge protocol literal</td><td>0</td><td>No host coupling. Safe to rename without shim.</td></tr>
+      <tr><td>KMP / native</td><td>0</td><td>No matches in <code>kmp-sdk</code>, <code>rn-sdk</code> (beyond type re-export), <code>app/</code></td></tr>
+    </tbody>
+  </table>
+
+  <h3>Type definitions</h3>
+  <ul class="scope">
+    <li><code>packages/webview-app/src/providers/OperatingModeProvider.tsx:10</code> — <code>type OperatingMode = 'wallet' | 'tunnel'</code></li>
+    <li><code>packages/rn-sdk/src/handlers/LifecycleHandler.ts:10</code> — same shape (parallel def)</li>
+    <li>No definition in <code>mobile-sdk-alpha</code>.</li>
+  </ul>
+</section>
+
+<section id="scope">
+  <h2>Scope</h2>
+  <ul class="scope">
+    <li>Rename <code>OperatingMode</code> literal to <code>'self-app' | 'embed'</code> in both definition sites (per decision <code>q1</code>). Update every consumer.</li>
+    <li>Rename <code>screens/tunnel/</code> → <code>screens/embed/</code>, every <code>Tunnel*</code> file/class to <code>Embed*</code>. Update imports. Single PR (per decision <code>q2</code>).</li>
+    <li>Update DevRouteMenu labels ("Tunnel — Screens" → "Embed — Screens", etc.).</li>
+    <li>Update tests (<code>tests/screens/tunnel/*</code> renames + import updates).</li>
+  </ul>
+  <div class="note">
+    <strong>Route paths are out of scope.</strong> The <code>/tunnel/*</code> → new-namespace rewrite belongs to <a href="../SPEC.html#backlog">NAV-08</a>. NAV-12 is code-only (mode literal + screen names + bridge type).
+  </div>
+</section>
+
+<section id="out-of-scope">
+  <h2>Out of Scope</h2>
+  <ul class="scope">
+    <li><strong>Route path renames</strong> — NAV-08.</li>
+    <li><strong>No bridge protocol changes.</strong> The bridge does not send the mode literal across; <code>getConfig</code>'s response value is owned on both sides. Renaming the constant on both sides is enough.</li>
+    <li><strong>No CHANGELOG/release notes</strong> beyond noting "internal rename, no host-facing changes."</li>
+  </ul>
+</section>
+
+<section id="required-files">
+  <h2>Required Files</h2>
+  <ul class="scope">
+    <li><code>packages/webview-app/src/providers/OperatingModeProvider.tsx</code> (type + consumers)</li>
+    <li><code>packages/webview-app/src/components/ModeBoot.tsx</code> (mode guards lines 22, 41, 68)</li>
+    <li><code>packages/rn-sdk/src/handlers/LifecycleHandler.ts</code> + <code>__tests__/LifecycleHandler.test.ts</code></li>
+    <li><code>packages/webview-app/src/screens/tunnel/</code> (rename to <code>embed/</code>) + every <code>Tunnel*</code> filename + every importer (App.tsx + DevRouteMenu.tsx)</li>
+    <li><code>specs/projects/sdk/workstreams/nav-hygiene/SPEC.html</code> + <code>AUDIT.html</code> — update terminology in prose (not the route-path strings; those are NAV-08).</li>
+  </ul>
+</section>
+
+<section id="approach">
+  <h2>Approach</h2>
+  <h3>Step 1 — Mode literal</h3>
+  <p>Rename <code>OperatingMode</code> in both definition sites to <code>'self-app' | 'embed'</code> per decision <code>q1</code>. Run TS compiler to surface every consumer; fix mechanically.</p>
+
+  <h3>Step 2 — Bridge contract sanity check</h3>
+  <p>Open <code>packages/webview-bridge/src/adapters/lifecycle.ts</code> and the <code>getConfig</code> handler in the RN side. Confirm the mode value flows through as an opaque string; both sides need to flip simultaneously. Document this in <code>packages/webview-bridge/README</code> or equivalent.</p>
+
+  <h3>Step 3 — File and folder renames (decision <code>q2</code>: all in one PR)</h3>
+  <p>Use <code>git mv</code> for clean history:</p>
+  <pre><code>git mv packages/webview-app/src/screens/tunnel packages/webview-app/src/screens/embed
+# Rename files within:
+git mv .../embed/TunnelTourScreen.tsx .../embed/EmbedTourScreen.tsx
+# ... 10 more files ...</code></pre>
+  <p>Then sed/rename inside files. Update App.tsx imports and DevRouteMenu entries.</p>
+
+  <h3>Step 4 — Spec updates</h3>
+  <p>Where SPEC.html and AUDIT.html prose says "tunnel mode" or "tunnel screens," update to "embed." Route paths in prose stay as <code>/tunnel/*</code> because the actual routes haven't moved yet (NAV-08).</p>
+</section>
+
+<section id="validation">
+  <h2>Validation</h2>
+  <ul class="scope">
+    <li><code>grep -rn "'tunnel'\|\"tunnel\"" packages/ app/</code> — zero hits (except in NAV-08-owned route strings).</li>
+    <li><code>grep -rn "Tunnel[A-Z]" packages/webview-app/src</code> — zero hits.</li>
+    <li><code>yarn types &amp;&amp; yarn build &amp;&amp; yarn lint</code> across all packages — clean.</li>
+    <li>Manual: launch the dev server with <code>?mode=embed</code> — flow boots into embed mode. Old <code>?mode=tunnel</code> URL returns the catch-all (or temporarily aliases per host shim, if added).</li>
+    <li>RN test suite passes: <code>packages/rn-sdk/__tests__/LifecycleHandler.test.ts</code>.</li>
+  </ul>
+</section>
+
+<section id="open-questions">
+  <h2>Open Questions</h2>
+  <p style="color:var(--muted);font-size:13px;margin-top:0">Answers persist to <code>localStorage</code>. Aggregate view in <a href="../SPEC.html#open-questions">SPEC.html</a>.</p>
+  <div id="oq-container"></div>
+</section>
+
+<section id="hand-off">
+  <h2>Hand-off</h2>
+  <ul class="scope">
+    <li><span class="nav-link">NAV-08</span> renames <code>/tunnel/*</code> paths. Best landed after NAV-12 so route + code use the same terminology.</li>
+    <li>The webview-app's host shells (RN app, future native shells) read the renamed mode value. Coordinate the bridge handshake change across both sides in the same release.</li>
+  </ul>
+</section>
+
+</main>
+</div>
+
+<script src="./_open-questions.js"></script>
+<script>
+  window.NavHygieneOQ.renderQuestionsForPlan('NAV-12', document.getElementById('oq-container'));
+
+  const sections = document.querySelectorAll('section[id]');
+  const tocLinks = document.querySelectorAll('nav.toc a[href^="#"]');
+  const obs = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (entry.isIntersecting) {
+        tocLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === `#${entry.target.id}`));
+      }
+    }
+  }, { rootMargin: '-50% 0px -45% 0px' });
+  sections.forEach(s => obs.observe(s));
+</script>
+
+</body>
+</html>

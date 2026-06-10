@@ -13,6 +13,7 @@ import {
   QuestionCircleStrokeIcon,
 } from '@selfxyz/euclid';
 
+import { PrivacyMask } from '../../observability/PrivacyMask';
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
 
@@ -44,7 +45,7 @@ export const IDDataScreen: React.FC = () => {
   const navigate = useNavigate();
   const { analytics, haptic } = useSelfClient();
 
-  const onClose = useCallback(() => {
+  const handleBack = useCallback(() => {
     haptic.trigger('selection');
     navigate(-1);
   }, [navigate, haptic]);
@@ -52,32 +53,34 @@ export const IDDataScreen: React.FC = () => {
   const onManageID = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('id_data_manage_pressed');
-    navigate('/manage-documents');
+    navigate('/docs');
   }, [navigate, haptic, analytics]);
 
   return (
-    <EuclidIDDataScreen
-      insets={WEB_SAFE_AREA.insets}
-      idCard={{
-        title: 'Passport',
-        subtitleLine1: 'UNITED STATES PASSPORT',
-        details: MOCK_ID_CARD_DETAILS,
-        mrzLine1: 'P<USA0000000000USA9001150M3001150<<<<<<<<<<<<<<',
-        mrzLine2: 'DOE<<JOHN<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<0',
-      }}
-      identificationDetailsTitle="Identification details"
-      identificationDetailsDescription="All data is stored locally on your device. Self does not collect or share any of this information without your consent."
-      identificationDetailsLogo={
-        <div style={{ width: 32, height: 21, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <IdCardIcon size={24} color="#2563EB" />
-        </div>
-      }
-      documentData={MOCK_DOCUMENT_DATA}
-      onClose={onClose}
-      onInfo={() => analytics.trackEvent('id_data_info_pressed')}
-      onManageID={onManageID}
-      closeIcon={({ size, color }) => <LeftArrowIcon size={size} color={color} />}
-      infoIcon={({ size, color }) => <QuestionCircleStrokeIcon size={size} color={color} />}
-    />
+    <PrivacyMask>
+      <EuclidIDDataScreen
+        insets={WEB_SAFE_AREA.insets}
+        idCard={{
+          title: 'Passport',
+          subtitleLine1: 'UNITED STATES PASSPORT',
+          details: MOCK_ID_CARD_DETAILS,
+          mrzLine1: 'P<USA0000000000USA9001150M3001150<<<<<<<<<<<<<<',
+          mrzLine2: 'DOE<<JOHN<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<0',
+        }}
+        identificationDetailsTitle="Identification details"
+        identificationDetailsDescription="All data is stored locally on your device. Self does not collect or share any of this information without your consent."
+        identificationDetailsLogo={
+          <div style={{ width: 32, height: 21, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <IdCardIcon size={24} color="#2563EB" />
+          </div>
+        }
+        documentData={MOCK_DOCUMENT_DATA}
+        onClose={handleBack}
+        onInfo={() => analytics.trackEvent('id_data_info_pressed')}
+        onManageID={onManageID}
+        closeIcon={({ size, color }) => <LeftArrowIcon size={size} color={color} />}
+        infoIcon={({ size, color }) => <QuestionCircleStrokeIcon size={size} color={color} />}
+      />
+    </PrivacyMask>
   );
 };

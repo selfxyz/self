@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom';
 export const MockRegistrationFailureButton: React.FC = () => {
   const navigate = useNavigate();
   const onOpenRegistrationFailureMock = useCallback(() => {
-    navigate('/onboarding/failure?mock=registration-failure');
+    navigate('/register/failure?mock=registration-failure');
   }, [navigate]);
 
   if (!import.meta.env.DEV) return null;
