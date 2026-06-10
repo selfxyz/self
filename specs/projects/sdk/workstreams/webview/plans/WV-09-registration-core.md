@@ -101,7 +101,7 @@ For tour screens specifically:
 | `/animations/app-tour-get-started.json` | `storybook/public/animations/`  |
 | `/backgrounds/dialogue-background.jpg`  | `storybook/public/backgrounds/` |
 
-See the **Euclid Screen Migration Checklist** in `CLAUDE.md` for the full
+See the **Euclid Screen Migration Checklist** in `packages/webview-app/AGENTS.md` for the full
 asset, inset, and validation protocol.
 
 ## Mock Flow Strategy

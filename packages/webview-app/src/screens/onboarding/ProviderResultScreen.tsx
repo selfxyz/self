@@ -39,10 +39,10 @@ export const ProviderResultScreen: React.FC = () => {
 
     const timer = window.setTimeout(() => {
       if (providerResult.status === 'success' || providerResult.status === 'partial') {
-        navigate('/onboarding/confirm', {
+        navigate('/capture/confirm', {
           replace: true,
           state: {
-            nextPath: '/onboarding/success',
+            nextPath: '/capture/success',
             countryCode: state?.countryCode,
             documentType: state?.documentType,
           },
@@ -64,7 +64,7 @@ export const ProviderResultScreen: React.FC = () => {
       }
 
       if (providerResult.error?.retryable !== false) {
-        navigate('/onboarding/kyc-failure', {
+        navigate('/disclose/kyc-failure', {
           replace: true,
           state: {
             countryCode: state?.countryCode,
@@ -75,7 +75,7 @@ export const ProviderResultScreen: React.FC = () => {
         return;
       }
 
-      navigate('/onboarding/failure', { replace: true });
+      navigate('/register/failure', { replace: true });
     }, 450);
 
     return () => window.clearTimeout(timer);

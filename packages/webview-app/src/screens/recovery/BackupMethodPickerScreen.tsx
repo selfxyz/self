@@ -21,7 +21,7 @@ export const BackupMethodPickerScreen: React.FC = () => {
   const navigate = useNavigate();
   const { analytics, haptic } = useSelfClient();
 
-  const onClose = useCallback(() => {
+  const handleClose = useCallback(() => {
     haptic.trigger('selection');
     navigate('/settings/security');
   }, [navigate, haptic]);
@@ -67,7 +67,7 @@ export const BackupMethodPickerScreen: React.FC = () => {
         },
       ]}
       closeIcon={({ size, color }) => <LeftArrowIcon size={size} color={color} />}
-      onClose={onClose}
+      onClose={handleClose}
     />
   );
 };

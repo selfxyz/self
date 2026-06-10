@@ -94,14 +94,14 @@ const LocationDisplay: React.FC = () => {
   return <div data-testid="location">{`${location.pathname}${location.search}`}</div>;
 };
 
-const renderScreen = (initialEntry = '/recovery/phrase-input') =>
+const renderScreen = (initialEntry = '/recover/phrase-input') =>
   render(
     <MemoryRouter initialEntries={[initialEntry]}>
       <Routes>
-        <Route path="/recovery/phrase-input" element={<SecretPhraseInputScreen />} />
-        <Route path="/recovery/failure" element={<LocationDisplay />} />
-        <Route path="/recovery/success" element={<LocationDisplay />} />
-        <Route path="/tunnel/kyc" element={<LocationDisplay />} />
+        <Route path="/recover/phrase-input" element={<SecretPhraseInputScreen />} />
+        <Route path="/recover/failure" element={<LocationDisplay />} />
+        <Route path="/recover/success" element={<LocationDisplay />} />
+        <Route path="/capture/kyc" element={<LocationDisplay />} />
         <Route path="*" element={<LocationDisplay />} />
       </Routes>
       <LocationDisplay />
@@ -139,7 +139,7 @@ describe('SecretPhraseInputScreen', () => {
     await fillWordsAndSubmit();
 
     await waitFor(() => {
-      expectLocation('/recovery/failure');
+      expectLocation('/recover/failure');
     });
 
     expect(analytics.trackEvent).toHaveBeenCalledWith('recovery_phrase_failed', {
@@ -148,7 +148,7 @@ describe('SecretPhraseInputScreen', () => {
     expect(haptic.trigger).toHaveBeenCalledWith('error');
   });
 
-  it('navigates to /tunnel/kyc for a mock document', async () => {
+  it('navigates to /capture/kyc for a mock document', async () => {
     loadSelectedDocumentMock.mockResolvedValue({
       data: { documentCategory: 'passport' },
       metadata: { mock: true },
@@ -158,7 +158,7 @@ describe('SecretPhraseInputScreen', () => {
     await fillWordsAndSubmit();
 
     await waitFor(() => {
-      expectLocation('/tunnel/kyc');
+      expectLocation('/capture/kyc');
     });
 
     expect(restoreSecretFromMnemonicMock).toHaveBeenCalled();
@@ -201,7 +201,7 @@ describe('SecretPhraseInputScreen', () => {
     await fillWordsAndSubmit();
 
     await waitFor(() => {
-      expectLocation('/recovery/failure');
+      expectLocation('/recover/failure');
     });
 
     expect(analytics.trackEvent).toHaveBeenCalledWith('recovery_phrase_failed', {

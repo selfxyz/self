@@ -74,7 +74,7 @@ describe('clearOnboardingTags', () => {
     setTagMock.mockClear();
   });
 
-  it('nulls out every cohort tag key', () => {
+  it('clears every cohort tag key', () => {
     clearOnboardingTags();
 
     const cleared = setTagMock.mock.calls.map(([key]) => key);
@@ -91,7 +91,7 @@ describe('clearOnboardingTags', () => {
       ]),
     );
     for (const [, value] of setTagMock.mock.calls) {
-      expect(value).toBeNull();
+      expect(value).toBeUndefined();
     }
   });
 });
@@ -127,7 +127,7 @@ describe('tagsFromAnalyticsEvent', () => {
     });
   });
 
-  it('maps signature_algorithm and csca_hash_function on biometric events', () => {
+  it('maps signature_algorithm and csca_hash_algorithm on biometric events', () => {
     expect(
       tagsFromAnalyticsEvent('Biometric: Document Parsed', {
         attempt_id: 'a',
@@ -135,7 +135,7 @@ describe('tagsFromAnalyticsEvent', () => {
         current_branch: 'biometric_passport',
         document_type: 'passport',
         signature_algorithm: 'ecdsa-sha256',
-        csca_hash_function: 'sha384',
+        csca_hash_algorithm: 'sha384',
       }),
     ).toEqual({
       attempt_id: 'a',

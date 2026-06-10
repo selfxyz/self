@@ -8,6 +8,7 @@ import {
   getSentryRuntimeFlags,
   isIosSimulator,
   redactSensitiveFields,
+  webViewDiagnosticLevel,
 } from '@/config/sentry';
 
 let mockIsEmulator = false;
@@ -142,5 +143,32 @@ describe('redactSensitiveFields (ANA-13)', () => {
     expect(ctx.os.name).toBe('iOS');
     expect(ctx.device.name).toBe('iPhone 15');
     expect(ctx.app.app_name).toBe('Self');
+  });
+});
+
+describe('webViewDiagnosticLevel', () => {
+  it('treats a terminal version mismatch as error', () => {
+    expect(
+      webViewDiagnosticLevel('version_mismatch', {
+        received: 2,
+        expected: 1,
+        recoverable: false,
+      }),
+    ).toBe('error');
+  });
+
+  it('treats a version mismatch with no recoverability flag as error', () => {
+    expect(webViewDiagnosticLevel('version_mismatch')).toBe('error');
+  });
+
+  it('downgrades a recoverable version mismatch to warning', () => {
+    expect(
+      webViewDiagnosticLevel('version_mismatch', { recoverable: true }),
+    ).toBe('warning');
+  });
+
+  it('treats timeout and load_error as warning', () => {
+    expect(webViewDiagnosticLevel('timeout')).toBe('warning');
+    expect(webViewDiagnosticLevel('load_error', { code: -2 })).toBe('warning');
   });
 });

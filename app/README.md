@@ -108,7 +108,7 @@ and rerun the command.
 1. Download and install [Android Studio](https://developer.android.com/studio)
 2. Open Android Studio → **Settings** (or **Preferences** on macOS) → **SDK Manager**
 3. Under **SDK Platforms**, install the platform with the highest API number
-4. Under **SDK Tools**, check **Show Package Details**, expand **NDK (Side by side)**, select version **27.0.12077973** and install
+4. Under **SDK Tools**, check **Show Package Details**, expand **NDK (Side by side)**, select version **28.0.13004108** and install
 5. Enable **USB debugging** on your Android device (Settings → Developer options → USB debugging)
 
 #### Using sdkmanager via CLI (Alternative)
@@ -126,7 +126,7 @@ $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --list | grep platforms
 $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "platforms;android-NN"
 
 # Install the NDK
-$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "ndk;27.0.12077973"
+$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "ndk;28.0.13004108"
 
 # Install Platform Tools (for adb)
 $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install platform-tools
@@ -135,8 +135,8 @@ $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install platform-tools
 Set additional environment variables:
 
 ```bash
-export ANDROID_NDK_VERSION=27.0.12077973
-export ANDROID_NDK=$ANDROID_HOME/ndk/27.0.12077973
+export ANDROID_NDK_VERSION=28.0.13004108
+export ANDROID_NDK=$ANDROID_HOME/ndk/28.0.13004108
 ```
 
 ## Run the app
@@ -369,7 +369,7 @@ yarn clean        # Full clean (use sparingly)
 
 # Use Fastlane for consistent builds
 bundle exec fastlane ios internal_test test_mode:true
-bundle exec fastlane android internal_test test_mode:true
+bundle exec fastlane android build_only test_mode:true
 ```
 
 ### Maestro end-to-end tests

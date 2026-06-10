@@ -24,8 +24,10 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/browser';
 import { bridgeStorageAdapter } from '@selfxyz/webview-bridge/adapters';
 
+import { PrivacyMask } from '../../observability/PrivacyMask';
 import { useBridge } from '../../providers/BridgeProvider';
 import { useSelfClient } from '../../providers/SelfClientProvider';
+import type { NavState } from '../../types/navState';
 import { WEB_SAFE_AREA } from '../../utils/insets';
 import {
   derivePrivateKey,
@@ -58,14 +60,9 @@ class RecoveryFlowError extends Error {
   }
 }
 
-function buildRecoveryTarget(path: string, returnTo: string | null) {
-  return returnTo ? `${path}?returnTo=${encodeURIComponent(returnTo)}` : path;
-}
-
-function getReturnTo(location: Location): string | null {
-  const searchParams = new URLSearchParams(location.search);
-  const state = location.state as { returnTo?: string } | null;
-  return searchParams.get('returnTo') ?? state?.returnTo ?? null;
+function getNextPath(location: Location): string | null {
+  const state = location.state as Partial<NavState> | null;
+  return state?.nextPath ?? null;
 }
 
 export const SecretPhraseInputScreen: React.FC = () => {
@@ -84,7 +81,7 @@ export const SecretPhraseInputScreen: React.FC = () => {
   const [lockedUntil, setLockedUntil] = useState<number | null>(null);
   const [cooldownTick, setCooldownTick] = useState(0);
 
-  const returnTo = getReturnTo(location);
+  const nextPath = getNextPath(location);
   const lockoutSecondsRemaining = lockedUntil ? Math.max(0, Math.ceil((lockedUntil - Date.now()) / 1000)) : 0;
   const isLocked = lockoutSecondsRemaining > 0;
 
@@ -126,7 +123,7 @@ export const SecretPhraseInputScreen: React.FC = () => {
     }
   }, [cooldownTick, isLocked, lockedUntil]);
 
-  const onBack = useCallback(() => {
+  const handleBack = useCallback(() => {
     haptic.trigger('selection');
     navigate(-1);
   }, [navigate, haptic]);
@@ -204,7 +201,7 @@ export const SecretPhraseInputScreen: React.FC = () => {
         haptic.trigger('success');
         analytics.trackEvent('recovery_phrase_recovered', { documentCategory: 'none' });
         if (isMountedRef.current) {
-          navigate('/tunnel/kyc', { replace: true });
+          navigate('/capture/kyc', { replace: true });
         }
         return;
       } else {
@@ -263,10 +260,10 @@ export const SecretPhraseInputScreen: React.FC = () => {
         documentCategory: selectedDocument.data.documentCategory,
       });
       if (isMountedRef.current) {
-        if (returnTo) {
-          navigate(returnTo, { replace: true });
+        if (nextPath) {
+          navigate(nextPath, { replace: true });
         } else {
-          navigate('/recovery/success');
+          navigate('/recover/success');
         }
       }
     } catch (error) {
@@ -277,9 +274,9 @@ export const SecretPhraseInputScreen: React.FC = () => {
         reason,
       });
       if (isMountedRef.current) {
-        navigate(buildRecoveryTarget('/recovery/failure', returnTo), {
+        navigate('/recover/failure', {
           replace: true,
-          state: returnTo ? { returnTo } : undefined,
+          state: nextPath ? ({ nextPath } satisfies Partial<NavState>) : undefined,
         });
       }
     } finally {
@@ -289,7 +286,7 @@ export const SecretPhraseInputScreen: React.FC = () => {
         setIsSubmitting(false);
       }
     }
-  }, [analytics, client, haptic, isLocked, isSubmitting, mismatchAttempts, navigate, returnTo, storage, words]);
+  }, [analytics, client, haptic, isLocked, isSubmitting, mismatchAttempts, navigate, nextPath, storage, words]);
 
   return (
     <div
@@ -301,20 +298,22 @@ export const SecretPhraseInputScreen: React.FC = () => {
           label="Recovery Phrase"
           escapeIcon={({ size, color }) => <LeftArrowIcon size={size} color={color} />}
           infoIcon={({ size }) => <div style={{ width: size, height: size }} />}
-          onEscape={onBack}
+          onEscape={handleBack}
           onPressInfo={() => {}}
         />
       </div>
 
       <div style={styles.content}>
         <span style={styles.instruction}>{instruction}</span>
-        <SecretPhraseInput
-          words={words}
-          onWordChange={handleWordChange}
-          onWordBlur={handleWordBlur}
-          errorIndices={errorIndices}
-          wordCount={WORD_COUNT}
-        />
+        <PrivacyMask>
+          <SecretPhraseInput
+            words={words}
+            onWordChange={handleWordChange}
+            onWordBlur={handleWordBlur}
+            errorIndices={errorIndices}
+            wordCount={WORD_COUNT}
+          />
+        </PrivacyMask>
         {errorMessage ? (
           <div aria-live="polite" role="alert" style={styles.errorMessage}>
             {isLocked && lockoutSecondsRemaining > 0

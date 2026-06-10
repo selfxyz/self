@@ -1,0 +1,928 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Navigation — Current-State Audit</title>
+<style>
+  :root {
+    --bg: #fafbfc;
+    --surface: #ffffff;
+    --surface-alt: #f6f8fa;
+    --border: #d1d9e0;
+    --border-soft: #e1e4e8;
+    --text: #1f2328;
+    --muted: #656d76;
+    --accent: #0969da;
+    --accent-soft: #ddf4ff;
+    --high: #cf222e;
+    --high-soft: #ffebe9;
+    --med: #9a6700;
+    --med-soft: #fff8c5;
+    --low: #0969da;
+    --low-soft: #ddf4ff;
+    --done: #1a7f37;
+    --done-soft: #dafbe1;
+    --draft: #6e7781;
+    --draft-soft: #eaeef2;
+
+    /* Disposition colors */
+    --self-app: #0969da;
+    --self-app-soft: #ddf4ff;
+    --embed: #8250df;
+    --embed-soft: #f5edff;
+    --shared: #1a7f37;
+    --shared-soft: #dafbe1;
+    --dev: #6f42c1;
+    --dev-soft: #ede4ff;
+    --component: #bf6a02;
+    --component-soft: #ffeed5;
+    --delete: #cf222e;
+    --delete-soft: #ffebe9;
+    --defer: #6e7781;
+    --defer-soft: #eaeef2;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font: 14px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    color: var(--text);
+    background: var(--bg);
+  }
+  code, pre, kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.9em; }
+  code { background: var(--surface-alt); padding: 1px 5px; border-radius: 4px; border: 1px solid var(--border-soft); }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  header.topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 12px 24px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  header h1 { margin: 0; font-size: 16px; font-weight: 600; }
+  header .meta-pill {
+    font-size: 11px; color: var(--muted);
+    padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border);
+    background: var(--surface-alt);
+  }
+  header .spacer { flex: 1; }
+  header .links a {
+    font-size: 12px; padding: 6px 12px; border-radius: 6px;
+    border: 1px solid var(--border); background: var(--surface);
+    color: var(--text);
+  }
+  header .links a:hover { background: var(--accent-soft); border-color: var(--accent); text-decoration: none; }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: 32px;
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 24px;
+  }
+  nav.toc {
+    position: sticky; top: 60px;
+    align-self: start;
+    max-height: calc(100vh - 80px); overflow-y: auto;
+    border-right: 1px solid var(--border-soft);
+    padding-right: 12px;
+    font-size: 13px;
+  }
+  nav.toc h4 { font-size: 11px; text-transform: uppercase; color: var(--muted); letter-spacing: 0.06em; margin: 12px 0 8px; }
+  nav.toc h4:first-child { margin-top: 0; }
+  nav.toc a {
+    display: block; padding: 5px 8px; border-radius: 4px;
+    color: var(--muted); margin-bottom: 1px;
+  }
+  nav.toc a:hover { background: var(--surface-alt); color: var(--text); text-decoration: none; }
+  nav.toc a.active { background: var(--accent-soft); color: var(--accent); font-weight: 500; }
+  nav.toc .severity-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+
+  main { min-width: 0; }
+  section { margin-bottom: 36px; scroll-margin-top: 70px; }
+  h2 { font-size: 20px; margin: 0 0 12px; border-bottom: 1px solid var(--border-soft); padding-bottom: 6px; }
+  h3 { font-size: 15px; margin: 0 0 8px; }
+
+  .stats {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 8px; margin-bottom: 20px;
+  }
+  .stat {
+    background: var(--surface); border: 1px solid var(--border-soft);
+    border-radius: 8px; padding: 12px 14px;
+  }
+  .stat .num { font-size: 26px; font-weight: 600; line-height: 1; }
+  .stat .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px; }
+  .stat.high .num { color: var(--high); }
+  .stat.med .num { color: var(--med); }
+  .stat.low .num { color: var(--low); }
+  .stat.done .num { color: var(--done); }
+  .stat.self-app .num { color: var(--self-app); }
+
+  .tabs { display: flex; gap: 4px; margin-bottom: 12px; border-bottom: 1px solid var(--border-soft); flex-wrap: wrap; }
+  .tab {
+    padding: 8px 14px; cursor: pointer; user-select: none;
+    border: 1px solid transparent; border-bottom: none; border-radius: 6px 6px 0 0;
+    font-size: 13px; color: var(--muted);
+  }
+  .tab:hover { background: var(--surface-alt); }
+  .tab.active { background: var(--surface); border-color: var(--border-soft); color: var(--text); font-weight: 500; margin-bottom: -1px; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  .mermaid-wrap {
+    background: var(--surface); border: 1px solid var(--border-soft);
+    border-radius: 8px; padding: 16px; overflow-x: auto;
+  }
+
+  .finding {
+    background: var(--surface); border: 1px solid var(--border-soft);
+    border-left: 4px solid var(--border);
+    border-radius: 8px; padding: 14px 18px; margin-bottom: 10px;
+  }
+  .finding.sev-high { border-left-color: var(--high); }
+  .finding.sev-med { border-left-color: var(--med); }
+  .finding.sev-low { border-left-color: var(--low); }
+  .finding-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .finding-head h3 { margin: 0; flex: 1; }
+  .sev-badge { font-size: 11px; padding: 2px 8px; border-radius: 999px; font-weight: 500; }
+  .sev-badge.sev-high { background: var(--high-soft); color: var(--high); }
+  .sev-badge.sev-med { background: var(--med-soft); color: var(--med); }
+  .sev-badge.sev-low { background: var(--low-soft); color: var(--low); }
+  .finding p { margin: 6px 0; color: var(--muted); font-size: 13px; }
+  .finding ul { margin: 4px 0; padding-left: 20px; color: var(--muted); font-size: 13px; }
+  .nav-link {
+    font-size: 11px; padding: 2px 8px; border-radius: 4px;
+    background: var(--surface-alt); color: var(--muted);
+    border: 1px solid var(--border-soft);
+  }
+
+  /* Triage board */
+  .triage-intro {
+    background: var(--surface); border: 1px solid var(--border-soft);
+    border-left: 4px solid var(--accent);
+    border-radius: 8px; padding: 12px 16px; margin-bottom: 14px;
+  }
+  .triage-intro p { margin: 4px 0; font-size: 13px; }
+  .disp-legend { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+  .disp-legend .disp-pill {
+    font-size: 11px; padding: 2px 8px; border-radius: 999px; font-weight: 500;
+  }
+  .disp-pill.self-app { background: var(--self-app-soft); color: var(--self-app); }
+  .disp-pill.embed { background: var(--embed-soft); color: var(--embed); }
+  .disp-pill.shared { background: var(--shared-soft); color: var(--shared); }
+  .disp-pill.dev { background: var(--dev-soft); color: var(--dev); }
+  .disp-pill.component { background: var(--component-soft); color: var(--component); }
+  .disp-pill.delete { background: var(--delete-soft); color: var(--delete); }
+  .disp-pill.defer { background: var(--defer-soft); color: var(--defer); }
+
+  .triage-controls {
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+    margin-bottom: 14px;
+  }
+  .triage-controls .spacer { flex: 1; }
+  .triage-status {
+    font-size: 12px; color: var(--muted);
+    padding: 4px 10px; background: var(--surface-alt);
+    border-radius: 999px; border: 1px solid var(--border-soft);
+  }
+  .triage-status strong { color: var(--text); }
+  .triage-board {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 10px;
+  }
+  .orphan {
+    background: var(--surface); border: 1px solid var(--border-soft);
+    border-radius: 8px; padding: 12px;
+    display: flex; flex-direction: column; gap: 8px;
+    border-left: 4px solid var(--border-soft);
+    transition: border-left-color 0.15s;
+  }
+  .orphan.decided { border-left-color: var(--current-color, var(--border)); }
+  .orphan-route {
+    font-family: ui-monospace, monospace; font-size: 12px; font-weight: 600;
+    word-break: break-all;
+  }
+  .orphan-meta { font-size: 12px; color: var(--muted); }
+  .orphan-meta .suggest {
+    font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 4px;
+    margin-left: 4px; text-transform: uppercase; letter-spacing: 0.03em;
+  }
+  .orphan-actions {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;
+  }
+  .orphan-actions.row2 { grid-template-columns: repeat(4, 1fr); }
+  .orphan-actions button {
+    font-size: 11px; padding: 5px 6px; border-radius: 5px;
+    border: 1px solid var(--border); background: var(--surface);
+    color: var(--text); cursor: pointer;
+    transition: all 0.15s;
+  }
+  .orphan-actions button:hover { background: var(--surface-alt); }
+  .orphan-actions button.suggested { border-style: dashed; }
+  .orphan-actions button.selected[data-disp="self-app"]  { background: var(--self-app-soft); border-color: var(--self-app); color: var(--self-app); font-weight: 600; border-style: solid; }
+  .orphan-actions button.selected[data-disp="embed"]     { background: var(--embed-soft); border-color: var(--embed); color: var(--embed); font-weight: 600; border-style: solid; }
+  .orphan-actions button.selected[data-disp="shared"]    { background: var(--shared-soft); border-color: var(--shared); color: var(--shared); font-weight: 600; border-style: solid; }
+  .orphan-actions button.selected[data-disp="dev"]       { background: var(--dev-soft); border-color: var(--dev); color: var(--dev); font-weight: 600; border-style: solid; }
+  .orphan-actions button.selected[data-disp="component"] { background: var(--component-soft); border-color: var(--component); color: var(--component); font-weight: 600; border-style: solid; }
+  .orphan-actions button.selected[data-disp="delete"]    { background: var(--delete-soft); border-color: var(--delete); color: var(--delete); font-weight: 600; border-style: solid; }
+  .orphan-actions button.selected[data-disp="defer"]     { background: var(--defer-soft); border-color: var(--defer); color: var(--defer); font-weight: 600; border-style: solid; }
+
+  .bulk-btn {
+    font-size: 12px; padding: 6px 12px; border-radius: 6px;
+    border: 1px solid var(--border); background: var(--surface);
+    color: var(--text); cursor: pointer;
+  }
+  .bulk-btn:hover { background: var(--accent-soft); border-color: var(--accent); }
+  .bulk-btn.danger:hover { background: var(--high-soft); border-color: var(--high); color: var(--high); }
+  .bulk-btn.primary { background: var(--accent); color: white; border-color: var(--accent); }
+  .bulk-btn.primary:hover { background: #0860c8; }
+  .bulk-btn.copied { background: var(--done-soft); border-color: var(--done); color: var(--done); }
+
+  .export-area { margin-top: 12px; display: none; }
+  .export-area.shown { display: block; }
+  .export-area textarea {
+    width: 100%; height: 320px;
+    font-family: ui-monospace, monospace; font-size: 11px;
+    padding: 10px; border: 1px solid var(--border); border-radius: 6px;
+    background: var(--surface-alt);
+  }
+
+  @media (max-width: 980px) {
+    .layout { grid-template-columns: 1fr; }
+    nav.toc { position: static; max-height: none; border-right: none; border-bottom: 1px solid var(--border-soft); padding: 0 0 12px; margin-bottom: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <h1>Navigation Audit</h1>
+  <span class="meta-pill">Historical · pre-NAV-08</span>
+  <span class="meta-pill">2026-05-24</span>
+  <span class="spacer"></span>
+  <div class="links">
+    <a href="./SPEC.html">← Workstream Spec</a>
+    <a href="./plans/NAV-01-route-classification.html">NAV-01 Plan →</a>
+    <a href="../../FUTURE-BACKLOG.html">Future Backlog ↗</a>
+  </div>
+</header>
+
+<div style="background:#fef3c7;border-left:4px solid #d97706;padding:12px 16px;margin:16px 0;font-size:14px;line-height:1.5;">
+  <strong>Post-landing note (2026-05-25):</strong> NAV-08 + NAV-13 have landed.
+  Path references in this audit are historical — every <code>/tunnel/*</code>,
+  <code>/onboarding/*</code>, and <code>/proving/*</code> is gone from the live
+  app. The canonical old → new mapping lives in
+  <a href="./DISPOSITION.md">DISPOSITION.md</a>; the current route table is in
+  <code>packages/webview-app/src/App.tsx</code>.
+</div>
+
+<div class="layout">
+
+<nav class="toc" id="toc">
+  <h4>On this page</h4>
+  <a href="#overview">Overview</a>
+  <a href="#graphs">Route Graphs</a>
+  <a href="#triage">Route Triage</a>
+  <h4>Findings</h4>
+  <a href="#f-classification"><span class="severity-dot" style="background:var(--high)"></span>No mode classification</a>
+  <a href="#f-prebuilt"><span class="severity-dot" style="background:var(--med)"></span>Pre-builds unwired</a>
+  <a href="#f-true-orphans"><span class="severity-dot" style="background:var(--med)"></span>True orphans</a>
+  <a href="#f-boot"><span class="severity-dot" style="background:var(--high)"></span>Boot overlap</a>
+  <a href="#f-close"><span class="severity-dot" style="background:var(--high)"></span>Hard-coded close</a>
+  <a href="#f-back-close"><span class="severity-dot" style="background:var(--med)"></span>Back vs close</a>
+  <a href="#f-coupling"><span class="severity-dot" style="background:var(--med)"></span>Cross-doc coupling</a>
+  <a href="#f-replace"><span class="severity-dot" style="background:var(--med)"></span>replace: true</a>
+  <a href="#f-namespace"><span class="severity-dot" style="background:var(--low)"></span>Namespace asymmetry</a>
+  <h4>Process</h4>
+  <a href="#methodology">Methodology</a>
+  <a href="#regen">Regeneration</a>
+  <h4>Plans</h4>
+  <a href="./plans/NAV-01-route-classification.html">NAV-01 · classification</a>
+  <a href="./plans/NAV-02-dev-route-namespace.html">NAV-02 · /dev/*</a>
+  <a href="./plans/NAV-03-boot-decision.html">NAV-03 · boot decision</a>
+  <a href="./plans/NAV-04-cluster-close.html">NAV-04 · close hook</a>
+  <a href="./plans/NAV-05-back-close-labels.html">NAV-05 · back/close</a>
+  <a href="./plans/NAV-06-nfc-error-consolidation.html">NAV-06 · NFC errors</a>
+  <a href="./plans/NAV-07-replace-true-audit.html">NAV-07 · replace:true</a>
+  <a href="./plans/NAV-08-namespace-rewrite.html">NAV-08 · namespace</a>
+  <a href="./plans/NAV-09-nav-state-slots.html">NAV-09 · NavState</a>
+  <a href="./plans/NAV-10-delete-tunnel-registration.html">NAV-10 · delete dead</a>
+  <a href="./plans/NAV-12-tunnel-to-embed.html">NAV-12 · tunnel rename</a>
+  <a href="./plans/NAV-13-mode-route-wrapper.html">NAV-13 · ModeRoute</a>
+  <h4>Sibling docs</h4>
+  <a href="./SPEC.html">SPEC ↗</a>
+  <a href="./SPEC.html#open-questions">Open Questions ↗</a>
+  <a href="../../FUTURE-BACKLOG.html">Future Backlog ↗</a>
+</nav>
+
+<main>
+
+<section id="overview">
+  <h2>Overview</h2>
+  <p style="margin-top:0;color:var(--muted)">A snapshot of the route graph as it exists today. The SDK runs in two modes — <strong style="color:var(--self-app)">self-app</strong> (full Self app UX) and <strong style="color:var(--embed)">embed</strong> (third-party host, one-shot verification). Most "unreachable" routes are pre-built self-app screens awaiting WV-13 / WV-14 wiring — not deletion candidates. This audit feeds <a href="./SPEC.html">SPEC.html</a>'s NAV-* backlog, especially NAV-01 (route classification).</p>
+  <div class="stats">
+    <div class="stat self-app"><div class="num" id="stat-selfapp">~14</div><div class="label">Self-app pre-builds</div></div>
+    <div class="stat med"><div class="num" id="stat-truly">~5</div><div class="label">True orphans</div></div>
+    <div class="stat high"><div class="num">2</div><div class="label">Boot deciders</div></div>
+    <div class="stat low"><div class="num">8</div><div class="label">Clusters</div></div>
+    <div class="stat done"><div class="num" id="stat-decided">0</div><div class="label">Triage decisions</div></div>
+  </div>
+</section>
+
+<section id="graphs">
+  <h2>Route Graphs</h2>
+  <p style="margin-top:0;color:var(--muted);font-size:13px">Three views. <strong style="color:var(--embed)">Embed flow</strong> is the focused one-shot path used by third-party hosts. <strong style="color:var(--self-app)">Self-app surface</strong> is what the Self app uses (target state with pre-builds wired). <strong>Full (current)</strong> is the actual state of <code>App.tsx</code> today, including every unwired pre-build.</p>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="embed">Embed flow (target)</div>
+    <div class="tab" data-tab="self-app">Self-app surface (target)</div>
+    <div class="tab" data-tab="full">Full (current state)</div>
+  </div>
+
+  <div class="tab-content active" data-tab="embed">
+    <div class="mermaid-wrap">
+<pre class="mermaid">
+flowchart TD
+    Host[Acme host app] -->|launch with verificationRequest| Boot[Boot decision]
+    Boot -->|invalid req| Kill["bridge.setResult INVALID_REQUEST<br/>+ bridge.dismiss → Host"]
+    Boot -->|valid| TTour["/tour/:step"]
+    TTour --> Check{"Local document<br/>registered?"}
+
+    Check -->|NO — first-time user<br/>REGISTER + DISCLOSE| Capture["/capture/kyc"]
+    Check -->|YES — returning user<br/>DISCLOSE-ONLY| DiscReview["/disclose/review"]
+    TTour -->|restore account| RecLaunch["/recover/launch"]
+
+    Capture -->|provider approved| KycOk["/disclose/kyc-success"]
+    Capture -.->|review pending<br/>partial result| KycPend["/disclose/kyc-pending"]
+    Capture -.->|retryable err| KycFail["/disclose/kyc-failure"]
+    KycPend -.->|review completes<br/>async| KycOk
+    KycPend -->|check back later| ExitDismiss[["bridge.dismiss → Host<br/>session ends; resumes later"]]
+    KycOk --> RegGen["/register/generating"]
+    RegGen --> DiscGen["/disclose/generating"]
+    DiscGen --> DiscReview
+    DiscGen -->|recovery needed| RecReq["/recover/required"]
+    RecReq --> RecLaunch
+    RecLaunch -.->|phrase complete| DiscGen
+
+    DiscReview --> DiscRes["/disclose/result"]
+    DiscRes --> Receipt["/receipts/:id"]
+    DiscRes -->|continue| Exit[["bridge.setResult + bridge.dismiss → Host"]]
+    KycFail -->|try again| Capture
+
+    classDef path1 fill:#f5edff,stroke:#8250df,stroke-width:2px
+    classDef path2 fill:#ddf4ff,stroke:#0969da,stroke-width:2px
+    class Capture,KycOk,RegGen,DiscGen,KycFail,KycPend path1
+    class Check path2
+</pre>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin-top:8px">
+      <strong>Two entry sub-paths</strong>, chosen at the tour based on local registration state:
+    </p>
+    <ul style="font-size:12px;color:var(--muted);margin:4px 0 8px 18px">
+      <li><strong style="color:var(--embed)">register + disclose</strong> (purple) — first-time user. Full path through KYC, provider, registration-proof generation, then disclose.</li>
+      <li><strong style="color:var(--self-app)">disclose-only</strong> — returning user. Skips KYC entirely; goes straight from tour to disclose (proof generated internally against the existing registration).</li>
+    </ul>
+    <p style="font-size:12px;color:var(--muted);margin:0">
+      Both paths converge at <code>/disclose/review</code> and terminate via <code>bridge.setResult + bridge.dismiss</code>. Account-recovery is a third side-entry available from the tour. <strong>KYC review hold:</strong> if Didit returns a "review pending" result, the user lands on <code>/disclose/kyc-pending</code> with the option to dismiss (host session ends, review continues async); when review clears asynchronously the user resumes by re-entering and lands on <code>/disclose/kyc-success</code>.
+    </p>
+  </div>
+
+  <div class="tab-content" data-tab="self-app">
+    <div class="mermaid-wrap">
+<pre class="mermaid">
+flowchart TD
+    Launch([Self app open]) --> Home["/<br/>HomeScreen"]
+    Home --> Settings["/settings"]
+    Home --> Manage["/docs"]
+    Home -->|no docs yet| Tour["/tour/:step"]
+    Home --> Points["/points"]
+    Home -->|disclosure deeplink| DiscReq["/disclose/request"]
+    Home -->|history| History["/history"]
+
+    Settings --> Sec["/settings/security"]
+    Settings --> SNotif["/settings/notifications"]
+    Settings --> Dev["/settings/dev-mode"]
+    Sec --> SBackup["/settings/backup"]
+    Sec --> SRec["/settings/recovery-phrase"]
+    Sec --> RecLaunch["/recover/launch"]
+
+    Manage --> IDData["/docs/:id"]
+    Manage --> PickCountry["/pick-country"]
+
+    Tour --> PickCountry
+    PickCountry --> PickId["/pick-id"]
+    PickId --> CapPassport["/capture/passport/*"]
+    PickId --> CapEu["/capture/eu-id/*"]
+    PickId --> CapAadhaar["/capture/aadhaar/*"]
+    PickId --> CapKyc["/capture/kyc"]
+
+    CapPassport --> RegGen["/register/generating"]
+    CapEu --> RegGen
+    CapAadhaar --> RegGen
+    CapKyc --> RegConfirm["/register/confirm"]
+    RegConfirm --> RegGen
+    CapKyc -.->|review pending| KycPend["/disclose/kyc-pending"]
+    KycPend -.->|cleared async| KycOk["/disclose/kyc-success"]
+    KycOk --> RegGen
+    RegGen --> RegSuccess["/register/success<br/>ProofSuccessBackupScreen"]
+    RegSuccess -->|backup account| Backup["/backup-phrase"]
+    RegSuccess -->|remind later| Notifs["/notify"]
+    Backup --> Notifs
+    Notifs --> Home
+
+    DiscReq --> DiscGen["/disclose/generating"]
+    DiscGen --> DiscRes["/disclose/result"]
+    DiscRes -->|success + setResult| Home
+    DiscRes -->|view receipt| Receipt["/receipts/:id"]
+    History --> Receipt
+
+    Account["/account/verified"]
+    Points --> Invite["/points/invite"]
+
+    classDef pending fill:#fff8c5,stroke:#9a6700,stroke-dasharray: 4 3
+    class Receipt,History,RegSuccess,KycPend,KycOk,Account pending
+</pre>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin-top:8px">All routes use the <strong>target</strong> namespace from NAV-08. Dashed/yellow nodes are screens pre-built today but unwired in production — WV-13 / WV-14 plug them in once NAV-08 renames their paths and NAV-13 tags them as self-app. Self-app close always lands at <code>/</code> (Home), enforced by NAV-04's cluster-close hook.</p>
+  </div>
+
+  <div class="tab-content" data-tab="full">
+    <div class="mermaid-wrap">
+<pre class="mermaid">
+flowchart TD
+    Start([App launch]) --> Pass[PasswordGate]
+    Pass --> OMP[OperatingModeProvider]
+    OMP --> VRP[VerificationRequestProvider]
+    VRP --> SCP[SelfClientProvider]
+    SCP --> Boot1[ModeBoot guard]
+    Wild["* catch-all<br/>InitialRouteRedirect"] -->|?disclosures| Proving
+    Wild --> Home
+    Boot1 -->|self-app| Home
+    Boot1 -->|embed valid| TTour
+    Boot1 -->|embed invalid| Kill["bridge.setResult INVALID_REQUEST"]
+
+    subgraph SELF ["Self-app (wired today)"]
+        Home["/"]
+        Home --> Settings["/settings"]
+        Home --> Tour
+        Settings --> Sec["/settings/security"]
+        Settings --> SNotif
+        Settings --> Dev["/settings/dev-mode"]
+        Settings --> Manage["/manage-documents"]
+        Sec --> SBackup["/settings/backup"]
+        Sec --> SRec["/settings/recovery-phrase"]
+        Sec --> RecLaunch
+        Manage --> IDData
+        Manage --> Country
+        Tour["/onboarding/tour/:step"] --> Country["/onboarding/country"]
+        Country --> IDSel["/onboarding/id-type"]
+        IDSel --> ProvLaunch
+        IDSel --> PInst & EInst & AInst
+    end
+
+    subgraph PEND ["Self-app pre-builds (UNWIRED — WV-13/14)"]
+        Hist["/proving/history"]
+        Rcpt["/proving/receipt"]
+        GenOk["/proving/generation-success"]
+        Bk["/proving/backup-prompt"]
+        KycPend["/proving/kyc-pending"]
+        KycOk["/proving/kyc-success"]
+        Acc["/account/verified"]
+        Pts["/points"]
+        Inv["/points/invite"]
+    end
+
+    subgraph EMBED ["Embed (wired today)"]
+        TTour["/tunnel/tour/:step"] --> TKyc["/tunnel/kyc"]
+        TKyc --> ProvLaunch["/onboarding/provider<br/>SHARED"]
+        ProvLaunch -.-> TOk["/tunnel/kyc-success"]
+        TOk --> TGen["/tunnel/proof/generating"]
+        TOk --> TFail["/tunnel/kyc-failure"]
+        TGen --> TDisc["/tunnel/proof/disclose"]
+        TGen --> TRec["/tunnel/recovery-required"]
+        TRec --> RecLaunch
+        TDisc --> TRes["/tunnel/proof/result"]
+        TRes --> TRcpt["/tunnel/proof/receipt"]
+        TRes --> Exit[[bridge.dismiss]]
+    end
+
+    subgraph SHARED ["Shared"]
+        PInst["/onboarding/passport/*"]
+        EInst["/onboarding/eu-id/* (errors REUSE passport)"]
+        AInst["/onboarding/aadhaar/*"]
+        RecLaunch["/recovery"] --> SecIn["/recovery/phrase-input"]
+        SecIn -.->|returnTo| TGen
+        ProvLaunch --> ProvRes["/onboarding/provider-result"]
+        ProvRes --> Confirm["/onboarding/confirm"]
+        Confirm --> ScanOk["/onboarding/success"]
+        ScanOk --> RecPhrase["/onboarding/recovery-phrase"]
+        RecPhrase --> Notifs["/onboarding/notifications"]
+    end
+
+    Proving["/proving"] --> PGen["/proving/generating"]
+    PGen --> PRes["/proving/result"]
+
+    subgraph DEAD ["True orphans / dev"]
+        TC["/tunnel/registration/country"]
+        TI["/tunnel/registration/id-type"]
+        QR["/proving/qr-scan"]
+        Dlg["/proving/dialogue"]
+        DlgC["/proving/dialogue-cta"]
+        GDlg["/proving/generation-dialogue"]
+        Backup["/onboarding/backup"]
+        Signin["/onboarding/signin"]
+        Conflict["/onboarding/conflict"]
+        Keychain["/debug/keychain (DEV-gated)"]
+    end
+</pre>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin-top:8px">Four subgraphs: <strong>Self-app wired</strong>, <strong>Pre-builds (unwired, target = self-app)</strong>, <strong>Embed wired</strong>, <strong>Shared</strong>, plus a <strong>True orphans / dev</strong> group. The triage board below confirms or overrides each pre-build's mode.</p>
+  </div>
+</section>
+
+<section id="triage">
+  <h2>Route Triage Board</h2>
+  <div class="triage-intro">
+    <p>One card per unwired route. Each shows the <strong>current path</strong>, the <strong>proposed path</strong> under the new namespace (NAV-08, invariant #7), and disposition buttons. Classify each by mode. Decisions persist to <code>localStorage</code>; click <em>Export</em> to copy a grouped table into the NAV-01 plan.</p>
+    <div class="disp-legend">
+      <span class="disp-pill self-app">self-app</span>
+      <span class="disp-pill embed">embed</span>
+      <span class="disp-pill shared">shared</span>
+      <span class="disp-pill dev">/dev/*</span>
+      <span class="disp-pill component">→ component</span>
+      <span class="disp-pill delete">delete</span>
+      <span class="disp-pill defer">defer</span>
+    </div>
+    <p style="margin-top:8px;font-size:12px;color:var(--muted)">Dashed buttons are <strong>suggested</strong> classifications based on filename, content, and existing TODOs. Use <em>Apply suggestions</em> to fill them all at once, then override the ones you want changed.</p>
+  </div>
+
+  <div class="triage-controls">
+    <button class="bulk-btn primary" data-bulk="apply-suggested">Apply suggestions</button>
+    <button class="bulk-btn" data-bulk="reset">Clear decisions</button>
+    <button class="bulk-btn primary" data-bulk="export">Export disposition table</button>
+    <span class="spacer"></span>
+    <span class="triage-status" id="triage-status">0 of 18 decided</span>
+  </div>
+
+  <div class="triage-board" id="triage-board"></div>
+
+  <div class="export-area" id="export-area">
+    <p style="font-size:12px;color:var(--muted);margin:8px 0">
+      Copy into <code>specs/projects/sdk/workstreams/nav-hygiene/plans/NAV-01-route-classification.md</code>:
+    </p>
+    <textarea id="export-output" readonly></textarea>
+    <div style="margin-top:8px;display:flex;gap:8px">
+      <button class="bulk-btn primary" id="copy-export">Copy to clipboard</button>
+      <button class="bulk-btn" id="close-export">Close</button>
+    </div>
+  </div>
+</section>
+
+<section id="findings">
+  <h2>Findings By Category</h2>
+
+  <article class="finding sev-high" id="f-classification">
+    <div class="finding-head">
+      <h3>No mode classification at route registration</h3>
+      <span class="sev-badge sev-high">High severity</span>
+    </div>
+    <p>Routes don't declare which mode they belong to. <code>ModeBoot</code> redirects between mode roots, but the router can't reject a cross-mode navigation (e.g. an embed flow trying to reach <code>/settings</code>). Mode coupling is implicit and scattered across screen guards and provider effects.</p>
+    <p><span class="nav-link">NAV-01</span> <span class="nav-link">NAV-13</span></p>
+  </article>
+
+  <article class="finding sev-med" id="f-prebuilt">
+    <div class="finding-head">
+      <h3>Self-app pre-builds awaiting wiring (~9)</h3>
+      <span class="sev-badge sev-med">Medium severity</span>
+    </div>
+    <p>Pre-built self-app screens reachable only via <code>DevRouteMenu</code> — Self app pieces that haven't been hooked into production navigation yet:</p>
+    <ul>
+      <li>Proof artifacts: <code>/proving/history</code>, <code>/proving/receipt</code>, <code>/proving/generation-success</code>, <code>/proving/backup-prompt</code>, <code>/proving/kyc-pending</code>, <code>/proving/kyc-success</code></li>
+      <li>Account: <code>/account/verified</code></li>
+      <li>Points: <code>/points</code>, <code>/points/invite</code></li>
+    </ul>
+    <p>These are <strong>not orphans</strong>. Classification (NAV-01) feeds <a href="../webview/SPEC.md">WV-13</a> (proof overlays + history) and <a href="../webview/SPEC.md">WV-14</a> (home + document management) which do the actual wiring.</p>
+    <p><span class="nav-link">NAV-01</span> <span class="nav-link">WV-13</span> <span class="nav-link">WV-14</span></p>
+  </article>
+
+  <article class="finding sev-low" id="f-deferred">
+    <div class="finding-head">
+      <h3>Deferred for v1: social sign-on placeholders (3)</h3>
+      <span class="sev-badge sev-low">Low severity</span>
+    </div>
+    <p><code>/onboarding/backup</code>, <code>/onboarding/signin</code>, <code>/onboarding/conflict</code> — Euclid screens are not built yet (TODO WV-12), so wiring is deferred for v1. Routes stay registered with placeholder content, reachable only via <code>DevRouteMenu</code>, and are excluded from the v1 production graph. Triage classifies all three as <code>defer</code>. Reopen when WV-12 lands.</p>
+    <p><span class="nav-link">NAV-11</span> <span class="nav-link">WV-12</span></p>
+  </article>
+
+  <article class="finding sev-med" id="f-true-orphans">
+    <div class="finding-head">
+      <h3>True orphans (~4)</h3>
+      <span class="sev-badge sev-med">Medium severity</span>
+    </div>
+    <p>Routes with no plausible production purpose:</p>
+    <ul>
+      <li><code>/tunnel/registration/country</code> + <code>/tunnel/registration/id-type</code> — dev sub-flow that bypasses KYC entirely. Delete or move to <code>/dev/*</code>.</li>
+      <li><code>/proving/dialogue</code>, <code>/dialogue-cta</code>, <code>/generation-dialogue</code> — overlay-shaped. Likely belong as components, not routes.</li>
+      <li><code>/debug/keychain</code> — already correctly DEV-gated (the pattern NAV-02 standardizes).</li>
+    </ul>
+    <p><span class="nav-link">NAV-01</span> <span class="nav-link">NAV-10</span></p>
+  </article>
+
+  <article class="finding sev-high" id="f-boot">
+    <div class="finding-head">
+      <h3>Boot decision overlap</h3>
+      <span class="sev-badge sev-high">High severity</span>
+    </div>
+    <p>Two functions decide initial route:</p>
+    <ul>
+      <li><code>ModeBoot</code> — redirects on <code>mode</code> + <code>verificationRequest</code> shape.</li>
+      <li><code>InitialRouteRedirect</code> — wildcard <code>*</code> catch-all, redirects on URL params.</li>
+    </ul>
+    <p>Both can fire on the same boot. Their outputs sometimes agree and sometimes don't.</p>
+    <p><span class="nav-link">NAV-03</span></p>
+  </article>
+
+  <article class="finding sev-high" id="f-close">
+    <div class="finding-head">
+      <h3>Cluster terminal screens hard-code <code>navigate('/')</code></h3>
+      <span class="sev-badge sev-high">High severity</span>
+    </div>
+    <p>Every NFC success, Aadhaar success, KYC failure screen calls <code>navigate('/')</code> directly. No single owner of "what does close mean for cluster X."</p>
+    <p>Problem worse in <strong>shared</strong> clusters (NFC, recovery): they must close differently in self-app (→ <code>/</code>) vs embed (→ <code>bridge.dismiss</code>). Currently each screen branches on <code>useOperatingMode()</code>. NAV-04 funnels through one cluster-owned handler.</p>
+    <p><span class="nav-link">NAV-04</span></p>
+  </article>
+
+  <article class="finding sev-med" id="f-back-close">
+    <div class="finding-head">
+      <h3>"Back" vs "close" inconsistency</h3>
+      <span class="sev-badge sev-med">Medium severity</span>
+    </div>
+    <p>Sample of the inconsistency:</p>
+    <ul>
+      <li>Passport instructions: "close" calls <code>navigate(-1)</code> (steps back inside cluster — should be "back").</li>
+      <li>Passport NFC success: "close" calls <code>navigate('/')</code> (cluster exit — correct).</li>
+      <li>Notifications: "close" calls <code>navigate(-1)</code> back to recovery phrase (within-cluster — should be "back").</li>
+      <li>EU-ID instructions: "close" calls <code>navigate(-1)</code> to ID-select (cluster exit but routed as back).</li>
+    </ul>
+    <p><span class="nav-link">NAV-05</span></p>
+  </article>
+
+  <article class="finding sev-med" id="f-coupling">
+    <div class="finding-head">
+      <h3>Cross-document coupling (EU-ID → passport error)</h3>
+      <span class="sev-badge sev-med">Medium severity</span>
+    </div>
+    <p>EU-ID flows reuse <code>/onboarding/passport/nfc-error</code> for both MRZ and NFC errors. EU-ID has its own <code>/onboarding/eu-id/nfc-success</code> — no matching reuse for success. Asymmetry suggests accidental, not designed.</p>
+    <p><span class="nav-link">NAV-06</span></p>
+  </article>
+
+  <article class="finding sev-med" id="f-replace">
+    <div class="finding-head">
+      <h3><code>replace: true</code> inconsistency</h3>
+      <span class="sev-badge sev-med">Medium severity</span>
+    </div>
+    <p>Most cluster-internal forward progressions use <code>replace: true</code>. Most "close to home" actions don't. Exceptions in both directions. No documented rule.</p>
+    <p><span class="nav-link">NAV-07</span></p>
+  </article>
+
+  <article class="finding sev-low" id="f-namespace">
+    <div class="finding-head">
+      <h3>Namespace asymmetry</h3>
+      <span class="sev-badge sev-low">Low severity</span>
+    </div>
+    <p>Self-app proving: <code>/proving/*</code>. Embed proving: <code>/tunnel/proof/*</code>. Same engine, both instantiate the same <code>provingMachine</code>. After NAV-12 rename, target is <code>/self-app/proof/*</code> vs <code>/embed/proof/*</code> (or simply <code>/app/proof/*</code>).</p>
+    <p><span class="nav-link">NAV-08</span> <span class="nav-link">NAV-12</span></p>
+  </article>
+</section>
+
+<section id="methodology">
+  <h2>Methodology</h2>
+  <p>Four parallel agent sweeps:</p>
+  <ol>
+    <li>Self-app onboarding (tour → country → ID select → document flows → outcomes)</li>
+    <li>Embed flow (boot → tour → KYC → proving → disclose → result)</li>
+    <li>Proving / recovery / settings (self-app <code>?disclosures</code> path, <code>/recovery/*</code>, <code>/settings/*</code>)</li>
+    <li>Entry / boot redirects (<code>ModeBoot</code>, <code>InitialRouteRedirect</code>, wildcard catch-all)</li>
+  </ol>
+  <p>Each sweep traced every <code>useNavigate</code>, <code>&lt;Navigate&gt;</code>, route param, and <code>state</code> field. Edges are verified against code, not inferred from naming.</p>
+</section>
+
+<section id="regen">
+  <h2>Regeneration</h2>
+  <ol>
+    <li>Re-run the four parallel sweeps against the updated code.</li>
+    <li>Update the mermaid blocks above.</li>
+    <li>Update the route list in <code>ROUTES</code> JS array.</li>
+    <li>After NAV-01, "uncategorized" count should reach zero; after NAV-13, every route should have a declared mode in code.</li>
+  </ol>
+</section>
+
+</main>
+</div>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: false, theme: 'neutral', flowchart: { curve: 'basis', useMaxWidth: true } });
+  const renderTab = async (tab) => {
+    const pane = document.querySelector(`.tab-content[data-tab="${tab}"]`);
+    if (!pane || pane.dataset.rendered) return;
+    const blocks = pane.querySelectorAll('pre.mermaid');
+    for (const block of blocks) {
+      const code = block.textContent;
+      const id = 'm-' + Math.random().toString(36).slice(2);
+      try {
+        const { svg } = await mermaid.render(id, code);
+        block.outerHTML = `<div class="mermaid-rendered">${svg}</div>`;
+      } catch (e) {
+        block.innerHTML = `<div style="color:var(--high);padding:8px">Mermaid render failed. Open this file in a browser, or paste the block into <a href="https://mermaid.live">mermaid.live</a>.<br/><small></small></div>`;
+        block.querySelector('small').textContent = e.message;
+      }
+    }
+    pane.dataset.rendered = '1';
+  };
+  renderTab('embed');
+  window.__renderTab = renderTab;
+</script>
+
+<script>
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    const name = tab.dataset.tab;
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t === tab));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.dataset.tab === name));
+    if (window.__renderTab) window.__renderTab(name);
+  });
+});
+
+const ROUTES = [
+  { route: "/proving/history",            proposed: "/history",                  cluster: "history",     suggested: "self-app",  note: "Proof history list. Pre-built; awaits WV-13 wiring from Home. Becomes a place-noun route under the new namespace." },
+  { route: "/proving/receipt",            proposed: "/receipts/:id",             cluster: "receipts",    suggested: "self-app",  note: "Proof detail / receipt screen. Reachable from /disclose/result and from history list. Place-noun, plural + id." },
+  { route: "/proving/generation-success", proposed: "(retire)",                  cluster: "register",    suggested: "delete",    note: "Wraps Euclid's ProofGenerationSuccessScreen ('Shield Identity' CTA). DUPLICATE: same moment as /proving/backup-prompt's richer ProofSuccessBackupScreen. Retire in favor of /register/success rendering ProofSuccessBackupScreen." },
+  { route: "/proving/backup-prompt",      proposed: "/register/success",         cluster: "register",    suggested: "self-app",  note: "Wraps Euclid's ProofSuccessBackupScreen (ID card + 'Remind later' / 'Backup account'). THE 'you're all set' screen — winner of the 3-way register-success duplication. Becomes the canonical /register/success." },
+  { route: "/proving/kyc-pending",        proposed: "/disclose/kyc-pending",     cluster: "disclose",    suggested: "shared",    note: "Disclose held up by async KYC review. Code-checked: CTAs are 'Check back later' → / and 'Receive live updates' → /settings/notifications. Lives in disclose journey, not account-state. Shared between self-app and embed (close handler differs per mode)." },
+  { route: "/proving/kyc-success",        proposed: "/disclose/kyc-success",     cluster: "disclose",    suggested: "shared",    note: "KYC review just cleared; resume disclose. Code-checked: single CTA 'Generate Proof' → /proving (which becomes /disclose/request in new namespace). Symmetric with /tunnel/kyc-success which collapses to the same shared route." },
+  { route: "/account/verified",           proposed: "/account/verified",         cluster: "account",     suggested: "self-app",  note: "Account-verified state screen. Already correctly named — stays put." },
+  { route: "/points",                     proposed: "/points",                   cluster: "points",      suggested: "self-app",  note: "Points / rewards screen. Place-noun, stays put." },
+  { route: "/points/invite",              proposed: "/points/invite",            cluster: "points",      suggested: "self-app",  note: "Referral invite screen. Stays put." },
+  { route: "/onboarding/backup",          proposed: "/link-social/backup",       cluster: "signin",      suggested: "defer",     note: "Social sign-on backup picker. DEFERRED for v1 (NAV-11): Euclid screen not built. Stays registered with TODO-WV-12 placeholder, reachable only via DevRouteMenu, excluded from production graph. Proposed /link-social/backup namespace applies when WV-12 lands as a follow-up PR." },
+  { route: "/onboarding/signin",          proposed: "/link-social",              cluster: "signin",      suggested: "defer",     note: "Social sign-on provider picker. DEFERRED for v1 (NAV-11): Euclid screen not built. Stays registered with TODO-WV-12 placeholder, reachable only via DevRouteMenu, excluded from production graph." },
+  { route: "/onboarding/conflict",        proposed: "/link-social/conflict",     cluster: "signin",      suggested: "defer",     note: "Account conflict surfaced when linking a social account already bound to a different identity. DEFERRED for v1 (NAV-11): Euclid screen not built. Stays registered with TODO-WV-12 placeholder, reachable only via DevRouteMenu, excluded from production graph." },
+  { route: "/proving/dialogue",           proposed: "(component, not route)",    cluster: "overlay",     suggested: "component", note: "Generic dialogue overlay. No outgoing nav. Refactor to a component imported where needed; remove the route." },
+  { route: "/proving/dialogue-cta",       proposed: "(component, not route)",    cluster: "overlay",     suggested: "component", note: "CTA dialogue variant. Component, not route." },
+  { route: "/proving/generation-dialogue",proposed: "(component, not route)",    cluster: "overlay",     suggested: "component", note: "Generation-time overlay. No outgoing nav. Component, not route." },
+  { route: "/tunnel/registration/country",proposed: "(delete)",                  cluster: "embed-dead",  suggested: "delete",    note: "Dev country picker that bypasses KYC. Dead sub-flow; only DevRouteMenu reaches it." },
+  { route: "/tunnel/registration/id-type",proposed: "(delete)",                  cluster: "embed-dead",  suggested: "delete",    note: "Dev ID-type picker. Part of bypass flow. Delete with sibling." },
+  { route: "/debug/keychain",             proposed: "/dev/keychain",             cluster: "dev",         suggested: "dev",       note: "Already DEV-guarded at registration. Reference for the pattern NAV-02 standardizes — moves under the /dev/* namespace." }
+];
+
+const DISPS = [
+  { key: "self-app",  label: "self-app",  row: 1 },
+  { key: "embed",     label: "embed",     row: 1 },
+  { key: "shared",    label: "shared",    row: 1 },
+  { key: "dev",       label: "/dev/*",    row: 2 },
+  { key: "component", label: "→ comp",    row: 2 },
+  { key: "delete",    label: "delete",    row: 2 },
+  { key: "defer",     label: "defer",     row: 2 }
+];
+const DISP_LABELS = Object.fromEntries(DISPS.map(d => [d.key, d.label]));
+const DISP_COLORS = {
+  "self-app": "var(--self-app)", embed: "var(--embed)", shared: "var(--shared)",
+  dev: "var(--dev)", component: "var(--component)", delete: "var(--delete)", defer: "var(--defer)"
+};
+
+const STORAGE_KEY = "nav-hygiene-triage-v2";
+function loadDecisions() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); } catch { return {}; } }
+function saveDecisions(d) { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); }
+let decisions = loadDecisions();
+
+const board = document.getElementById('triage-board');
+function renderBoard() {
+  board.innerHTML = '';
+  for (const r of ROUTES) {
+    const decided = decisions[r.route];
+    const card = document.createElement('div');
+    card.className = 'orphan' + (decided ? ' decided' : '');
+    if (decided) card.style.setProperty('--current-color', DISP_COLORS[decided]);
+    const row1 = DISPS.filter(d => d.row === 1).map(d =>
+      `<button data-disp="${d.key}" class="${decided === d.key ? 'selected' : ''}${r.suggested === d.key && !decided ? ' suggested' : ''}">${d.label}</button>`
+    ).join('');
+    const row2 = DISPS.filter(d => d.row === 2).map(d =>
+      `<button data-disp="${d.key}" class="${decided === d.key ? 'selected' : ''}${r.suggested === d.key && !decided ? ' suggested' : ''}">${d.label}</button>`
+    ).join('');
+    const proposedLabel = r.proposed.startsWith('(')
+      ? `<span style="font-family:ui-monospace,monospace;font-size:11px;color:var(--muted)">${r.proposed}</span>`
+      : `<span style="font-family:ui-monospace,monospace;font-size:11px;color:var(--accent)">${r.proposed}</span>`;
+    card.innerHTML = `
+      <div class="orphan-route">${r.route}</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:-4px">→ proposed: ${proposedLabel}</div>
+      <div class="orphan-meta">
+        <strong>${r.cluster}</strong>
+        <span class="suggest" style="background: var(--${r.suggested}-soft); color: var(--${r.suggested});">suggest: ${DISP_LABELS[r.suggested]}</span>
+        <div style="margin-top:4px">${r.note}</div>
+      </div>
+      <div class="orphan-actions">${row1}</div>
+      <div class="orphan-actions row2">${row2}</div>
+    `;
+    card.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const disp = btn.dataset.disp;
+        if (decisions[r.route] === disp) delete decisions[r.route];
+        else decisions[r.route] = disp;
+        saveDecisions(decisions);
+        renderBoard();
+        updateStatus();
+      });
+    });
+    board.appendChild(card);
+  }
+}
+
+function updateStatus() {
+  const decidedCount = Object.keys(decisions).length;
+  const total = ROUTES.length;
+  document.getElementById('triage-status').innerHTML = `<strong>${decidedCount}</strong> of ${total} decided`;
+  document.getElementById('stat-decided').textContent = decidedCount;
+}
+
+document.querySelectorAll('.bulk-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const action = btn.dataset.bulk;
+    if (action === 'reset') {
+      if (!confirm('Clear all triage decisions?')) return;
+      decisions = {};
+      saveDecisions(decisions);
+      renderBoard();
+      updateStatus();
+    } else if (action === 'apply-suggested') {
+      for (const r of ROUTES) {
+        if (!decisions[r.route]) decisions[r.route] = r.suggested;
+      }
+      saveDecisions(decisions);
+      renderBoard();
+      updateStatus();
+    } else if (action === 'export') {
+      const decidedCount = Object.keys(decisions).length;
+      const grouped = {};
+      for (const d of DISPS) grouped[d.key] = [];
+      const undecided = [];
+      for (const r of ROUTES) {
+        const d = decisions[r.route];
+        if (d) grouped[d].push(r);
+        else undecided.push(r);
+      }
+      let md = `## NAV-01 — Route classification\n\n_${decidedCount} of ${ROUTES.length} decided_\n\nProposed paths follow the new namespace defined in SPEC.html invariant #7 (NAV-08).\n\n`;
+      for (const d of DISPS) {
+        const items = grouped[d.key];
+        md += `### ${DISP_LABELS[d.key]} (${items.length})\n\n`;
+        if (items.length === 0) { md += `_none_\n\n`; continue; }
+        md += `| Current path | Proposed path | Cluster | Notes |\n| --- | --- | --- | --- |\n`;
+        for (const r of items) md += `| \`${r.route}\` | \`${r.proposed}\` | ${r.cluster} | ${r.note} |\n`;
+        md += `\n`;
+      }
+      if (undecided.length) {
+        md += `### Undecided (${undecided.length})\n\n| Current path | Proposed path | Cluster | Suggested | Notes |\n| --- | --- | --- | --- | --- |\n`;
+        for (const r of undecided) md += `| \`${r.route}\` | \`${r.proposed}\` | ${r.cluster} | ${DISP_LABELS[r.suggested]} | ${r.note} |\n`;
+      }
+      document.getElementById('export-output').value = md;
+      document.getElementById('export-area').classList.add('shown');
+      document.getElementById('export-area').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+});
+
+document.getElementById('copy-export').addEventListener('click', () => {
+  const ta = document.getElementById('export-output');
+  ta.select();
+  navigator.clipboard.writeText(ta.value).then(() => {
+    const btn = document.getElementById('copy-export');
+    const orig = btn.textContent;
+    btn.textContent = 'Copied ✓';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 1400);
+  });
+});
+
+document.getElementById('close-export').addEventListener('click', () => {
+  document.getElementById('export-area').classList.remove('shown');
+});
+
+renderBoard();
+updateStatus();
+
+const sections = document.querySelectorAll('main section[id], main article[id]');
+const tocLinks = document.querySelectorAll('#toc a');
+const io = new IntersectionObserver(entries => {
+  for (const e of entries) {
+    if (e.isIntersecting) {
+      tocLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + e.target.id));
+    }
+  }
+}, { rootMargin: '-30% 0px -60% 0px' });
+sections.forEach(s => io.observe(s));
+</script>
+
+</body>
+</html>

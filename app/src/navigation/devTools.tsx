@@ -16,6 +16,7 @@ import DevPrivateKeyScreen from '@/screens/dev/DevPrivateKeyScreen';
 import DevSettingsScreen from '@/screens/dev/DevSettingsScreen';
 import SocialLoginDemoScreen from '@/screens/dev/SocialLoginDemoScreen';
 import TroubleshootingScreen from '@/screens/dev/TroubleshootingScreen';
+import WebViewHostScreen from '@/screens/dev/WebViewHostScreen';
 
 const devHeaderOptions: NativeStackNavigationOptions = {
   headerStyle: {
@@ -103,6 +104,12 @@ const devScreens = {
     options: {
       ...devHeaderOptions,
       title: 'Troubleshooting',
+    } as NativeStackNavigationOptions,
+  },
+  WebViewHost: {
+    screen: WebViewHostScreen,
+    options: {
+      headerShown: false,
     } as NativeStackNavigationOptions,
   },
 };
