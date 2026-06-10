@@ -1216,12 +1216,15 @@ jobs:
           echo "✅ Dependencies built successfully"
 
       # rn-sdk's Android module declares compileOnly xyz.self.sdk:shared-android,
-      # which only exists in mavenLocal (see mobile-e2e.yml / rn-sdk-test-app-ci.yml)
+      # which only exists in mavenLocal. The script publishes only the Android
+      # publication — the aggregate publishToMavenLocal task pulls in the iOS
+      # metadata path, which fails an unrelated Gradle task-dependency check.
       - name: Publish KMP SDK to mavenLocal
         if: inputs.platform != 'ios'
         run: |
           chmod +x packages/kmp-sdk/gradlew
-          cd packages/kmp-sdk && ./gradlew :shared:publishToMavenLocal --quiet
+          cd ${{ env.APP_PATH }}
+          node scripts/publish-kmp-local.cjs
 
       - name: Build AAB with Fastlane
         if: inputs.platform != 'ios'
