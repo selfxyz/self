@@ -19,8 +19,8 @@ module.exports = {
     'plugin:import/typescript',
     'plugin:prettier/recommended',
   ],
-  plugins: ['simple-import-sort', 'import', 'sort-exports'],
-  ignorePatterns: ['dist/', 'node_modules/'],
+  plugins: ['simple-import-sort', 'import', 'sort-exports', 'self-handlers'],
+  ignorePatterns: ['dist/', 'node_modules/', 'eslint-rules/'],
   settings: {
     react: {
       version: 'detect',
@@ -100,6 +100,14 @@ module.exports = {
             fixMixedExportsWithInlineTypeSpecifier: false,
           },
         ],
+      },
+    },
+    {
+      // Enforce canonical handler names in screen files. See
+      // eslint-rules/handler-names.js and AGENTS.md "Handler naming".
+      files: ['src/screens/**/*.{ts,tsx}'],
+      rules: {
+        'self-handlers/handler-names': 'error',
       },
     },
     {

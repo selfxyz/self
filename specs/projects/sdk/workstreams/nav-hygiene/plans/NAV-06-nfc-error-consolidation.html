@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>NAV-06 Plan — Cross-Document NFC Error/Success Consolidation</title>
+<link rel="stylesheet" href="./_shared.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <h1>NAV-06 · NFC Error/Success Consolidation</h1>
+  <span class="meta-pill status-Ready">Ready</span>
+  <span class="meta-pill prio-Medium">Medium</span>
+  <span class="meta-pill">Updated 2026-05-25</span>
+  <span class="spacer"></span>
+  <div class="links">
+    <a href="../SPEC.html">← Spec</a>
+    <a href="../AUDIT.html">Audit</a>
+  </div>
+</header>
+
+<div class="layout">
+
+<nav class="toc">
+  <h4>On this page</h4>
+  <a href="#why">Why</a>
+  <a href="#decisions">Decisions</a>
+  <a href="#meta">Meta</a>
+  <a href="#current-state">Current State</a>
+  <a href="#scope">Scope</a>
+  <a href="#out-of-scope">Out of Scope</a>
+  <a href="#required-files">Required Files</a>
+  <a href="#approach">Approach</a>
+  <a href="#validation">Validation</a>
+  <a href="#open-questions">Open Questions</a>
+  <a href="#hand-off">Hand-off</a>
+  <h4>Workstream</h4>
+  <a href="../SPEC.html">SPEC ↗</a>
+  <a href="../AUDIT.html">AUDIT ↗</a>
+</nav>
+
+<main>
+
+<section id="why" class="tldr">
+  <h2>Why</h2>
+  <p>
+    Passport has <code>/onboarding/passport/nfc-error</code> + <code>/onboarding/passport/nfc-success</code>. Aadhaar has <code>/onboarding/aadhaar/upload-error</code> + <code>/onboarding/aadhaar/upload-success</code>. EU-ID has only the success route — it navigates to <strong>passport's</strong> error route from two call sites. The borrowed route's UI, strings, and analytics names are passport-specific, so EU-ID users see "passport" copy on their NFC errors.
+  </p>
+</section>
+
+<section id="decisions" class="decisions-block">
+  <h2>Decisions</h2>
+  <p class="decisions-intro">Locked in on 2026-05-25. See <a href="../DECISIONS.md">DECISIONS.md</a>.</p>
+  <ul class="decisions-list">
+    <li class="decision">
+      <div class="d-head"><code>nav-06-q1-split-vs-param</code> · Decided</div>
+      <p class="d-q">Split routes per document, or parameterize the Euclid <code>NfcErrorScreen</code>?</p>
+      <p class="d-a"><strong>Split.</strong> EU-ID gets its own <code>/onboarding/eu-id/nfc-error</code> route, mirroring the Aadhaar precedent. File an Euclid follow-up ticket for an upstream <code>EuIdNfcErrorScreen</code> component if one doesn't exist yet.</p>
+    </li>
+  </ul>
+</section>
+
+<section id="meta">
+  <h2>Meta</h2>
+  <div class="meta-grid">
+    <div class="item"><div class="label">Workstream</div><div class="value">nav-hygiene</div></div>
+    <div class="item"><div class="label">Linear</div><div class="value">TBD</div></div>
+    <div class="item"><div class="label">Owner</div><div class="value">TBD</div></div>
+    <div class="item"><div class="label">Branch</div><div class="value"><code>chore/nav-06-nfc-error</code></div></div>
+    <div class="item"><div class="label">PR</div><div class="value">TBD</div></div>
+    <div class="item"><div class="label">Depends on</div><div class="value">—</div></div>
+  </div>
+</section>
+
+<section id="current-state">
+  <h2>Current State</h2>
+  <h3>EU-ID → passport navigation (2 sites)</h3>
+  <pre><code>// packages/webview-app/src/screens/onboarding/eu-id/EuIdNfcInstructionsRoute.tsx:115
+navigate('/onboarding/passport/nfc-error', {
+  state: { countryCode: state.countryCode, errorMessage: message, stage: 'nfc' },
+  replace: true,
+});
+
+// packages/webview-app/src/screens/onboarding/eu-id/EuIdViewfinderRoute.tsx:57
+navigate('/onboarding/passport/nfc-error', {
+  state: { ...state, errorMessage: message, stage: 'mrz' },
+  replace: true,
+});</code></pre>
+
+  <h3>Euclid coupling</h3>
+  <p><code>PassportNfcErrorScreen</code> (from <code>@selfxyz/euclid</code>) is passport-specific: hardcoded strings, analytics events like <code>passport_scan_start_over</code>. It does NOT accept a <code>documentType</code> prop today.</p>
+</section>
+
+<section id="scope">
+  <h2>Scope</h2>
+  <p>Per <a href="#open-questions">Q1</a> (split-routes vs param-euclid). <strong>Recommended path: split-routes.</strong></p>
+  <ul class="scope">
+    <li>Add EU-ID-specific routes in <code>App.tsx</code>:
+      <ul>
+        <li><code>/onboarding/eu-id/nfc-error</code> → <code>&lt;EuIdNfcErrorRoute /&gt;</code></li>
+        <li>(If symmetric: also confirm <code>/onboarding/eu-id/nfc-success</code> exists; it does — line 115)</li>
+      </ul>
+    </li>
+    <li>Create <code>screens/onboarding/eu-id/EuIdNfcErrorRoute.tsx</code> as a thin wrapper around an Euclid component (or a local EU-ID-flavored copy of <code>PassportNfcErrorScreen</code>). The wrapper reads <code>location.state</code> in the same shape passport's does: <code>{ countryCode?, errorMessage?, stage? }</code>.</li>
+    <li>Update the two EU-ID call sites to navigate to the new EU-ID route:
+      <pre><code>navigate('/onboarding/eu-id/nfc-error', { state: ..., replace: true });</code></pre>
+    </li>
+    <li>If Euclid doesn't have an EU-ID NFC error component, this plan creates the wrapper locally and TODOs an Euclid migration — call out in <a href="#hand-off">Hand-off</a>.</li>
+    <li>Keep passport's route and screen unchanged.</li>
+  </ul>
+</section>
+
+<section id="out-of-scope">
+  <h2>Out of Scope</h2>
+  <ul class="scope">
+    <li><strong>No changes to the passport flow.</strong></li>
+    <li><strong>No Aadhaar changes.</strong> Aadhaar already has its own routes.</li>
+    <li><strong>No Euclid library changes.</strong> If an EU-ID error component is needed, this plan creates a local wrapper that renders the closest Euclid component or a local React component. Euclid changes are a follow-up.</li>
+    <li><strong>No analytics-event consolidation.</strong> Per-document analytics (e.g. <code>passport_scan_start_over</code> vs <code>eu_id_*</code>) stay distinct.</li>
+  </ul>
+</section>
+
+<section id="required-files">
+  <h2>Required Files</h2>
+  <ul class="scope">
+    <li><code>packages/webview-app/src/App.tsx</code> (register <code>/onboarding/eu-id/nfc-error</code>)</li>
+    <li><code>packages/webview-app/src/screens/onboarding/eu-id/EuIdNfcErrorRoute.tsx</code> (new)</li>
+    <li><code>packages/webview-app/src/screens/onboarding/eu-id/EuIdNfcInstructionsRoute.tsx</code> (update navigate target line 115)</li>
+    <li><code>packages/webview-app/src/screens/onboarding/eu-id/EuIdViewfinderRoute.tsx</code> (update navigate target line 57)</li>
+    <li><code>packages/webview-app/src/components/DevRouteMenu.tsx</code> (add EU-ID error entry)</li>
+  </ul>
+</section>
+
+<section id="approach">
+  <h2>Approach</h2>
+  <h3>Step 1 — Identify the Euclid component to wrap</h3>
+  <p>Check <code>@selfxyz/euclid</code> for an EU-ID-specific NFC error screen. If none exists, decide between:</p>
+  <ul class="scope">
+    <li>Reusing <code>PassportNfcErrorScreen</code> with EU-ID copy overrides via props (if Euclid exposes them — currently doesn't).</li>
+    <li>Authoring a small local EU-ID copy of the screen until Euclid catches up. Flag this in <a href="#hand-off">Hand-off</a>.</li>
+  </ul>
+
+  <h3>Step 2 — Create the route component</h3>
+  <p>Pattern follows <code>PassportNfcErrorRoute</code> (the existing wrapper):</p>
+  <pre><code>// EuIdNfcErrorRoute.tsx (sketch)
+export function EuIdNfcErrorRoute() {
+  const location = useLocation();
+  const { countryCode, errorMessage, stage } = (location.state ?? {}) as {
+    countryCode?: string; errorMessage?: string; stage?: 'mrz' | 'nfc';
+  };
+  // Render Euclid component or local copy with EU-ID copy + analytics
+  return &lt;EuIdNfcErrorScreen ... /&gt;;
+}</code></pre>
+
+  <h3>Step 3 — Register and re-point</h3>
+  <p>Add <code>&lt;Route path="/onboarding/eu-id/nfc-error" element={&lt;EuIdNfcErrorRoute /&gt;} /&gt;</code> in <code>App.tsx</code> near other EU-ID routes (around line 110-115).</p>
+  <p>Update the two navigate sites to target the new route.</p>
+
+  <h3>Step 4 — Dev menu</h3>
+  <p>Add EU-ID error entry to <code>DevRouteMenu.tsx</code> under the EU-ID group.</p>
+</section>
+
+<section id="validation">
+  <h2>Validation</h2>
+  <ul class="scope">
+    <li><code>cd packages/webview-app &amp;&amp; yarn build &amp;&amp; yarn types</code> — clean.</li>
+    <li><code>grep -rn "/onboarding/passport/nfc-error" packages/webview-app/src/screens/onboarding/eu-id</code> — zero hits.</li>
+    <li>Manual: EU-ID flow, fail MRZ → land on <code>/onboarding/eu-id/nfc-error</code> showing EU-ID copy.</li>
+    <li>Manual: EU-ID flow, fail NFC → same.</li>
+    <li>Manual: passport flow, fail MRZ/NFC → unchanged.</li>
+    <li>DevRouteMenu has both passport and EU-ID NFC error entries.</li>
+  </ul>
+</section>
+
+<section id="open-questions">
+  <h2>Open Questions</h2>
+  <p style="color:var(--muted);font-size:13px;margin-top:0">Answers persist to <code>localStorage</code>. Aggregate view in <a href="../SPEC.html#open-questions">SPEC.html</a>.</p>
+  <div id="oq-container"></div>
+</section>
+
+<section id="hand-off">
+  <h2>Hand-off</h2>
+  <ul class="scope">
+    <li>If Step 1 forced a local EU-ID error component, file a follow-up Euclid issue: "Add EuIdNfcErrorScreen to @selfxyz/euclid; webview-app local wrapper migrates to the library component."</li>
+    <li><span class="nav-link">NAV-08</span> renames <code>/onboarding/*</code> to verb/place names. <code>/onboarding/eu-id/nfc-error</code> becomes part of that rewrite; this plan's route is short-lived.</li>
+  </ul>
+</section>
+
+</main>
+</div>
+
+<script src="./_open-questions.js"></script>
+<script>
+  window.NavHygieneOQ.renderQuestionsForPlan('NAV-06', document.getElementById('oq-container'));
+
+  const sections = document.querySelectorAll('section[id]');
+  const tocLinks = document.querySelectorAll('nav.toc a[href^="#"]');
+  const obs = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (entry.isIntersecting) {
+        tocLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === `#${entry.target.id}`));
+      }
+    }
+  }, { rootMargin: '-50% 0px -45% 0px' });
+  sections.forEach(s => obs.observe(s));
+</script>
+
+</body>
+</html>

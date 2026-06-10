@@ -15,6 +15,14 @@ const projectRoot = __dirname;
 const workspaceRoot =
   findYarnWorkspaceRoot(__dirname) || path.resolve(__dirname, '..');
 
+// Expo's metro-config resolves the entry relative to the monorepo root, so it
+// rewrites Android's `/.expo/.virtual-metro-entry.bundle` to this segment
+// (e.g. `app/index`). We keep our server root at the app dir, so we strip it
+// back to `index` below. See the `server` block.
+const appDirFromWorkspace = path.relative(workspaceRoot, projectRoot);
+const expoRewriteRequestUrl =
+  defaultConfig.server && defaultConfig.server.rewriteRequestUrl;
+
 /**
  * Modern Metro configuration using native workspace capabilities
  * Eliminates need for manual symlink management through:
@@ -27,13 +35,29 @@ const workspaceRoot =
 const config = {
   projectRoot,
 
-  // Pin Metro's server root to the app so bundle URLs like `/index.bundle`
-  // resolve to app/index.js. Otherwise Metro (via expo/metro-config) derives
-  // the server root from the common ancestor of projectRoot and watchFolders
-  // (the monorepo root), and `/index.bundle` resolves to <repo>/index, which
-  // does not exist.
+  // Server root is the app dir so native `/index.bundle` and the embedded
+  // `--entry-file index.js` (iOS "Bundle React Native code and images" phase)
+  // both resolve to app/index.js. Without this, Metro derives the root from the
+  // common ancestor of projectRoot and watchFolders (the monorepo root) and
+  // those look for <repo>/index.js.
+  //
+  // Expo's rewriteRequestUrl resolves the entry relative to the monorepo root
+  // regardless, so Android's `/.expo/.virtual-metro-entry.bundle` becomes
+  // `/app/index.bundle`, which 404s as `app/app/index` against this root. Wrap
+  // Expo's rewrite and strip the workspace-relative app segment back to
+  // `/index.bundle`. iOS hardcodes bundle root "index" and never hits the
+  // virtual entry, so it's unaffected.
   server: {
     unstable_serverRoot: projectRoot,
+    rewriteRequestUrl: url => {
+      const rewritten = expoRewriteRequestUrl
+        ? expoRewriteRequestUrl(url)
+        : url;
+      return rewritten.replace(
+        `/${appDirFromWorkspace}/index.bundle`,
+        '/index.bundle',
+      );
+    },
   },
 
   watchFolders: [
@@ -87,6 +111,11 @@ const config = {
       new RegExp(
         'packages/mobile-sdk-alpha/node_modules/react-native-webview(/|$)',
       ),
+      new RegExp('packages/rn-sdk/node_modules/react(/|$)'),
+      new RegExp('packages/rn-sdk/node_modules/react-dom(/|$)'),
+      new RegExp('packages/rn-sdk/node_modules/react-native(/|$)'),
+      new RegExp('packages/rn-sdk/node_modules/scheduler(/|$)'),
+      new RegExp('packages/rn-sdk/node_modules/react-native-webview(/|$)'),
       new RegExp('packages/mobile-sdk-demo/node_modules/react(/|$)'),
       new RegExp('packages/mobile-sdk-demo/node_modules/react-dom(/|$)'),
       new RegExp('packages/mobile-sdk-demo/node_modules/react-native(/|$)'),
@@ -116,6 +145,10 @@ const config = {
       assert: require.resolve('assert'),
       events: require.resolve('events'),
       process: require.resolve('process'),
+      react: path.resolve(projectRoot, 'node_modules/react'),
+      'react-dom': path.resolve(projectRoot, 'node_modules/react-dom'),
+      'react-native': path.resolve(projectRoot, 'node_modules/react-native'),
+      scheduler: path.resolve(projectRoot, 'node_modules/scheduler'),
       'react-native-svg': path.resolve(
         projectRoot,
         'node_modules/react-native-svg',
@@ -140,6 +173,12 @@ const config = {
       const appLevelModules = {
         'react-native-gesture-handler':
           'react-native-gesture-handler/lib/commonjs/index.js',
+        // Pin to the app's copy (under unstable_serverRoot). The SDK dynamically
+        // imports this from packages/mobile-sdk-alpha/dist, which would otherwise
+        // resolve to packages/.../node_modules/.../src/index.ts — outside the
+        // server root, so the async chunk path can't be serialized and iOS crashes.
+        'react-native-haptic-feedback':
+          'react-native-haptic-feedback/lib/commonjs/index.js',
       };
       const sdkAlphaPath = path.resolve(
         workspaceRoot,

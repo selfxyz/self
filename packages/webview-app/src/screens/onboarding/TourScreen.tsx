@@ -17,7 +17,7 @@ export const TourScreen: React.FC = () => {
   const stepNumber = Number.parseInt(step ?? '1', 10);
 
   const onNext = useCallback(() => {
-    navigate(stepNumber < 4 ? `/onboarding/tour/${stepNumber + 1}` : '/onboarding/provider');
+    navigate(stepNumber < 4 ? `/tour/${stepNumber + 1}` : '/pick-country');
   }, [navigate, stepNumber]);
 
   const onRestore = useCallback(() => {
@@ -50,10 +50,10 @@ export const TourScreen: React.FC = () => {
       return (
         <div className="tour4-lottie-scale">
           <MockRegistrationFailureButton />
-          <LaunchTour4Screen {...WEB_SAFE_AREA} onNext={onNext} onSkip={onNext} onRestore={onRestore} />
+          <LaunchTour4Screen {...WEB_SAFE_AREA} onNext={onNext} onSkip={onRestore} onRestore={onRestore} />
         </div>
       );
     default:
-      return <Navigate to="/onboarding/tour/1" replace />;
+      return <Navigate to="/tour/1" replace />;
   }
 };

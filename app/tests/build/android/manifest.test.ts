@@ -125,8 +125,12 @@ describe('Android Manifest Configuration', () => {
       expect(manifestContent).toContain('android:name=".MainActivity"');
       expect(manifestContent).toContain('android:exported="true"');
       expect(manifestContent).toContain('android:launchMode="singleTop"');
-      // Orientation locks removed to support large screens
-      expect(manifestContent).not.toContain('android:screenOrientation');
+      // Orientation locks removed from MainActivity to support large screens
+      const mainActivityBlock = manifestContent.slice(
+        manifestContent.indexOf('android:name=".MainActivity"'),
+        manifestContent.indexOf('</activity>'),
+      );
+      expect(mainActivityBlock).not.toContain('android:screenOrientation');
     });
 
     it('should have main launcher intent filter', () => {

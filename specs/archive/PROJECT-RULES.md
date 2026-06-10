@@ -68,7 +68,7 @@
 
 ### Quality
 
-24. **No regressions in the RN app.** Every change to `mobile-sdk-alpha` must be backwards-compatible with the existing Self Wallet app. Validate with `yarn test` and manual testing.
+24. **No regressions in the RN app.** Every change to `mobile-sdk-alpha` must be backwards-compatible with the existing Self app app. Validate with `yarn test` and manual testing.
 
 25. **Specs stay current.** When implementation deviates from the spec, update the spec. A stale spec is worse than no spec — it misleads the next person.
 

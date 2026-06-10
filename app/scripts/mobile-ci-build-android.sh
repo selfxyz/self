@@ -226,6 +226,15 @@ fi
 
 log "SDK AAR file found at: $SDK_AAR_PATH"
 
+# Publish kmp-sdk shared-android to mavenLocal so @selfxyz/rn-sdk's SelfBridgeModule
+# (compileOnly against xyz.self.sdk:shared-android) resolves the current API. See
+# scripts/publish-kmp-local.cjs. Remove once SD-06 (SELF-2534) lands a hosted coordinate.
+log "Publishing kmp-sdk shared-android to mavenLocal..."
+node scripts/publish-kmp-local.cjs || {
+  log "Failed to publish kmp-sdk shared-android"
+  exit 1
+}
+
 # Build Android APK (don't install to device)
 log "Building Android APK..."
 if is_ci; then

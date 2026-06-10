@@ -2,124 +2,63 @@
 
 ## Repository Overview
 
-Yarn v4 monorepo for Self — identity verification using passport NFC + zero-knowledge proofs. Two major surfaces:
+Yarn v4 monorepo for Self — identity verification using passport NFC + zero-knowledge proofs.
 
-1. **React Native app** (`app/`) — Self Wallet, production mobile app
-2. **SDK packages** (`packages/`) — Embeddable verification SDK (WebView engine + native shells)
+- `app/` (`@selfxyz/mobile-app`) — React Native Self Wallet, production mobile app.
+- `packages/` — SDK surfaces: WebView engine + native shells.
 
-## Quick Setup
-
-```bash
-nvm use && corepack enable && yarn install
-```
+Setup: `nvm use && corepack enable && yarn install`
 
 ## Key Rules
 
-- **Package manager:** Yarn (never npm or pnpm)
-- **Keep the codebase DRY.** Before writing new code, search for existing utilities/components/flows and reuse or refactor to shared modules. Create new code only if a reusable option does not exist.
-- **Extract repeated UI.** If the same UI sub-structure appears in 2+ places, extract a shared component.
-- **Reusable UI belongs in shared libraries.** If a UI primitive is broadly reusable, add it to a shared library (e.g., `@selfxyz/euclid` or another shared package) instead of duplicating in feature code.
-- **Keep files small.** Aim for <800 LOC per file. If a file approaches 800 LOC, split it into smaller modules.
-- **Move static data out of UI.** Large static maps/lookups/constants do not belong in screen/components; move them to `utils/` or `data/` modules.
-- **Prefer design tokens over hex.** Use shared color/font/spacing tokens instead of raw hex values in UI code.
-- **No `react-native` imports in SDK core.** `packages/mobile-sdk-alpha/src/` must be platform-agnostic outside of `src/adapters/react-native/`.
-- **Native handlers are thin wrappers.** No business logic in Kotlin or Swift. All logic lives in TypeScript.
-- **Keychain is always native-managed.** No web fallbacks for secure storage. This is a security boundary.
-- **No “slop comments.”** Only add comments when they convey non-obvious intent or constraints. Never add generic or chatty comments.
-- **Do not add comments in PRs.** When changing code in a PR, default to writing zero new comments. The only acceptable reasons to add a comment are: (a) a `TODO:` / `FIXME:` flagging follow-up work, (b) a temporary workaround that explains why the workaround exists and what removes it, (c) a non-obvious invariant or constraint that a future reader would otherwise re-discover by breaking things. JSDoc describing what a function does, restated parameter meanings, narration of what the next line of code is about to do, and "// Handle X" section labels are all out. Well-named identifiers carry that load.
-- **Signal over praise in docs/reviews.** Remove feel-good or back-patting text that does not change decisions or actions. Keep only actionable content: concrete issues, risks, decisions, owners, next steps, and validation evidence.
-- **Spec naming and structure must be context-first.** Use doc-type file names (for example `OVERVIEW.md`, `SPEC.md`) and do not repeat project prefixes in file names. Use descriptive labels in markdown links — `[SDK Overview](./OVERVIEW.md)` not `[OVERVIEW.md](./OVERVIEW.md)` — so the link text is meaningful without folder context.
-- **No singleton spec folders.** Do not create a folder that exists only to hold one markdown file; keep single docs at the nearest meaningful project/shared root.
-- **Workstream spec names are fixed.** Under `workstreams/<scope>/`, use `SPEC.md` (context + implementation in one file); use `SPEC-<TOPIC>.md` only when multiple implementation specs are needed in that same folder.
-- **Use the two-layer spec model.** `INDEX.md` / `OVERVIEW.md` are stable project context. Workstream `SPEC.md` holds the durable contract + backlog (the **what** — events, invariants, branch models). PR execution lives in `workstreams/<scope>/plans/<BACKLOG-ID>-<slug>.md` (the **how** — file paths, code, fire sites). Paused workstreams: `specs/projects/sdk/paused/<scope>/`.
-- **SPEC.md stays scannable.** Target 100–200 lines. No file paths, line numbers, or code (those belong in plans). Cancelled items move to a `Cancelled` section; IDs are not reused.
-- **Test value over mock wiring.** Prefer tests that validate behavior. Avoid tests that only assert mocks were called unless that is the behavior being validated.
-- **PR size target:** 1k–3k LOC changed. Smaller is fine for focused fixes. If >3k, add a brief justification for why it can’t be split.
-- **No generated artifacts in source PRs.** Do not commit build outputs or generated assets unless the build system requires them for runtime or distribution.
-- **Each chunk = one PR.** Don't bundle chunks into mega PRs. Keeps reviews fast, reverts clean, and progress visible.
-- **TypeScript is the primary surface area.** All core logic (proving machine, state machines, stores, UI) lives in TypeScript in the WebView. Kotlin and Swift exist only for hardware access (NFC, camera, biometrics), OS-level APIs (keychain, lifecycle), and crypto signing/key-gen. Before writing any native code, ask: "Can this run in the WebView?" If yes or maybe, it belongs in TypeScript.
-- **Maximize code reuse through `mobile-sdk-alpha`.** Before adding code to `webview-app`, `kmp-sdk`, or `app/`, check if `mobile-sdk-alpha` already has it or should have it. Types, interfaces, constants, parsing, validation, formatting, state machines, and stores belong in the SDK. Migrate shared code to `mobile-sdk-alpha` before building WebView UI that needs it.
-- **Bridge protocol is the only coupling.** Native shells and the WebView share a JSON contract, not code. New native handlers must follow the bridge protocol exactly — no custom messaging, no side channels, no platform-specific extensions. The WebView must not know which native shell it's running inside.
-- **Adapter interfaces are the coupling layer.** WebView code imports adapter interfaces from SDK core. Native shells implement bridge handlers. Nobody imports code across the bridge boundary.
-- **Fail closed on security-critical boundaries.** Default-deny for protocol compatibility, remote bundle loading, and verification session lifecycle. Reject unknown protocol versions, block remote `devServerUrl` in production.
-- **No regressions in the RN app.** Every change to `mobile-sdk-alpha` must be backwards-compatible with the existing Self Wallet app.
-- **Specs stay current.** When implementation deviates from the spec, update the spec. A stale spec is worse than no spec.
-- **Constraint tie-breaker.** If rules conflict: correctness and security first, then scope/clarity (small PRs, small files), then reuse. Document the tradeoff in the spec.
-- **Linear issue descriptions are immutable after creation.** Never overwrite an issue description with `save_issue` to add updates, status notes, or context. Issue descriptions are the original scope set at creation time. All subsequent updates — status changes, progress notes, discovered context, blockers, decision records — go in **comments** via `save_comment`. The only valid use of `save_issue` on an existing issue is to change structured fields (status, priority, assignee, labels). If you need to correct a factual error in the description, add a comment explaining the correction rather than silently rewriting history.
+- **Package manager:** Yarn only (never npm/pnpm).
+- **Respect nested instructions.** Read the nearest `AGENTS.md` before working under `app/`, `packages/mobile-sdk-alpha/`, `packages/webview-app/`, or `noir/`.
+- **DRY first.** Search for existing utilities/components/flows and reuse or refactor before adding new code.
+- **Extract repeated UI.** Same sub-structure in 2+ places → shared component; broad primitives → a shared library such as `@selfxyz/euclid`.
+- **Keep files small.** Aim <800 LOC; split as files approach it.
+- **Move static data out of UI.** Large maps/lookups/constants → `utils/` or `data/`, not screens/components.
+- **Design tokens over hex.** Prefer shared color/font/spacing tokens.
+- **No slop comments.** Comment only for non-obvious intent, temporary workarounds, `TODO:`/`FIXME:`, or invariants a future reader would otherwise break. Default to zero new comments in PRs; no JSDoc-restating-the-obvious, no "// Handle X" labels.
+- **Signal over praise.** Docs/reviews/specs/PRs carry issues, risks, decisions, owners, next steps, validation evidence — not feel-good text.
+- **Test behavior**, not mock wiring.
+- **PR size:** 1k–3k LOC; >3k needs a justification. One chunk = one PR.
+- **Do not commit generated artifacts** unless the build requires them for runtime/distribution.
+- **Constraint tie-breaker.** Correctness/security first, then scope/clarity (small PRs/files), then reuse. Document tradeoffs in the spec.
+- **Unfamiliar term?** Check the [Self Dictionary](https://www.notion.so/34257801cd1280a4b348d01fac82a2be) in Notion first — it's authoritative, before searching the codebase.
+- **Linear issue descriptions are immutable after creation.** All updates (status, progress, blockers, decisions) go in **comments** via `save_comment`. `save_issue` on an existing issue is only for structured fields (status/priority/assignee/labels).
 
-## Project Dictionary
+## SDK Architecture Rules
 
-When asked about an unfamiliar project term, **look it up in the [Self Dictionary](https://www.notion.so/34257801cd1280a4b348d01fac82a2be) in Notion first** — before searching the codebase. The dictionary is the authoritative source for project terminology.
+- **TypeScript is the primary surface.** Core logic, state machines, stores, proving flow, and UI live in TS/WebView. Before writing native code ask "Can this run in the WebView?" — if yes/maybe, it belongs in TS.
+- **Native handlers stay thin.** Kotlin/Swift are for hardware, OS APIs, lifecycle, keychain, and crypto signing/key-gen only.
+- **Keychain is native-managed.** No web fallback for secure storage (security boundary).
+- **No `react-native` imports in SDK core.** `packages/mobile-sdk-alpha/src/` is platform-agnostic except `src/adapters/react-native/`.
+- **Reuse through `mobile-sdk-alpha`.** Shared types, interfaces, constants, parsing, validation, formatting, state machines, and stores belong in the SDK — migrate there before building WebView UI that needs them.
+- **Bridge protocol is the only coupling.** Native shells and WebView share a JSON contract; no side channels, custom messaging, or platform extensions. The WebView must not know which shell it runs in.
+- **Adapter interfaces are the coupling layer.** WebView imports SDK adapter interfaces; native shells implement bridge handlers; code does not cross the bridge boundary.
+- **Fail closed on security boundaries.** Reject unknown protocol versions, block remote `devServerUrl` in production, default-deny session lifecycle edge cases.
+- **No RN app regressions.** `mobile-sdk-alpha` changes stay backwards-compatible with Self Wallet.
 
-## Specs & Planning
-
-**Every feature — even minor ones — needs a spec.** For SDK work (`packages/`, `webview-app`, `webview-bridge`), specs live in **both** the repo (`specs/`) and Linear. The repo spec is the canonical, version-controlled execution plan. The Linear issue is the tracking and discovery layer. For app-only or non-SDK work, a Linear issue with inline scope is sufficient — no repo spec required.
-
-### Where Specs Live
-
-- **Execution specs → `specs/projects/sdk/workstreams/<scope>/plans/<ID>-<slug>.md`** — version-controlled, agent-executable plans
-- **Backlog → `specs/projects/sdk/workstreams/<scope>/SPEC.md`** — durable context plus backlog table per workstream
-- **Architecture context → `specs/projects/sdk/OVERVIEW.md`** — system architecture, bridge protocol, decision matrix
-- **Audit docs → `docs/reviews/`** — PR audit findings, kept in repo for git history
-- **Linear issues** — tracking, discovery, status. Link to the repo spec. Attach a Linear document copy for cross-tool access.
-
-### Planning Protocol
-
-1. **Read** this file's Key Rules and any relevant specs — understand the current state and constraints
-2. **Create a Linear issue** if one doesn't exist — include scope, files modified, acceptance criteria
-3. **Write the spec** in `specs/` following the two-layer model (backlog row in `SPEC.md`, execution plan in `plans/`)
-4. **Create a Linear document** attached to the issue with the spec content (so non-GitHub users can review)
-5. **Then implement** — one spec = one PR (see PR size target in Key Rules)
-6. **After completion:** Update the Linear issue status via `save_issue` (status field only). Add a **comment** via `save_comment` summarizing what was done, linking the PR. Close when done.
-
-### Spec-Writing Guidelines
-
-Specs are agent-executable prompts. A new Claude Code session with no prior context must be able to pick up the spec and produce a correct PR.
-
-- **Make decisions, not options.** "Use local wrappers" not "Consider adding to Euclid or using local wrappers." Agents can't choose between approaches — tell them which one.
-- **Use second person.** "You are fixing X" not "X should be fixed."
-- **Be explicit about constraints.** "You will NOT modify..." not just "Focus on..."
-- **Provide exact file paths with line numbers.** `src/utils/kycProvider.ts:118` not "the provider file."
-- **State the validation command.** Agents will run it. If it's not there, they'll skip validation.
-- **One spec = one PR.** Target the PR size from Key Rules (1k–3k LOC). If a spec would exceed that, split it.
-- **Mark items as required vs optional.** Don't let agents infer priority.
-- **Include out-of-scope sections.** These are as important as in-scope sections for preventing drift.
-- **Qualify coverage claims precisely.** "Complete, tested" means handler-level integration tests pass end-to-end. If only shared parsers or utilities are tested, say that. Overclaimed coverage propagates into execution plans and skips real testing work.
-- **Flag invariant departures explicitly.** If a spec's approach conflicts with an active rule in CLAUDE.md, OVERVIEW.md, or a sibling workstream SPEC.md, the spec must call out the conflict, justify the departure, and list the parent docs that need updating. Silent contradictions cause repo-wide drift.
-- **Use `--remote` for medium+ work.** Medium and large specs benefit from `claude --remote` so work continues in the background.
-
-### Audit Pipeline Skills
-
-Three Claude Code skills automate the review-to-implementation pipeline:
-
-1. **`/pr-audit`** — Multi-agent review (component + integration + routing), produces audit doc in `docs/reviews/`
-2. **`/gaps-to-issues`** — Creates Linear issues from audit PR buckets
-3. **`/spec-from-audit`** — Generates agent-executable specs (repo file + Linear document), one per issue
-
-Run them in sequence with review pauses between each step.
-
-## Validation Commands
+## Validation
 
 ```bash
-# SDK core
-cd packages/mobile-sdk-alpha && yarn test && yarn types
-
-# Bridge
-cd packages/webview-bridge && yarn build && yarn test
-
-# WebView app
-cd packages/webview-app && yarn build
-
-# KMP
-cd packages/kmp-sdk && ./gradlew :shared:jvmTest
-
-# Full repo
-yarn lint && yarn types && yarn build
+cd packages/mobile-sdk-alpha && yarn test && yarn types   # SDK core
+cd packages/webview-bridge && yarn build && yarn test      # Bridge
+cd packages/webview-app && yarn build                      # WebView app
+yarn kmp:test                                              # KMP SDK (Kotlin)
+yarn lint && yarn types && yarn build                      # Full repo
 ```
+
+## Specs
+
+- **Every SDK feature needs a repo spec + Linear issue.** App-only/non-SDK work → a Linear issue with inline scope is enough.
+- **Read the relevant workstream `SPEC.md` before implementing.** Start at [SDK Index](./specs/projects/sdk/INDEX.md); architecture in [SDK Overview](./specs/projects/sdk/OVERVIEW.md).
+- Specs live in `specs/projects/sdk/workstreams/<scope>/` (`SPEC.md` = backlog; `plans/<ID>-<slug>.md` = execution). Keep `SPEC.md` scannable (100–200 lines, no paths/code). Update specs when implementation deviates.
+- **Full planning protocol, spec-writing guidelines, and the `/pr-audit` → `/gaps-to-issues` → `/spec-from-audit` pipeline:** see [SDK Contributing](./specs/projects/sdk/CONTRIBUTING.md).
 
 ## Workspace-Specific Instructions
 
-- `app/AGENTS.md` — Mobile app development, E2E testing, deployment
-- `packages/webview-app/AGENTS.md` — WebView app development, Euclid screen migration, asset management
-- `packages/mobile-sdk-alpha/AGENTS.md` — SDK development, testing guidelines
-- `noir/AGENTS.md` — Noir circuit development
+- [app/AGENTS.md](./app/AGENTS.md) — mobile app dev, E2E testing, deployment.
+- [packages/webview-app/AGENTS.md](./packages/webview-app/AGENTS.md) — WebView app dev, Euclid migration, assets.
+- [packages/mobile-sdk-alpha/AGENTS.md](./packages/mobile-sdk-alpha/AGENTS.md) — SDK dev, testing guidelines.
+- [noir/AGENTS.md](./noir/AGENTS.md) — Noir circuit development.

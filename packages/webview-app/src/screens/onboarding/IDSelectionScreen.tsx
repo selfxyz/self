@@ -47,7 +47,7 @@ export const IDSelectionScreen: React.FC = () => {
 
   useEffect(() => {
     if (!countryCode || documentTypes.length === 0) {
-      navigate('/onboarding/country', { replace: true });
+      navigate('/pick-country', { replace: true });
     }
   }, [countryCode, documentTypes.length, navigate]);
 
@@ -66,8 +66,20 @@ export const IDSelectionScreen: React.FC = () => {
       });
 
       if (idType.id === 'kyc') {
-        navigate('/onboarding/provider', {
+        navigate('/pick-provider', {
           state: { countryCode, documentType: idType.id },
+        });
+      } else if (idType.id === 'p') {
+        navigate('/capture/passport/instructions', {
+          state: { countryCode, documentType: 'passport' },
+        });
+      } else if (idType.id === 'i') {
+        navigate('/capture/eu-id/instructions', {
+          state: { countryCode, documentType: 'id_card' },
+        });
+      } else if (idType.id === 'a') {
+        navigate('/capture/aadhaar/instructions', {
+          state: { countryCode, documentType: 'aadhaar' },
         });
       } else {
         navigate('/coming-soon', {
@@ -84,7 +96,7 @@ export const IDSelectionScreen: React.FC = () => {
   //     documentType: 'kyc',
   //     countryCode,
   //   });
-  //   navigate('/onboarding/provider', {
+  //   navigate('/pick-provider', {
   //     state: { countryCode, documentType: 'kyc' },
   //   });
   // }, [navigate, analytics, haptic, countryCode]);

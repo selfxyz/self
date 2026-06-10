@@ -24,6 +24,12 @@ import type {
   NFCScanContext,
   ProofContext,
 } from '@selfxyz/mobile-sdk-alpha';
+import {
+  redactSensitiveFields,
+  sanitizeTagValue,
+} from '@selfxyz/mobile-sdk-alpha/observability';
+
+export { redactSensitiveFields, sanitizeTagValue };
 // Security: Whitelist of allowed tag keys to prevent XSS
 const ALLOWED_TAG_KEYS = new Set([
   'session_id',
@@ -44,6 +50,10 @@ const ALLOWED_TAG_KEYS = new Set([
   'signature_algorithm',
   'csca_hash_algorithm',
   'kyc_provider',
+  'runtime',
+  'webview_source',
+  'reference_id',
+  'verification_id',
 ]);
 
 export const captureException = (
@@ -58,22 +68,47 @@ export const captureException = (
   });
 };
 
-const SENSITIVE_KEY_PATTERN =
-  /passport|mrz|dg\d|chip|aadhaar|(?:first|last|full|given|family|holder|sur)_?name|name_?(?:first|last|of_?holder|holder)|date_?of_?birth|dob|birth|photo/i;
-const REDACTED = '[REDACTED]';
+type WebViewLoadDiagnosticKind = 'timeout' | 'load_error' | 'version_mismatch';
 
-const redactObjectInPlace = <T extends Record<string, unknown>>(obj: T): T => {
-  for (const key of Object.keys(obj)) {
-    if (SENSITIVE_KEY_PATTERN.test(key)) {
-      obj[key as keyof T] = REDACTED as T[keyof T];
-      continue;
-    }
-    const value = obj[key];
-    if (value && typeof value === 'object') {
-      redactObjectInPlace(value as Record<string, unknown>);
-    }
+/**
+ * A terminal `version_mismatch` (a present-but-wrong protocol version,
+ * `recoverable !== true`) is a definitive incompatibility → error; recoverable
+ * mismatches, timeout, and load_error are retryable → warning.
+ */
+export const webViewDiagnosticLevel = (
+  kind: WebViewLoadDiagnosticKind,
+  detail?: Record<string, unknown>,
+): 'error' | 'warning' =>
+  kind === 'version_mismatch' && detail?.recoverable !== true
+    ? 'error'
+    : 'warning';
+
+/**
+ * Maps a SelfVerification load diagnostic to Sentry. Tagged so these can be
+ * sliced out of the host runtime's noise.
+ */
+export const captureWebViewLoadDiagnostic = (
+  kind: WebViewLoadDiagnosticKind,
+  source: 'bundle' | 'dev-server',
+  detail?: Record<string, unknown>,
+) => {
+  if (isSentryDisabled) {
+    return;
   }
-  return obj;
+  withScope(scope => {
+    scope.setLevel(webViewDiagnosticLevel(kind, detail));
+    scope.setTag('runtime', 'rn-host');
+    scope.setTag('webview_source', source);
+    scope.setTag('error_code', kind);
+    if (detail) {
+      const redacted =
+        redactSensitiveFields({ extra: { ...detail } }).extra ?? {};
+      Object.entries(redacted).forEach(([key, value]) => {
+        scope.setExtra(key, value);
+      });
+    }
+    sentryCaptureException(new Error(`WebView load ${kind}`));
+  });
 };
 
 export const captureFeedback = (
@@ -115,6 +150,36 @@ const sanitizeTagKey = (key: string): string | null => {
   }
 
   return key;
+};
+
+// Durable per-session reference tags for cross-runtime joins (RN host +
+// WebView). Set when a WebView session starts, cleared when it ends so a
+// failed session's id never leaks into a later session's events.
+export const setReferenceTag = (
+  referenceId: string,
+  verificationId?: string,
+): void => {
+  if (isSentryDisabled) {
+    return;
+  }
+  const cid = sanitizeTagValue(referenceId);
+  if (sanitizeTagKey('reference_id') && cid) {
+    setTag('reference_id', cid);
+  }
+  const vid = verificationId ? sanitizeTagValue(verificationId) : '';
+  if (sanitizeTagKey('verification_id') && vid) {
+    setTag('verification_id', vid);
+  } else {
+    setTag('verification_id', undefined);
+  }
+};
+
+export const clearReferenceTag = (): void => {
+  if (isSentryDisabled) {
+    return;
+  }
+  setTag('reference_id', undefined);
+  setTag('verification_id', undefined);
 };
 
 export const captureMessage = (
@@ -292,60 +357,6 @@ export const logAuthEvent = (
   context: BaseContext & Record<string, unknown>,
   extra?: Record<string, unknown>,
 ) => logEvent(level, 'auth', message, context, extra);
-
-export const redactSensitiveFields = <
-  T extends {
-    breadcrumbs?: Array<{ data?: Record<string, unknown> | undefined }>;
-    contexts?: Record<string, unknown>;
-    extra?: Record<string, unknown>;
-  },
->(
-  event: T,
-): T => {
-  if (event.breadcrumbs) {
-    for (const crumb of event.breadcrumbs) {
-      if (crumb.data) redactObjectInPlace(crumb.data);
-    }
-  }
-  if (event.contexts) {
-    redactObjectInPlace(event.contexts);
-  }
-  if (event.extra) {
-    redactObjectInPlace(event.extra);
-  }
-  return event;
-};
-
-export const sanitizeTagValue = (value: unknown): string => {
-  if (value == null) return '';
-
-  const stringValue = String(value);
-
-  const MAX_TAG_LENGTH = 200;
-  const truncated =
-    stringValue.length > MAX_TAG_LENGTH
-      ? stringValue.substring(0, MAX_TAG_LENGTH) + '...'
-      : stringValue;
-
-  return truncated
-    .replace(/[<>&"']/g, char => {
-      switch (char) {
-        case '<':
-          return '&lt;';
-        case '>':
-          return '&gt;';
-        case '&':
-          return '&amp;';
-        case '"':
-          return '&quot;';
-        case "'":
-          return '&#x27;';
-        default:
-          return char;
-      }
-    })
-    .replace(/[^\x20-\x7E]/g, '');
-};
 
 export const setSupportUuidInSentry = (
   supportUuid: string | null,

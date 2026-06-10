@@ -27,10 +27,10 @@ export const ConflictDetectedScreen: React.FC = () => {
   const onSecondaryAction = useCallback(() => {
     haptic.trigger('selection');
     analytics.trackEvent('conflict_create_new_pressed');
-    navigate('/');
+    navigate('/', { replace: true });
   }, [navigate, haptic, analytics]);
 
-  const onClose = useCallback(() => {
+  const handleClose = useCallback(() => {
     haptic.trigger('selection');
     navigate(`/onboarding/signin${getPromptMockSearch(mock === 'existing-account' ? mock : 'default')}`);
   }, [mock, navigate, haptic]);
@@ -44,7 +44,7 @@ export const ConflictDetectedScreen: React.FC = () => {
       secondaryActionLabel="Create new account"
       onPrimaryAction={onPrimaryAction}
       onSecondaryAction={onSecondaryAction}
-      onClose={onClose}
+      onClose={handleClose}
     />
   );
 };

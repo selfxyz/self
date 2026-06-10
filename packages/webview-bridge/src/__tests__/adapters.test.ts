@@ -64,7 +64,7 @@ describe('Adapter integration tests', () => {
 
   describe('NFC Scanner Adapter', () => {
     it('should send scan request with 120s timeout', async () => {
-      mock.handleWith('nfc', 'scan', { passportData: { mrz: 'test' } });
+      mock.handleWith('nfc', 'scanPassport', { passportData: { mrz: 'test' } });
 
       const scanner = bridgeNFCScannerAdapter(bridge);
       const result = await scanner.scan({
@@ -83,7 +83,7 @@ describe('Adapter integration tests', () => {
       let resolveScan: (v: unknown) => void;
       mock.handle(
         'nfc',
-        'scan',
+        'scanPassport',
         () =>
           new Promise(resolve => {
             resolveScan = resolve;
