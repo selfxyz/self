@@ -3792,7 +3792,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@didit-protocol/sdk-react-native@npm:^4.0.5":
+"@didit-protocol/sdk-react-native@npm:4.0.5":
   version: 4.0.5
   resolution: "@didit-protocol/sdk-react-native@npm:4.0.5"
   peerDependencies:
@@ -11494,7 +11494,7 @@ __metadata:
     "@babel/preset-env": "npm:^7.29.2"
     "@babel/preset-react": "npm:^7.28.5"
     "@babel/runtime": "npm:^7.29.2"
-    "@didit-protocol/sdk-react-native": "npm:^4.0.5"
+    "@didit-protocol/sdk-react-native": "npm:4.0.5"
     "@ethersproject/shims": "npm:^5.8.0"
     "@invertase/react-native-apple-authentication": "npm:^2.5.1"
     "@noble/hashes": "npm:^1.5.0"

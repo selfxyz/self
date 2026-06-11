@@ -12,7 +12,7 @@ PODS:
   - boost (1.84.0)
   - BVLinearGradient (2.8.3):
     - React-Core
-  - DiditSDK/Core (4.0.5)
+  - DiditSDK/AutoDetection (4.0.5)
   - DoubleConversion (1.1.6)
   - EXApplication (55.0.14):
     - ExpoModulesCore
@@ -3442,7 +3442,7 @@ PODS:
     - Yoga
   - SdkReactNative (4.0.5):
     - boost
-    - DiditSDK/Core (= 4.0.5)
+    - DiditSDK/AutoDetection (= 4.0.5)
     - DoubleConversion
     - fast_float
     - fmt
@@ -3490,7 +3490,7 @@ PODS:
 DEPENDENCIES:
   - boost (from `../node_modules/react-native/third-party-podspecs/boost.podspec`)
   - BVLinearGradient (from `../node_modules/react-native-linear-gradient`)
-  - DiditSDK/Core (from `https://raw.githubusercontent.com/didit-protocol/sdk-ios/4.0.5/DiditSDK.podspec`)
+  - DiditSDK/AutoDetection (from `https://raw.githubusercontent.com/didit-protocol/sdk-ios/4.0.5/DiditSDK.podspec`)
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
   - EXApplication (from `../node_modules/expo-application/ios`)
   - EXConstants (from `../node_modules/expo-constants/ios`)
@@ -4083,7 +4083,7 @@ SPEC CHECKSUMS:
   RNScreens: 7c9bd0eafa89f9a57dfb2cf69112fdc5298d474b
   RNSentry: 06242a8b32437eff96f4e2e48d9e780e65ccd686
   RNSVG: 14a9b979bfb8fc5b90c03de67409f399f847b3b3
-  SdkReactNative: c09cc8ae7bd819f1b4681b9ef0697caa3cb0611f
+  SdkReactNative: be345ffe0dc9624ef7e1fa759a83a27f4ce3de0f
   segment-analytics-react-native: ab16aeb1731acc05670dcec1aaed13b6bcbc1b6d
   SelfNFCPassportReader: 8b53f9d483e0dd1f1a275953e3dc6dfc733694c5
   selfxyz-rn-sdk: 10a6f99e70be61f7b9f7f2a3b2975dbf0ad9f351
@@ -4094,6 +4094,6 @@ SPEC CHECKSUMS:
   SwiftyTesseract: 1f3d96668ae92dc2208d9842c8a59bea9fad2cbb
   Yoga: e9fea23bf9b2766818ce9a8df72f584bf5ad36cd
 
-PODFILE CHECKSUM: f89d18f77e52cf128acaf016dba241a8ebe7432e
+PODFILE CHECKSUM: 7375a9098249b50f3237490775ff8342867de51e
 
 COCOAPODS: 1.16.2
