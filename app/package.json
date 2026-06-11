@@ -91,7 +91,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.29.2",
-    "@didit-protocol/sdk-react-native": "^3.3.2",
+    "@didit-protocol/sdk-react-native": "^4.0.5",
     "@ethersproject/shims": "^5.8.0",
     "@invertase/react-native-apple-authentication": "^2.5.1",
     "@noble/hashes": "^1.5.0",

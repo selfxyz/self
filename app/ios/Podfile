@@ -1,10 +1,11 @@
 source "https://cdn.cocoapods.org/"
 
-# Disable Didit's bundled NFC passport reader — Self ships its own. The wrapper
-# podspec consumes DiditSDK/Core (no CoreNFC, no bundled OpenSSL.xcframework)
-# when this env var is "false", which also avoids the OpenSSL conflict with
-# SelfNFCPassportReader's OpenSSL-Universal dependency.
-ENV["DIDIT_SDK_IOS_NFC_ENABLED"] ||= "false"
+# Pin Didit to the Core variant — Self ships its own passport NFC reader.
+# DiditSDK/Core has no CoreNFC and no bundled OpenSSL.xcframework, avoiding the
+# OpenSSL conflict with SelfNFCPassportReader's OpenSSL-Universal dependency.
+# (The SDK 4.x legacy mapping for DIDIT_SDK_IOS_NFC_ENABLED=false resolves to
+# AutoDetection, not Core, so the variant must be set explicitly.)
+ENV["DIDIT_SDK_IOS_VARIANT"] ||= "core"
 
 use_frameworks!
 require "tmpdir"
@@ -173,8 +174,9 @@ target "Self" do
   pod "lottie-ios"
   # DiditSDK is not on CocoaPods trunk — reference the upstream podspec by tag.
   # The wrapper (SdkReactNative.podspec) depends on DiditSDK/Core when
-  # DIDIT_SDK_IOS_NFC_ENABLED=false (set above).
-  pod 'DiditSDK/Core', :podspec => 'https://raw.githubusercontent.com/didit-protocol/sdk-ios/3.5.1/DiditSDK.podspec'
+  # DIDIT_SDK_IOS_VARIANT=core (set above). Keep this tag in sync with the
+  # exact DiditSDK version pinned by @didit-protocol/sdk-react-native.
+  pod 'DiditSDK/Core', :podspec => 'https://raw.githubusercontent.com/didit-protocol/sdk-ios/4.0.5/DiditSDK.podspec'
   pod 'OpenSSL-Universal', '~> 1.1.1900'
   pod "SwiftQRScanner", :git => "https://github.com/vinodiOS/SwiftQRScanner"
   # RNReactNativeHapticFeedback is handled by autolinking
