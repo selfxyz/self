@@ -1,6 +1,6 @@
 # SDK Project
 
-Last updated: May 19, 2026
+Last updated: June 11, 2026
 Status: Active (WebView-first; Self app adopts WebView as host via `webview-in-app`)
 
 ## Start Here
@@ -22,6 +22,7 @@ Status: Active (WebView-first; Self app adopts WebView as host via `webview-in-a
 | SDK Distribution     | [SDK Distribution Spec](./workstreams/sdk-distribution/SPEC.md)     | Hosted URL loading + native shell publishing            |
 | Analytics            | [Analytics Spec](./workstreams/analytics/SPEC.md)                   | Canonical onboarding funnel events + Mixpanel dashboard |
 | Monorepo Tooling     | [Monorepo Tooling Spec](./workstreams/monorepo-tooling/SPEC.md)     | pnpm follow-ups, Turborepo, blur dependency swap        |
+| Codebase Audits      | [Audits Spec](./workstreams/audits/SPEC.md)                         | Sequential surface audits: findings → issues → fixes    |
 
 ## Paused Workstreams
 
