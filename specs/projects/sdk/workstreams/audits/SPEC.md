@@ -143,13 +143,14 @@ to `Done` only when issues exist for every accepted Critical/Major finding and e
 | ID     | Title                                                                     | Status | Priority | Depends on             | Plan |
 | ------ | ------------------------------------------------------------------------- | ------ | -------- | ---------------------- | ---- |
 | AUD-02 | Key material & keychain lifecycle (mnemonic, migration, backup, biometrics) | Ready  | High     | —                      | [plan](./plans/AUD-02-key-material-keychain-lifecycle.md) |
-| AUD-01 | NFC chip-reading flow (native auth fallbacks, parser duplication, timeouts) | Ready  | High     | AUD-02                 | —    |
-| AUD-03 | Onboarding & startup routing (state matrix, recovery, deep links, KYC resume) | Ready  | High     | AUD-02                 | —    |
+| AUD-01 | NFC chip-reading flow (native auth fallbacks, parser duplication, timeouts) | Ready  | High     | AUD-02                 | [plan](./plans/AUD-01-nfc-chip-reading-flow.md) |
+| AUD-03 | Startup & navigation routing (state matrix, recovery, deep links, KYC resume) | Ready  | High     | AUD-02                 | [plan](./plans/AUD-03-startup-nav-routing.md) |
 | AUD-05 | Bridge protocol surface (adapter fail-closed review, session lifecycle)     | Ready  | High     | —                      | —    |
 | AUD-04 | Test coverage & test quality (risk-ranked gaps, mock-wiring tests, thresholds) | Ready  | Medium   | AUD-01, AUD-02, AUD-03 | —    |
 | AUD-06 | Cruft & dead code (common/new-common split, dead routes, artifacts, patches) | Ready  | Medium   | —                      | —    |
 | AUD-07 | Config & CI consolidation (tool-config sprawl, disabled workflow steps)     | Ready  | Low      | AUD-06                 | —    |
 | AUD-08 | Analytics & observability correctness (funnel fire-sites, Sentry sanitization) | Ready  | Low      | AUD-01, AUD-03         | —    |
+| AUD-09 | WebView app surface (secret handling, recovery/proving flows, providers, dev screens) | Ready  | High     | AUD-05                 | —    |
 
 Allowed statuses: `Ready`, `Planned` (plan merged, investigation not started), `In Progress`,
 `In Review` (report at Stage 4), `Blocked`, `Done`.
