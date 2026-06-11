@@ -17,7 +17,7 @@ state machine — `getStartupNavigationTarget`, `SplashScreen`'s init sequence, 
 handler, and the two startup hooks (`useRecoveryPrompts`, `usePendingKycRecovery`) — not the
 onboarding UX.
 
-**Scope decision (owner, 2026-06-11): the onboarding *experience* (screens, copy, step flow) is
+**Scope decision (owner, 2026-06-11): the onboarding _experience_ (screens, copy, step flow) is
 descoped.** Self is rebuilding onboarding for Euclid 3.0, so auditing onboarding-screen UX would
 audit code about to be replaced. This audit therefore covers only the routing/navigation
 **mechanism** — the parts that survive an onboarding rewrite because they sit below it: the startup
@@ -32,18 +32,18 @@ confirm or refute each with a trace or a reproduction, per the workstream's evid
 
 ### In scope (the complete file inventory)
 
-| Area | Files | LOC |
-| --- | --- | --- |
-| Startup routing decision | `app/src/screens/app/startupRouting.ts` | 61 |
-| Splash init / settle / timeout | `app/src/screens/app/SplashScreen.tsx` | 270 |
-| Deep-link handler + stack builder | `app/src/navigation/deeplinks.ts` | 451 |
-| Root navigator + listeners | `app/src/navigation/index.tsx` | 116 |
-| KYC resume-on-launch | `app/src/hooks/usePendingKycRecovery.ts` | 153 |
-| Recovery-prompt scheduler | `app/src/hooks/useRecoveryPrompts.ts` | 168 |
-| Dev-screen registration (prod-reachable) | `app/src/navigation/devTools.tsx` | 117 |
-| WIA / dev flags | `app/src/utils/devUtils.ts` (`IS_WIA_ENABLED` line 24, `IS_DEV_MODE`) | trace only |
-| Routing inputs (boundary, trace only) | `app/src/providers/authProvider.tsx` (`hasSecretStored`), `app/src/providers/passportDataProvider.tsx` (`hasAnyValidRegisteredDocument`, the migration calls), `app/src/stores/settingStore.ts` (privacy-note/backup/recovery flags), `app/src/stores/pendingKycStore.ts`, `app/src/consts/recoveryPrompts.ts` | trace only |
-| Existing tests | `app/tests/src/screens/app/startupRouting.test.ts` (97, 5 cases), `app/tests/src/navigation/deeplinks.test.ts` (811), `app/tests/src/hooks/useRecoveryPrompts.test.ts` (330), `app/tests/src/hooks/usePendingKycRecovery.test.ts` (276), `app/tests/src/navigation.test.tsx` (141) | — |
+| Area                                     | Files                                                                                                                                                                                                                                                                                                          | LOC        |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| Startup routing decision                 | `app/src/screens/app/startupRouting.ts`                                                                                                                                                                                                                                                                        | 61         |
+| Splash init / settle / timeout           | `app/src/screens/app/SplashScreen.tsx`                                                                                                                                                                                                                                                                         | 270        |
+| Deep-link handler + stack builder        | `app/src/navigation/deeplinks.ts`                                                                                                                                                                                                                                                                              | 451        |
+| Root navigator + listeners               | `app/src/navigation/index.tsx`                                                                                                                                                                                                                                                                                 | 116        |
+| KYC resume-on-launch                     | `app/src/hooks/usePendingKycRecovery.ts`                                                                                                                                                                                                                                                                       | 153        |
+| Recovery-prompt scheduler                | `app/src/hooks/useRecoveryPrompts.ts`                                                                                                                                                                                                                                                                          | 168        |
+| Dev-screen registration (prod-reachable) | `app/src/navigation/devTools.tsx`                                                                                                                                                                                                                                                                              | 117        |
+| WIA / dev flags                          | `app/src/utils/devUtils.ts` (`IS_WIA_ENABLED` line 24, `IS_DEV_MODE`)                                                                                                                                                                                                                                          | trace only |
+| Routing inputs (boundary, trace only)    | `app/src/providers/authProvider.tsx` (`hasSecretStored`), `app/src/providers/passportDataProvider.tsx` (`hasAnyValidRegisteredDocument`, the migration calls), `app/src/stores/settingStore.ts` (privacy-note/backup/recovery flags), `app/src/stores/pendingKycStore.ts`, `app/src/consts/recoveryPrompts.ts` | trace only |
+| Existing tests                           | `app/tests/src/screens/app/startupRouting.test.ts` (97, 5 cases), `app/tests/src/navigation/deeplinks.test.ts` (811), `app/tests/src/hooks/useRecoveryPrompts.test.ts` (330), `app/tests/src/hooks/usePendingKycRecovery.test.ts` (276), `app/tests/src/navigation.test.tsx` (141)                             | —          |
 
 ### Out of scope
 
@@ -55,7 +55,7 @@ confirm or refute each with a trace or a reproduction, per the workstream's evid
   keychain.
 - Document storage/migration internals (`passportDataProvider` catalog, dedup, registration-state
   computation) are outside this routing audit. You trace that `hasAnyValidRegisteredDocument`,
-  `checkIfAnyDocumentsNeedMigration`, and `migrateFromLegacyStorage` are *called* in a particular
+  `checkIfAnyDocumentsNeedMigration`, and `migrateFromLegacyStorage` are _called_ in a particular
   order and stop at the function boundary; storage correctness findings route to the owning
   workstream or a follow-up AUD row, not AUD-01.
 - The WebView bridge protocol belongs to AUD-05, and the WebView app / WIA host surface belongs to
@@ -63,7 +63,7 @@ confirm or refute each with a trace or a reproduction, per the workstream's evid
 - Google USAT gate **policy** — you trace its two cold-launch nav side-effects in `handleUrl`
   (`deeplinks.ts:198-207`, `:238-245`); the gate's eligibility rules are AUD-08/product.
 - KYC websocket protocol/TEE caching — `usePendingKycRecovery` calls `useKycWebSocket`; you trace
-  the resume *navigation*, not the socket.
+  the resume _navigation_, not the socket.
 - Fixing anything. The workstream invariant is read-only.
 
 ## Question list (fixed — do not add questions mid-audit; new leads go to `Needs investigation`)
@@ -92,7 +92,7 @@ confirm or refute each with a trace or a reproduction, per the workstream's evid
 
 1. **Q2.1 (suspected Major).** `SplashScreen` has three competing settle paths, all guarded by
    `settledRef` (`SplashScreen.tsx:143-144`, `:164-165`, `:184-186`): the happy path, the catch
-   block, and a 30s `INIT_TIMEOUT_MS` timer. Trace the interleavings: if init throws *after*
+   block, and a 30s `INIT_TIMEOUT_MS` timer. Trace the interleavings: if init throws _after_
    `settledRef` is set (e.g., `migrateToSecureKeychain` rejects at `:135-141` — but note that
    call is wrapped in its own try/catch, so it can't reject the outer flow), or if the timeout
    fires while `loadDataAndDetermineNextScreen` is between `await`s. Establish whether any
@@ -108,7 +108,7 @@ confirm or refute each with a trace or a reproduction, per the workstream's evid
    init flow: `migrateFromLegacyStorage` (`:89`), `checkAndUpdateRegistrationStates` (`:108`,
    conditional), and `migrateToSecureKeychain` (`:135`, in inner try/catch that only `console.warn`s
    on failure). Trace the ordering relative to the `getStartupNavigationTarget` call (`:122`):
-   the routing decision is computed *before* keychain migration runs (`:122` vs `:135`). Does the
+   the routing decision is computed _before_ keychain migration runs (`:122` vs `:135`). Does the
    target ever go stale because migration changes `hasSecretStored` after the decision is frozen?
    What is the user impact of `migrateToSecureKeychain` failing silently here (cross-reference
    AUD-02 Q2.2 on the re-run-every-launch behavior)?
@@ -128,7 +128,7 @@ confirm or refute each with a trace or a reproduction, per the workstream's evid
    computed, producing a wrong back stack or bypassing recovery/disclaimer routing entirely.
 2. **Q3.2 (suspected Major).** `getAndClearQueuedUrl` vs `peekQueuedUrl` (`:148-150`): when the
    startup target disallows queued deep links (`allowQueuedDeepLink: false` for recovery/
-   disclaimer targets, `startupRouting.ts`), Splash *peeks* but never clears
+   disclaimer targets, `startupRouting.ts`), Splash _peeks_ but never clears
    (`SplashScreen.tsx:148-150`). Trace what happens to that queued URL: is it ever consumed, or
    does it leak into the next `handleUrl` / next launch? Confirm whether a deep link can be
    silently dropped for a user who launches into recovery.
@@ -175,7 +175,7 @@ confirm or refute each with a trace or a reproduction, per the workstream's evid
    `DevPrivateKey` (`devTools.tsx:81`, key display — cross-reference AUD-02 Q7.1),
    `MockDataDeepLink`/`CreateMock` (mock document injection, reachable via deep link per Q3.4),
    `DevDangerZone`. The report must force an owner decision: accepted testing posture, or a gap.
-2. **Q5.2.** Determine whether any dev screen is reachable *without* a dev-only entry point — i.e.,
+2. **Q5.2.** Determine whether any dev screen is reachable _without_ a dev-only entry point — i.e.,
    via deep link (Q3.4), gesture (AUD-01 found a 5-tap gesture; check for analogues here), or a
    production-visible menu — versus only via `DevSettings` which itself may be gated.
 

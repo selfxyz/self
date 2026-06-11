@@ -43,27 +43,27 @@ inspection.
 
 ### In scope (the complete file inventory)
 
-| Area | Files | LOC |
-| --- | --- | --- |
-| Analytics core | `app/src/services/analytics.ts` | 495 |
-| Segment client | `app/src/config/segment.ts` (write key from `@env`; `DisableTrackingPlugin` strips device/ad IDs) | 74 |
-| Event-name contract | `packages/mobile-sdk-alpha/src/constants/analytics.ts` (~180 event names, 17 groups; `KNOWN_EVENT_NAMES` allowlist built at `analytics.ts:34-48`) | 259 |
-| Sentry config | `app/src/config/sentry.ts` (`beforeSend:266-272` deletes `user.ip_address`/`user.id`, calls `redactSensitiveFields`; tracesSampleRate 1.0) | 375 |
-| Redaction logic | `app/src/observability/onboardingContext.ts` (`SENSITIVE_KEY_PATTERN`, redacts breadcrumbs/contexts/extra/user/request) **and its SDK twin** `packages/mobile-sdk-alpha/src/observability/onboardingContext.ts` | — |
-| Loki shipping | `app/src/services/logging/logger/lokiTransport.ts` (in-app POST to `/loki/api/v1/push`; batches 100/5s), `app/src/services/logging/index.ts` (`enabled: !__DEV__` :24; `interceptConsole` :69), `app/src/services/logging/logger/consoleInterceptor.ts`, `app/src/services/logging/logger/nativeLoggerBridge.ts` (119) | — |
-| SDK/WebView analytics boundary | `packages/webview-bridge/src/adapters/analytics.ts` (42; fires over bridge), `packages/mobile-sdk-alpha/src/adapters/browser/analytics.ts` (55; standalone POST, swallows failures) | — |
-| SDK proof events | `packages/mobile-sdk-alpha/src/proving/provingMachine.ts` (`PROOF_STARTED:492`, `PROOF_SUCCEEDED:528`) | trace only |
-| Existing tests | `app/tests/src/services/analytics.test.ts` (416), `app/tests/src/config/sentry.test.ts` (175), `packages/webview-bridge/src/__tests__/analytics-web.test.ts` (65), `packages/mobile-sdk-alpha/tests/adapters/browser/analytics.test.ts` | — |
+| Area                           | Files                                                                                                                                                                                                                                                                                                                  | LOC        |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| Analytics core                 | `app/src/services/analytics.ts`                                                                                                                                                                                                                                                                                        | 495        |
+| Segment client                 | `app/src/config/segment.ts` (write key from `@env`; `DisableTrackingPlugin` strips device/ad IDs)                                                                                                                                                                                                                      | 74         |
+| Event-name contract            | `packages/mobile-sdk-alpha/src/constants/analytics.ts` (~180 event names, 17 groups; `KNOWN_EVENT_NAMES` allowlist built at `analytics.ts:34-48`)                                                                                                                                                                      | 259        |
+| Sentry config                  | `app/src/config/sentry.ts` (`beforeSend:266-272` deletes `user.ip_address`/`user.id`, calls `redactSensitiveFields`; tracesSampleRate 1.0)                                                                                                                                                                             | 375        |
+| Redaction logic                | `app/src/observability/onboardingContext.ts` (`SENSITIVE_KEY_PATTERN`, redacts breadcrumbs/contexts/extra/user/request) **and its SDK twin** `packages/mobile-sdk-alpha/src/observability/onboardingContext.ts`                                                                                                        | —          |
+| Loki shipping                  | `app/src/services/logging/logger/lokiTransport.ts` (in-app POST to `/loki/api/v1/push`; batches 100/5s), `app/src/services/logging/index.ts` (`enabled: !__DEV__` :24; `interceptConsole` :69), `app/src/services/logging/logger/consoleInterceptor.ts`, `app/src/services/logging/logger/nativeLoggerBridge.ts` (119) | —          |
+| SDK/WebView analytics boundary | `packages/webview-bridge/src/adapters/analytics.ts` (42; fires over bridge), `packages/mobile-sdk-alpha/src/adapters/browser/analytics.ts` (55; standalone POST, swallows failures)                                                                                                                                    | —          |
+| SDK proof events               | `packages/mobile-sdk-alpha/src/proving/provingMachine.ts` (`PROOF_STARTED:492`, `PROOF_SUCCEEDED:528`)                                                                                                                                                                                                                 | trace only |
+| Existing tests                 | `app/tests/src/services/analytics.test.ts` (416), `app/tests/src/config/sentry.test.ts` (175), `packages/webview-bridge/src/__tests__/analytics-web.test.ts` (65), `packages/mobile-sdk-alpha/tests/adapters/browser/analytics.test.ts`                                                                                | —          |
 
 ### Out of scope
 
 - **Analytics destination config / dashboards** (Segment sources, Mixpanel project setup, Sentry
-  org, Loki/Grafana provisioning) — backend/ops, not app code. CI secret *plumbing* is AUD-07.
+  org, Loki/Grafana provisioning) — backend/ops, not app code. CI secret _plumbing_ is AUD-07.
 - **The funnel's product semantics** — whether the right events exist for a given metric is a
   product question. This audit judges only correctness (fires once, has its terminal pair, fires
   only in prod) and privacy (leaks nothing).
 - **NFC scan-flow correctness and the Google USAT eligibility policy** — AUD-01 and AUD-03/product
-  own those. This audit consumes AUD-01's fire-site map and audits the *events*, not the scan.
+  own those. This audit consumes AUD-01's fire-site map and audits the _events_, not the scan.
 - **Native logger internals** below the bridge (the iOS/Android log emitters) — trace to the
   `nativeLoggerBridge` boundary and stop; native correctness is AUD-01/AUD-02 territory.
 - **Fixing anything** — redaction gaps, missing guards, and duplicate fires are remediation PRs.

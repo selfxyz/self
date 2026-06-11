@@ -42,10 +42,11 @@ refresh** — every cited `path:line` re-verified, findings from completed audit
 revisions folded in — and an owner re-review. Inventory figures in plans (file counts, LOC,
 test-suite sizes) are scoping aids, not commitments — they drift and get refined at the recon
 refresh and during execution; precision is owed to the `path:line` citations behind suspected
-findings, not to counts. Plans whose question lists depend on earlier audit
-outputs (see Backlog dependencies) may be pre-drafted only **structurally**: each dependent input
-is a named placeholder citing its source audit and artifact, and the plan cannot pass activation
-review until the recon refresh fills every placeholder.
+findings, not to counts. Plans whose question lists **cannot be written without** earlier audit
+outputs — a hard dependency; most Backlog dependencies are informational and do not trigger this
+rule — may be pre-drafted only **structurally**: each dependent input is a named placeholder
+citing its source audit and artifact, and the plan cannot pass activation review until the recon
+refresh fills every placeholder.
 
 ### Stage 1 — Scope plan
 
@@ -87,12 +88,12 @@ leads with disposition, a **follow-up issues section grouping findings into PR-s
 structure `/gaps-to-issues` consumes — without it the Stage 5 handoff breaks), an adversarial
 verification log, what works well, and validation (commands run, tests written). Severity rubric:
 
-| Severity     | Meaning                                                                          |
-| ------------ | -------------------------------------------------------------------------------- |
-| **Critical** | Exploitable security flaw, permanent data/key loss, or build/release breakage    |
-| **Major**    | Incorrect behavior on a real user path; silent failure on a security boundary    |
-| **Medium**   | Latent bug needing unusual conditions; missing coverage on a critical module     |
-| **Low**      | Maintainability debt, dead code, config sprawl, documentation gaps               |
+| Severity     | Meaning                                                                       |
+| ------------ | ----------------------------------------------------------------------------- |
+| **Critical** | Exploitable security flaw, permanent data/key loss, or build/release breakage |
+| **Major**    | Incorrect behavior on a real user path; silent failure on a security boundary |
+| **Medium**   | Latent bug needing unusual conditions; missing coverage on a critical module  |
+| **Low**      | Maintainability debt, dead code, config sprawl, documentation gaps            |
 
 ### Stage 4 — Adversarial review gate
 
@@ -145,26 +146,28 @@ to `Done` only when issues exist for every accepted Critical/Major finding and e
 
 ## Backlog
 
-| ID     | Title                                                                     | Status | Priority | Depends on             | Plan |
-| ------ | ------------------------------------------------------------------------- | ------ | -------- | ---------------------- | ---- |
-| AUD-02 | Key material & keychain lifecycle (mnemonic, migration, backup, biometrics) | Ready  | High     | —                      | [plan](./plans/AUD-02-key-material-keychain-lifecycle.md) |
-| AUD-01 | NFC chip-reading flow (native auth fallbacks, parser duplication, timeouts) | Ready  | High     | AUD-02                 | [plan](./plans/AUD-01-nfc-chip-reading-flow.md) |
-| AUD-03 | Startup & navigation routing (state matrix, recovery, deep links, KYC resume) | Ready  | High     | AUD-02                 | [plan](./plans/AUD-03-startup-nav-routing.md) |
-| AUD-05 | Bridge protocol surface (adapter fail-closed review, session lifecycle)     | Ready  | High     | —                      | [plan](./plans/AUD-05-bridge-protocol-surface.md) |
-| AUD-04 | Test coverage & test quality (risk-ranked gaps, mock-wiring tests, thresholds) | Ready  | Medium   | AUD-01, AUD-02, AUD-03, AUD-05 | [plan](./plans/AUD-04-test-coverage-quality.md) |
-| AUD-06 | Cruft & dead code (common/new-common split, dead routes, artifacts, patches) | Ready  | Medium   | —                      | [plan](./plans/AUD-06-cruft-dead-code.md) |
-| AUD-07 | Config & CI consolidation (tool-config sprawl, disabled workflow steps)     | Ready  | Low      | AUD-06                 | [plan](./plans/AUD-07-config-ci-consolidation.md) |
-| AUD-08 | Analytics & observability correctness (funnel fire-sites, Sentry sanitization) | Ready  | Low      | AUD-01, AUD-03         | [plan](./plans/AUD-08-analytics-observability.md) |
-| AUD-09 | WebView app surface (secret handling, recovery/proving flows, providers, dev screens) | Ready  | High     | AUD-05                 | [plan](./plans/AUD-09-webview-app-surface.md) |
+| ID     | Title                                                                                 | Status  | Priority | Depends on                     | Plan                                                      |
+| ------ | ------------------------------------------------------------------------------------- | ------- | -------- | ------------------------------ | --------------------------------------------------------- |
+| AUD-02 | Key material & keychain lifecycle (mnemonic, migration, backup, biometrics)           | Planned | High     | —                              | [plan](./plans/AUD-02-key-material-keychain-lifecycle.md) |
+| AUD-01 | NFC chip-reading flow (native auth fallbacks, parser duplication, timeouts)           | Planned | High     | AUD-02                         | [plan](./plans/AUD-01-nfc-chip-reading-flow.md)           |
+| AUD-03 | Startup & navigation routing (state matrix, recovery, deep links, KYC resume)         | Planned | High     | AUD-02                         | [plan](./plans/AUD-03-startup-nav-routing.md)             |
+| AUD-05 | Bridge protocol surface (adapter fail-closed review, session lifecycle)               | Planned | High     | —                              | [plan](./plans/AUD-05-bridge-protocol-surface.md)         |
+| AUD-04 | Test coverage & test quality (risk-ranked gaps, mock-wiring tests, thresholds)        | Planned | Medium   | AUD-01, AUD-02, AUD-03, AUD-05 | [plan](./plans/AUD-04-test-coverage-quality.md)           |
+| AUD-06 | Cruft & dead code (common/new-common split, dead routes, artifacts, patches)          | Planned | Medium   | —                              | [plan](./plans/AUD-06-cruft-dead-code.md)                 |
+| AUD-07 | Config & CI consolidation (tool-config sprawl, disabled workflow steps)               | Planned | Low      | AUD-06                         | [plan](./plans/AUD-07-config-ci-consolidation.md)         |
+| AUD-08 | Analytics & observability correctness (funnel fire-sites, Sentry sanitization)        | Planned | Low      | AUD-01, AUD-03                 | [plan](./plans/AUD-08-analytics-observability.md)         |
+| AUD-09 | WebView app surface (secret handling, recovery/proving flows, providers, dev screens) | Planned | High     | AUD-05                         | [plan](./plans/AUD-09-webview-app-surface.md)             |
 
-Allowed statuses: `Ready`, `Planned` (plan merged, investigation not started), `In Progress`,
-`In Review` (report at Stage 4), `Blocked`, `Done`.
+Allowed statuses: `Ready` (scoped backlog row, plan not yet merged), `Planned` (plan merged,
+investigation not started), `In Progress`, `In Review` (report at Stage 4), `Blocked`, `Done`.
 
-Execution order is the table order. AUD-02 is the **pilot**: it exercises every protocol stage on
-the smallest high-risk surface, and the protocol above gets revised from its lessons before AUD-01
-starts. Dependencies are informational (findings feed later scopes), not hard blockers — except
-AUD-04, which cannot activate until the coverage maps from AUD-01/02/03/05 land; its plan exists
-as a structural pre-draft carrying those maps as named placeholders.
+Execution order is the table order; IDs reflect drafting order, not execution order. AUD-02 is
+the **pilot**: it exercises every protocol stage on the smallest high-risk surface, and the
+protocol above gets revised from its lessons before AUD-01 starts. Dependencies are informational
+(findings feed later scopes), not hard blockers — except AUD-04, which cannot activate until the
+coverage maps from AUD-01/02/03/05 land, and AUD-09, which needs AUD-05's coupling-seam map and
+origin-trust findings; both plans exist as structural pre-drafts carrying those inputs as named
+placeholders.
 
 ## Execution Model
 

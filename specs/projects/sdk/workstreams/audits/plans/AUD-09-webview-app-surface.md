@@ -49,18 +49,18 @@ with a trace or a reproduction, per the workstream's evidence standard.
 
 ### In scope (the complete file inventory; LOC verified 2026-06-11)
 
-| Area | Files | LOC |
-| --- | --- | --- |
-| App shell & routing | `src/App.tsx` (309), `src/main.tsx` (39), `src/components/{BootDecision,decideBootRoute,InitialRouteRedirect,ModeRoute,modeDispatch}.{ts,tsx}` | 609 |
-| Providers | `src/providers/{BridgeProvider,OperatingModeProvider,SelfClientProvider,VerificationRequestProvider}.tsx` | 324 |
-| Dev/preview/mocking surfaces | `src/components/{DevRouteMenu,MockRegistrationFailureButton,PasswordGate}.tsx`, `src/screens/debug/KeychainDebugScreen.tsx`, `src/screens/account/DevModeScreen.tsx`, `src/utils/{mockDocumentStore,mockOnboardingFlow}.ts` | 1,189 |
-| Secret handling | `src/utils/secretManager.ts` (180), `src/screens/recovery/*.tsx` (951), `src/screens/account/SecurityScreen.tsx` (84) | 1,215 |
-| Verification request & proving | `src/utils/{verificationRequest,provingUtils,selfAppContext}.ts` (361), `src/screens/proving/*.tsx` (700), `src/utils/{clusterClose,clusterCloseRegistry}.ts` (152), `src/types/navState.ts` (55) | 1,268 |
-| KYC provider chain | `src/utils/{kycProvider,kycAttestation,buildKycDocument}.ts` (273), `src/types/kycProvider.ts` (38), `src/screens/onboarding/{ProviderLaunchScreen,ProviderResultScreen,KycFailureScreen}.tsx` (562) | 873 |
-| Embed flows | `src/screens/embed/*.tsx` | 956 |
-| Remaining onboarding/home/account screens | `src/screens/onboarding/**` (rest), `src/screens/home/*`, `src/screens/account/{SettingsScreen,NotificationPreferencesScreen}.tsx`, `src/screens/points/*` | ~1,900 |
-| Observability & build | `src/config/sentry.ts` (80), `src/observability/*` (70), `src/utils/assetPathShim.ts` (62), `vite.config.ts`, `index.html`, `vercel.json`, `packages/rn-sdk/scripts/strip-embedded-sri.cjs` + `copy-assets` script (`packages/rn-sdk/package.json:27`) | ~400 |
-| Existing tests | `src/test/sri.test.ts` (70), `src/utils/{verificationRequest,provingUtils}.test.ts` (347), `tests/**` (23 files, 4,075) | 4,492 |
+| Area                                      | Files                                                                                                                                                                                                                                                  | LOC    |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------ |
+| App shell & routing                       | `src/App.tsx` (309), `src/main.tsx` (39), `src/components/{BootDecision,decideBootRoute,InitialRouteRedirect,ModeRoute,modeDispatch}.{ts,tsx}`                                                                                                         | 609    |
+| Providers                                 | `src/providers/{BridgeProvider,OperatingModeProvider,SelfClientProvider,VerificationRequestProvider}.tsx`                                                                                                                                              | 324    |
+| Dev/preview/mocking surfaces              | `src/components/{DevRouteMenu,MockRegistrationFailureButton,PasswordGate}.tsx`, `src/screens/debug/KeychainDebugScreen.tsx`, `src/screens/account/DevModeScreen.tsx`, `src/utils/{mockDocumentStore,mockOnboardingFlow}.ts`                            | 1,189  |
+| Secret handling                           | `src/utils/secretManager.ts` (180), `src/screens/recovery/*.tsx` (951), `src/screens/account/SecurityScreen.tsx` (84)                                                                                                                                  | 1,215  |
+| Verification request & proving            | `src/utils/{verificationRequest,provingUtils,selfAppContext}.ts` (361), `src/screens/proving/*.tsx` (700), `src/utils/{clusterClose,clusterCloseRegistry}.ts` (152), `src/types/navState.ts` (55)                                                      | 1,268  |
+| KYC provider chain                        | `src/utils/{kycProvider,kycAttestation,buildKycDocument}.ts` (273), `src/types/kycProvider.ts` (38), `src/screens/onboarding/{ProviderLaunchScreen,ProviderResultScreen,KycFailureScreen}.tsx` (562)                                                   | 873    |
+| Embed flows                               | `src/screens/embed/*.tsx`                                                                                                                                                                                                                              | 956    |
+| Remaining onboarding/home/account screens | `src/screens/onboarding/**` (rest), `src/screens/home/*`, `src/screens/account/{SettingsScreen,NotificationPreferencesScreen}.tsx`, `src/screens/points/*`                                                                                             | ~1,900 |
+| Observability & build                     | `src/config/sentry.ts` (80), `src/observability/*` (70), `src/utils/assetPathShim.ts` (62), `vite.config.ts`, `index.html`, `vercel.json`, `packages/rn-sdk/scripts/strip-embedded-sri.cjs` + `copy-assets` script (`packages/rn-sdk/package.json:27`) | ~400   |
+| Existing tests                            | `src/test/sri.test.ts` (70), `src/utils/{verificationRequest,provingUtils}.test.ts` (347), `tests/**` (23 files, 4,075)                                                                                                                                | 4,492  |
 
 ### Out of scope
 
@@ -98,7 +98,7 @@ with a trace or a reproduction, per the workstream's evidence standard.
 2. **Q1.2 (suspected Major).** Everything else dev is gated on `import.meta.env.DEV` — a build-time
    constant. Prove a shipped artifact cannot carry `DEV=true`: trace the only two build paths
    (`vercel.json` `buildCommand` → `yarn workspace @selfxyz/webview-app run build` = `tsc --noEmit
-   && vite build`, `package.json:7`; and `packages/rn-sdk` `copy-assets` which copies
+&& vite build`, `package.json:7`; and `packages/rn-sdk` `copy-assets` which copies
    `../webview-app/dist/.`, `packages/rn-sdk/package.json:27`), check nothing passes
    `--mode development`, and **inspect the built `dist/` bundle** for the DEV-gated strings.
    Enumerate the blast radius if the gate ever fails — this list is the DEV-surface inventory
@@ -210,7 +210,7 @@ with a trace or a reproduction, per the workstream's evidence standard.
    (`SecretPhraseInputScreen.tsx:76`, `:283-285`); full phrase copied to the OS clipboard on user
    action (`RecoveryPhraseScreen.tsx:220`, `:277`). Classify against a stated threat model (WebView
    memory inspection, Sentry replay, clipboard managers) — JS cannot zero strings, so findings here
-   are about *unnecessary* retention/exposure, not the impossible. Verify the `PrivacyMask`
+   are about _unnecessary_ retention/exposure, not the impossible. Verify the `PrivacyMask`
    wrapping actually covers every mnemonic-rendering element (ties to Q6.3).
 3. **Q5.3.** `DEV_FAKE_MNEMONIC` (`RecoveryPhraseScreen.tsx:49-50`) is a valid BIP39 phrase in
    source. Confirm it is tree-shaken out of the production `dist/` bundle (part of the Q1.2 bundle

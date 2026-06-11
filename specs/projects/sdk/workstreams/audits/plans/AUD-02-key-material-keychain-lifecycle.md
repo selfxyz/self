@@ -25,19 +25,19 @@ refute each one with a trace or a reproduction, per the workstream's evidence st
 
 ### In scope (the complete file inventory)
 
-| Area | Files | LOC |
-| --- | --- | --- |
-| Secret lifecycle core | `app/src/providers/authProvider.tsx` | 596 |
-| Keychain option builder | `app/src/integrations/keychain/index.ts` | 225 |
-| Mnemonic validation | `app/src/utils/crypto/mnemonic.ts` | 68 |
-| Keychain error taxonomy | `app/src/utils/keychainErrors.ts` | — |
-| Cloud backup | `app/src/services/cloud-backup/{index,helpers,ios,google}.ts` | 247 |
-| Startup call sites | `app/src/screens/app/SplashScreen.tsx` (lines 116–137), `app/src/screens/app/startupRouting.ts` | — |
-| Web variant | `app/src/providers/authProvider.web.tsx` | — |
-| Privileged-export call sites | `app/src/providers/selfClientProvider.tsx`, `app/src/providers/passportDataProvider.tsx`, `app/src/services/points/api.ts`, `app/src/screens/dev/DevPrivateKeyScreen.tsx`, `app/src/screens/dev/TroubleshootingScreen.tsx` | trace only |
-| Backup/restore call sites (Q4/Q5 ingress) | `app/src/screens/account/settings/CloudBackupScreen.tsx` (`useBackupMnemonic` at :64, `disableBackup` :91, `upload` :175), `app/src/screens/account/recovery/AccountRecoveryChoiceScreen.tsx` (`download` :58, `restoreAccountFromMnemonic` :81, :218), `app/src/screens/account/recovery/RecoverWithPhraseScreen.tsx` (`restoreAccountFromMnemonic` :63, :95) | trace only |
-| Vendored native delta | `patches/react-native-keychain+10.0.0.patch` | ~6.2k added lines |
-| Existing tests | `app/tests/src/utils/keychainErrors.test.ts` (64), `app/tests/src/hooks/useMnemonic.test.ts` (47), `app/tests/src/services/cloud-backup.test.ts` (497) | 608 |
+| Area                                      | Files                                                                                                                                                                                                                                                                                                                                                          | LOC               |
+| ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- |
+| Secret lifecycle core                     | `app/src/providers/authProvider.tsx`                                                                                                                                                                                                                                                                                                                           | 596               |
+| Keychain option builder                   | `app/src/integrations/keychain/index.ts`                                                                                                                                                                                                                                                                                                                       | 225               |
+| Mnemonic validation                       | `app/src/utils/crypto/mnemonic.ts`                                                                                                                                                                                                                                                                                                                             | 68                |
+| Keychain error taxonomy                   | `app/src/utils/keychainErrors.ts`                                                                                                                                                                                                                                                                                                                              | —                 |
+| Cloud backup                              | `app/src/services/cloud-backup/{index,helpers,ios,google}.ts`                                                                                                                                                                                                                                                                                                  | 247               |
+| Startup call sites                        | `app/src/screens/app/SplashScreen.tsx` (lines 116–137), `app/src/screens/app/startupRouting.ts`                                                                                                                                                                                                                                                                | —                 |
+| Web variant                               | `app/src/providers/authProvider.web.tsx`                                                                                                                                                                                                                                                                                                                       | —                 |
+| Privileged-export call sites              | `app/src/providers/selfClientProvider.tsx`, `app/src/providers/passportDataProvider.tsx`, `app/src/services/points/api.ts`, `app/src/screens/dev/DevPrivateKeyScreen.tsx`, `app/src/screens/dev/TroubleshootingScreen.tsx`                                                                                                                                     | trace only        |
+| Backup/restore call sites (Q4/Q5 ingress) | `app/src/screens/account/settings/CloudBackupScreen.tsx` (`useBackupMnemonic` at :64, `disableBackup` :91, `upload` :175), `app/src/screens/account/recovery/AccountRecoveryChoiceScreen.tsx` (`download` :58, `restoreAccountFromMnemonic` :81, :218), `app/src/screens/account/recovery/RecoverWithPhraseScreen.tsx` (`restoreAccountFromMnemonic` :63, :95) | trace only        |
+| Vendored native delta                     | `patches/react-native-keychain+10.0.0.patch`                                                                                                                                                                                                                                                                                                                   | ~6.2k added lines |
+| Existing tests                            | `app/tests/src/utils/keychainErrors.test.ts` (64), `app/tests/src/hooks/useMnemonic.test.ts` (47), `app/tests/src/services/cloud-backup.test.ts` (497)                                                                                                                                                                                                         | 608               |
 
 ### Out of scope
 
@@ -92,7 +92,7 @@ refute each one with a trace or a reproduction, per the workstream's evidence st
 1. **Q3.1 (suspected Major).** `loginWithBiometrics` (`authProvider.tsx:329-370`) and
    `_getWithBiometrics` (`:86-124`) use `ReactNativeBiometrics.simplePrompt` — a UI prompt with no
    cryptographic binding — and `_getSecurely` hardcodes `signature: 'authenticated'` (`:71-74`).
-   Establish where biometric access to the secret is *actually* enforced: it must be the keychain
+   Establish where biometric access to the secret is _actually_ enforced: it must be the keychain
    `accessControl` on the entry itself. Verify on both platforms that reading service `'secret'`
    without passing the auth-gated `getOptions` fails when `accessControl` was set at write time.
 2. **Q3.2 (suspected Major — policy decision needed).** On devices without a passcode,
@@ -143,7 +143,7 @@ refute each one with a trace or a reproduction, per the workstream's evidence st
 1. **Q6.1 (suspected Medium).** Every detection failure degrades silently to the weakest option:
    `getMaxSecurityLevel` catch → `ANY` (`:195-204`), `checkPasscodeAvailable` catch → `false`
    (`:62-77`) which drops `accessControl` entirely (Q3.2). Determine whether a transient failure
-   at write time can downgrade the protection class of an *existing* secret on the next write, and
+   at write time can downgrade the protection class of an _existing_ secret on the next write, and
    whether any telemetry records that a downgrade happened.
 2. **Q6.2 (suspected Low).** `checkPasscodeAvailable` probes by writing
    `passcode-test-<Date.now()>` entries (`:64`). If `resetGenericPassword` fails, orphaned test

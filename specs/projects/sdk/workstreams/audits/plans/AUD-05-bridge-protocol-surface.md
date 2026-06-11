@@ -38,23 +38,23 @@ evidence standard.
 
 ### In scope (the complete file inventory)
 
-| Area | Files | LOC |
-| --- | --- | --- |
-| TS bridge client (transport, request/response, events, teardown) | `packages/webview-bridge/src/bridge.ts` | 453 |
-| TS wire-format validation | `packages/webview-bridge/src/schema.ts` | 127 |
-| TS protocol types + constants | `packages/webview-bridge/src/types.ts` | 154 |
-| TS adapter coupling layer | `packages/webview-bridge/src/adapters/*.ts` (auth 27, crypto 69, keychain-documents 56, sdk-adapter-map 68, + nfc/nav/analytics/storage/lifecycle/camera/documents/biometrics/haptic) | 621 |
-| TS mock transport | `packages/webview-bridge/src/mock.ts` | 159 |
-| RN SDK router + KMP transport | `packages/rn-sdk/src/bridge/{MessageRouter,KmpBridgeTransport,types}.ts` | 282 |
-| RN SDK handlers | `packages/rn-sdk/src/handlers/*.ts` | 1,385 |
-| RN SDK WebView host + native KMP module | `packages/rn-sdk/src/SelfVerification.tsx`, `packages/rn-sdk/android/src/main/java/xyz/self/rnsdk/SelfBridgeModule.kt` | 763 |
-| Android router + models + handler base | `packages/native-shell-android/src/main/kotlin/xyz/self/sdk/bridge/{MessageRouter,BridgeModels,BridgeHandler}.kt` | 267 |
-| Android handlers | `packages/native-shell-android/.../handlers/{SecureStorageHandler,LifecycleHandler,CryptoHandler}.kt` | 246 |
-| Android WebView host + nav policy | `packages/native-shell-android/.../webview/{AndroidWebViewHost,SelfVerificationActivity,RemoteNavigationPolicy}.kt` | 576 |
-| iOS router + models + handler base | `packages/native-shell-ios/Sources/SelfNativeShell/Bridge/{MessageRouter,BridgeModels,BridgeHandler}.swift` | 276 |
-| iOS handlers | `packages/native-shell-ios/.../Handlers/{SecureStorageHandler,LifecycleHandler,CryptoHandler}.swift` | 273 |
-| iOS WebView host + nav policy | `packages/native-shell-ios/.../WebView/{SelfWebViewHost,RemoteNavigationPolicy}.swift` | 262 |
-| Existing tests | `packages/webview-bridge/src/__tests__/{schema,adapters,bridge,analytics-web,documents-web}.test.ts` (991), `packages/rn-sdk/src/__tests__/*.test.ts` (1,920), `packages/native-shell-android/src/test/**` (1,385), `packages/native-shell-ios/Tests/**` (1,461) | — |
+| Area                                                             | Files                                                                                                                                                                                                                                                            | LOC   |
+| ---------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----- |
+| TS bridge client (transport, request/response, events, teardown) | `packages/webview-bridge/src/bridge.ts`                                                                                                                                                                                                                          | 453   |
+| TS wire-format validation                                        | `packages/webview-bridge/src/schema.ts`                                                                                                                                                                                                                          | 127   |
+| TS protocol types + constants                                    | `packages/webview-bridge/src/types.ts`                                                                                                                                                                                                                           | 154   |
+| TS adapter coupling layer                                        | `packages/webview-bridge/src/adapters/*.ts` (auth 27, crypto 69, keychain-documents 56, sdk-adapter-map 68, + nfc/nav/analytics/storage/lifecycle/camera/documents/biometrics/haptic)                                                                            | 621   |
+| TS mock transport                                                | `packages/webview-bridge/src/mock.ts`                                                                                                                                                                                                                            | 159   |
+| RN SDK router + KMP transport                                    | `packages/rn-sdk/src/bridge/{MessageRouter,KmpBridgeTransport,types}.ts`                                                                                                                                                                                         | 282   |
+| RN SDK handlers                                                  | `packages/rn-sdk/src/handlers/*.ts`                                                                                                                                                                                                                              | 1,385 |
+| RN SDK WebView host + native KMP module                          | `packages/rn-sdk/src/SelfVerification.tsx`, `packages/rn-sdk/android/src/main/java/xyz/self/rnsdk/SelfBridgeModule.kt`                                                                                                                                           | 763   |
+| Android router + models + handler base                           | `packages/native-shell-android/src/main/kotlin/xyz/self/sdk/bridge/{MessageRouter,BridgeModels,BridgeHandler}.kt`                                                                                                                                                | 267   |
+| Android handlers                                                 | `packages/native-shell-android/.../handlers/{SecureStorageHandler,LifecycleHandler,CryptoHandler}.kt`                                                                                                                                                            | 246   |
+| Android WebView host + nav policy                                | `packages/native-shell-android/.../webview/{AndroidWebViewHost,SelfVerificationActivity,RemoteNavigationPolicy}.kt`                                                                                                                                              | 576   |
+| iOS router + models + handler base                               | `packages/native-shell-ios/Sources/SelfNativeShell/Bridge/{MessageRouter,BridgeModels,BridgeHandler}.swift`                                                                                                                                                      | 276   |
+| iOS handlers                                                     | `packages/native-shell-ios/.../Handlers/{SecureStorageHandler,LifecycleHandler,CryptoHandler}.swift`                                                                                                                                                             | 273   |
+| iOS WebView host + nav policy                                    | `packages/native-shell-ios/.../WebView/{SelfWebViewHost,RemoteNavigationPolicy}.swift`                                                                                                                                                                           | 262   |
+| Existing tests                                                   | `packages/webview-bridge/src/__tests__/{schema,adapters,bridge,analytics-web,documents-web}.test.ts` (991), `packages/rn-sdk/src/__tests__/*.test.ts` (1,920), `packages/native-shell-android/src/test/**` (1,385), `packages/native-shell-ios/Tests/**` (1,461) | —     |
 
 ### Out of scope
 
@@ -100,7 +100,7 @@ evidence standard.
    drive the bridge. For `packages/rn-sdk`, establish the equivalent trust model: `onMessage`
    accepts WebView frames without origin metadata (`SelfVerification.tsx:529-537`), the KMP-backed
    secure-storage path forwards selected messages to `SelfBridgeModule.routeMessage(...,
-   isTrustedSource = true)` (`SelfBridgeModule.kt:42-45`), and the safety claim appears to depend on
+isTrustedSource = true)` (`SelfBridgeModule.kt:42-45`), and the safety claim appears to depend on
    embedded-bundle loading plus `__DEV__`-only dev-server use.
 3. **Q1.3 (suspected Medium).** The TS client registers `_handleResponse`/`_handleEvent` as
    methods on the global `SelfNativeBridge` (`bridge.ts:74`, `:255`, `:273`). Any script running
@@ -244,8 +244,8 @@ evidence standard.
      package Gradle test task.
    - iOS native shell: extend `packages/native-shell-ios/Tests/SelfNativeShellTests/`. Run via the
      package's Swift test command.
-   Name tests so the linked finding is obvious
-   (`describe('AUD-05 Q1.1: escapeForJs U+2028 breakout', ...)`).
+     Name tests so the linked finding is obvious
+     (`describe('AUD-05 Q1.1: escapeForJs U+2028 breakout', ...)`).
 4. The Q1.1 escape question must be answered by **constructing concrete payloads** and asserting
    the escaped output is inert, not by inspection — this is the load-bearing security claim.
 5. Platform behavior you cannot establish from source (e.g., whether `isDebugMode` is reachable in
