@@ -209,7 +209,7 @@
     "@types/react-dom": "^19.1.1",
     "@types/react-native-dotenv": "^0.2.2",
     "@types/react-native-sqlite-storage": "^6.0.5",
-    "@types/react-native-web": "^0",
+    "@types/react-native-web": "0.19.2",
     "@typescript-eslint/eslint-plugin": "^8.58.1",
     "@typescript-eslint/parser": "^8.58.1",
     "@vitejs/plugin-react-swc": "^4.3.0",

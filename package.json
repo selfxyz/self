@@ -22,6 +22,7 @@
     "build:sdk-android": "./scripts/build-webview-bundle.sh && cd packages/native-shell-android && ./gradlew assembleRelease",
     "build:sdk-bundle": "./scripts/build-webview-bundle.sh",
     "build:sdk-ios": "./scripts/build-webview-bundle.sh && cd packages/native-shell-ios && swift build",
+    "check:rn-types-pin": "node scripts/check-rn-types-pin.cjs",
     "check:versions": "node scripts/check-package-versions.mjs",
     "demo:mobile": "yarn build:mobile-sdk && yarn build:demo && yarn workspace mobile-sdk-demo start",
     "docstrings": "yarn docstrings:app && yarn docstrings:sdk",

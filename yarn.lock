@@ -11425,7 +11425,7 @@ __metadata:
     "@types/react-dom": "npm:^19.1.1"
     "@types/react-native-dotenv": "npm:^0.2.2"
     "@types/react-native-sqlite-storage": "npm:^6.0.5"
-    "@types/react-native-web": "npm:^0"
+    "@types/react-native-web": "npm:0.19.2"
     "@typescript-eslint/eslint-plugin": "npm:^8.58.1"
     "@typescript-eslint/parser": "npm:^8.58.1"
     "@vitejs/plugin-react-swc": "npm:^4.3.0"
@@ -17028,7 +17028,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-native-web@npm:^0":
+"@types/react-native-web@npm:0.19.2":
   version: 0.19.2
   resolution: "@types/react-native-web@npm:0.19.2"
   dependencies:

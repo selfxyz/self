@@ -139,6 +139,13 @@ end
 
 target "Self" do
   use_expo_modules!
+  # expo-modules-autolinking mistakes this repo for the Expo monorepo (it walks up
+  # from ios/ until it finds a packages/ dir, and ours qualifies), so companion-pod
+  # registration is skipped and ExpoCameraBarcodeScanning never gets linked. Without
+  # it expo-camera 55 disables ALL barcode scanning at runtime.
+  # TODO(expo/expo#44491): remove once autolinking registers companion pods here —
+  # keeping both will fail pod install with a duplicate pod.
+  pod "ExpoCameraBarcodeScanning", :podspec => "../node_modules/expo-camera/ios/ExpoCameraBarcodeScanning.podspec"
   # Native module exclusion for E2E testing is handled in react-native.config.cjs
   config = use_native_modules!
   # Skip SelfNFCPassportReader for e2e testing to avoid build issues
