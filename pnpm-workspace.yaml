@@ -29,10 +29,12 @@ allowBuilds:
   lmdb: true
   msgpackr-extract: true
   node-forge: true
+  node-forge@https://codeload.github.com/remicolin/forge/tar.gz/17a11a632dd0e50343b3b8393245a2696f78afbb: true
   protobufjs: true
   react-native-inappbrowser-reborn: true
   secp256k1: true
   snarkjs: true
+  snarkjs@https://codeload.github.com/sampritipanda/snarkjs/tar.gz/fef81fc51d17a734637555c6edbd585ecda02d9e: true
   unrs-resolver: true
 
 # @zk-email/relayer-utils pulls in node-pre-gyp-github via a git ref; pnpm 11's

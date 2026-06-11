@@ -31,7 +31,6 @@
     "format": "pnpm nice && pnpm fmt:fix",
     "ia": "pnpm install-app",
     "imports:fix": "node ./scripts/alias-imports.cjs",
-    "postinstall": "pnpm exec patch-package --patch-dir ../patches || true",
     "install-app": "pnpm install-app:setup && pnpm clean:xcode-env-local",
     "install-app:mobile-deploy": "pnpm install && pnpm build:deps && pnpm clean:xcode-env-local",
     "install-app:setup": "pnpm install && pnpm build:deps && pnpm setup:android-deps && cd ios && ./scripts/install-ios-deps-if-needed.sh && cd ..",
