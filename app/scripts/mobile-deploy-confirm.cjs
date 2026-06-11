@@ -23,7 +23,7 @@ const SUPPORTED_PLATFORMS = Object.values(PLATFORMS);
 const FILE_PATHS = {
   PACKAGE_JSON: '../package.json',
   VERSION_JSON: '../version.json',
-  IOS_INFO_PLIST: '../ios/OpenPassport/Info.plist',
+  IOS_INFO_PLIST: '../ios/Self/Info.plist',
   IOS_PROJECT_PBXPROJ: '../ios/Self.xcodeproj/project.pbxproj',
   ANDROID_BUILD_GRADLE: '../android/app/build.gradle',
 };

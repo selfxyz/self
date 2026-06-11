@@ -61,7 +61,7 @@ echo -e "${GREEN}✅ Changelog generated${NC}"
 # Stage all version-related files
 echo -e "\n${YELLOW}4. Committing changes...${NC}"
 git add package.json version.json RELEASE_NOTES.md
-git add ios/Self.xcodeproj/project.pbxproj ios/OpenPassport/Info.plist
+git add ios/Self.xcodeproj/project.pbxproj ios/Self/Info.plist
 git add android/app/build.gradle
 
 # Create commit
