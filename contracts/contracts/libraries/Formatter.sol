@@ -245,9 +245,8 @@ library Formatter {
                 uint256 shift = byteIndex * 8;
                 uint256 mask = 0xFFFFFF;
                 uint256 packedData = (publicSignals[index * 3] >> shift) & mask;
-                uint256 reversedPackedData = ((packedData & 0xff) << 16) |
-                    ((packedData & 0xff00)) |
-                    ((packedData & 0xff0000) >> 16);
+                uint256 reversedPackedData =
+                    ((packedData & 0xff) << 16) | ((packedData & 0xff00)) | ((packedData & 0xff0000) >> 16);
                 forbiddenCountries[j] = string(abi.encodePacked(uint24(reversedPackedData)));
             } else if (byteIndex < 31) {
                 uint256 part0 = (publicSignals[0] >> (byteIndex * 8));
@@ -260,9 +259,8 @@ library Formatter {
                 uint256 shift = byteIndexIn1 * 8;
                 uint256 mask = 0xFFFFFF;
                 uint256 packedData = (publicSignals[1] >> shift) & mask;
-                uint256 reversedPackedData = ((packedData & 0xff) << 16) |
-                    ((packedData & 0xff00)) |
-                    ((packedData & 0xff0000) >> 16);
+                uint256 reversedPackedData =
+                    ((packedData & 0xff) << 16) | ((packedData & 0xff00)) | ((packedData & 0xff0000) >> 16);
                 forbiddenCountries[j] = string(abi.encodePacked(uint24(reversedPackedData)));
             } else if (byteIndex < 62) {
                 uint256 part0 = (publicSignals[1] >> ((byteIndex - 31) * 8)) & 0x00ffff;
@@ -275,9 +273,8 @@ library Formatter {
                 uint256 shift = byteIndexIn1 * 8;
                 uint256 mask = 0xFFFFFF;
                 uint256 packedData = (publicSignals[2] >> shift) & mask;
-                uint256 reversedPackedData = ((packedData & 0xff) << 16) |
-                    ((packedData & 0xff00)) |
-                    ((packedData & 0xff0000) >> 16);
+                uint256 reversedPackedData =
+                    ((packedData & 0xff) << 16) | ((packedData & 0xff00)) | ((packedData & 0xff0000) >> 16);
                 forbiddenCountries[j] = string(abi.encodePacked(uint24(reversedPackedData)));
             }
         }

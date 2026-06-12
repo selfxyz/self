@@ -384,9 +384,10 @@ contract IdentityRegistryAadhaarImplV1 is IdentityRegistryAadhaarStorageV1, IIde
         uint256 nameAndYobRoot
     ) external view virtual onlyProxy returns (bool) {
         bool currentMatch = (_nameAndDobOfacRoot == nameAndDobRoot) && (_nameAndYobOfacRoot == nameAndYobRoot);
-        bool prevMatch = (_prevNameAndDobOfacRoot != 0) &&
-            (_prevNameAndDobOfacRoot == nameAndDobRoot) &&
-            (_prevNameAndYobOfacRoot == nameAndYobRoot);
+        bool prevMatch =
+            (_prevNameAndDobOfacRoot != 0) &&
+                (_prevNameAndDobOfacRoot == nameAndDobRoot) &&
+                (_prevNameAndYobOfacRoot == nameAndYobRoot);
         return currentMatch || prevMatch;
     }
 
