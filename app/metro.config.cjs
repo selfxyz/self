@@ -114,6 +114,23 @@ const config = {
       require.resolve('react-native-svg-transformer/react-native'),
     disableImportExportTransform: true,
     inlineRequires: true,
+    // Pin asset registration to react-native's own @react-native/assets-registry
+    // instance. If a second copy gets hoisted into app/node_modules (e.g. via a
+    // dependency pulling a different react-native version), assets register in
+    // one registry while Image.resolveAssetSource reads the other, and every
+    // static image renders blank.
+    assetRegistryPath: require.resolve(
+      '@react-native/assets-registry/registry',
+      {
+        paths: [
+          path.dirname(
+            require.resolve('react-native/package.json', {
+              paths: [projectRoot],
+            }),
+          ),
+        ],
+      },
+    ),
   },
 
   resolver: {
@@ -128,6 +145,11 @@ const config = {
       /.*\/build\/package\.json$/,
       // Block workspace-root and .pnpm-nested duplicates of React/RN/scheduler.
       ...workspaceReactBlockList,
+      // @types/react-native-web declares `"react-native": "*"`. The root
+      // resolution pins it to the app's RN so it dedupes today, but if that pin
+      // ever drifts a second RN lands here. Block it so Metro can never pull a
+      // divergent copy into the graph regardless of the installed version.
+      new RegExp('@types/react-native-web/node_modules/react-native(/|$)'),
       new RegExp('packages/mobile-sdk-alpha/node_modules/react(/|$)'),
       new RegExp('packages/mobile-sdk-alpha/node_modules/react-dom(/|$)'),
       new RegExp('packages/mobile-sdk-alpha/node_modules/react-native(/|$)'),

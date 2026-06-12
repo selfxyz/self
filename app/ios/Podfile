@@ -107,7 +107,7 @@ end
 # YttriumWrapper (Yttrium UniFFI bindings). The Self app does not use
 # WalletConnect Pay and the binary pod fails to build. Patch the podspec
 # and remove the Pay bridge Swift file before CocoaPods resolves deps.
-wc_compat_dir = File.join(__dir__, "..", "node_modules", "@walletconnect", "react-native-compat")
+wc_compat_dir = File.dirname(`node --print "require.resolve('@walletconnect/react-native-compat/package.json', {paths: ['#{__dir__}/..']})"`.strip)
 wc_podspec = File.join(wc_compat_dir, "react-native-compat.podspec")
 
 if File.exist?(wc_podspec)
@@ -127,7 +127,7 @@ Pod::UI.puts "Removed WalletConnect Pay source files (not used)".yellow if files
 # ── Haptic feedback AudioToolbox fix ────────────────────────────────────────
 # react-native-haptic-feedback uses AudioServicesPlaySystemSound but its
 # podspec doesn't declare the AudioToolbox framework. Patch it.
-haptic_podspec = File.join(__dir__, "..", "node_modules", "react-native-haptic-feedback", "RNReactNativeHapticFeedback.podspec")
+haptic_podspec = File.join(File.dirname(`node --print "require.resolve('react-native-haptic-feedback/package.json', {paths: ['#{__dir__}/..']})"`.strip), "RNReactNativeHapticFeedback.podspec")
 if File.exist?(haptic_podspec)
   haptic_text = File.read(haptic_podspec)
   if !haptic_text.include?("AudioToolbox")
@@ -140,6 +140,17 @@ end
 
 target "Self" do
   use_expo_modules!
+  # expo-modules-autolinking mistakes this repo for the Expo monorepo (it walks up
+  # from ios/ until it finds a packages/ dir, and ours qualifies), so companion-pod
+  # registration is skipped and ExpoCameraBarcodeScanning never gets linked. Without
+  # it expo-camera 55 disables ALL barcode scanning at runtime.
+  # TODO(expo/expo#44491): remove once autolinking registers companion pods here —
+  # keeping both will fail pod install with a duplicate pod.
+  # Must be :path (local sources), NOT :podspec — :podspec fetches from the spec's
+  # declared git source (expo/expo root), where the source_files glob matches nothing
+  # and CocoaPods silently integrates an empty no-op target.
+  expo_camera_ios_dir = File.join(File.dirname(`node --print "require.resolve('expo-camera/package.json', {paths: ['#{__dir__}/..']})"`.strip), "ios")
+  pod "ExpoCameraBarcodeScanning", :path => Pathname.new(expo_camera_ios_dir).relative_path_from(Pathname.new(__dir__)).to_s
   # Native module exclusion for E2E testing is handled in react-native.config.cjs
   config = use_native_modules!
   # Skip SelfNFCPassportReader for e2e testing to avoid build issues

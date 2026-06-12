@@ -57,6 +57,10 @@ PODS:
     - ExpoModulesCore
   - ExpoCamera (55.0.17):
     - ExpoModulesCore
+  - ExpoCameraBarcodeScanning (55.0.17):
+    - ExpoCamera
+    - ZXingObjC/OneD
+    - ZXingObjC/PDF417
   - ExpoDomWebView (55.0.6):
     - ExpoModulesCore
   - ExpoFileSystem (55.0.22):
@@ -2310,7 +2314,6 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-    - YttriumWrapper (= 0.10.50)
   - react-native-date-picker (5.0.13):
     - boost
     - DoubleConversion
@@ -3513,7 +3516,11 @@ PODS:
   - SwiftQRScanner (1.1.6)
   - SwiftyTesseract (3.1.3)
   - Yoga (0.0.0)
-  - YttriumWrapper (0.10.50)
+  - ZXingObjC/Core (3.6.9)
+  - ZXingObjC/OneD (3.6.9):
+    - ZXingObjC/Core
+  - ZXingObjC/PDF417 (3.6.9):
+    - ZXingObjC/Core
 
 DEPENDENCIES:
   - boost (from `../../node_modules/react-native/third-party-podspecs/boost.podspec`)
@@ -3526,6 +3533,7 @@ DEPENDENCIES:
   - "ExpoAdapterGoogleSignIn (from `../../node_modules/@react-native-google-signin/google-signin/expo/ios`)"
   - ExpoAsset (from `../../node_modules/expo-asset/ios`)
   - ExpoCamera (from `../../node_modules/expo-camera/ios`)
+  - ExpoCameraBarcodeScanning (from `../../node_modules/expo-camera/ios`)
   - "ExpoDomWebView (from `../../node_modules/@expo/dom-webview/ios`)"
   - ExpoFileSystem (from `../../node_modules/expo-file-system/ios`)
   - ExpoFont (from `../../node_modules/expo-font/ios`)
@@ -3685,7 +3693,7 @@ SPEC REPOS:
     - Sentry
     - SocketRocket
     - SwiftyTesseract
-    - YttriumWrapper
+    - ZXingObjC
 
 EXTERNAL SOURCES:
   boost:
@@ -3707,6 +3715,8 @@ EXTERNAL SOURCES:
   ExpoAsset:
     :path: "../../node_modules/expo-asset/ios"
   ExpoCamera:
+    :path: "../../node_modules/expo-camera/ios"
+  ExpoCameraBarcodeScanning:
     :path: "../../node_modules/expo-camera/ios"
   ExpoDomWebView:
     :path: "../../node_modules/@expo/dom-webview/ios"
@@ -3974,6 +3984,7 @@ SPEC CHECKSUMS:
   ExpoAdapterGoogleSignIn: ab4d9fc38cb91077a4138d178395525ec65d0c2e
   ExpoAsset: 7721c5c4ae2a7c3c8147a046727ac6c020b05648
   ExpoCamera: 1f783af198ebb299f430758c86af8339cf7d63a9
+  ExpoCameraBarcodeScanning: 76e0fe3e7d5b17c3c73f1cae8a3ffe76df9e971f
   ExpoDomWebView: b2e9d601f9cb77d3c97da73234e175b64be91928
   ExpoFileSystem: 61e663d0bbd1a973d324530d1d6ee559a5e5192c
   ExpoFont: a7e34a75bdfb703fa07a0e87807f836236608c76
@@ -4052,7 +4063,7 @@ SPEC CHECKSUMS:
   react-native-biometrics: 43ed5b828646a7862dbc7945556446be00798e7d
   react-native-blur: b83ffbc5380d8bd2f06804b4b0e848be3507e65c
   react-native-cloud-storage: 70b358ddb1ab755c0093b0077ad7b4b8bcd332b2
-  react-native-compat: 864fd40792e455ae4e0fd7f68b113c3c28e2b3fc
+  react-native-compat: bcc3c754c04b17f0f1005ba4ea5252f16fcc7b32
   react-native-date-picker: 64ccae6c3a8104a168cef950fea8e1fe616cda82
   react-native-get-random-values: d16467cf726c618e9c7a8c3c39c31faa2244bbba
   react-native-netinfo: 64f05e94821ee3f3adcd9b67b35c1480e5564915
@@ -4122,8 +4133,8 @@ SPEC CHECKSUMS:
   SwiftQRScanner: e85a25f9b843e9231dab89a96e441472fe54a724
   SwiftyTesseract: 1f3d96668ae92dc2208d9842c8a59bea9fad2cbb
   Yoga: e9fea23bf9b2766818ce9a8df72f584bf5ad36cd
-  YttriumWrapper: d7f63336830536f1da41b745ed8bacedb04228c4
+  ZXingObjC: 8898711ab495761b2dbbdec76d90164a6d7e14c5
 
-PODFILE CHECKSUM: 7375a9098249b50f3237490775ff8342867de51e
+PODFILE CHECKSUM: edf03bb243fc79d8aa30eb4b6d8668b0e4504316
 
 COCOAPODS: 1.16.2
