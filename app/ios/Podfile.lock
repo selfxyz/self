@@ -12,7 +12,7 @@ PODS:
   - boost (1.84.0)
   - BVLinearGradient (2.8.3):
     - React-Core
-  - DiditSDK/Core (3.5.1)
+  - DiditSDK/AutoDetection (4.0.5)
   - DoubleConversion (1.1.6)
   - EXApplication (55.0.14):
     - ExpoModulesCore
@@ -3467,9 +3467,9 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - SdkReactNative (3.3.2):
+  - SdkReactNative (4.0.5):
     - boost
-    - DiditSDK/Core (~> 3.5)
+    - DiditSDK/AutoDetection (= 4.0.5)
     - DoubleConversion
     - fast_float
     - fmt
@@ -3518,7 +3518,7 @@ PODS:
 DEPENDENCIES:
   - boost (from `../../node_modules/react-native/third-party-podspecs/boost.podspec`)
   - BVLinearGradient (from `../../node_modules/react-native-linear-gradient`)
-  - DiditSDK/Core (from `https://raw.githubusercontent.com/didit-protocol/sdk-ios/3.5.1/DiditSDK.podspec`)
+  - DiditSDK/AutoDetection (from `https://raw.githubusercontent.com/didit-protocol/sdk-ios/4.0.5/DiditSDK.podspec`)
   - DoubleConversion (from `../../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
   - EXApplication (from `../../node_modules/expo-application/ios`)
   - EXConstants (from `../../node_modules/expo-constants/ios`)
@@ -3693,7 +3693,7 @@ EXTERNAL SOURCES:
   BVLinearGradient:
     :path: "../../node_modules/react-native-linear-gradient"
   DiditSDK:
-    :podspec: https://raw.githubusercontent.com/didit-protocol/sdk-ios/3.5.1/DiditSDK.podspec
+    :podspec: https://raw.githubusercontent.com/didit-protocol/sdk-ios/4.0.5/DiditSDK.podspec
   DoubleConversion:
     :podspec: "../../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec"
   EXApplication:
@@ -3966,7 +3966,7 @@ SPEC CHECKSUMS:
   AppCheckCore: cc8fd0a3a230ddd401f326489c99990b013f0c4f
   boost: 7e761d76ca2ce687f7cc98e698152abd03a18f90
   BVLinearGradient: cb006ba232a1f3e4f341bb62c42d1098c284da70
-  DiditSDK: 27173cbfc13db575640538a978d3ecf983b047ba
+  DiditSDK: 1c48cbef9127ac9068e65fb758e04999e31ea375
   DoubleConversion: cb417026b2400c8f53ae97020b2be961b59470cb
   EXApplication: ab5a9ca485adce8be81309a5172d1565e9d7467f
   EXConstants: dadbeba983acc30f855a919658a2b34fbd86615d
@@ -4112,7 +4112,7 @@ SPEC CHECKSUMS:
   RNScreens: 0e35897693c6f1aa38627dc1b4c37c7450e4b902
   RNSentry: adbde98523a92f127f7ac2834cb25a71589f2763
   RNSVG: d9938e7f6ea1616124dd2d64b933322ac2059e05
-  SdkReactNative: 1bc6a7467202311b7ac795d84c9b1905c3c089c9
+  SdkReactNative: 1d3cf50c4564a2f61c3db8663dedd789911fc5b0
   segment-analytics-react-native: 5df85065a7cf2c07311ec5a4832d5d3092015c98
   SelfNFCPassportReader: 8b53f9d483e0dd1f1a275953e3dc6dfc733694c5
   selfxyz-rn-sdk: 979043eba7cb1ca128d9e6bfbe970c5737be2a51
@@ -4124,6 +4124,6 @@ SPEC CHECKSUMS:
   Yoga: e9fea23bf9b2766818ce9a8df72f584bf5ad36cd
   YttriumWrapper: d7f63336830536f1da41b745ed8bacedb04228c4
 
-PODFILE CHECKSUM: bdee3995d30648e8e5e19197fe140d8a809fdbaf
+PODFILE CHECKSUM: 7375a9098249b50f3237490775ff8342867de51e
 
 COCOAPODS: 1.16.2
