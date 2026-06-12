@@ -145,6 +145,11 @@ const config = {
       /.*\/build\/package\.json$/,
       // Block workspace-root and .pnpm-nested duplicates of React/RN/scheduler.
       ...workspaceReactBlockList,
+      // @types/react-native-web declares `"react-native": "*"`. The root
+      // resolution pins it to the app's RN so it dedupes today, but if that pin
+      // ever drifts a second RN lands here. Block it so Metro can never pull a
+      // divergent copy into the graph regardless of the installed version.
+      new RegExp('@types/react-native-web/node_modules/react-native(/|$)'),
       new RegExp('packages/mobile-sdk-alpha/node_modules/react(/|$)'),
       new RegExp('packages/mobile-sdk-alpha/node_modules/react-dom(/|$)'),
       new RegExp('packages/mobile-sdk-alpha/node_modules/react-native(/|$)'),

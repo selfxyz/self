@@ -18,10 +18,7 @@ const svgSelfReferencePlugin: Plugin = {
   name: 'svg-self-reference',
   setup(build) {
     build.onResolve({ filter: /\.svg$/ }, args => {
-      const rel = path
-        .relative(path.resolve('.'), path.resolve(args.resolveDir, args.path))
-        .split(path.sep)
-        .join('/');
+      const rel = path.relative(path.resolve('.'), path.resolve(args.resolveDir, args.path)).split(path.sep).join('/');
       if (!rel.startsWith('svgs/')) return { external: true };
       return { path: `@selfxyz/mobile-sdk-alpha/${rel}`, external: true };
     });
