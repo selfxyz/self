@@ -146,8 +146,11 @@ target "Self" do
   # it expo-camera 55 disables ALL barcode scanning at runtime.
   # TODO(expo/expo#44491): remove once autolinking registers companion pods here —
   # keeping both will fail pod install with a duplicate pod.
-  barcode_scanning_podspec = File.join(File.dirname(`node --print "require.resolve('expo-camera/package.json', {paths: ['#{__dir__}/..']})"`.strip), "ios", "ExpoCameraBarcodeScanning.podspec")
-  pod "ExpoCameraBarcodeScanning", :podspec => Pathname.new(barcode_scanning_podspec).relative_path_from(Pathname.new(__dir__)).to_s
+  # Must be :path (local sources), NOT :podspec — :podspec fetches from the spec's
+  # declared git source (expo/expo root), where the source_files glob matches nothing
+  # and CocoaPods silently integrates an empty no-op target.
+  expo_camera_ios_dir = File.join(File.dirname(`node --print "require.resolve('expo-camera/package.json', {paths: ['#{__dir__}/..']})"`.strip), "ios")
+  pod "ExpoCameraBarcodeScanning", :path => Pathname.new(expo_camera_ios_dir).relative_path_from(Pathname.new(__dir__)).to_s
   # Native module exclusion for E2E testing is handled in react-native.config.cjs
   config = use_native_modules!
   # Skip SelfNFCPassportReader for e2e testing to avoid build issues

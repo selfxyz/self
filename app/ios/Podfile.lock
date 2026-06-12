@@ -3533,7 +3533,7 @@ DEPENDENCIES:
   - "ExpoAdapterGoogleSignIn (from `../../node_modules/@react-native-google-signin/google-signin/expo/ios`)"
   - ExpoAsset (from `../../node_modules/expo-asset/ios`)
   - ExpoCamera (from `../../node_modules/expo-camera/ios`)
-  - ExpoCameraBarcodeScanning (from `../../node_modules/expo-camera/ios/ExpoCameraBarcodeScanning.podspec`)
+  - ExpoCameraBarcodeScanning (from `../../node_modules/expo-camera/ios`)
   - "ExpoDomWebView (from `../../node_modules/@expo/dom-webview/ios`)"
   - ExpoFileSystem (from `../../node_modules/expo-file-system/ios`)
   - ExpoFont (from `../../node_modules/expo-font/ios`)
@@ -3717,7 +3717,7 @@ EXTERNAL SOURCES:
   ExpoCamera:
     :path: "../../node_modules/expo-camera/ios"
   ExpoCameraBarcodeScanning:
-    :podspec: "../../node_modules/expo-camera/ios/ExpoCameraBarcodeScanning.podspec"
+    :path: "../../node_modules/expo-camera/ios"
   ExpoDomWebView:
     :path: "../../node_modules/@expo/dom-webview/ios"
   ExpoFileSystem:
@@ -3964,9 +3964,6 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/react-native/ReactCommon/yoga"
 
 CHECKOUT OPTIONS:
-  ExpoCameraBarcodeScanning:
-    :commit: ef456dddb25b60b503854c298e79b3cecacd1c51
-    :git: https://github.com/expo/expo.git
   SelfNFCPassportReader:
     :commit: b478e1f1320e86f72c5755bc5adf156fff950585
     :git: "git@github.com:selfxyz/NFCPassportReader.git"
@@ -4138,6 +4135,6 @@ SPEC CHECKSUMS:
   Yoga: e9fea23bf9b2766818ce9a8df72f584bf5ad36cd
   ZXingObjC: 8898711ab495761b2dbbdec76d90164a6d7e14c5
 
-PODFILE CHECKSUM: f93215b2ac426d81f640288d993ba4b6bb87dde1
+PODFILE CHECKSUM: edf03bb243fc79d8aa30eb4b6d8668b0e4504316
 
 COCOAPODS: 1.16.2

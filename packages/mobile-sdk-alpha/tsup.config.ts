@@ -5,9 +5,28 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 
+import type { Plugin } from 'esbuild';
 import { defineConfig } from 'tsup';
 
 const banner = `// SPDX-License-Identifier: BUSL-1.1; Copyright (c) 2025 Social Connect Labs, Inc.; Licensed under BUSL-1.1 (see LICENSE); Apache-2.0 from 2029-06-11`;
+
+// Externalize SVG imports as package self-references instead of relative paths.
+// Code splitting hoists shared modules into chunks at the outDir root, where a
+// verbatim relative path like ../../../svgs/... escapes the package; the bare
+// specifier resolves via the exports map (./svgs/* -> ./dist/svgs/*) anywhere.
+const svgSelfReferencePlugin: Plugin = {
+  name: 'svg-self-reference',
+  setup(build) {
+    build.onResolve({ filter: /\.svg$/ }, args => {
+      const rel = path
+        .relative(path.resolve('.'), path.resolve(args.resolveDir, args.path))
+        .split(path.sep)
+        .join('/');
+      if (!rel.startsWith('svgs/')) return { external: true };
+      return { path: `@selfxyz/mobile-sdk-alpha/${rel}`, external: true };
+    });
+  },
+};
 
 // Dynamically find all flow files
 function findFlowFiles(dir: string, basePath = ''): Record<string, string> {
@@ -89,9 +108,9 @@ export default defineConfig([
       'react-native-get-random-values',
       '@noble/hashes',
       /^@noble\/hashes\/.*/,
-      // SVG files should be handled by React Native's SVG transformer
-      /\.svg$/,
     ],
+    // SVG imports become external package self-references for Metro's SVG transformer
+    esbuildPlugins: [svgSelfReferencePlugin],
     esbuildOptions(options) {
       options.supported = {
         ...options.supported,
@@ -148,10 +167,10 @@ export default defineConfig([
       'react-native-get-random-values',
       '@noble/hashes',
       /^@noble\/hashes\/.*/,
-      // SVG files should be handled by React Native's SVG transformer
-      /\.svg$/,
     ],
     outExtension: ({ format }) => ({ js: format === 'cjs' ? '.cjs' : '.js' }),
+    // SVG imports become external package self-references for Metro's SVG transformer
+    esbuildPlugins: [svgSelfReferencePlugin],
     esbuildOptions(options) {
       options.supported = {
         ...options.supported,
