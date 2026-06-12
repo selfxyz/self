@@ -3965,7 +3965,7 @@ EXTERNAL SOURCES:
 
 CHECKOUT OPTIONS:
   ExpoCameraBarcodeScanning:
-    :commit: 065b393aed98b599b395357f9b73790b0a8d0ccf
+    :commit: ef456dddb25b60b503854c298e79b3cecacd1c51
     :git: https://github.com/expo/expo.git
   SelfNFCPassportReader:
     :commit: b478e1f1320e86f72c5755bc5adf156fff950585
@@ -4016,7 +4016,7 @@ SPEC CHECKSUMS:
   GoogleUtilities: 00c88b9a86066ef77f0da2fab05f65d7768ed8e1
   GTMAppAuth: 217a876b249c3c585a54fd6f73e6b58c4f5c4238
   GTMSessionFetcher: 5aea5ba6bd522a239e236100971f10cb71b96ab6
-  hermes-engine: 85d1dfac6a09d00a2ebe76179c258c1215f2cde9
+  hermes-engine: 614e4e1feaa65d21b146116092ba76b73aad4791
   lottie-ios: 8f959969761e9c45d70353667d00af0e5b9cadb3
   lottie-react-native: e542fe4b6e8eddcf893d5a8cef9f8b5c6d2f7331
   Mixpanel-swift: e9bef28a9648faff384d5ba6f48ecc2787eb24c0
