@@ -1,7 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "ignoreCommand": "git diff HEAD^ HEAD --quiet -- . ../../common ../../packages/mobile-sdk-alpha ../../packages/webview-bridge",
-  "buildCommand": "yarn workspace @selfxyz/common build && yarn workspace @selfxyz/mobile-sdk-alpha build:ts-only && yarn workspace @selfxyz/webview-bridge build && yarn workspace @selfxyz/webview-app run build",
+  "installCommand": "corepack enable && pnpm install --frozen-lockfile",
+  "buildCommand": "pnpm --filter @selfxyz/common build && pnpm --filter @selfxyz/mobile-sdk-alpha build:ts-only && pnpm --filter @selfxyz/webview-bridge build && pnpm --filter @selfxyz/webview-app build",
   "rewrites": [
     {
       "source": "/(.*)",

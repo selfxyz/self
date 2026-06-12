@@ -9,11 +9,11 @@ env:
   ANDROID_API_LEVEL: 34
   ANDROID_NDK_VERSION: 28.0.13004108
   XCODE_VERSION: 26
+  NODE_OPTIONS: --max-old-space-size=8192
   # Cache versions
   GH_CACHE_VERSION: v2 # Global cache version - bumped to invalidate caches
   GH_GEMS_CACHE_VERSION: v1 # Ruby gems cache version
   # Performance optimizations
-  YARN_TASK_POOL_CONCURRENCY: 2 # Limit parallel native module builds to prevent OOM on self-hosted runners
   GRADLE_OPTS: -Dorg.gradle.workers.max=1 -Dorg.gradle.parallel=true -Dorg.gradle.caching=true -Dorg.gradle.jvmargs='-Xmx4096m -XX:MaxMetaspaceSize=1024m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8'
   CI: true
   # Disable Maestro analytics in CI
@@ -38,6 +38,7 @@ on:
       - "packages/mobile-sdk-alpha/**"
       - "patches/**"
       - ".github/workflows/mobile-e2e.yml"
+      - ".github/CI_FORCE_RUN"
   pull_request:
     types: [opened, synchronize, reopened, labeled]
     paths:
@@ -45,6 +46,7 @@ on:
       - "packages/mobile-sdk-alpha/**"
       - "patches/**"
       - ".github/workflows/mobile-e2e.yml"
+      - ".github/CI_FORCE_RUN"
   workflow_dispatch:
     inputs:
       didit_e2e_bypass:
@@ -86,21 +88,10 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - run: corepack enable
-      - run: corepack prepare yarn@4.12.0 --activate
-      - name: Compute .yarnrc.yml hash
-        id: yarnrc-hash
-        uses: ./.github/actions/yarnrc-hash
-      - name: Cache Yarn dependencies
-        uses: ./.github/actions/cache-yarn
+      - name: Cache pnpm store
+        uses: ./.github/actions/cache-pnpm
         with:
-          path: |
-            .yarn/cache
-            .yarn/install-state.gz
-            .yarn/unplugged
-          cache-version: ${{ env.GH_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-${{ steps.yarnrc-hash.outputs.hash }}
-      - name: Toggle Yarn hardened mode for trusted PRs
-        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false }}
-        run: echo "YARN_ENABLE_HARDENED_MODE=0" >> $GITHUB_ENV
+          cache-version: ${{ env.GH_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}
       - name: Generate token for self repositories
         if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
         uses: ./.github/actions/generate-github-token
@@ -110,8 +101,10 @@ jobs:
           private-key: ${{ secrets.GH_WORKFLOWS_CROSS_ACCESS_KEY }}
           configure-netrc: "true"
       - name: Check for nested require() in tests
-        run: node scripts/check-test-requires.cjs
-        working-directory: ./app
+        uses: ./.github/actions/check-nested-requires
+        with:
+          paths: |
+            app/tests/
       - name: Install deps (internal PRs and protected branches)
         if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
         shell: bash
@@ -143,8 +136,8 @@ jobs:
           }
 
           check_network() {
-            echo "Checking network prerequisites for Yarn install..."
-            for host in github.com api.github.com classic.yarnpkg.com repo.maven.apache.org; do
+            echo "Checking network prerequisites for pnpm install..."
+            for host in github.com api.github.com registry.npmjs.org repo.maven.apache.org; do
               echo "Resolving ${host}..."
               getent hosts "${host}" || true
             done
@@ -170,9 +163,9 @@ jobs:
             trap 'kill "${MONITOR_PID}" 2>/dev/null || true' EXIT
 
             for attempt in 1 2 3; do
-              echo "Starting yarn install attempt ${attempt}/3..."
-              if timeout 20m yarn install --immutable; then
-                echo "yarn install completed successfully on attempt ${attempt}."
+              echo "Starting pnpm install attempt ${attempt}/3..."
+              if timeout 20m pnpm install --frozen-lockfile; then
+                echo "pnpm install completed successfully on attempt ${attempt}."
                 kill "${MONITOR_PID}" 2>/dev/null || true
                 trap - EXIT
                 return 0
@@ -180,7 +173,7 @@ jobs:
                 exit_code=$?
               fi
 
-              echo "yarn install failed on attempt ${attempt} with exit code ${exit_code}."
+              echo "pnpm install failed on attempt ${attempt} with exit code ${exit_code}."
               log_resources "post-failure"
 
               if [ "${attempt}" -eq 3 ]; then
@@ -224,8 +217,8 @@ jobs:
           }
 
           check_network() {
-            echo "Checking network prerequisites for Yarn install..."
-            for host in github.com api.github.com classic.yarnpkg.com repo.maven.apache.org; do
+            echo "Checking network prerequisites for pnpm install..."
+            for host in github.com api.github.com registry.npmjs.org repo.maven.apache.org; do
               echo "Resolving ${host}..."
               getent hosts "${host}" || true
             done
@@ -251,9 +244,9 @@ jobs:
             trap 'kill "${MONITOR_PID}" 2>/dev/null || true' EXIT
 
             for attempt in 1 2 3; do
-              echo "Starting yarn install attempt ${attempt}/3..."
-              if timeout 20m yarn install --immutable; then
-                echo "yarn install completed successfully on attempt ${attempt}."
+              echo "Starting pnpm install attempt ${attempt}/3..."
+              if timeout 20m pnpm install --frozen-lockfile; then
+                echo "pnpm install completed successfully on attempt ${attempt}."
                 kill "${MONITOR_PID}" 2>/dev/null || true
                 trap - EXIT
                 return 0
@@ -261,7 +254,7 @@ jobs:
                 exit_code=$?
               fi
 
-              echo "yarn install failed on attempt ${attempt} with exit code ${exit_code}."
+              echo "pnpm install failed on attempt ${attempt} with exit code ${exit_code}."
               log_resources "post-failure"
 
               if [ "${attempt}" -eq 3 ]; then
@@ -326,10 +319,8 @@ jobs:
       - name: Build dependencies (outside emulator)
         run: |
           echo "Building dependencies..."
-          # Ensure Yarn 4.12.0 is active
           corepack enable
-          corepack prepare yarn@4.12.0 --activate
-          yarn workspace @selfxyz/mobile-app run build:deps || { echo "❌ Dependency build failed"; exit 1; }
+          pnpm --filter @selfxyz/mobile-app run build:deps || { echo "❌ Dependency build failed"; exit 1; }
           echo "✅ Dependencies built successfully"
       - name: Setup Android private modules
         run: |
@@ -359,7 +350,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: app/android/app/build/outputs/apk/debug/app-debug.apk
-          key: ${{ runner.os }}-apk-v2-${{ hashFiles('app/android/app/src/**', 'app/android/app/build.gradle', 'app/android/app/proguard-rules.pro', 'app/android/build.gradle', 'app/android/settings.gradle', 'app/android/gradle.properties', 'app/android/gradle/wrapper/**', 'app/android/gradlew', 'app/src/**', 'app/App.tsx', 'app/index.js', 'app/app.json', 'app/package.json', 'app/babel.config.cjs', 'app/metro.config.cjs', 'app/react-native.config.cjs', 'app/patches/**', 'patches/**', 'packages/mobile-sdk-alpha/src/**', 'packages/mobile-sdk-alpha/package.json', 'yarn.lock', '.nvmrc', '.apk-cache-inputs.txt') }}
+          key: ${{ runner.os }}-apk-v2-${{ hashFiles('app/android/app/src/**', 'app/android/app/build.gradle', 'app/android/app/proguard-rules.pro', 'app/android/build.gradle', 'app/android/settings.gradle', 'app/android/gradle.properties', 'app/android/gradle/wrapper/**', 'app/android/gradlew', 'app/src/**', 'app/App.tsx', 'app/index.js', 'app/app.json', 'app/package.json', 'app/babel.config.cjs', 'app/metro.config.cjs', 'app/react-native.config.cjs', 'app/patches/**', 'patches/**', 'packages/mobile-sdk-alpha/src/**', 'packages/mobile-sdk-alpha/package.json', 'pnpm-lock.yaml', '.nvmrc', '.apk-cache-inputs.txt') }}
 
       - name: Publish KMP SDK to mavenLocal
         if: steps.apk-cache.outputs.cache-hit != 'true'
@@ -637,21 +628,10 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - run: corepack enable
-      - run: corepack prepare yarn@4.12.0 --activate
-      - name: Compute .yarnrc.yml hash
-        id: yarnrc-hash
-        uses: ./.github/actions/yarnrc-hash
-      - name: Cache Yarn dependencies
-        uses: ./.github/actions/cache-yarn
+      - name: Cache pnpm store
+        uses: ./.github/actions/cache-pnpm
         with:
-          path: |
-            .yarn/cache
-            .yarn/install-state.gz
-            .yarn/unplugged
-          cache-version: ${{ env.GH_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-${{ steps.yarnrc-hash.outputs.hash }}
-      - name: Toggle Yarn hardened mode for trusted PRs
-        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false }}
-        run: echo "YARN_ENABLE_HARDENED_MODE=0" >> $GITHUB_ENV
+          cache-version: ${{ env.GH_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}
       - name: Check Java installation
         run: |
           echo "INSTALL_JAVA=false" >> "$GITHUB_ENV"
@@ -676,8 +656,10 @@ jobs:
           private-key: ${{ secrets.GH_WORKFLOWS_CROSS_ACCESS_KEY }}
           configure-netrc: "true"
       - name: Check for nested require() in tests
-        run: node scripts/check-test-requires.cjs
-        working-directory: ./app
+        uses: ./.github/actions/check-nested-requires
+        with:
+          paths: |
+            app/tests/
       - name: Install deps (internal PRs and protected branches)
         if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
         uses: nick-fields/retry@v3
@@ -685,7 +667,7 @@ jobs:
           timeout_minutes: 10
           max_attempts: 3
           retry_wait_seconds: 5
-          command: yarn install --immutable --silent
+          command: pnpm install --frozen-lockfile --reporter=silent
         env:
           SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
       - name: Install deps (forked PRs - no secrets)
@@ -695,7 +677,7 @@ jobs:
           timeout_minutes: 10
           max_attempts: 3
           retry_wait_seconds: 5
-          command: yarn install --immutable --silent
+          command: pnpm install --frozen-lockfile --reporter=silent
       - name: Validate Maestro test file
         run: |
           [ -f app/tests/e2e/launch.ios.flow.yaml ] || { echo "❌ iOS E2E test file missing"; exit 1; }
@@ -814,7 +796,7 @@ jobs:
       - name: Build dependencies (outside main flow)
         run: |
           echo "Building dependencies..."
-          yarn workspace @selfxyz/mobile-app run build:deps || { echo "❌ Dependency build failed"; exit 1; }
+          pnpm --filter @selfxyz/mobile-app run build:deps || { echo "❌ Dependency build failed"; exit 1; }
           echo "✅ Dependencies built successfully"
       - name: Install iOS dependencies
         uses: nick-fields/retry@v3
@@ -828,6 +810,7 @@ jobs:
             echo "📦 Installing pods via centralized script…"
             BUNDLE_GEMFILE=../Gemfile bundle exec bash scripts/pod-install-with-cache-fix.sh
         env:
+          RCT_BUILD_HERMES_FROM_SOURCE: "false"
           SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
           E2E_TESTING: 1
       - name: Resolve iOS workspace
@@ -1115,6 +1098,12 @@ jobs:
             MAESTRO_OUTPUT_RETRY=$(run_maestro)
             MAESTRO_EXIT_CODE=$?
             MAESTRO_OUTPUT=$(printf '%s\n\n===== RETRY AFTER DRIVER STARTUP FAILURE =====\n\n%s' "$MAESTRO_OUTPUT" "$MAESTRO_OUTPUT_RETRY")
+          elif [ $MAESTRO_EXIT_CODE -ne 0 ] && printf '%s' "$MAESTRO_OUTPUT" | grep -Eq "App crashed or stopped while executing flow"; then
+            echo "⚠️ App crashed during Maestro flow, retrying once after 20s..."
+            sleep 20
+            MAESTRO_OUTPUT_RETRY=$(run_maestro)
+            MAESTRO_EXIT_CODE=$?
+            MAESTRO_OUTPUT=$(printf '%s\n\n===== RETRY AFTER APP CRASH =====\n\n%s' "$MAESTRO_OUTPUT" "$MAESTRO_OUTPUT_RETRY")
           fi
           set -e
 

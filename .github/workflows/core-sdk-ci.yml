@@ -32,7 +32,7 @@ jobs:
               echo "Error: Failed to diff against base branch"
               exit 1
             }
-            if echo "$CHANGED_FILES" | grep -qE "^(sdk/core/|common/|\.github/workflows/core-sdk-ci\.yml|\.github/actions/)"; then
+            if echo "$CHANGED_FILES" | grep -qE "^(sdk/core/|common/|\.github/workflows/core-sdk-ci\.yml|\.github/actions/|\.github/CI_FORCE_RUN$)"; then
               echo "should_run=true" >> $GITHUB_OUTPUT
               echo "Running for dev - relevant files changed"
             else
@@ -40,6 +40,20 @@ jobs:
               echo "Skipping for dev - no relevant files changed"
             fi
           fi
+
+  debug_check_changes:
+    needs: check_changes
+    runs-on: ubuntu-slim
+    steps:
+      - name: Dump gating values
+        env:
+          SHOULD_RUN: ${{ needs.check_changes.outputs.should_run }}
+          IS_DRAFT: ${{ github.event.pull_request.draft }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          echo "needs.check_changes.outputs.should_run = '$SHOULD_RUN'"
+          echo "github.event.pull_request.draft       = '$IS_DRAFT'"
+          echo "github.event_name                     = '$EVENT_NAME'"
 
   build:
     needs: check_changes
@@ -50,11 +64,11 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
       - name: Build dependencies
         run: |
-          yarn workspace @selfxyz/common build
-          yarn workspace @selfxyz/core build
+          pnpm --filter @selfxyz/common build
+          pnpm --filter @selfxyz/core build
       - name: Cache build artifacts
         uses: ./.github/actions/cache-core-sdk-build
         with:
@@ -70,9 +84,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Setup Corepack
-        run: |
-          corepack enable
-          corepack prepare yarn@4.12.0 --activate
+        run: corepack enable
       - name: Restore build artifacts
         id: build-cache
         uses: ./.github/actions/cache-core-sdk-build
@@ -81,15 +93,14 @@ jobs:
           cache-version: v1
           fail-on-cache-miss: false
       - name: Install Dependencies
-        if: steps.build-cache.outputs.cache-hit != 'true'
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
       - name: Build dependencies (fallback on cache miss)
         if: steps.build-cache.outputs.cache-hit != 'true'
         run: |
-          yarn workspace @selfxyz/common build
-          yarn workspace @selfxyz/core build
+          pnpm --filter @selfxyz/common build
+          pnpm --filter @selfxyz/core build
       - name: Run linter
-        run: yarn workspace @selfxyz/core lint
+        run: pnpm --filter @selfxyz/core lint
 
   types:
     runs-on: ubuntu-latest
@@ -100,9 +111,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Setup Corepack
-        run: |
-          corepack enable
-          corepack prepare yarn@4.12.0 --activate
+        run: corepack enable
       - name: Restore build artifacts
         id: build-cache
         uses: ./.github/actions/cache-core-sdk-build
@@ -111,15 +120,14 @@ jobs:
           cache-version: v1
           fail-on-cache-miss: false
       - name: Install Dependencies
-        if: steps.build-cache.outputs.cache-hit != 'true'
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
       - name: Build dependencies (fallback on cache miss)
         if: steps.build-cache.outputs.cache-hit != 'true'
         run: |
-          yarn workspace @selfxyz/common build
-          yarn workspace @selfxyz/core build
+          pnpm --filter @selfxyz/common build
+          pnpm --filter @selfxyz/core build
       - name: Type checking
-        run: yarn workspace @selfxyz/core types
+        run: pnpm --filter @selfxyz/core types
 
   test:
     runs-on: ubuntu-latest
@@ -130,9 +138,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Setup Corepack
-        run: |
-          corepack enable
-          corepack prepare yarn@4.12.0 --activate
+        run: corepack enable
       - name: Restore build artifacts
         id: build-cache
         uses: ./.github/actions/cache-core-sdk-build
@@ -141,12 +147,16 @@ jobs:
           cache-version: v1
           fail-on-cache-miss: false
       - name: Install Dependencies
-        if: steps.build-cache.outputs.cache-hit != 'true'
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
       - name: Build dependencies (fallback on cache miss)
         if: steps.build-cache.outputs.cache-hit != 'true'
         run: |
-          yarn workspace @selfxyz/common build
-          yarn workspace @selfxyz/core build
+          pnpm --filter @selfxyz/common build
+          pnpm --filter @selfxyz/core build
+      - name: Check for nested require() in tests
+        uses: ./.github/actions/check-nested-requires
+        with:
+          paths: |
+            sdk/core/tests/
       - name: Run tests
-        run: yarn workspace @selfxyz/core test
+        run: pnpm --filter @selfxyz/core test

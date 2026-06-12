@@ -11,6 +11,7 @@ on:
       - "packages/native-shell-ios/**"
       - ".github/workflows/native-shells-ci.yml"
       - ".github/actions/**"
+      - ".github/CI_FORCE_RUN"
   push:
     branches: [dev, staging, main]
     paths:
@@ -18,6 +19,7 @@ on:
       - "packages/native-shell-ios/**"
       - ".github/workflows/native-shells-ci.yml"
       - ".github/actions/**"
+      - ".github/CI_FORCE_RUN"
   workflow_dispatch: {}
 
 jobs:
@@ -36,10 +38,12 @@ jobs:
               - "packages/native-shell-android/**"
               - ".github/workflows/native-shells-ci.yml"
               - ".github/actions/**"
+              - ".github/CI_FORCE_RUN"
             ios:
               - "packages/native-shell-ios/**"
               - ".github/workflows/native-shells-ci.yml"
               - ".github/actions/**"
+              - ".github/CI_FORCE_RUN"
 
   native-shell-android-tests:
     needs: changes

@@ -10,6 +10,7 @@ on:
       - "packages/mobile-sdk-demo/**"
       - ".github/workflows/mobile-sdk-demo-ci.yml"
       - ".github/actions/**"
+      - ".github/CI_FORCE_RUN"
 
 jobs:
   test:
@@ -21,15 +22,15 @@ jobs:
         with:
           node-version-file: .nvmrc
       - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
       - name: Build dependencies (topological)
         shell: bash
         run: |
           # Build demo app and all its transitive workspace deps in the correct order
-          yarn workspaces foreach -R -t --from mobile-sdk-demo run build
+          pnpm -r --filter mobile-sdk-demo... run build
       - name: Run demo app tests
         run: |
-          yarn workspace mobile-sdk-demo test
+          pnpm --filter mobile-sdk-demo test
       - name: Build demo app
         run: |
-          yarn build:demo
+          pnpm build:demo

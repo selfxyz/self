@@ -30,21 +30,22 @@ vi.mock('../../../src/providers/SelfClientProvider', () => ({
   }),
 }));
 
-const generateMockDocumentMock = vi.fn();
-const storePassportDataMock = vi.fn();
+const { generateMockDocumentMock, mockDocumentStore, storePassportDataMock } = vi.hoisted(() => ({
+  generateMockDocumentMock: vi.fn(),
+  mockDocumentStore: {
+    addDocument: vi.fn(),
+    clear: vi.fn(),
+    hasDocuments: vi.fn().mockReturnValue(false),
+    getCatalog: vi.fn().mockReturnValue({ documents: [] }),
+    subscribe: vi.fn().mockReturnValue(() => {}),
+  },
+  storePassportDataMock: vi.fn(),
+}));
 
 vi.mock('@selfxyz/mobile-sdk-alpha', () => ({
   generateMockDocument: (...args: unknown[]) => generateMockDocumentMock(...args),
   storePassportData: (...args: unknown[]) => storePassportDataMock(...args),
 }));
-
-const mockDocumentStore = {
-  addDocument: vi.fn(),
-  clear: vi.fn(),
-  hasDocuments: vi.fn().mockReturnValue(false),
-  getCatalog: vi.fn().mockReturnValue({ documents: [] }),
-  subscribe: vi.fn().mockReturnValue(() => {}),
-};
 
 vi.mock('../../../src/utils/mockDocumentStore', () => ({
   mockDocumentStore,

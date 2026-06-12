@@ -12,6 +12,7 @@ on:
       - "packages/webview-bridge/**"
       - ".github/workflows/webview-app-ci.yml"
       - ".github/actions/**"
+      - ".github/CI_FORCE_RUN"
   push:
     branches: [dev, staging, main]
     paths:
@@ -21,6 +22,7 @@ on:
       - "packages/webview-bridge/**"
       - ".github/workflows/webview-app-ci.yml"
       - ".github/actions/**"
+      - ".github/CI_FORCE_RUN"
 
 jobs:
   build:
@@ -29,15 +31,15 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Install dependencies
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
       - name: Build common
-        run: yarn workspace @selfxyz/common build
+        run: pnpm --filter @selfxyz/common build
       - name: Build mobile-sdk-alpha
-        run: yarn workspace @selfxyz/mobile-sdk-alpha build
+        run: pnpm --filter @selfxyz/mobile-sdk-alpha build
       - name: Build webview-bridge
-        run: yarn workspace @selfxyz/webview-bridge build
+        run: pnpm --filter @selfxyz/webview-bridge build
       - name: Build webview-app
-        run: yarn workspace @selfxyz/webview-app build
+        run: pnpm --filter @selfxyz/webview-app build
 
   lint:
     runs-on: ubuntu-latest
@@ -45,15 +47,15 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Install dependencies
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
       - name: Build common
-        run: yarn workspace @selfxyz/common build
+        run: pnpm --filter @selfxyz/common build
       - name: Build mobile-sdk-alpha
-        run: yarn workspace @selfxyz/mobile-sdk-alpha build
+        run: pnpm --filter @selfxyz/mobile-sdk-alpha build
       - name: Build webview-bridge
-        run: yarn workspace @selfxyz/webview-bridge build
+        run: pnpm --filter @selfxyz/webview-bridge build
       - name: Run linter
-        run: yarn workspace @selfxyz/webview-app lint
+        run: pnpm --filter @selfxyz/webview-app lint
 
   format:
     runs-on: ubuntu-latest
@@ -61,9 +63,9 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Install dependencies
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
       - name: Check Prettier formatting
-        run: yarn workspace @selfxyz/webview-app fmt
+        run: pnpm --filter @selfxyz/webview-app fmt
 
   types:
     runs-on: ubuntu-latest
@@ -71,15 +73,15 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Install dependencies
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
       - name: Build common
-        run: yarn workspace @selfxyz/common build
+        run: pnpm --filter @selfxyz/common build
       - name: Build mobile-sdk-alpha
-        run: yarn workspace @selfxyz/mobile-sdk-alpha build
+        run: pnpm --filter @selfxyz/mobile-sdk-alpha build
       - name: Build webview-bridge
-        run: yarn workspace @selfxyz/webview-bridge build
+        run: pnpm --filter @selfxyz/webview-bridge build
       - name: Typecheck
-        run: yarn workspace @selfxyz/webview-app types
+        run: pnpm --filter @selfxyz/webview-app types
 
   test:
     runs-on: ubuntu-latest
@@ -87,12 +89,12 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Install dependencies
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
       - name: Build common
-        run: yarn workspace @selfxyz/common build
+        run: pnpm --filter @selfxyz/common build
       - name: Build mobile-sdk-alpha
-        run: yarn workspace @selfxyz/mobile-sdk-alpha build
+        run: pnpm --filter @selfxyz/mobile-sdk-alpha build
       - name: Build webview-bridge
-        run: yarn workspace @selfxyz/webview-bridge build
+        run: pnpm --filter @selfxyz/webview-bridge build
       - name: Test
-        run: yarn workspace @selfxyz/webview-app test
+        run: pnpm --filter @selfxyz/webview-app test

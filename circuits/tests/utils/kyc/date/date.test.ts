@@ -2,6 +2,7 @@ import { expect } from 'chai';
 import { wasm as wasmTester } from 'circom_tester';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
+import { CIRCOM_INCLUDE_PATHS } from '../../circomIncludePaths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -10,7 +11,7 @@ describe('date', async () => {
 
   before(async () => {
     circuit = await wasmTester(path.join(__dirname, 'is_valid.test.circom'), {
-      include: ['node_modules', 'node_modules/@zk-kit/binary-merkle-root.circom/src'],
+      include: CIRCOM_INCLUDE_PATHS,
     });
   });
 

@@ -107,7 +107,6 @@ vi.mock('@selfxyz/euclid', () => ({
   borderRadius: {
     mdd: 12,
   },
-  RecoveryPhrase: () => null,
   ZapShieldIcon: () => null,
   SettingsViewScreen: ({ sections }: { sections: Array<{ items: Array<{ label: string; onPress: () => void }> }> }) => (
     <div>
@@ -151,6 +150,16 @@ vi.mock('@selfxyz/euclid', () => ({
     </div>
   ),
   RecoveryPhraseScreen: ({ onReveal, onCopy }: { onReveal: () => void; onCopy: () => void }) => (
+    <div>
+      <button onClick={onReveal} type="button">
+        Reveal phrase
+      </button>
+      <button onClick={onCopy} type="button">
+        Copy phrase
+      </button>
+    </div>
+  ),
+  RecoveryPhrase: ({ onReveal, onCopy }: { onReveal: () => void; onCopy: () => void }) => (
     <div>
       <button onClick={onReveal} type="button">
         Reveal phrase

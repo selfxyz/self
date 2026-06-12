@@ -9,6 +9,7 @@ import { formatAndUnpackForbiddenCountriesList } from '@selfxyz/new-common/src/c
 import { formatMrz } from '@selfxyz/new-common/src/documents/passport/format.js';
 import { genAndInitMockPassportData } from '@selfxyz/new-common/src/testing/genMockPassportData.js';
 import { fileURLToPath } from 'url';
+import { CIRCOM_INCLUDE_PATHS } from '../utils/circomIncludePaths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -22,11 +23,7 @@ describe('ProveCountryIsNotInList', function () {
       '../../circuits/tests/utils/proveCountryIsNotInList_tester.circom'
     );
     circuit = await wasm_tester(circuitPath, {
-      include: [
-        'node_modules',
-        'node_modules/@zk-kit/binary-merkle-root.circom/src',
-        'node_modules/circomlib/circuits',
-      ],
+      include: CIRCOM_INCLUDE_PATHS,
     });
   });
 

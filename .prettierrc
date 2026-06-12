@@ -7,6 +7,5 @@
   "tabWidth": 2,
   "useTabs": false,
   "semi": true,
-  "endOfLine": "auto",
-  "parser": "typescript"
+  "endOfLine": "auto"
 }

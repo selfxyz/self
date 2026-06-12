@@ -26,4 +26,4 @@ else
 fi
 
 echo "Starting webview dev server on 0.0.0.0:${PORT}..."
-exec yarn workspace @selfxyz/webview-app dev --host 0.0.0.0 --port "${PORT}"
+exec pnpm --filter @selfxyz/webview-app run dev -- --host 0.0.0.0 --port "${PORT}"

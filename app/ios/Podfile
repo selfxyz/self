@@ -107,7 +107,7 @@ end
 # YttriumWrapper (Yttrium UniFFI bindings). The Self app does not use
 # WalletConnect Pay and the binary pod fails to build. Patch the podspec
 # and remove the Pay bridge Swift file before CocoaPods resolves deps.
-wc_compat_dir = File.join(__dir__, "..", "node_modules", "@walletconnect", "react-native-compat")
+wc_compat_dir = File.dirname(`node --print "require.resolve('@walletconnect/react-native-compat/package.json', {paths: ['#{__dir__}/..']})"`.strip)
 wc_podspec = File.join(wc_compat_dir, "react-native-compat.podspec")
 
 if File.exist?(wc_podspec)
@@ -127,7 +127,7 @@ Pod::UI.puts "Removed WalletConnect Pay source files (not used)".yellow if files
 # ── Haptic feedback AudioToolbox fix ────────────────────────────────────────
 # react-native-haptic-feedback uses AudioServicesPlaySystemSound but its
 # podspec doesn't declare the AudioToolbox framework. Patch it.
-haptic_podspec = File.join(__dir__, "..", "node_modules", "react-native-haptic-feedback", "RNReactNativeHapticFeedback.podspec")
+haptic_podspec = File.join(File.dirname(`node --print "require.resolve('react-native-haptic-feedback/package.json', {paths: ['#{__dir__}/..']})"`.strip), "RNReactNativeHapticFeedback.podspec")
 if File.exist?(haptic_podspec)
   haptic_text = File.read(haptic_podspec)
   if !haptic_text.include?("AudioToolbox")
@@ -146,7 +146,8 @@ target "Self" do
   # it expo-camera 55 disables ALL barcode scanning at runtime.
   # TODO(expo/expo#44491): remove once autolinking registers companion pods here —
   # keeping both will fail pod install with a duplicate pod.
-  pod "ExpoCameraBarcodeScanning", :podspec => "../node_modules/expo-camera/ios/ExpoCameraBarcodeScanning.podspec"
+  barcode_scanning_podspec = File.join(File.dirname(`node --print "require.resolve('expo-camera/package.json', {paths: ['#{__dir__}/..']})"`.strip), "ios", "ExpoCameraBarcodeScanning.podspec")
+  pod "ExpoCameraBarcodeScanning", :podspec => Pathname.new(barcode_scanning_podspec).relative_path_from(Pathname.new(__dir__)).to_s
   # Native module exclusion for E2E testing is handled in react-native.config.cjs
   config = use_native_modules!
   # Skip SelfNFCPassportReader for e2e testing to avoid build issues

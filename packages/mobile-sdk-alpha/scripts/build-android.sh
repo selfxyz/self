@@ -114,7 +114,7 @@ else
         echo "❌ No prebuilt AAR found at dist/android/mobile-sdk-alpha-release.aar"
         echo "💡 To build from source, clone the mobile-sdk-native repository:"
         echo "   node scripts/setup-native-source.cjs"
-        echo "   yarn build:android"
+        echo "   pnpm build:android"
         echo ""
         echo "⚠️  Package may not work without AAR file!"
         exit 1

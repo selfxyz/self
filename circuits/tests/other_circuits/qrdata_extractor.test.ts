@@ -10,11 +10,15 @@ import { testCustomData } from '../utils/aadhaar/generateTestData.js';
 import { generateTestData } from '@selfxyz/new-common/src/testing/genMockAadhaarData.js';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
+import { createRequire } from 'module';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const require = createRequire(import.meta.url);
+const anonAadhaarCircuitsRoot = path.dirname(require.resolve('anon-aadhaar-circuits/package.json'));
+const circomlibRoot = path.dirname(require.resolve('circomlib/package.json'));
 
 const privateKeyPem = fs.readFileSync(
-  path.join(__dirname, '../../node_modules/anon-aadhaar-circuits/assets/testPrivateKey.pem'),
+  path.join(anonAadhaarCircuitsRoot, 'assets/testPrivateKey.pem'),
   'utf8'
 );
 
@@ -29,8 +33,8 @@ describe('Aadhaar QR Data Extractor1', function () {
         logOutput: true,
         include: [
           'node_modules',
-          'node_modules/anon-aadhaar-circuits/src/helpers/constants.circom',
-          'node_modules/circomlib/circuits',
+          path.join(anonAadhaarCircuitsRoot, 'src/helpers/constants.circom'),
+          path.join(circomlibRoot, 'circuits'),
         ],
       }
     );

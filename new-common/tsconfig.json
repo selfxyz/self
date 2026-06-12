@@ -12,7 +12,8 @@
     "resolveJsonModule": true,
     "moduleResolution": "NodeNext",
     "baseUrl": "./",
-    "composite": true
+    "composite": true,
+    "types": ["node"]
   },
   "include": [
     "src/**/*",

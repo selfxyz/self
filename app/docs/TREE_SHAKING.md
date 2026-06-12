@@ -27,25 +27,11 @@ yarn test:tree-shaking
 
 ```bash
 # Analyze import patterns in your codebase
-yarn analyze:tree-shaking:imports
-
-# Analyze web bundle after building
-yarn web:build
-yarn analyze:tree-shaking:web
+pnpm analyze:tree-shaking
 
 # Analyze React Native bundles
-yarn analyze:tree-shaking:android
-yarn analyze:tree-shaking:ios
-```
-
-### 3. View Visual Bundle Analysis
-
-```bash
-# Build web app with visual analysis
-yarn web:build
-
-# Open dist/bundle-analysis.html in your browser
-# This shows a treemap of your bundle with tree shaking results
+pnpm analyze:bundle:android
+pnpm analyze:bundle:ios
 ```
 
 ## Understanding the Results
@@ -283,12 +269,9 @@ yarn analyze:tree-shaking
 ### Platform-Specific Analysis
 
 ```bash
-# Web bundle analysis (after yarn web:build)
-yarn analyze:tree-shaking:web
-
 # Mobile bundle analysis
-yarn analyze:tree-shaking:android
-yarn analyze:tree-shaking:ios
+pnpm analyze:bundle:android
+pnpm analyze:bundle:ios
 ```
 
 ### Comprehensive Testing
@@ -336,14 +319,6 @@ Tree shaking is automatically tested in CI:
 
 ## Understanding Bundle Analysis
 
-### Web Bundle Treemap
-
-After running `yarn web:build`, open `dist/bundle-analysis.html` to see:
-
-- Visual representation of your bundle
-- Which modules are taking up space
-- Tree shaking effectiveness by module
-
 ### React Native Bundle Reports
 
 Bundle reports show:
@@ -363,10 +338,9 @@ Bundle reports show:
 
 ### Bundle Still Large?
 
-1. Run `yarn analyze:tree-shaking:imports` to find star imports
-2. Check the visual bundle analysis for large modules
-3. Consider lazy loading for large features
-4. Review vendor chunk sizes
+1. Run `pnpm analyze:tree-shaking` to find star imports
+2. Consider lazy loading for large features
+3. Review vendor chunk sizes
 
 ### Different Results Between Platforms?
 

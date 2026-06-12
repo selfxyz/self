@@ -7,6 +7,7 @@ import {
   packBytesAndPoseidon,
 } from '@selfxyz/new-common/src/crypto/hash/poseidon.js';
 import { fileURLToPath } from 'url';
+import { CIRCOM_INCLUDE_PATHS } from '../utils/circomIncludePaths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -25,18 +26,10 @@ describe('CustomHasher', function () {
       '../../circuits/tests/utils/packBytesAndPoseidon_tester.circom'
     );
     circuitCustomHasher = await wasm_tester(circuitPathCustomHasher, {
-      include: [
-        'node_modules',
-        'node_modules/@zk-kit/binary-merkle-root.circom/src',
-        'node_modules/circomlib/circuits',
-      ],
+      include: CIRCOM_INCLUDE_PATHS,
     });
     circuitPackBytesAndPoseidon = await wasm_tester(circuitPathPackBytesAndPoseidon, {
-      include: [
-        'node_modules',
-        'node_modules/@zk-kit/binary-merkle-root.circom/src',
-        'node_modules/circomlib/circuits',
-      ],
+      include: CIRCOM_INCLUDE_PATHS,
     });
   });
 

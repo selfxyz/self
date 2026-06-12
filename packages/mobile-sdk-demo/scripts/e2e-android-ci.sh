@@ -43,7 +43,7 @@ cleanup() {
 trap cleanup EXIT
 
 log "Ensuring dependencies are built"
-yarn prebuild
+pnpm prebuild
 
 log "Checking for running emulator"
 serial="$($ADB devices | awk '/^emulator-/{print $1; exit}')"

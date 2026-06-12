@@ -21,6 +21,7 @@ import { genAndInitMockPassportData } from '@selfxyz/new-common/src/testing/genM
 import { hashEndpointWithScope } from '@selfxyz/new-common/src/crypto/scope.js';
 import { fileURLToPath } from 'url';
 import { castFromUUID } from '@selfxyz/new-common/src/circuits/userId.js';
+import { CIRCOM_INCLUDE_PATHS } from '../utils/circomIncludePaths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -67,11 +68,7 @@ describe('Disclose', function () {
     circuit = await wasm_tester(
       path.join(__dirname, '../../circuits/disclose/vc_and_disclose.circom'),
       {
-        include: [
-          'node_modules',
-          'node_modules/@zk-kit/binary-merkle-root.circom/src',
-          'node_modules/circomlib/circuits',
-        ],
+        include: CIRCOM_INCLUDE_PATHS,
       }
     );
 

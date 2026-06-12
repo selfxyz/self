@@ -262,9 +262,9 @@ function printUsage(): void {
   const usage = `Usage: docstring-report [pattern ...] [--write-report <path>] [--label <name>] [--details]
 
 Examples:
-  yarn tsx scripts/docstring-report.ts
-  yarn tsx scripts/docstring-report.ts \"app/src/**/*.{ts,tsx}\"
-  yarn tsx scripts/docstring-report.ts \"app/src/**/*.{ts,tsx}\" --label \"Mobile App\" --write-report docs/coverage/app.json --details`;
+  pnpm tsx scripts/docstring-report.ts
+  pnpm tsx scripts/docstring-report.ts \"app/src/**/*.{ts,tsx}\"
+  pnpm tsx scripts/docstring-report.ts \"app/src/**/*.{ts,tsx}\" --label \"Mobile App\" --write-report docs/coverage/app.json --details`;
   console.log(usage);
 }
 

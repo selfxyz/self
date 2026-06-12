@@ -12,6 +12,7 @@ import { getLeafDscTree } from '@selfxyz/new-common/src/trees/index.js';
 import type { SignatureAlgorithm } from '@selfxyz/new-common/src/foundation/types/document.js';
 import { fullSigAlgs, sigAlgs } from './test_cases.js';
 import { fileURLToPath } from 'url';
+import { CIRCOM_INCLUDE_PATHS } from '../utils/circomIncludePaths.js';
 dotenv.config();
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -44,11 +45,7 @@ testSuite.forEach(({ sigAlg, hashFunction, domainParameter, keyLength }) => {
       circuit = await wasm_tester(
         path.join(__dirname, `../../circuits/dsc/instances/${doc.getDscCircuitName()}.circom`),
         {
-          include: [
-            'node_modules',
-            'node_modules/@zk-kit/binary-merkle-root.circom/src',
-            'node_modules/circomlib/circuits',
-          ],
+          include: CIRCOM_INCLUDE_PATHS,
         }
       );
     });

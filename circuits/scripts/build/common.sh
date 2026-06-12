@@ -79,19 +79,19 @@ build_circuit() {
         --output ${OUTPUT_DIR}/${CIRCUIT_NAME}/
 
     echo -e "${BLUE}Building zkey${NC}"
-    NODE_OPTIONS="--max-old-space-size=40960" yarn snarkjs groth16 setup \
+    NODE_OPTIONS="--max-old-space-size=40960" pnpm exec snarkjs groth16 setup \
         ${OUTPUT_DIR}/${CIRCUIT_NAME}/${CIRCUIT_NAME}.r1cs \
         build/powersOfTau28_hez_final_${POWEROFTAU}.ptau \
         ${OUTPUT_DIR}/${CIRCUIT_NAME}/${CIRCUIT_NAME}.zkey
 
     # Generate and contribute random string
     local RAND_STR=$(get_random_string)
-    echo $RAND_STR | yarn snarkjs zkey contribute \
+    echo $RAND_STR | pnpm exec snarkjs zkey contribute \
         ${OUTPUT_DIR}/${CIRCUIT_NAME}/${CIRCUIT_NAME}.zkey \
         ${OUTPUT_DIR}/${CIRCUIT_NAME}/${CIRCUIT_NAME}_final.zkey
 
     echo -e "${BLUE}Building vkey${NC}"
-    yarn snarkjs zkey export verificationkey \
+    pnpm exec snarkjs zkey export verificationkey \
         ${OUTPUT_DIR}/${CIRCUIT_NAME}/${CIRCUIT_NAME}_final.zkey \
         ${OUTPUT_DIR}/${CIRCUIT_NAME}/${CIRCUIT_NAME}_vkey.json
 
@@ -107,7 +107,7 @@ build_circuit() {
         VERIFIER_FILE_NAME="Verifier_${CIRCUIT_NAME}.sol"
     fi
 
-    yarn snarkjs zkey export solidityverifier \
+    pnpm exec snarkjs zkey export solidityverifier \
         ${OUTPUT_DIR}/${CIRCUIT_NAME}/${CIRCUIT_NAME}_final.zkey \
         ${OUTPUT_DIR}/${CIRCUIT_NAME}/${VERIFIER_FILE_NAME}
 

@@ -134,7 +134,7 @@ function runTest(config, testDir, commonPackagePath) {
   try {
     // Install dependencies
     console.log('   📦 Installing dependencies...');
-    execSync('yarn install', {
+    execSync('pnpm install', {
       cwd: appDir,
       stdio: 'pipe',
     });
@@ -143,14 +143,14 @@ function runTest(config, testDir, commonPackagePath) {
     createWebpackConfig(appDir);
 
     // Install webpack locally for this test
-    execSync('yarn add -D webpack webpack-cli webpack-node-externals', {
+    execSync('pnpm add -D webpack webpack-cli webpack-node-externals', {
       cwd: appDir,
       stdio: 'pipe',
       env: { ...process.env, CI: 'true' }, // Set CI environment to prevent interactive prompts
     });
 
     console.log('   🔨 Building bundle...');
-    execSync('yarn webpack --mode=production', {
+    execSync('pnpm exec webpack --mode=production', {
       cwd: appDir,
       stdio: 'pipe',
       env: { ...process.env, CI: 'true' }, // Set CI environment to prevent interactive prompts
@@ -265,7 +265,7 @@ async function main() {
     // Ensure @selfxyz/common is built
     console.log('\n🔨 Building @selfxyz/common...');
     const commonDir = join(__dirname, '..', '..', 'common');
-    execSync('yarn workspace @selfxyz/common build', {
+    execSync('pnpm --filter @selfxyz/common run build', {
       stdio: 'inherit',
       cwd: join(__dirname, '..', '..'),
     });
