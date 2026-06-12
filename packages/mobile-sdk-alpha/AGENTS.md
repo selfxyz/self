@@ -8,59 +8,59 @@ For the best development experience, run these commands in order:
 
 ```bash
 # Fix linting and formatting issues automatically
-yarn nice
+pnpm nice
 
 # Check types across the codebase
-yarn types
+pnpm types
 
 # Run tests to ensure everything works
-yarn test
+pnpm test
 ```
 
 ### Individual Commands
 
 #### Linting
 
-- Run `yarn lint` to check for linting issues
-- Run `yarn lint:fix` to automatically fix linting issues
+- Run `pnpm lint` to check for linting issues
+- Run `pnpm lint:fix` to automatically fix linting issues
 
 #### Formatting
 
-- Run `yarn fmt` to check if files are properly formatted
-- Run `yarn fmt:fix` to automatically format files with Prettier
-- Run `yarn format` (alias for `yarn nice`) to fix both linting and formatting
+- Run `pnpm fmt` to check if files are properly formatted
+- Run `pnpm fmt:fix` to automatically format files with Prettier
+- Run `pnpm format` (alias for `pnpm nice`) to fix both linting and formatting
 
 #### Type Checking
 
-- Run `yarn types` to check TypeScript types across the codebase
-- Run `yarn typecheck` (alias for `yarn types`) for the same functionality
+- Run `pnpm types` to check TypeScript types across the codebase
+- Run `pnpm typecheck` (alias for `pnpm types`) for the same functionality
 
 #### Building
 
-- Run `yarn build` to build the package for distribution
-- Run `yarn test:build` to build, test, check types, and lint in one command
+- Run `pnpm build` to build the package for distribution
+- Run `pnpm test:build` to build, test, check types, and lint in one command
 
 #### Testing
 
-- Run `yarn test` to run all tests
-- Run `yarn test:build` for a comprehensive check (build + test + types + lint)
+- Run `pnpm test` to run all tests
+- Run `pnpm test:build` for a comprehensive check (build + test + types + lint)
 
 ### Pre-commit Checklist
 
 Before committing your changes, ensure:
 
-1. ✅ Code is properly formatted: `yarn nice`
-2. ✅ Types are valid: `yarn types`
-3. ✅ All tests pass: `yarn test`
-4. ✅ Build succeeds: `yarn build`
+1. ✅ Code is properly formatted: `pnpm nice`
+2. ✅ Types are valid: `pnpm types`
+3. ✅ All tests pass: `pnpm test`
+4. ✅ Build succeeds: `pnpm build`
 
 ### Package Validation
 
 For publishing:
 
-- Run `yarn prepublishOnly` to validate exports and package configuration
-- Run `yarn validate:exports` to check export configuration
-- Run `yarn validate:pkg` to verify package conditions
+- Run `pnpm prepublishOnly` to validate exports and package configuration
+- Run `pnpm validate:exports` to check export configuration
+- Run `pnpm validate:pkg` to verify package conditions
 
 ## Pre-PR Checklist
 
@@ -68,15 +68,15 @@ Before creating a PR for the mobile-sdk-alpha package:
 
 ### Code Quality
 
-- [ ] `yarn nice` passes (fixes linting and formatting)
-- [ ] `yarn types` passes (TypeScript validation)
-- [ ] `yarn test` passes (unit tests)
-- [ ] `yarn build` succeeds (package builds correctly)
+- [ ] `pnpm nice` passes (fixes linting and formatting)
+- [ ] `pnpm types` passes (TypeScript validation)
+- [ ] `pnpm test` passes (unit tests)
+- [ ] `pnpm build` succeeds (package builds correctly)
 
 ### SDK-Specific Validation
 
-- [ ] Exports are properly configured (`yarn validate:exports`)
-- [ ] Package conditions are valid (`yarn validate:pkg`)
+- [ ] Exports are properly configured (`pnpm validate:exports`)
+- [ ] Package conditions are valid (`pnpm validate:pkg`)
 - [ ] No breaking changes to public API (or properly documented)
 - [ ] Migration guide updated (if applicable)
 - [ ] Integration tests pass
@@ -124,22 +124,22 @@ After PR creation:
 
 ```bash
 # Run all checks before PR
-yarn nice
-yarn types
-yarn test
-yarn build
-yarn validate:exports
-yarn validate:pkg
+pnpm nice
+pnpm types
+pnpm test
+pnpm build
+pnpm validate:exports
+pnpm validate:pkg
 ```
 
 ### Post-PR Cleanup
 
 ```bash
 # After addressing review feedback
-yarn nice  # Fix any formatting issues
-yarn test  # Ensure tests still pass
-yarn types # Verify type checking
-yarn build # Confirm build still works
+pnpm nice  # Fix any formatting issues
+pnpm test  # Ensure tests still pass
+pnpm types # Verify type checking
+pnpm build # Confirm build still works
 ```
 
 ## Linear Issue Interaction
@@ -166,7 +166,7 @@ Before implementing SDK work, read `CLAUDE.md` Key Rules for constraints and val
 - This package uses TypeScript with strict type checking
 - ESLint is configured with TypeScript-specific rules
 - Prettier is used for code formatting
-- The `yarn nice` command is the recommended way to fix code quality issues
+- The `pnpm nice` command is the recommended way to fix code quality issues
 - Use the root Prettier and EditorConfig settings for consistency
 - Uses Vitest for testing (not Jest) - see `tests/setup.ts` for configuration
 - React Native is mocked for web compatibility in tests
@@ -180,8 +180,8 @@ When making changes to the SDK API, verify integration:
 ```bash
 # From app directory
 cd ../../app
-yarn build:deps  # Ensures latest SDK is built
-yarn test        # Run app tests that use SDK
+pnpm build:deps  # Ensures latest SDK is built
+pnpm test        # Run app tests that use SDK
 ```
 
 ### Cross-Platform Considerations

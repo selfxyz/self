@@ -6,12 +6,12 @@ import type React from 'react';
 import { Pressable, StyleSheet, Text, View as RNView } from 'react-native';
 
 import { colors, fontFamily } from '@selfxyz/euclid-core';
-import AadhaarLogo from '@selfxyz/mobile-sdk-alpha/svgs/icons/aadhaar.svg';
-import EPassportLogoRounded from '@selfxyz/mobile-sdk-alpha/svgs/icons/epassport_rounded.svg';
-import PassportCameraScanIcon from '@selfxyz/mobile-sdk-alpha/svgs/icons/passport_camera_scan.svg';
-import PlusIcon from '@selfxyz/mobile-sdk-alpha/svgs/icons/plus.svg';
-import SelfLogo from '@selfxyz/mobile-sdk-alpha/svgs/logo.svg';
 
+import AadhaarLogo from '../../../svgs/icons/aadhaar.svg';
+import EPassportLogoRounded from '../../../svgs/icons/epassport_rounded.svg';
+import PassportCameraScanIcon from '../../../svgs/icons/passport_camera_scan.svg';
+import PlusIcon from '../../../svgs/icons/plus.svg';
+import SelfLogo from '../../../svgs/logo.svg';
 import { resolveOnboardingBranch, trackOnboardingStep } from '../../analytics/onboardingFunnel';
 import { BodyText, PerkRail, RoundFlag, View, XStack, YStack } from '../../components';
 import { OnboardingEvents } from '../../constants/analytics';

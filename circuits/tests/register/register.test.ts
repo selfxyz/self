@@ -12,6 +12,7 @@ import { genAndInitMockPassportData } from '@selfxyz/new-common/src/testing/genM
 import type { SignatureAlgorithm } from '@selfxyz/new-common/src/foundation/types/document.js';
 import { fullSigAlgs, sigAlgs } from './test_cases.js';
 import { fileURLToPath } from 'url';
+import { CIRCOM_INCLUDE_PATHS } from '../utils/circomIncludePaths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -60,11 +61,7 @@ testSuite.forEach(
             `../../circuits/register/instances/${doc.getRegisterCircuitName()}.circom`
           ),
           {
-            include: [
-              'node_modules',
-              'node_modules/@zk-kit/binary-merkle-root.circom/src',
-              'node_modules/circomlib/circuits',
-            ],
+            include: CIRCOM_INCLUDE_PATHS,
           }
         );
       });

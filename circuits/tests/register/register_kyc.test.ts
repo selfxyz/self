@@ -12,6 +12,7 @@ import {
   KYC_ID_TYPE_LENGTH,
 } from '@selfxyz/new-common/src/documents/kyc/constants.js';
 import { fileURLToPath } from 'url';
+import { CIRCOM_INCLUDE_PATHS } from '../utils/circomIncludePaths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -27,7 +28,7 @@ describe('REGISTER KYC Circuit Tests', () => {
       {
         verbose: true,
         logOutput: true,
-        include: ['node_modules'],
+        include: CIRCOM_INCLUDE_PATHS,
       }
     );
   });

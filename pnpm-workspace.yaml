@@ -1,0 +1,101 @@
+packages:
+  - app
+  - circuits
+  - common
+  - contracts
+  - new-common
+  - packages/*
+  - prover/tests
+  - scripts/tests
+  - sdk/*
+
+# patch-package and React Native autolinking require a flat node_modules.
+nodeLinker: hoisted
+autoInstallPeers: true
+strictPeerDependencies: false
+
+# Whitelist of packages allowed to run install scripts (pnpm 11 default-denies).
+# Add new entries only after auditing the postinstall script.
+allowBuilds:
+  '@parcel/watcher': true
+  '@scarf/scarf': false
+  '@sentry/cli': true
+  '@swc/core': true
+  '@zk-email/zk-regex-circom': true
+  blake-hash: true
+  esbuild: true
+  keccak: true
+  less: true
+  lmdb: true
+  msgpackr-extract: true
+  node-forge: true
+  node-forge@https://codeload.github.com/remicolin/forge/tar.gz/17a11a632dd0e50343b3b8393245a2696f78afbb: true
+  protobufjs: true
+  react-native-inappbrowser-reborn: true
+  secp256k1: true
+  snarkjs: true
+  snarkjs@https://codeload.github.com/sampritipanda/snarkjs/tar.gz/fef81fc51d17a734637555c6edbd585ecda02d9e: true
+  unrs-resolver: true
+
+# @zk-email/relayer-utils pulls in node-pre-gyp-github via a git ref; pnpm 11's
+# default block on exotic subdeps rejects it. Re-enable once that's removed.
+blockExoticSubdeps: false
+
+patchedDependencies:
+  react-native-svg@15.14.0: pnpm-patches/react-native-svg@15.14.0.patch
+
+# Pin jsdom to v25 across the workspace. jsdom v26+ uses cssstyle v5, which
+# turns CSSStyleDeclaration into a strict Proxy that rejects react-dom v18's
+# numeric-index style writes (TypeError: 'set' on proxy: trap returned falsish).
+overrides:
+  # circom-dl depends on npm circom_tester@0.0.20, but circuits tests rely on
+  # the pinned remicolin fork's getOutput(witness, string[]) API. Force every
+  # hoisted copy to the same implementation until MT-22 migrates to upstream.
+  circom_tester: github:remicolin/circom_tester#81e963cea5fb91ca31126058c8fdc9aafc9d695d
+  jsdom: ^25.0.1
+  # Pin @types/minimatch to v5; v6 is a deprecated stub with no .d.ts files,
+  # which makes TS error "TS2688: Cannot find type definition file for 'minimatch'"
+  # whenever the @types directory gets scanned (e.g. ng-packagr in sdk/qrcode-angular).
+  '@types/minimatch': 5.1.2
+  # Pin prettier to one version across the workspace. Mixed ^3.5.3/^3.8.3 ranges
+  # plus contracts' exact 3.5.3, under nodeLinker: hoisted, let CI and local
+  # resolve different prettier builds, which reformat .sol/.md differently →
+  # recurring format-check drift. prettier-plugin-solidity@2.3.1 peer is >=3.0.0,
+  # so 3.8.3 is safe.
+  prettier: 3.8.3
+  # typechain@8 calls prettier.format() synchronously for codegen, but prettier 3
+  # made format() async (returns a Promise). Under the global pin above, typechain
+  # writes that Promise to disk and crashes with "The data argument ... Received an
+  # instance of Promise". Keep typechain on prettier 2.x, which has a sync format().
+  typechain>prettier: 2.8.8
+  # Ported from yarn `resolutions` during the pnpm migration. Without these,
+  # pnpm allows multiple versions of these packages to co-exist (yarn dedupes
+  # them via `resolutions`), which inflates Metro's bundle ~3x by bundling
+  # duplicate React/RN copies from the .pnpm virtual store.
+  '@babel/core': ^7.28.6
+  '@babel/runtime': ^7.28.6
+  '@noble/curves': 1.9.7
+  '@noble/hashes': 1.8.0
+  '@swc/core': 1.7.36
+  '@tamagui/animations-react-native': 1.144.4
+  '@tamagui/toast': 1.144.4
+  '@types/node': ^22.18.3
+  '@types/react': ^19.2.0
+  '@types/react-dom': ^19.2.0
+  ethereum-cryptography: 3.2.0
+  punycode: npm:punycode.js@^2.3.1
+  react: ^19.2.0
+  react-dom: ^19.2.0
+  react-native: 0.83.9
+  react-native-passkey: ^3.3.3
+  react-native-blur-effect: 1.1.3
+  react-native-webview: 13.16.0
+
+# @selfxyz/euclid lists react-native-blur-effect as a peer, but it is only
+# required by consumers that opt into blur effects. Mark it optional so
+# workspaces that do not install it (e.g. mobile-sdk-demo) don't warn.
+packageExtensions:
+  '@selfxyz/euclid@*':
+    peerDependenciesMeta:
+      react-native-blur-effect:
+        optional: true

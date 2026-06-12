@@ -31,6 +31,7 @@ on:
       - "packages/mobile-sdk-demo/**"
       - "packages/mobile-sdk-alpha/**"
       - ".github/workflows/mobile-sdk-demo-e2e.yml"
+      - ".github/CI_FORCE_RUN"
   pull_request:
     types: [opened, synchronize, reopened, labeled]
     branches:
@@ -41,6 +42,7 @@ on:
       - "packages/mobile-sdk-demo/**"
       - "packages/mobile-sdk-alpha/**"
       - ".github/workflows/mobile-sdk-demo-e2e.yml"
+      - ".github/CI_FORCE_RUN"
   workflow_dispatch:
 
 jobs:
@@ -70,21 +72,10 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - run: corepack enable
-      - run: corepack prepare yarn@4.12.0 --activate
-      - name: Compute .yarnrc.yml hash
-        id: yarnrc-hash
-        uses: ./.github/actions/yarnrc-hash
-      - name: Cache Yarn dependencies
-        uses: ./.github/actions/cache-yarn
+      - name: Cache pnpm store
+        uses: ./.github/actions/cache-pnpm
         with:
-          path: |
-            .yarn/cache
-            .yarn/install-state.gz
-            .yarn/unplugged
-          cache-version: ${{ env.GH_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-${{ steps.yarnrc-hash.outputs.hash }}
-      - name: Toggle Yarn hardened mode for trusted PRs
-        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false }}
-        run: echo "YARN_ENABLE_HARDENED_MODE=0" >> $GITHUB_ENV
+          cache-version: ${{ env.GH_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}
       - name: Generate token for self repositories
         if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
         uses: ./.github/actions/generate-github-token
@@ -99,7 +90,7 @@ jobs:
           timeout_minutes: 10
           max_attempts: 3
           retry_wait_seconds: 5
-          command: yarn install --immutable --silent
+          command: pnpm install --frozen-lockfile --reporter=silent
         env:
           SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
       - name: Install deps (forked PRs - no secrets)
@@ -109,7 +100,7 @@ jobs:
           timeout_minutes: 10
           max_attempts: 3
           retry_wait_seconds: 5
-          command: yarn install --immutable --silent
+          command: pnpm install --frozen-lockfile --reporter=silent
       - name: Free up disk space
         uses: ./.github/actions/free-disk-space
       - name: Setup Java environment
@@ -134,9 +125,9 @@ jobs:
         run: |
           echo "Building dependencies..."
           echo "📦 Building @selfxyz/common to refresh shared types..."
-          yarn workspace @selfxyz/common build || { echo "❌ @selfxyz/common build failed"; exit 1; }
+          pnpm --filter @selfxyz/common build || { echo "❌ @selfxyz/common build failed"; exit 1; }
           echo "✅ @selfxyz/common build succeeded"
-          yarn workspace mobile-sdk-demo run prebuild || { echo "❌ Dependency build failed"; exit 1; }
+          pnpm --filter mobile-sdk-demo run prebuild || { echo "❌ Dependency build failed"; exit 1; }
           echo "✅ Dependencies built successfully"
       - name: Build Android APK
         run: |
@@ -194,21 +185,10 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - run: corepack enable
-      - run: corepack prepare yarn@4.12.0 --activate
-      - name: Compute .yarnrc.yml hash
-        id: yarnrc-hash
-        uses: ./.github/actions/yarnrc-hash
-      - name: Cache Yarn dependencies
-        uses: ./.github/actions/cache-yarn
+      - name: Cache pnpm store
+        uses: ./.github/actions/cache-pnpm
         with:
-          path: |
-            .yarn/cache
-            .yarn/install-state.gz
-            .yarn/unplugged
-          cache-version: ${{ env.GH_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}-${{ steps.yarnrc-hash.outputs.hash }}
-      - name: Toggle Yarn hardened mode for trusted PRs
-        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false }}
-        run: echo "YARN_ENABLE_HARDENED_MODE=0" >> $GITHUB_ENV
+          cache-version: ${{ env.GH_CACHE_VERSION }}-node-${{ env.NODE_VERSION_SANITIZED }}
       - name: Check Java installation
         run: |
           echo "INSTALL_JAVA=false" >> "$GITHUB_ENV"
@@ -238,7 +218,7 @@ jobs:
           timeout_minutes: 10
           max_attempts: 3
           retry_wait_seconds: 5
-          command: yarn install --immutable --silent
+          command: pnpm install --frozen-lockfile --reporter=silent
         env:
           SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
       - name: Install deps (forked PRs - no secrets)
@@ -248,7 +228,7 @@ jobs:
           timeout_minutes: 10
           max_attempts: 3
           retry_wait_seconds: 5
-          command: yarn install --immutable --silent
+          command: pnpm install --frozen-lockfile --reporter=silent
       - name: Validate Maestro test file
         run: |
           [ -f packages/mobile-sdk-demo/tests/e2e/launch.ios.flow.yaml ] || { echo "❌ iOS E2E test file missing"; exit 1; }
@@ -305,9 +285,9 @@ jobs:
         run: |
           echo "Building dependencies..."
           echo "📦 Building @selfxyz/common to refresh shared types..."
-          yarn workspace @selfxyz/common build || { echo "❌ @selfxyz/common build failed"; exit 1; }
+          pnpm --filter @selfxyz/common build || { echo "❌ @selfxyz/common build failed"; exit 1; }
           echo "✅ @selfxyz/common build succeeded"
-          yarn workspace mobile-sdk-demo run prebuild || { echo "❌ Dependency build failed"; exit 1; }
+          pnpm --filter mobile-sdk-demo run prebuild || { echo "❌ Dependency build failed"; exit 1; }
           echo "✅ Dependencies built successfully"
       - name: Install iOS dependencies
         uses: nick-fields/retry@v3

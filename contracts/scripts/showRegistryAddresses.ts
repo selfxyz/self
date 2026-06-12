@@ -14,7 +14,7 @@ async function showRegistryAddresses() {
 
     if (!fs.existsSync(deployedAddressesPath)) {
       console.log("❌ No deployment found for chain 11142220 (Sepolia)");
-      console.log("   Please run: yarn deploy:registry");
+      console.log("   Please run: pnpm deploy:registry");
       return;
     }
 

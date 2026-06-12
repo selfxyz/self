@@ -26,4 +26,4 @@ build_circuit "$CIRCUIT_NAME" "$CIRCUIT_TYPE" "$POWEROFTAU" "$OUTPUT_DIR" "$MAX_
 
 echo ""
 echo -e "${BLUE}To generate circuit inputs, run:${NC}"
-echo -e "${YELLOW}  yarn tsx circuits/gcp_jwt_verifier/prepare.ts example_jwt.txt circuit_inputs.json${NC}"
+echo -e "${YELLOW}  pnpm tsx circuits/gcp_jwt_verifier/prepare.ts example_jwt.txt circuit_inputs.json${NC}"

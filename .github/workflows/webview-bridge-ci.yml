@@ -11,6 +11,7 @@ on:
       - "packages/webview-bridge/**"
       - ".github/workflows/webview-bridge-ci.yml"
       - ".github/actions/**"
+      - ".github/CI_FORCE_RUN"
   push:
     branches: [dev, staging, main]
     paths:
@@ -19,6 +20,7 @@ on:
       - "packages/webview-bridge/**"
       - ".github/workflows/webview-bridge-ci.yml"
       - ".github/actions/**"
+      - ".github/CI_FORCE_RUN"
 
 jobs:
   build:
@@ -27,13 +29,13 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Install dependencies
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
       - name: Build common
-        run: yarn workspace @selfxyz/common build
+        run: pnpm --filter @selfxyz/common build
       - name: Build mobile-sdk-alpha
-        run: yarn workspace @selfxyz/mobile-sdk-alpha build
+        run: pnpm --filter @selfxyz/mobile-sdk-alpha build
       - name: Build
-        run: yarn workspace @selfxyz/webview-bridge build
+        run: pnpm --filter @selfxyz/webview-bridge build
 
   lint:
     runs-on: ubuntu-latest
@@ -41,13 +43,13 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Install dependencies
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
       - name: Build common
-        run: yarn workspace @selfxyz/common build
+        run: pnpm --filter @selfxyz/common build
       - name: Build mobile-sdk-alpha
-        run: yarn workspace @selfxyz/mobile-sdk-alpha build
+        run: pnpm --filter @selfxyz/mobile-sdk-alpha build
       - name: Run linter
-        run: yarn workspace @selfxyz/webview-bridge lint
+        run: pnpm --filter @selfxyz/webview-bridge lint
 
   format:
     runs-on: ubuntu-latest
@@ -55,9 +57,9 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Install dependencies
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
       - name: Check Prettier formatting
-        run: yarn workspace @selfxyz/webview-bridge fmt
+        run: pnpm --filter @selfxyz/webview-bridge fmt
 
   types:
     runs-on: ubuntu-latest
@@ -65,13 +67,13 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Install dependencies
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
       - name: Build common
-        run: yarn workspace @selfxyz/common build
+        run: pnpm --filter @selfxyz/common build
       - name: Build mobile-sdk-alpha
-        run: yarn workspace @selfxyz/mobile-sdk-alpha build
+        run: pnpm --filter @selfxyz/mobile-sdk-alpha build
       - name: Typecheck
-        run: yarn workspace @selfxyz/webview-bridge types
+        run: pnpm --filter @selfxyz/webview-bridge types
 
   test:
     runs-on: ubuntu-latest
@@ -79,6 +81,11 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Install dependencies
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
+      - name: Check for nested require() in tests
+        uses: ./.github/actions/check-nested-requires
+        with:
+          paths: |
+            packages/webview-bridge/src/__tests__/
       - name: Test
-        run: yarn workspace @selfxyz/webview-bridge test
+        run: pnpm --filter @selfxyz/webview-bridge test

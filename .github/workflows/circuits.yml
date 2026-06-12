@@ -30,7 +30,7 @@ jobs:
               echo "Error: Failed to diff against base branch"
               exit 1
             }
-            if echo "$CHANGED_FILES" | grep -qE "^circuits/"; then
+            if echo "$CHANGED_FILES" | grep -qE "^(circuits/|\.github/CI_FORCE_RUN$)"; then
               echo "should_run=true" >> $GITHUB_OUTPUT
               echo "Running for dev - circuits files changed"
             else
@@ -149,23 +149,19 @@ jobs:
       - name: Enable Corepack
         run: corepack enable
 
-      - name: Cache Yarn dependencies
-        uses: ./.github/actions/cache-yarn
+      - name: Cache pnpm store
+        uses: ./.github/actions/cache-pnpm
         with:
-          path: |
-            .yarn/cache
-            node_modules
-            circuits/node_modules
           cache-version: v1
 
-      - name: Install Yarn dependencies
-        uses: ./.github/actions/yarn-install
+      - name: Install dependencies
+        uses: ./.github/actions/pnpm-install
         with:
           working_directory: circuits
 
       - name: Run lint
-        run: yarn workspace @selfxyz/circuits lint
+        run: pnpm --filter @selfxyz/circuits lint
       - name: Run Tests (Circuits)
         env:
           FULL_TEST_SUITE: false
-        run: yarn workspace @selfxyz/circuits test
+        run: pnpm --filter @selfxyz/circuits test

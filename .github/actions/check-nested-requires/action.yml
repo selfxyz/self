@@ -1,0 +1,35 @@
+name: Check Nested Requires
+description: Fail CI if tests contain nested require() patterns that can trigger OOMs.
+
+inputs:
+  paths:
+    description: Newline-separated list of paths to scan.
+    required: true
+  pattern:
+    description: Extended regular expression to search for.
+    required: false
+    default: "require\\(['\"]react(-native)?['\"]\\)"
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        CHECK_PATHS: ${{ inputs.paths }}
+        CHECK_PATTERN: ${{ inputs.pattern }}
+      run: |
+        set -euo pipefail
+
+        paths=()
+        while IFS= read -r path; do
+          if [[ -n "$path" ]]; then
+            paths+=("$path")
+          fi
+        done <<< "$CHECK_PATHS"
+
+        if grep -rE "$CHECK_PATTERN" -- "${paths[@]}" 2>/dev/null; then
+          echo "❌ Found nested require() patterns that cause OOM in CI"
+          exit 1
+        fi
+
+        echo "✅ No nested require() patterns found"

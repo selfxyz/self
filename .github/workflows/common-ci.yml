@@ -9,18 +9,14 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v6
-      - name: Cache Yarn dependencies
-        uses: ./.github/actions/cache-yarn
+      - name: Cache pnpm store
+        uses: ./.github/actions/cache-pnpm
         with:
-          path: |
-            .yarn/cache
-            node_modules
-            common/node_modules
           cache-version: v1
       - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
       - name: Build dependencies
-        run: yarn workspace @selfxyz/mobile-app run build:deps
+        run: pnpm --filter @selfxyz/mobile-app run build:deps
       - name: Cache build artifacts
         uses: actions/cache/save@v4
         with:
@@ -35,18 +31,14 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v6
-      - name: Cache Yarn dependencies
-        uses: ./.github/actions/cache-yarn
+      - name: Cache pnpm store
+        uses: ./.github/actions/cache-pnpm
         with:
-          path: |
-            .yarn/cache
-            node_modules
-            common/node_modules
           cache-version: v1
       - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
       - name: Run linter
-        run: yarn workspace @selfxyz/common lint
+        run: pnpm --filter @selfxyz/common lint
 
   type-check:
     runs-on: ubuntu-latest
@@ -55,16 +47,12 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v6
-      - name: Cache Yarn dependencies
-        uses: ./.github/actions/cache-yarn
+      - name: Cache pnpm store
+        uses: ./.github/actions/cache-pnpm
         with:
-          path: |
-            .yarn/cache
-            node_modules
-            common/node_modules
           cache-version: v1
       - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
       - name: Restore build artifacts
         id: restore-build-deps
         uses: actions/cache/restore@v4
@@ -76,13 +64,13 @@ jobs:
           fail-on-cache-miss: false
       - name: Build @selfxyz/common (fallback on cache miss)
         if: steps.restore-build-deps.outputs.cache-hit != 'true'
-        run: yarn workspace @selfxyz/common build
+        run: pnpm --filter @selfxyz/common build
       - name: Build @selfxyz/mobile-sdk-alpha
-        run: yarn workspace @selfxyz/mobile-sdk-alpha build
+        run: pnpm --filter @selfxyz/mobile-sdk-alpha build
       - name: Build @selfxyz/qrcode
-        run: yarn workspace @selfxyz/qrcode build:deps
-      - name: Yarn types
-        run: yarn types
+        run: pnpm --filter @selfxyz/qrcode build:deps
+      - name: Run pnpm types
+        run: pnpm types
 
   test-common:
     runs-on: ubuntu-latest
@@ -91,16 +79,12 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v6
-      - name: Cache Yarn dependencies
-        uses: ./.github/actions/cache-yarn
+      - name: Cache pnpm store
+        uses: ./.github/actions/cache-pnpm
         with:
-          path: |
-            .yarn/cache
-            node_modules
-            common/node_modules
           cache-version: v1
       - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
       - name: Restore build artifacts
         id: restore-build-deps
         uses: actions/cache/restore@v4
@@ -112,8 +96,8 @@ jobs:
           fail-on-cache-miss: false
       - name: Build @selfxyz/common (fallback on cache miss)
         if: steps.restore-build-deps.outputs.cache-hit != 'true'
-        run: yarn workspace @selfxyz/common build
+        run: pnpm --filter @selfxyz/common build
       - name: Build @selfxyz/mobile-sdk-alpha
-        run: yarn workspace @selfxyz/mobile-sdk-alpha build
+        run: pnpm --filter @selfxyz/mobile-sdk-alpha build
       - name: Run @selfxyz/common tests
-        run: yarn workspace @selfxyz/common test
+        run: pnpm --filter @selfxyz/common test

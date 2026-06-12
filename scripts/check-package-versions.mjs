@@ -66,7 +66,6 @@ const tamaguiPackages = [
   '@tamagui/animations-css',
   '@tamagui/animations-react-native',
   '@tamagui/toast',
-  '@tamagui/vite-plugin',
   '@tamagui/types',
 ];
 
