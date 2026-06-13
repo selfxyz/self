@@ -2,6 +2,7 @@ import chai, { expect, assert } from 'chai';
 import path from 'path';
 import { wasm as wasm_tester } from 'circom_tester';
 import { fileURLToPath } from 'url';
+import { CIRCOM_INCLUDE_PATHS } from '../utils/circomIncludePaths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -78,7 +79,7 @@ describe('DateIsLessChecker Circuit Test', function () {
     circuit = await wasm_tester(
       path.join(__dirname, '../../circuits/tests/utils/isOlderThan_tester.circom'),
       {
-        include: ['node_modules'],
+        include: CIRCOM_INCLUDE_PATHS,
       }
     );
   });

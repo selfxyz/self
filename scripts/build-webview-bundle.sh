@@ -23,7 +23,7 @@ done
 # Step 1: Build webview-app
 if [ "$SKIP_BUILD" = false ]; then
   echo "Building webview-app..."
-  (cd "$REPO_ROOT" && yarn workspace @selfxyz/webview-app build)
+  (cd "$REPO_ROOT" && pnpm --filter @selfxyz/webview-app build)
 else
   echo "Skipping build (--skip-build)"
 fi

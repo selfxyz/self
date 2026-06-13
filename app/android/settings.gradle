@@ -1,5 +1,5 @@
 pluginManagement {
-  includeBuild("../node_modules/@react-native/gradle-plugin")
+  includeBuild("../../node_modules/@react-native/gradle-plugin")
   includeBuild(new File(
     ["node", "--print", "require.resolve('expo-modules-autolinking/package.json', { paths: [require.resolve('expo/package.json')] })"]
       .execute(null, rootDir).text.trim()
@@ -10,15 +10,15 @@ plugins {
   id("expo-autolinking-settings")
 }
 extensions.configure(com.facebook.react.ReactSettingsExtension){ ex ->
-  ex.autolinkLibrariesFromCommand(['yarn','exec','react-native','config'])
+  ex.autolinkLibrariesFromCommand(['pnpm','exec','react-native','config'])
 }
-rootProject.name = 'OpenPassport'
+rootProject.name = 'Self'
 
 expoAutolinking.exclude = ['@sentry/react-native']
 expoAutolinking.useExpoModules()
 
 include ':app'
-includeBuild('../node_modules/@react-native/gradle-plugin')
+includeBuild('../../node_modules/@react-native/gradle-plugin')
 include ':react-native-passport-reader'
 project(':react-native-passport-reader').projectDir = new File(rootProject.projectDir, './react-native-passport-reader/android')
 include ':passportreader'

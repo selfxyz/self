@@ -31,6 +31,7 @@ on:
       - "packages/mobile-sdk-alpha/**"
       - ".github/workflows/mobile-ci.yml"
       - ".github/actions/**"
+      - ".github/CI_FORCE_RUN"
   workflow_dispatch: {}
 
 concurrency:
@@ -62,37 +63,31 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - name: Enable Corepack
         run: corepack enable
-      - name: Activate Yarn 4.12.0
-        run: corepack prepare yarn@4.12.0 --activate
-      - name: Cache Yarn
-        uses: ./.github/actions/cache-yarn
+      - name: Cache pnpm store
+        uses: ./.github/actions/cache-pnpm
         with:
-          path: |
-            .yarn/cache
-            node_modules
-            app/node_modules
           cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}
       - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
       - name: Cache Built Dependencies
         id: built-deps
         uses: ./.github/actions/cache-built-deps
         with:
           cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}
       - name: Build dependencies (cache miss)
-        # Temporarily disabled due to `yarn types` failures when cache is used.
+        # Temporarily disabled due to `pnpm types` failures when cache is used.
         # if: steps.built-deps.outputs.cache-hit != 'true'
         run: |
           echo "Cache miss for built dependencies. Building now..."
-          yarn workspace @selfxyz/mobile-app run build:deps
+          pnpm --filter @selfxyz/mobile-app run build:deps
       - name: Run linter
-        run: yarn lint
+        run: pnpm lint
         working-directory: ./app
       - name: Run prettier
-        run: yarn fmt
+        run: pnpm fmt
         working-directory: ./app
       - name: Check App Types
-        run: yarn types
+        run: pnpm types
         working-directory: ./app
 
   test:
@@ -120,18 +115,12 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
       - name: Enable Corepack
         run: corepack enable
-      - name: Activate Yarn 4.12.0
-        run: corepack prepare yarn@4.12.0 --activate
-      - name: Cache Yarn
-        uses: ./.github/actions/cache-yarn
+      - name: Cache pnpm store
+        uses: ./.github/actions/cache-pnpm
         with:
-          path: |
-            .yarn/cache
-            node_modules
-            app/node_modules
           cache-version: ${{ env.GH_CACHE_VERSION }}-${{ env.NODE_VERSION_SANITIZED }}
       - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
       - name: Cache Built Dependencies
         id: built-deps
         uses: ./.github/actions/cache-built-deps
@@ -153,7 +142,7 @@ jobs:
         # TODO: Re-enable cache after fixing: if: steps.built-deps.outputs.cache-hit != 'true'
         run: |
           echo "Building dependencies (cache temporarily disabled for debugging)..."
-          yarn workspace @selfxyz/mobile-app run build:deps
+          pnpm --filter @selfxyz/mobile-app run build:deps
           # Verify build completed successfully
           if [ ! -f "packages/mobile-sdk-alpha/dist/cjs/index.cjs" ] || [ ! -f "common/dist/cjs/index.cjs" ]; then
             echo "❌ Build failed - required files missing after build"
@@ -170,7 +159,7 @@ jobs:
             echo "Missing files:"
             [ ! -f "packages/mobile-sdk-alpha/dist/cjs/index.cjs" ] && echo "  - packages/mobile-sdk-alpha/dist/cjs/index.cjs"
             [ ! -f "common/dist/cjs/index.cjs" ] && echo "  - common/dist/cjs/index.cjs"
-            yarn workspace @selfxyz/mobile-app run build:deps
+            pnpm --filter @selfxyz/mobile-app run build:deps
             # Verify build completed successfully
             if [ ! -f "packages/mobile-sdk-alpha/dist/cjs/index.cjs" ] || [ ! -f "common/dist/cjs/index.cjs" ]; then
               echo "❌ Forced build failed - required files still missing"
@@ -185,8 +174,10 @@ jobs:
             echo "✅ All required dependency files exist"
           fi
       - name: Check for nested require() in tests
-        run: node scripts/check-test-requires.cjs
-        working-directory: ./app
+        uses: ./.github/actions/check-nested-requires
+        with:
+          paths: |
+            app/tests/
       - name: App Tests
         env:
           # Increase Node.js memory to prevent hermes-parser WASM memory errors
@@ -203,6 +194,6 @@ jobs:
             exit 1
           fi
           echo "✅ All dependencies verified, running tests..."
-          # Run jest through yarn to avoid the build:deps step since CI already built dependencies
-          yarn test:ci
+          # Run jest through pnpm to avoid the build:deps step since CI already built dependencies
+          pnpm test:ci
         working-directory: ./app

@@ -661,17 +661,17 @@
     "pubkeys/serialized_dsc_tree.json"
   ],
   "scripts": {
-    "build": "tsup && yarn build:types && yarn postbuild",
+    "build": "tsup && pnpm build:types && pnpm postbuild",
     "postbuild": "node ./scripts/postBuild.mjs",
     "build:types": "tsc -p tsconfig.json --emitDeclarationOnly && tsc -p tsconfig.cjs.json --emitDeclarationOnly",
     "build:watch": "tsup --watch",
     "format": "prettier --write .",
     "lint": "prettier --check .",
-    "lint:imports": "yarn eslint --fix .",
-    "lint:imports:check": "yarn eslint .",
-    "nice": "yarn format && yarn lint:imports",
-    "nice:check": "yarn lint && yarn lint:imports:check",
-    "prepublishOnly": "yarn build",
+    "lint:imports": "pnpm eslint --fix .",
+    "lint:imports:check": "pnpm eslint .",
+    "nice": "pnpm format && pnpm lint:imports",
+    "nice:check": "pnpm lint && pnpm lint:imports:check",
+    "prepublishOnly": "pnpm build",
     "test": "vitest run",
     "test:exports": "node scripts/validateExports.js && node scripts/testExports.js",
     "test:scope": "vitest run tests/scope.test.ts",
@@ -730,7 +730,6 @@
     "typescript": "^5.9.3",
     "vitest": "^2.1.8"
   },
-  "packageManager": "yarn@4.12.0",
   "engines": {
     "node": ">=22 <23"
   }

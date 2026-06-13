@@ -23,10 +23,10 @@
     "react-native.config.cjs"
   ],
   "scripts": {
-    "build": "yarn workspace @selfxyz/webview-app run build && yarn copy-assets && tsup",
+    "build": "pnpm --filter @selfxyz/webview-app build && pnpm copy-assets && tsup",
     "copy-assets": "mkdir -p ./assets/self-wallet && cp -r ../webview-app/dist/. ./assets/self-wallet/ && node scripts/strip-embedded-sri.cjs",
-    "prepublishOnly": "yarn build",
-    "test": "yarn copy-assets && tsup && vitest run",
+    "prepublishOnly": "pnpm build",
+    "test": "pnpm copy-assets && tsup && vitest run",
     "typecheck": "tsc --noEmit",
     "types": "tsup"
   },
@@ -35,9 +35,9 @@
   },
   "devDependencies": {
     "@selfxyz/webview-app": "workspace:^",
-    "@types/react": "^18.3.4",
-    "react": "^18.3.1",
-    "react-native": "0.76.9",
+    "@types/react": "^19.2.0",
+    "react": "^19.2.0",
+    "react-native": "0.83.9",
     "react-native-biometrics": "^3.0.1",
     "react-native-fs": "^2.20.0",
     "react-native-keychain": "^9.2.3",
@@ -48,8 +48,8 @@
     "vitest": "^2.1.8"
   },
   "peerDependencies": {
-    "react": "^18.0.0",
-    "react-native": ">=0.72.0",
+    "react": "^19.0.0",
+    "react-native": ">=0.83.0",
     "react-native-biometrics": "^3.0.1",
     "react-native-fs": "^2.20.0",
     "react-native-keychain": ">=8.2.0 <11",

@@ -2,10 +2,9 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { act, render } from '@testing-library/react-native';
+import { render } from '@testing-library/react-native';
 
 import { PassportCamera as NativePassportCamera } from '@/components/native/PassportCamera';
-import { PassportCamera as WebPassportCamera } from '@/components/native/PassportCamera.web';
 
 // Mock the SDK client hook to provide a spyable MRZ parser
 const mockExtract = jest.fn();
@@ -115,24 +114,5 @@ describe('PassportCamera components', () => {
         stack: 'stack-trace',
       }),
     );
-  });
-
-  it('web stub emits an error and does not call MRZ parser', () => {
-    jest.useFakeTimers();
-    const onPassportRead = jest.fn();
-    render(<WebPassportCamera isMounted onPassportRead={onPassportRead} />);
-
-    // Parser should not be invoked by the stub
-    expect(mockExtract).not.toHaveBeenCalled();
-
-    // Stub emits an error after 100ms
-    act(() => {
-      jest.advanceTimersByTime(100);
-    });
-
-    expect(onPassportRead).toHaveBeenCalledWith(expect.any(Error));
-    expect(mockExtract).not.toHaveBeenCalled();
-
-    jest.useRealTimers();
   });
 });

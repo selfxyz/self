@@ -21,6 +21,7 @@ on:
       - "packages/mobile-sdk-alpha/**"
       - ".github/workflows/mobile-bundle-analysis.yml"
       - ".github/actions/**"
+      - ".github/CI_FORCE_RUN"
   pull_request:
     types: [opened, synchronize, reopened, labeled]
     branches:
@@ -32,6 +33,7 @@ on:
       - "packages/mobile-sdk-alpha/**"
       - ".github/workflows/mobile-bundle-analysis.yml"
       - ".github/actions/**"
+      - ".github/CI_FORCE_RUN"
   workflow_dispatch:
 
 jobs:
@@ -56,13 +58,9 @@ jobs:
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: ${{ env.NODE_VERSION }}
-      - name: Cache Yarn
-        uses: ./.github/actions/cache-yarn
+      - name: Cache pnpm store
+        uses: ./.github/actions/cache-pnpm
         with:
-          path: |
-            .yarn/cache
-            node_modules
-            app/node_modules
           cache-version: node-${{ env.NODE_VERSION_SANITIZED }}
       - name: Cache Bundler
         uses: ./.github/actions/cache-bundler
@@ -93,11 +91,17 @@ jobs:
           workspace: ${{ env.WORKSPACE }}
         env:
           SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
+      - name: Check for duplicate dependency versions
+        shell: bash
+        run: pnpm dedupe --check
       - name: Build dependencies
         shell: bash
-        run: yarn workspace @selfxyz/common build
+        run: pnpm --filter @selfxyz/common build
       - name: Run Android analysis
-        run: yarn analyze:bundle:android
+        env:
+          # Prevent V8 heap OOM during Metro bundle generation on larger dependency graphs
+          NODE_OPTIONS: --max-old-space-size=8192
+        run: pnpm analyze:bundle:android
         working-directory: ./app
 
   analyze-ios:
@@ -127,13 +131,9 @@ jobs:
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: ${{ env.NODE_VERSION }}
-      - name: Cache Yarn
-        uses: ./.github/actions/cache-yarn
+      - name: Cache pnpm store
+        uses: ./.github/actions/cache-pnpm
         with:
-          path: |
-            .yarn/cache
-            node_modules
-            app/node_modules
           cache-version: node-${{ env.NODE_VERSION_SANITIZED }}
       - name: Cache Bundler
         uses: ./.github/actions/cache-bundler
@@ -178,9 +178,15 @@ jobs:
           workspace: ${{ env.WORKSPACE }}
         env:
           SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
+      - name: Check for duplicate dependency versions
+        shell: bash
+        run: pnpm dedupe --check
       - name: Build dependencies
         shell: bash
-        run: yarn workspace @selfxyz/common build
+        run: pnpm --filter @selfxyz/common build
       - name: Run iOS analysis
-        run: yarn analyze:bundle:ios
+        env:
+          # Keep parity with Android analysis to avoid platform-specific heap regressions
+          NODE_OPTIONS: --max-old-space-size=8192
+        run: pnpm analyze:bundle:ios
         working-directory: ./app

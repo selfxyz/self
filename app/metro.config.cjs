@@ -14,6 +14,48 @@ const { assetExts, sourceExts } = defaultConfig.resolver;
 const projectRoot = __dirname;
 const workspaceRoot =
   findYarnWorkspaceRoot(__dirname) || path.resolve(__dirname, '..');
+const escapeRegExp = value => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const moduleResolutionRoots = [projectRoot, workspaceRoot];
+const resolveInstalledFile = (packageName, relativePath) => {
+  const fallbackPath = path.resolve(
+    projectRoot,
+    'node_modules',
+    packageName,
+    relativePath,
+  );
+
+  try {
+    const packageJson = require.resolve(`${packageName}/package.json`, {
+      paths: moduleResolutionRoots,
+    });
+    return path.resolve(path.dirname(packageJson), relativePath);
+  } catch {
+    try {
+      const packageEntry = require.resolve(packageName, {
+        paths: moduleResolutionRoots,
+      });
+      return path.resolve(path.dirname(packageEntry), relativePath);
+    } catch {
+      return fallbackPath;
+    }
+  }
+};
+// Block workspace-root React/RN copies only when app/node_modules has its own.
+// This matters in the yarn-style layout where both can co-exist. Under pnpm's
+// hoisted layout, react-native lives at the workspace root as a symlink into
+// node_modules/.pnpm — that IS the canonical single copy. Duplicate-version
+// prevention now happens at install time via pnpm-workspace.yaml `overrides`
+// and the `pnpm dedupe --check` step in mobile-bundle-analysis.yml.
+const reactDupePackages = ['react', 'react-dom', 'react-native', 'scheduler'];
+const hasAppLocalReactCopies = reactDupePackages
+  .map(name => path.resolve(projectRoot, 'node_modules', name))
+  .every(modulePath => fs.existsSync(modulePath));
+const workspaceReactBlockList = hasAppLocalReactCopies
+  ? reactDupePackages.map(
+      name =>
+        new RegExp(`^${escapeRegExp(workspaceRoot)}/node_modules/${name}(/|$)`),
+    )
+  : [];
 
 // Expo's metro-config resolves the entry relative to the monorepo root, so it
 // rewrites Android's `/.expo/.virtual-metro-entry.bundle` to this segment
@@ -72,6 +114,23 @@ const config = {
       require.resolve('react-native-svg-transformer/react-native'),
     disableImportExportTransform: true,
     inlineRequires: true,
+    // Pin asset registration to react-native's own @react-native/assets-registry
+    // instance. If a second copy gets hoisted into app/node_modules (e.g. via a
+    // dependency pulling a different react-native version), assets register in
+    // one registry while Image.resolveAssetSource reads the other, and every
+    // static image renders blank.
+    assetRegistryPath: require.resolve(
+      '@react-native/assets-registry/registry',
+      {
+        paths: [
+          path.dirname(
+            require.resolve('react-native/package.json', {
+              paths: [projectRoot],
+            }),
+          ),
+        ],
+      },
+    ),
   },
 
   resolver: {
@@ -84,20 +143,13 @@ const config = {
       /.*\/dist\/esm\/package\.json$/,
       /.*\/dist\/cjs\/package\.json$/,
       /.*\/build\/package\.json$/,
-      // Prevent duplicate React/React Native - block workspace root versions and use app's versions
-      // Use precise regex patterns to avoid blocking packages like react-native-get-random-values
-      new RegExp(
-        `^${workspaceRoot.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/node_modules/react(/|$)`,
-      ),
-      new RegExp(
-        `^${workspaceRoot.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/node_modules/react-dom(/|$)`,
-      ),
-      new RegExp(
-        `^${workspaceRoot.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/node_modules/react-native(/|$)`,
-      ),
-      new RegExp(
-        `^${workspaceRoot.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/node_modules/scheduler(/|$)`,
-      ),
+      // Block workspace-root and .pnpm-nested duplicates of React/RN/scheduler.
+      ...workspaceReactBlockList,
+      // @types/react-native-web declares `"react-native": "*"`. The root
+      // resolution pins it to the app's RN so it dedupes today, but if that pin
+      // ever drifts a second RN lands here. Block it so Metro can never pull a
+      // divergent copy into the graph regardless of the installed version.
+      new RegExp('@types/react-native-web/node_modules/react-native(/|$)'),
       new RegExp('packages/mobile-sdk-alpha/node_modules/react(/|$)'),
       new RegExp('packages/mobile-sdk-alpha/node_modules/react-dom(/|$)'),
       new RegExp('packages/mobile-sdk-alpha/node_modules/react-native(/|$)'),
@@ -250,10 +302,7 @@ const config = {
 
       // Fix @turnkey/encoding to use CommonJS instead of ESM
       if (moduleName === '@turnkey/encoding') {
-        const filePath = path.resolve(
-          projectRoot,
-          'node_modules/@turnkey/encoding/dist/index.js',
-        );
+        const filePath = resolveInstalledFile('@turnkey/encoding', 'index.js');
         return {
           type: 'sourceFile',
           filePath,
@@ -263,9 +312,9 @@ const config = {
       // Fix @turnkey/encoding submodules to use CommonJS
       if (moduleName.startsWith('@turnkey/encoding/')) {
         const subpath = moduleName.replace('@turnkey/encoding/', '');
-        const filePath = path.resolve(
-          projectRoot,
-          `node_modules/@turnkey/encoding/dist/${subpath}.js`,
+        const filePath = resolveInstalledFile(
+          '@turnkey/encoding',
+          `${subpath}.js`,
         );
         return {
           type: 'sourceFile',
@@ -275,9 +324,9 @@ const config = {
 
       // Fix @turnkey/api-key-stamper to use CommonJS instead of ESM
       if (moduleName === '@turnkey/api-key-stamper') {
-        const filePath = path.resolve(
-          projectRoot,
-          'node_modules/@turnkey/api-key-stamper/dist/index.js',
+        const filePath = resolveInstalledFile(
+          '@turnkey/api-key-stamper',
+          'index.js',
         );
         return {
           type: 'sourceFile',
@@ -288,9 +337,9 @@ const config = {
       // Fix @turnkey/api-key-stamper dynamic imports by resolving submodules statically
       if (moduleName.startsWith('@turnkey/api-key-stamper/')) {
         const subpath = moduleName.replace('@turnkey/api-key-stamper/', '');
-        const filePath = path.resolve(
-          projectRoot,
-          `node_modules/@turnkey/api-key-stamper/dist/${subpath}`,
+        const filePath = resolveInstalledFile(
+          '@turnkey/api-key-stamper',
+          subpath,
         );
         return {
           type: 'sourceFile',
@@ -301,11 +350,7 @@ const config = {
       // Fix viem dynamic import resolution
       if (moduleName === 'viem') {
         try {
-          // Viem uses package exports, so we need to resolve to the actual file path
-          const viemPath = path.resolve(
-            projectRoot,
-            'node_modules/viem/_cjs/index.js',
-          );
+          const viemPath = resolveInstalledFile('viem', '_cjs/index.js');
           return {
             type: 'sourceFile',
             filePath: viemPath,

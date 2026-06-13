@@ -23,7 +23,8 @@
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "baseUrl": "."
+    "baseUrl": ".",
+    "types": []
   },
   "include": ["src/**/*", "src/lib/components/animations/animations.d.ts"],
   "exclude": ["node_modules", "dist"],

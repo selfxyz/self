@@ -23,7 +23,7 @@ const SUPPORTED_PLATFORMS = Object.values(PLATFORMS);
 const FILE_PATHS = {
   PACKAGE_JSON: '../package.json',
   VERSION_JSON: '../version.json',
-  IOS_INFO_PLIST: '../ios/OpenPassport/Info.plist',
+  IOS_INFO_PLIST: '../ios/Self/Info.plist',
   IOS_PROJECT_PBXPROJ: '../ios/Self.xcodeproj/project.pbxproj',
   ANDROID_BUILD_GRADLE: '../android/app/build.gradle',
 };
@@ -114,24 +114,24 @@ function validatePlatform(platform) {
 function displayUsageAndExit() {
   console.error('Usage: node mobile-deploy-confirm.cjs <ios|android|both>');
   console.error('');
-  console.error('Recommended: Use yarn commands instead:');
+  console.error('Recommended: Use pnpm commands instead:');
   console.error(
-    '  yarn mobile-deploy              # Deploy to both platforms (GitHub runner)',
+    '  pnpm mobile-deploy              # Deploy to both platforms (GitHub runner)',
   );
   console.error(
-    '  yarn mobile-deploy:ios          # Deploy to iOS only (GitHub runner)',
+    '  pnpm mobile-deploy:ios          # Deploy to iOS only (GitHub runner)',
   );
   console.error(
-    '  yarn mobile-deploy:android      # Deploy to Android only (GitHub runner)',
+    '  pnpm mobile-deploy:android      # Deploy to Android only (GitHub runner)',
   );
   console.error(
-    '  yarn mobile-local-deploy        # Deploy to both platforms (local fastlane)',
+    '  pnpm mobile-local-deploy        # Deploy to both platforms (local fastlane)',
   );
   console.error(
-    '  yarn mobile-local-deploy:ios    # Deploy to iOS only (local fastlane)',
+    '  pnpm mobile-local-deploy:ios    # Deploy to iOS only (local fastlane)',
   );
   console.error(
-    '  yarn mobile-local-deploy:android # Deploy to Android only (local fastlane)',
+    '  pnpm mobile-local-deploy:android # Deploy to Android only (local fastlane)',
   );
   console.error('');
   console.error('Direct script usage:');
@@ -476,13 +476,13 @@ function promptConfirmation() {
 // Deployment Functions
 
 /**
- * Performs yarn reinstall to ensure clean dependencies
+ * Performs pnpm reinstall to ensure clean dependencies
  */
-function performYarnReinstall() {
+function performReinstall() {
   console.log(
-    `\n${CONSOLE_SYMBOLS.BROOM} Performing yarn reinstall to ensure clean dependencies...`,
+    `\n${CONSOLE_SYMBOLS.BROOM} Performing pnpm reinstall to ensure clean dependencies...`,
   );
-  execSync('yarn reinstall', {
+  execSync('pnpm reinstall', {
     stdio: 'inherit',
     cwd: join(__dirname, '..'),
   });
@@ -552,7 +552,7 @@ async function executeLocalFastlaneDeployment(platform) {
   let deploymentSuccessful = false;
 
   try {
-    performYarnReinstall();
+    performReinstall();
 
     const commands = getFastlaneCommands(platform);
 

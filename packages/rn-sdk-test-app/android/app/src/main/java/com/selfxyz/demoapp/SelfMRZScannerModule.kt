@@ -80,7 +80,7 @@ class SelfMRZScannerModule(
             return
         }
 
-        val currentActivity = currentActivity
+        val currentActivity = reactApplicationContext.currentActivity
         if (currentActivity == null) {
             promise.reject("ACTIVITY_DOES_NOT_EXIST", "Activity doesn't exist")
             return

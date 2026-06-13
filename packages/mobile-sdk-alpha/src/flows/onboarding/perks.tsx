@@ -4,9 +4,8 @@
 
 import type React from 'react';
 
-import GoogleLogo from '@selfxyz/mobile-sdk-alpha/svgs/icons/google.svg';
-import UsatLogo from '@selfxyz/mobile-sdk-alpha/svgs/icons/usat.svg';
-
+import GoogleLogo from '../../../svgs/icons/google.svg';
+import UsatLogo from '../../../svgs/icons/usat.svg';
 import type { EligiblePerksItem } from '../../components/data-display/EligiblePerksCard';
 import { getPerkRecordsForIdType, type PerkId, PERKS as SHARED_PERKS } from '../../data/perks';
 

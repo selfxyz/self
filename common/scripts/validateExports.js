@@ -155,9 +155,7 @@ async function runValidation() {
     // Verify build directory exists
     if (!existsSync(BUILD_DIR)) {
       console.error(`❌ Build directory not found: ${BUILD_DIR}`);
-      console.error(
-        '   Please run the build process first (e.g., "npm run build" or "yarn build")'
-      );
+      console.error('   Please run the build process first (e.g., "pnpm build")');
       process.exit(1);
     }
 

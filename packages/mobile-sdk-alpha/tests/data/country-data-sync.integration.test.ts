@@ -9,8 +9,8 @@
  * the staging API response. It gracefully skips when network is unavailable
  * to avoid CI flakiness from transient network issues.
  *
- * To run integration tests only: yarn test --grep="integration"
- * To skip integration tests: yarn test --grep="^(?!.*integration)"
+ * To run integration tests only: pnpm test --grep="integration"
+ * To skip integration tests: pnpm test --grep="^(?!.*integration)"
  */
 
 import { describe, expect, it } from 'vitest';

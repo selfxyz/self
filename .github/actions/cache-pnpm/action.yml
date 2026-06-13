@@ -1,0 +1,46 @@
+name: Cache PNPM
+
+description: Cache the pnpm content-addressable store. Do not cache node_modules — pnpm uses `.modules.yaml` as an up-to-date marker and will skip re-linking workspace packages if a partial node_modules tree is restored.
+
+inputs:
+  lock-file:
+    description: Path to pnpm-lock.yaml
+    required: false
+    default: pnpm-lock.yaml
+  cache-version:
+    description: Additional cache version segment
+    required: false
+    default: v2
+
+outputs:
+  cache-hit:
+    description: Whether an exact match was found for the cache key
+    value: ${{ steps.cache.outputs.cache-hit }}
+
+runs:
+  using: "composite"
+  steps:
+    - id: get-hash
+      name: Hash lock file
+      shell: bash
+      run: |
+        if [ -f "${{ inputs.lock-file }}" ]; then
+          echo "hash=$(shasum -a 256 "${{ inputs.lock-file }}" | awk '{ print $1 }')" >> $GITHUB_OUTPUT
+        else
+          echo "::warning::Lock file '${{ inputs.lock-file }}' not found."
+          echo "hash=no-lock-file" >> $GITHUB_OUTPUT
+        fi
+    - id: cache
+      name: Cache pnpm store
+      uses: actions/cache@v4
+      with:
+        # Default pnpm store locations on Linux/macOS. If PNPM_HOME is set or
+        # pnpm changes its default store path in a future release, update
+        # these paths or invoke `pnpm store path --silent` dynamically.
+        path: |
+          ~/.local/share/pnpm/store
+          ~/Library/pnpm/store
+        key: ${{ runner.os }}-pnpm-store-${{ inputs.cache-version }}-${{ steps.get-hash.outputs.hash }}
+        restore-keys: |
+          ${{ runner.os }}-pnpm-store-${{ inputs.cache-version }}-
+          ${{ runner.os }}-pnpm-store-

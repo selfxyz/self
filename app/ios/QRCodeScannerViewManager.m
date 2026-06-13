@@ -2,7 +2,7 @@
 
 //
 //  QRCodeScannerViewManager.m
-//  OpenPassport
+//  Self
 //
 //  Created by Rémi Colin on 07/02/2025.
 //

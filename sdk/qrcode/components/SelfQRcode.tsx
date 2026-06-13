@@ -51,8 +51,7 @@ const SelfQRcode = ({
   showStatusText = true,
   variant = 'hybrid',
 }: SelfQRcodeProps) => {
-  // darkMode prop is accepted in the type for back-compat but always ignored.
-  const darkMode = false;
+  const effectiveDarkMode = false;
   const [proofStep, setProofStep] = useState(QRcodeSteps.WAITING_FOR_MOBILE);
   const [sessionId, setSessionId] = useState('');
   const socketRef = useRef<ReturnType<typeof initWebSocket> | null>(null);
@@ -115,7 +114,7 @@ const SelfQRcode = ({
         proofStep={proofStep}
         qrValue={qrValue}
         selfApp={selfAppRef.current}
-        darkMode={darkMode}
+        darkMode={effectiveDarkMode}
       />
     );
   }
@@ -126,7 +125,7 @@ const SelfQRcode = ({
         proofStep={proofStep}
         qrValue={qrValue}
         size={size}
-        darkMode={darkMode}
+        darkMode={effectiveDarkMode}
         selfApp={selfAppRef.current}
       />
     );
@@ -134,7 +133,7 @@ const SelfQRcode = ({
 
   return (
     <div
-      style={qrWrapperStyle(proofStep, showBorder, darkMode)}
+      style={qrWrapperStyle(proofStep, showBorder, effectiveDarkMode)}
       role="img"
       aria-label="Self authentication QR code"
     >
