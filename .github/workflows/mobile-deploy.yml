@@ -637,7 +637,7 @@ jobs:
         run: |
           echo "🏗️ Building SDK dependencies..."
           cd ${{ env.APP_PATH }}
-          pnpm --filter @selfxyz/mobile-app run build:deps --silent || { echo "❌ Dependency build failed"; exit 1; }
+          pnpm --filter @selfxyz/mobile-app run build:deps || { echo "❌ Dependency build failed"; exit 1; }
           echo "✅ Dependencies built successfully"
 
       # act won't work with macos, but you can test with `bundle exec fastlane ios ...`
@@ -1107,7 +1107,7 @@ jobs:
         run: |
           echo "🏗️ Building SDK dependencies..."
           cd ${{ env.APP_PATH }}
-          pnpm --filter @selfxyz/mobile-app run build:deps --silent || { echo "❌ Dependency build failed"; exit 1; }
+          pnpm --filter @selfxyz/mobile-app run build:deps || { echo "❌ Dependency build failed"; exit 1; }
           echo "✅ Dependencies built successfully"
 
       # rn-sdk's Android module declares compileOnly xyz.self.sdk:shared-android,
