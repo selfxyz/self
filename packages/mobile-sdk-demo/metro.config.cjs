@@ -14,19 +14,16 @@ const projectRoot = __dirname;
 const workspaceRoot = findYarnWorkspaceRoot(__dirname) || path.resolve(__dirname, '../..');
 const escapeRegExp = value => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-// Block workspace-root React/RN copies only when this app's node_modules has its
-// own. That matters in the yarn-style layout where both can co-exist. Under
-// pnpm's hoisted layout (CI), React lives at the workspace root as the single
-// canonical copy, so blocking it unconditionally leaves nothing to resolve.
+// Block a workspace-root React/RN copy only when this app's node_modules carries
+// its own copy of that same package. That matters in the yarn-style layout where
+// both can co-exist. Under pnpm's hoisted layout (CI), React lives at the
+// workspace root as the single canonical copy, so blocking it leaves nothing to
+// resolve. Decided per-package: a partial-local install (e.g. local react/RN but
+// hoisted scheduler) still blocks the duplicates it actually has.
 const reactDupePackages = ['react', 'react-dom', 'react-native', 'scheduler'];
-const hasAppLocalReactCopies = reactDupePackages
-  .map(name => path.resolve(projectRoot, 'node_modules', name))
-  .every(modulePath => fs.existsSync(modulePath));
-const workspaceReactBlockList = hasAppLocalReactCopies
-  ? reactDupePackages.map(
-      name => new RegExp(`^${escapeRegExp(workspaceRoot)}/node_modules/${name}(/|$)`),
-    )
-  : [];
+const workspaceReactBlockList = reactDupePackages
+  .filter(name => fs.existsSync(path.resolve(projectRoot, 'node_modules', name)))
+  .map(name => new RegExp(`^${escapeRegExp(workspaceRoot)}/node_modules/${name}(/|$)`));
 
 /**
  * Modern Metro configuration for demo app using native workspace capabilities
