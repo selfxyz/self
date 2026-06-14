@@ -25,14 +25,14 @@
   ],
   "scripts": {
     "build": "ng-packagr -p ng-package.json",
-    "build:deps": "yarn workspaces foreach --from @selfxyz/qrcode-angular --topological-dev --recursive run build",
+    "build:deps": "pnpm -r --filter @selfxyz/qrcode-angular... run build",
     "build:watch": "ng-packagr -p ng-package.json --watch",
     "format": "prettier --write .",
     "lint": "ng lint",
     "lint:fix": "ng lint --fix",
-    "nice": "yarn format && yarn lint",
-    "prepublishOnly": "yarn build",
-    "test": "ng test"
+    "nice": "pnpm format && pnpm lint",
+    "prepublishOnly": "pnpm build",
+    "test": "echo \"(no tests in @selfxyz/qrcode-angular)\""
   },
   "dependencies": {
     "angularx-qrcode": "^20.0.0",

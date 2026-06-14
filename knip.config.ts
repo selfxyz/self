@@ -23,9 +23,6 @@ const config: KnipConfig = {
     'app/android/**',
     'app/ios/**',
 
-    // Web build artifacts
-    'app/web/**',
-
     // Test setup files
     '**/__setup__/**',
     '**/__mocks__/**',
@@ -67,7 +64,6 @@ const config: KnipConfig = {
     'app': {
       entry: [
         'index.js',
-        'web/main.tsx'
       ],
       ignore: [
         // React Native config files
@@ -83,10 +79,6 @@ const config: KnipConfig = {
         // Platform-specific animations
         '@tamagui/animations-css',
         '@tamagui/animations-react-native',
-
-        // Web-specific dependencies
-        'react-native-web',
-        'react-native-svg-web',
 
         // Development tools
         'expo-modules-core',

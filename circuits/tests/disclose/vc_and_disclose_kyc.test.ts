@@ -16,6 +16,7 @@ import { expect } from 'chai';
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
+import { CIRCOM_INCLUDE_PATHS } from '../utils/circomIncludePaths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -65,11 +66,7 @@ describe('VC_AND_DISCLOSE KYC Circuit Tests', () => {
       {
         verbose: true,
         logOutput: true,
-        include: [
-          'node_modules',
-          'node_modules/@zk-kit/binary-merkle-root.circom/src',
-          'node_modules/circomlib/circuits',
-        ],
+        include: CIRCOM_INCLUDE_PATHS,
       }
     );
   });

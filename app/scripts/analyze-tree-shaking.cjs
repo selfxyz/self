@@ -14,120 +14,6 @@ function formatBytes(bytes) {
   return Math.round((bytes / Math.pow(1024, i)) * 100) / 100 + ' ' + sizes[i];
 }
 
-function analyzeWebBundle() {
-  console.log('🕸️  Analyzing Web Bundle for Tree Shaking');
-  console.log('=========================================');
-
-  const distDir = join(__dirname, '..', 'web', 'dist');
-  const assetsDir = join(distDir, 'assets');
-
-  if (!existsSync(distDir)) {
-    console.log('❌ Web build not found. Run "yarn web:build" first.');
-    return;
-  }
-
-  // Analyze chunk sizes - check both dist/ and dist/assets/
-  let files = [];
-  if (existsSync(assetsDir)) {
-    files = readdirSync(assetsDir)
-      .filter(f => f.endsWith('.js'))
-      .map(f => join('assets', f));
-  }
-  if (files.length === 0) {
-    files = readdirSync(distDir).filter(f => f.endsWith('.js'));
-  }
-
-  console.log('\n📦 JavaScript Chunks:');
-  let totalSize = 0;
-
-  files.forEach(file => {
-    const filePath = join(distDir, file);
-    const size = statSync(filePath).size;
-    totalSize += size;
-
-    // Categorize chunks - use just the filename for categorization
-    const fileName = basename(file);
-    let category = '📄';
-    if (fileName.includes('vendor-')) category = '📚';
-    if (fileName.includes('screens-')) category = '🖥️ ';
-    if (fileName.includes('index')) category = '🏠';
-
-    // Show filename with size, highlighting large chunks
-    const sizeInfo = formatBytes(size);
-    const isLarge = size > 500 * 1024; // > 500KB
-    const displayName = fileName.padEnd(40);
-    const sizeDisplay = isLarge ? `⚠️  ${sizeInfo}` : sizeInfo;
-
-    console.log(`${category} ${displayName} ${sizeDisplay}`);
-  });
-
-  console.log(`\n📊 Total JavaScript: ${formatBytes(totalSize)}`);
-
-  // Check for source maps (indicates tree shaking info)
-  const sourceMaps = files.filter(f => basename(f).endsWith('.map'));
-  if (sourceMaps.length > 0) {
-    console.log(`📍 Source maps available: ${sourceMaps.length} files`);
-  }
-
-  // Analyze vendor chunks for common imports
-  const vendorChunks = files.filter(f => basename(f).includes('vendor-'));
-  if (vendorChunks.length > 0) {
-    console.log('\n🔍 Vendor Chunk Analysis:');
-    vendorChunks.forEach(chunk => {
-      const size = statSync(join(distDir, chunk)).size;
-      const chunkName = basename(chunk);
-      console.log(`   ${chunkName}: ${formatBytes(size)}`);
-    });
-  }
-
-  // Look for @selfxyz/common usage patterns
-  console.log('\n🌳 Tree Shaking Indicators:');
-
-  try {
-    // Check if chunks are split (good for tree shaking)
-    const nonVendorChunks = files.filter(f => !basename(f).includes('vendor-'));
-    if (nonVendorChunks.length > 1) {
-      console.log('✅ Code splitting enabled - helps with tree shaking');
-    }
-
-    // Check for multiple vendor chunks (indicates good chunking strategy)
-    if (vendorChunks.length > 1) {
-      console.log('✅ Multiple vendor chunks - good separation of concerns');
-    }
-
-    // Identify large chunks that could benefit from tree shaking
-    const largeChunks = files.filter(f => {
-      const size = statSync(join(distDir, f)).size;
-      return size > 1024 * 1024; // > 1MB
-    });
-
-    if (largeChunks.length > 0) {
-      console.log('\n⚠️  LARGE CHUNKS DETECTED:');
-      largeChunks.forEach(chunk => {
-        const size = statSync(join(distDir, chunk)).size;
-        const chunkName = basename(chunk);
-        console.log(
-          `   ${chunkName}: ${formatBytes(size)} - Consider tree shaking optimization`,
-        );
-      });
-    }
-
-    // Size-based heuristics
-    if (totalSize < 2 * 1024 * 1024) {
-      // Less than 2MB
-      console.log(
-        '✅ Reasonable total bundle size - tree shaking likely working',
-      );
-    } else {
-      console.log(
-        `⚠️  Large total bundle size (${formatBytes(totalSize)}) - significant tree shaking potential`,
-      );
-    }
-  } catch (error) {
-    console.log('❌ Could not analyze bundle details:', error.message);
-  }
-}
-
 function analyzeReactNativeBundle(platform) {
   console.log(`📱 Analyzing React Native Bundle (${platform})`);
   console.log('============================================');
@@ -146,7 +32,7 @@ function analyzeReactNativeBundle(platform) {
       require('os').tmpdir(),
       'react-native-bundle-visualizer',
     );
-    const reportPath = join(tmpDir, 'OpenPassport', 'output', 'explorer.html');
+    const reportPath = join(tmpDir, 'Self', 'output', 'explorer.html');
 
     if (existsSync(reportPath)) {
       console.log(`\n📊 Detailed bundle report: ${reportPath}`);
@@ -591,9 +477,6 @@ function main() {
   console.log('==============================');
 
   switch (command) {
-    case 'web':
-      analyzeWebBundle();
-      break;
     case 'android':
     case 'ios':
       analyzeReactNativeBundle(command);
@@ -604,24 +487,19 @@ function main() {
     case 'all':
     default:
       compareImportPatterns();
-      console.log('\n');
-      analyzeWebBundle();
       break;
   }
 
   if (!command || command === 'all') {
     console.log('\n🚀 NEXT STEPS:');
     console.log(
-      '1. Run "yarn test:tree-shaking" to test different import patterns',
+      '1. Run "pnpm test:tree-shaking" to test different import patterns',
     );
     console.log(
-      '2. Run "yarn analyze:tree-shaking android" for mobile bundle analysis',
+      '2. Run "pnpm analyze:tree-shaking android" for mobile bundle analysis',
     );
     console.log(
-      '3. Run "yarn analyze:tree-shaking web" after "yarn web:build"',
-    );
-    console.log(
-      '4. Check the generated reports for optimization opportunities',
+      '3. Check the generated reports for optimization opportunities',
     );
   }
 }
@@ -631,7 +509,6 @@ if (require.main === module) {
 }
 
 module.exports = {
-  analyzeWebBundle,
   analyzeReactNativeBundle,
   compareImportPatterns,
 };

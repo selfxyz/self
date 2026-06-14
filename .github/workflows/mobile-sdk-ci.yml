@@ -6,6 +6,7 @@ on:
       - "packages/mobile-sdk-alpha/**"
       - ".github/workflows/mobile-sdk-ci.yml"
       - ".github/actions/**"
+      - ".github/CI_FORCE_RUN"
 
 jobs:
   # Build dependencies once and cache for other jobs
@@ -14,12 +15,12 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
       - name: Build dependencies
         shell: bash
         run: |
-          yarn workspace @selfxyz/common build
-          yarn workspace @selfxyz/mobile-sdk-alpha build
+          pnpm --filter @selfxyz/common build
+          pnpm --filter @selfxyz/mobile-sdk-alpha build
       - name: Cache build artifacts
         uses: ./.github/actions/cache-mobile-sdk-build
         with:
@@ -32,7 +33,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
       - name: Restore build artifacts
         id: restore-build
         uses: ./.github/actions/cache-mobile-sdk-build
@@ -43,10 +44,10 @@ jobs:
       - name: Build dependencies (fallback on cache miss)
         if: steps.restore-build.outputs.cache-hit != 'true'
         run: |
-          yarn workspace @selfxyz/common build
-          yarn workspace @selfxyz/mobile-sdk-alpha build
+          pnpm --filter @selfxyz/common build
+          pnpm --filter @selfxyz/mobile-sdk-alpha build
       - name: Run linter
-        run: yarn workspace @selfxyz/mobile-sdk-alpha lint
+        run: timeout 20m pnpm --filter @selfxyz/mobile-sdk-alpha exec eslint .
 
   format:
     runs-on: ubuntu-latest
@@ -54,7 +55,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
       - name: Restore build artifacts
         id: restore-build
         uses: ./.github/actions/cache-mobile-sdk-build
@@ -65,10 +66,10 @@ jobs:
       - name: Build dependencies (fallback on cache miss)
         if: steps.restore-build.outputs.cache-hit != 'true'
         run: |
-          yarn workspace @selfxyz/common build
-          yarn workspace @selfxyz/mobile-sdk-alpha build
+          pnpm --filter @selfxyz/common build
+          pnpm --filter @selfxyz/mobile-sdk-alpha build
       - name: Check Prettier formatting
-        run: yarn workspace @selfxyz/mobile-sdk-alpha prettier --check .
+        run: pnpm --filter @selfxyz/mobile-sdk-alpha exec prettier --check .
 
   types:
     runs-on: ubuntu-latest
@@ -76,7 +77,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
       - name: Restore build artifacts
         id: restore-build
         uses: ./.github/actions/cache-mobile-sdk-build
@@ -87,10 +88,10 @@ jobs:
       - name: Build dependencies (fallback on cache miss)
         if: steps.restore-build.outputs.cache-hit != 'true'
         run: |
-          yarn workspace @selfxyz/common build
-          yarn workspace @selfxyz/mobile-sdk-alpha build
+          pnpm --filter @selfxyz/common build
+          pnpm --filter @selfxyz/mobile-sdk-alpha build
       - name: Type checking
-        run: yarn workspace @selfxyz/mobile-sdk-alpha types
+        run: timeout 20m pnpm --filter @selfxyz/mobile-sdk-alpha types
 
   test:
     runs-on: ubuntu-latest
@@ -98,7 +99,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Install Dependencies
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
       - name: Restore build artifacts
         id: restore-build
         uses: ./.github/actions/cache-mobile-sdk-build
@@ -109,7 +110,7 @@ jobs:
       - name: Build dependencies (fallback on cache miss)
         if: steps.restore-build.outputs.cache-hit != 'true'
         run: |
-          yarn workspace @selfxyz/common build
-          yarn workspace @selfxyz/mobile-sdk-alpha build
+          pnpm --filter @selfxyz/common build
+          pnpm --filter @selfxyz/mobile-sdk-alpha build
       - name: Run tests
-        run: yarn workspace @selfxyz/mobile-sdk-alpha test
+        run: pnpm --filter @selfxyz/mobile-sdk-alpha test

@@ -77,6 +77,13 @@ export default defineConfig({
     },
   ],
   define: { global: 'globalThis' },
+  resolve: {
+    // The deprecated npm `crypto` placeholder package (a transitive dep of
+    // `@zk-email/jwt-tx-builder-helpers`) has no entry point and breaks
+    // vite's commonjs resolver under pnpm's strict layout. Redirect bare
+    // `crypto` requires to the browser polyfill.
+    alias: [{ find: /^crypto$/, replacement: 'crypto-browserify' }],
+  },
   build: {
     target: ['chrome90', 'safari15.4'],
     rollupOptions: { output: { manualChunks: undefined } },

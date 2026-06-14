@@ -49,21 +49,21 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsup && yarn build:types && yarn postbuild",
+    "build": "tsup && pnpm build:types && pnpm postbuild",
     "postbuild": "node ./scripts/postBuild.mjs",
-    "build:deps": "yarn workspaces foreach --from @selfxyz/qrcode --topological-dev --recursive run build",
+    "build:deps": "pnpm -r --filter @selfxyz/qrcode... run build",
     "build:types": "tsc -p tsconfig.json --emitDeclarationOnly",
     "build:watch": "tsup --watch",
     "format": "prettier --write .",
-    "install-sdk": "yarn workspace focus @selfxyz/qrcode",
+    "install-sdk": "pnpm install --filter @selfxyz/qrcode...",
     "lint": "prettier --check .",
     "lint:imports": "eslint . --fix",
     "lint:imports:check": "eslint .",
-    "nice": "yarn format && yarn lint:imports",
-    "nice:check": "yarn lint && yarn lint:imports:check",
-    "prepublishOnly": "yarn build",
+    "nice": "pnpm format && pnpm lint:imports",
+    "nice:check": "pnpm lint && pnpm lint:imports:check",
+    "prepublishOnly": "pnpm build",
     "test": "echo 'no tests found'",
-    "types": "yarn workspace @selfxyz/sdk-common build && tsc -p tsconfig.json --noEmit"
+    "types": "pnpm --filter @selfxyz/sdk-common build && tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
     "@selfxyz/sdk-common": "workspace:^",

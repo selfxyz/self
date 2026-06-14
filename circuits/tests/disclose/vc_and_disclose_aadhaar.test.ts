@@ -26,6 +26,7 @@ import { createCircuitInputGenerator } from '@selfxyz/new-common/src/circuits/ge
 import { extractField } from '@selfxyz/new-common/src/documents/aadhaar/constants.js';
 import { unpackReveal } from '@selfxyz/new-common/src/circuits/outputs/format.js';
 import type { AadhaarData } from '@selfxyz/new-common/src/foundation/types/document.js';
+import { CIRCOM_INCLUDE_PATHS } from '../utils/circomIncludePaths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const generator = createCircuitInputGenerator();
@@ -108,7 +109,7 @@ describe(' VC and Disclose Aadhaar Circuit Tests', function () {
       {
         verbose: true,
         logOutput: true,
-        include: ['node_modules', 'node_modules/circomlib/circuits'],
+        include: CIRCOM_INCLUDE_PATHS,
       }
     );
   });

@@ -1,0 +1,14 @@
+diff --git a/common/cpp/react/renderer/components/rnsvg/RNSVGLayoutableShadowNode.cpp b/common/cpp/react/renderer/components/rnsvg/RNSVGLayoutableShadowNode.cpp
+index 3e55dc7..a1b4075 100644
+--- a/common/cpp/react/renderer/components/rnsvg/RNSVGLayoutableShadowNode.cpp
++++ b/common/cpp/react/renderer/components/rnsvg/RNSVGLayoutableShadowNode.cpp
+@@ -28,7 +28,7 @@ void RNSVGLayoutableShadowNode::setZeroDimensions() {
+   // properties like width when viewBox scale is set.
+   auto style = yogaNode_.style();
+-  style.setDimension(yoga::Dimension::Width, yoga::StyleLength::points(0));
+-  style.setDimension(yoga::Dimension::Height, yoga::StyleLength::points(0));
++  style.setDimension(yoga::Dimension::Width, yoga::StyleSizeLength::points(0));
++  style.setDimension(yoga::Dimension::Height, yoga::StyleSizeLength::points(0));
+   yogaNode_.setStyle(style);
+ }
+ 

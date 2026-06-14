@@ -13,6 +13,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
+    "types": ["vite/client"],
     "baseUrl": ".",
     "paths": {
       "@selfxyz/mobile-sdk-alpha": ["../mobile-sdk-alpha/src/index.ts"],

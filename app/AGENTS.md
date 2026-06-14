@@ -2,13 +2,13 @@
 
 ## Prerequisites
 
-- Node.js 22.x (`nvm use`), Yarn via Corepack (`corepack enable && corepack prepare yarn@stable --activate`)
+- Node.js 22.x (`nvm use`), pnpm via Corepack (`corepack enable` — version is pinned in root `package.json`)
 - macOS/iOS:
   - Xcode and Command Line Tools, CocoaPods (Ruby installed)
   - From `app/ios`: `bundle install && bundle exec pod install` or from `app`: `npx pod-install`
 - Android:
   - Android SDK + Emulator, ANDROID_HOME configured, JDK 17 (set JAVA_HOME)
-- Helpful: Watchman (macOS), `yarn install` at repo root
+- Helpful: Watchman (macOS), `pnpm install` at repo root
 
 ## Pre-PR Checklist
 
@@ -16,17 +16,17 @@ Before creating a PR for the mobile app:
 
 ### Code Quality
 
-- [ ] `yarn nice` passes (fixes linting and formatting)
-- [ ] `yarn types` passes (TypeScript validation)
-- [ ] `yarn test` passes (unit tests)
+- [ ] `pnpm nice` passes (fixes linting and formatting)
+- [ ] `pnpm types` passes (TypeScript validation)
+- [ ] `pnpm test` passes (unit tests)
 - [ ] No nested `require('react-native')` calls in tests (causes OOM in CI) - check with `grep -r "require('react-native')" app/tests/` and verify no nested patterns
 - [ ] App builds successfully on target platforms
 
 ### Mobile-Specific Validation
 
-- [ ] iOS build succeeds: `yarn ios` (simulator)
-- [ ] Android build succeeds: `yarn android` (emulator/device)
-- [ ] Web build succeeds: `yarn web`
+- [ ] iOS build succeeds: `pnpm ios` (simulator)
+- [ ] Android build succeeds: `pnpm android` (emulator/device)
+- [ ] Web build succeeds: `pnpm web`
 - [ ] No sensitive data in logs (PII, credentials, tokens)
 - [ ] Environment variables properly configured (check `.env` setup)
 - [ ] E2E tests run in CI (not required locally - CI will run E2E tests automatically)
@@ -69,16 +69,16 @@ After PR creation:
 
 ```bash
 # Fix formatting and linting issues
-yarn nice
+pnpm nice
 
 # Lint source files
-yarn lint
+pnpm lint
 
 # Check types
-yarn types
+pnpm types
 
 # Run tests
-yarn test
+pnpm test
 ```
 
 ## Workflow Commands
@@ -87,45 +87,46 @@ yarn test
 
 ```bash
 # Run all checks before PR
-yarn nice
-yarn lint
-yarn types
-yarn test
-yarn ios  # Test iOS build
-yarn android  # Test Android build
+pnpm nice
+pnpm lint
+pnpm types
+pnpm test
+pnpm ios  # Test iOS build
+pnpm android  # Test Android build
 ```
 
 ### Post-PR Cleanup
 
 ```bash
 # After addressing review feedback
-yarn nice  # Fix any formatting issues
-yarn test  # Ensure tests still pass
-yarn types # Verify type checking
+pnpm nice  # Fix any formatting issues
+pnpm test  # Ensure tests still pass
+pnpm types # Verify type checking
 ```
 
 ## Running the App
 
-- `yarn ios` - Run on iOS simulator (builds dependencies automatically)
-- `yarn android` - Run on Android emulator/device (builds dependencies automatically)
-- `yarn web` - Run web version
+- `pnpm ios` - Run on iOS simulator (builds dependencies automatically)
+- `pnpm android` - Run on Android emulator/device (builds dependencies automatically)
+- `pnpm web` - Run web version
 
 ### Development Tips
 
-- Use `yarn build:deps` to build all workspace dependencies before running the app
-- For iOS: Ensure Xcode scheme is set to "OpenPassport" (see memory)
-- For Android: Ensure emulator is running or device is connected before `yarn android`
-- Metro bundler starts automatically; use `yarn start` to run it separately
+- Use `pnpm build:deps` to build all workspace dependencies before running the app
+- For iOS: Ensure Xcode scheme is set to "Self"
+- For iOS device builds: the project pins `DEVELOPMENT_TEAM` to the Self team (`5B29R5LYHQ`); contributors outside that team must override it locally in Xcode (Signing & Capabilities) — simulator builds are unaffected
+- For Android: Ensure emulator is running or device is connected before `pnpm android`
+- Metro bundler starts automatically; use `pnpm start` to run it separately
 
 #### Workspace-Root Preflight (do not bypass)
 
-`yarn ios`, `yarn start`, and `yarn start:clean` run `node scripts/preflight-workspace-config.cjs` before Metro. The preflight fails fast if a stray `react-native.config.{js,cjs,mjs}` or `metro.config.{js,cjs,mjs}` exists at the **monorepo root**. Either file at the workspace root hijacks the RN CLI / Metro project-root anchor (the CLI walks up from CWD and stops at the first config it finds), making Metro resolve `./index` against the repo root instead of `app/`. The failure mode is a confusing `Metro resolver failed for module "./index"` that's easy to misdiagnose.
+`pnpm ios`, `pnpm start`, and `pnpm start:clean` run `node scripts/preflight-workspace-config.cjs` before Metro. The preflight fails fast if a stray `react-native.config.{js,cjs,mjs}` or `metro.config.{js,cjs,mjs}` exists at the **monorepo root**. Either file at the workspace root hijacks the RN CLI / Metro project-root anchor (the CLI walks up from CWD and stops at the first config it finds), making Metro resolve `./index` against the repo root instead of `app/`. The failure mode is a confusing `Metro resolver failed for module "./index"` that's easy to misdiagnose.
 
 These files are easy to miss locally because broad personal gitignore rules (e.g. `*.config.*`) can hide them from `git status`. Do **not** bypass the preflight by running `react-native start` / `npx expo start` directly — fix the underlying config (delete the stray file at the root). See `app/scripts/preflight-workspace-config.cjs` for the exact patterns checked.
 
 #### iOS Simulator Selection
 
-`yarn ios` now selects a simulator by UDID, shuts down stale booted simulators, explicitly boots the chosen device, waits for boot completion, then starts the React Native iOS build against that simulator.
+`pnpm ios` now selects a simulator by UDID, shuts down stale booted simulators, explicitly boots the chosen device, waits for boot completion, then starts the React Native iOS build against that simulator.
 
 | Env var | Purpose |
 |---|---|
@@ -145,15 +146,15 @@ Default device priority when no env vars are set:
 Examples:
 
 ```bash
-yarn ios
-IOS_SIMULATOR_DEVICE="iPhone 16 Pro" yarn ios
-IOS_SIMULATOR_RUNTIME="18.4" yarn ios
-IOS_SIMULATOR_DEVICE="iPhone 15" IOS_SIMULATOR_RUNTIME="18-4" yarn ios
+pnpm ios
+IOS_SIMULATOR_DEVICE="iPhone 16 Pro" pnpm ios
+IOS_SIMULATOR_RUNTIME="18.4" pnpm ios
+IOS_SIMULATOR_DEVICE="iPhone 15" IOS_SIMULATOR_RUNTIME="18-4" pnpm ios
 ```
 
 If a pinned simulator cannot be found, the launcher exits with a readable error that includes the available iPhone simulators for the matching runtimes.
 
-The launcher currently shuts down all booted simulators before booting the selected one. If you keep other simulators open for unrelated work, relaunch them after `yarn ios`.
+The launcher currently shuts down all booted simulators before booting the selected one. If you keep other simulators open for unrelated work, relaunch them after `pnpm ios`.
 
 ## E2E Testing
 
@@ -180,10 +181,10 @@ If you need to run E2E tests locally for debugging:
 
 ```bash
 # iOS E2E tests
-yarn test:e2e:ios
+pnpm test:e2e:ios
 
 # Android E2E tests
-yarn test:e2e:android
+pnpm test:e2e:android
 
 # Or use the local test script (handles setup automatically)
 ./scripts/test-e2e-local.sh ios
@@ -227,16 +228,16 @@ The app uses Fastlane for iOS and Android deployment.
 
 ```bash
 # Deploy both platforms (requires confirmation)
-yarn mobile-deploy
+pnpm mobile-deploy
 
 # Deploy iOS only
-yarn mobile-deploy:ios
+pnpm mobile-deploy:ios
 
 # Deploy Android only
-yarn mobile-deploy:android
+pnpm mobile-deploy:android
 
 # Force local deployment (for testing deployment scripts)
-yarn mobile-local-deploy
+pnpm mobile-local-deploy
 ```
 
 ### Deployment Prerequisites
@@ -250,7 +251,7 @@ yarn mobile-local-deploy
 
 - [ ] Version bumped in `package.json` and `app.json`
 - [ ] Changelog updated
-- [ ] All unit tests pass (`yarn test`)
+- [ ] All unit tests pass (`pnpm test`)
 - [ ] Build succeeds for target platform
 - [ ] Required secrets/environment variables configured
 - [ ] Fastlane configuration verified

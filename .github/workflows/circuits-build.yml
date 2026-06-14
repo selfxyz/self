@@ -8,6 +8,7 @@ on:
     paths:
       - "circuits/circuits/**"
       - ".github/workflows/artifacts.yml"
+      - ".github/CI_FORCE_RUN"
   workflow_dispatch:
     inputs:
       circuit-type:
@@ -150,11 +151,11 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Install Yarn
-        run: npm i -g yarn
+      - name: Install pnpm
+        run: npm i -g pnpm
 
       - name: Install dependencies
-        uses: ./.github/actions/yarn-install
+        uses: ./.github/actions/pnpm-install
         with:
           working_directory: circuits
 

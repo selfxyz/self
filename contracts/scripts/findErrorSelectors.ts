@@ -172,7 +172,7 @@ function writeGeneratedJson(filePath: string, data: unknown, check: boolean) {
   if (check) {
     if (current !== next) {
       console.error(`❌ Generated file is stale: ${relativePath}`);
-      console.error("   Run `yarn workspace @selfxyz/contracts generate:error-selectors` and commit the result.");
+      console.error("   Run `pnpm --filter @selfxyz/contracts run generate:error-selectors` and commit the result.");
       process.exitCode = 1;
       return;
     }

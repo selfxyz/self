@@ -10,7 +10,7 @@
 
 //
 //  PhotoLibraryQRScannerViewController.swift
-//  OpenPassport
+//  Self
 //
 //  Created by AI Assistant on 01/03/2025.
 //

@@ -8,6 +8,5 @@
   "useTabs": false,
   "semi": true,
   "endOfLine": "auto",
-  "printWidth": 100,
-  "parser": "typescript"
+  "printWidth": 100
 }

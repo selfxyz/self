@@ -57,28 +57,28 @@ runs:
       run: |
         cd ${{ inputs.app_path }}
 
-        # Configure Yarn
+        # Configure pnpm
         corepack enable
-        yarn set version 4.12.0
 
         echo "📦 Installing JavaScript dependencies with strict lock file..."
-        if ! yarn install --immutable --inline-builds; then
+        # Force full dependency installation even when workflows export NODE_ENV=production.
+        if ! NODE_ENV=development pnpm install --frozen-lockfile --no-prod; then
           echo ""
-          echo "❌ ERROR: yarn.lock is out of date!"
+          echo "❌ ERROR: pnpm-lock.yaml is out of date!"
           echo ""
-          echo "This happens when package.json was modified but yarn.lock wasn't updated."
+          echo "This happens when package.json was modified but pnpm-lock.yaml wasn't updated."
           echo ""
           echo "To fix this:"
-          echo "  1. Run 'yarn install' locally in the app directory"
-          echo "  2. Commit the updated yarn.lock file"
+          echo "  1. Run 'pnpm install' locally at the repository root"
+          echo "  2. Commit the updated pnpm-lock.yaml file"
           echo "  3. Push your changes"
           echo ""
           echo "This ensures everyone has the exact same dependency versions."
           exit 1
         fi
 
-        # Run mobile-specific installation
-        yarn install-app:mobile-deploy
+        # Run mobile-specific installation with full dependency graph as well.
+        NODE_ENV=development pnpm install-app:mobile-deploy
 
     - name: Install Ruby dependencies
       shell: bash

@@ -2,7 +2,7 @@
 
 //
 //  QRScannerBridge.m
-//  OpenPassport
+//  Self
 //
 //  Created by Rémi Colin on 23/07/2024.
 //

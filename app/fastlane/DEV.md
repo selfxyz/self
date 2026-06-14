@@ -471,7 +471,7 @@ Build numbers and version codes must be manually incremented before deployment u
    - Each deployment requires a unique build number higher than the previous version
 
 2. **Files Updated:**
-   - `./app/ios/OpenPassport/Info.plist` - `CFBundleVersion`
+   - `./app/ios/Self/Info.plist` - `CFBundleVersion`
    - `./app/ios/Self.xcodeproj/project.pbxproj` - `CURRENT_PROJECT_VERSION`
 
 ### Android Version Code
@@ -602,7 +602,7 @@ If you encounter issues with version syncing between `package.json` and native p
    node -p "require('./package.json').version"
 
    # Check version in Info.plist
-   /usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" app/ios/OpenPassport/Info.plist
+   /usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" app/ios/Self/Info.plist
 
    # Check version in build.gradle
    grep "versionName" app/android/app/build.gradle

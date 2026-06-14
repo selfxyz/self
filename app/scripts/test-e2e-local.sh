@@ -97,7 +97,7 @@ check_metro_running() {
         echo "Please start Metro in another terminal before running e2e tests:"
         echo ""
         echo "  ${BLUE}cd $(pwd)${NC}"
-        echo "  ${BLUE}yarn start${NC}"
+        echo "  ${BLUE}pnpm start${NC}"
         echo ""
         echo "Wait for Metro to show 'Metro waiting on exp://localhost:8081' then re-run this script."
         echo ""
@@ -112,7 +112,7 @@ check_metro_running() {
 # Build dependencies (shared by both platforms)
 build_dependencies() {
     log_info "🔨 Building dependencies..."
-    if ! yarn build:deps; then
+    if ! pnpm build:deps; then
         log_error "Dependency build failed"
         exit 1
     fi
@@ -262,8 +262,8 @@ build_ios_app() {
         BUILD_CONFIG="Debug"
         # Match CI xcodebuild flags exactly with FORCE_BUNDLING and RCT_NO_LAUNCH_PACKAGER
         if ! FORCE_BUNDLING=1 RCT_NO_LAUNCH_PACKAGER=1 \
-            xcodebuild -workspace ios/OpenPassport.xcworkspace \
-            -scheme OpenPassport \
+            xcodebuild -workspace ios/Self.xcworkspace \
+            -scheme Self \
             -configuration Debug \
             -sdk iphonesimulator \
             -derivedDataPath ios/build \
@@ -279,14 +279,14 @@ build_ios_app() {
     elif [ "$WORKFLOW_MATCH" = "true" ]; then
         log_info "Using Release configuration for workflow match"
         BUILD_CONFIG="Release"
-        if ! xcodebuild -workspace ios/OpenPassport.xcworkspace -scheme OpenPassport -configuration "$BUILD_CONFIG" -sdk iphonesimulator -derivedDataPath ios/build -jobs "$(sysctl -n hw.ncpu)" -parallelizeTargets SWIFT_ACTIVE_COMPILATION_CONDITIONS="E2E_TESTING"; then
+        if ! xcodebuild -workspace ios/Self.xcworkspace -scheme Self -configuration "$BUILD_CONFIG" -sdk iphonesimulator -derivedDataPath ios/build -jobs "$(sysctl -n hw.ncpu)" -parallelizeTargets SWIFT_ACTIVE_COMPILATION_CONDITIONS="E2E_TESTING"; then
             log_error "iOS build failed"
             exit 1
         fi
     else
         log_info "Using Debug configuration for local development"
         BUILD_CONFIG="Debug"
-        if ! xcodebuild -workspace ios/OpenPassport.xcworkspace -scheme OpenPassport -configuration "$BUILD_CONFIG" -sdk iphonesimulator -derivedDataPath ios/build -jobs "$(sysctl -n hw.ncpu)" -parallelizeTargets SWIFT_ACTIVE_COMPILATION_CONDITIONS="E2E_TESTING"; then
+        if ! xcodebuild -workspace ios/Self.xcworkspace -scheme Self -configuration "$BUILD_CONFIG" -sdk iphonesimulator -derivedDataPath ios/build -jobs "$(sysctl -n hw.ncpu)" -parallelizeTargets SWIFT_ACTIVE_COMPILATION_CONDITIONS="E2E_TESTING"; then
             log_error "iOS build failed"
             exit 1
         fi

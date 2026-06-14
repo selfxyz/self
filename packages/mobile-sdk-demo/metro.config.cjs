@@ -4,6 +4,7 @@
 
 const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
 const path = require('node:path');
+const fs = require('node:fs');
 const findYarnWorkspaceRoot = require('find-yarn-workspace-root');
 
 const defaultConfig = getDefaultConfig(__dirname);
@@ -11,6 +12,18 @@ const { assetExts, sourceExts } = defaultConfig.resolver;
 
 const projectRoot = __dirname;
 const workspaceRoot = findYarnWorkspaceRoot(__dirname) || path.resolve(__dirname, '../..');
+const escapeRegExp = value => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+// Block a workspace-root React/RN copy only when this app's node_modules carries
+// its own copy of that same package. That matters in the yarn-style layout where
+// both can co-exist. Under pnpm's hoisted layout (CI), React lives at the
+// workspace root as the single canonical copy, so blocking it leaves nothing to
+// resolve. Decided per-package: a partial-local install (e.g. local react/RN but
+// hoisted scheduler) still blocks the duplicates it actually has.
+const reactDupePackages = ['react', 'react-dom', 'react-native', 'scheduler'];
+const workspaceReactBlockList = reactDupePackages
+  .filter(name => fs.existsSync(path.resolve(projectRoot, 'node_modules', name)))
+  .map(name => new RegExp(`^${escapeRegExp(workspaceRoot)}/node_modules/${name}(/|$)`));
 
 /**
  * Modern Metro configuration for demo app using native workspace capabilities
@@ -28,7 +41,7 @@ const config = {
   ],
 
   transformer: {
-    babelTransformerPath: require.resolve('react-native-svg-transformer'),
+    babelTransformerPath: require.resolve('react-native-svg-transformer/react-native'),
     getTransformOptions: async () => ({
       transform: {
         experimentalImportSupport: false,
@@ -45,11 +58,9 @@ const config = {
       /.*\/dist\/esm\/package\.json$/,
       /.*\/dist\/cjs\/package\.json$/,
       /.*\/build\/package\.json$/,
-      // Prevent duplicate React/React Native - block workspace root versions and use app's versions
-      new RegExp(`^${workspaceRoot.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/node_modules/react(/|$)`),
-      new RegExp(`^${workspaceRoot.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/node_modules/react-dom(/|$)`),
-      new RegExp(`^${workspaceRoot.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/node_modules/react-native(/|$)`),
-      new RegExp(`^${workspaceRoot.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/node_modules/scheduler(/|$)`),
+      // Prevent duplicate React/React Native - block workspace root versions only
+      // when this app carries its own copies (see workspaceReactBlockList above).
+      ...workspaceReactBlockList,
       new RegExp('packages/mobile-sdk-alpha/node_modules/react(/|$)'),
       new RegExp('packages/mobile-sdk-alpha/node_modules/react-dom(/|$)'),
       new RegExp('packages/mobile-sdk-alpha/node_modules/react-native(/|$)'),

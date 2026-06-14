@@ -2,17 +2,17 @@
 
 ## Repository Overview
 
-Yarn v4 monorepo for Self: identity verification using passport NFC and zero-knowledge proofs.
+Self is a pnpm monorepo for identity verification using passport NFC and zero-knowledge proofs.
 
 - `app/` (`@selfxyz/mobile-app`) - React Native Self Wallet.
 - `packages/` - SDK surfaces, including WebView engine and native shells.
-- `common/`, `circuits/`, `contracts/`, `sdk/core/`, `sdk/qrcode/`, `noir/` - shared utilities, circuits, contracts, and SDK packages.
+- `common/`, `circuits/`, `contracts`, `sdk/core`, `sdk/qrcode`, `noir` - shared utilities, circuits, contracts, and SDK packages.
 
-Setup: `nvm use && corepack enable && yarn install`
+Setup: `nvm use && corepack enable && pnpm install`
 
 ## Key Rules
 
-- **Package manager:** Yarn only. Use `yarn install`, `yarn add`, and `yarn remove`; never use npm or pnpm.
+- **Package manager:** pnpm only. Use `pnpm install`, `pnpm add`, `pnpm remove`, and `pnpm --filter <workspace>`; never use npm or yarn for dependency management.
 - **Respect nested instructions.** Read the nearest `AGENTS.md` before working under `app/`, `packages/mobile-sdk-alpha/`, `packages/webview-app/`, or `noir/`.
 - **DRY first.** Search for existing utilities/components/flows and reuse or refactor before adding new code.
 - **Extract repeated UI.** Same UI sub-structure in 2+ places becomes a shared component; broad primitives belong in a shared library such as `@selfxyz/euclid`.
@@ -41,21 +41,21 @@ Setup: `nvm use && corepack enable && yarn install`
 Run the narrowest relevant checks first, then broaden before PR/commit.
 
 ```bash
-yarn workspaces foreach -A -p -v --topological-dev --since=HEAD run nice --if-present
-yarn lint
-yarn types
-yarn build
-yarn test
-yarn workspace @selfxyz/contracts build
+pnpm --filter '...[HEAD]' --if-present run nice
+pnpm lint
+pnpm types
+pnpm build
+pnpm test
+pnpm --filter @selfxyz/contracts build
 ```
 
 Workspace examples:
 
 ```bash
-yarn workspace @selfxyz/common test
-yarn workspace @selfxyz/circuits test
-yarn workspace @selfxyz/mobile-app test
-yarn workspace @selfxyz/mobile-sdk-alpha test
+pnpm --filter @selfxyz/common test
+pnpm --filter @selfxyz/circuits test
+pnpm --filter @selfxyz/mobile-app test
+pnpm --filter @selfxyz/mobile-sdk-alpha test
 ```
 
 Notes:
@@ -68,7 +68,7 @@ Notes:
 
 ## Specs
 
-Before SDK work, read the Key Rules and SDK Architecture Rules above plus the relevant `specs/projects/sdk/workstreams/*/SPEC.md` (constraints, validation commands, ownership boundaries). For the planning protocol and spec-writing guidelines, see [SDK Contributing](./specs/projects/sdk/CONTRIBUTING.md).
+Before SDK work, read the Key Rules and SDK Architecture Rules above plus the relevant `specs/projects/sdk/workstreams/*/SPEC.md` constraints, validation commands, and ownership boundaries. For the planning protocol and spec-writing guidelines, see [SDK Contributing](./specs/projects/sdk/CONTRIBUTING.md).
 
 Start at [specs/README.md](./specs/README.md). Key files:
 

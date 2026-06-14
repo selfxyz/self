@@ -1,4 +1,4 @@
-if ! yarn gitleaks; then
+if ! pnpm gitleaks; then
   echo "❌ Gitleaks scan failed. Please review the output above and fix any issues."
   echo "💡 To skip this check temporarily, use: git commit --no-verify"
   exit 1

@@ -717,6 +717,7 @@ describe('tunnel flow screens', () => {
       </MemoryRouter>,
     );
 
+    expect(screen.queryByRole('button', { name: /confirm receipt/i })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: /close receipt/i }));
     expect(screen.getAllByTestId('location').at(-1)?.textContent).toBe('/disclose/result');
   });

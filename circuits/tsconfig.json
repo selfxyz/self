@@ -12,6 +12,7 @@
     "declaration": false,
     "baseUrl": ".",
     "composite": false,
+    "types": ["node", "mocha", "chai"],
     "paths": {
       "@selfxyz/new-common/src/*": ["../new-common/src/*"],
       "@selfxyz/new-common": ["../new-common/src/index.ts"]

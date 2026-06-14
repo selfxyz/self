@@ -3,11 +3,8 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type * as React from 'react';
-import {
-  codegenNativeComponent,
-  type CodegenTypes,
-  type ViewProps,
-} from 'react-native';
+import type { CodegenTypes, ViewProps } from 'react-native';
+import { codegenNativeComponent } from 'react-native';
 
 type PassportReadEvent = Readonly<{
   data: string;

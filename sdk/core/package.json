@@ -35,14 +35,14 @@
   ],
   "scripts": {
     "build": "typechain --target ethers-v6 --node16-modules --out-dir src/typechain-types src/abi/**.json && tsup index.ts --format cjs,esm --dts --clean --sourcemap",
-    "build:deps": "yarn workspaces foreach --from @selfxyz/core --topological-dev --recursive run build",
+    "build:deps": "pnpm -r --filter @selfxyz/core... run build",
     "copy-abi": "bash scripts/copyAbi.sh",
     "format": "prettier --write .",
-    "install-sdk": "yarn workspaces focus @selfxyz/core",
+    "install-sdk": "pnpm install --filter @selfxyz/core...",
     "lint": "prettier --check .",
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "pnpm build",
     "test": "node --loader ts-node/esm --test tests/*.test.ts",
-    "types": "yarn build"
+    "types": "pnpm build"
   },
   "dependencies": {
     "@selfxyz/common": "workspace:^",

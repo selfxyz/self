@@ -29,9 +29,6 @@ runs:
         path: |
           common/dist
           sdk/core/dist
-          node_modules
-          sdk/core/node_modules
-          common/node_modules
         key: core-sdk-build-${{ inputs.cache-version }}-${{ github.sha }}
         fail-on-cache-miss: ${{ inputs.fail-on-cache-miss }}
     - id: save
@@ -41,7 +38,4 @@ runs:
         path: |
           common/dist
           sdk/core/dist
-          node_modules
-          sdk/core/node_modules
-          common/node_modules
         key: core-sdk-build-${{ inputs.cache-version }}-${{ github.sha }}
