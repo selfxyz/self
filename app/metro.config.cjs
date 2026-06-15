@@ -231,6 +231,11 @@ const config = {
         // server root, so the async chunk path can't be serialized and iOS crashes.
         'react-native-haptic-feedback':
           'react-native-haptic-feedback/lib/commonjs/index.js',
+        // Pinned for the same reason: keychain dynamically imports this
+        // (await import('react-native-biometrics')). The package is hoisted to
+        // the workspace root, so Metro's dev-server async-chunk path would
+        // resolve relative to the app server root (app/node_modules) and miss.
+        'react-native-biometrics': 'react-native-biometrics/build/cjs/index.js',
       };
       const sdkAlphaPath = path.resolve(
         workspaceRoot,
