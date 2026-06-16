@@ -221,6 +221,16 @@ const config = {
 
     // Custom resolver to handle both .js imports in TypeScript and Node.js modules
     resolveRequest: (context, moduleName, platform) => {
+      // NOTE: react-native-reanimated is a real, installed dependency and
+      // resolves through Metro's default resolver. It is intentionally NOT
+      // intercepted here. An earlier build shimmed it to a stub because the app
+      // did not want to adopt Reanimated, but react-native-screens and
+      // react-native-gesture-handler require the real native module at runtime
+      // (RNGestureHandlerManager.sendEventForReanimated -> ReanimatedModule).
+      // The shim made gesture-handler detect Reanimated as "present" while the
+      // native pod was absent, crashing with "Unable to find module for
+      // ReanimatedModule". See scripts/tests/reanimatedIntegrationGuard.test.cjs.
+
       // Handle React Native gesture handler that needs app-level resolution
       const appLevelModules = {
         'react-native-gesture-handler':
@@ -231,16 +241,35 @@ const config = {
         // server root, so the async chunk path can't be serialized and iOS crashes.
         'react-native-haptic-feedback':
           'react-native-haptic-feedback/lib/commonjs/index.js',
-        // Pinned for the same reason: keychain dynamically imports this
-        // (await import('react-native-biometrics')). The package is hoisted to
-        // the workspace root, so Metro's dev-server async-chunk path would
-        // resolve relative to the app server root (app/node_modules) and miss.
-        'react-native-biometrics': 'react-native-biometrics/build/cjs/index.js',
       };
       const sdkAlphaPath = path.resolve(
         workspaceRoot,
         'packages/mobile-sdk-alpha',
       );
+
+      // Dynamically imported (await import(...)) packages that are hoisted to
+      // the workspace root get rewritten by Metro's dev server into a path
+      // relative to the app server root, e.g.
+      // "./node_modules/react-native-biometrics/build/cjs/index". That resolves
+      // against app/node_modules and misses the hoisted install. Re-anchor any
+      // such relative ".../node_modules/<subpath>" request to the real install
+      // by resolving the subpath from the project + workspace roots. Node's
+      // require.resolve fills in the missing extension.
+      if (moduleName.startsWith('.') && moduleName.includes('/node_modules/')) {
+        const subPath = moduleName.slice(
+          moduleName.indexOf('/node_modules/') + '/node_modules/'.length,
+        );
+        try {
+          return {
+            type: 'sourceFile',
+            filePath: require.resolve(subPath, {
+              paths: moduleResolutionRoots,
+            }),
+          };
+        } catch {
+          // Fall through to default resolution if it can't be resolved.
+        }
+      }
 
       // Custom resolver to handle Node.js modules and dynamic flow imports
       if (moduleName.startsWith('@selfxyz/mobile-sdk-alpha/')) {
@@ -513,7 +542,6 @@ const config = {
 
       // Handle optional peer dependencies by returning empty modules
       const optionalPeerDependencies = [
-        'react-native-reanimated',
         '@react-native-masked-view/masked-view',
         '@react-native-firebase/analytics',
         'react-native-b4a',
