@@ -160,7 +160,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 161
-        versionName "2.9.24"
+        versionName "2.9.25"
         manifestPlaceholders = [appAuthRedirectScheme: 'com.proofofpassportapp']
         externalNativeBuild {
             cmake {
