@@ -28,11 +28,17 @@ consumers and remove temporary local cleanup.
 ### Scope
 
 - Bump Euclid consumers in this repo to the version containing the blur swap.
-- Remove direct `react-native-blur-effect` dependencies from:
-  - `app/package.json`
-  - `packages/mobile-sdk-demo/package.json`
-  - root `package.json` `resolutions` / pnpm override entries, if present
-- Drop the `@selfxyz/euclid` peer workaround in `pnpm-workspace.yaml`.
+- Remove every `react-native-blur-effect` declaration. It is currently present
+  in all of the following — each must be removed for the nested RN duplicate to
+  go away:
+  - `app/package.json` — the `dependencies` entry **and** the
+    `react-native-blur-effect` line in the root-level `overrides` block.
+  - `packages/mobile-sdk-alpha/package.json` — the `peerDependencies` entry
+    **and** the matching `peerDependenciesMeta` optional block.
+  - `packages/mobile-sdk-demo/package.json` — the dependency entry.
+  - root `package.json` — the `resolutions` pin.
+  - `pnpm-workspace.yaml` — the `overrides` pin **and** the
+    `@selfxyz/euclid` peer-optional workaround block.
 - Remove `app/tests/__setup__/blurEffectMock.js`.
 - Remove the related `moduleNameMapper` entry from `app/jest.config.cjs`.
 

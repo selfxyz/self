@@ -17,9 +17,13 @@ the acceptance criteria all depend on a clean `pnpm install` and lockfile diff.
 
 ### Scope
 
-- Move root `package.json` `resolutions` pins to `pnpm.overrides`.
-- Add `pnpm.overrides` entry `node-pre-gyp-github: 1.4.4` so the
-  `@zk-email/relayer-utils` transitive resolves from the npm registry instead
+- Move root `package.json` `resolutions` pins to the `overrides` block in
+  `pnpm-workspace.yaml` (the established location — `circom_tester`, `jsdom`,
+  and `@types/minimatch` already live there). Do not create a second
+  `pnpm.overrides` block in `package.json`.
+- Add a `pnpm-workspace.yaml` `overrides` entry `node-pre-gyp-github: 1.4.4`
+  so the `@zk-email/relayer-utils` transitive resolves from the npm registry
+  instead
   of the `ultamatt/node-pre-gyp-github` git tarball. Verify by running
   `relayer-utils`'s postinstall against the registry version locally before
   landing. This removes one of two blockers MT-9 currently waits on; the
@@ -34,8 +38,10 @@ the acceptance criteria all depend on a clean `pnpm install` and lockfile diff.
   packages whose install scripts are required.
 - Add one-line justification comments for every retained install-script
   allowlist entry, using the config format supported by pnpm.
-- Bump the root `packageManager` pnpm pin from `11.1.1` to the chosen current
-  minor after confirming Corepack in CI resolves it without warning.
+- Bump the root `packageManager` pnpm pin from the current `11.5.3` to the
+  chosen current minor, after confirming Corepack in CI resolves it without
+  warning. Update `scripts/check-pnpm-version.mjs` (and any other pin
+  references) to match.
 
 ### Out of Scope
 
@@ -55,7 +61,8 @@ pnpm types
 
 Additional checks:
 
-- The lockfile maps every former `resolutions` pin through `pnpm.overrides`.
+- The lockfile maps every former `resolutions` pin through the
+  `pnpm-workspace.yaml` `overrides` block.
 - Root `package.json` no longer runs `patch-package` from `postinstall`.
 - Every retained install-script allowlist entry has a justification.
 - CI logs show Corepack resolves the pinned pnpm version without warning.
@@ -64,17 +71,21 @@ Additional checks:
 
 | File                             | Change                                                                             |
 | -------------------------------- | ---------------------------------------------------------------------------------- |
-| `package.json`                   | Move pins to `pnpm.overrides`, remove patch-package hook, bump pnpm pin.           |
-| `pnpm-lock.yaml`                 | Reflect override, patch, and pnpm-version changes.                                 |
-| `pnpm-workspace.yaml` / `.npmrc` | Keep install-script allowlist comments where the active pnpm config supports them. |
+| `package.json`                   | Remove `resolutions` pins (moved to `pnpm-workspace.yaml`) and the patch-package `postinstall` hook; bump the `packageManager` pnpm pin. |
+| `scripts/check-pnpm-version.mjs` | Update the enforced pin to match the new pnpm version. |
+| `pnpm-workspace.yaml`            | Add moved pins + `node-pre-gyp-github` to the `overrides` block; keep justified install-script allowlist comments. |
+| `pnpm-lock.yaml`                 | Reflect override and patch changes.                                                |
+| `.npmrc`                         | Keep install-script allowlist comments where the active pnpm config supports them. |
 | `patches/*`                      | Move or regenerate patches through pnpm native patching.                           |
 
 ### Definition of Done
 
-- [ ] Yarn `resolutions` no longer carry active install behavior.
+- [ ] Yarn `resolutions` no longer carry active install behavior; moved pins
+      live in the `pnpm-workspace.yaml` `overrides` block.
 - [ ] Patches apply through pnpm native patching.
 - [ ] Install-script allowlist is trimmed and justified.
-- [ ] Updated pnpm pin works in CI.
+- [ ] pnpm pin bumped from `11.5.3` to the chosen current minor; Corepack
+      resolves it without warning in CI and `check-pnpm-version.mjs` matches.
 - [ ] Mobile app tests and repo typecheck pass.
 - [ ] `pnpm why node-pre-gyp-github` reports a single registry resolution; the
       `codeload.github.com/ultamatt/...` tarball entry is absent from the lockfile.
