@@ -5,8 +5,7 @@
 import { nativeApplicationVersion } from 'expo-application';
 import type { PropsWithChildren } from 'react';
 import React, { useCallback, useMemo, useState } from 'react';
-import { Linking, Platform, Share, View as RNView } from 'react-native';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { Linking, Platform, Pressable, Share } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { SvgProps } from 'react-native-svg';
 import { Button, ScrollView, View, XStack, YStack } from 'tamagui';
@@ -42,6 +41,7 @@ import {
   xUrl,
 } from '@/consts/links';
 import useHasRealDocument from '@/hooks/useHasRealDocument';
+import { useMultiTap } from '@/hooks/useMultiTap';
 import { impactLight } from '@/integrations/haptics';
 import type {
   SettingsPlatform,
@@ -155,19 +155,12 @@ const SettingsScreen: React.FC = () => {
     [hasRealDocument, isDevMode, isTroubleshootingMode],
   );
 
-  const troubleshootingTap = Gesture.Tap()
-    .numberOfTaps(3)
-    .onStart(() => {
-      setTroubleshootingMode(true);
-    });
-
-  const devModeTap = Gesture.Tap()
-    .numberOfTaps(5)
-    .onStart(() => {
-      setDevModeOn();
-    });
-
-  const combinedTap = Gesture.Exclusive(devModeTap, troubleshootingTap);
+  const onVersionPress = useMultiTap({
+    thresholds: [
+      { taps: 3, onReach: () => setTroubleshootingMode(true) },
+      { taps: 5, onReach: setDevModeOn },
+    ],
+  });
 
   const onMenuPress = useCallback(
     (menuRoute: SettingsRouteKey) => {
@@ -192,83 +185,81 @@ const SettingsScreen: React.FC = () => {
   );
   const { bottom } = useSafeAreaInsets();
   return (
-    <GestureDetector gesture={combinedTap}>
-      <RNView collapsable={false}>
-        <View backgroundColor={white}>
+    <View backgroundColor={white}>
+      <YStack
+        backgroundColor={black}
+        gap={20}
+        justifyContent="space-between"
+        height={'100%'}
+        paddingHorizontal={20}
+        paddingBottom={bottom + extraYPadding}
+        borderTopLeftRadius={30}
+        borderTopRightRadius={30}
+      >
+        <ScrollView>
           <YStack
-            backgroundColor={black}
-            gap={20}
-            justifyContent="space-between"
-            height={'100%'}
-            paddingHorizontal={20}
-            paddingBottom={bottom + extraYPadding}
-            borderTopLeftRadius={30}
-            borderTopRightRadius={30}
+            alignItems="flex-start"
+            justifyContent="flex-start"
+            width="100%"
           >
-            <ScrollView>
-              <YStack
-                alignItems="flex-start"
-                justifyContent="flex-start"
-                width="100%"
+            {screenRoutes.map(({ label, route }) => (
+              <MenuButton
+                key={route}
+                Icon={ROUTE_ICONS[route]}
+                onPress={onMenuPress(route)}
               >
-                {screenRoutes.map(({ label, route }) => (
-                  <MenuButton
-                    key={route}
-                    Icon={ROUTE_ICONS[route]}
-                    onPress={onMenuPress(route)}
-                  >
-                    {label}
-                  </MenuButton>
-                ))}
-              </YStack>
-            </ScrollView>
-            <YStack
-              alignItems="center"
-              gap={20}
-              justifyContent="center"
-              paddingBottom={50}
-            >
-              <Button
-                unstyled
-                icon={<Star color={white} height={24} width={21} />}
-                width="100%"
-                padding={20}
-                backgroundColor={slate800}
-                color={white}
-                flexDirection="row"
-                justifyContent="center"
-                alignItems="center"
-                gap={6}
-                borderRadius={4}
-                pressStyle={pressedStyle}
-                onPress={goToStore}
-              >
-                <BodyText style={{ color: white }}>
-                  Leave an app store review
-                </BodyText>
-              </Button>
-              <XStack gap={32}>
-                {social.map(([Icon, href], i) => (
-                  <SocialButton
-                    key={i}
-                    Icon={Icon}
-                    href={href}
-                    onPress={href === selfUrl ? openSelfWebsite : undefined}
-                  />
-                ))}
-              </XStack>
-              <BodyText style={{ color: warmCream, fontSize: 15 }}>
-                {nativeApplicationVersion
-                  ? `SELF  ${nativeApplicationVersion}`
-                  : 'SELF'}
-              </BodyText>
-              {/* Dont remove if not viewing on ios */}
-              <View marginBottom={bottom} />
-            </YStack>
+                {label}
+              </MenuButton>
+            ))}
           </YStack>
-        </View>
-      </RNView>
-    </GestureDetector>
+        </ScrollView>
+        <YStack
+          alignItems="center"
+          gap={20}
+          justifyContent="center"
+          paddingBottom={50}
+        >
+          <Button
+            unstyled
+            icon={<Star color={white} height={24} width={21} />}
+            width="100%"
+            padding={20}
+            backgroundColor={slate800}
+            color={white}
+            flexDirection="row"
+            justifyContent="center"
+            alignItems="center"
+            gap={6}
+            borderRadius={4}
+            pressStyle={pressedStyle}
+            onPress={goToStore}
+          >
+            <BodyText style={{ color: white }}>
+              Leave an app store review
+            </BodyText>
+          </Button>
+          <XStack gap={32}>
+            {social.map(([Icon, href], i) => (
+              <SocialButton
+                key={i}
+                Icon={Icon}
+                href={href}
+                onPress={href === selfUrl ? openSelfWebsite : undefined}
+              />
+            ))}
+          </XStack>
+          <Pressable hitSlop={12} onPress={onVersionPress}>
+            <BodyText style={{ color: warmCream, fontSize: 15 }}>
+              {nativeApplicationVersion
+                ? `SELF  ${nativeApplicationVersion}`
+                : 'SELF'}
+            </BodyText>
+          </Pressable>
+          {/* Dont remove if not viewing on ios */}
+          <View marginBottom={bottom} />
+        </YStack>
+      </YStack>
+    </View>
   );
 };
 
