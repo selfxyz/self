@@ -87,6 +87,22 @@ for (const platform of ['ios', 'android']) {
       );
     });
 
+    it('delegates nested node_modules paths instead of guessing a copy', () => {
+      // A path with more than one /node_modules/ segment is ambiguous about
+      // which install to anchor to, so the resolver must hand it to Metro's
+      // default resolver rather than slicing to the wrong subpath.
+      const result = resolveRequest(
+        makeContext(),
+        './node_modules/some-pkg/node_modules/transitive-dep/index',
+        platform,
+      );
+      assert.strictEqual(
+        result,
+        DEFAULT_SENTINEL,
+        'nested node_modules requests must not be intercepted',
+      );
+    });
+
     it('does NOT intercept Reanimated — it resolves as a real dependency', () => {
       // Reanimated is an installed package; native screens/gesture-handler need
       // the real module. The custom resolver must leave it to Metro's default

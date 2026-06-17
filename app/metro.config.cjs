@@ -256,18 +256,25 @@ const config = {
       // by resolving the subpath from the project + workspace roots. Node's
       // require.resolve fills in the missing extension.
       if (moduleName.startsWith('.') && moduleName.includes('/node_modules/')) {
-        const subPath = moduleName.slice(
-          moduleName.indexOf('/node_modules/') + '/node_modules/'.length,
-        );
-        try {
-          return {
-            type: 'sourceFile',
-            filePath: require.resolve(subPath, {
-              paths: moduleResolutionRoots,
-            }),
-          };
-        } catch {
-          // Fall through to default resolution if it can't be resolved.
+        const marker = '/node_modules/';
+        // Only re-anchor a single /node_modules/ segment. A nested path
+        // (".../node_modules/a/node_modules/b") is ambiguous about which copy
+        // to resolve, so delegate those to Metro's default resolver instead of
+        // guessing the wrong install.
+        if (moduleName.indexOf(marker) === moduleName.lastIndexOf(marker)) {
+          const subPath = moduleName.slice(
+            moduleName.indexOf(marker) + marker.length,
+          );
+          try {
+            return {
+              type: 'sourceFile',
+              filePath: require.resolve(subPath, {
+                paths: moduleResolutionRoots,
+              }),
+            };
+          } catch {
+            // Fall through to default resolution if it can't be resolved.
+          }
         }
       }
 

@@ -85,4 +85,35 @@ describe('useMultiTap', () => {
     tap(result.current, 5);
     expect(onReach).toHaveBeenCalledTimes(2);
   });
+
+  it('keeps a stable handler identity across re-renders with new threshold literals', () => {
+    const onReach = jest.fn();
+    const { result, rerender } = renderHook(() =>
+      useMultiTap({ thresholds: [{ taps: 5, onReach }] }),
+    );
+
+    const handler = result.current;
+    rerender({});
+    // callers pass a fresh array literal every render; the handler must not
+    // churn, or React.memo'd children receiving it re-render needlessly.
+    expect(result.current).toBe(handler);
+  });
+
+  it('reads the latest thresholds after a re-render without swapping the handler', () => {
+    const first = jest.fn();
+    const second = jest.fn();
+    let onReach = first;
+    const { result, rerender } = renderHook(() =>
+      useMultiTap({ thresholds: [{ taps: 1, onReach }] }),
+    );
+
+    const handler = result.current;
+    onReach = second;
+    rerender({});
+    expect(result.current).toBe(handler);
+
+    tap(handler, 1);
+    expect(second).toHaveBeenCalledTimes(1);
+    expect(first).not.toHaveBeenCalled();
+  });
 });
