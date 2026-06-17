@@ -4,8 +4,7 @@
 
 import { flag } from 'country-emoji';
 import React, { useCallback, useState } from 'react';
-import { TouchableOpacity, View } from 'react-native';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { Pressable, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Button,
@@ -52,6 +51,7 @@ import IdIcon from '@/assets/icons/id_icon.svg';
 import NoteIcon from '@/assets/icons/note.svg';
 import SelfDevCard from '@/assets/images/card_dev.svg';
 import { useMockDataForm } from '@/hooks/useMockDataForm';
+import { useMultiTap } from '@/hooks/useMultiTap';
 import { buttonTap, selectionChange } from '@/integrations/haptics';
 import type { RootStackParamList } from '@/navigation';
 import { storePassportData } from '@/providers/passportDataProvider';
@@ -215,7 +215,9 @@ const CreateMockScreen: React.FC = () => {
     selectedDocumentType,
   ]);
 
-  const devModeTap = Gesture.Tap().numberOfTaps(5).onStart(buttonTap);
+  const onHeroTap = useMultiTap({
+    thresholds: [{ taps: 5, onReach: buttonTap }],
+  });
 
   const { bottom } = useSafeAreaInsets();
   return (
@@ -225,11 +227,9 @@ const CreateMockScreen: React.FC = () => {
       paddingBottom={bottom + extraYPadding}
     >
       <ScrollView showsVerticalScrollIndicator={false}>
-        <GestureDetector gesture={devModeTap}>
-          <View collapsable={false}>
-            <HeroBanner />
-          </View>
-        </GestureDetector>
+        <Pressable onPress={onHeroTap}>
+          <HeroBanner />
+        </Pressable>
         <YStack paddingHorizontal="$4" paddingBottom="$4" gap="$4">
           <Text fontWeight={500} fontSize="$6" fontFamily={dinot}>
             Mock Document Parameters
