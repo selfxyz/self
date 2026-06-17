@@ -42,10 +42,10 @@ export function useMultiTap({
   });
 
   return useCallback(() => {
-    const { thresholds: active, windowMs: window } = configRef.current;
+    const { thresholds: active, windowMs: tapWindowMs } = configRef.current;
     const now = Date.now();
     const s = state.current;
-    s.count = now - s.lastTapAt > window ? 1 : s.count + 1;
+    s.count = now - s.lastTapAt > tapWindowMs ? 1 : s.count + 1;
     s.lastTapAt = now;
 
     const maxTaps = Math.max(...active.map(t => t.taps));
