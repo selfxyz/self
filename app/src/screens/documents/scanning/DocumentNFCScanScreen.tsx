@@ -15,10 +15,9 @@ import {
   NativeEventEmitter,
   NativeModules,
   Platform,
+  Pressable,
   StyleSheet,
-  View,
 } from 'react-native';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import NfcManager from 'react-native-nfc-manager';
 import { Button, Image, XStack } from 'tamagui';
 import { v4 as uuidv4 } from 'uuid';
@@ -67,6 +66,7 @@ import { useErrorInjection } from '@/hooks/useErrorInjection';
 import { useFeedbackAutoHide } from '@/hooks/useFeedbackAutoHide';
 import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { useKycLauncher } from '@/hooks/useKycLauncher';
+import { useMultiTap } from '@/hooks/useMultiTap';
 import useOpenSupportForm from '@/hooks/useOpenSupportForm';
 import {
   buttonTap,
@@ -191,11 +191,9 @@ const DocumentNFCScanScreen: React.FC = () => {
   const goToNFCTrouble = useHapticNavigation('DocumentNFCTrouble');
 
   // 5-taps with a single finger
-  const devModeTap = Gesture.Tap()
-    .numberOfTaps(5)
-    .onStart(() => {
-      goToNFCMethodSelection();
-    });
+  const onTitleTap = useMultiTap({
+    thresholds: [{ taps: 5, onReach: goToNFCMethodSelection }],
+  });
 
   const onReportIssue = useCallback(() => {
     openSupportForm();
@@ -633,23 +631,21 @@ const DocumentNFCScanScreen: React.FC = () => {
           ) : (
             <>
               <TextsContainer>
-                <GestureDetector gesture={devModeTap}>
-                  <View collapsable={false}>
-                    <XStack
-                      justifyContent="space-between"
-                      alignItems="center"
-                      gap="$1.5"
-                    >
-                      <Title>Verify your ID</Title>
-                      <Button
-                        unstyled
-                        onPress={goToNFCTrouble}
-                        icon={<CircleHelp size={28} color={slate500} />}
-                        aria-label="Help"
-                      />
-                    </XStack>
-                  </View>
-                </GestureDetector>
+                <XStack
+                  justifyContent="space-between"
+                  alignItems="center"
+                  gap="$1.5"
+                >
+                  <Pressable onPress={onTitleTap}>
+                    <Title>Verify your ID</Title>
+                  </Pressable>
+                  <Button
+                    unstyled
+                    onPress={goToNFCTrouble}
+                    icon={<CircleHelp size={28} color={slate500} />}
+                    aria-label="Help"
+                  />
+                </XStack>
                 {isNfcEnabled ? (
                   <>
                     <Title style={[styles.title, { marginTop: 8 }]}>

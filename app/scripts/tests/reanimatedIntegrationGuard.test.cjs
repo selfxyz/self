@@ -71,7 +71,9 @@ describe('reanimated integration guard', () => {
       'react-native-reanimated should declare a react-native-worklets peer range',
     );
     assert.ok(
-      semver.satisfies(worklets.version, peerRange, { includePrerelease: true }),
+      semver.satisfies(worklets.version, peerRange, {
+        includePrerelease: true,
+      }),
       `react-native-worklets@${worklets.version} does not satisfy ` +
         `react-native-reanimated@${reanimated.version} peer range ` +
         `"${peerRange}". Bump them together.`,

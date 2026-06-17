@@ -19,6 +19,7 @@ const path = require('node:path');
 const fs = require('node:fs');
 
 const config = require('../../metro.config.cjs');
+
 const { resolveRequest } = config.resolver;
 
 const DEFAULT_SENTINEL = Symbol('default-resolution');
