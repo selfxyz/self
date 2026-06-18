@@ -37,6 +37,8 @@ const extraArgs = process.argv.slice(3);
 // script (which injects node_modules/.bin) or directly as `node scripts/...`.
 const result = spawnSync('pnpm', ['exec', 'turbo', 'run', task, ...filters, ...extraArgs], {
   stdio: 'inherit',
+  // On Windows pnpm is a .cmd wrapper that spawnSync can't resolve without the shell.
+  shell: process.platform === 'win32',
 });
 
 if (result.error) {

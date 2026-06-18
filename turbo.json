@@ -15,7 +15,8 @@
     "test": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$"],
-      "outputs": []
+      "outputs": [],
+      "env": ["FULL_TEST_SUITE"]
     },
     "lint": {
       "dependsOn": [],
