@@ -1,7 +1,7 @@
-diff --git a/node_modules/react-native-passport-reader/index.android.js b/node_modules/react-native-passport-reader/index.android.js
+diff --git a/index.android.js b/index.android.js
 index 672466b..277146b 100644
---- a/node_modules/react-native-passport-reader/index.android.js
-+++ b/node_modules/react-native-passport-reader/index.android.js
+--- a/index.android.js
++++ b/index.android.js
 @@ -9,11 +9,11 @@ module.exports = {
    scan
  }

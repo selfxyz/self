@@ -1,0 +1,224 @@
+diff --git a/android/src/main/java/com/oblador/keychain/KeychainModule.kt b/android/src/main/java/com/oblador/keychain/KeychainModule.kt
+index 722a5ed..7917dbf 100644
+--- a/android/src/main/java/com/oblador/keychain/KeychainModule.kt
++++ b/android/src/main/java/com/oblador/keychain/KeychainModule.kt
+@@ -86,6 +86,7 @@ class KeychainModule(reactContext: ReactApplicationContext) :
+       const val USERNAME = "username"
+       const val PASSWORD = "password"
+       const val STORAGE = "storage"
++      const val USE_STRONGBOX = "useStrongBox"
+     }
+   }
+ 
+@@ -191,8 +192,9 @@ class KeychainModule(reactContext: ReactApplicationContext) :
+           val useBiometry =
+             getUseBiometry(accessControl) && (isFingerprintAuthAvailable || isFaceAuthAvailable || isIrisAuthAvailable)
+           val promptInfo = getPromptInfo(options, usePasscode, useBiometry)
++          val useStrongBox = getUseStrongBoxOrDefault(options)
+           val result =
+-            encryptToResult(alias, storage, username, password, level, promptInfo)
++            encryptToResult(alias, storage, username, password, level, promptInfo, useStrongBox)
+           prefsStorage.storeEncryptedEntry(alias, result)
+           val results = Arguments.createMap()
+           results.putString(Maps.SERVICE, alias)
+@@ -502,10 +504,11 @@ class KeychainModule(reactContext: ReactApplicationContext) :
+     username: String,
+     password: String,
+     securityLevel: SecurityLevel,
+-    promptInfo: PromptInfo
++    promptInfo: PromptInfo,
++    useStrongBox: Boolean
+   ): CipherStorage.EncryptionResult {
+     val handler = getInteractiveHandler(storage, promptInfo)
+-    storage.encrypt(handler, alias, username, password, securityLevel)
++    storage.encrypt(handler, alias, username, password, securityLevel, useStrongBox)
+     CryptoFailedException.reThrowOnError(handler.error)
+     if (null == handler.encryptionResult) {
+       throw CryptoFailedException("No decryption results and no error. Something deeply wrong!")
+@@ -534,7 +537,8 @@ class KeychainModule(reactContext: ReactApplicationContext) :
+     newCipherStorage: CipherStorage,
+     oldCipherStorage: CipherStorage,
+     decryptionResult: DecryptionResult,
+-    promptInfo: PromptInfo
++    promptInfo: PromptInfo,
++    useStrongBox: Boolean = true
+   ) {
+ 
+     val username =
+@@ -549,7 +553,8 @@ class KeychainModule(reactContext: ReactApplicationContext) :
+       username,
+       password,
+       decryptionResult.getSecurityLevel(),
+-      promptInfo
++      promptInfo,
++      useStrongBox
+     )
+ 
+     // store the encryption result
+@@ -716,6 +721,14 @@ class KeychainModule(reactContext: ReactApplicationContext) :
+       return SecurityLevel.valueOf(minimalSecurityLevel)
+     }
+ 
++    /** Get useStrongBox value from options or fallback to true (default). */
++    private fun getUseStrongBoxOrDefault(options: ReadableMap?): Boolean {
++      if (null != options && options.hasKey(Maps.USE_STRONGBOX)) {
++        return options.getBoolean(Maps.USE_STRONGBOX)
++      }
++      return true // Default: attempt StrongBox
++    }
++
+     // endregion
+     // region Implementation
+ 
+diff --git a/android/src/main/java/com/oblador/keychain/cipherStorage/CipherStorage.kt b/android/src/main/java/com/oblador/keychain/cipherStorage/CipherStorage.kt
+index 2be2286..a3211a0 100644
+--- a/android/src/main/java/com/oblador/keychain/cipherStorage/CipherStorage.kt
++++ b/android/src/main/java/com/oblador/keychain/cipherStorage/CipherStorage.kt
+@@ -53,7 +53,8 @@ interface CipherStorage {
+     alias: String,
+     username: String,
+     password: String,
+-    level: SecurityLevel
++    level: SecurityLevel,
++    useStrongBox: Boolean = true
+   )
+ 
+ 
+diff --git a/android/src/main/java/com/oblador/keychain/cipherStorage/CipherStorageBase.kt b/android/src/main/java/com/oblador/keychain/cipherStorage/CipherStorageBase.kt
+index adc9c00..b260e5f 100644
+--- a/android/src/main/java/com/oblador/keychain/cipherStorage/CipherStorageBase.kt
++++ b/android/src/main/java/com/oblador/keychain/cipherStorage/CipherStorageBase.kt
+@@ -178,7 +178,8 @@ abstract class CipherStorageBase(protected val applicationContext: Context) : Ci
+   protected fun extractGeneratedKey(
+     safeAlias: String,
+     level: SecurityLevel,
+-    retries: AtomicInteger
++    retries: AtomicInteger,
++    useStrongBox: Boolean = true
+   ): Key {
+     var key: Key?
+     do {
+@@ -186,7 +187,7 @@ abstract class CipherStorageBase(protected val applicationContext: Context) : Ci
+       // Check if the key exists
+       if (!keyStore.containsAlias(safeAlias)) {
+         // Key does not exist, generate a new one
+-        generateKeyAndStoreUnderAlias(safeAlias, level)
++        generateKeyAndStoreUnderAlias(safeAlias, level, useStrongBox)
+       } else {
+         // Key exists, check if it's compatible
+         key = keyStore.getKey(safeAlias, null)
+@@ -203,7 +204,7 @@ abstract class CipherStorageBase(protected val applicationContext: Context) : Ci
+           // Key is not compatible, delete it
+           keyStore.deleteEntry(safeAlias)
+           // Generate a new compatible key
+-          generateKeyAndStoreUnderAlias(safeAlias, level)
++          generateKeyAndStoreUnderAlias(safeAlias, level, useStrongBox)
+           key = null // Set key to null to retry the loop
+           continue
+         }
+@@ -373,14 +374,19 @@ abstract class CipherStorageBase(protected val applicationContext: Context) : Ci
+ 
+   /** Get the most secured keystore */
+   @Throws(GeneralSecurityException::class)
+-  fun generateKeyAndStoreUnderAlias(alias: String, requiredLevel: SecurityLevel) {
++  fun generateKeyAndStoreUnderAlias(
++    alias: String,
++    requiredLevel: SecurityLevel,
++    useStrongBox: Boolean = true
++  ) {
+     // Firstly, try to generate the key as safe as possible (strongbox).
+     // see https://developer.android.com/training/articles/keystore#HardwareSecurityModule
+ 
+     var secretKey: Key? = null
+     val supportsSecureHardware = DeviceAvailability.isStrongboxAvailable(applicationContext)
+ 
+-    if (supportsSecureHardware) {
++    // Only attempt StrongBox if flag is true
++    if (useStrongBox && supportsSecureHardware) {
+       try {
+         secretKey = tryGenerateStrongBoxSecurityKey(alias)
+       } catch (ex: GeneralSecurityException) {
+diff --git a/android/src/main/java/com/oblador/keychain/cipherStorage/CipherStorageKeystoreAesCbc.kt b/android/src/main/java/com/oblador/keychain/cipherStorage/CipherStorageKeystoreAesCbc.kt
+index 98c399f..13a98f1 100644
+--- a/android/src/main/java/com/oblador/keychain/cipherStorage/CipherStorageKeystoreAesCbc.kt
++++ b/android/src/main/java/com/oblador/keychain/cipherStorage/CipherStorageKeystoreAesCbc.kt
+@@ -80,7 +80,8 @@ class CipherStorageKeystoreAesCbc(reactContext: ReactApplicationContext) :
+         alias: String,
+         username: String,
+         password: String,
+-        level: SecurityLevel
++        level: SecurityLevel,
++        useStrongBox: Boolean
+     ) {
+ 
+         throwIfInsufficientLevel(level)
+@@ -89,7 +90,7 @@ class CipherStorageKeystoreAesCbc(reactContext: ReactApplicationContext) :
+         val retries = AtomicInteger(1)
+ 
+         try {
+-            val key = extractGeneratedKey(safeAlias, level, retries)
++            val key = extractGeneratedKey(safeAlias, level, retries, useStrongBox)
+ 
+             val result = CipherStorage.EncryptionResult(
+                 encryptString(key, username), encryptString(key, password), this
+diff --git a/android/src/main/java/com/oblador/keychain/cipherStorage/CipherStorageKeystoreAesGcm.kt b/android/src/main/java/com/oblador/keychain/cipherStorage/CipherStorageKeystoreAesGcm.kt
+index 6b6e626..c79fdbf 100644
+--- a/android/src/main/java/com/oblador/keychain/cipherStorage/CipherStorageKeystoreAesGcm.kt
++++ b/android/src/main/java/com/oblador/keychain/cipherStorage/CipherStorageKeystoreAesGcm.kt
+@@ -79,7 +79,8 @@ class CipherStorageKeystoreAesGcm(
+         alias: String,
+         username: String,
+         password: String,
+-        level: SecurityLevel
++        level: SecurityLevel,
++        useStrongBox: Boolean
+     ) {
+ 
+         throwIfInsufficientLevel(level)
+@@ -89,7 +90,7 @@ class CipherStorageKeystoreAesGcm(
+         var key: Key? = null
+ 
+         try {
+-            key = extractGeneratedKey(safeAlias, level, retries)
++            key = extractGeneratedKey(safeAlias, level, retries, useStrongBox)
+ 
+             val result = CipherStorage.EncryptionResult(
+                 encryptString(key, username), encryptString(key, password), this
+diff --git a/android/src/main/java/com/oblador/keychain/cipherStorage/CipherStorageKeystoreRsaEcb.kt b/android/src/main/java/com/oblador/keychain/cipherStorage/CipherStorageKeystoreRsaEcb.kt
+index fc8ebf1..8951d92 100644
+--- a/android/src/main/java/com/oblador/keychain/cipherStorage/CipherStorageKeystoreRsaEcb.kt
++++ b/android/src/main/java/com/oblador/keychain/cipherStorage/CipherStorageKeystoreRsaEcb.kt
+@@ -55,14 +55,15 @@ class CipherStorageKeystoreRsaEcb(reactContext: ReactApplicationContext) :
+         alias: String,
+         username: String,
+         password: String,
+-        level: SecurityLevel
++        level: SecurityLevel,
++        useStrongBox: Boolean
+     ) {
+         throwIfInsufficientLevel(level)
+ 
+         val safeAlias = getDefaultAliasIfEmpty(alias, getDefaultAliasServiceName())
+         val retries = AtomicInteger(1)
+         try {
+-            extractGeneratedKey(safeAlias, level, retries)
++            extractGeneratedKey(safeAlias, level, retries, useStrongBox)
+             val result = innerEncryptedCredentials(safeAlias, password, username)
+             handler.onEncrypt(result, null)
+         } catch (e: Exception) {
+diff --git a/src/types.ts b/src/types.ts
+index 00448d3..987fe62 100644
+--- a/src/types.ts
++++ b/src/types.ts
+@@ -58,6 +58,11 @@ export type SetOptions = {
+    * @default 'Best available storage'
+    */
+   storage?: STORAGE_TYPE;
++  /** Whether to attempt StrongBox-backed key generation.
++   * @platform Android
++   * @default true
++   */
++  useStrongBox?: boolean;
+   /** Authentication prompt details or a title string.
+    * @default
+    * ```json
