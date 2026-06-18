@@ -1,7 +1,7 @@
-diff --git a/node_modules/@turnkey/core/dist/__clients__/core.js b/node_modules/@turnkey/core/dist/__clients__/core.js
+diff --git a/dist/__clients__/core.js b/dist/__clients__/core.js
 index 3400c3d..d5ddc74 100644
---- a/node_modules/@turnkey/core/dist/__clients__/core.js
-+++ b/node_modules/@turnkey/core/dist/__clients__/core.js
+--- a/dist/__clients__/core.js
++++ b/dist/__clients__/core.js
 @@ -2903,6 +2903,20 @@ class TurnkeyClient {
                  if (!publicKeys || publicKeys.length === 0) {
                      return;
@@ -32,10 +32,10 @@ index 3400c3d..d5ddc74 100644
                      if (!sessionTokensMap[publicKey]) {
                          try {
                              await this.apiKeyStamper?.deleteKeyPair(publicKey);
-diff --git a/node_modules/@turnkey/core/dist/__clients__/core.mjs b/node_modules/@turnkey/core/dist/__clients__/core.mjs
+diff --git a/dist/__clients__/core.mjs b/dist/__clients__/core.mjs
 index 09353bc..55835bf 100644
---- a/node_modules/@turnkey/core/dist/__clients__/core.mjs
-+++ b/node_modules/@turnkey/core/dist/__clients__/core.mjs
+--- a/dist/__clients__/core.mjs
++++ b/dist/__clients__/core.mjs
 @@ -2901,6 +2901,20 @@ class TurnkeyClient {
                  if (!publicKeys || publicKeys.length === 0) {
                      return;

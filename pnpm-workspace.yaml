@@ -9,33 +9,33 @@ packages:
   - scripts/tests
   - sdk/*
 
-# patch-package and React Native autolinking require a flat node_modules.
+# React Native autolinking requires a flat node_modules.
 nodeLinker: hoisted
 autoInstallPeers: true
 strictPeerDependencies: false
 
 # Whitelist of packages allowed to run install scripts (pnpm 11 default-denies).
+# Audited 2026-06-17: each entry's install script reviewed; rationale inline.
 # Add new entries only after auditing the postinstall script.
 allowBuilds:
-  '@parcel/watcher': true
-  '@scarf/scarf': false
-  '@sentry/cli': true
-  '@swc/core': true
-  '@zk-email/zk-regex-circom': true
-  blake-hash: true
-  esbuild: true
-  keccak: true
-  less: true
-  lmdb: true
-  msgpackr-extract: true
-  node-forge: true
-  node-forge@https://codeload.github.com/remicolin/forge/tar.gz/17a11a632dd0e50343b3b8393245a2696f78afbb: true
-  protobufjs: true
-  react-native-inappbrowser-reborn: true
-  secp256k1: true
-  snarkjs: true
-  snarkjs@https://codeload.github.com/sampritipanda/snarkjs/tar.gz/fef81fc51d17a734637555c6edbd585ecda02d9e: true
-  unrs-resolver: true
+  '@parcel/watcher': true # native file-watcher; install builds from source
+  '@scarf/scarf': false # telemetry phone-home; denied
+  '@sentry/cli': true # postinstall downloads the sentry-cli binary
+  '@swc/core': true # postinstall fetches the native SWC binary
+  '@zk-email/zk-regex-circom': false # install script is a bare `echo`; nothing to build
+  blake-hash: true # native node-gyp prebuild
+  esbuild: true # postinstall fetches the platform esbuild binary
+  keccak: true # native node-gyp prebuild
+  less: true # @parcel/css-related native build; pnpm flags less@4.x install scripts
+  lmdb: true # native node-gyp-build-optional-packages
+  msgpackr-extract: true # native node-gyp-build-optional-packages
+  node-forge: true # remicolin/forge fork builds native crypto; pnpm matches by name
+  node-forge@https://codeload.github.com/remicolin/forge/tar.gz/17a11a632dd0e50343b3b8393245a2696f78afbb: true # explicit tarball-key form of the fork above
+  protobufjs: true # postinstall generates the CLI shim
+  react-native-inappbrowser-reborn: false # postinstall only prints an OpenCollective donation message
+  snarkjs: true # sampritipanda/snarkjs fork; pnpm matches the build by name
+  snarkjs@https://codeload.github.com/sampritipanda/snarkjs/tar.gz/fef81fc51d17a734637555c6edbd585ecda02d9e: true # explicit tarball-key form of the fork above
+  unrs-resolver: true # native resolver postinstall
 
 # @zk-email/relayer-utils pulls in node-pre-gyp-github via a git ref; pnpm 11's
 # default block on exotic subdeps rejects it. Re-enable once that's removed.
@@ -43,6 +43,10 @@ blockExoticSubdeps: false
 
 patchedDependencies:
   react-native-svg@15.14.0: pnpm-patches/react-native-svg@15.14.0.patch
+  '@turnkey/core@1.7.0': pnpm-patches/@turnkey__core@1.7.0.patch
+  react-native-date-picker@5.0.13: pnpm-patches/react-native-date-picker@5.0.13.patch
+  react-native-keychain@10.0.0: pnpm-patches/react-native-keychain@10.0.0.patch
+  react-native-passport-reader@1.0.3: pnpm-patches/react-native-passport-reader@1.0.3.patch
 
 # Pin jsdom to v25 across the workspace. jsdom v26+ uses cssstyle v5, which
 # turns CSSStyleDeclaration into a strict Proxy that rejects react-dom v18's
@@ -68,6 +72,12 @@ overrides:
   # writes that Promise to disk and crashes with "The data argument ... Received an
   # instance of Promise". Keep typechain on prettier 2.x, which has a sync format().
   typechain>prettier: 2.8.8
+  # @zk-email/relayer-utils@0.3.7 pulls node-pre-gyp-github from the ultamatt git
+  # tarball (an exotic subdep that blockExoticSubdeps rejects). The tarball only
+  # pins v1.4.3 of a publish-time tool (uploads prebuilt binaries to GitHub
+  # releases; not used when consuming relayer-utils), so resolve it from the
+  # registry instead. This removes the last blockExoticSubdeps blocker (MT-9).
+  node-pre-gyp-github: 1.4.4
   # Ported from yarn `resolutions` during the pnpm migration. Without these,
   # pnpm allows multiple versions of these packages to co-exist (yarn dedupes
   # them via `resolutions`), which inflates Metro's bundle ~3x by bundling

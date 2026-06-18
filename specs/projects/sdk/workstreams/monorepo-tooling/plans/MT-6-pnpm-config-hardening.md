@@ -38,10 +38,9 @@ the acceptance criteria all depend on a clean `pnpm install` and lockfile diff.
   packages whose install scripts are required.
 - Add one-line justification comments for every retained install-script
   allowlist entry, using the config format supported by pnpm.
-- Bump the root `packageManager` pnpm pin from the current `11.5.3` to the
-  chosen current minor, after confirming Corepack in CI resolves it without
-  warning. Update `scripts/check-pnpm-version.mjs` (and any other pin
-  references) to match.
+- Bump the root `packageManager` pnpm pin from `11.5.3` to `11.7.0`, after
+  confirming Corepack in CI resolves it without warning. Update
+  `scripts/check-pnpm-version.mjs` (and any other pin references) to match.
 
 ### Out of Scope
 
@@ -84,8 +83,8 @@ Additional checks:
       live in the `pnpm-workspace.yaml` `overrides` block.
 - [ ] Patches apply through pnpm native patching.
 - [ ] Install-script allowlist is trimmed and justified.
-- [ ] pnpm pin bumped from `11.5.3` to the chosen current minor; Corepack
-      resolves it without warning in CI and `check-pnpm-version.mjs` matches.
+- [ ] pnpm pin bumped from `11.5.3` to `11.7.0`; Corepack resolves it without
+      warning in CI and `check-pnpm-version.mjs` matches.
 - [ ] Mobile app tests and repo typecheck pass.
 - [ ] `pnpm why node-pre-gyp-github` reports a single registry resolution; the
       `codeload.github.com/ultamatt/...` tarball entry is absent from the lockfile.

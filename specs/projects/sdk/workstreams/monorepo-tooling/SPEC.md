@@ -162,8 +162,9 @@ follow-up tracks.
   `allowBuilds` install-script allowlist in `pnpm-workspace.yaml`;
   `scripts/check-pnpm-version.mjs` enforces the pin locally and in CI;
   `pnpm.overrides` block established (`jsdom@^25.0.1`, `@types/minimatch@5.1.2`,
-  `circom_tester` fork pin). Remaining MT-6 scope is patch consolidation, the
-  install-script audit doc, and a further pnpm pin bump (currently `11.5.3`).
+  `circom_tester` fork pin). MT-6 has since finished this scope: patches
+  consolidated to pnpm `patchedDependencies`, the install-script allowlist
+  audited and justified, and the pnpm pin bumped `11.5.3` → `11.7.0`.
 - **MT-8 foundations:** `yarn.lock`, `.yarnrc.yml`, and
   `.github/actions/yarnrc-hash` deleted; every workspace `package.json`,
   `CLAUDE.md`, `AGENTS.md`, and root script migrated to pnpm; new
