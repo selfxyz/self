@@ -113,8 +113,8 @@ Additionally:
     is CLI-only), so the lists live in a new `scripts/turbo-tasks.cjs` wrapper
     (matches the "complex logic belongs in `scripts/*.cjs`" invariant and keeps
     root scripts thin). Root scripts call `node scripts/turbo-tasks.cjs <task>`.
-  - **`lint` keeps its prefix steps:** `lint:pnpm-version && lint:ci-sentinel &&
-    lint:headers` run before the turbo fan-out, unchanged.
+  - `lint` keeps its prefix steps: `lint:pnpm-version`, `lint:ci-sentinel`, and
+    `lint:headers` run before the turbo fan-out, unchanged.
   - **`format` is NOT migrated.** Unlike the plan's table, the root `format`
     script was never a `pnpm -r` fan-out — it is `node scripts/format-monorepo.cjs`,
     a bespoke orchestrator that sets `SKIP_BUILD_DEPS`/`GRADLE_USER_HOME` and

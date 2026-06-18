@@ -135,12 +135,13 @@ ls packages/webview-app/dist
 - 2026-06-17: Implemented alongside MT-4 (one PR). `turbo@^2.5.0` added to root
   devDependencies (resolves to 2.9.18). `turbo.json` defines build/types/test/
   lint/format with `dependsOn`/`inputs` (`$TURBO_DEFAULT$`)/`outputs`.
-  - **Outputs deviations from the plan's "`dist/**`" default** (MT-20 cache
-    correctness): `@selfxyz/rn-sdk#build` adds `assets/self-wallet/**` (it copies
-    the webview-app bundle there) and depends on `@selfxyz/webview-app#build`;
-    `@selfxyz/core#build` adds `src/typechain-types/**` (typechain codegen);
-    `@selfxyz/rn-sdk-test-app#build` is `tsc --noEmit` (build = `pnpm types`) so
-    `outputs: []` — without this turbo warns "no output files found".
+  - Output overrides (MT-20 cache correctness). The generic build task declares
+    `outputs: ["dist/**"]`; these packages emit elsewhere and override it:
+    - `@selfxyz/rn-sdk#build` adds `assets/self-wallet` outputs (it copies the
+      webview-app bundle there) and depends on `@selfxyz/webview-app#build`.
+    - `@selfxyz/core#build` adds `src/typechain-types` outputs (typechain codegen).
+    - `@selfxyz/rn-sdk-test-app#build` is `tsc --noEmit` (build = `pnpm types`),
+      so it declares no outputs — without this, turbo warns "no output files found".
   - `app#test` depends on `@selfxyz/mobile-sdk-alpha#build` (jest → dist/cjs);
     verified in the dry-run graph.
   - **globalDependencies deviation:** the plan listed "root `tsconfig*` and env

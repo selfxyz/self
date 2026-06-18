@@ -33,7 +33,9 @@ if (!task) {
 const filters = (EXCLUSIONS[task] ?? []).flatMap((pkg) => ['--filter', `!${pkg}`]);
 const extraArgs = process.argv.slice(3);
 
-const result = spawnSync('turbo', ['run', task, ...filters, ...extraArgs], {
+// Invoke via `pnpm exec` so turbo resolves whether this runs through a pnpm
+// script (which injects node_modules/.bin) or directly as `node scripts/...`.
+const result = spawnSync('pnpm', ['exec', 'turbo', 'run', task, ...filters, ...extraArgs], {
   stdio: 'inherit',
 });
 
