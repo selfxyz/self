@@ -35,7 +35,7 @@ packageExtensionsChecksum: sha256-tkCaKfiFwLlXS2dEjX1+6n9cFCgHIQwAxB7YmYB9p/E=
 patchedDependencies:
   '@turnkey/core@1.7.0': f273ace02cb3a4e29b44ded23302d9b7128d8031111c2d36bdd6bfe893649eb7
   react-native-date-picker@5.0.13: 9f92df14f5b46a69020e826e9b6621a4c4e265043ad61d1451428bff564e0ba4
-  react-native-keychain@10.0.0: 5636df72c004bc6423261fb076095dfcef0852a23eeff8201300d31610b4545c
+  react-native-keychain@10.0.0: 73657f122583f58e54dd154a4b669b5c0596cde9b4e190d1c74fd35c984b89fb
   react-native-passport-reader@1.0.3: e4e417558e137746e5de27e963e1717f915ecde493bb7727aa54fff0f273d052
   react-native-svg@15.14.0: 262cd6cbe204c6218fa7efeade14b445de806608302bfee4274428960f34252d
 
@@ -184,13 +184,13 @@ importers:
         version: 0.5.0
       '@turnkey/core':
         specifier: 1.7.0
-        version: 1.7.0(patch_hash=f273ace02cb3a4e29b44ded23302d9b7128d8031111c2d36bdd6bfe893649eb7)(@react-native-async-storage/async-storage@2.2.0(react-native@0.83.9(@babel/core@7.29.0)(@react-native-community/cli@20.1.3(typescript@5.9.3))(@react-native/metro-config@0.83.9(@babel/core@7.29.0))(@types/react@19.2.15)(react@19.2.6)))(@turnkey/react-native-passkey-stamper@1.2.5(react-native@0.83.9(@babel/core@7.29.0)(@react-native-community/cli@20.1.3(typescript@5.9.3))(@react-native/metro-config@0.83.9(@babel/core@7.29.0))(@types/react@19.2.15)(react@19.2.6))(react@19.2.6))(react-native-keychain@10.0.0(patch_hash=5636df72c004bc6423261fb076095dfcef0852a23eeff8201300d31610b4545c))(typescript@5.9.3)(zod@4.4.3)
+        version: 1.7.0(patch_hash=f273ace02cb3a4e29b44ded23302d9b7128d8031111c2d36bdd6bfe893649eb7)(@react-native-async-storage/async-storage@2.2.0(react-native@0.83.9(@babel/core@7.29.0)(@react-native-community/cli@20.1.3(typescript@5.9.3))(@react-native/metro-config@0.83.9(@babel/core@7.29.0))(@types/react@19.2.15)(react@19.2.6)))(@turnkey/react-native-passkey-stamper@1.2.5(react-native@0.83.9(@babel/core@7.29.0)(@react-native-community/cli@20.1.3(typescript@5.9.3))(@react-native/metro-config@0.83.9(@babel/core@7.29.0))(@types/react@19.2.15)(react@19.2.6))(react@19.2.6))(react-native-keychain@10.0.0(patch_hash=73657f122583f58e54dd154a4b669b5c0596cde9b4e190d1c74fd35c984b89fb))(typescript@5.9.3)(zod@4.4.3)
       '@turnkey/encoding':
         specifier: ^0.6.0
         version: 0.6.0
       '@turnkey/react-native-wallet-kit':
         specifier: 1.1.5
-        version: 1.1.5(7dbec7ca14b55e5221d9d45c1aebc87d)
+        version: 1.1.5(c0e91843d9999d58bebfc2707484e493)
       '@walletconnect/react-native-compat':
         specifier: ^2.23.9
         version: 2.23.9(@react-native-async-storage/async-storage@2.2.0(react-native@0.83.9(@babel/core@7.29.0)(@react-native-community/cli@20.1.3(typescript@5.9.3))(@react-native/metro-config@0.83.9(@babel/core@7.29.0))(@types/react@19.2.15)(react@19.2.6)))(@react-native-community/netinfo@11.5.2(react-native@0.83.9(@babel/core@7.29.0)(@react-native-community/cli@20.1.3(typescript@5.9.3))(@react-native/metro-config@0.83.9(@babel/core@7.29.0))(@types/react@19.2.15)(react@19.2.6))(react@19.2.6))(expo-application@55.0.14(expo@55.0.20))(react-native-get-random-values@1.11.0(react-native@0.83.9(@babel/core@7.29.0)(@react-native-community/cli@20.1.3(typescript@5.9.3))(@react-native/metro-config@0.83.9(@babel/core@7.29.0))(@types/react@19.2.15)(react@19.2.6)))(react-native@0.83.9(@babel/core@7.29.0)(@react-native-community/cli@20.1.3(typescript@5.9.3))(@react-native/metro-config@0.83.9(@babel/core@7.29.0))(@types/react@19.2.15)(react@19.2.6))
@@ -289,7 +289,7 @@ importers:
         version: 3.7.1(react-native@0.83.9(@babel/core@7.29.0)(@react-native-community/cli@20.1.3(typescript@5.9.3))(@react-native/metro-config@0.83.9(@babel/core@7.29.0))(@types/react@19.2.15)(react@19.2.6))
       react-native-keychain:
         specifier: ^10.0.0
-        version: 10.0.0(patch_hash=5636df72c004bc6423261fb076095dfcef0852a23eeff8201300d31610b4545c)
+        version: 10.0.0(patch_hash=73657f122583f58e54dd154a4b669b5c0596cde9b4e190d1c74fd35c984b89fb)
       react-native-linear-gradient:
         specifier: ^2.8.3
         version: 2.8.3(react-native@0.83.9(@babel/core@7.29.0)(@react-native-community/cli@20.1.3(typescript@5.9.3))(@react-native/metro-config@0.83.9(@babel/core@7.29.0))(@types/react@19.2.15)(react@19.2.6))(react@19.2.6)
@@ -1274,7 +1274,7 @@ importers:
         version: 2.3.4(react-native@0.83.9(@babel/core@7.29.0)(@react-native-community/cli@20.1.3(typescript@5.9.3))(@react-native/metro-config@0.83.9(@babel/core@7.29.0))(@types/react@19.2.15)(react@19.2.6))
       react-native-keychain:
         specifier: ^10.0.0
-        version: 10.0.0(patch_hash=5636df72c004bc6423261fb076095dfcef0852a23eeff8201300d31610b4545c)
+        version: 10.0.0(patch_hash=73657f122583f58e54dd154a4b669b5c0596cde9b4e190d1c74fd35c984b89fb)
       react-native-localize:
         specifier: ^3.6.1
         version: 3.7.0(@expo/config-plugins@55.0.10)(react-native@0.83.9(@babel/core@7.29.0)(@react-native-community/cli@20.1.3(typescript@5.9.3))(@react-native/metro-config@0.83.9(@babel/core@7.29.0))(@types/react@19.2.15)(react@19.2.6))(react@19.2.6)
@@ -25623,7 +25623,7 @@ snapshots:
       '@turnkey/encoding': 0.6.0
       sha256-uint8array: 0.10.7
 
-  '@turnkey/core@1.7.0(patch_hash=f273ace02cb3a4e29b44ded23302d9b7128d8031111c2d36bdd6bfe893649eb7)(@react-native-async-storage/async-storage@2.2.0(react-native@0.83.9(@babel/core@7.29.0)(@react-native-community/cli@20.1.3(typescript@5.9.3))(@react-native/metro-config@0.83.9(@babel/core@7.29.0))(@types/react@19.2.15)(react@19.2.6)))(@turnkey/react-native-passkey-stamper@1.2.5(react-native@0.83.9(@babel/core@7.29.0)(@react-native-community/cli@20.1.3(typescript@5.9.3))(@react-native/metro-config@0.83.9(@babel/core@7.29.0))(@types/react@19.2.15)(react@19.2.6))(react@19.2.6))(react-native-keychain@10.0.0(patch_hash=5636df72c004bc6423261fb076095dfcef0852a23eeff8201300d31610b4545c))(typescript@5.9.3)(zod@4.4.3)':
+  '@turnkey/core@1.7.0(patch_hash=f273ace02cb3a4e29b44ded23302d9b7128d8031111c2d36bdd6bfe893649eb7)(@react-native-async-storage/async-storage@2.2.0(react-native@0.83.9(@babel/core@7.29.0)(@react-native-community/cli@20.1.3(typescript@5.9.3))(@react-native/metro-config@0.83.9(@babel/core@7.29.0))(@types/react@19.2.15)(react@19.2.6)))(@turnkey/react-native-passkey-stamper@1.2.5(react-native@0.83.9(@babel/core@7.29.0)(@react-native-community/cli@20.1.3(typescript@5.9.3))(@react-native/metro-config@0.83.9(@babel/core@7.29.0))(@types/react@19.2.15)(react@19.2.6))(react@19.2.6))(react-native-keychain@10.0.0(patch_hash=73657f122583f58e54dd154a4b669b5c0596cde9b4e190d1c74fd35c984b89fb))(typescript@5.9.3)(zod@4.4.3)':
     dependencies:
       '@turnkey/api-key-stamper': 0.5.0
       '@turnkey/crypto': 2.8.5
@@ -25643,7 +25643,7 @@ snapshots:
     optionalDependencies:
       '@react-native-async-storage/async-storage': 2.2.0(react-native@0.83.9(@babel/core@7.29.0)(@react-native-community/cli@20.1.3(typescript@5.9.3))(@react-native/metro-config@0.83.9(@babel/core@7.29.0))(@types/react@19.2.15)(react@19.2.6))
       '@turnkey/react-native-passkey-stamper': 1.2.5(react-native@0.83.9(@babel/core@7.29.0)(@react-native-community/cli@20.1.3(typescript@5.9.3))(@react-native/metro-config@0.83.9(@babel/core@7.29.0))(@types/react@19.2.15)(react@19.2.6))(react@19.2.6)
-      react-native-keychain: 10.0.0(patch_hash=5636df72c004bc6423261fb076095dfcef0852a23eeff8201300d31610b4545c)
+      react-native-keychain: 10.0.0(patch_hash=73657f122583f58e54dd154a4b669b5c0596cde9b4e190d1c74fd35c984b89fb)
     transitivePeerDependencies:
       - '@azure/app-configuration'
       - '@azure/cosmos'
@@ -25706,11 +25706,11 @@ snapshots:
       - react
       - react-native
 
-  '@turnkey/react-native-wallet-kit@1.1.5(7dbec7ca14b55e5221d9d45c1aebc87d)':
+  '@turnkey/react-native-wallet-kit@1.1.5(c0e91843d9999d58bebfc2707484e493)':
     dependencies:
       '@noble/hashes': 1.8.0
       '@react-native-async-storage/async-storage': 2.2.0(react-native@0.83.9(@babel/core@7.29.0)(@react-native-community/cli@20.1.3(typescript@5.9.3))(@react-native/metro-config@0.83.9(@babel/core@7.29.0))(@types/react@19.2.15)(react@19.2.6))
-      '@turnkey/core': 1.7.0(patch_hash=f273ace02cb3a4e29b44ded23302d9b7128d8031111c2d36bdd6bfe893649eb7)(@react-native-async-storage/async-storage@2.2.0(react-native@0.83.9(@babel/core@7.29.0)(@react-native-community/cli@20.1.3(typescript@5.9.3))(@react-native/metro-config@0.83.9(@babel/core@7.29.0))(@types/react@19.2.15)(react@19.2.6)))(@turnkey/react-native-passkey-stamper@1.2.5(react-native@0.83.9(@babel/core@7.29.0)(@react-native-community/cli@20.1.3(typescript@5.9.3))(@react-native/metro-config@0.83.9(@babel/core@7.29.0))(@types/react@19.2.15)(react@19.2.6))(react@19.2.6))(react-native-keychain@10.0.0(patch_hash=5636df72c004bc6423261fb076095dfcef0852a23eeff8201300d31610b4545c))(typescript@5.9.3)(zod@4.4.3)
+      '@turnkey/core': 1.7.0(patch_hash=f273ace02cb3a4e29b44ded23302d9b7128d8031111c2d36bdd6bfe893649eb7)(@react-native-async-storage/async-storage@2.2.0(react-native@0.83.9(@babel/core@7.29.0)(@react-native-community/cli@20.1.3(typescript@5.9.3))(@react-native/metro-config@0.83.9(@babel/core@7.29.0))(@types/react@19.2.15)(react@19.2.6)))(@turnkey/react-native-passkey-stamper@1.2.5(react-native@0.83.9(@babel/core@7.29.0)(@react-native-community/cli@20.1.3(typescript@5.9.3))(@react-native/metro-config@0.83.9(@babel/core@7.29.0))(@types/react@19.2.15)(react@19.2.6))(react@19.2.6))(react-native-keychain@10.0.0(patch_hash=73657f122583f58e54dd154a4b669b5c0596cde9b4e190d1c74fd35c984b89fb))(typescript@5.9.3)(zod@4.4.3)
       '@turnkey/crypto': 2.8.5
       '@turnkey/encoding': 0.6.0
       '@turnkey/react-native-passkey-stamper': 1.2.5(react-native@0.83.9(@babel/core@7.29.0)(@react-native-community/cli@20.1.3(typescript@5.9.3))(@react-native/metro-config@0.83.9(@babel/core@7.29.0))(@types/react@19.2.15)(react@19.2.6))(react@19.2.6)
@@ -34133,7 +34133,7 @@ snapshots:
       react: 19.2.6
       react-native: 0.83.9(@babel/core@7.29.0)(@react-native-community/cli@20.1.3(typescript@5.9.3))(@react-native/metro-config@0.83.9(@babel/core@7.29.0))(@types/react@19.2.15)(react@19.2.6)
 
-  react-native-keychain@10.0.0(patch_hash=5636df72c004bc6423261fb076095dfcef0852a23eeff8201300d31610b4545c): {}
+  react-native-keychain@10.0.0(patch_hash=73657f122583f58e54dd154a4b669b5c0596cde9b4e190d1c74fd35c984b89fb): {}
 
   react-native-keychain@9.2.3: {}
 

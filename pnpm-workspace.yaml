@@ -37,8 +37,9 @@ allowBuilds:
   snarkjs@https://codeload.github.com/sampritipanda/snarkjs/tar.gz/fef81fc51d17a734637555c6edbd585ecda02d9e: true # explicit tarball-key form of the fork above
   unrs-resolver: true # native resolver postinstall
 
-# @zk-email/relayer-utils pulls in node-pre-gyp-github via a git ref; pnpm 11's
-# default block on exotic subdeps rejects it. Re-enable once that's removed.
+# circom_tester is overridden to a github: ref (see overrides below); pnpm 11's
+# default block on exotic subdeps rejects it. Re-enable once MT-21/MT-22 migrate
+# circom_tester to a registry release and the github: override is removed.
 blockExoticSubdeps: false
 
 patchedDependencies:
