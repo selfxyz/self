@@ -111,13 +111,17 @@ const SplashScreen: React.FC = ({}) => {
             );
           }
 
-          const [hasRegisteredDocument, hasStoredSecret] = await Promise.all([
+          const [hasRegisteredDocument, secretPresence] = await Promise.all([
             hasAnyValidRegisteredDocument(selfClient),
             hasSecretStored(),
           ]);
           console.log(
             `SplashScreen: hasAnyValidRegisteredDocument complete (${elapsed()})`,
           );
+          // F-07: only an explicit `absent` result routes as a fresh install.
+          // `unknown` (transient keychain error) is treated as present so we
+          // never push an existing user into onboarding/recovery on a flaky
+          // read; a later secret access will surface the real error if needed.
           const settings = useSettingStore.getState();
           const startupTarget = getStartupNavigationTarget({
             hasPrivacyNoteBeenDismissed: settings.hasPrivacyNoteBeenDismissed,
@@ -126,7 +130,7 @@ const SplashScreen: React.FC = ({}) => {
               hasViewedRecoveryPhrase: settings.hasViewedRecoveryPhrase,
               pointsAddress: settings.pointsAddress,
             }),
-            hasSecretStored: hasStoredSecret,
+            hasSecretStored: secretPresence !== 'absent',
             hasValidRegisteredDocument: hasRegisteredDocument,
           });
           const parentScreen = startupTarget.route;

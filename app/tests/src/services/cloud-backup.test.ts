@@ -10,6 +10,7 @@ import { renderHook } from '@testing-library/react-native';
 
 import { useBackupMnemonic } from '@/services/cloud-backup';
 import { createGDrive } from '@/services/cloud-backup/google';
+import { useSettingStore } from '@/stores/settingStore';
 
 type SupportedPlatforms = 'ios' | 'android';
 
@@ -99,6 +100,7 @@ const mockGDriveInstance = {
   accessToken: '',
   files: {
     newMultipartUploader: jest.fn().mockReturnValue({
+      setIdOfFileToUpdate: jest.fn().mockReturnThis(),
       setData: jest.fn().mockReturnThis(),
       setDataMimeType: jest.fn().mockReturnThis(),
       setRequestBody: jest.fn().mockReturnThis(),
@@ -129,6 +131,9 @@ describe('cloudBackup', () => {
     consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
     (GDrive as jest.Mock).mockImplementation(() => mockGDriveInstance);
     (ethers.Mnemonic.isValidMnemonic as jest.Mock).mockReturnValue(true);
+    // F-08: the canonical Drive file id is persisted; reset it between tests so
+    // one test's stored id never leaks into the next.
+    useSettingStore.getState().setBackupFileId(null);
   });
 
   afterEach(() => {
@@ -225,8 +230,9 @@ describe('cloudBackup', () => {
 
   // AUD-02 F-01 (Critical) — characterizes that the backup payload is the
   // plaintext mnemonic, not ciphertext, despite the 'encrypted-private-key'
-  // name. Pins current behavior; remediation must flip these assertions to
-  // require that the provider receives non-parseable ciphertext.
+  // name. F-01 (client-side encryption) is DEFERRED, so this behavior is
+  // intentionally unchanged in this round; these assertions still hold and
+  // must be flipped when encryption lands.
   // See docs/reviews/2026-06-17-key-material-keychain-audit.md.
   describe('AUD-02 F-01: cloud backup payload is plaintext, not encrypted', () => {
     it('iOS: writes a JSON-parseable mnemonic exposing the literal phrase', async () => {
@@ -250,8 +256,9 @@ describe('cloudBackup', () => {
     it('Android: hands the Drive uploader a JSON-parseable mnemonic exposing the phrase', async () => {
       mockPlatform.OS = 'android';
       (createGDrive as jest.Mock).mockResolvedValue(mockGDriveInstance);
+      mockGDriveInstance.files.list.mockResolvedValue({ files: [] });
       mockGDriveInstance.files.newMultipartUploader().execute.mockResolvedValue(
-        {},
+        { id: 'new-file-id' },
       );
 
       const { result } = renderHook(() => useBackupMnemonic());
@@ -271,11 +278,13 @@ describe('cloudBackup', () => {
       mockPlatform.OS = 'android';
     });
 
-    it('should upload mnemonic to Google Drive successfully', async () => {
+    it('creates a new Drive file when none exists and stores its id', async () => {
       (createGDrive as jest.Mock).mockResolvedValue(mockGDriveInstance);
+      // No existing backup file.
+      mockGDriveInstance.files.list.mockResolvedValue({ files: [] });
       mockGDriveInstance.files
         .newMultipartUploader()
-        .execute.mockResolvedValue({});
+        .execute.mockResolvedValue({ id: 'new-file-id' });
 
       const { result } = renderHook(() => useBackupMnemonic());
 
@@ -290,6 +299,54 @@ describe('cloudBackup', () => {
       expect(
         mockGDriveInstance.files.newMultipartUploader().execute,
       ).toHaveBeenCalled();
+      // Create path (not update): no prior id to update in place.
+      expect(
+        mockGDriveInstance.files.newMultipartUploader().setIdOfFileToUpdate,
+      ).not.toHaveBeenCalled();
+      // The created file id is persisted as the canonical backup.
+      expect(useSettingStore.getState().backupFileId).toBe('new-file-id');
+    });
+
+    it('updates the existing canonical file in place when an id is known', async () => {
+      useSettingStore.getState().setBackupFileId('known-file-id');
+      (createGDrive as jest.Mock).mockResolvedValue(mockGDriveInstance);
+      mockGDriveInstance.files
+        .newMultipartUploader()
+        .execute.mockResolvedValue({ id: 'known-file-id' });
+
+      const { result } = renderHook(() => useBackupMnemonic());
+
+      await expect(
+        result.current.upload(mockMnemonic),
+      ).resolves.toBeUndefined();
+
+      // PATCH in place; no listing/dedupe churn when the id is already known.
+      expect(
+        mockGDriveInstance.files.newMultipartUploader().setIdOfFileToUpdate,
+      ).toHaveBeenCalledWith('known-file-id');
+      expect(mockGDriveInstance.files.list).not.toHaveBeenCalled();
+    });
+
+    it('adopts and dedupes pre-existing duplicate files', async () => {
+      (createGDrive as jest.Mock).mockResolvedValue(mockGDriveInstance);
+      mockGDriveInstance.files.list.mockResolvedValue({
+        files: [{ id: 'keep' }, { id: 'dup1' }, { id: 'dup2' }],
+      });
+      mockGDriveInstance.files.delete.mockResolvedValue(undefined);
+      mockGDriveInstance.files
+        .newMultipartUploader()
+        .execute.mockResolvedValue({ id: 'keep' });
+
+      const { result } = renderHook(() => useBackupMnemonic());
+
+      await result.current.upload(mockMnemonic);
+
+      // Extra duplicates removed; the survivor is updated in place.
+      expect(mockGDriveInstance.files.delete).toHaveBeenCalledWith('dup1');
+      expect(mockGDriveInstance.files.delete).toHaveBeenCalledWith('dup2');
+      expect(
+        mockGDriveInstance.files.newMultipartUploader().setIdOfFileToUpdate,
+      ).toHaveBeenCalledWith('keep');
     });
 
     it('should throw error when user cancels Google sign-in', async () => {
@@ -411,6 +468,23 @@ describe('cloudBackup', () => {
       );
     });
 
+    it('downloads by the stored canonical id without listing', async () => {
+      useSettingStore.getState().setBackupFileId('known-file-id');
+      (createGDrive as jest.Mock).mockResolvedValue(mockGDriveInstance);
+      mockGDriveInstance.files.getText.mockResolvedValue(
+        JSON.stringify(mockMnemonic),
+      );
+
+      const { result } = renderHook(() => useBackupMnemonic());
+      const downloaded = await result.current.download();
+
+      expect(mockGDriveInstance.files.getText).toHaveBeenCalledWith(
+        'known-file-id',
+      );
+      expect(mockGDriveInstance.files.list).not.toHaveBeenCalled();
+      expect(downloaded).toEqual(mockMnemonic);
+    });
+
     it('should throw error when user cancels Google sign-in', async () => {
       (createGDrive as jest.Mock).mockResolvedValue(null);
 
@@ -505,7 +579,8 @@ describe('cloudBackup', () => {
       mockPlatform.OS = 'android';
     });
 
-    it('should delete backup files from Google Drive', async () => {
+    it('should delete all backup files from Google Drive and clear the stored id', async () => {
+      useSettingStore.getState().setBackupFileId('file-id');
       (createGDrive as jest.Mock).mockResolvedValue(mockGDriveInstance);
       mockGDriveInstance.files.list.mockResolvedValue({
         files: [{ id: 'file-id' }, { id: 'file-id2' }],
@@ -519,6 +594,7 @@ describe('cloudBackup', () => {
         spaces: 'mock-app-data-folder',
         q: "name = 'encrypted-private-key'",
       });
+      // Deletes the canonical file plus any duplicate (self-healing).
       expect(mockGDriveInstance.files.delete).toHaveBeenNthCalledWith(
         1,
         'file-id',
@@ -527,6 +603,7 @@ describe('cloudBackup', () => {
         2,
         'file-id2',
       );
+      expect(useSettingStore.getState().backupFileId).toBeNull();
     });
 
     it('should resolve when user cancels Google sign-in', async () => {

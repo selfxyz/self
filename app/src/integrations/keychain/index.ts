@@ -25,7 +25,12 @@ export interface AdaptiveSecurityConfig {
 export interface GetSecureOptions {
   requireAuth?: boolean;
   promptMessage?: string;
-  /** Whether to use StrongBox-backed key generation on Android. Default: true */
+  /**
+   * Whether to use StrongBox-backed key generation on Android. When omitted,
+   * resolves to the `useStrongBox` setting, which defaults to `false`
+   * (StrongBox is off by default due to reliability issues on some Samsung
+   * devices). The library-level default if no flag is passed at all is `true`.
+   */
   useStrongBox?: boolean;
 }
 
