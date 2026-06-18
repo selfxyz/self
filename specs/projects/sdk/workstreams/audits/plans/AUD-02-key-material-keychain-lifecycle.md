@@ -257,3 +257,24 @@ records these commands and their output.
 - 2026-06-11 — Review revisions: fixed validation command path (`scripts/` relative to `app/`),
   carved out a backlog-row-only exception to the SPEC.md no-modify rule to resolve the DoD
   conflict, added Q4/Q5 backup/restore ingress call sites to the inventory as trace-only rows.
+- 2026-06-18 — Investigation + adversarial gate complete; report at
+  `docs/reviews/2026-06-17-key-material-keychain-audit.md`; backlog row → In Review. Findings
+  F-01..F-14, owner dispositions recorded in the report. Pilot lessons for the protocol revision
+  before AUD-01:
+  1. **Recon refresh must cover the deps/build environment, not just `path:line`.** The target
+     code was 87 commits behind on the local checkout, forcing an isolated worktree at
+     `origin/dev`; that worktree had no `node_modules` and the stale main checkout's jest was
+     itself broken, so "characterization tests merged & green" was unachievable in-session.
+     Protocol should require Stage 1 to confirm the validation command actually executes (deps
+     installed), or explicitly allow "tests written, validation deferred" as a DoD state.
+  2. **Native/third-party findings (F-03) need a first-class "accept + document" lane** at
+     Stage 4 — some real findings live in vendored libraries the audit cannot change and should
+     not be forced into a remediation bucket.
+  3. **Critical fast-path collides with the agent boundary.** Filing a confidential Linear issue
+     is an outward-facing action the human owner must drive; the protocol should say the agent
+     surfaces and the owner escalates.
+  4. **Plan citations drifted in two spots** (`authProvider.web.tsx` absent; `CloudBackupScreen`
+     not a restore ingress) — both caught during recon/investigation; confirms the step earns
+     its keep.
+  5. **"Suspected = unverified" framing held up** — two priors were refuted (Q1.2 transient-false
+     overwrite; Q3.3 overwrite-compounding). Keep it.

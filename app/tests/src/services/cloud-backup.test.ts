@@ -223,6 +223,49 @@ describe('cloudBackup', () => {
     });
   });
 
+  // AUD-02 F-01 (Critical) — characterizes that the backup payload is the
+  // plaintext mnemonic, not ciphertext, despite the 'encrypted-private-key'
+  // name. Pins current behavior; remediation must flip these assertions to
+  // require that the provider receives non-parseable ciphertext.
+  // See docs/reviews/2026-06-17-key-material-keychain-audit.md.
+  describe('AUD-02 F-01: cloud backup payload is plaintext, not encrypted', () => {
+    it('iOS: writes a JSON-parseable mnemonic exposing the literal phrase', async () => {
+      mockPlatform.OS = 'ios';
+      (CloudStorage.mkdir as jest.Mock).mockResolvedValue(undefined);
+      (CloudStorage.writeFile as jest.Mock).mockResolvedValue(undefined);
+
+      const { result } = renderHook(() => useBackupMnemonic());
+      await result.current.upload(mockMnemonic);
+
+      const [path, payload] = (CloudStorage.writeFile as jest.Mock).mock
+        .calls[0];
+      expect(path).toContain('encrypted-private-key');
+      // The "encrypted" file is plaintext: it round-trips through JSON.parse
+      // and yields the recovery phrase + entropy verbatim.
+      const recovered = JSON.parse(payload);
+      expect(recovered.phrase).toBe(mockMnemonic.phrase);
+      expect(recovered.entropy).toBe(mockMnemonic.entropy);
+    });
+
+    it('Android: hands the Drive uploader a JSON-parseable mnemonic exposing the phrase', async () => {
+      mockPlatform.OS = 'android';
+      (createGDrive as jest.Mock).mockResolvedValue(mockGDriveInstance);
+      mockGDriveInstance.files.newMultipartUploader().execute.mockResolvedValue(
+        {},
+      );
+
+      const { result } = renderHook(() => useBackupMnemonic());
+      await result.current.upload(mockMnemonic);
+
+      const [payload] = (
+        mockGDriveInstance.files.newMultipartUploader().setData as jest.Mock
+      ).mock.calls[0];
+      const recovered = JSON.parse(payload);
+      expect(recovered.phrase).toBe(mockMnemonic.phrase);
+      expect(recovered.entropy).toBe(mockMnemonic.entropy);
+    });
+  });
+
   describe('upload function - Android', () => {
     beforeEach(() => {
       mockPlatform.OS = 'android';
