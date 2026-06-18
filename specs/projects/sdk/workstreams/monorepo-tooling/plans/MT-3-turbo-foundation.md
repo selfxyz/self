@@ -5,9 +5,9 @@
 
 - Workstream: monorepo-tooling
 - Backlog IDs: MT-3
-- Owner: TBD
-- Branch: TBD
-- PR: TBD
+- Owner: Justin Hernandez
+- Branch: justin/mt-3-and-4
+- PR: TBD (shipped together with MT-4)
 
 ### Why
 
@@ -132,3 +132,31 @@ ls packages/webview-app/dist
 ### Status Log
 
 - 2026-05-13: Plan created.
+- 2026-06-17: Implemented alongside MT-4 (one PR). `turbo@^2.5.0` added to root
+  devDependencies (resolves to 2.9.18). `turbo.json` defines build/types/test/
+  lint/format with `dependsOn`/`inputs` (`$TURBO_DEFAULT$`)/`outputs`.
+  - Output overrides (MT-20 cache correctness). The generic build task declares
+    `outputs: ["dist/**"]`; these packages emit elsewhere and override it:
+    - `@selfxyz/rn-sdk#build` adds `assets/self-wallet` outputs (it copies the
+      webview-app bundle there) and depends on `@selfxyz/webview-app#build`.
+    - `@selfxyz/core#build` adds `src/typechain-types` outputs (typechain codegen).
+    - `@selfxyz/rn-sdk-test-app#build` is `tsc --noEmit` (build = `pnpm types`),
+      so it declares no outputs — without this, turbo warns "no output files found".
+  - `app#test` depends on `@selfxyz/mobile-sdk-alpha#build` (jest → dist/cjs);
+    verified in the dry-run graph.
+  - **globalDependencies deviation:** the plan listed "root `tsconfig*` and env
+    templates" but the repo has neither at root (tsconfigs are per-package; only
+    `contracts/.env.example` exists, package-local). Used `pnpm-lock.yaml`,
+    `pnpm-workspace.yaml`, `.npmrc` — the actual repo-wide invalidation inputs.
+  - **Lockfile hygiene note:** a plain `pnpm install` to add turbo re-resolves
+    peers and rewrites ~1.7k lines (threads `supports-color` through every
+    `@babel/core` peer key — versions unchanged, only peer-key identity). The
+    committed lockfile predates this normalization and only survives because
+    `--frozen-lockfile` skips re-resolution. To keep this PR's lockfile diff
+    turbo-only (64 lines), turbo's isolated entries were grafted onto the clean
+    committed lockfile; `pnpm install --frozen-lockfile` accepts the result. The
+    broader peer-renormalization is pre-existing drift and belongs to pnpm
+    hygiene (MT-13/MT-6), not here.
+  - Validation: cold `turbo run build` → warm "FULL TURBO" (11/11 cached);
+    `pnpm --filter @selfxyz/mobile-app test` 70 pass / 0 fail; `pnpm types` and
+    `pnpm lint` green via the new turbo-backed scripts.

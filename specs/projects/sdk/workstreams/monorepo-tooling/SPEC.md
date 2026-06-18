@@ -73,7 +73,23 @@ ordering, inputs, and outputs.
 
 Every cacheable build task declares explicit `outputs`, and `globalDependencies`
 cover shared root config such as root `tsconfig*`, `pnpm-lock.yaml`, and env
-templates.
+templates. (As implemented in MT-3, the repo has no root `tsconfig*` or env
+template, so `globalDependencies` is `pnpm-lock.yaml`, `pnpm-workspace.yaml`,
+`.npmrc`.)
+
+**Implemented in MT-3/MT-4 — read before MT-5 (CI):**
+
+- Per-task exclusions live in `scripts/turbo-tasks.cjs` (Turbo has no per-task
+  package-exclude in `turbo.json`); root scripts call
+  `node scripts/turbo-tasks.cjs <task>`.
+- Gradle/native packages (`@selfxyz/kmp-sdk`, `@selfxyz/kmp-sdk-test-app`) are
+  excluded from every Turbo task (SPEC keeps gradle/swift out of Turbo). As a
+  result `pnpm test` and `pnpm lint` no longer cover the kmp packages — they are
+  covered by the dedicated `kmp:test`/`kmp:lint` (and `native-shell:*`) scripts.
+  **MT-5 must invoke kmp/native coverage explicitly**, not via bare `pnpm test`/
+  `pnpm lint`.
+- `pnpm format` stays on `scripts/format-monorepo.cjs` (bespoke gradle/swift +
+  env orchestration); it is not migrated to `turbo run format`.
 
 ### pnpm Hardening
 

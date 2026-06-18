@@ -1,0 +1,50 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": ["pnpm-lock.yaml", "pnpm-workspace.yaml", ".npmrc"],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$"],
+      "outputs": ["dist/**"]
+    },
+    "types": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$"],
+      "outputs": []
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$"],
+      "outputs": [],
+      "env": ["FULL_TEST_SUITE"]
+    },
+    "lint": {
+      "dependsOn": [],
+      "inputs": ["$TURBO_DEFAULT$"],
+      "outputs": []
+    },
+    "format": {
+      "cache": false
+    },
+    "@selfxyz/mobile-app#test": {
+      "dependsOn": ["^build", "@selfxyz/mobile-sdk-alpha#build"],
+      "inputs": ["$TURBO_DEFAULT$"],
+      "outputs": []
+    },
+    "@selfxyz/rn-sdk#build": {
+      "dependsOn": ["^build", "@selfxyz/webview-app#build"],
+      "inputs": ["$TURBO_DEFAULT$"],
+      "outputs": ["dist/**", "assets/self-wallet/**"]
+    },
+    "@selfxyz/rn-sdk-test-app#build": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$"],
+      "outputs": []
+    },
+    "@selfxyz/core#build": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$"],
+      "outputs": ["dist/**", "src/typechain-types/**"]
+    }
+  }
+}
