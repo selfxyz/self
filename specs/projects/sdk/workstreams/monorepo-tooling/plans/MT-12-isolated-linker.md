@@ -129,15 +129,15 @@ and re-open MT-12 if any of the following hold at merge time:
 
 ### Files Modified
 
-| File                                           | Change                                                      |
-| ---------------------------------------------- | ----------------------------------------------------------- |
-| `pnpm-workspace.yaml`                          | Remove `nodeLinker: hoisted`                                |
+| File                                           | Change                                                                                          |
+| ---------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `pnpm-workspace.yaml`                          | Remove `nodeLinker: hoisted`                                                                    |
 | `.npmrc`                                       | Remove duplicate `node-linker=hoisted`; add isolated-linker-compatible flags with justification |
-| `app/metro.config.js`                          | Enable symlink resolution; widen `watchFolders` if needed   |
-| `packages/mobile-sdk-demo/metro.config.js`     | Same as above                                               |
-| `app/ios/Podfile` (if needed)                  | Adjust `pod` paths that bake in hoisted-layout assumptions  |
-| `app/android/settings.gradle` (if needed)      | Adjust autolinking paths that bake in hoisted-layout        |
-| Any `patches/*.patch` revalidated against pnpm | Re-base patches that referenced hoisted paths (coord. MT-6) |
+| `app/metro.config.js`                          | Enable symlink resolution; widen `watchFolders` if needed                                       |
+| `packages/mobile-sdk-demo/metro.config.js`     | Same as above                                                                                   |
+| `app/ios/Podfile` (if needed)                  | Adjust `pod` paths that bake in hoisted-layout assumptions                                      |
+| `app/android/settings.gradle` (if needed)      | Adjust autolinking paths that bake in hoisted-layout                                            |
+| Any `patches/*.patch` revalidated against pnpm | Re-base patches that referenced hoisted paths (coord. MT-6)                                     |
 
 ### Files NOT Modified
 

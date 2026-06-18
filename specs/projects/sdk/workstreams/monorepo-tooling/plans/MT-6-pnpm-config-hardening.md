@@ -68,14 +68,14 @@ Additional checks:
 
 ### Files Modified
 
-| File                             | Change                                                                             |
-| -------------------------------- | ---------------------------------------------------------------------------------- |
+| File                             | Change                                                                                                                                   |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | `package.json`                   | Remove `resolutions` pins (moved to `pnpm-workspace.yaml`) and the patch-package `postinstall` hook; bump the `packageManager` pnpm pin. |
-| `scripts/check-pnpm-version.mjs` | Update the enforced pin to match the new pnpm version. |
-| `pnpm-workspace.yaml`            | Add moved pins + `node-pre-gyp-github` to the `overrides` block; keep justified install-script allowlist comments. |
-| `pnpm-lock.yaml`                 | Reflect override and patch changes.                                                |
-| `.npmrc`                         | Keep install-script allowlist comments where the active pnpm config supports them. |
-| `patches/*`                      | Move or regenerate patches through pnpm native patching.                           |
+| `scripts/check-pnpm-version.mjs` | Update the enforced pin to match the new pnpm version.                                                                                   |
+| `pnpm-workspace.yaml`            | Add moved pins + `node-pre-gyp-github` to the `overrides` block; keep justified install-script allowlist comments.                       |
+| `pnpm-lock.yaml`                 | Reflect override and patch changes.                                                                                                      |
+| `.npmrc`                         | Keep install-script allowlist comments where the active pnpm config supports them.                                                       |
+| `patches/*`                      | Move or regenerate patches through pnpm native patching.                                                                                 |
 
 ### Definition of Done
 
