@@ -16,7 +16,7 @@
   },
   "scripts": {
     "audit:tech-debt": "node scripts/audit/tech-debt-baseline.mjs",
-    "build": "pnpm -r --if-present --filter \"!@selfxyz/contracts\" --filter \"!@selfxyz/circuits\" --filter \"!mobile-sdk-demo\" --filter \"!@selfxyz/kmp-sdk\" --filter \"!@selfxyz/kmp-sdk-test-app\" run build",
+    "build": "node scripts/turbo-tasks.cjs build",
     "build:demo": "pnpm --filter mobile-sdk-demo build",
     "build:mobile-sdk": "pnpm --filter @selfxyz/mobile-sdk-alpha build",
     "build:sdk-android": "./scripts/build-webview-bundle.sh && cd packages/native-shell-android && ./gradlew assembleRelease",
@@ -39,7 +39,7 @@
     "kmp:lint": "pnpm --filter @selfxyz/kmp-sdk-test-app lint",
     "kmp:start": "bash scripts/kmp-start.sh",
     "kmp:test": "pnpm --filter @selfxyz/kmp-sdk test",
-    "lint": "pnpm lint:pnpm-version && pnpm lint:ci-sentinel && pnpm lint:headers && pnpm -r --if-present --filter \"!self-workspace-root\" run lint",
+    "lint": "pnpm lint:pnpm-version && pnpm lint:ci-sentinel && pnpm lint:headers && node scripts/turbo-tasks.cjs lint",
     "lint:ci-sentinel": "python3 scripts/ci/add-force-run-sentinel.py --check",
     "lint:headers": "node scripts/check-duplicate-headers.cjs . && node scripts/check-license-headers.mjs . --check",
     "lint:headers:fix": "node scripts/check-duplicate-headers.cjs . && node scripts/check-license-headers.mjs . --fix",
@@ -51,9 +51,9 @@
     "prepare": "husky",
     "reinstall-app": "pnpm install && (cd app && pnpm clean:watchman && pnpm clean:build && pnpm clean:ios && pnpm clean:xcode && pnpm clean:pod-cache && pnpm clean:android-deps && pnpm clean:ruby && pnpm clean:node) && pnpm install && pnpm --filter @selfxyz/mobile-app run install-app",
     "sort-package-jsons": "find . -name 'package.json' -not -path './node_modules/*' -not -path './*/node_modules/*' | xargs pnpm dlx sort-package-json",
-    "test": "pnpm -r --if-present run test",
+    "test": "node scripts/turbo-tasks.cjs test",
     "test:license-headers": "cd scripts/tests && node check-license-headers.test.mjs",
-    "types": "pnpm -r --if-present --filter \"!@selfxyz/contracts\" --filter \"!@selfxyz/common\" --filter \"!@selfxyz/mobile-app\" run types"
+    "types": "node scripts/turbo-tasks.cjs types"
   },
   "dependencies": {
     "@babel/runtime": "^7.29.7",
@@ -69,6 +69,7 @@
     "knip": "^6.14.2",
     "prettier": "^3.8.3",
     "tsx": "^4.22.3",
+    "turbo": "^2.5.0",
     "typescript": "^5.9.3"
   },
   "packageManager": "pnpm@11.7.0+sha512.19cc852c120c7125760f2443ee6be0ca5b40f9f50598de1a09a1f177503e010e57c23c77646e01e761de59bf874fb22a3398c33ab9691fc13eb946b6f0f4d620",

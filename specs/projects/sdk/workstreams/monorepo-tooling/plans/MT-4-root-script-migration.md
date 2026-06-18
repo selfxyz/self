@@ -5,9 +5,9 @@
 
 - Workstream: monorepo-tooling
 - Backlog IDs: MT-4
-- Owner: TBD
-- Branch: TBD
-- PR: TBD
+- Owner: Justin Hernandez
+- Branch: justin/mt-3-and-4
+- PR: TBD (shipped together with MT-3)
 
 ### Why
 
@@ -103,3 +103,31 @@ Additionally:
 ### Status Log
 
 - 2026-05-13: Plan created.
+- 2026-06-17: Implemented alongside MT-3 (one PR). Root `build`/`types`/`test`/
+  `lint` now drive Turbo. Deviations from the plan's "bare `turbo run <task>`"
+  mapping, all to preserve pre-Turbo semantics:
+  - **Exclusions are required.** The pre-Turbo scripts carried `--filter "!..."`
+    scopes that must survive: `build` excludes contracts/circuits/mobile-sdk-demo/
+    kmp-sdk/kmp-sdk-test-app; `types` excludes contracts/common/mobile-app.
+    Turbo has no "exclude package from a task" field in `turbo.json` (selection
+    is CLI-only), so the lists live in a new `scripts/turbo-tasks.cjs` wrapper
+    (matches the "complex logic belongs in `scripts/*.cjs`" invariant and keeps
+    root scripts thin). Root scripts call `node scripts/turbo-tasks.cjs <task>`.
+  - **`lint` keeps its prefix steps:** `lint:pnpm-version && lint:ci-sentinel &&
+    lint:headers` run before the turbo fan-out, unchanged.
+  - **`format` is NOT migrated.** Unlike the plan's table, the root `format`
+    script was never a `pnpm -r` fan-out — it is `node scripts/format-monorepo.cjs`,
+    a bespoke orchestrator that sets `SKIP_BUILD_DEPS`/`GRADLE_USER_HOME` and
+    sequences gradle (kmp) + swift (native-shell) formatting. The invariant says
+    such logic stays in `scripts/*.cjs`, and SPEC out-of-scope forbids gradle/
+    swift through Turbo. Kept as-is. (`format` is still defined in `turbo.json`
+    per MT-3 for JS-only use, but `pnpm format` remains the canonical entrypoint.)
+  - **Behavior change to flag for MT-5/CI:** `pnpm test` and `pnpm lint` no longer
+    run the Gradle kmp packages (`@selfxyz/kmp-sdk`, `@selfxyz/kmp-sdk-test-app`)
+    — SPEC out-of-scope keeps gradle out of Turbo and those are JS-task no-ops/
+    heavy gradle. They remain covered by the dedicated `kmp:test`/`kmp:lint`
+    (and `native-shell:*`) scripts. The CI migration (MT-5) must invoke kmp
+    coverage explicitly rather than relying on bare `pnpm test`/`pnpm lint`.
+  - Validation: `pnpm build` (cold → warm FULL TURBO 11/11), `pnpm types`,
+    `pnpm lint` all green; RN gate `pnpm --filter @selfxyz/mobile-app test`
+    70 pass / 0 fail.
