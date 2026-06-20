@@ -91,19 +91,6 @@ jobs:
           workspace: ${{ env.WORKSPACE }}
         env:
           SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
-      - name: Check for duplicate dependency versions
-        shell: bash
-        run: pnpm dedupe --check
-      - name: Relink dependencies
-        # `pnpm dedupe --check` reconciles node_modules and relocates hoisted
-        # packages it treats as foreign (typescript, turbo, ...) to
-        # node_modules/.ignored. A plain frozen reinstall reports "Already up to
-        # date" and leaves them stranded, so --force is required to rebuild the
-        # hoisted layout from the lockfile. NODE_ENV=development + --no-prod
-        # mirrors mobile-setup so the global NODE_ENV=production doesn't drop
-        # root devDeps.
-        shell: bash
-        run: NODE_ENV=development pnpm install --frozen-lockfile --no-prod --force
       - name: Build dependencies
         shell: bash
         run: pnpm --filter @selfxyz/common build
@@ -188,19 +175,6 @@ jobs:
           workspace: ${{ env.WORKSPACE }}
         env:
           SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
-      - name: Check for duplicate dependency versions
-        shell: bash
-        run: pnpm dedupe --check
-      - name: Relink dependencies
-        # `pnpm dedupe --check` reconciles node_modules and relocates hoisted
-        # packages it treats as foreign (typescript, turbo, ...) to
-        # node_modules/.ignored. A plain frozen reinstall reports "Already up to
-        # date" and leaves them stranded, so --force is required to rebuild the
-        # hoisted layout from the lockfile. NODE_ENV=development + --no-prod
-        # mirrors mobile-setup so the global NODE_ENV=production doesn't drop
-        # root devDeps.
-        shell: bash
-        run: NODE_ENV=development pnpm install --frozen-lockfile --no-prod --force
       - name: Build dependencies
         shell: bash
         run: pnpm --filter @selfxyz/common build
