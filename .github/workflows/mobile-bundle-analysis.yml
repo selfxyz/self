@@ -92,15 +92,12 @@ jobs:
         env:
           SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
       - name: Check for duplicate dependency versions
+        # Run under NODE_ENV=development so the dedupe reconcile keeps hoisted
+        # devDeps (typescript, turbo, ...) linked. Under the workflow's global
+        # NODE_ENV=production, dedupe prunes them to node_modules/.ignored and a
+        # frozen-lockfile reinstall won't relink them, breaking later build steps.
         shell: bash
-        run: pnpm dedupe --check
-      - name: Relink dependencies
-        # `pnpm dedupe --check` heals node_modules and moves hoisted devDeps
-        # (typescript, turbo, ...) to .ignored; reinstall to relink them.
-        # NODE_ENV=development + --no-prod mirrors mobile-setup so the global
-        # NODE_ENV=production doesn't drop root devDeps again.
-        shell: bash
-        run: NODE_ENV=development pnpm install --frozen-lockfile --no-prod
+        run: NODE_ENV=development pnpm dedupe --check
       - name: Build dependencies
         shell: bash
         run: pnpm --filter @selfxyz/common build
@@ -186,15 +183,12 @@ jobs:
         env:
           SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
       - name: Check for duplicate dependency versions
+        # Run under NODE_ENV=development so the dedupe reconcile keeps hoisted
+        # devDeps (typescript, turbo, ...) linked. Under the workflow's global
+        # NODE_ENV=production, dedupe prunes them to node_modules/.ignored and a
+        # frozen-lockfile reinstall won't relink them, breaking later build steps.
         shell: bash
-        run: pnpm dedupe --check
-      - name: Relink dependencies
-        # `pnpm dedupe --check` heals node_modules and moves hoisted devDeps
-        # (typescript, turbo, ...) to .ignored; reinstall to relink them.
-        # NODE_ENV=development + --no-prod mirrors mobile-setup so the global
-        # NODE_ENV=production doesn't drop root devDeps again.
-        shell: bash
-        run: NODE_ENV=development pnpm install --frozen-lockfile --no-prod
+        run: NODE_ENV=development pnpm dedupe --check
       - name: Build dependencies
         shell: bash
         run: pnpm --filter @selfxyz/common build
