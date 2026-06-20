@@ -16,7 +16,7 @@ Yarn → pnpm conversion. Hoisting defeats pnpm's main safety property
 (strict, isolated `node_modules` per package) — every workspace can
 silently import any transitive dep, peer mismatches go undetected, and
 ghost dependencies creep in. Until this is flipped to the default
-isolated (symlink-based) linker, MT-9 / MT-11 / MT-14 cannot deliver
+isolated (symlink-based) linker, MT-9 and MT-14 cannot deliver
 their full safety value.
 
 This plan is high-risk because React Native's tooling chain was not
@@ -28,6 +28,10 @@ implementation step.
 
 - `pnpm-workspace.yaml` — remove `nodeLinker: hoisted` (or set explicitly
   to `isolated`).
+- `.npmrc` — remove the duplicate `node-linker=hoisted` line. The linker is
+  currently pinned in **both** files; flipping only `pnpm-workspace.yaml`
+  leaves `.npmrc` forcing the hoisted layout, so the install layout would not
+  actually change.
 - Any `.npmrc` flags required to make RN tooling work under isolated
   (e.g. `public-hoist-pattern`, `shamefully-hoist=false`,
   `dedupe-peer-dependents=true`). Document each addition with a one-line
@@ -36,23 +40,25 @@ implementation step.
   necessary to resolve symlinked packages.
 - Patch ports: any `patch-package` patch that relied on hoisted layout
   must be re-validated against the isolated layout. Coordinate with
-  MT-7.
+  MT-6 (which owns the `patch-package` → `pnpm.patchedDependencies`
+  migration).
 
 ### Out of Scope
 
 - Remote-cache or Turbo wiring (separate plan).
-- Yarn artifact removal (MT-15).
-- pnpm version bump (MT-16).
+- Yarn artifact removal and the pnpm version bump — both completed in #2069
+  (no yarn artifacts remain; `packageManager` is already on the current pin).
 - `mobile-sdk-alpha`, `webview-app`, `webview-bridge` source changes —
   only their build/resolution configs are in scope.
 
 ### Dependencies
 
-- MT-7 must land first. Patches handled by `pnpm.patchedDependencies`
-  apply cleanly under both linkers; `patch-package` postinstall does not.
-- MT-9 (`blockExoticSubdeps`) and MT-11 (`strictPeerDependencies: true`)
-  should land first if possible — they surface peer breakage that
-  isolated linker would otherwise mask as runtime errors.
+- MT-6 must land first (it owns the patch migration). Patches handled by
+  `pnpm.patchedDependencies` apply cleanly under both linkers;
+  `patch-package` postinstall does not.
+- MT-9 (`blockExoticSubdeps` + `strictPeerDependencies: true`) should land
+  first if possible — it surfaces peer breakage that the isolated linker
+  would otherwise mask as runtime errors.
 
 ### Per-gate Acceptance
 
@@ -123,15 +129,15 @@ and re-open MT-12 if any of the following hold at merge time:
 
 ### Files Modified
 
-| File                                           | Change                                                      |
-| ---------------------------------------------- | ----------------------------------------------------------- |
-| `pnpm-workspace.yaml`                          | Remove `nodeLinker: hoisted`                                |
-| `.npmrc`                                       | Add isolated-linker-compatible flags with justification     |
-| `app/metro.config.js`                          | Enable symlink resolution; widen `watchFolders` if needed   |
-| `packages/mobile-sdk-demo/metro.config.js`     | Same as above                                               |
-| `app/ios/Podfile` (if needed)                  | Adjust `pod` paths that bake in hoisted-layout assumptions  |
-| `app/android/settings.gradle` (if needed)      | Adjust autolinking paths that bake in hoisted-layout        |
-| Any `patches/*.patch` revalidated against pnpm | Re-base patches that referenced hoisted paths (coord. MT-7) |
+| File                                           | Change                                                                                          |
+| ---------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `pnpm-workspace.yaml`                          | Remove `nodeLinker: hoisted`                                                                    |
+| `.npmrc`                                       | Remove duplicate `node-linker=hoisted`; add isolated-linker-compatible flags with justification |
+| `app/metro.config.js`                          | Enable symlink resolution; widen `watchFolders` if needed                                       |
+| `packages/mobile-sdk-demo/metro.config.js`     | Same as above                                                                                   |
+| `app/ios/Podfile` (if needed)                  | Adjust `pod` paths that bake in hoisted-layout assumptions                                      |
+| `app/android/settings.gradle` (if needed)      | Adjust autolinking paths that bake in hoisted-layout                                            |
+| Any `patches/*.patch` revalidated against pnpm | Re-base patches that referenced hoisted paths (coord. MT-6)                                     |
 
 ### Files NOT Modified
 
