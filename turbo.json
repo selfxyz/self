@@ -1,11 +1,22 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "globalDependencies": ["pnpm-lock.yaml", "pnpm-workspace.yaml", ".npmrc"],
+  "globalPassThroughEnv": [
+    "SELFXYZ_APP_TOKEN",
+    "SELFXYZ_INTERNAL_REPO_PAT",
+    "ANDROID_HOME",
+    "ANDROID_SDK_ROOT",
+    "JAVA_HOME",
+    "GRADLE_USER_HOME",
+    "GRADLE_OPTS",
+    "DEBUG_SETUP"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$"],
-      "outputs": ["dist/**"]
+      "outputs": ["dist/**"],
+      "env": ["CI", "DRY_RUN"]
     },
     "types": {
       "dependsOn": ["^build"],
