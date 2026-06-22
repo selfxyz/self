@@ -42,14 +42,14 @@ So MT-5 splits into two moves:
    hit, so the cache still pays off even though `types` produces no artifact.)
 2. **Rewire + cache** — `webview-app-ci`, `webview-bridge-ci`, and the
    `types` job of `rn-sdk-test-app-ci`. These hand-roll a `pnpm --filter
-   common build` → `mobile-sdk-alpha` → `webview-bridge` (→ `webview-app`)
+common build` → `mobile-sdk-alpha` → `webview-bridge` (→ `webview-app`)
    chain before the leaf task, rebuilding all dependencies from scratch every
    run. `turbo.json`'s `^build` graph already models that chain, so the chain
    collapses to one cached invocation:
    - build jobs: `pnpm exec turbo run build --filter="<leaf>"` (leaf + deps).
    - lint/types/test jobs: `pnpm exec turbo run build --filter="<leaf>^..."`
      (dependencies only), then the unchanged leaf `pnpm --filter <leaf>
-     <task>`. Verified by `turbo run … --dry=json` that each filter resolves
+<task>`. Verified by `turbo run … --dry=json` that each filter resolves
      to exactly the package set the manual steps built.
 
 **Explicitly left alone** (not Turbo-routed, would be a behavior change or a
@@ -58,11 +58,11 @@ broad rewrite the scope rejects):
 - `mobile-ci` — `pnpm lint`/`fmt`/`types` run under `working-directory: ./app`
   (app-local scripts) with its own `cache-built-deps` action.
 - `contracts.yml` — `pnpm build`/`test` run under `working-directory:
-  ./contracts` (hardhat); `test` is `if: false`.
+./contracts` (hardhat); `test` is `if: false`.
 - `common-ci` — only the `type-check` job is in scope (its root `pnpm types`
   routes through Turbo; cache added). The `build`, `lint`, and `test-common`
   jobs use `pnpm --filter` package-local scripts plus a bespoke `common/dist`
-  + `mobile-sdk-alpha/dist` cache, and stay as-is.
+  - `mobile-sdk-alpha/dist` cache, and stay as-is.
 - `rn-sdk-test-app-ci` `ios-build` job — builds `mobile-sdk-alpha` via
   `build:ios` / `build:ts-only`, which are not Turbo tasks.
 
@@ -104,14 +104,14 @@ match.
 
 ### Files Modified
 
-| File                                          | Change                                                                  |
-| --------------------------------------------- | ----------------------------------------------------------------------- |
-| `.github/actions/cache-turbo/action.yml`      | New composite action wrapping `actions/cache` for `.turbo`              |
-| `.github/workflows/workspace-ci.yml`          | Cache step in build/type-check/lint/format-check/test jobs (cache-only) |
-| `.github/workflows/common-ci.yml`             | Cache step in the `type-check` job (`pnpm types` is Turbo-routed)       |
-| `.github/workflows/webview-app-ci.yml`        | Rewire `--filter` chain → `turbo run build`; add cache                  |
-| `.github/workflows/webview-bridge-ci.yml`     | Rewire `--filter` chain → `turbo run build`; add cache                  |
-| `.github/workflows/rn-sdk-test-app-ci.yml`    | Rewire `types` job build chain → `turbo run build`; add cache           |
+| File                                       | Change                                                                  |
+| ------------------------------------------ | ----------------------------------------------------------------------- |
+| `.github/actions/cache-turbo/action.yml`   | New composite action wrapping `actions/cache` for `.turbo`              |
+| `.github/workflows/workspace-ci.yml`       | Cache step in build/type-check/lint/format-check/test jobs (cache-only) |
+| `.github/workflows/common-ci.yml`          | Cache step in the `type-check` job (`pnpm types` is Turbo-routed)       |
+| `.github/workflows/webview-app-ci.yml`     | Rewire `--filter` chain → `turbo run build`; add cache                  |
+| `.github/workflows/webview-bridge-ci.yml`  | Rewire `--filter` chain → `turbo run build`; add cache                  |
+| `.github/workflows/rn-sdk-test-app-ci.yml` | Rewire `types` job build chain → `turbo run build`; add cache           |
 
 ### Files NOT Modified
 
@@ -148,8 +148,9 @@ place — local development is unaffected.
 
 - 2026-05-13: Plan created.
 - 2026-06-22: Implemented. Inventory audit reframed scope to cache-only
-  (`workspace-ci`) + rewire-and-cache (`webview-app-ci`, `webview-bridge-ci`,
-  `rn-sdk-test-app-ci` types job); added `cache-turbo` composite action;
+  (`workspace-ci` all jobs + `common-ci` type-check) + rewire-and-cache
+  (`webview-app-ci`, `webview-bridge-ci`, `rn-sdk-test-app-ci` types job);
+  added `cache-turbo` composite action;
   corrected the immutable cache key to sha-suffixed + restore-keys. Turbo
   filter resolution verified via `--dry=json`. Pending: capture CI
   before/after wall-clock numbers and confirm `.turbo` cache hit on a
