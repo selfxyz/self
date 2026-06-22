@@ -1,0 +1,24 @@
+name: Cache Turbo
+
+description: Persist Turbo's local task cache (.turbo) across CI runs so unchanged workspaces are restored from cache instead of rebuilt. Local filesystem cache only — no remote cache, so TURBO_TOKEN/TURBO_TEAM must stay unset.
+
+inputs:
+  key-prefix:
+    description: Per-workflow (or per-job) prefix so unrelated pipelines do not thrash a shared cache entry.
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Cache Turbo
+      uses: actions/cache@v4
+      with:
+        path: .turbo
+        # The github.sha suffix makes every run write a fresh, immutable entry;
+        # restore-keys then pulls the most recent prefix match. Without the
+        # suffix the first run would freeze the cache forever (actions/cache
+        # never overwrites an existing key), so Turbo's incremental hits would
+        # stop improving after run #1.
+        key: turbo-${{ inputs.key-prefix }}-${{ hashFiles('pnpm-lock.yaml', 'turbo.json') }}-${{ github.sha }}
+        restore-keys: |
+          turbo-${{ inputs.key-prefix }}-${{ hashFiles('pnpm-lock.yaml', 'turbo.json') }}-

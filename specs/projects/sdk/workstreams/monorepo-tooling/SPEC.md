@@ -1,9 +1,9 @@
 # Monorepo Tooling - Workstream Spec
 
-> Last updated: 2026-05-21
+> Last updated: 2026-06-22
 > Owner: Platform
 > Parent: `../../OVERVIEW.md`
-> Status: Draft - follow-up to pnpm conversion (PR #2069)
+> Status: Active - Turbo foundation landed (#2186/#2188); CI migration in progress
 
 ## Purpose
 
@@ -146,13 +146,14 @@ The temporary fork pin is allowed only until the upstream API migration lands.
 | Track                       | IDs                             | Status  | Plan                                                                      | Notes                                                                                                                              |
 | --------------------------- | ------------------------------- | ------- | ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
 | Blur swap                   | MT-1, MT-2                      | Open    | [MT-1 Blur Swap](./plans/MT-1-blur-swap.md)                               | MT-1 is upstream Euclid work; MT-2 is local mock cleanup after the consumer bump.                                                  |
-| Turbo foundation            | MT-3                            | Open    | [MT-3 Turbo Foundation](./plans/MT-3-turbo-foundation.md)                 | Add `turbo` and `turbo.json`; no root script or CI rewiring yet.                                                                   |
-| Root script migration       | MT-4                            | Open    | [MT-4 Root Script Migration](./plans/MT-4-root-script-migration.md)       | Depends on MT-3.                                                                                                                   |
-| CI Turbo migration          | MT-5                            | Open    | [MT-5 CI Turbo Migration](./plans/MT-5-ci-turbo-migration.md)             | Depends on MT-3 and MT-4.                                                                                                          |
+| Turbo foundation            | MT-3                            | Landed  | [MT-3 Turbo Foundation](./plans/MT-3-turbo-foundation.md)                 | `turbo` + `turbo.json` landed in #2186.                                                                                            |
+| Root script migration       | MT-4                            | Landed  | [MT-4 Root Script Migration](./plans/MT-4-root-script-migration.md)       | Root scripts route through `scripts/turbo-tasks.cjs` (#2186/#2188).                                                                |
+| CI Turbo migration          | MT-5                            | In progress | [MT-5 CI Turbo Migration](./plans/MT-5-ci-turbo-migration.md)         | `.turbo` cache on `workspace-ci`; `--filter` build chains rewired to Turbo in webview-app/bridge + rn-sdk-test-app.               |
 | pnpm native config          | MT-6, MT-7, MT-10, MT-16, MT-17 | Partial | [MT-6 pnpm Config Hardening](./plans/MT-6-pnpm-config-hardening.md)       | Foundations landed in #2069 (see "Completed in PR #2069"). Remaining: consolidate `patchedDependencies`, install-script audit doc. |
 | Peer strictness             | MT-9, MT-11                     | Open    | [MT-9 Peer Strictness](./plans/MT-9-peer-strictness.md)                   | Re-enable `blockExoticSubdeps` and `strictPeerDependencies` together.                                                              |
 | Yarn residue/docs           | MT-8, MT-15                     | Partial | [MT-8 Yarn Residue Guardrail](./plans/MT-8-yarn-residue-guardrail.md)     | Artifacts and docs removed in #2069 (see below). Remaining: CI/lefthook guardrail against reintroducing yarn files.                |
 | Dedupe audit                | MT-14, MT-18                    | Open    | [MT-14 Dedupe Audit](./plans/MT-14-dedupe-audit.md)                       | Inventory nested duplicates, run dedupe, and keep only intentional pins.                                                           |
+| Version upgrade sweep       | MT-29                           | Open    | [MT-29 ncu Version Sweep](./plans/MT-29-ncu-version-sweep.md)             | Pin-aware `ncu` patch/minor sweep across workspaces. Sequence with MT-14; excludes RN/Expo and all intentional pins.              |
 | pnpm cache audit            | MT-13                           | Partial | [MT-13 pnpm Cache Audit](./plans/MT-13-pnpm-cache-audit.md)               | `cache-pnpm` action and the `node_modules`-excluding build caches landed in #2069. Remaining: store-cache hit-rate tuning.         |
 | Circuits fork pin           | MT-21                           | Open    | [MT-21 Circom Tester Pin](./plans/MT-21-circom-tester-pin.md)             | Temporary stabilization under pnpm hoisting.                                                                                       |
 | Circuits upstream migration | MT-22                           | Open    | [MT-22 Circom Tester Migration](./plans/MT-22-circom-tester-migration.md) | Removes the MT-21 pin by moving to upstream `0.0.24`.                                                                              |

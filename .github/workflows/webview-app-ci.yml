@@ -32,14 +32,12 @@ jobs:
       - uses: actions/checkout@v6
       - name: Install dependencies
         uses: ./.github/actions/pnpm-install
-      - name: Build common
-        run: pnpm --filter @selfxyz/common build
-      - name: Build mobile-sdk-alpha
-        run: pnpm --filter @selfxyz/mobile-sdk-alpha build
-      - name: Build webview-bridge
-        run: pnpm --filter @selfxyz/webview-bridge build
-      - name: Build webview-app
-        run: pnpm --filter @selfxyz/webview-app build
+      - name: Cache Turbo
+        uses: ./.github/actions/cache-turbo
+        with:
+          key-prefix: webview-app-build
+      - name: Build webview-app and dependencies
+        run: pnpm exec turbo run build --filter="@selfxyz/webview-app"
 
   lint:
     runs-on: ubuntu-latest
@@ -48,12 +46,12 @@ jobs:
       - uses: actions/checkout@v6
       - name: Install dependencies
         uses: ./.github/actions/pnpm-install
-      - name: Build common
-        run: pnpm --filter @selfxyz/common build
-      - name: Build mobile-sdk-alpha
-        run: pnpm --filter @selfxyz/mobile-sdk-alpha build
-      - name: Build webview-bridge
-        run: pnpm --filter @selfxyz/webview-bridge build
+      - name: Cache Turbo
+        uses: ./.github/actions/cache-turbo
+        with:
+          key-prefix: webview-app-lint
+      - name: Build dependencies
+        run: pnpm exec turbo run build --filter="@selfxyz/webview-app^..."
       - name: Run linter
         run: pnpm --filter @selfxyz/webview-app lint
 
@@ -74,12 +72,12 @@ jobs:
       - uses: actions/checkout@v6
       - name: Install dependencies
         uses: ./.github/actions/pnpm-install
-      - name: Build common
-        run: pnpm --filter @selfxyz/common build
-      - name: Build mobile-sdk-alpha
-        run: pnpm --filter @selfxyz/mobile-sdk-alpha build
-      - name: Build webview-bridge
-        run: pnpm --filter @selfxyz/webview-bridge build
+      - name: Cache Turbo
+        uses: ./.github/actions/cache-turbo
+        with:
+          key-prefix: webview-app-types
+      - name: Build dependencies
+        run: pnpm exec turbo run build --filter="@selfxyz/webview-app^..."
       - name: Typecheck
         run: pnpm --filter @selfxyz/webview-app types
 
@@ -90,11 +88,11 @@ jobs:
       - uses: actions/checkout@v6
       - name: Install dependencies
         uses: ./.github/actions/pnpm-install
-      - name: Build common
-        run: pnpm --filter @selfxyz/common build
-      - name: Build mobile-sdk-alpha
-        run: pnpm --filter @selfxyz/mobile-sdk-alpha build
-      - name: Build webview-bridge
-        run: pnpm --filter @selfxyz/webview-bridge build
+      - name: Cache Turbo
+        uses: ./.github/actions/cache-turbo
+        with:
+          key-prefix: webview-app-test
+      - name: Build dependencies
+        run: pnpm exec turbo run build --filter="@selfxyz/webview-app^..."
       - name: Test
         run: pnpm --filter @selfxyz/webview-app test
