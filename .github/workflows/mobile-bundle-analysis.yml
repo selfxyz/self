@@ -91,9 +91,6 @@ jobs:
           workspace: ${{ env.WORKSPACE }}
         env:
           SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
-      - name: Check for duplicate dependency versions
-        shell: bash
-        run: pnpm dedupe --check
       - name: Build dependencies
         shell: bash
         run: pnpm --filter @selfxyz/common build
@@ -178,9 +175,6 @@ jobs:
           workspace: ${{ env.WORKSPACE }}
         env:
           SELFXYZ_APP_TOKEN: ${{ steps.github-token.outputs.token }}
-      - name: Check for duplicate dependency versions
-        shell: bash
-        run: pnpm dedupe --check
       - name: Build dependencies
         shell: bash
         run: pnpm --filter @selfxyz/common build

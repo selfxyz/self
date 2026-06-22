@@ -73,7 +73,23 @@ ordering, inputs, and outputs.
 
 Every cacheable build task declares explicit `outputs`, and `globalDependencies`
 cover shared root config such as root `tsconfig*`, `pnpm-lock.yaml`, and env
-templates.
+templates. (As implemented in MT-3, the repo has no root `tsconfig*` or env
+template, so `globalDependencies` is `pnpm-lock.yaml`, `pnpm-workspace.yaml`,
+`.npmrc`.)
+
+**Implemented in MT-3/MT-4 — read before MT-5 (CI):**
+
+- Per-task exclusions live in `scripts/turbo-tasks.cjs` (Turbo has no per-task
+  package-exclude in `turbo.json`); root scripts call
+  `node scripts/turbo-tasks.cjs <task>`.
+- Gradle/native packages (`@selfxyz/kmp-sdk`, `@selfxyz/kmp-sdk-test-app`) are
+  excluded from every Turbo task (SPEC keeps gradle/swift out of Turbo). As a
+  result `pnpm test` and `pnpm lint` no longer cover the kmp packages — they are
+  covered by the dedicated `kmp:test`/`kmp:lint` (and `native-shell:*`) scripts.
+  **MT-5 must invoke kmp/native coverage explicitly**, not via bare `pnpm test`/
+  `pnpm lint`.
+- `pnpm format` stays on `scripts/format-monorepo.cjs` (bespoke gradle/swift +
+  env orchestration); it is not migrated to `turbo run format`.
 
 ### pnpm Hardening
 
@@ -120,7 +136,7 @@ The temporary fork pin is allowed only until the upstream API migration lands.
 
 | Depends On                                        | Type     | Status  | Notes                                                                                                         |
 | ------------------------------------------------- | -------- | ------- | ------------------------------------------------------------------------------------------------------------- |
-| pnpm conversion (PR #2069)                        | Upstream | Landing | `packageManager: pnpm@11.1.1` already pinned; this work starts after merge.                                   |
+| pnpm conversion (PR #2069)                        | Upstream | Landing | `packageManager: pnpm@11.5.3` already pinned; this work starts after merge.                                   |
 | `@selfxyz/euclid`                                 | Upstream | Active  | Owns the `BlurView` implementation used by app consumers.                                                     |
 | `@zk-email/relayer-utils` / `node-pre-gyp-github` | Override | Open    | Replaced by registry `node-pre-gyp-github@1.4.4` via `pnpm.overrides` in MT-6; no upstream wait required.     |
 | `circom_tester` (remicolin fork)                  | Override | Open    | Last remaining `blockExoticSubdeps` blocker. Resolved by MT-22 upstream migration, or interim patch in MT-21. |
@@ -158,12 +174,13 @@ The pnpm conversion PR landed more than the lockfile swap. Treat these as
 done; the items below should not be re-implemented as part of the listed
 follow-up tracks.
 
-- **MT-6 foundations:** `packageManager: pnpm@11.2.2` pinned; pnpm-native
+- **MT-6 foundations:** `packageManager: pnpm@11.5.3` pinned; pnpm-native
   `allowBuilds` install-script allowlist in `pnpm-workspace.yaml`;
   `scripts/check-pnpm-version.mjs` enforces the pin locally and in CI;
   `pnpm.overrides` block established (`jsdom@^25.0.1`, `@types/minimatch@5.1.2`,
-  `circom_tester` fork pin). Remaining MT-6 scope is patch consolidation and
-  the install-script audit doc.
+  `circom_tester` fork pin). MT-6 has since finished this scope: patches
+  consolidated to pnpm `patchedDependencies`, the install-script allowlist
+  audited and justified, and the pnpm pin bumped `11.5.3` → `11.7.0`.
 - **MT-8 foundations:** `yarn.lock`, `.yarnrc.yml`, and
   `.github/actions/yarnrc-hash` deleted; every workspace `package.json`,
   `CLAUDE.md`, `AGENTS.md`, and root script migrated to pnpm; new

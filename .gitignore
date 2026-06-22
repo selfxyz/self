@@ -69,6 +69,9 @@ packages/self-sdk-swift/Sources/SelfSdkSwift/Resources/self-sdk-web/
 app/build/*
 packages/mobile-sdk-alpha-source/android/.gradle/*
 
+# Turborepo
+.turbo/
+
 # Python
 __pycache__/
 *.py[cod]

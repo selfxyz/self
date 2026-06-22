@@ -1,7 +1,7 @@
-diff --git a/node_modules/react-native-date-picker/package.json b/node_modules/react-native-date-picker/package.json
+diff --git a/package.json b/package.json
 index 36460e4e3..9a9763112 100644
---- a/node_modules/react-native-date-picker/package.json
-+++ b/node_modules/react-native-date-picker/package.json
+--- a/package.json
++++ b/package.json
 @@ -68,12 +68,9 @@
      "android": {
        "javaPackageName": "com.henninghall.date_picker"

@@ -1,6 +1,6 @@
 {
   "name": "@selfxyz/mobile-app",
-  "version": "2.9.24",
+  "version": "2.9.25",
   "private": true,
   "type": "module",
   "main": "index.js",
@@ -157,6 +157,7 @@
     "react-native-passkey": "^3.3.3",
     "react-native-passport-reader": "1.0.3",
     "react-native-permissions": "^4.1.5",
+    "react-native-reanimated": "4.3.1",
     "react-native-safe-area-context": "^5.8.0",
     "react-native-screens": "4.15.3",
     "react-native-sqlite-storage": "^6.0.1",
@@ -165,6 +166,7 @@
     "react-native-url-polyfill": "^3.0.0",
     "react-native-web": "^0.21.2",
     "react-native-webview": "13.16.0",
+    "react-native-worklets": "0.8.3",
     "react-qr-barcode-scanner": "^2.1.25",
     "socket.io-client": "^4.8.3",
     "tamagui": "1.144.4",

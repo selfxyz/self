@@ -4,24 +4,30 @@
 // @types/react-native-web declares `"react-native": "*"`. Left unconstrained,
 // that wildcard resolves to the latest published react-native, installing a
 // second copy that diverges from the app's pinned version (Haste collisions,
-// type drift). The root `resolutions` entry pins it to the app's exact RN so
-// the two dedupe onto a single copy. This guard keeps that pin honest: bump RN
-// in app/package.json and the resolution must move with it, or CI fails here.
+// type drift). Under pnpm the global `react-native` override in
+// pnpm-workspace.yaml rewrites every react-native spec — including that `*` —
+// to the app's exact version, so the two dedupe onto a single copy. This guard
+// keeps that override honest: bump RN in app/package.json and the override must
+// move with it, or CI fails here.
 
 const fs = require('fs');
 const path = require('path');
 
-const RES_KEY = '@types/react-native-web/react-native';
 const root = path.resolve(__dirname, '..');
 
 function readJson(rel) {
   return JSON.parse(fs.readFileSync(path.join(root, rel), 'utf8'));
 }
 
-const rootPkg = readJson('package.json');
 const appPkg = readJson('app/package.json');
+const workspaceYaml = fs.readFileSync(
+  path.join(root, 'pnpm-workspace.yaml'),
+  'utf8',
+);
 
-const pinned = rootPkg.resolutions?.[RES_KEY];
+// Match the `react-native:` override line, not react-native-* siblings.
+const overrideMatch = workspaceYaml.match(/^\s+react-native:\s*(\S+)\s*$/m);
+const pinned = overrideMatch?.[1];
 const appRN =
   appPkg.dependencies?.['react-native'] ??
   appPkg.devDependencies?.['react-native'];
@@ -37,19 +43,19 @@ if (!appRN) {
 
 if (!pinned) {
   fail(
-    `Missing resolution "${RES_KEY}" in root package.json.\n` +
-      `  Add "${RES_KEY}": "${appRN}" so @types/react-native-web does not pull a\n` +
-      `  second, latest react-native via its "*" dependency.`,
+    `Missing "react-native" override in pnpm-workspace.yaml.\n` +
+      `  Add "react-native: ${appRN}" under overrides so @types/react-native-web\n` +
+      `  does not pull a second, latest react-native via its "*" dependency.`,
   );
 }
 
 if (pinned !== appRN) {
   fail(
-    `Resolution "${RES_KEY}" is "${pinned}" but app/package.json declares react-native "${appRN}".\n` +
-      `  Update the resolution in root package.json to "${appRN}".`,
+    `pnpm-workspace.yaml override "react-native: ${pinned}" but app/package.json declares react-native "${appRN}".\n` +
+      `  Update the override in pnpm-workspace.yaml to "${appRN}".`,
   );
 }
 
 console.log(
-  `✅ rn-types pin check: "${RES_KEY}" matches app react-native (${appRN}).`,
+  `✅ rn-types pin check: pnpm-workspace.yaml react-native override matches app react-native (${appRN}).`,
 );
