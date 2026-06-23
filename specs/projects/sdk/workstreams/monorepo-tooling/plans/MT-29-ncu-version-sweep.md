@@ -48,7 +48,9 @@ This is dependency-version cleanup, deliberately separated from `pnpm dedupe`
   - _Override pins_ (changing these fights an `overrides` entry):
     - `jsdom` — pinned `^25` (MT-27; v26 breaks react-dom tests).
     - `@types/minimatch` — pinned `5.1.2` (MT-28; v6 is a broken stub).
-    - `circom_tester` — github fork pin (MT-21; removed by MT-22, not here).
+    - `circom_tester` — github fork pin (MT-21). Still present in the tree
+      until MT-22 removes it, so this sweep must reject it to avoid bumping the
+      fork pin in the interim; once MT-22 lands this entry can be dropped.
   - _Policy defers_ (no override pin, but owned by another track / too
     entangled for a routine sweep):
     - `react-native`, `react-native-*`, `expo`, `expo-*`, `react`, `react-dom`

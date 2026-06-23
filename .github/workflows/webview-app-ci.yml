@@ -88,6 +88,11 @@ jobs:
       - uses: actions/checkout@v6
       - name: Install dependencies
         uses: ./.github/actions/pnpm-install
+      - name: Check for nested require() in tests
+        uses: ./.github/actions/check-nested-requires
+        with:
+          paths: |
+            packages/webview-app/tests/
       - name: Cache Turbo
         uses: ./.github/actions/cache-turbo
         with:
