@@ -38,14 +38,12 @@ jobs:
         with:
           paths: |
             packages/rn-sdk/src/__tests__/
-      - name: Build common
-        run: pnpm --filter @selfxyz/common build
-      - name: Build mobile-sdk-alpha
-        run: pnpm --filter @selfxyz/mobile-sdk-alpha build
-      - name: Build webview-bridge
-        run: pnpm --filter @selfxyz/webview-bridge build
-      - name: Build webview-app
-        run: pnpm --filter @selfxyz/webview-app build
+      - name: Cache Turbo
+        uses: ./.github/actions/cache-turbo
+        with:
+          key-prefix: rn-sdk-test-app-types
+      - name: Build webview-app and dependencies
+        run: pnpm exec turbo run build --filter="@selfxyz/webview-app"
       - name: Typecheck rn-sdk
         run: pnpm --filter @selfxyz/rn-sdk typecheck
       - name: Test rn-sdk
