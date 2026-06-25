@@ -1292,6 +1292,14 @@ jest.mock('./src/integrations/nfc/passportReader', () => {
     PassportReader: mockPassportReader,
     reset: jest.fn(),
     scan: jest.fn(),
+    isFixtureCaptureSupported: false,
+    fixtureCapture: {
+      isSupported: false,
+      setEnabled: jest.fn().mockResolvedValue(false),
+      listTapes: jest.fn().mockResolvedValue([]),
+      readTape: jest.fn().mockResolvedValue(null),
+      deleteTapes: jest.fn().mockResolvedValue(undefined),
+    },
     default: mockPassportReader,
   };
 });

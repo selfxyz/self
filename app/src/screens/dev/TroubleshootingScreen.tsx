@@ -4,6 +4,7 @@
 
 import { poseidon2 } from 'poseidon-lite';
 import React, { useState } from 'react';
+import { Alert } from 'react-native';
 import { Button, H4, Paragraph, Spinner, Text, YStack } from 'tamagui';
 
 import { hashEndpointWithScope } from '@selfxyz/common/utils/scope';
@@ -16,7 +17,9 @@ import {
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
+import { isFixtureCaptureSupported } from '@/integrations/nfc/fixtureCapture';
 import { unsafe_getPrivateKey } from '@/providers/authProvider';
+import { TopicToggleButton } from '@/screens/dev/components/TopicToggleButton';
 import {
   POINTS_API_BASE_URL,
   POINTS_API_ROUTES,
@@ -24,6 +27,46 @@ import {
   POINTS_SELF_APP_SCOPE,
 } from '@/services/points/constants';
 import { getPointsAddress } from '@/services/points/utils';
+import { useSettingStore } from '@/stores/settingStore';
+
+const FixtureCaptureToggle: React.FC = () => {
+  const enabled = useSettingStore(state => state.fixtureCaptureEnabled);
+  const setEnabled = useSettingStore(state => state.setFixtureCaptureEnabled);
+
+  if (!isFixtureCaptureSupported) {
+    return null;
+  }
+
+  const onToggle = () => {
+    if (enabled) {
+      setEnabled(false);
+      return;
+    }
+    Alert.alert(
+      'Share NFC diagnostic logs?',
+      'When on, a redacted log of each scan is stored on this device so you can share it with us to debug failed reads.\n\nKept: chip type, issuing country, command sequence, status codes.\nNever included: your name, photo, document number, or biometrics.\n\nNothing is sent automatically — you choose when to share. Turning this off deletes any stored logs.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Enable', onPress: () => setEnabled(true) },
+      ],
+    );
+  };
+
+  return (
+    <YStack gap="$2">
+      <H4>NFC diagnostic logs</H4>
+      <Paragraph color={slate500}>
+        Record a redacted log of each passport scan to help us debug failed
+        reads. Off by default; logs stay on this device until you share them.
+      </Paragraph>
+      <TopicToggleButton
+        label="Diagnostic capture"
+        isSubscribed={enabled}
+        onToggle={onToggle}
+      />
+    </YStack>
+  );
+};
 
 const TroubleshootingScreen: React.FC = () => {
   const [status, setStatus] = useState<
@@ -120,6 +163,8 @@ const TroubleshootingScreen: React.FC = () => {
           {message}
         </Text>
       )}
+
+      <FixtureCaptureToggle />
     </YStack>
   );
 };

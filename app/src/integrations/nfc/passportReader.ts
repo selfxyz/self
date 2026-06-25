@@ -36,6 +36,15 @@ export interface AndroidScanResponse {
   dataGroupHashes: string;
 }
 
+export type FixtureTapeStatus = 'success' | 'failed' | 'unknown';
+
+export interface FixtureTapeSummary {
+  name: string;
+  sizeBytes: number;
+  issuingCountry: string | null;
+  status: FixtureTapeStatus;
+}
+
 type AndroidPassportReaderModule = {
   configure?: (token: string, enableDebug?: boolean) => void;
   trackEvent?: (name: string, properties?: Record<string, unknown>) => void;
@@ -44,6 +53,11 @@ type AndroidPassportReaderModule = {
   resetIdentity?: () => void;
   setDistinctId?: (distinctId: string) => void;
   scan?: (options: ScanOptions) => Promise<AndroidScanResponse>;
+  // Opt-in APDU fixture capture (Android only; present on newer native builds).
+  setFixtureCaptureEnabled?: (enabled: boolean) => Promise<boolean>;
+  listFixtureTapes?: () => Promise<FixtureTapeSummary[]>;
+  readFixtureTape?: (name: string) => Promise<string | null>;
+  deleteFixtureTapes?: () => Promise<void>;
 };
 
 type IOSPassportReaderModule = {
@@ -74,6 +88,9 @@ type PassportReaderModule =
 let PassportReader: PassportReaderModule | null = null;
 let scan: ((options: ScanOptions) => Promise<unknown>) | null = null;
 let resetImpl: (() => void) | undefined;
+// Retained reference to the Android module so the fixture-capture helpers below
+// can reach its bridge methods (which only exist on newer native builds).
+let androidModule: AndroidPassportReaderModule | undefined;
 
 if (Platform.OS === 'android') {
   // Android uses the react-native-passport-reader package
@@ -83,6 +100,7 @@ if (Platform.OS === 'android') {
 
   if (AndroidPassportReader) {
     PassportReader = AndroidPassportReader;
+    androidModule = AndroidPassportReader;
     resetImpl = () => AndroidPassportReader.reset?.();
     if (AndroidPassportReader.scan) {
       const androidScan = AndroidPassportReader.scan.bind(
@@ -171,6 +189,49 @@ const reset = () => {
   resetImpl?.();
 };
 
+/**
+ * True when the running native build exposes the opt-in APDU fixture-capture
+ * bridge. Android-only; older native builds and iOS return false, so callers
+ * can hide/disable the feature instead of crashing.
+ */
+const isFixtureCaptureSupported =
+  Platform.OS === 'android' &&
+  typeof androidModule?.setFixtureCaptureEnabled === 'function';
+
+const fixtureCapture = {
+  isSupported: isFixtureCaptureSupported,
+  setEnabled(enabled: boolean): Promise<boolean> {
+    if (!androidModule?.setFixtureCaptureEnabled) {
+      return Promise.resolve(false);
+    }
+    return androidModule.setFixtureCaptureEnabled(enabled);
+  },
+  listTapes(): Promise<FixtureTapeSummary[]> {
+    if (!androidModule?.listFixtureTapes) {
+      return Promise.resolve([]);
+    }
+    return androidModule.listFixtureTapes();
+  },
+  readTape(name: string): Promise<string | null> {
+    if (!androidModule?.readFixtureTape) {
+      return Promise.resolve(null);
+    }
+    return androidModule.readFixtureTape(name);
+  },
+  deleteTapes(): Promise<void> {
+    if (!androidModule?.deleteFixtureTapes) {
+      return Promise.resolve();
+    }
+    return androidModule.deleteFixtureTapes();
+  },
+};
+
 export type { ScanOptions };
-export { PassportReader, reset, scan };
+export {
+  fixtureCapture,
+  isFixtureCaptureSupported,
+  PassportReader,
+  reset,
+  scan,
+};
 export default PassportReader;

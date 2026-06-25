@@ -24,9 +24,10 @@ const PRIVATE_MODULES = [
     repoName: 'react-native-passport-reader',
     localPath: path.join(ANDROID_DIR, 'react-native-passport-reader'),
     validationFiles: ['android/build.gradle'],
-    // Pinned to PR #4 (chore/upgrade-rn-0_83) until RN upgrade lands.
-    // Do NOT merge that branch to main; bump this SHA when the branch advances.
-    commit: 'e4ec4900c95dcf1209cb72891120c37f0f93b13c',
+    // Pinned to feat/apdu-redactor: carries the RN 0.83 upgrade plus the opt-in
+    // APDU fixture-capture bridge. Do NOT merge that branch to main; bump this
+    // SHA when the branch advances.
+    commit: '594b5678cea206908fdffb1caaf8dfb57fc7ef6b',
   },
 ];
 

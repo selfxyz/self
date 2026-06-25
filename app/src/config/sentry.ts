@@ -111,6 +111,34 @@ export const captureWebViewLoadDiagnostic = (
   });
 };
 
+/**
+ * Uploads a redacted APDU fixture tape to Sentry as a JSON attachment. The
+ * `json` is the exact, already-redacted payload the user previewed — there is no
+ * separate path. No-op when Sentry is disabled (e.g. local builds).
+ */
+export const captureFixtureTape = (
+  json: string,
+  meta: { name: string; issuingCountry: string | null; status: string },
+) => {
+  if (isSentryDisabled) {
+    return;
+  }
+  withScope(scope => {
+    scope.setLevel('info');
+    scope.addAttachment({
+      filename: `${meta.name}.json`,
+      data: json,
+      contentType: 'application/json',
+    });
+    scope.setTag(
+      'document_country',
+      sanitizeTagValue(meta.issuingCountry ?? 'unknown'),
+    );
+    scope.setTag('scan_result', sanitizeTagValue(meta.status));
+    sentryCaptureMessage('apdu_fixture_tape');
+  });
+};
+
 export const captureFeedback = (
   feedback: string,
   context?: Record<string, unknown>,
