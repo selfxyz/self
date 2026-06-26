@@ -13,6 +13,7 @@ import DevDangerZoneScreen from '@/screens/dev/DevDangerZoneScreen';
 import DevFeatureFlagsScreen from '@/screens/dev/DevFeatureFlagsScreen';
 import DevHapticFeedbackScreen from '@/screens/dev/DevHapticFeedbackScreen';
 import DevLoadingScreen from '@/screens/dev/DevLoadingScreen';
+import DevNfcDebugScreen from '@/screens/dev/DevNfcDebugScreen';
 import DevPrivateKeyScreen from '@/screens/dev/DevPrivateKeyScreen';
 import DevSettingsScreen from '@/screens/dev/DevSettingsScreen';
 import SocialLoginDemoScreen from '@/screens/dev/SocialLoginDemoScreen';
@@ -75,6 +76,13 @@ const devScreens = {
     options: {
       ...devHeaderOptions,
       title: 'APDU Capture',
+    } as NativeStackNavigationOptions,
+  },
+  DevNfcDebug: {
+    screen: DevNfcDebugScreen,
+    options: {
+      ...devHeaderOptions,
+      title: 'NFC Debug Bridge',
     } as NativeStackNavigationOptions,
   },
   DevFeatureFlags: {

@@ -93,6 +93,7 @@ export type WebViewHostRequest = {
 export type DevRoutesParamList = {
   CreateMock: undefined;
   DevApduCapture: undefined;
+  DevNfcDebug: undefined;
   MockDataDeepLink: undefined;
   SocialLoginDemo: undefined;
   WebViewHost: { request?: WebViewHostRequest } | undefined;

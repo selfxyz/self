@@ -129,6 +129,10 @@ export const DebugShortcutsSection: React.FC<DebugShortcutsSectionProps> = ({
           label="APDU Fixture Capture"
           onPress={() => navigation.navigate('DevApduCapture')}
         />
+        <ShortcutRow
+          label="NFC Debug Bridge"
+          onPress={() => navigation.navigate('DevNfcDebug')}
+        />
       </YStack>
     </ParameterSection>
   );

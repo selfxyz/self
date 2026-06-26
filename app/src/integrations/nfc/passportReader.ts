@@ -45,6 +45,14 @@ export interface FixtureTapeSummary {
   status: FixtureTapeStatus;
 }
 
+export interface NfcDebugBridgeOptions {
+  relayUrl: string;
+  documentNumber: string;
+  dateOfBirth: string; // YYMMDD
+  dateOfExpiry: string; // YYMMDD
+  canNumber?: string;
+}
+
 type AndroidPassportReaderModule = {
   configure?: (token: string, enableDebug?: boolean) => void;
   trackEvent?: (name: string, properties?: Record<string, unknown>) => void;
@@ -58,6 +66,9 @@ type AndroidPassportReaderModule = {
   listFixtureTapes?: () => Promise<FixtureTapeSummary[]>;
   readFixtureTape?: (name: string) => Promise<string | null>;
   deleteFixtureTapes?: () => Promise<void>;
+  // Debug-only on-device NFC-debug bridge (Android; present on newer builds).
+  startNfcDebugBridge?: (opts: NfcDebugBridgeOptions) => Promise<boolean>;
+  stopNfcDebugBridge?: () => Promise<boolean>;
 };
 
 type IOSPassportReaderModule = {
@@ -226,10 +237,36 @@ const fixtureCapture = {
   },
 };
 
+/**
+ * True when the running native build exposes the on-device NFC-debug bridge.
+ * Android-only; older builds and iOS return false so the dev screen can hide.
+ */
+const isNfcDebugBridgeSupported =
+  Platform.OS === 'android' &&
+  typeof androidModule?.startNfcDebugBridge === 'function';
+
+const nfcDebugBridge = {
+  isSupported: isNfcDebugBridgeSupported,
+  start(opts: NfcDebugBridgeOptions): Promise<boolean> {
+    if (!androidModule?.startNfcDebugBridge) {
+      return Promise.reject(new Error('NFC debug bridge unavailable'));
+    }
+    return androidModule.startNfcDebugBridge(opts);
+  },
+  stop(): Promise<boolean> {
+    if (!androidModule?.stopNfcDebugBridge) {
+      return Promise.resolve(false);
+    }
+    return androidModule.stopNfcDebugBridge();
+  },
+};
+
 export type { ScanOptions };
 export {
   fixtureCapture,
   isFixtureCaptureSupported,
+  isNfcDebugBridgeSupported,
+  nfcDebugBridge,
   PassportReader,
   reset,
   scan,

@@ -17,6 +17,7 @@ interface PersistedSettingsState {
   dismissPrivacyNote: () => void;
   fcmToken: string | null;
   fixtureCaptureEnabled: boolean;
+  nfcDebugRelayUrl: string;
   hasCompletedBackupForPoints: boolean;
   hasCompletedKeychainMigration: boolean;
   hasPrivacyNoteBeenDismissed: boolean;
@@ -36,6 +37,7 @@ interface PersistedSettingsState {
   setDevModeOn: () => void;
   setFcmToken: (token: string | null) => void;
   setFixtureCaptureEnabled: (enabled: boolean) => void;
+  setNfcDebugRelayUrl: (url: string) => void;
   setHasViewedRecoveryPhrase: (viewed: boolean) => void;
   setKeychainMigrationCompleted: () => void;
   setLoggingSeverity: (severity: LoggingSeverity) => void;
@@ -161,6 +163,10 @@ export const useSettingStore = create<SettingsState>()(
           // Native flag failed to set; leave the UI state as the user chose.
         });
       },
+
+      // Last-used relay URL for the dev NFC-debug bridge (non-PII convenience).
+      nfcDebugRelayUrl: 'ws://localhost:8080/device',
+      setNfcDebugRelayUrl: (url: string) => set({ nfcDebugRelayUrl: url }),
 
       subscribedTopics: [],
       setSubscribedTopics: (topics: string[]) =>

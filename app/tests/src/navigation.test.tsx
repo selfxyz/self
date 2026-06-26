@@ -67,6 +67,7 @@ describe('navigation', () => {
         'DevFeatureFlags',
         'DevHapticFeedback',
         'DevLoadingScreen',
+        'DevNfcDebug',
         'DevPrivateKey',
         'DevSettings',
         'Disclaimer',

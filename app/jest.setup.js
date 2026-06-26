@@ -1300,6 +1300,12 @@ jest.mock('./src/integrations/nfc/passportReader', () => {
       readTape: jest.fn().mockResolvedValue(null),
       deleteTapes: jest.fn().mockResolvedValue(undefined),
     },
+    isNfcDebugBridgeSupported: false,
+    nfcDebugBridge: {
+      isSupported: false,
+      start: jest.fn().mockResolvedValue(false),
+      stop: jest.fn().mockResolvedValue(false),
+    },
     default: mockPassportReader,
   };
 });

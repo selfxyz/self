@@ -27,7 +27,7 @@ const PRIVATE_MODULES = [
     // Pinned to feat/apdu-redactor: carries the RN 0.83 upgrade plus the opt-in
     // APDU fixture-capture bridge. Do NOT merge that branch to main; bump this
     // SHA when the branch advances.
-    commit: '594b5678cea206908fdffb1caaf8dfb57fc7ef6b',
+    commit: '6ceabc7',
   },
 ];
 
