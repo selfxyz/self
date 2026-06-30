@@ -35,14 +35,14 @@ SDK's launch URL actually hits.
    - `metadata.isRegistered === true` → `/disclose/request` (preserve `search`) —
      today's behavior, unchanged.
    - not registered / unknown / error → onboarding (`/tour/1`).
-   Reuse the decision already in `screens/embed/TourScreen.tsx:29-39` — extract it
-   into a shared helper so it is not duplicated.
+     Reuse the decision already in `screens/embed/TourScreen.tsx:29-39` — extract it
+     into a shared helper so it is not duplicated.
 2. **Sticky request capture.** BrowserRouter wipes the URL query during onboarding
    navigation (prod `TourScreen`/capture routes navigate without `search`), so the
    request would be lost before the user reaches `/disclose/request`. Capture the
    request once at entry and hold it in memory so the post-registration resume
    still carries `disclosures`/`userId`/`scope`. In-memory is sufficient for the
-   demo: the host re-supplies the URL on every WebView launch, so only *in-session*
+   demo: the host re-supplies the URL on every WebView launch, so only _in-session_
    navigation loses it. (Durable host-driven sourcing is Part B / EM-01, not here.)
 3. **Tests.** Unit-test the doc-aware decision. Keep `decideBootRoute` **pure** —
    if the decision needs document state, pass it in as a `BootInputs` field rather
@@ -57,20 +57,19 @@ mode is always self-app and `BootDecision`'s embed branch never fires. The
 doc-aware decision therefore lives in the **catch-all** (`InitialRouteRedirect`) —
 that is the only boot path that runs without `getConfig`, so this is not
 re-fragmentation vs NAV-03, it is the active path. Still extract the decision into
-the shared `resolveEmbedEntry` helper so `BootDecision` can call the *same* helper
+the shared `resolveEmbedEntry` helper so `BootDecision` can call the _same_ helper
 later for a real `getConfig` host (rn-sdk) — but for the demo, the catch-all is
 where it fires.
 
-**Part B — contract consumption (depends on EM-01; post-demo).**
-4. Once EM-01 ships `getConfig` for the KMP/Swift shell, switch the embed
-   disclose/proving screens to read the request from the `OperatingMode` /
-   `VerificationRequest` context instead of the URL parser. Refactor
-   `parseVerificationRequestContext` (`utils/verificationRequest.ts:47`) to accept
-   a **structured object** (the raw `getConfig` payload) instead of
-   `URLSearchParams`, **preserving every derivation** (`normalizeEndpoint`,
-   `formatEndpointForDisplay`, `normalizeRequestType`, environment/chainID mapping,
-   `appName` default). Add `getConfig` to the `webview-bridge` mock for tests.
-   See `../SPEC.md` invariants — `targetOrigin`/`referenceId` stay URL-borne.
+**Part B — contract consumption (depends on EM-01; post-demo).** 4. Once EM-01 ships `getConfig` for the KMP/Swift shell, switch the embed
+disclose/proving screens to read the request from the `OperatingMode` /
+`VerificationRequest` context instead of the URL parser. Refactor
+`parseVerificationRequestContext` (`utils/verificationRequest.ts:47`) to accept
+a **structured object** (the raw `getConfig` payload) instead of
+`URLSearchParams`, **preserving every derivation** (`normalizeEndpoint`,
+`formatEndpointForDisplay`, `normalizeRequestType`, environment/chainID mapping,
+`appName` default). Add `getConfig` to the `webview-bridge` mock for tests.
+See `../SPEC.md` invariants — `targetOrigin`/`referenceId` stay URL-borne.
 
 ### Out of Scope
 
@@ -82,14 +81,14 @@ where it fires.
 
 ### Files to Modify (Part A — demo)
 
-| File | Change |
-|------|--------|
-| `src/components/InitialRouteRedirect.tsx` | Make doc-aware + async with a loading state; defer to the shared embed-entry decision instead of the unconditional jump. |
-| `src/utils/resolveEmbedEntry.ts` (new) | Extract `loadSelectedDocument → isRegistered ? '/disclose/request' : '/tour/1'`; reused by `InitialRouteRedirect` and `embed/TourScreen`. |
-| `src/screens/embed/TourScreen.tsx` | Replace the inline branch (`:29-39`) with the shared helper. |
-| `src/providers/VerificationRequestProvider.tsx` | Sticky-capture the parsed request so it survives in-session navigation. |
-| `src/components/decideBootRoute.ts` | Only if the decision routes through here — add a doc-state input field; keep the function pure. (Default: keep routing in `InitialRouteRedirect`, leave `decideBootRoute` untouched.) |
-| tests | Unit tests for `resolveEmbedEntry` / the doc-aware branch; `decideBootRoute` stays pure and its existing tests pass. |
+| File                                            | Change                                                                                                                                                                                |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/components/InitialRouteRedirect.tsx`       | Make doc-aware + async with a loading state; defer to the shared embed-entry decision instead of the unconditional jump.                                                              |
+| `src/utils/resolveEmbedEntry.ts` (new)          | Extract `loadSelectedDocument → isRegistered ? '/disclose/request' : '/tour/1'`; reused by `InitialRouteRedirect` and `embed/TourScreen`.                                             |
+| `src/screens/embed/TourScreen.tsx`              | Replace the inline branch (`:29-39`) with the shared helper.                                                                                                                          |
+| `src/providers/VerificationRequestProvider.tsx` | Sticky-capture the parsed request so it survives in-session navigation.                                                                                                               |
+| `src/components/decideBootRoute.ts`             | Only if the decision routes through here — add a doc-state input field; keep the function pure. (Default: keep routing in `InitialRouteRedirect`, leave `decideBootRoute` untouched.) |
+| tests                                           | Unit tests for `resolveEmbedEntry` / the doc-aware branch; `decideBootRoute` stays pure and its existing tests pass.                                                                  |
 
 ### Validation
 
@@ -98,6 +97,7 @@ cd packages/webview-app && pnpm test && pnpm build
 ```
 
 **On-device, via the demo host (self-webview-sdk PR #26 tooling):**
+
 - `make web-app` serves this `webview-app` (from the `selfxyz/self` checkout) on
   Vite `:5173`; `make run-android` loads it on a **physical device** (NFC/camera
   need real hardware).

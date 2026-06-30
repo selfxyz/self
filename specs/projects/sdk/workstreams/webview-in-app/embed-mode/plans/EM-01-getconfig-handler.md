@@ -29,7 +29,7 @@
 
 - **Mirror `packages/rn-sdk/src/handlers/LifecycleHandler.ts` field-for-field**
   (the live RN reference: `{ mode, verificationRequest: config.request, debug,
-  platform, referenceId }`). Do NOT re-derive the shape from KMP's
+platform, referenceId }`). Do NOT re-derive the shape from KMP's
   `VerificationRequest`/`SelfSdkConfig` types — the WebView must not be able to
   tell which shell it runs in. Verify field names against the RN object,
   especially RN's flat `config.request` vs KMP's separated config/request.
@@ -57,15 +57,15 @@
 
 ### Files to Modify
 
-| File | Change | Notes |
-|------|--------|-------|
-| `kmp-sdk/shared/src/commonMain/kotlin/xyz/self/sdk/handlers/HostConfig.kt` (new) | Add `@Serializable HostConfigResponse` + `buildGetConfigResponse(config, request): JsonElement` that encodes the SPEC field set. | Shared by both platform handlers; single source of the payload shape. |
-| `kmp-sdk/shared/src/androidMain/kotlin/xyz/self/sdk/handlers/LifecycleBridgeHandler.kt` | Take `config: SelfSdkConfig` + `request: VerificationRequest` in ctor; add `"getConfig" -> buildGetConfigResponse(config, request)` to the `when`. | Currently only `ready`/`dismiss`/`setResult`. |
-| `kmp-sdk/shared/src/iosMain/kotlin/xyz/self/sdk/handlers/LifecycleBridgeHandler.kt` | Same ctor + `getConfig` branch. | Keep parity with Android. |
-| `kmp-sdk/shared/src/androidMain/kotlin/xyz/self/sdk/webview/SelfVerificationActivity.kt` | Thread the already-parsed `config` + `request` into `LifecycleBridgeHandler(...)` in `registerHandlers()`. | They're locals in `initVerificationFlow()`; pass them through. |
-| `kmp-sdk/shared/src/iosMain/kotlin/xyz/self/sdk/api/SelfSdk.ios.kt` | Construct the iOS `LifecycleBridgeHandler` with config + request. | Mirror Android wiring. |
-| `kmp-sdk/shared/src/commonTest/.../handlers/HostConfigTest.kt` (new) | Assert the builder emits mode=embed + every SPEC field for a populated request, and stable defaults (`disclosures=["ofac"]`, empty arrays). | Hermetic. |
-| `kmp-sdk/shared/src/androidUnitTest/.../handlers/LifecycleBridgeHandlerTest.kt` | Add a `getConfig` case: handler returns the encoded payload; unknown method still throws. | Extend existing test. |
+| File                                                                                     | Change                                                                                                                                             | Notes                                                                 |
+| ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| `kmp-sdk/shared/src/commonMain/kotlin/xyz/self/sdk/handlers/HostConfig.kt` (new)         | Add `@Serializable HostConfigResponse` + `buildGetConfigResponse(config, request): JsonElement` that encodes the SPEC field set.                   | Shared by both platform handlers; single source of the payload shape. |
+| `kmp-sdk/shared/src/androidMain/kotlin/xyz/self/sdk/handlers/LifecycleBridgeHandler.kt`  | Take `config: SelfSdkConfig` + `request: VerificationRequest` in ctor; add `"getConfig" -> buildGetConfigResponse(config, request)` to the `when`. | Currently only `ready`/`dismiss`/`setResult`.                         |
+| `kmp-sdk/shared/src/iosMain/kotlin/xyz/self/sdk/handlers/LifecycleBridgeHandler.kt`      | Same ctor + `getConfig` branch.                                                                                                                    | Keep parity with Android.                                             |
+| `kmp-sdk/shared/src/androidMain/kotlin/xyz/self/sdk/webview/SelfVerificationActivity.kt` | Thread the already-parsed `config` + `request` into `LifecycleBridgeHandler(...)` in `registerHandlers()`.                                         | They're locals in `initVerificationFlow()`; pass them through.        |
+| `kmp-sdk/shared/src/iosMain/kotlin/xyz/self/sdk/api/SelfSdk.ios.kt`                      | Construct the iOS `LifecycleBridgeHandler` with config + request.                                                                                  | Mirror Android wiring.                                                |
+| `kmp-sdk/shared/src/commonTest/.../handlers/HostConfigTest.kt` (new)                     | Assert the builder emits mode=embed + every SPEC field for a populated request, and stable defaults (`disclosures=["ofac"]`, empty arrays).        | Hermetic.                                                             |
+| `kmp-sdk/shared/src/androidUnitTest/.../handlers/LifecycleBridgeHandlerTest.kt`          | Add a `getConfig` case: handler returns the encoded payload; unknown method still throws.                                                          | Extend existing test.                                                 |
 
 ### Implementation Steps
 

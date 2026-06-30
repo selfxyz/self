@@ -12,6 +12,7 @@ import { bridgeCameraAdapter } from '@selfxyz/webview-bridge/adapters';
 import { useBridge } from '../../../providers/BridgeProvider';
 import { useSelfClient } from '../../../providers/SelfClientProvider';
 import { WEB_SAFE_AREA } from '../../../utils/insets';
+import { MrzScanStatusOverlay } from '../components/MrzScanStatusOverlay';
 
 export const PassportCodeScanViewfinderRoute: React.FC = () => {
   const navigate = useNavigate();
@@ -79,10 +80,13 @@ export const PassportCodeScanViewfinderRoute: React.FC = () => {
   }, [analytics, haptic]);
 
   return (
-    <PassportCodeScanViewfinderScreen
-      insets={WEB_SAFE_AREA.insets}
-      onClose={handleBack}
-      onCaptureTips={onCaptureTips}
-    />
+    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+      <PassportCodeScanViewfinderScreen
+        insets={WEB_SAFE_AREA.insets}
+        onClose={handleBack}
+        onCaptureTips={onCaptureTips}
+      />
+      <MrzScanStatusOverlay bridge={bridge} variant="passport" />
+    </div>
   );
 };

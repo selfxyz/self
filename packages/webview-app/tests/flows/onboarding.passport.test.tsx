@@ -8,7 +8,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { currentPath, renderWithBridge } from '../utils/renderWithBridge';
 
-import { cleanup, waitFor } from '@testing-library/react';
+import { act, cleanup, waitFor } from '@testing-library/react';
 
 const MRZ_FIXTURE = {
   documentNumber: 'P1234567',
@@ -30,6 +30,26 @@ describe('passport onboarding flow', () => {
       },
     });
 
+    await waitFor(() => expect(currentPath(result)).toBe('/capture/passport/nfc-success'));
+  });
+
+  it('surfaces native scan progress over the viewfinder, then advances on MRZ result', async () => {
+    let resolveScan!: (value: typeof MRZ_FIXTURE) => void;
+    const result = renderWithBridge({
+      initialEntries: ['/capture/passport/code-scan-viewfinder'],
+      setupHandlers: mock => {
+        mock.handle('camera', 'scanMRZ', () => new Promise<typeof MRZ_FIXTURE>(resolve => (resolveScan = resolve)));
+        mock.handleWith('nfc', 'scanPassport', CHIP_FIXTURE);
+      },
+    });
+
+    // Native (mock transport, not browser-host) owns the camera, so the overlay renders.
+    expect(result.getByRole('status').textContent).toContain('Opening');
+
+    act(() => result.mock.pushEvent('camera', 'scanProgress', { state: 'text_detected', message: 'Reading the MRZ…' }));
+    await waitFor(() => expect(result.getByRole('status').textContent).toContain('Reading the MRZ…'));
+
+    act(() => resolveScan(MRZ_FIXTURE));
     await waitFor(() => expect(currentPath(result)).toBe('/capture/passport/nfc-success'));
   });
 

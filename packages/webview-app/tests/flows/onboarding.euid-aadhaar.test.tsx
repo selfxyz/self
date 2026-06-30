@@ -8,10 +8,18 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { currentPath, renderWithBridge } from '../utils/renderWithBridge';
 
-import { cleanup, fireEvent, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, waitFor } from '@testing-library/react';
 
 const MRZ_FIXTURE = {
   passportNumber: 'EU1234567',
+  dateOfBirth: '900115',
+  dateOfExpiry: '300115',
+};
+
+// The eu-id viewfinder validates documentNumber/dateOfBirth/dateOfExpiry on the scan
+// result, so the scanMRZ fixture must carry documentNumber (not passportNumber).
+const EUID_MRZ_SCAN = {
+  documentNumber: 'EU1234567',
   dateOfBirth: '900115',
   dateOfExpiry: '300115',
 };
@@ -32,6 +40,24 @@ describe('EU-ID and Aadhaar onboarding flows', () => {
 
     await waitFor(() => expect(currentPath(result)).toBe('/capture/eu-id/nfc-error'));
     await waitFor(() => expect(result.getByText('Reference: ref-euid-nfc')).toBeTruthy());
+  });
+
+  it('EU-ID viewfinder surfaces native scan progress, then advances on MRZ result', async () => {
+    let resolveScan!: (value: typeof EUID_MRZ_SCAN) => void;
+    const result = renderWithBridge({
+      initialEntries: ['/capture/eu-id/code-scan-viewfinder'],
+      setupHandlers: mock => {
+        mock.handle('camera', 'scanMRZ', () => new Promise<typeof EUID_MRZ_SCAN>(resolve => (resolveScan = resolve)));
+      },
+    });
+
+    expect(result.getByRole('status').textContent).toContain('Opening the document scanner');
+
+    act(() => result.mock.pushEvent('camera', 'scanProgress', { state: 'mrz_detected', message: 'Got the MRZ!' }));
+    await waitFor(() => expect(result.getByRole('status').textContent).toContain('Got the MRZ!'));
+
+    act(() => resolveScan(EUID_MRZ_SCAN));
+    await waitFor(() => expect(currentPath(result)).toBe('/capture/eu-id/nfc-instructions'));
   });
 
   it('Aadhaar upload with no native handler routes to the upload-error screen with the footer', async () => {

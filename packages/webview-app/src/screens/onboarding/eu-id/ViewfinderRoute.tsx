@@ -12,6 +12,7 @@ import { bridgeCameraAdapter } from '@selfxyz/webview-bridge/adapters';
 import { useBridge } from '../../../providers/BridgeProvider';
 import { useSelfClient } from '../../../providers/SelfClientProvider';
 import { WEB_SAFE_AREA } from '../../../utils/insets';
+import { MrzScanStatusOverlay } from '../components/MrzScanStatusOverlay';
 
 export const EuIdViewfinderRoute: React.FC = () => {
   const navigate = useNavigate();
@@ -75,5 +76,10 @@ export const EuIdViewfinderRoute: React.FC = () => {
     analytics.trackEvent('eu_id_viewfinder_capture_tips');
   }, [analytics, haptic]);
 
-  return <EuIdViewfinderScreen insets={WEB_SAFE_AREA.insets} onClose={handleBack} onCaptureTips={onCaptureTips} />;
+  return (
+    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+      <EuIdViewfinderScreen insets={WEB_SAFE_AREA.insets} onClose={handleBack} onCaptureTips={onCaptureTips} />
+      <MrzScanStatusOverlay bridge={bridge} variant="document" />
+    </div>
+  );
 };
