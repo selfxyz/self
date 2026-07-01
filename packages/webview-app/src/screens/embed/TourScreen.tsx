@@ -26,7 +26,7 @@ export const TourScreen: React.FC = () => {
       return;
     }
 
-    navigate(await resolveEmbedEntry(client, `/capture/kyc${mockParam}`));
+    navigate(await resolveEmbedEntry(client, `/capture/kyc${mockParam}`), { replace: true });
   }, [navigate, stepNum, client, mockParam]);
 
   const onRestore = useCallback(() => {

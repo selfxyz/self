@@ -7,6 +7,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 
 import { useSelfClient } from '../providers/SelfClientProvider';
 import { resolveEmbedEntry } from '../utils/resolveEmbedEntry';
+import { hasVerificationRequestParam } from '../utils/verificationRequest';
 
 /**
  * Catch-all entry. The SDK launches the WebView at `…/tunnel/tour/1?disclosures=…`,
@@ -19,8 +20,7 @@ import { resolveEmbedEntry } from '../utils/resolveEmbedEntry';
 export const InitialRouteRedirect: React.FC = () => {
   const location = useLocation();
   const { client } = useSelfClient();
-  const params = new URLSearchParams(location.search);
-  const hasRequest = params.has('disclosures') || params.has('proofItems');
+  const hasRequest = hasVerificationRequestParam(location.search);
 
   const [target, setTarget] = useState<string | null>(null);
 

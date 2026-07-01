@@ -102,7 +102,7 @@
     "environment": "string", // SelfEnvironment.queryValue; web maps to 'prod'|'stg'
     "endpointType": "string|null",
     "appName": "string|null", // web defaults to 'Verification' when null
-    "chainID": 0, // number|null; web keeps only 42220/11142220
+    "chainID": 42220, // number|null; web keeps only 42220/11142220 (others filtered out)
     "version": 2, // from config.version (NOT hardcoded)
   },
   "debug": false, // optional

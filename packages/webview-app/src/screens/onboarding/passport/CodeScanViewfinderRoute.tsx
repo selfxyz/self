@@ -11,21 +11,20 @@ import { bridgeCameraAdapter } from '@selfxyz/webview-bridge/adapters';
 
 import { useBridge } from '../../../providers/BridgeProvider';
 import { useSelfClient } from '../../../providers/SelfClientProvider';
+import type { NavState } from '../../../types/navState';
 import { WEB_SAFE_AREA } from '../../../utils/insets';
 import { MrzScanStatusOverlay } from '../components/MrzScanStatusOverlay';
 
-type RouteState = { countryCode?: string };
-
 // Stable identity for the no-router-state case, so `state` in the scan effect's dep
 // array doesn't churn on every render and needlessly re-run the effect.
-const EMPTY_STATE: RouteState = Object.freeze({});
+const EMPTY_STATE: Partial<NavState> = Object.freeze({});
 
 export const PassportCodeScanViewfinderRoute: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const bridge = useBridge();
   const { analytics, haptic } = useSelfClient();
-  const state = useMemo(() => (location.state as RouteState | null) ?? EMPTY_STATE, [location.state]);
+  const state = useMemo(() => (location.state as Partial<NavState> | null) ?? EMPTY_STATE, [location.state]);
   const cameraAdapter = useMemo(() => bridgeCameraAdapter(bridge), [bridge]);
   const startedRef = useRef(false);
   const cancelledRef = useRef(false);
