@@ -76,6 +76,45 @@ describe('EU-ID and Aadhaar onboarding flows', () => {
     await waitFor(() => expect(currentPath(result)).toBe('/capture/eu-id/nfc-instructions'));
   });
 
+  it('EU-ID runs MRZ under StrictMode then NFC via Continue to success', async () => {
+    // StrictMode double-invokes the viewfinder's auto-scan effect (setup→cleanup→setup).
+    // The start-once guard means only the first setup starts the native scan; the
+    // interleaved cleanup must not cancel that one in-flight scan (a closure `cancelled`
+    // boolean did, dropping the MRZ so the flow hung on the viewfinder forever). A
+    // reset-on-setup `cancelledRef` survives the benign cleanup. The eu-id NFC step is
+    // button-driven (Continue), so it advances once tapped.
+    let resolveScan!: (value: typeof EUID_MRZ_SCAN) => void;
+    const result = renderWithBridge({
+      initialEntries: ['/capture/eu-id/code-scan-viewfinder'],
+      strictMode: true,
+      setupHandlers: mock => {
+        mock.handle('camera', 'scanMRZ', () => new Promise<typeof EUID_MRZ_SCAN>(resolve => (resolveScan = resolve)));
+        mock.handleWith('nfc', 'scanPassport', { dg1: 'mock-dg1', sod: 'mock-sod' });
+      },
+    });
+
+    await waitFor(() => expect(resolveScan).toBeTypeOf('function'));
+    act(() => resolveScan(EUID_MRZ_SCAN));
+    await waitFor(() => expect(currentPath(result)).toBe('/capture/eu-id/nfc-instructions'));
+
+    fireEvent.click(await waitFor(() => result.getByText('Continue')));
+    await waitFor(() => expect(currentPath(result)).toBe('/capture/eu-id/nfc-success'));
+  });
+
+  it('EU-ID incomplete MRZ result routes to the error screen under StrictMode', async () => {
+    // Exercises the viewfinder catch branch (missing dateOfExpiry → "Incomplete MRZ
+    // result") and its cancelledRef guard under StrictMode's benign cleanup.
+    const result = renderWithBridge({
+      initialEntries: ['/capture/eu-id/code-scan-viewfinder'],
+      strictMode: true,
+      setupHandlers: mock => {
+        mock.handleWith('camera', 'scanMRZ', { documentNumber: 'EU1234567', dateOfBirth: '900115' });
+      },
+    });
+
+    await waitFor(() => expect(currentPath(result)).toBe('/capture/eu-id/nfc-error'));
+  });
+
   it('Aadhaar upload with no native handler routes to the upload-error screen with the footer', async () => {
     const result = renderWithBridge({
       initialEntries: ['/capture/aadhaar/instructions'],

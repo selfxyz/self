@@ -16,10 +16,8 @@ import { MrzScanStatusOverlay } from '../components/MrzScanStatusOverlay';
 
 type RouteState = { countryCode?: string };
 
-// Stable identity for the no-router-state case. Without this, `location.state ?? {}`
-// mints a fresh object every render; because `state` is in the scan effect's dep array,
-// any re-render re-runs the effect and its cleanup flips `cancelled=true` on the
-// still-in-flight native scan — the resolved MRZ is then dropped and we never navigate.
+// Stable identity for the no-router-state case, so `state` in the scan effect's dep
+// array doesn't churn on every render and needlessly re-run the effect.
 const EMPTY_STATE: RouteState = Object.freeze({});
 
 export const PassportCodeScanViewfinderRoute: React.FC = () => {
@@ -30,17 +28,27 @@ export const PassportCodeScanViewfinderRoute: React.FC = () => {
   const state = useMemo(() => (location.state as RouteState | null) ?? EMPTY_STATE, [location.state]);
   const cameraAdapter = useMemo(() => bridgeCameraAdapter(bridge), [bridge]);
   const startedRef = useRef(false);
+  const cancelledRef = useRef(false);
 
   useEffect(() => {
-    if (startedRef.current) return;
+    // StrictMode (dev) runs setup→cleanup→setup. The start-once guard means only the
+    // first setup starts the native scan; without resetting here, the interleaved
+    // cleanup would flip cancel on that one in-flight scan and no later setup replaces
+    // it, so the resolved MRZ is dropped and we never navigate. Reset each setup so only
+    // a real unmount keeps cancel set.
+    cancelledRef.current = false;
+    if (startedRef.current) {
+      return () => {
+        cancelledRef.current = true;
+      };
+    }
     startedRef.current = true;
 
-    let cancelled = false;
     void (async () => {
       analytics.trackEvent('passport_mrz_scan_started');
       try {
         const mrz = await cameraAdapter.scanMRZ({});
-        if (cancelled) return;
+        if (cancelledRef.current) return;
         if (!mrz?.documentNumber || !mrz?.dateOfBirth || !mrz?.dateOfExpiry) {
           throw new Error('Incomplete MRZ result');
         }
@@ -58,7 +66,7 @@ export const PassportCodeScanViewfinderRoute: React.FC = () => {
           replace: true,
         });
       } catch (err) {
-        if (cancelled) return;
+        if (cancelledRef.current) return;
         const message = err instanceof Error ? err.message : 'MRZ scan failed';
         analytics.trackEvent('passport_mrz_scan_failed', { error: message });
         haptic.trigger('warning');
@@ -70,7 +78,7 @@ export const PassportCodeScanViewfinderRoute: React.FC = () => {
     })();
 
     return () => {
-      cancelled = true;
+      cancelledRef.current = true;
     };
   }, [analytics, cameraAdapter, haptic, navigate, state]);
 

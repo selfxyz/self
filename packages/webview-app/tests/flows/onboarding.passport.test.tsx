@@ -72,6 +72,50 @@ describe('passport onboarding flow', () => {
     await waitFor(() => expect(currentPath(result)).toBe('/capture/passport/nfc-success'));
   });
 
+  it('runs MRZ then auto NFC to success under StrictMode setup→cleanup→setup', async () => {
+    // StrictMode double-invokes both auto-scan effects (viewfinder MRZ and NfcRoute's
+    // NFC). Each uses a start-once guard, so only the first setup starts the native scan;
+    // the interleaved cleanup must not cancel that one in-flight scan (a closure
+    // `cancelled` boolean did, dropping the result). The viewfinder then hung forever,
+    // and the NFC screen — which auto-scans with no manual button — stranded the user on
+    // the instructions. A reset-on-setup `cancelledRef` survives the benign cleanup, so
+    // both stages complete through to nfc-success.
+    let resolveMrz!: (value: typeof MRZ_FIXTURE) => void;
+    let resolveNfc!: (value: typeof CHIP_FIXTURE) => void;
+    const result = renderWithBridge({
+      initialEntries: ['/capture/passport/code-scan-viewfinder'],
+      strictMode: true,
+      setupHandlers: mock => {
+        mock.handle('camera', 'scanMRZ', () => new Promise<typeof MRZ_FIXTURE>(resolve => (resolveMrz = resolve)));
+        mock.handle('nfc', 'scanPassport', () => new Promise<typeof CHIP_FIXTURE>(resolve => (resolveNfc = resolve)));
+      },
+    });
+
+    await waitFor(() => expect(resolveMrz).toBeTypeOf('function'));
+    act(() => resolveMrz(MRZ_FIXTURE));
+
+    // Reaches the auto-NFC screen, then the deferred NFC scan resolves and advances.
+    await waitFor(() => expect(currentPath(result)).toBe('/capture/passport/nfc'));
+    await waitFor(() => expect(resolveNfc).toBeTypeOf('function'));
+    act(() => resolveNfc(CHIP_FIXTURE));
+    await waitFor(() => expect(currentPath(result)).toBe('/capture/passport/nfc-success'));
+  });
+
+  it('incomplete MRZ result routes to the error screen under StrictMode', async () => {
+    // Exercises the viewfinder catch branch (missing dateOfExpiry → "Incomplete MRZ
+    // result") and its cancelledRef guard: under StrictMode the benign cleanup must not
+    // suppress the error navigation either.
+    const result = renderWithBridge({
+      initialEntries: ['/capture/passport/code-scan-viewfinder'],
+      strictMode: true,
+      setupHandlers: mock => {
+        mock.handleWith('camera', 'scanMRZ', { documentNumber: 'P1234567', dateOfBirth: '900115' });
+      },
+    });
+
+    await waitFor(() => expect(currentPath(result)).toBe('/capture/passport/nfc-error'));
+  });
+
   it('NFC failure routes to the error screen and shows the support reference', async () => {
     const result = renderWithBridge({
       initialEntries: [{ pathname: '/capture/passport/nfc', state: { mrz: MRZ_FIXTURE } }],
