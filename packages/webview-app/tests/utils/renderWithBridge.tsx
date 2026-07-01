@@ -39,6 +39,9 @@ export interface RenderWithBridgeResult extends RenderResult {
   mock: MockNativeBridge;
   bridge: WebViewBridge;
   storage: Map<string, string>;
+  // Re-render the same tree in place (preserves the router history and the bridge).
+  // Used to reproduce spurious mid-effect re-renders.
+  forceRerender: () => void;
 }
 
 const LocationProbe: React.FC = () => {
@@ -90,7 +93,9 @@ export function renderWithBridge(options: RenderWithBridgeOptions): RenderWithBr
   const bridge = new WebViewBridge({ transport: mock });
   mock.connect(bridge);
 
-  const result = render(
+  // Fresh element each call so a rerender doesn't hit React's identical-element bail-out.
+  // MemoryRouter keeps its history in an internal ref, so routing survives the rerender.
+  const renderTree = () => (
     <BridgeProvider bridge={bridge}>
       <App
         renderRouter={children => (
@@ -100,10 +105,12 @@ export function renderWithBridge(options: RenderWithBridgeOptions): RenderWithBr
           </MemoryRouter>
         )}
       />
-    </BridgeProvider>,
+    </BridgeProvider>
   );
 
-  return Object.assign(result, { mock, bridge, storage });
+  const result = render(renderTree());
+
+  return Object.assign(result, { mock, bridge, storage, forceRerender: () => result.rerender(renderTree()) });
 }
 
 export type { BridgeDomain };

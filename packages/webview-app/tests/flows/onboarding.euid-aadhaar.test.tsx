@@ -60,6 +60,22 @@ describe('EU-ID and Aadhaar onboarding flows', () => {
     await waitFor(() => expect(currentPath(result)).toBe('/capture/eu-id/nfc-instructions'));
   });
 
+  it('EU-ID viewfinder still navigates when the route re-renders mid native scan', async () => {
+    let resolveScan!: (value: typeof EUID_MRZ_SCAN) => void;
+    const result = renderWithBridge({
+      initialEntries: ['/capture/eu-id/code-scan-viewfinder'],
+      setupHandlers: mock => {
+        mock.handle('camera', 'scanMRZ', () => new Promise<typeof EUID_MRZ_SCAN>(resolve => (resolveScan = resolve)));
+      },
+    });
+
+    await waitFor(() => expect(result.getByRole('status')).toBeTruthy());
+    act(() => result.forceRerender());
+
+    act(() => resolveScan(EUID_MRZ_SCAN));
+    await waitFor(() => expect(currentPath(result)).toBe('/capture/eu-id/nfc-instructions'));
+  });
+
   it('Aadhaar upload with no native handler routes to the upload-error screen with the footer', async () => {
     const result = renderWithBridge({
       initialEntries: ['/capture/aadhaar/instructions'],

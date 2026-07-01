@@ -38,6 +38,12 @@ function getSharedBridge(): WebViewBridge {
   return sharedBridge;
 }
 
+/** Test-only: drop the process-wide bridge so each test starts from a clean slate. */
+export function resetSharedBridgeForTests(): void {
+  sharedBridge?.destroy();
+  sharedBridge = null;
+}
+
 export const BridgeProvider: React.FC<{ children: React.ReactNode; bridge?: WebViewBridge }> = ({
   children,
   bridge: injectedBridge,

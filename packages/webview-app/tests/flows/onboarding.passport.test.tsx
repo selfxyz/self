@@ -53,6 +53,25 @@ describe('passport onboarding flow', () => {
     await waitFor(() => expect(currentPath(result)).toBe('/capture/passport/nfc-success'));
   });
 
+  it('still navigates when the route re-renders while the native scan is in flight', async () => {
+    let resolveScan!: (value: typeof MRZ_FIXTURE) => void;
+    const result = renderWithBridge({
+      initialEntries: ['/capture/passport/code-scan-viewfinder'],
+      setupHandlers: mock => {
+        mock.handle('camera', 'scanMRZ', () => new Promise<typeof MRZ_FIXTURE>(resolve => (resolveScan = resolve)));
+        mock.handleWith('nfc', 'scanPassport', CHIP_FIXTURE);
+      },
+    });
+
+    // Re-render while the scan is still pending. A fresh `location.state ?? {}` used to
+    // re-run the scan effect and cancel the in-flight scan; the result would be dropped.
+    await waitFor(() => expect(result.getByRole('status')).toBeTruthy());
+    act(() => result.forceRerender());
+
+    act(() => resolveScan(MRZ_FIXTURE));
+    await waitFor(() => expect(currentPath(result)).toBe('/capture/passport/nfc-success'));
+  });
+
   it('NFC failure routes to the error screen and shows the support reference', async () => {
     const result = renderWithBridge({
       initialEntries: [{ pathname: '/capture/passport/nfc', state: { mrz: MRZ_FIXTURE } }],

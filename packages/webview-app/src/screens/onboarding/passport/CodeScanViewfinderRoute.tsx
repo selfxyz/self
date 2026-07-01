@@ -14,12 +14,20 @@ import { useSelfClient } from '../../../providers/SelfClientProvider';
 import { WEB_SAFE_AREA } from '../../../utils/insets';
 import { MrzScanStatusOverlay } from '../components/MrzScanStatusOverlay';
 
+type RouteState = { countryCode?: string };
+
+// Stable identity for the no-router-state case. Without this, `location.state ?? {}`
+// mints a fresh object every render; because `state` is in the scan effect's dep array,
+// any re-render re-runs the effect and its cleanup flips `cancelled=true` on the
+// still-in-flight native scan — the resolved MRZ is then dropped and we never navigate.
+const EMPTY_STATE: RouteState = Object.freeze({});
+
 export const PassportCodeScanViewfinderRoute: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const bridge = useBridge();
   const { analytics, haptic } = useSelfClient();
-  const state = (location.state as { countryCode?: string } | null) ?? {};
+  const state = useMemo(() => (location.state as RouteState | null) ?? EMPTY_STATE, [location.state]);
   const cameraAdapter = useMemo(() => bridgeCameraAdapter(bridge), [bridge]);
   const startedRef = useRef(false);
 
