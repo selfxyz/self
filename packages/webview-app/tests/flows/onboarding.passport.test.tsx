@@ -127,5 +127,46 @@ describe('passport onboarding flow', () => {
 
     await waitFor(() => expect(currentPath(result)).toBe('/capture/passport/nfc-error'));
     await waitFor(() => expect(result.getByText('Reference: ref-passport-nfc')).toBeTruthy());
+    // NFC-stage failure keeps the default chip copy (only the MRZ stage overrides it).
+    expect(result.getByText('There was a problem scanning the chip')).toBeTruthy();
+  });
+
+  it('MRZ failure routes to the error screen with camera copy and stops the native camera', async () => {
+    const result = renderWithBridge({
+      initialEntries: ['/capture/passport/code-scan-viewfinder'],
+      setupHandlers: mock => {
+        mock.handleWithError('camera', 'scanMRZ', { code: 'CAMERA_ERROR', message: 'camera stalled' });
+        mock.handleWith('camera', 'stopCamera', {});
+      },
+    });
+
+    await waitFor(() => expect(currentPath(result)).toBe('/capture/passport/nfc-error'));
+    // The failure happened at the camera step — the chip-error copy would send the
+    // user retrying the wrong thing.
+    expect(result.getByText('There was a problem scanning your document')).toBeTruthy();
+    // A rejected scanMRZ must not orphan the native scan (camera kept streaming,
+    // covering the WebView, and its late result was dropped as "No pending request").
+    await waitFor(() =>
+      expect(result.mock.messagesFor('camera').filter(m => m.method === 'stopCamera').length).toBeGreaterThanOrEqual(1),
+    );
+  });
+
+  it('leaving the viewfinder mid-scan stops the native camera', async () => {
+    const result = renderWithBridge({
+      initialEntries: ['/capture/passport/code-scan-viewfinder'],
+      setupHandlers: mock => {
+        mock.handle('camera', 'scanMRZ', () => new Promise<typeof MRZ_FIXTURE>(() => {}));
+        mock.handleWith('camera', 'stopCamera', {});
+      },
+    });
+
+    await waitFor(() => expect(result.getByRole('status')).toBeTruthy());
+    result.unmount();
+
+    // The stop is deferred one tick so StrictMode remounts can cancel it; a real
+    // unmount must let it fire.
+    await waitFor(() =>
+      expect(result.mock.messagesFor('camera').filter(m => m.method === 'stopCamera').length).toBeGreaterThanOrEqual(1),
+    );
   });
 });

@@ -101,17 +101,37 @@ File: `kmp-sdk/ocr/src/main/kotlin/xyz/self/sdk/ocr/AndroidCameraMrzProvider.kt`
 1. ~~`camera.scanMRZ` bridge request has no timeout~~ 120s timeout added
    (`webview-bridge/src/adapters/camera.ts`). On timeout the viewfinder catch
    routes to `/capture/passport/nfc-error` (`stage: 'mrz'`), whose Start Over
-   CTA restarts the capture flow — verified, no new error screen needed.
+   CTA restarts the capture flow.
 2. ~~Viewfinder unmount never tells native to stop~~ Both viewfinder routes now
    fire `camera.stopCamera` on unmount, deferred one tick so StrictMode's
-   cleanup→setup remount cancels the stop and keeps the live scan. Native
+   cleanup→setup remount cancels the stop and keeps the live scan. The camera
+   adapter additionally fires `stopCamera` whenever `scanMRZ` rejects (timeout
+   included), so a dead request can never orphan the native scan — on-device
+   logcat (08:09–08:11) showed the camera streaming 2 min past a timed-out
+   request and its late result dropped as "No pending request". Native
    `stopCamera` handler exists and is idempotent.
 3. ~~`waitForBox` rAF-loops forever~~ Falls back to the full-viewport rect
    after ~1s if no measurable `<video>` box appears.
+4. MRZ-stage failures no longer show the chip-error copy: both `NfcErrorRoute`s
+   pass an MRZ-specific `copy` override to `PassportNfcErrorScreen` when
+   `stage === 'mrz'` (`onboarding/components/nfcErrorCopy.ts`).
 
-Validated: `webview-bridge` build + tests (68), `webview-app` tsc + vite build
+Tests: 2 new webview-bridge adapter tests (scanMRZ rejection fires stopCamera;
+120s fake-timer timeout rejects + fires stopCamera) and 2 new webview-app flow
+tests (MRZ failure → error route with camera copy + stopCamera; unmount
+mid-scan → stopCamera), plus a chip-copy assertion on the NFC-failure flow.
+Validated: `webview-bridge` build + tests (70), `webview-app` tsc + vite build
 
-- eslint + tests (254) all pass.
+- eslint + tests (256) all pass.
+
+**Serving gap (why on-device still failed at 08:09):** vite :5173 serves the
+`self` checkout, which lacks all of the above. Sync these files from `selfapp`
+to `self` (or repoint serving), then rebuild `self`'s `webview-bridge` dist:
+`packages/webview-bridge/src/adapters/camera.ts`,
+`.../src/__tests__/adapters.test.ts`, and under
+`packages/webview-app/src/screens/onboarding/`: `components/MrzScanStatusOverlay.tsx`,
+`components/nfcErrorCopy.ts` (new), `passport/CodeScanViewfinderRoute.tsx`,
+`eu-id/ViewfinderRoute.tsx`, `passport/NfcErrorRoute.tsx`, `eu-id/NfcErrorRoute.tsx`.
 
 ### P1 — NFC method mismatch (will hit immediately after MRZ works) — monorepo half DONE; self-webview-sdk half IN PROGRESS (separate session)
 
