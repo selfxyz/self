@@ -16,13 +16,36 @@ export type { NfcDebugBridgeOptions };
 
 export const isNfcDebugBridgeSupported = bridge.isSupported;
 
+export interface StartBridgeInput extends NfcDebugBridgeOptions {
+  // Session key minted by the server's POST /session; the phone dials
+  // /device?session=<key>. Blank uses the shared "default" session (dev only).
+  sessionKey?: string;
+}
+
 const YYMMDD = /^\d{6}$/;
+
+/**
+ * Composes the effective relay URL. The session key is a query param on the
+ * relay URL (`/device?session=S`); the server routes the device leg by it and
+ * pairs it with the backend's `POST /debug/run {session:S}`.
+ */
+export const relayUrlWithSession = (
+  relayUrl: string,
+  sessionKey?: string,
+): string => {
+  const key = sessionKey?.trim();
+  if (!key) {
+    return relayUrl;
+  }
+  const sep = relayUrl.includes('?') ? '&' : '?';
+  return `${relayUrl}${sep}session=${encodeURIComponent(key)}`;
+};
 
 /**
  * Arms the bridge. Validates inputs before the native call (same contract the
  * package's index.android.js asserts) and rejects with a readable message.
  */
-export const startBridge = (opts: NfcDebugBridgeOptions): Promise<boolean> => {
+export const startBridge = (opts: StartBridgeInput): Promise<boolean> => {
   const relayUrl = opts.relayUrl?.trim();
   if (!relayUrl) {
     return Promise.reject(new Error('Relay URL is required.'));
@@ -37,7 +60,7 @@ export const startBridge = (opts: NfcDebugBridgeOptions): Promise<boolean> => {
     return Promise.reject(new Error('Date of expiry must be YYMMDD.'));
   }
   return bridge.start({
-    relayUrl,
+    relayUrl: relayUrlWithSession(relayUrl, opts.sessionKey),
     documentNumber: opts.documentNumber.trim(),
     dateOfBirth: opts.dateOfBirth,
     dateOfExpiry: opts.dateOfExpiry,

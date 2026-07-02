@@ -22,17 +22,24 @@ import BugIcon from '@/assets/icons/bug_icon.svg';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import {
   isNfcDebugBridgeSupported,
+  relayUrlWithSession,
   startBridge,
   stopBridge,
 } from '@/integrations/nfc/nfcDebugBridge';
 import { ParameterSection } from '@/screens/dev/components/ParameterSection';
 import { useSettingStore } from '@/stores/settingStore';
 
+// The agent runs server-side; the phone is only the device leg. To exercise the
+// autonomous flow: mint a session, arm the device on it, then have the backend
+// (holding DEBUG_API_TOKEN) trigger the run.
 const SETUP_HINTS = [
-  'MCP_TRANSPORT=http MCP_HTTP_PORT=8080 npm --prefix mcp-server start',
+  'export DEBUG_API_TOKEN=<secret> ANTHROPIC_API_KEY=sk-ant-…',
+  'MCP_TRANSPORT=http MCP_HTTP_PORT=8080 SESSION_ENFORCE=1 npm --prefix mcp-server start',
   'adb reverse tcp:8080 tcp:8080',
-  'claude mcp add --transport http nfc-debug http://localhost:8080/mcp',
-  'agent: nfc_connect → nfc_authenticate {"strategy":"auto"} → nfc_read_data_group {"dg":"DG1"}',
+  'S=$(curl -s -XPOST localhost:8080/session | jq -r .session)   # mint a session',
+  'paste S below + Arm, then rest passport on phone',
+  'curl -XPOST localhost:8080/debug/run -H "Authorization: Bearer $DEBUG_API_TOKEN" \\',
+  '  -H "Content-Type: application/json" -d "{\\"session\\":\\"$S\\",\\"target\\":\\"device\\"}"',
 ];
 
 const DevNfcDebugScreen: React.FC = () => {
@@ -44,6 +51,7 @@ const DevNfcDebugScreen: React.FC = () => {
   const relayUrl = useSettingStore(state => state.nfcDebugRelayUrl);
   const setRelayUrl = useSettingStore(state => state.setNfcDebugRelayUrl);
 
+  const [sessionKey, setSessionKey] = useState('');
   const [documentNumber, setDocumentNumber] = useState(passportNumber ?? '');
   const [dob, setDob] = useState(dateOfBirth ?? '');
   const [doe, setDoe] = useState(dateOfExpiry ?? '');
@@ -53,12 +61,15 @@ const DevNfcDebugScreen: React.FC = () => {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const effectiveUrl = relayUrlWithSession(relayUrl, sessionKey);
+
   const onArm = useCallback(async () => {
     setBusy(true);
     setError(null);
     try {
       await startBridge({
         relayUrl,
+        sessionKey,
         documentNumber,
         dateOfBirth: dob,
         dateOfExpiry: doe,
@@ -71,7 +82,7 @@ const DevNfcDebugScreen: React.FC = () => {
     } finally {
       setBusy(false);
     }
-  }, [relayUrl, documentNumber, dob, doe, canNumber]);
+  }, [relayUrl, sessionKey, documentNumber, dob, doe, canNumber]);
 
   const onStop = useCallback(async () => {
     setBusy(true);
@@ -115,15 +126,24 @@ const DevNfcDebugScreen: React.FC = () => {
           <ParameterSection
             icon={<BugIcon />}
             title="Connection"
-            description="WebSocket relay served by the MCP server (use adb reverse for local)."
+            description="Dial the server's /device relay for a session (use adb reverse for local)."
           >
-            <Field
-              label="Relay URL"
-              value={relayUrl}
-              onChangeText={setRelayUrl}
-              placeholder="ws://localhost:8080/device"
-              autoCapitalize="none"
-            />
+            <YStack gap="$2">
+              <Field
+                label="Relay URL"
+                value={relayUrl}
+                onChangeText={setRelayUrl}
+                placeholder="ws://localhost:8080/device"
+                autoCapitalize="none"
+              />
+              <Field
+                label="Session key (from POST /session)"
+                value={sessionKey}
+                onChangeText={setSessionKey}
+                placeholder="blank = default session (dev only)"
+                autoCapitalize="none"
+              />
+            </YStack>
           </ParameterSection>
 
           <ParameterSection
@@ -171,7 +191,7 @@ const DevNfcDebugScreen: React.FC = () => {
                 fontFamily={dinot}
               >
                 {armed
-                  ? `Armed · ${relayUrl}`
+                  ? `Armed · ${effectiveUrl}`
                   : 'Stopped — not listening for a tag.'}
               </Text>
               {error ? (
