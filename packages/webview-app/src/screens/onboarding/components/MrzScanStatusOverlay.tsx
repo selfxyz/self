@@ -78,6 +78,73 @@ export const MrzScanStatusOverlay: React.FC<{ bridge: WebViewBridge; variant: Sc
     });
   }, [bridge, nativeScan, variant]);
 
+  // Native CameraX owns the camera, so euclid's own <video> stays black. Report where
+  // euclid's scan window sits (its <video>'s box) to native, in physical px, so the
+  // native preview can be positioned to fill exactly that box. Re-reports on layout
+  // settle / resize so it stays aligned. If no measurable box appears within ~1s,
+  // falls back to a full-viewport rect — a missing rect must never mean no preview.
+  useEffect(() => {
+    if (!nativeScan) return;
+
+    const dpr = () => window.devicePixelRatio || 1;
+    // `scale` lets native detect visual-viewport zoom, where css×dpr misplaces the rect.
+    const fire = (left: number, top: number, width: number, height: number) => {
+      bridge.fire('camera', 'setPreviewRect', {
+        left: Math.round(left * dpr()),
+        top: Math.round(top * dpr()),
+        width: Math.round(width * dpr()),
+        height: Math.round(height * dpr()),
+        dpr: dpr(),
+        scale: window.visualViewport?.scale ?? 1,
+      });
+    };
+
+    const report = () => {
+      const box = document.querySelector('video')?.parentElement;
+      if (!box) return false;
+      const r = box.getBoundingClientRect();
+      if (r.width <= 0 || r.height <= 0) return false;
+      fire(r.left, r.top, r.width, r.height);
+      return true;
+    };
+
+    let raf = 0;
+    let observer: ResizeObserver | null = null;
+    const timers: number[] = [];
+    let cancelled = false;
+
+    const fallback = window.setTimeout(() => {
+      if (!report()) fire(0, 0, window.innerWidth, window.innerHeight);
+    }, 1000);
+
+    const waitForBox = () => {
+      if (cancelled) return;
+      const box = document.querySelector('video')?.parentElement;
+      if (box) {
+        report();
+        // Catch layout settling (fonts/insets) shortly after mount.
+        [120, 350, 800].forEach(ms => timers.push(window.setTimeout(report, ms)));
+        if (typeof ResizeObserver !== 'undefined') {
+          observer = new ResizeObserver(report);
+          observer.observe(box);
+        }
+      } else {
+        raf = window.requestAnimationFrame(waitForBox);
+      }
+    };
+    waitForBox();
+    window.addEventListener('resize', report);
+
+    return () => {
+      cancelled = true;
+      window.cancelAnimationFrame(raf);
+      window.clearTimeout(fallback);
+      timers.forEach(window.clearTimeout);
+      observer?.disconnect();
+      window.removeEventListener('resize', report);
+    };
+  }, [bridge, nativeScan]);
+
   if (!nativeScan) return null;
 
   return (

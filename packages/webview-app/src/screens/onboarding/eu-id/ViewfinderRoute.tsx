@@ -28,6 +28,7 @@ export const EuIdViewfinderRoute: React.FC = () => {
   const cameraAdapter = useMemo(() => bridgeCameraAdapter(bridge), [bridge]);
   const startedRef = useRef(false);
   const cancelledRef = useRef(false);
+  const stopTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     // StrictMode (dev) runs setup→cleanup→setup. The start-once guard means only the
@@ -36,10 +37,21 @@ export const EuIdViewfinderRoute: React.FC = () => {
     // it, so the resolved MRZ is dropped and we never navigate. Reset each setup so only
     // a real unmount keeps cancel set.
     cancelledRef.current = false;
+    if (stopTimerRef.current !== null) {
+      window.clearTimeout(stopTimerRef.current);
+      stopTimerRef.current = null;
+    }
+    // The web abandoning the scan (unmount, timeout → error route) must also stop the
+    // native camera — otherwise CameraX keeps streaming with no UI attached. Deferred
+    // a tick so a StrictMode/dep-churn re-setup can cancel it and keep the live scan.
+    const scheduleStop = () => {
+      cancelledRef.current = true;
+      stopTimerRef.current = window.setTimeout(() => {
+        bridge.fire('camera', 'stopCamera', {});
+      }, 0);
+    };
     if (startedRef.current) {
-      return () => {
-        cancelledRef.current = true;
-      };
+      return scheduleStop;
     }
     startedRef.current = true;
 
@@ -76,10 +88,8 @@ export const EuIdViewfinderRoute: React.FC = () => {
       }
     })();
 
-    return () => {
-      cancelledRef.current = true;
-    };
-  }, [analytics, cameraAdapter, haptic, navigate, state]);
+    return scheduleStop;
+  }, [analytics, bridge, cameraAdapter, haptic, navigate, state]);
 
   const handleBack = useCallback(() => {
     haptic.trigger('selection');

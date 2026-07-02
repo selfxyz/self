@@ -4,6 +4,10 @@
 
 import type { WebViewBridge } from '../bridge';
 
+// A native stall must surface as an error the UI can react to, not an
+// indefinitely-pending promise over a black viewfinder.
+const MRZ_SCAN_TIMEOUT_MS = 120_000;
+
 export interface BridgeCameraAdapter {
   scanMRZ(params?: MrzScanParams): Promise<MrzScanResult>;
   isAvailable(): Promise<boolean>;
@@ -26,7 +30,7 @@ export function bridgeCameraAdapter(bridge: WebViewBridge): BridgeCameraAdapter 
     async scanMRZ(params?: MrzScanParams): Promise<MrzScanResult> {
       // Native handler parses the MRZ JSON string into a JsonElement,
       // which arrives as an object with documentNumber, dateOfBirth, dateOfExpiry.
-      return bridge.request<MrzScanResult>('camera', 'scanMRZ', params ?? {});
+      return bridge.request<MrzScanResult>('camera', 'scanMRZ', params ?? {}, MRZ_SCAN_TIMEOUT_MS);
     },
 
     async isAvailable(): Promise<boolean> {
