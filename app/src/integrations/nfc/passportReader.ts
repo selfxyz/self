@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { NativeModules, Platform } from 'react-native';
+import { NativeEventEmitter, NativeModules, Platform } from 'react-native';
 
 type ScanOptions = {
   documentNumber: string;
@@ -52,6 +52,32 @@ export interface NfcDebugBridgeOptions {
   dateOfExpiry: string; // YYMMDD
   canNumber?: string;
 }
+
+// Emitted (Android native) when the debug session ends for good: the server
+// closed the relay WebSocket. `runComplete` is true when it closed with the
+// run-complete code (report is ready to fetch); false means a fatal/dropped
+// close that will not reconnect.
+export interface NfcDebugSessionOverEvent {
+  code: number;
+  reason: string;
+  runComplete: boolean;
+}
+
+const NFC_DEBUG_SESSION_OVER_EVENT = 'NfcDebugSessionOver';
+
+// One emitter for the whole app (Android only), matching how the logger bridge
+// and NFC scan screen consume RNPassportReader events. Created lazily so a
+// missing module (iOS / older builds) stays a no-op.
+let nfcEventEmitter: NativeEventEmitter | null = null;
+const getNfcEventEmitter = (): NativeEventEmitter | null => {
+  if (Platform.OS !== 'android' || !NativeModules.RNPassportReader) {
+    return null;
+  }
+  if (!nfcEventEmitter) {
+    nfcEventEmitter = new NativeEventEmitter(NativeModules.RNPassportReader);
+  }
+  return nfcEventEmitter;
+};
 
 type AndroidPassportReaderModule = {
   configure?: (token: string, enableDebug?: boolean) => void;
@@ -258,6 +284,23 @@ const nfcDebugBridge = {
       return Promise.resolve(false);
     }
     return androidModule.stopNfcDebugBridge();
+  },
+  /**
+   * Subscribes to the native "session over" event (the server closed the relay
+   * WebSocket). Returns an unsubscribe fn. No-op on iOS / older native builds.
+   */
+  onSessionOver(
+    listener: (event: NfcDebugSessionOverEvent) => void,
+  ): () => void {
+    const emitter = getNfcEventEmitter();
+    if (!emitter) {
+      return () => undefined;
+    }
+    const subscription = emitter.addListener(
+      NFC_DEBUG_SESSION_OVER_EVENT,
+      listener,
+    );
+    return () => subscription.remove();
   },
 };
 

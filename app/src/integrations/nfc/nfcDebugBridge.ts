@@ -2,10 +2,13 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import type { NfcDebugBridgeOptions } from '@/integrations/nfc/passportReader';
+import type {
+  NfcDebugBridgeOptions,
+  NfcDebugSessionOverEvent,
+} from '@/integrations/nfc/passportReader';
 import { nfcDebugBridge as bridge } from '@/integrations/nfc/passportReader';
 
-export type { NfcDebugBridgeOptions };
+export type { NfcDebugBridgeOptions, NfcDebugSessionOverEvent };
 
 /**
  * Orchestration over the on-device NFC-debug bridge. When armed, the phone dials
@@ -70,3 +73,12 @@ export const startBridge = (opts: StartBridgeInput): Promise<boolean> => {
 
 /** Disarms the bridge and tears down the relay connection. */
 export const stopBridge = (): Promise<boolean> => bridge.stop();
+
+/**
+ * Subscribes to the native "session over" signal (the server closed the relay
+ * WebSocket when the run finished or the connection dropped for good). Returns
+ * an unsubscribe fn; no-op on iOS / older native builds.
+ */
+export const subscribeSessionOver = (
+  listener: (event: NfcDebugSessionOverEvent) => void,
+): (() => void) => bridge.onSessionOver(listener);

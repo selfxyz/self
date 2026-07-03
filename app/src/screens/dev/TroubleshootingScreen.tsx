@@ -5,10 +5,11 @@
 import { poseidon2 } from 'poseidon-lite';
 import React, { useState } from 'react';
 import { Alert } from 'react-native';
-import { Button, H4, Paragraph, Spinner, Text, YStack } from 'tamagui';
+import { Button, H4, Paragraph, Spinner, Text, XStack, YStack } from 'tamagui';
 
 import { hashEndpointWithScope } from '@selfxyz/common/utils/scope';
 import {
+  amber500,
   black,
   red500,
   slate200,
@@ -17,6 +18,7 @@ import {
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
+import { useNfcDebugRun } from '@/hooks/useNfcDebugRun';
 import { isFixtureCaptureSupported } from '@/integrations/nfc/fixtureCapture';
 import { unsafe_getPrivateKey } from '@/providers/authProvider';
 import { TopicToggleButton } from '@/screens/dev/components/TopicToggleButton';
@@ -28,6 +30,8 @@ import {
 } from '@/services/points/constants';
 import { getPointsAddress } from '@/services/points/utils';
 import { useSettingStore } from '@/stores/settingStore';
+import type { NfcDebugTone } from '@/utils/nfcDebugOutcome';
+import { describeOutcome } from '@/utils/nfcDebugOutcome';
 
 const FixtureCaptureToggle: React.FC = () => {
   const enabled = useSettingStore(state => state.fixtureCaptureEnabled);
@@ -64,6 +68,125 @@ const FixtureCaptureToggle: React.FC = () => {
         isSubscribed={enabled}
         onToggle={onToggle}
       />
+    </YStack>
+  );
+};
+
+const TONE_COLOR: Record<NfcDebugTone, string> = {
+  success: teal500,
+  warn: amber500,
+  error: red500,
+};
+
+const PHASE_LABEL: Record<string, string> = {
+  starting: 'Starting…',
+  waiting: 'Waiting for passport…',
+  running: 'Analyzing…',
+};
+
+const NfcDebugSection: React.FC = () => {
+  const { state, result, error, run, reset, hasMrz, isSupported } =
+    useNfcDebugRun();
+
+  if (!isSupported) {
+    return null;
+  }
+
+  const busy =
+    state === 'starting' || state === 'waiting' || state === 'running';
+
+  const onPress = () => {
+    Alert.alert(
+      'Debug my passport read?',
+      'Our team can debug why your passport read failed. While you hold your passport on the phone, only redacted protocol data (chip type, command sequence, status codes) is shared.\n\nYour name, photo, document number, and biometrics never leave this device.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Start', onPress: () => run().catch(() => undefined) },
+      ],
+    );
+  };
+
+  // Phase-aware progress line so a long run reads as "working", not frozen. The
+  // done line's color reflects the outcome (a dropped connection is not a clean
+  // success), so it carries an explicit color alongside the text.
+  const statusLine = ((): { text: string; color: string } | null => {
+    if (state === 'starting') {
+      return { text: 'Starting a secure debug session…', color: slate500 };
+    }
+    if (state === 'waiting') {
+      return {
+        text: 'Hold your passport flat against the phone and keep it there…',
+        color: slate500,
+      };
+    }
+    if (state === 'running') {
+      return {
+        text: 'Connected — analyzing your passport. Keep holding it still; this can take a minute.',
+        color: slate500,
+      };
+    }
+    if (state === 'done' && result) {
+      const outcome = describeOutcome(result);
+      return { text: outcome.message, color: TONE_COLOR[outcome.tone] };
+    }
+    return null;
+  })();
+
+  return (
+    <YStack gap="$2">
+      <H4>Debug my passport read</H4>
+      <Paragraph color={slate500}>
+        Let our team debug a failed passport scan. Your document details stay on
+        this device — only redacted protocol data is shared.
+      </Paragraph>
+      <XStack gap="$2">
+        <Button
+          flex={1}
+          backgroundColor={black}
+          color={white}
+          borderColor={slate200}
+          borderRadius="$3"
+          height="$5"
+          disabled={busy || !hasMrz}
+          opacity={busy || !hasMrz ? 0.5 : 1}
+          onPress={onPress}
+        >
+          {busy ? (
+            <XStack gap="$2" alignItems="center">
+              <Spinner color={white} />
+              <Text color={white}>{PHASE_LABEL[state] ?? 'Working…'}</Text>
+            </XStack>
+          ) : (
+            'Debug my passport read'
+          )}
+        </Button>
+        {busy ? (
+          <Button
+            backgroundColor={slate200}
+            color={black}
+            borderRadius="$3"
+            height="$5"
+            onPress={() => reset()}
+          >
+            Cancel
+          </Button>
+        ) : null}
+      </XStack>
+      {!hasMrz ? (
+        <Text fontSize="$3" color={slate500}>
+          Scan your passport first, then come back here.
+        </Text>
+      ) : null}
+      {statusLine ? (
+        <Text fontSize="$3" color={statusLine.color}>
+          {statusLine.text}
+        </Text>
+      ) : null}
+      {state === 'error' && error ? (
+        <Text fontSize="$3" color={red500}>
+          {error}
+        </Text>
+      ) : null}
     </YStack>
   );
 };
@@ -165,6 +288,8 @@ const TroubleshootingScreen: React.FC = () => {
       )}
 
       <FixtureCaptureToggle />
+
+      <NfcDebugSection />
     </YStack>
   );
 };
