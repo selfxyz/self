@@ -96,6 +96,7 @@ export type DevRoutesParamList = {
   DevNfcDebug: undefined;
   MockDataDeepLink: undefined;
   SocialLoginDemo: undefined;
+  Troubleshooting: { nfcDebug?: 'pending' | 'run' } | undefined;
   WebViewHost: { request?: WebViewHostRequest } | undefined;
 };
 

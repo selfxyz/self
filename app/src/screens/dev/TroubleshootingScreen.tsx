@@ -3,9 +3,16 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { poseidon2 } from 'poseidon-lite';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Alert } from 'react-native';
 import { Button, H4, Paragraph, Spinner, Text, XStack, YStack } from 'tamagui';
+import type { RouteProp } from '@react-navigation/native';
+import {
+  useFocusEffect,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { hashEndpointWithScope } from '@selfxyz/common/utils/scope';
 import {
@@ -20,6 +27,8 @@ import {
 
 import { useNfcDebugRun } from '@/hooks/useNfcDebugRun';
 import { isFixtureCaptureSupported } from '@/integrations/nfc/fixtureCapture';
+import type { RootStackParamList } from '@/navigation';
+import type { DevRoutesParamList } from '@/navigation/types';
 import { unsafe_getPrivateKey } from '@/providers/authProvider';
 import { TopicToggleButton } from '@/screens/dev/components/TopicToggleButton';
 import {
@@ -30,6 +39,7 @@ import {
 } from '@/services/points/constants';
 import { getPointsAddress } from '@/services/points/utils';
 import { useSettingStore } from '@/stores/settingStore';
+import { ensureCameraForPassportScan } from '@/utils/cameraPermission';
 import type { NfcDebugTone } from '@/utils/nfcDebugOutcome';
 import { describeOutcome } from '@/utils/nfcDebugOutcome';
 
@@ -85,15 +95,45 @@ const PHASE_LABEL: Record<string, string> = {
 };
 
 const NfcDebugSection: React.FC = () => {
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const route = useRoute<RouteProp<DevRoutesParamList, 'Troubleshooting'>>();
   const { state, result, error, run, reset, hasMrz, isSupported } =
     useNfcDebugRun();
+
+  const busy =
+    state === 'starting' || state === 'waiting' || state === 'running';
+
+  // With no MRZ on file, detour through the normal camera-scan flow. Marking
+  // our own route lets DataConfirmation pop back here with `run` instead of
+  // continuing to the NFC scan; the mark dies with the route on every
+  // abandonment path, so no cleanup is needed. Never clear `pending` here — a
+  // clear-on-focus would race the setParams below.
+  const startScanDetour = useCallback(async () => {
+    if (!(await ensureCameraForPassportScan())) {
+      return;
+    }
+    navigation.setParams({ nfcDebug: 'pending' });
+    navigation.navigate('DocumentCamera');
+  }, [navigation]);
+
+  // Consent was granted before the detour, so the returned `run` signal starts
+  // the debug run without re-prompting.
+  useFocusEffect(
+    useCallback(() => {
+      if (route.params?.nfcDebug !== 'run') {
+        return;
+      }
+      navigation.setParams({ nfcDebug: undefined });
+      if (hasMrz && !busy) {
+        run().catch(() => undefined);
+      }
+    }, [route.params?.nfcDebug, hasMrz, busy, run, navigation]),
+  );
 
   if (!isSupported) {
     return null;
   }
-
-  const busy =
-    state === 'starting' || state === 'waiting' || state === 'running';
 
   const onPress = () => {
     Alert.alert(
@@ -101,7 +141,11 @@ const NfcDebugSection: React.FC = () => {
       'Our team can debug why your passport read failed. While you hold your passport on the phone, only redacted protocol data (chip type, command sequence, status codes) is shared.\n\nYour name, photo, document number, and biometrics never leave this device.',
       [
         { text: 'Cancel', style: 'cancel' },
-        { text: 'Start', onPress: () => run().catch(() => undefined) },
+        {
+          text: 'Start',
+          onPress: () =>
+            (hasMrz ? run() : startScanDetour()).catch(() => undefined),
+        },
       ],
     );
   };
@@ -147,8 +191,8 @@ const NfcDebugSection: React.FC = () => {
           borderColor={slate200}
           borderRadius="$3"
           height="$5"
-          disabled={busy || !hasMrz}
-          opacity={busy || !hasMrz ? 0.5 : 1}
+          disabled={busy}
+          opacity={busy ? 0.5 : 1}
           onPress={onPress}
         >
           {busy ? (
@@ -174,7 +218,7 @@ const NfcDebugSection: React.FC = () => {
       </XStack>
       {!hasMrz ? (
         <Text fontSize="$3" color={slate500}>
-          Scan your passport first, then come back here.
+          We'll ask you to scan your passport's photo page first.
         </Text>
       ) : null}
       {statusLine ? (

@@ -101,6 +101,22 @@ const DataConfirmationScreen: React.FC & {
       edited_fields: editedFields,
     });
 
+    // A Troubleshooting route marked `pending` means the user detoured here
+    // just to capture MRZ for the NFC-debug run — pop back and let it start
+    // instead of continuing to the NFC scan.
+    const nfcDebugPending = navigation
+      .getState()
+      .routes.some(
+        r =>
+          r.name === 'Troubleshooting' &&
+          (r.params as { nfcDebug?: string } | undefined)?.nfcDebug ===
+            'pending',
+      );
+    if (nfcDebugPending) {
+      navigation.popTo('Troubleshooting', { nfcDebug: 'run' });
+      return;
+    }
+
     navigation.navigate('DocumentNFCScan');
   };
 
