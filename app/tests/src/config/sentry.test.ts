@@ -136,7 +136,7 @@ describe('redactSensitiveFields (ANA-13)', () => {
       contexts: {
         os: { name: 'iOS', version: '17.4' },
         device: { name: 'iPhone 15', model: 'iPhone16,1' },
-        app: { app_name: 'Self', app_version: '2.9.25' },
+        app: { app_name: 'Self', app_version: '2.9.26' },
       },
     });
     const ctx = event.contexts as Record<string, Record<string, unknown>>;
