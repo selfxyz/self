@@ -115,11 +115,19 @@ const devScreens = {
       title: 'Social Login Demo',
     } as NativeStackNavigationOptions,
   },
+  // User-facing (reachable from Settings); styled like the settings screens,
+  // not the dev tools.
   Troubleshooting: {
     screen: TroubleshootingScreen,
     options: {
-      ...devHeaderOptions,
       title: 'Troubleshooting',
+      headerTintColor: black,
+      headerStyle: {
+        backgroundColor: white,
+      },
+      headerTitleStyle: {
+        color: black,
+      },
     } as NativeStackNavigationOptions,
   },
   WebViewHost: {

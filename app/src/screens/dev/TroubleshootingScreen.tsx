@@ -4,8 +4,8 @@
 
 import { poseidon2 } from 'poseidon-lite';
 import React, { useCallback, useState } from 'react';
-import { Alert } from 'react-native';
-import { Button, H4, Paragraph, Spinner, Text, XStack, YStack } from 'tamagui';
+import { Alert, StyleSheet, Switch, View } from 'react-native';
+import { Button, ScrollView, Spinner, XStack, YStack } from 'tamagui';
 import type { RouteProp } from '@react-navigation/native';
 import {
   useFocusEffect,
@@ -15,22 +15,25 @@ import {
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { hashEndpointWithScope } from '@selfxyz/common/utils/scope';
+import { BodyText } from '@selfxyz/mobile-sdk-alpha/components';
 import {
   amber500,
   black,
+  blue600,
   red500,
+  slate100,
   slate200,
   slate500,
   teal500,
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import { useNfcDebugRun } from '@/hooks/useNfcDebugRun';
 import { isFixtureCaptureSupported } from '@/integrations/nfc/fixtureCapture';
 import type { RootStackParamList } from '@/navigation';
 import type { DevRoutesParamList } from '@/navigation/types';
 import { unsafe_getPrivateKey } from '@/providers/authProvider';
-import { TopicToggleButton } from '@/screens/dev/components/TopicToggleButton';
 import {
   POINTS_API_BASE_URL,
   POINTS_API_ROUTES,
@@ -51,8 +54,8 @@ const FixtureCaptureToggle: React.FC = () => {
     return null;
   }
 
-  const onToggle = () => {
-    if (enabled) {
+  const onToggle = (next: boolean) => {
+    if (!next) {
       setEnabled(false);
       return;
     }
@@ -67,18 +70,22 @@ const FixtureCaptureToggle: React.FC = () => {
   };
 
   return (
-    <YStack gap="$2">
-      <H4>NFC diagnostic logs</H4>
-      <Paragraph color={slate500}>
-        Record a redacted log of each passport scan to help us debug failed
-        reads. Off by default; logs stay on this device until you share them.
-      </Paragraph>
-      <TopicToggleButton
-        label="Diagnostic capture"
-        isSubscribed={enabled}
-        onToggle={onToggle}
+    <View style={styles.settingRow}>
+      <View style={styles.settingTextContainer}>
+        <BodyText style={styles.settingLabel}>NFC diagnostic logs</BodyText>
+        <BodyText style={styles.settingDescription}>
+          Keep a redacted log of each passport scan to help us debug failed
+          reads. Off by default; logs stay on this device until you share them.
+        </BodyText>
+      </View>
+      <Switch
+        value={enabled}
+        onValueChange={onToggle}
+        trackColor={{ false: slate200, true: blue600 }}
+        thumbColor={white}
+        testID="fixture-capture-toggle"
       />
-    </YStack>
+    </View>
   );
 };
 
@@ -177,65 +184,66 @@ const NfcDebugSection: React.FC = () => {
   })();
 
   return (
-    <YStack gap="$2">
-      <H4>Debug my passport read</H4>
-      <Paragraph color={slate500}>
+    <YStack gap={8}>
+      <BodyText style={styles.settingLabel}>Debug my passport read</BodyText>
+      <BodyText style={styles.settingDescription}>
         Let our team debug a failed passport scan. Your document details stay on
         this device — only redacted protocol data is shared.
-      </Paragraph>
-      <XStack gap="$2">
+      </BodyText>
+      <XStack gap={8} marginTop={4}>
         <Button
           flex={1}
           backgroundColor={black}
-          color={white}
-          borderColor={slate200}
-          borderRadius="$3"
-          height="$5"
+          borderRadius={12}
           disabled={busy}
-          opacity={busy ? 0.5 : 1}
+          opacity={busy ? 0.6 : 1}
           onPress={onPress}
+          testID="nfc-debug-run"
         >
           {busy ? (
-            <XStack gap="$2" alignItems="center">
+            <XStack gap={8} alignItems="center">
               <Spinner color={white} />
-              <Text color={white}>{PHASE_LABEL[state] ?? 'Working…'}</Text>
+              <BodyText style={{ color: white }}>
+                {PHASE_LABEL[state] ?? 'Working…'}
+              </BodyText>
             </XStack>
           ) : (
-            'Debug my passport read'
+            <BodyText style={{ color: white }}>Debug my passport read</BodyText>
           )}
         </Button>
         {busy ? (
           <Button
-            backgroundColor={slate200}
-            color={black}
-            borderRadius="$3"
-            height="$5"
+            backgroundColor={white}
+            borderColor={slate200}
+            borderWidth={1}
+            borderRadius={12}
             onPress={() => reset()}
+            testID="nfc-debug-cancel"
           >
-            Cancel
+            <BodyText style={{ color: black }}>Cancel</BodyText>
           </Button>
         ) : null}
       </XStack>
       {!hasMrz ? (
-        <Text fontSize="$3" color={slate500}>
+        <BodyText style={styles.hintText}>
           We'll ask you to scan your passport's photo page first.
-        </Text>
+        </BodyText>
       ) : null}
       {statusLine ? (
-        <Text fontSize="$3" color={statusLine.color}>
+        <BodyText style={[styles.hintText, { color: statusLine.color }]}>
           {statusLine.text}
-        </Text>
+        </BodyText>
       ) : null}
       {state === 'error' && error ? (
-        <Text fontSize="$3" color={red500}>
+        <BodyText style={[styles.hintText, { color: red500 }]}>
           {error}
-        </Text>
+        </BodyText>
       ) : null}
     </YStack>
   );
 };
 
-const TroubleshootingScreen: React.FC = () => {
+const PointsFixSection: React.FC = () => {
   const [status, setStatus] = useState<
     'idle' | 'loading' | 'success' | 'error'
   >('idle');
@@ -297,45 +305,80 @@ const TroubleshootingScreen: React.FC = () => {
   };
 
   return (
-    <YStack padding="$4" gap="$4">
-      <YStack gap="$2">
-        <H4>Fix points disclosure</H4>
-        <Paragraph color={slate500}>
-          If your points haven't updated after a successful verification, tap
-          below to repair your disclosure state. This is safe to run more than
-          once.
-        </Paragraph>
-      </YStack>
-
+    <YStack gap={8}>
+      <BodyText style={styles.settingLabel}>Fix points disclosure</BodyText>
+      <BodyText style={styles.settingDescription}>
+        If your points haven't updated after a successful verification, tap
+        below to repair your disclosure state. This is safe to run more than
+        once.
+      </BodyText>
       <Button
         backgroundColor={status === 'success' ? teal500 : black}
-        color={white}
-        borderColor={slate200}
-        borderRadius="$3"
-        height="$5"
+        borderRadius={12}
+        marginTop={4}
         disabled={status === 'loading'}
         onPress={handleFix}
+        testID="points-fix-run"
       >
         {status === 'loading' ? (
           <Spinner color={white} />
-        ) : status === 'success' ? (
-          'Fixed'
         ) : (
-          'Fix Points Issue'
+          <BodyText style={{ color: white }}>
+            {status === 'success' ? 'Fixed' : 'Fix points issue'}
+          </BodyText>
         )}
       </Button>
-
       {message !== '' && (
-        <Text fontSize="$3" color={status === 'error' ? red500 : teal500}>
+        <BodyText
+          style={[
+            styles.hintText,
+            { color: status === 'error' ? red500 : teal500 },
+          ]}
+        >
           {message}
-        </Text>
+        </BodyText>
       )}
-
-      <FixtureCaptureToggle />
-
-      <NfcDebugSection />
     </YStack>
   );
 };
+
+const TroubleshootingScreen: React.FC = () => (
+  <ScrollView flex={1} backgroundColor={slate100}>
+    <YStack padding={20} gap={28}>
+      <NfcDebugSection />
+      <PointsFixSection />
+      <FixtureCaptureToggle />
+    </YStack>
+  </ScrollView>
+);
+
+const styles = StyleSheet.create({
+  settingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 16,
+  },
+  settingTextContainer: {
+    flex: 1,
+    gap: 4,
+  },
+  settingLabel: {
+    fontSize: 16,
+    fontFamily: dinot,
+    fontWeight: '500',
+    color: black,
+  },
+  settingDescription: {
+    fontSize: 14,
+    fontFamily: dinot,
+    color: slate500,
+  },
+  hintText: {
+    fontSize: 13,
+    fontFamily: dinot,
+    color: slate500,
+  },
+});
 
 export default TroubleshootingScreen;

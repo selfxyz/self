@@ -19,6 +19,7 @@ jest.mock('react-native', () => ({
   View: 'View',
   Text: 'Text',
   TouchableOpacity: 'TouchableOpacity',
+  Switch: 'Switch',
 }));
 
 jest.mock('tamagui', () => {
@@ -31,27 +32,38 @@ jest.mock('tamagui', () => {
     children,
     onPress,
     disabled,
+    testID,
   }: {
     children?: React.ReactNode;
     onPress?: () => void;
     disabled?: boolean;
+    testID?: string;
   }) =>
     react.createElement(
       'TouchableOpacity',
-      { testID: 'tamagui-button', onPress, disabled },
+      { testID, onPress, disabled },
       children,
     );
   return {
     __esModule: true,
     Button,
-    H4: passthrough('Text'),
-    Paragraph: passthrough('Text'),
+    ScrollView: passthrough('View'),
     Spinner: passthrough('View'),
-    Text: passthrough('Text'),
     XStack: passthrough('View'),
     YStack: passthrough('View'),
   };
 });
+
+jest.mock('@selfxyz/mobile-sdk-alpha/components', () => {
+  const react = jest.requireActual('react');
+  return {
+    BodyText: ({ children, ...props }: { children?: React.ReactNode }) =>
+      react.createElement('Text', props, children),
+  };
+});
+jest.mock('@selfxyz/mobile-sdk-alpha/constants/fonts', () => ({
+  dinot: 'dinot',
+}));
 
 const mockNavigate = jest.fn();
 const mockSetParams = jest.fn();
@@ -95,9 +107,6 @@ jest.mock('@/integrations/nfc/fixtureCapture', () => ({
 jest.mock('@/providers/authProvider', () => ({
   unsafe_getPrivateKey: jest.fn(),
 }));
-jest.mock('@/screens/dev/components/TopicToggleButton', () => ({
-  TopicToggleButton: () => null,
-}));
 jest.mock('@/services/points/constants', () => ({
   POINTS_API_BASE_URL: 'https://points.test',
   POINTS_API_ROUTES: { discloseFix: '/fix' },
@@ -125,7 +134,9 @@ jest.mock('@selfxyz/common/utils/scope', () => ({
 jest.mock('@selfxyz/mobile-sdk-alpha/constants/colors', () => ({
   amber500: '#f59e0b',
   black: '#000',
+  blue600: '#2563eb',
   red500: '#ef4444',
+  slate100: '#f1f5f9',
   slate200: '#e2e8f0',
   slate500: '#64748b',
   teal500: '#14b8a6',
@@ -142,12 +153,7 @@ const pressAlertStart = async () => {
   });
 };
 
-const debugButton = () =>
-  screen
-    .getAllByTestId('tamagui-button')
-    .find(el =>
-      JSON.stringify(el.props.children).includes('Debug my passport read'),
-    );
+const debugButton = () => screen.getByTestId('nfc-debug-run');
 
 describe('TroubleshootingScreen NFC-debug section', () => {
   beforeEach(() => {
