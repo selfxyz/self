@@ -12,6 +12,8 @@ import { slate200, slate500 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import BugIcon from '@/assets/icons/bug_icon.svg';
+import { isFixtureCaptureSupported } from '@/integrations/nfc/fixtureCapture';
+import { isNfcDebugBridgeSupported } from '@/integrations/nfc/nfcDebugBridge';
 import type { RootStackParamList } from '@/navigation';
 import { ParameterSection } from '@/screens/dev/components/ParameterSection';
 import { ScreenSelector } from '@/screens/dev/components/ScreenSelector';
@@ -125,14 +127,18 @@ export const DebugShortcutsSection: React.FC<DebugShortcutsSectionProps> = ({
           label="WebView Host (rn-sdk)"
           onPress={() => navigation.navigate('WebViewHost')}
         />
-        <ShortcutRow
-          label="APDU Fixture Capture"
-          onPress={() => navigation.navigate('DevApduCapture')}
-        />
-        <ShortcutRow
-          label="NFC Debug Bridge"
-          onPress={() => navigation.navigate('DevNfcDebug')}
-        />
+        {isFixtureCaptureSupported && (
+          <ShortcutRow
+            label="APDU Fixture Capture"
+            onPress={() => navigation.navigate('DevApduCapture')}
+          />
+        )}
+        {isNfcDebugBridgeSupported && (
+          <ShortcutRow
+            label="NFC Debug Bridge"
+            onPress={() => navigation.navigate('DevNfcDebug')}
+          />
+        )}
       </YStack>
     </ParameterSection>
   );
