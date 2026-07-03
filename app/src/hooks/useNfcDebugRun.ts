@@ -6,7 +6,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
-import { nfcDebugRelayUrl } from '@/consts/links';
+import { nfcDebugRelayUrl } from '@/consts/nfcDebug';
 import {
   isNfcDebugBridgeSupported,
   startBridge,

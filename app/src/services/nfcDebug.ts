@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { nfcDebugApiBaseUrl } from '@/consts/links';
+import { nfcDebugApiBaseUrl } from '@/consts/nfcDebug';
 
 // Client for the NFC-debug server's auto-start flow. The phone mints an
 // auto-run session, arms the device leg (see nfcDebugBridge), then polls for

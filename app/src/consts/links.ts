@@ -21,11 +21,6 @@ export const googleDriveAppDataScope =
 export const googleOAuthAuthorizationEndpoint =
   'https://accounts.google.com/o/oauth2/v2/auth';
 export const googleOAuthTokenEndpoint = 'https://oauth2.googleapis.com/token';
-// NFC-debug server (auto-start agent). One host serves the HTTP endpoints
-// (/session, /debug/result) and the /device WebSocket.
-export const nfcDebugHost = 'nfc-mcp.self.xyz';
-export const nfcDebugApiBaseUrl = `https://${nfcDebugHost}`;
-export const nfcDebugRelayUrl = `wss://${nfcDebugHost}/device`;
 export const notificationApiStagingUrl =
   'https://notification.staging.self.xyz';
 export const notificationApiUrl = 'https://notification.self.xyz';
