@@ -160,7 +160,9 @@ export const useSettingStore = create<SettingsState>()(
       setFixtureCaptureEnabled: (enabled: boolean) => {
         set({ fixtureCaptureEnabled: enabled });
         setCaptureEnabled(enabled).catch(() => {
-          // Native flag failed to set; leave the UI state as the user chose.
+          // Native call failed — revert so the persisted flag never claims
+          // capture is on (or stored tapes were deleted) when it isn't.
+          set({ fixtureCaptureEnabled: !enabled });
         });
       },
 

@@ -107,6 +107,10 @@ jest.mock('@/integrations/nfc/fixtureCapture', () => ({
 jest.mock('@/providers/authProvider', () => ({
   unsafe_getPrivateKey: jest.fn(),
 }));
+jest.mock('@/components/ErrorBoundary', () => ({
+  __esModule: true,
+  default: ({ children }: { children?: React.ReactNode }) => children,
+}));
 jest.mock('@/services/points/constants', () => ({
   POINTS_API_BASE_URL: 'https://points.test',
   POINTS_API_ROUTES: { discloseFix: '/fix' },

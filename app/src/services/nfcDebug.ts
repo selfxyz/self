@@ -75,7 +75,9 @@ export const mintSession = async (): Promise<{ session: string }> => {
   if (!res.ok) {
     throw new NfcDebugUnavailableError(`session mint failed (${res.status})`);
   }
-  const data = (await res.json()) as { session?: string };
+  const data = (await res.json().catch(() => {
+    throw new NfcDebugUnavailableError('session mint returned invalid JSON');
+  })) as { session?: string };
   if (!data.session) {
     throw new NfcDebugUnavailableError('session mint returned no key');
   }
@@ -88,5 +90,7 @@ export const getResult = async (session: string): Promise<DebugResult> => {
   if (!res.ok) {
     throw new NfcDebugUnavailableError(`result poll failed (${res.status})`);
   }
-  return (await res.json()) as DebugResult;
+  return (await res.json().catch(() => {
+    throw new NfcDebugUnavailableError('result poll returned invalid JSON');
+  })) as DebugResult;
 };

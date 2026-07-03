@@ -173,6 +173,22 @@ describe('DataConfirmationScreen', () => {
       expect(mockNavigate).not.toHaveBeenCalledWith('DocumentNFCScan');
     });
 
+    it('ignores a stale pending mark buried under a different flow', () => {
+      mockStackRoutes = [
+        { name: 'Home' },
+        { name: 'Troubleshooting', params: { nfcDebug: 'pending' } },
+        { name: 'DocumentOnboarding' },
+        { name: 'DocumentCamera' },
+        { name: 'DataConfirmation' },
+      ];
+      render(<DataConfirmationScreen />);
+
+      fireEvent.press(screen.getByText('Continue'));
+
+      expect(mockPopTo).not.toHaveBeenCalled();
+      expect(mockNavigate).toHaveBeenCalledWith('DocumentNFCScan');
+    });
+
     it('ignores a Troubleshooting route without the pending mark', () => {
       mockStackRoutes = [
         { name: 'Home' },

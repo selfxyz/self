@@ -29,6 +29,7 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
+import ErrorBoundary from '@/components/ErrorBoundary';
 import { useNfcDebugRun } from '@/hooks/useNfcDebugRun';
 import { isFixtureCaptureSupported } from '@/integrations/nfc/fixtureCapture';
 import type { RootStackParamList } from '@/navigation';
@@ -343,13 +344,15 @@ const PointsFixSection: React.FC = () => {
 };
 
 const TroubleshootingScreen: React.FC = () => (
-  <ScrollView flex={1} backgroundColor={slate100}>
-    <YStack padding={20} gap={28}>
-      <NfcDebugSection />
-      <PointsFixSection />
-      <FixtureCaptureToggle />
-    </YStack>
-  </ScrollView>
+  <ErrorBoundary>
+    <ScrollView flex={1} backgroundColor={slate100}>
+      <YStack padding={20} gap={28}>
+        <NfcDebugSection />
+        <PointsFixSection />
+        <FixtureCaptureToggle />
+      </YStack>
+    </ScrollView>
+  </ErrorBoundary>
 );
 
 const styles = StyleSheet.create({
