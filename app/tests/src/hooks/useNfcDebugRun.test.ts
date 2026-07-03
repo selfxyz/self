@@ -6,8 +6,8 @@ import { act, renderHook } from '@testing-library/react-native';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
-import type { NfcDebugSessionOverEvent } from '@/integrations/nfc/nfcDebugBridge';
 import { useNfcDebugRun } from '@/hooks/useNfcDebugRun';
+import type { NfcDebugSessionOverEvent } from '@/integrations/nfc/nfcDebugBridge';
 import {
   startBridge,
   stopBridge,

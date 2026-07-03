@@ -13,13 +13,22 @@ const report = (over: Partial<DebugReport>): DebugReport => ({
 describe('describeOutcome', () => {
   it('reads a clean completion by status', () => {
     expect(
-      describeOutcome(report({ status: 'success', terminationReason: 'completed' })),
-    ).toEqual({ message: expect.stringMatching(/succeeded/i), tone: 'success' });
+      describeOutcome(
+        report({ status: 'success', terminationReason: 'completed' }),
+      ),
+    ).toEqual({
+      message: expect.stringMatching(/succeeded/i),
+      tone: 'success',
+    });
     expect(
-      describeOutcome(report({ status: 'partial', terminationReason: 'completed' })),
+      describeOutcome(
+        report({ status: 'partial', terminationReason: 'completed' }),
+      ),
     ).toMatchObject({ tone: 'warn' });
     expect(
-      describeOutcome(report({ status: 'failed', terminationReason: 'completed' })),
+      describeOutcome(
+        report({ status: 'failed', terminationReason: 'completed' }),
+      ),
     ).toMatchObject({ tone: 'error' });
   });
 
