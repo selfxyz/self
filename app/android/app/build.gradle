@@ -160,7 +160,7 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 162
-        versionName "2.9.25"
+        versionName "2.9.26"
         manifestPlaceholders = [appAuthRedirectScheme: 'com.proofofpassportapp']
         externalNativeBuild {
             cmake {
@@ -211,6 +211,12 @@ android {
             signingConfig signingConfigs.release
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+        }
+    }
+
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
         }
     }
 
@@ -274,6 +280,10 @@ dependencies {
     implementation "com.google.android.material:material:1.12.0"
 
     implementation "com.google.android.play:app-update:2.1.0"
+
+    testImplementation "junit:junit:4.13.2"
+    testImplementation "org.robolectric:robolectric:4.15.1"
+    testImplementation "androidx.test:core:1.6.1"
 }
 
 java {
