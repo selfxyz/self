@@ -72,7 +72,11 @@ const RegistrationFallbackMRZScreen: React.FC = () => {
 
   const headerTitle = getHeaderTitle(documentType);
 
-  const { launchKycVerification, isLoading: isRetrying } = useKycLauncher({
+  const {
+    launchKycVerification,
+    isLoading: isRetrying,
+    isKycSupported,
+  } = useKycLauncher({
     countryCode,
     onCancel: () => {
       navigation.goBack();
@@ -98,9 +102,13 @@ const RegistrationFallbackMRZScreen: React.FC = () => {
   }, [navigation]);
 
   const handleTryAlternative = useCallback(async () => {
-    setOnboardingBranch('kyc');
+    // Only mutate the funnel branch when the launch can actually proceed; on
+    // unsupported devices the hook shows the safety modal instead.
+    if (isKycSupported) {
+      setOnboardingBranch('kyc');
+    }
     await launchKycVerification();
-  }, [launchKycVerification]);
+  }, [isKycSupported, launchKycVerification]);
 
   const handleRetryOriginal = useCallback(() => {
     trackOnboardingRetry(selfClient, 'scan_started', 'mrz_scan_failed');
@@ -218,40 +226,44 @@ const RegistrationFallbackMRZScreen: React.FC = () => {
         paddingBottom={paddingBottom}
         gap={10}
       >
-        {/* Secondary Button - White fill, black text, rounded */}
-        <Button
-          backgroundColor={white}
-          borderWidth={1}
-          borderColor={slate200}
-          borderRadius={100}
-          height={52}
-          pressStyle={{ opacity: 0.8 }}
-          onPress={handleTryAlternative}
-          disabled={isRetrying}
-        >
-          <BodyText
-            style={{
-              fontSize: 17,
-              fontWeight: '500',
-              fontFamily: dinot,
-              color: black,
-            }}
-          >
-            {isRetrying ? 'Loading...' : 'Try a different method'}
-          </BodyText>
-        </Button>
+        {isKycSupported && (
+          <>
+            {/* Secondary Button - White fill, black text, rounded */}
+            <Button
+              backgroundColor={white}
+              borderWidth={1}
+              borderColor={slate200}
+              borderRadius={100}
+              height={52}
+              pressStyle={{ opacity: 0.8 }}
+              onPress={handleTryAlternative}
+              disabled={isRetrying}
+            >
+              <BodyText
+                style={{
+                  fontSize: 17,
+                  fontWeight: '500',
+                  fontFamily: dinot,
+                  color: black,
+                }}
+              >
+                {isRetrying ? 'Loading...' : 'Try a different method'}
+              </BodyText>
+            </Button>
 
-        {/* Footer Text - Not italic */}
-        <BodyText
-          style={{
-            fontSize: 16,
-            textAlign: 'center',
-            color: slate500,
-          }}
-        >
-          Registering with alternative methods may take longer to verify your
-          document.
-        </BodyText>
+            {/* Footer Text - Not italic */}
+            <BodyText
+              style={{
+                fontSize: 16,
+                textAlign: 'center',
+                color: slate500,
+              }}
+            >
+              Registering with alternative methods may take longer to verify
+              your document.
+            </BodyText>
+          </>
+        )}
       </YStack>
     </YStack>
   );

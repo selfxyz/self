@@ -98,9 +98,11 @@ const DocumentCard: React.FC<DocumentCardProps> = ({ docType, countryCode, onPre
 type IDSelectionScreenProps = {
   countryCode: string;
   documentTypes: string[];
+  /** Hides the limited-security (KYC) entry point, e.g. on devices that cannot run the KYC provider. */
+  showKycOption?: boolean;
 };
 
-const IDSelectionScreen: React.FC<IDSelectionScreenProps> = ({ countryCode, documentTypes }) => {
+const IDSelectionScreen: React.FC<IDSelectionScreenProps> = ({ countryCode, documentTypes, showKycOption = true }) => {
   const selfClient = useSelfClient();
   const biometricTypes = documentTypes.filter(t => t !== KYC_DOC_TYPE);
 
@@ -163,15 +165,17 @@ const IDSelectionScreen: React.FC<IDSelectionScreenProps> = ({ countryCode, docu
         ))}
       </YStack>
 
-      <YStack alignItems="center" marginTop={32} gap={16}>
-        <BodyText style={styles.footerLabel}>LIMITED SECURITY IDS</BodyText>
-        <View onPress={onTapKyc} style={styles.kycButton} pressStyle={{ transform: [{ scale: 0.98 }], opacity: 0.9 }}>
-          <BodyText style={styles.kycButtonText}>View other supported IDs</BodyText>
-          <View style={styles.betaPill}>
-            <BodyText style={styles.betaText}>BETA</BodyText>
+      {showKycOption && (
+        <YStack alignItems="center" marginTop={32} gap={16}>
+          <BodyText style={styles.footerLabel}>LIMITED SECURITY IDS</BodyText>
+          <View onPress={onTapKyc} style={styles.kycButton} pressStyle={{ transform: [{ scale: 0.98 }], opacity: 0.9 }}>
+            <BodyText style={styles.kycButtonText}>View other supported IDs</BodyText>
+            <View style={styles.betaPill}>
+              <BodyText style={styles.betaText}>BETA</BodyText>
+            </View>
           </View>
-        </View>
-      </YStack>
+        </YStack>
+      )}
     </YStack>
   );
 };

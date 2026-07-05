@@ -31,6 +31,8 @@ import {
 import { logNFCEvent, logProofEvent } from '@/config/sentry';
 import {
   createKycSession,
+  isKycSupportedOnDevice,
+  isRetryableKycFailure,
   KYC_PROVIDER,
   launchKycVerification,
 } from '@/integrations/kyc';
@@ -350,6 +352,14 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
               break;
             case 'kyc':
               (async () => {
+                if (!isKycSupportedOnDevice()) {
+                  navigationRef.navigate('KycFailure', {
+                    countryCode,
+                    canRetry: false,
+                  });
+                  return;
+                }
+
                 const sessionRequestedAt = Date.now();
                 let providerOpenedAt = 0;
                 const trackEventClient = { trackEvent };
@@ -456,7 +466,7 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
                     if (navigationRef.isReady()) {
                       navigationRef.navigate('KycFailure', {
                         countryCode,
-                        canRetry: true,
+                        canRetry: isRetryableKycFailure(result),
                       });
                     }
                     return;

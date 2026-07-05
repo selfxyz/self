@@ -53,7 +53,11 @@ const DataConfirmationScreen: React.FC & {
     action: 'cancel',
   });
 
-  const { launchKycVerification, isLoading: isKycLoading } = useKycLauncher({
+  const {
+    launchKycVerification,
+    isLoading: isKycLoading,
+    isKycSupported,
+  } = useKycLauncher({
     countryCode: mrzData.countryCode,
   });
   const {
@@ -151,7 +155,7 @@ const DataConfirmationScreen: React.FC & {
 
       <YStack gap={12} style={styles.buttonContainer}>
         <PrimaryButton onPress={handleConfirmPress}>Continue</PrimaryButton>
-        {fromNfcFailure && (
+        {fromNfcFailure && isKycSupported && (
           <SecondaryButton
             onPress={launchKycVerification}
             disabled={isKycLoading}

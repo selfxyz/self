@@ -55,7 +55,7 @@ const DocumentCameraTroubleScreen: React.FC = () => {
   const selfClient = useSelfClient();
   const { useMRZStore } = selfClient;
   const { countryCode } = useMRZStore();
-  const { launchKycVerification, isLoading } = useKycLauncher({
+  const { launchKycVerification, isLoading, isKycSupported } = useKycLauncher({
     countryCode,
   });
 
@@ -80,23 +80,27 @@ const DocumentCameraTroubleScreen: React.FC = () => {
             page quickly and clearly!
           </Caption>
 
-          <Caption
-            size="large"
-            style={{ color: slate500, marginTop: 12, marginBottom: 8 }}
-          >
-            Or try an alternative verification method:
-          </Caption>
+          {isKycSupported && (
+            <Caption
+              size="large"
+              style={{ color: slate500, marginTop: 12, marginBottom: 8 }}
+            >
+              Or try an alternative verification method:
+            </Caption>
+          )}
 
           <SupportUuidRow />
 
-          <SecondaryButton
-            onPress={launchKycVerification}
-            disabled={isLoading}
-            textColor={slate700}
-            style={{ marginBottom: 0 }}
-          >
-            {isLoading ? 'Loading...' : 'Try Alternative Verification'}
-          </SecondaryButton>
+          {isKycSupported && (
+            <SecondaryButton
+              onPress={launchKycVerification}
+              disabled={isLoading}
+              textColor={slate700}
+              style={{ marginBottom: 0 }}
+            >
+              {isLoading ? 'Loading...' : 'Try Alternative Verification'}
+            </SecondaryButton>
+          )}
         </YStack>
       }
     >

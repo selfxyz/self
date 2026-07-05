@@ -110,6 +110,7 @@ jest.mock('@/hooks/useKycLauncher', () => ({
     launchKycVerification: jest.fn(),
     showKycFallbackModal: jest.fn(),
     isLoading: false,
+    isKycSupported: true,
   }),
 }));
 jest.mock('react-native-safe-area-context', () => ({

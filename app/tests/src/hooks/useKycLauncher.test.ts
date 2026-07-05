@@ -14,6 +14,7 @@ import { OnboardingEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics'
 import { useKycLauncher } from '@/hooks/useKycLauncher';
 import {
   createKycSession,
+  isKycSupportedOnDevice,
   launchKycVerification as startKycVerification,
 } from '@/integrations/kyc';
 import { useFeedback } from '@/providers/feedbackProvider';
@@ -47,6 +48,12 @@ jest.mock('@selfxyz/mobile-sdk-alpha/constants/analytics', () => ({
 jest.mock('@/integrations/kyc', () => ({
   createKycSession: jest.fn(),
   launchKycVerification: jest.fn(),
+  isKycSupportedOnDevice: jest.fn(() => true),
+  isRetryableKycFailure: (result: { error?: { type?: string } }) =>
+    result.error?.type !== 'unsupportedDevice',
+  KYC_PROVIDER: 'didit',
+  KYC_UNSUPPORTED_DEVICE_MESSAGE:
+    'Alternative identity verification requires Android 9 or newer.',
 }));
 
 jest.mock('@/providers/feedbackProvider', () => ({
@@ -70,6 +77,8 @@ const mockCreateKycSession = createKycSession as jest.MockedFunction<
 const mockStartKycVerification = startKycVerification as jest.MockedFunction<
   typeof startKycVerification
 >;
+const mockIsKycSupportedOnDevice =
+  isKycSupportedOnDevice as jest.MockedFunction<typeof isKycSupportedOnDevice>;
 const mockTrackOnboardingStep = trackOnboardingStep as jest.MockedFunction<
   typeof trackOnboardingStep
 >;
@@ -98,6 +107,7 @@ describe('useKycLauncher', () => {
     } as unknown as ReturnType<typeof useFeedback>);
     mockGetState.mockReturnValue({ pendingVerifications: [] });
     mockGetKycDocumentCount.mockResolvedValue(0);
+    mockIsKycSupportedOnDevice.mockReturnValue(true);
     mockCreateKycSession.mockResolvedValue({
       sessionId: 'session-1',
       sessionToken: 'token-1',
@@ -391,5 +401,70 @@ describe('useKycLauncher', () => {
           "We couldn't confirm how many verified IDs are stored. Please try again.",
       }),
     );
+  });
+
+  it('shows the unsupported-device modal and skips the session on unsupported devices', async () => {
+    mockIsKycSupportedOnDevice.mockReturnValue(false);
+    const { result } = renderHook(() => useKycLauncher({ countryCode: 'US' }));
+
+    expect(result.current.isKycSupported).toBe(false);
+
+    await act(async () => {
+      await result.current.launchKycVerification();
+    });
+
+    expect(mockShowModal).toHaveBeenCalledWith(
+      expect.objectContaining({
+        titleText: 'Device not supported',
+      }),
+    );
+    expect(mockCreateKycSession).not.toHaveBeenCalled();
+    expect(mockStartKycVerification).not.toHaveBeenCalled();
+    expect(mockTrackBranchEvent).not.toHaveBeenCalled();
+  });
+
+  it('replaces the fallback modal with the unsupported-device modal on unsupported devices', async () => {
+    mockIsKycSupportedOnDevice.mockReturnValue(false);
+    const onDismiss = jest.fn();
+    const { result } = renderHook(() => useKycLauncher({ countryCode: 'US' }));
+
+    act(() => {
+      result.current.showKycFallbackModal(onDismiss);
+    });
+
+    expect(mockShowModal).toHaveBeenCalledTimes(1);
+    const modalProps = mockShowModal.mock.calls[0][0];
+    expect(modalProps.titleText).toBe('Device not supported');
+
+    act(() => {
+      modalProps.onButtonPress();
+    });
+    expect(onDismiss).toHaveBeenCalled();
+  });
+
+  it('navigates to KycFailure with canRetry false for unsupportedDevice failures', async () => {
+    mockStartKycVerification.mockResolvedValue({
+      type: 'failed',
+      error: {
+        type: 'unsupportedDevice',
+        message: 'unsupported',
+      },
+    } as Awaited<ReturnType<typeof startKycVerification>>);
+    const consoleErrorSpy = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+
+    const { result } = renderHook(() => useKycLauncher({ countryCode: 'US' }));
+
+    await act(async () => {
+      await result.current.launchKycVerification();
+    });
+
+    expect(mockNavigate).toHaveBeenCalledWith('KycFailure', {
+      countryCode: 'US',
+      canRetry: false,
+    });
+
+    consoleErrorSpy.mockRestore();
   });
 });

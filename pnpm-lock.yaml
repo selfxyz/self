@@ -33,6 +33,7 @@ overrides:
 packageExtensionsChecksum: sha256-tkCaKfiFwLlXS2dEjX1+6n9cFCgHIQwAxB7YmYB9p/E=
 
 patchedDependencies:
+  '@segment/analytics-react-native@2.23.0': 0443f0dd935b06cfe507a37da6c65830abc0c7fda97345a134dc0b701b66805e
   '@turnkey/core@1.7.0': f273ace02cb3a4e29b44ded23302d9b7128d8031111c2d36bdd6bfe893649eb7
   react-native-date-picker@5.0.13: 9f92df14f5b46a69020e826e9b6621a4c4e265043ad61d1451428bff564e0ba4
   react-native-keychain@10.0.0: 73657f122583f58e54dd154a4b669b5c0596cde9b4e190d1c74fd35c984b89fb
@@ -145,7 +146,7 @@ importers:
         version: 2.2.6
       '@segment/analytics-react-native':
         specifier: ^2.23.0
-        version: 2.23.0(89f238036155141f3824aae2af9a598c)
+        version: 2.23.0(patch_hash=0443f0dd935b06cfe507a37da6c65830abc0c7fda97345a134dc0b701b66805e)(89f238036155141f3824aae2af9a598c)
       '@segment/sovran-react-native':
         specifier: ^1.1.3
         version: 1.1.3(@react-native-async-storage/async-storage@2.2.0(react-native@0.83.9(@babel/core@7.29.0)(@react-native-community/cli@20.1.3(typescript@5.9.3))(@react-native/metro-config@0.83.9(@babel/core@7.29.0))(@types/react@19.2.15)(react@19.2.6)))(react-native@0.83.9(@babel/core@7.29.0)(@react-native-community/cli@20.1.3(typescript@5.9.3))(@react-native/metro-config@0.83.9(@babel/core@7.29.0))(@types/react@19.2.15)(react@19.2.6))(react@19.2.6)
@@ -22980,7 +22981,7 @@ snapshots:
       '@noble/hashes': 1.8.0
       '@scure/base': 1.2.6
 
-  '@segment/analytics-react-native@2.23.0(89f238036155141f3824aae2af9a598c)':
+  '@segment/analytics-react-native@2.23.0(patch_hash=0443f0dd935b06cfe507a37da6c65830abc0c7fda97345a134dc0b701b66805e)(89f238036155141f3824aae2af9a598c)':
     dependencies:
       '@segment/sovran-react-native': 1.1.3(@react-native-async-storage/async-storage@2.2.0(react-native@0.83.9(@babel/core@7.29.0)(@react-native-community/cli@20.1.3(typescript@5.9.3))(@react-native/metro-config@0.83.9(@babel/core@7.29.0))(@types/react@19.2.15)(react@19.2.6)))(react-native@0.83.9(@babel/core@7.29.0)(@react-native-community/cli@20.1.3(typescript@5.9.3))(@react-native/metro-config@0.83.9(@babel/core@7.29.0))(@types/react@19.2.15)(react@19.2.6))(react@19.2.6)
       '@segment/tsub': 2.0.0

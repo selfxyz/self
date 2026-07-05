@@ -19,7 +19,10 @@ import {
 
 import {
   createKycSession,
+  isKycSupportedOnDevice,
+  isRetryableKycFailure,
   KYC_PROVIDER,
+  KYC_UNSUPPORTED_DEVICE_MESSAGE,
   launchKycVerification as startKycVerification,
 } from '@/integrations/kyc';
 import type { KycVerificationResult } from '@/integrations/kyc/types';
@@ -92,6 +95,19 @@ export const useKycLauncher = (options: UseKycLauncherOptions) => {
   const { showModal } = useFeedback();
   const selfClient = useSelfClient();
   const [isLoading, setIsLoading] = useState(false);
+  const isKycSupported = isKycSupportedOnDevice();
+
+  const showUnsupportedDeviceModal = useCallback(
+    (onDismiss?: () => void) => {
+      showModal({
+        titleText: 'Device not supported',
+        bodyText: KYC_UNSUPPORTED_DEVICE_MESSAGE,
+        buttonText: 'Dismiss',
+        onButtonPress: () => onDismiss?.(),
+      });
+    },
+    [showModal],
+  );
 
   const launchKycVerification = useCallback(async () => {
     const hasPendingOrProcessingKyc = () =>
@@ -102,6 +118,11 @@ export const useKycLauncher = (options: UseKycLauncherOptions) => {
             verification.status === 'pending' ||
             verification.status === 'processing',
         );
+
+    if (!isKycSupported) {
+      showUnsupportedDeviceModal();
+      return;
+    }
 
     setIsLoading(true);
     const sessionRequestedAt = Date.now();
@@ -203,7 +224,7 @@ export const useKycLauncher = (options: UseKycLauncherOptions) => {
         } else {
           navigation.navigate('KycFailure', {
             countryCode,
-            canRetry: true,
+            canRetry: isRetryableKycFailure(result),
           });
         }
         return;
@@ -254,10 +275,16 @@ export const useKycLauncher = (options: UseKycLauncherOptions) => {
     onCancel,
     onError,
     showModal,
+    isKycSupported,
+    showUnsupportedDeviceModal,
   ]);
 
   const showKycFallbackModal = useCallback(
     (onDismiss: () => void) => {
+      if (!isKycSupported) {
+        showUnsupportedDeviceModal(onDismiss);
+        return;
+      }
       const titleText = 'Having trouble scanning your document?';
       const bodyText =
         "You'll be redirected to our third party verification partner.";
@@ -280,12 +307,19 @@ export const useKycLauncher = (options: UseKycLauncherOptions) => {
         onSecondaryButtonPress: onDismiss,
       });
     },
-    [cancelLabel, showModal, launchKycVerification],
+    [
+      cancelLabel,
+      showModal,
+      launchKycVerification,
+      isKycSupported,
+      showUnsupportedDeviceModal,
+    ],
   );
 
   return {
     launchKycVerification,
     showKycFallbackModal,
     isLoading,
+    isKycSupported,
   };
 };
