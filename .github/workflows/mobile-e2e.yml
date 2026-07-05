@@ -390,7 +390,7 @@ jobs:
           build_attempt() {
             (
               cd app/android &&
-              E2E_BUILD=true ./gradlew assembleDebug -PbundleInDebug=true --quiet --build-cache --no-configuration-cache
+              E2E_BUILD=true ./gradlew assembleDebug -PbundleInDebug=true -PreactNativeArchitectures=x86_64 --quiet --build-cache --no-configuration-cache
             )
           }
 

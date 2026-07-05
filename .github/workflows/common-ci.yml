@@ -69,6 +69,10 @@ jobs:
         run: pnpm --filter @selfxyz/mobile-sdk-alpha build
       - name: Build @selfxyz/qrcode
         run: pnpm --filter @selfxyz/qrcode build:deps
+      - name: Cache Turbo
+        uses: ./.github/actions/cache-turbo
+        with:
+          key-prefix: common-types
       - name: Run pnpm types
         run: pnpm types
 

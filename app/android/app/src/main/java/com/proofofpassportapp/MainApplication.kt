@@ -33,7 +33,7 @@ class MainApplication : Application(), ReactApplication {
 
   override val reactNativeHost: ReactNativeHost =
       object : DefaultReactNativeHost(this) {
-        override fun getPackages(): MutableList<ReactPackage> = packages
+        override fun getPackages(): MutableList<ReactPackage> = this@MainApplication.packages
 
         override fun getJSMainModuleName(): String = "index"
 

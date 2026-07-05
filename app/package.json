@@ -1,6 +1,6 @@
 {
   "name": "@selfxyz/mobile-app",
-  "version": "2.9.25",
+  "version": "2.9.26",
   "private": true,
   "type": "module",
   "main": "index.js",
@@ -9,7 +9,7 @@
     "analyze:bundle:ios": "pnpm build:deps && node ./scripts/bundle-analyze-ci.cjs ios",
     "analyze:tree-shaking": "node ./scripts/analyze-tree-shaking.cjs imports",
     "analyze:tree-shaking:web": "pnpm web:build && node ./scripts/analyze-tree-shaking.cjs web",
-    "android": "pnpm build:deps && pnpm setup:android-deps && react-native run-android",
+    "android": "pnpm build:deps && pnpm setup:android-deps && react-native run-android --active-arch-only",
     "android:ci": "./scripts/mobile-ci-build-android.sh",
     "build:deps": "pnpm -r --filter @selfxyz/mobile-app... run build",
     "bump-version:major": "npm version major && pnpm sync-versions",
