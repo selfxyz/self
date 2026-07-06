@@ -1,5 +1,15 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
+// react-native-passport-reader ships gradle.properties with includeReactNative=false
+// for its standalone/KMP publish path, which excludes the RN bridge module
+// (io.tradle.nfc.RNPassportReaderModule) that MainActivity links against. Force it
+// back on for the app build before the module's build.gradle reads findProperty().
+gradle.beforeProject { project ->
+    if (project.name == 'react-native-passport-reader') {
+        project.extensions.extraProperties.set('includeReactNative', 'true')
+    }
+}
+
 buildscript {
     ext {
         buildToolsVersion = "36.0.0"
