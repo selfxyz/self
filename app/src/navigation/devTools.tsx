@@ -8,10 +8,12 @@ import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import CreateMockScreen from '@/screens/dev/CreateMockScreen';
 import CreateMockScreenDeepLink from '@/screens/dev/CreateMockScreenDeepLink';
+import DevApduCaptureScreen from '@/screens/dev/DevApduCaptureScreen';
 import DevDangerZoneScreen from '@/screens/dev/DevDangerZoneScreen';
 import DevFeatureFlagsScreen from '@/screens/dev/DevFeatureFlagsScreen';
 import DevHapticFeedbackScreen from '@/screens/dev/DevHapticFeedbackScreen';
 import DevLoadingScreen from '@/screens/dev/DevLoadingScreen';
+import DevNfcDebugScreen from '@/screens/dev/DevNfcDebugScreen';
 import DevPrivateKeyScreen from '@/screens/dev/DevPrivateKeyScreen';
 import DevSettingsScreen from '@/screens/dev/DevSettingsScreen';
 import SocialLoginDemoScreen from '@/screens/dev/SocialLoginDemoScreen';
@@ -69,6 +71,20 @@ const devScreens = {
       title: 'Danger Zone',
     } as NativeStackNavigationOptions,
   },
+  DevApduCapture: {
+    screen: DevApduCaptureScreen,
+    options: {
+      ...devHeaderOptions,
+      title: 'APDU Capture',
+    } as NativeStackNavigationOptions,
+  },
+  DevNfcDebug: {
+    screen: DevNfcDebugScreen,
+    options: {
+      ...devHeaderOptions,
+      title: 'NFC Debug Bridge',
+    } as NativeStackNavigationOptions,
+  },
   DevFeatureFlags: {
     screen: DevFeatureFlagsScreen,
     options: {
@@ -99,11 +115,19 @@ const devScreens = {
       title: 'Social Login Demo',
     } as NativeStackNavigationOptions,
   },
+  // User-facing (reachable from Settings); styled like the settings screens,
+  // not the dev tools.
   Troubleshooting: {
     screen: TroubleshootingScreen,
     options: {
-      ...devHeaderOptions,
       title: 'Troubleshooting',
+      headerTintColor: black,
+      headerStyle: {
+        backgroundColor: white,
+      },
+      headerTitleStyle: {
+        color: black,
+      },
     } as NativeStackNavigationOptions,
   },
   WebViewHost: {
