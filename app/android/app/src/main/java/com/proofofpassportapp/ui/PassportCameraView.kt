@@ -119,7 +119,7 @@ class PassportCameraView(context: Context) : FrameLayout(context) {
 
     MRZUtil.cleanStorage()
     frameProcessor = textProcessor
-    if (BuildConfig.TESSERACT_MRZ_FALLBACK && tesseractProcessor == null) {
+    if (isTesseractEnabled && tesseractProcessor == null) {
       val processor = TesseractMrzProcessor(context)
       tesseractProcessor = processor
       disposable.add(
@@ -238,6 +238,12 @@ class PassportCameraView(context: Context) : FrameLayout(context) {
             return
           }
           try {
+            if (BuildConfig.TESSERACT_MRZ_PRIMARY) {
+              if (!maybeStartTesseractFallback(results, bitmap, timeRequired)) {
+                mrzListener.onMRZReadFailure(timeRequired)
+              }
+              return
+            }
             val callback =
                 object : OcrUtils.MRZCallback by mrzListener {
                   override fun onMRZReadFailure(timeRequired: Long) {
@@ -327,7 +333,7 @@ class PassportCameraView(context: Context) : FrameLayout(context) {
    * is ever dispatched.
    */
   private fun maybeStartTesseractFallback(results: Text, bitmap: Bitmap?, timeRequired: Long): Boolean {
-    if (!BuildConfig.TESSERACT_MRZ_FALLBACK) return false
+    if (!isTesseractEnabled) return false
     val processor = tesseractProcessor ?: return false
     if (bitmap == null || passportDispatched.get()) return false
     if (!TesseractMrzProcessor.looksLikeMrz(results)) return false
@@ -458,6 +464,9 @@ class PassportCameraView(context: Context) : FrameLayout(context) {
   private companion object {
     // Bounds a stuck native recognition so the tesseractInFlight gate can't wedge the scan loop.
     const val TESSERACT_TIMEOUT_SECONDS = 3L
+
+    val isTesseractEnabled: Boolean
+      get() = BuildConfig.TESSERACT_MRZ_FALLBACK || BuildConfig.TESSERACT_MRZ_PRIMARY
   }
 
   private fun dispatchPassportRead(mrzInfo: org.jmrtd.lds.icao.MRZInfo) {
