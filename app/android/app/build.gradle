@@ -162,6 +162,9 @@ android {
         versionCode 163
         versionName "2.9.27"
         manifestPlaceholders = [appAuthRedirectScheme: 'com.proofofpassportapp']
+        // Tesseract OCR fallback when ML Kit yields no check-digit-valid MRZ
+        // (SELF-3447); flip to gate a future Tesseract-primary mode.
+        buildConfigField "boolean", "TESSERACT_MRZ_FALLBACK", "true"
         externalNativeBuild {
             cmake {
                 cppFlags += "-fexceptions -frtti -std=c++11"
