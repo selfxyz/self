@@ -2,6 +2,11 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+// MUST stay the first import: sets globalThis.process before any module in
+// the graph below (readable-stream via crypto-browserify) evaluates.
+// eslint-disable-next-line simple-import-sort/imports
+import './polyfills';
+
 import { Buffer } from 'buffer';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
