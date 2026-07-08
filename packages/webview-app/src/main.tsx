@@ -2,6 +2,11 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+// MUST stay the first import: sets globalThis.process before any module in
+// the graph below (readable-stream via crypto-browserify) evaluates.
+// eslint-disable-next-line simple-import-sort/imports
+import './polyfills';
+
 import { Buffer } from 'buffer';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
@@ -11,7 +16,6 @@ import { initSentry } from './config/sentry';
 import { BridgeProvider } from './providers/BridgeProvider';
 import { installAssetPathShim } from './utils/assetPathShim';
 
-import './polyfills';
 import './fonts.css';
 import './recovery.css';
 import './reset.css';
