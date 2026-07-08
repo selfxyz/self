@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import './polyfills';
+
 import { Buffer } from 'buffer';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
