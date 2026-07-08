@@ -15,8 +15,11 @@ import { WEB_SAFE_AREA } from '../../../utils/insets';
 
 // Module-level so React StrictMode's double-effect in dev shares one native
 // scan instead of the first (immediately-cancelled) effect owning the only
-// pending promise and dropping its result.
+// pending promise and dropping its result. `mrzScanClaims` counts live effect
+// runs: when it drops to 0 (a real route exit, not a StrictMode remount) the
+// scan is invalidated and the native camera stopped.
 let activeMrzScan: Promise<Awaited<ReturnType<ReturnType<typeof bridgeCameraAdapter>['scanMRZ']>>> | null = null;
+let mrzScanClaims = 0;
 
 export const PassportCodeScanViewfinderRoute: React.FC = () => {
   const navigate = useNavigate();
@@ -29,6 +32,7 @@ export const PassportCodeScanViewfinderRoute: React.FC = () => {
 
   useEffect(() => {
     let cancelled = false;
+    mrzScanClaims += 1;
     void (async () => {
       if (!activeMrzScan) {
         analytics.trackEvent('passport_mrz_scan_started');
@@ -43,9 +47,10 @@ export const PassportCodeScanViewfinderRoute: React.FC = () => {
             : undefined;
         activeMrzScan = cameraAdapter.scanMRZ(scanRect ? { scanRect } : {});
       }
+      const scan = activeMrzScan;
       try {
-        const mrz = await activeMrzScan;
-        activeMrzScan = null;
+        const mrz = await scan;
+        if (activeMrzScan === scan) activeMrzScan = null;
         if (cancelled) return;
         if (!mrz?.documentNumber || !mrz?.dateOfBirth || !mrz?.dateOfExpiry) {
           throw new Error('Incomplete MRZ result');
@@ -64,7 +69,7 @@ export const PassportCodeScanViewfinderRoute: React.FC = () => {
           replace: true,
         });
       } catch (err) {
-        activeMrzScan = null;
+        if (activeMrzScan === scan) activeMrzScan = null;
         if (cancelled) return;
         const message = err instanceof Error ? err.message : 'MRZ scan failed';
         analytics.trackEvent('passport_mrz_scan_failed', { error: message });
@@ -78,8 +83,17 @@ export const PassportCodeScanViewfinderRoute: React.FC = () => {
 
     return () => {
       cancelled = true;
+      mrzScanClaims -= 1;
+      // Deferred: a StrictMode remount re-claims synchronously before this
+      // runs; only a real route exit leaves the count at 0.
+      setTimeout(() => {
+        if (mrzScanClaims === 0 && activeMrzScan) {
+          activeMrzScan = null;
+          void bridge.request('camera', 'stopCamera', {}).catch(() => {});
+        }
+      }, 0);
     };
-  }, [analytics, cameraAdapter, haptic, navigate, state]);
+  }, [analytics, bridge, cameraAdapter, haptic, navigate, state]);
 
   const handleBack = useCallback(() => {
     haptic.trigger('selection');
