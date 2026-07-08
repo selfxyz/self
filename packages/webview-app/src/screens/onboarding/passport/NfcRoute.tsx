@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type React from 'react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { PassportNfcInstructionsScreen } from '@selfxyz/euclid';
@@ -45,6 +45,8 @@ const progressStepToNfcStep = (progressStep: string): NfcStep => {
   }
 };
 
+let activeNfcScan: Promise<unknown> | null = null;
+
 export const PassportNfcRoute: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -53,7 +55,6 @@ export const PassportNfcRoute: React.FC = () => {
   const state = (location.state as RouteState | null) ?? {};
   const mrz = state.mrz;
   const nfcScanner = useMemo(() => bridgeNFCScannerAdapter(bridge), [bridge]);
-  const startedRef = useRef(false);
   const [step, setStep] = useState<NfcStep>(1);
 
   useEffect(() => {
@@ -61,8 +62,6 @@ export const PassportNfcRoute: React.FC = () => {
       navigate('/capture/passport/code-scan-instructions', { replace: true });
       return;
     }
-    if (startedRef.current) return;
-    startedRef.current = true;
 
     const unsubscribe = onNfcProgress(bridge, progress => {
       const next = progressStepToNfcStep(progress.step);
@@ -70,20 +69,26 @@ export const PassportNfcRoute: React.FC = () => {
     });
 
     let cancelled = false;
-    const sessionId =
-      typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
-        ? crypto.randomUUID()
-        : `sess-${Date.now()}`;
 
     void (async () => {
-      analytics.trackEvent('passport_nfc_scan_started');
-      try {
-        const result = await nfcScanner.scan({
+      // Module-level shared promise so StrictMode's double-effect in dev
+      // doesn't strand the scan result in the first (cancelled) effect run.
+      if (!activeNfcScan) {
+        analytics.trackEvent('passport_nfc_scan_started');
+        const sessionId =
+          typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+            ? crypto.randomUUID()
+            : `sess-${Date.now()}`;
+        activeNfcScan = nfcScanner.scan({
           passportNumber: mrz.passportNumber,
           dateOfBirth: mrz.dateOfBirth,
           dateOfExpiry: mrz.dateOfExpiry,
           sessionId,
         });
+      }
+      try {
+        const result = await activeNfcScan;
+        activeNfcScan = null;
         if (cancelled) return;
 
         const docId = `passport-${mrz.passportNumber}`;
@@ -113,6 +118,7 @@ export const PassportNfcRoute: React.FC = () => {
           replace: true,
         });
       } catch (err) {
+        activeNfcScan = null;
         if (cancelled) return;
         const message = err instanceof Error ? err.message : 'NFC scan failed';
         analytics.trackEvent('passport_nfc_scan_failed', { error: message });
