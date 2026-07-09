@@ -15,7 +15,7 @@ import { navigationRef } from '@/navigation';
 import type { WebViewHostRequest } from '@/navigation/types';
 import useUserStore from '@/stores/userStore';
 import { useVerificationGateStore } from '@/stores/verificationGateStore';
-import { IS_DEV_MODE } from '@/utils/devUtils';
+import { IS_DEV_MODE, IS_WIA_ENABLED } from '@/utils/devUtils';
 import {
   evaluateGoogleUsatGate,
   isGoogleUsatForceEnabledForTesting,
@@ -209,11 +209,23 @@ export const handleUrl = async (selfClient: SelfClient, uri: string) => {
       selfClient.getSelfAppState().setSelfApp(selfAppJson);
       selfClient.getSelfAppState().startAppListener(selfAppJson.sessionId);
 
-      safeNavigate(
-        createDeeplinkNavigationState('WebViewHost', correctParentScreen, {
-          request: selfAppToWebViewRequest(selfAppJson),
-        }),
-      );
+      // WebViewHost is gated on the WIA cutover flag, same as SplashScreen;
+      // until then deeplinks use the native proving flow, matching QR scan.
+      if (IS_WIA_ENABLED) {
+        safeNavigate(
+          createDeeplinkNavigationState('WebViewHost', correctParentScreen, {
+            request: selfAppToWebViewRequest(selfAppJson),
+          }),
+        );
+      } else {
+        safeNavigate(
+          createDeeplinkNavigationState(
+            'ProvingScreenRouter',
+            correctParentScreen,
+            { entryPoint: 'deeplink' },
+          ),
+        );
+      }
 
       return;
     } catch (error) {
