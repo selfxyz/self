@@ -20,12 +20,15 @@ import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactContext
 import com.facebook.react.uimanager.UIManagerHelper
 import com.facebook.react.uimanager.events.Event
+import com.google.mlkit.vision.text.Text
+import com.proofofpassportapp.BuildConfig
 import example.jllarraz.com.passportreader.R
 import example.jllarraz.com.passportreader.databinding.FragmentCameraMrzBinding
 import example.jllarraz.com.passportreader.mlkit.FrameMetadata
 import example.jllarraz.com.passportreader.mlkit.GraphicOverlay
 import example.jllarraz.com.passportreader.mlkit.OcrMrzDetectorProcessor
 import example.jllarraz.com.passportreader.mlkit.VisionProcessorBase
+import example.jllarraz.com.passportreader.tesseract.TesseractMrzProcessor
 import example.jllarraz.com.passportreader.utils.MRZUtil
 import example.jllarraz.com.passportreader.utils.OcrUtils
 import io.fotoapparat.Fotoapparat
@@ -38,10 +41,12 @@ import io.fotoapparat.selector.autoFocus
 import io.fotoapparat.selector.firstAvailable
 import io.fotoapparat.selector.off
 import io.fotoapparat.view.CameraView
+import io.reactivex.Completable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 
 class PassportCameraView(context: Context) : FrameLayout(context) {
@@ -57,6 +62,10 @@ class PassportCameraView(context: Context) : FrameLayout(context) {
   private var cameraStarted = false
   private val isDecoding = AtomicBoolean(false)
   private val passportDispatched = AtomicBoolean(false)
+  // isDecoding is force-reset by ocrListener.onCompleted after every ML Kit pass, so the
+  // Tesseract fallback needs its own gate to keep the loop one-frame-at-a-time.
+  private val tesseractInFlight = AtomicBoolean(false)
+  private var tesseractProcessor: TesseractMrzProcessor? = null
   private var rotation: Int = 0
   private var mDist: Float = 0f
 
@@ -110,6 +119,14 @@ class PassportCameraView(context: Context) : FrameLayout(context) {
 
     MRZUtil.cleanStorage()
     frameProcessor = textProcessor
+    if (isTesseractEnabled && tesseractProcessor == null) {
+      val processor = TesseractMrzProcessor(context)
+      tesseractProcessor = processor
+      disposable.add(
+          Completable.fromAction { processor.warmUp() }
+              .subscribeOn(Schedulers.io())
+              .subscribe({}, { error -> Log.w("PassportCameraView", "Tesseract warm-up failed", error) }))
+    }
     rotation = getRotation(context, LensPosition.Back)
 
     val preview = binding.cameraPreview
@@ -143,6 +160,12 @@ class PassportCameraView(context: Context) : FrameLayout(context) {
     fotoapparat = null
     cameraStarted = false
     isDecoding.set(false)
+    tesseractProcessor?.let { processor ->
+      // close() blocks until an in-flight recognition drains — keep it off the main thread.
+      Schedulers.io().scheduleDirect { processor.close() }
+    }
+    tesseractProcessor = null
+    tesseractInFlight.set(false)
   }
 
   private fun configureZoom() {
@@ -158,6 +181,9 @@ class PassportCameraView(context: Context) : FrameLayout(context) {
           override fun process(frame: Frame) {
             try {
               if (!mounted || !isAttachedToWindow) {
+                return
+              }
+              if (tesseractInFlight.get()) {
                 return
               }
               if (!isDecoding.compareAndSet(false, true)) {
@@ -212,7 +238,21 @@ class PassportCameraView(context: Context) : FrameLayout(context) {
             return
           }
           try {
-            OcrUtils.processOcr(results = results, timeRequired = timeRequired, callback = mrzListener)
+            if (BuildConfig.TESSERACT_MRZ_PRIMARY) {
+              if (!maybeStartTesseractFallback(results, bitmap, timeRequired)) {
+                mrzListener.onMRZReadFailure(timeRequired)
+              }
+              return
+            }
+            val callback =
+                object : OcrUtils.MRZCallback by mrzListener {
+                  override fun onMRZReadFailure(timeRequired: Long) {
+                    if (!maybeStartTesseractFallback(results, bitmap, timeRequired)) {
+                      mrzListener.onMRZReadFailure(timeRequired)
+                    }
+                  }
+                }
+            OcrUtils.processOcr(results = results, timeRequired = timeRequired, callback = callback)
           } catch (e: Exception) {
             mrzListener.onFailure(e, timeRequired)
           }
@@ -284,6 +324,40 @@ class PassportCameraView(context: Context) : FrameLayout(context) {
           mainHandler.post { dispatchError(e, "Something went wrong scanning MRZ with camera") }
         }
       }
+
+  /**
+   * Runs Tesseract (fine-tuned OCR-B model) over the frame when ML Kit found text but no
+   * check-digit-valid MRZ — ML Kit misreads OCR-B confusables like 0/O. Returns true when the
+   * fallback was started; the caller must then skip its own failure handling. Results flow
+   * through the same OcrUtils validation and mrzListener, so only check-digit-valid MRZ data
+   * is ever dispatched.
+   */
+  private fun maybeStartTesseractFallback(results: Text, bitmap: Bitmap?, timeRequired: Long): Boolean {
+    if (!isTesseractEnabled) return false
+    val processor = tesseractProcessor ?: return false
+    if (bitmap == null || passportDispatched.get()) return false
+    if (!TesseractMrzProcessor.looksLikeMrz(results)) return false
+    if (!tesseractInFlight.compareAndSet(false, true)) return false
+    disposable.add(
+        Single.fromCallable { processor.recognizeMrz(bitmap, results) }
+            .subscribeOn(Schedulers.io())
+            .timeout(TESSERACT_TIMEOUT_SECONDS, TimeUnit.SECONDS, Schedulers.io())
+            .doFinally { tesseractInFlight.set(false) }
+            .subscribe(
+                { rawText ->
+                  if (rawText.isBlank()) {
+                    mrzListener.onMRZReadFailure(timeRequired)
+                  } else {
+                    OcrUtils.processOcr(rawText = rawText, timeRequired = timeRequired, callback = mrzListener)
+                  }
+                },
+                { error ->
+                  Log.w("PassportCameraView", "Tesseract fallback failed", error)
+                  processor.cancelCurrent()
+                  mrzListener.onMRZReadFailure(timeRequired)
+                }))
+    return true
+  }
 
   protected val textProcessor: OcrMrzDetectorProcessor
     get() = OcrMrzDetectorProcessor()
@@ -386,6 +460,14 @@ class PassportCameraView(context: Context) : FrameLayout(context) {
   private fun hasCameraPermission(): Boolean =
       ContextCompat.checkSelfPermission(context, android.Manifest.permission.CAMERA) ==
           PackageManager.PERMISSION_GRANTED
+
+  private companion object {
+    // Bounds a stuck native recognition so the tesseractInFlight gate can't wedge the scan loop.
+    const val TESSERACT_TIMEOUT_SECONDS = 3L
+
+    val isTesseractEnabled: Boolean
+      get() = BuildConfig.TESSERACT_MRZ_FALLBACK || BuildConfig.TESSERACT_MRZ_PRIMARY
+  }
 
   private fun dispatchPassportRead(mrzInfo: org.jmrtd.lds.icao.MRZInfo) {
     val reactContext = UIManagerHelper.getReactContext(this) as? ReactContext ?: return
