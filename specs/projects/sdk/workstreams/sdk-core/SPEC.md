@@ -112,6 +112,7 @@ You are NOT building screens or native handlers. You are making the engine porta
 - `Adapters` = the adapter interfaces in `src/types/public.ts` that decouple core logic from platform APIs
 - `Browser entry point` = `src/browser.ts`, the import path used by WebView consumers (must have zero `react-native` imports)
 - Read [SDK Overview](../../OVERVIEW.md) for architecture context
+- Read [Proving Flow Reference](./proving-flow.md) for the proving machine's happy path, state diagram, and TEE session sequence
 
 ## The Problem
 
