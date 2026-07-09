@@ -28,6 +28,7 @@ import {
 
 import type { ProofHistory } from '@/stores/proofTypes';
 import { ProofStatus } from '@/stores/proofTypes';
+import { formatUserId } from '@/utils/formatUserId';
 
 type ProofHistoryDetailScreenProps = {
   route: {
@@ -138,9 +139,10 @@ const ProofHistoryDetailScreen: React.FC<ProofHistoryDetailScreenProps> = ({
     return { uri: base64String };
   }, [data.logoBase64]);
 
+  // SelfAppBuilder strips the 0x prefix from hex userIds, so accept both forms.
   const isEthereumAddress = useMemo(() => {
     return (
-      /^0x[a-fA-F0-9]+$/.test(data.userId) &&
+      /^(0x)?[a-fA-F0-9]{40}$/.test(data.userId) &&
       (data.endpointType === 'staging_celo' || data.endpointType === 'celo') &&
       data.userIdType === 'hex'
     );
@@ -285,7 +287,7 @@ const ProofHistoryDetailScreen: React.FC<ProofHistoryDetailScreenProps> = ({
                       fontWeight="500"
                       ellipsizeMode="tail"
                     >
-                      {data.userId.slice(0, 2)}...{data.userId.slice(-4)}
+                      {formatUserId(data.userId, data.userIdType)}
                     </Text>
                   )}
                 </XStack>
