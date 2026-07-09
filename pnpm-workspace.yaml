@@ -48,6 +48,7 @@ patchedDependencies:
   react-native-date-picker@5.0.13: pnpm-patches/react-native-date-picker@5.0.13.patch
   react-native-keychain@10.0.0: pnpm-patches/react-native-keychain@10.0.0.patch
   react-native-passport-reader@1.0.3: pnpm-patches/react-native-passport-reader@1.0.3.patch
+  '@segment/analytics-react-native@2.23.0': pnpm-patches/@segment__analytics-react-native@2.23.0.patch
 
 # Pin jsdom to v25 across the workspace. jsdom v26+ uses cssstyle v5, which
 # turns CSSStyleDeclaration into a strict Proxy that rejects react-dom v18's
