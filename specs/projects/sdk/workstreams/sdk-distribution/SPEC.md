@@ -48,24 +48,24 @@
 
 ## Ownership Boundaries
 
-| Area                             | Owner            | Notes                                  |
-| -------------------------------- | ---------------- | -------------------------------------- |
-| `packages/native-shell-android/` | SDK Distribution | Config + URL loading changes only      |
-| `packages/native-shell-ios/`     | SDK Distribution | Config + URL loading changes only      |
-| `packages/webview-app/`          | SDK Distribution | Hosting setup only (no source changes) |
+| Area                             | Owner            | Notes                                                                                                                         |
+| -------------------------------- | ---------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `packages/native-shell-android/` | SDK Distribution | Config + URL loading changes only                                                                                             |
+| `packages/native-shell-ios/`     | SDK Distribution | Config + URL loading changes only                                                                                             |
+| `packages/webview-app/`          | SDK Distribution | Hosting setup only (no source changes)                                                                                        |
 | `packages/kmp-sdk/`              | SDK Distribution | Decommission — publishing moved to external `self-webview-sdk` (SD-07; supersedes SD-06), pending WIA-17 convergence decision |
-| Bridge handlers                  | Native Shells    | Not modified by this workstream        |
+| Bridge handlers                  | Native Shells    | Not modified by this workstream                                                                                               |
 
 ## Backlog
 
-| ID    | Title                             | Status | Priority | Depends On | Plan                                                                                 | PR  |
-| ----- | --------------------------------- | ------ | -------- | ---------- | ------------------------------------------------------------------------------------ | --- |
-| SD-01 | Android hosted URL loading        | Ready  | High     | NSL-01     | [plans/SD-01-android-hosted-url.md](./plans/SD-01-android-hosted-url.md)             | —   |
-| SD-02 | iOS hosted URL loading            | Ready  | High     | NSL-02     | [plans/SD-02-ios-hosted-url.md](./plans/SD-02-ios-hosted-url.md)                     | —   |
-| SD-03 | WebView app hosting setup         | Ready  | High     | —          | [plans/SD-03-hosting-setup.md](./plans/SD-03-hosting-setup.md)                       | —   |
-| SD-04 | Android Maven publishing          | Ready  | Medium   | SD-01      | [plans/SD-04-android-maven-publishing.md](./plans/SD-04-android-maven-publishing.md) | —   |
-| SD-05 | iOS publishing (SPM + CocoaPods)  | Ready  | Medium   | SD-02      | [plans/SD-05-ios-spm-publishing.md](./plans/SD-05-ios-spm-publishing.md)             | —   |
-| SD-06 | KMP remote publishing (Maven+SPM) | Blocked | Medium   | KR-03      | [plans/SD-06-kmp-remote-publishing.md](./plans/SD-06-kmp-remote-publishing.md)       | —   |
+| ID    | Title                             | Status  | Priority | Depends On                                                       | Plan                                                                                           | PR  |
+| ----- | --------------------------------- | ------- | -------- | ---------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | --- |
+| SD-01 | Android hosted URL loading        | Ready   | High     | NSL-01                                                           | [plans/SD-01-android-hosted-url.md](./plans/SD-01-android-hosted-url.md)                       | —   |
+| SD-02 | iOS hosted URL loading            | Ready   | High     | NSL-02                                                           | [plans/SD-02-ios-hosted-url.md](./plans/SD-02-ios-hosted-url.md)                               | —   |
+| SD-03 | WebView app hosting setup         | Ready   | High     | —                                                                | [plans/SD-03-hosting-setup.md](./plans/SD-03-hosting-setup.md)                                 | —   |
+| SD-04 | Android Maven publishing          | Ready   | Medium   | SD-01                                                            | [plans/SD-04-android-maven-publishing.md](./plans/SD-04-android-maven-publishing.md)           | —   |
+| SD-05 | iOS publishing (SPM + CocoaPods)  | Ready   | Medium   | SD-02                                                            | [plans/SD-05-ios-spm-publishing.md](./plans/SD-05-ios-spm-publishing.md)                       | —   |
+| SD-06 | KMP remote publishing (Maven+SPM) | Blocked | Medium   | KR-03                                                            | [plans/SD-06-kmp-remote-publishing.md](./plans/SD-06-kmp-remote-publishing.md)                 | —   |
 | SD-07 | Decommission vendored KMP SDK     | Blocked | Medium   | external `self-webview-sdk` release; WIA-17 convergence decision | [plans/SD-07-decommission-vendored-kmp-sdk.md](./plans/SD-07-decommission-vendored-kmp-sdk.md) | —   |
 
 Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
@@ -81,14 +81,14 @@ Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 
 ## Active Plans
 
-| Plan                                                                                 | IDs   | Status |
-| ------------------------------------------------------------------------------------ | ----- | ------ |
-| [plans/SD-01-android-hosted-url.md](./plans/SD-01-android-hosted-url.md)             | SD-01 | Ready  |
-| [plans/SD-02-ios-hosted-url.md](./plans/SD-02-ios-hosted-url.md)                     | SD-02 | Ready  |
-| [plans/SD-03-hosting-setup.md](./plans/SD-03-hosting-setup.md)                       | SD-03 | Ready  |
-| [plans/SD-04-android-maven-publishing.md](./plans/SD-04-android-maven-publishing.md) | SD-04 | Ready  |
-| [plans/SD-05-ios-spm-publishing.md](./plans/SD-05-ios-spm-publishing.md)             | SD-05 | Ready  |
-| [plans/SD-06-kmp-remote-publishing.md](./plans/SD-06-kmp-remote-publishing.md)       | SD-06 | Blocked |
+| Plan                                                                                           | IDs   | Status          |
+| ---------------------------------------------------------------------------------------------- | ----- | --------------- |
+| [plans/SD-01-android-hosted-url.md](./plans/SD-01-android-hosted-url.md)                       | SD-01 | Ready           |
+| [plans/SD-02-ios-hosted-url.md](./plans/SD-02-ios-hosted-url.md)                               | SD-02 | Ready           |
+| [plans/SD-03-hosting-setup.md](./plans/SD-03-hosting-setup.md)                                 | SD-03 | Ready           |
+| [plans/SD-04-android-maven-publishing.md](./plans/SD-04-android-maven-publishing.md)           | SD-04 | Ready           |
+| [plans/SD-05-ios-spm-publishing.md](./plans/SD-05-ios-spm-publishing.md)                       | SD-05 | Ready           |
+| [plans/SD-06-kmp-remote-publishing.md](./plans/SD-06-kmp-remote-publishing.md)                 | SD-06 | Blocked         |
 | [plans/SD-07-decommission-vendored-kmp-sdk.md](./plans/SD-07-decommission-vendored-kmp-sdk.md) | SD-07 | Blocked (draft) |
 
 ## Completion Checklist

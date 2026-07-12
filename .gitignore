@@ -66,6 +66,9 @@ packages/self-sdk-swift/Sources/SelfSdkSwift/Resources/self-sdk-web/
 # Isolated Gradle home for format tasks
 .gradle-home/
 
+# Turborepo local cache/logs (root + per-workspace)
+.turbo/
+
 app/build/*
 packages/mobile-sdk-alpha-source/android/.gradle/*
 
