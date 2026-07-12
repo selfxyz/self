@@ -4,11 +4,11 @@
 
 import React from 'react';
 import { ActivityIndicator, Pressable, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, View, XStack, YStack } from 'tamagui';
 
 import { slate500 as trueSlate500 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
-import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 import type { Perk } from '@selfxyz/mobile-sdk-alpha/onboarding/perks';
 
 import { proofRequestColors } from '@/components/proof-request/designTokens';
@@ -63,8 +63,8 @@ export const BottomActionBar: React.FC<BottomActionBarProps> = ({
   const topPadding = 4;
 
   const basePadding = 4;
-  const safeAreaPadding = useSafeBottomPadding(basePadding);
-  const dynamicPadding = safeAreaPadding;
+  const insets = useSafeAreaInsets();
+  const dynamicPadding = Math.max(insets.bottom, 12) + basePadding;
 
   return (
     <View

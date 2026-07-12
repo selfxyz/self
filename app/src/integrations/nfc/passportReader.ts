@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { NativeModules, Platform } from 'react-native';
+import { NativeEventEmitter, NativeModules, Platform } from 'react-native';
 
 type ScanOptions = {
   documentNumber: string;
@@ -36,6 +36,49 @@ export interface AndroidScanResponse {
   dataGroupHashes: string;
 }
 
+export type FixtureTapeStatus = 'success' | 'failed' | 'unknown';
+
+export interface FixtureTapeSummary {
+  name: string;
+  sizeBytes: number;
+  issuingCountry: string | null;
+  status: FixtureTapeStatus;
+}
+
+export interface NfcDebugBridgeOptions {
+  relayUrl: string;
+  documentNumber: string;
+  dateOfBirth: string; // YYMMDD
+  dateOfExpiry: string; // YYMMDD
+  canNumber?: string;
+}
+
+// Emitted (Android native) when the debug session ends for good: the server
+// closed the relay WebSocket. `runComplete` is true when it closed with the
+// run-complete code (report is ready to fetch); false means a fatal/dropped
+// close that will not reconnect.
+export interface NfcDebugSessionOverEvent {
+  code: number;
+  reason: string;
+  runComplete: boolean;
+}
+
+const NFC_DEBUG_SESSION_OVER_EVENT = 'NfcDebugSessionOver';
+
+// One emitter for the whole app (Android only), matching how the logger bridge
+// and NFC scan screen consume RNPassportReader events. Created lazily so a
+// missing module (iOS / older builds) stays a no-op.
+let nfcEventEmitter: NativeEventEmitter | null = null;
+const getNfcEventEmitter = (): NativeEventEmitter | null => {
+  if (Platform.OS !== 'android' || !NativeModules.RNPassportReader) {
+    return null;
+  }
+  if (!nfcEventEmitter) {
+    nfcEventEmitter = new NativeEventEmitter(NativeModules.RNPassportReader);
+  }
+  return nfcEventEmitter;
+};
+
 type AndroidPassportReaderModule = {
   configure?: (token: string, enableDebug?: boolean) => void;
   trackEvent?: (name: string, properties?: Record<string, unknown>) => void;
@@ -44,6 +87,14 @@ type AndroidPassportReaderModule = {
   resetIdentity?: () => void;
   setDistinctId?: (distinctId: string) => void;
   scan?: (options: ScanOptions) => Promise<AndroidScanResponse>;
+  // Opt-in APDU fixture capture (Android only; present on newer native builds).
+  setFixtureCaptureEnabled?: (enabled: boolean) => Promise<boolean>;
+  listFixtureTapes?: () => Promise<FixtureTapeSummary[]>;
+  readFixtureTape?: (name: string) => Promise<string | null>;
+  deleteFixtureTapes?: () => Promise<void>;
+  // Debug-only on-device NFC-debug bridge (Android; present on newer builds).
+  startNfcDebugBridge?: (opts: NfcDebugBridgeOptions) => Promise<boolean>;
+  stopNfcDebugBridge?: () => Promise<boolean>;
 };
 
 type IOSPassportReaderModule = {
@@ -74,6 +125,9 @@ type PassportReaderModule =
 let PassportReader: PassportReaderModule | null = null;
 let scan: ((options: ScanOptions) => Promise<unknown>) | null = null;
 let resetImpl: (() => void) | undefined;
+// Retained reference to the Android module so the fixture-capture helpers below
+// can reach its bridge methods (which only exist on newer native builds).
+let androidModule: AndroidPassportReaderModule | undefined;
 
 if (Platform.OS === 'android') {
   // Android uses the react-native-passport-reader package
@@ -83,6 +137,7 @@ if (Platform.OS === 'android') {
 
   if (AndroidPassportReader) {
     PassportReader = AndroidPassportReader;
+    androidModule = AndroidPassportReader;
     resetImpl = () => AndroidPassportReader.reset?.();
     if (AndroidPassportReader.scan) {
       const androidScan = AndroidPassportReader.scan.bind(
@@ -171,6 +226,92 @@ const reset = () => {
   resetImpl?.();
 };
 
+/**
+ * True when the running native build exposes the opt-in APDU fixture-capture
+ * bridge. Android-only; older native builds and iOS return false, so callers
+ * can hide/disable the feature instead of crashing.
+ */
+const isFixtureCaptureSupported =
+  Platform.OS === 'android' &&
+  typeof androidModule?.setFixtureCaptureEnabled === 'function';
+
+const fixtureCapture = {
+  isSupported: isFixtureCaptureSupported,
+  setEnabled(enabled: boolean): Promise<boolean> {
+    if (!androidModule?.setFixtureCaptureEnabled) {
+      return Promise.resolve(false);
+    }
+    return androidModule.setFixtureCaptureEnabled(enabled);
+  },
+  listTapes(): Promise<FixtureTapeSummary[]> {
+    if (!androidModule?.listFixtureTapes) {
+      return Promise.resolve([]);
+    }
+    return androidModule.listFixtureTapes();
+  },
+  readTape(name: string): Promise<string | null> {
+    if (!androidModule?.readFixtureTape) {
+      return Promise.resolve(null);
+    }
+    return androidModule.readFixtureTape(name);
+  },
+  deleteTapes(): Promise<void> {
+    if (!androidModule?.deleteFixtureTapes) {
+      return Promise.resolve();
+    }
+    return androidModule.deleteFixtureTapes();
+  },
+};
+
+/**
+ * True when the running native build exposes the on-device NFC-debug bridge.
+ * Android-only; older builds and iOS return false so the dev screen can hide.
+ */
+const isNfcDebugBridgeSupported =
+  Platform.OS === 'android' &&
+  typeof androidModule?.startNfcDebugBridge === 'function';
+
+const nfcDebugBridge = {
+  isSupported: isNfcDebugBridgeSupported,
+  start(opts: NfcDebugBridgeOptions): Promise<boolean> {
+    if (!androidModule?.startNfcDebugBridge) {
+      return Promise.reject(new Error('NFC debug bridge unavailable'));
+    }
+    return androidModule.startNfcDebugBridge(opts);
+  },
+  stop(): Promise<boolean> {
+    if (!androidModule?.stopNfcDebugBridge) {
+      return Promise.resolve(false);
+    }
+    return androidModule.stopNfcDebugBridge();
+  },
+  /**
+   * Subscribes to the native "session over" event (the server closed the relay
+   * WebSocket). Returns an unsubscribe fn. No-op on iOS / older native builds.
+   */
+  onSessionOver(
+    listener: (event: NfcDebugSessionOverEvent) => void,
+  ): () => void {
+    const emitter = getNfcEventEmitter();
+    if (!emitter) {
+      return () => undefined;
+    }
+    const subscription = emitter.addListener(
+      NFC_DEBUG_SESSION_OVER_EVENT,
+      listener,
+    );
+    return () => subscription.remove();
+  },
+};
+
 export type { ScanOptions };
-export { PassportReader, reset, scan };
+export {
+  fixtureCapture,
+  isFixtureCaptureSupported,
+  isNfcDebugBridgeSupported,
+  nfcDebugBridge,
+  PassportReader,
+  reset,
+  scan,
+};
 export default PassportReader;

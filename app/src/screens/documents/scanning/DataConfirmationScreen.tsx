@@ -37,6 +37,16 @@ export interface DocumentData {
   documentExpiryDate: string;
 }
 
+// Screens a Troubleshooting-initiated MRZ detour may pass through before
+// landing here; anything else above the Troubleshooting route means the user
+// is in a different flow.
+const NFC_DEBUG_DETOUR_SCREENS = new Set([
+  'DocumentCamera',
+  'DocumentCameraTrouble',
+  'RegistrationFallbackMRZ',
+  'DataConfirmation',
+]);
+
 const DataConfirmationScreen: React.FC & {
   statusBar: { hidden: boolean; style: string };
 } = () => {
@@ -100,6 +110,31 @@ const DataConfirmationScreen: React.FC & {
       edited: hasChanges,
       edited_fields: editedFields,
     });
+
+    // A Troubleshooting route marked `pending` means the user detoured here
+    // just to capture MRZ for the NFC-debug run — pop back and let it start
+    // instead of continuing to the NFC scan. Only honored when every route
+    // above it belongs to the detour, so a stale mark from an abandoned detour
+    // can't hijack a later, unrelated pass through this screen.
+    const routes = navigation.getState().routes;
+    let troubleshootingIdx = -1;
+    for (let i = routes.length - 1; i >= 0; i--) {
+      if (routes[i].name === 'Troubleshooting') {
+        troubleshootingIdx = i;
+        break;
+      }
+    }
+    const nfcDebugPending =
+      troubleshootingIdx >= 0 &&
+      (routes[troubleshootingIdx].params as { nfcDebug?: string } | undefined)
+        ?.nfcDebug === 'pending' &&
+      routes
+        .slice(troubleshootingIdx + 1)
+        .every(r => NFC_DEBUG_DETOUR_SCREENS.has(r.name));
+    if (nfcDebugPending) {
+      navigation.popTo('Troubleshooting', { nfcDebug: 'run' });
+      return;
+    }
 
     navigation.navigate('DocumentNFCScan');
   };

@@ -28,6 +28,10 @@ module.exports = {
     '/ios/Pods/',
     '/scripts/tests/', // Node.js native test runner tests
     '/babel\\.config\\.test\\.cjs',
+    // Nested repos cloned into android/ by setup scripts carry their own
+    // vitest suites that Jest can't load.
+    '/android/react-native-passport-reader/',
+    '/android/android-passport-reader/',
   ],
   moduleNameMapper: {
     '^@env$': '<rootDir>/tests/__setup__/@env.js',
