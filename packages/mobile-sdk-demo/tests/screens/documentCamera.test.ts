@@ -75,7 +75,7 @@ describe('normalizeMRZPayload', () => {
     const normalized = normalizeMRZPayload(info);
 
     expect(normalized.info).toEqual(info);
-    expect(normalized.readableBirthDate).toBe(formatMRZDate('010101', 'en-US'));
+    expect(normalized.readableBirthDate).toBe(formatMRZDate('010101'));
   });
 });
 

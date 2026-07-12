@@ -11,6 +11,7 @@ import React, {
   useState,
 } from 'react';
 import {
+  Alert,
   Linking,
   NativeEventEmitter,
   NativeModules,
@@ -74,6 +75,12 @@ import {
   feedbackUnsuccessful,
   impactLight,
 } from '@/integrations/haptics';
+import {
+  isFixtureCaptureSupported,
+  listTapes,
+  shareTape,
+  uploadTapeToSentry,
+} from '@/integrations/nfc/fixtureCapture';
 import { parseScanResponse, scan } from '@/integrations/nfc/nfcScanner';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
@@ -89,6 +96,7 @@ import {
   SUPPORT_FORM_BUTTON_TEXT,
   SUPPORT_FORM_MESSAGE,
 } from '@/services/support';
+import { useSettingStore } from '@/stores/settingStore';
 
 const emitter =
   Platform.OS === 'android'
@@ -145,6 +153,31 @@ const DocumentNFCScanScreen: React.FC = () => {
   const scanTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scanCancelledRef = useRef(false);
   const [sessionId] = useState(() => uuidv4());
+  const fixtureCaptureEnabled = useSettingStore(
+    state => state.fixtureCaptureEnabled,
+  );
+
+  // After a failed read, if diagnostic capture is on, offer to send the staged
+  // (redacted) tape. The tape for this session was already written at scan end.
+  const promptShareDiagnostic = useCallback(async () => {
+    if (!fixtureCaptureEnabled || !isFixtureCaptureSupported) {
+      return;
+    }
+    const tapes = await listTapes();
+    const latest = tapes[tapes.length - 1];
+    if (!latest) {
+      return;
+    }
+    Alert.alert(
+      'Reading failed',
+      'Share a diagnostic log to help us fix this? It contains no personal data — only the chip type, country, and command/status sequence.',
+      [
+        { text: 'Not now', style: 'cancel' },
+        { text: 'Send to Self', onPress: () => uploadTapeToSentry(latest) },
+        { text: 'Share', onPress: () => shareTape(latest.name) },
+      ],
+    );
+  }, [fixtureCaptureEnabled]);
 
   const baseContext = useMemo(
     () => ({
@@ -478,6 +511,7 @@ const DocumentNFCScanScreen: React.FC = () => {
         openErrorModal(message);
         // We deliberately avoid opening any external feedback widgets here;
         // users can request support via the support form action in the modal.
+        promptShareDiagnostic().catch(() => undefined);
       } finally {
         if (scanTimeoutRef.current) {
           clearTimeout(scanTimeoutRef.current);
@@ -506,6 +540,7 @@ const DocumentNFCScanScreen: React.FC = () => {
     isPacePolling,
     navigation,
     openErrorModal,
+    promptShareDiagnostic,
     selfClient,
     sessionId,
     shouldInjectError,

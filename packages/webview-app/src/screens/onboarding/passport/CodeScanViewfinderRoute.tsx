@@ -13,6 +13,14 @@ import { useBridge } from '../../../providers/BridgeProvider';
 import { useSelfClient } from '../../../providers/SelfClientProvider';
 import { WEB_SAFE_AREA } from '../../../utils/insets';
 
+// Module-level so React StrictMode's double-effect in dev shares one native
+// scan instead of the first (immediately-cancelled) effect owning the only
+// pending promise and dropping its result. `mrzScanClaims` counts live effect
+// runs: when it drops to 0 (a real route exit, not a StrictMode remount) the
+// scan is invalidated and the native camera stopped.
+let activeMrzScan: Promise<Awaited<ReturnType<ReturnType<typeof bridgeCameraAdapter>['scanMRZ']>>> | null = null;
+let mrzScanClaims = 0;
+
 export const PassportCodeScanViewfinderRoute: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -20,17 +28,29 @@ export const PassportCodeScanViewfinderRoute: React.FC = () => {
   const { analytics, haptic } = useSelfClient();
   const state = (location.state as { countryCode?: string } | null) ?? {};
   const cameraAdapter = useMemo(() => bridgeCameraAdapter(bridge), [bridge]);
-  const startedRef = useRef(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (startedRef.current) return;
-    startedRef.current = true;
-
     let cancelled = false;
+    mrzScanClaims += 1;
     void (async () => {
-      analytics.trackEvent('passport_mrz_scan_started');
+      if (!activeMrzScan) {
+        analytics.trackEvent('passport_mrz_scan_started');
+        // Report the scan-frame rect (physical px, viewport-relative) so a
+        // native host can pin its camera preview exactly over it.
+        const frame = containerRef.current?.querySelector('video')?.parentElement;
+        const rect = frame?.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        const scanRect =
+          rect && rect.width > 0
+            ? { x: rect.x * dpr, y: rect.y * dpr, width: rect.width * dpr, height: rect.height * dpr }
+            : undefined;
+        activeMrzScan = cameraAdapter.scanMRZ(scanRect ? { scanRect } : {});
+      }
+      const scan = activeMrzScan;
       try {
-        const mrz = await cameraAdapter.scanMRZ({});
+        const mrz = await scan;
+        if (activeMrzScan === scan) activeMrzScan = null;
         if (cancelled) return;
         if (!mrz?.documentNumber || !mrz?.dateOfBirth || !mrz?.dateOfExpiry) {
           throw new Error('Incomplete MRZ result');
@@ -49,6 +69,7 @@ export const PassportCodeScanViewfinderRoute: React.FC = () => {
           replace: true,
         });
       } catch (err) {
+        if (activeMrzScan === scan) activeMrzScan = null;
         if (cancelled) return;
         const message = err instanceof Error ? err.message : 'MRZ scan failed';
         analytics.trackEvent('passport_mrz_scan_failed', { error: message });
@@ -62,8 +83,17 @@ export const PassportCodeScanViewfinderRoute: React.FC = () => {
 
     return () => {
       cancelled = true;
+      mrzScanClaims -= 1;
+      // Deferred: a StrictMode remount re-claims synchronously before this
+      // runs; only a real route exit leaves the count at 0.
+      setTimeout(() => {
+        if (mrzScanClaims === 0 && activeMrzScan) {
+          activeMrzScan = null;
+          void bridge.request('camera', 'stopCamera', {}).catch(() => {});
+        }
+      }, 0);
     };
-  }, [analytics, cameraAdapter, haptic, navigate, state]);
+  }, [analytics, bridge, cameraAdapter, haptic, navigate, state]);
 
   const handleBack = useCallback(() => {
     haptic.trigger('selection');
@@ -79,10 +109,12 @@ export const PassportCodeScanViewfinderRoute: React.FC = () => {
   }, [analytics, haptic]);
 
   return (
-    <PassportCodeScanViewfinderScreen
-      insets={WEB_SAFE_AREA.insets}
-      onClose={handleBack}
-      onCaptureTips={onCaptureTips}
-    />
+    <div ref={containerRef} style={{ display: 'contents' }}>
+      <PassportCodeScanViewfinderScreen
+        insets={WEB_SAFE_AREA.insets}
+        onClose={handleBack}
+        onCaptureTips={onCaptureTips}
+      />
+    </div>
   );
 };
