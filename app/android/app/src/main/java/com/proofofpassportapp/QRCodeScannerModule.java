@@ -24,8 +24,15 @@ import com.facebook.react.bridge.LifecycleEventListener;
 import com.blikoon.qrcodescanner.QrCodeActivity;
 import android.Manifest;
 import com.proofofpassportapp.utils.QrCodeDetectorProcessor;
+import com.proofofpassportapp.utils.PdfQrHelper;
+import com.tom_roush.pdfbox.pdmodel.PDDocument;
+import com.tom_roush.pdfbox.pdmodel.encryption.InvalidPasswordException;
 import example.jllarraz.com.passportreader.mlkit.FrameMetadata;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.Executors;
 
 public class QRCodeScannerModule extends ReactContextBaseJavaModule implements LifecycleEventListener {
 
@@ -148,6 +155,57 @@ public class QRCodeScannerModule extends ReactContextBaseJavaModule implements L
         Intent intent = new Intent(Intent.ACTION_PICK);
         intent.setType("image/*");
         currentActivity.startActivityForResult(intent, REQUEST_CODE_PHOTO_PICK);
+    }
+
+    @ReactMethod
+    public void scanQRCodeFromPDF(String uri, String password, Promise promise) {
+        java.util.concurrent.ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(() -> {
+            PDDocument document = null;
+            try {
+                Uri parsed = Uri.parse(uri);
+                String scheme = parsed.getScheme();
+                InputStream in;
+                if (scheme == null || "file".equals(scheme)) {
+                    in = new FileInputStream(new File(parsed.getPath()));
+                } else {
+                    in = getReactApplicationContext().getContentResolver().openInputStream(parsed);
+                }
+                if (in == null) {
+                    promise.reject("PDF_OPEN_FAILED", "Could not open PDF");
+                    return;
+                }
+
+                try {
+                    document = PDDocument.load(in, password);
+                } catch (InvalidPasswordException e) {
+                    promise.reject("INVALID_PASSWORD", "Incorrect password");
+                    return;
+                } finally {
+                    try {
+                        in.close();
+                    } catch (IOException ignored) {
+                    }
+                }
+
+                String qr = PdfQrHelper.INSTANCE.findQr(document, new QrCodeDetectorProcessor());
+                if (qr != null) {
+                    promise.resolve(qr);
+                } else {
+                    promise.reject("QR_NOT_FOUND", "No QR code found in PDF");
+                }
+            } catch (Exception e) {
+                promise.reject("PDF_PROCESSING_ERROR", e.getMessage());
+            } finally {
+                if (document != null) {
+                    try {
+                        document.close();
+                    } catch (IOException ignored) {
+                    }
+                }
+            }
+        });
+        executor.shutdown();
     }
 
     private void startQRScanner(Activity activity) {

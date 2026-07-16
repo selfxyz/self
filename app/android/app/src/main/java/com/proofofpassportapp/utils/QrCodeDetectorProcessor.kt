@@ -101,10 +101,8 @@ class QrCodeDetectorProcessor {
         executor.execute {
             val result = detectInImage(image)
             val timeRequired = System.currentTimeMillis() - start
-            println(result)
             if (result != null) {
                 if (URLUtil.isValidUrl(result.text)) {
-                    println("NICO HERE TOO " + result.text)
                     listener.onSuccess(result.text!!, metadata, timeRequired, originalBitmap)
                 } else {
                     listener.onFailure(Exception("Invalid URL"), timeRequired)
@@ -192,6 +190,31 @@ class QrCodeDetectorProcessor {
     fun stop() {
     }
 
+    /**
+     * Synchronously decodes a QR code from a still bitmap (e.g. a rasterized PDF
+     * page). Returns the decoded text, or null if none is found. Uses the same
+     * mAadhaar-friendly hint as [detectQrCodeInBitmap] and the built-in
+     * scale-up/scale-down and dual-binarizer retries.
+     */
+    fun decodeBitmapSync(image: Bitmap): String? {
+        val hints = mapOf(
+            com.google.zxing.DecodeHintType.PURE_BARCODE to false
+        )
+        return detectInImage(image, hints)?.text
+    }
+
+    /**
+     * Decodes a QR from an already high-resolution bitmap WITHOUT the internal
+     * 2x/0.5x rescaling. Use for high-DPI PDF renders/crops where upscaling adds
+     * no detail and would allocate huge intermediate bitmaps.
+     */
+    fun decodeBitmapDirect(image: Bitmap): String? {
+        val hints = mapOf(
+            com.google.zxing.DecodeHintType.PURE_BARCODE to false
+        )
+        return tryDetectInBitmap(image, QRCodeReader(), hints)?.text
+    }
+
     fun detectQrCodeInBitmap(
         image: Bitmap,
         listener: Listener
@@ -204,7 +227,6 @@ class QrCodeDetectorProcessor {
             )
             val result = detectInImage(image, hints)
             val timeRequired = System.currentTimeMillis() - start
-            println(result)
             if (result != null) {
                 listener.onSuccess(result.text!!, null, timeRequired, null)
             }

@@ -2,11 +2,14 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import * as DocumentPicker from 'expo-document-picker';
 import React, { useCallback, useEffect, useState } from 'react';
 import type { ImageSourcePropType } from 'react-native';
 import { Linking } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image, XStack, YStack } from 'tamagui';
-import { useNavigation } from '@react-navigation/native';
+import type { RouteProp } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import {
@@ -14,7 +17,11 @@ import {
   trackOnboardingStep,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
-import { BodyText, PrimaryButton } from '@selfxyz/mobile-sdk-alpha/components';
+import {
+  BodyText,
+  PrimaryButton,
+  SecondaryButton,
+} from '@selfxyz/mobile-sdk-alpha/components';
 import {
   AadhaarEvents,
   OnboardingEvents,
@@ -26,26 +33,33 @@ import {
   slate500,
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
-import { useSafeBottomPadding } from '@selfxyz/mobile-sdk-alpha/hooks';
 import { useAadhaar } from '@selfxyz/mobile-sdk-alpha/onboarding/import-aadhaar';
 
 import AadhaarImage from '@/assets/images/512w.png';
 import { useModal } from '@/hooks/useModal';
 import {
+  isQRScannerPDFAvailable,
   isQRScannerPhotoLibraryAvailable,
   scanQRCodeFromPhotoLibrary,
 } from '@/integrations/qrScanner';
 import type { RootStackParamList } from '@/navigation';
+import type { AadhaarRoutesParamList } from '@/navigation/types';
 import { PrivacyMask } from '@/observability/PrivacyMask';
 import { extraYPadding } from '@/utils/styleUtils';
 
 const AadhaarUploadScreen: React.FC = () => {
-  const paddingBottom = useSafeBottomPadding(extraYPadding + 50);
+  const insets = useSafeAreaInsets();
+  const paddingBottom = insets.bottom + extraYPadding;
 
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const route = useRoute<RouteProp<AadhaarRoutesParamList, 'AadhaarUpload'>>();
+  const countryCode = route.params?.countryCode ?? '';
   const selfClient = useSelfClient();
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [processingAction, setProcessingAction] = useState<
+    'pdf' | 'photo' | null
+  >(null);
+  const isProcessing = processingAction !== null;
   const aadhaarImageSource: ImageSourcePropType = AadhaarImage;
 
   const { showModal: showPermissionModal } = useModal({
@@ -76,7 +90,7 @@ const AadhaarUploadScreen: React.FC = () => {
     }
 
     try {
-      setIsProcessing(true);
+      setProcessingAction('photo');
       trackBranchEvent(selfClient, AadhaarEvents.UPLOAD_STARTED);
 
       const qrCodeData = await scanQRCodeFromPhotoLibrary();
@@ -131,7 +145,7 @@ const AadhaarUploadScreen: React.FC = () => {
         errorType: 'general',
       } as never);
     } finally {
-      setIsProcessing(false);
+      setProcessingAction(null);
     }
   }, [
     isProcessing,
@@ -140,6 +154,38 @@ const AadhaarUploadScreen: React.FC = () => {
     navigation,
     showPermissionModal,
   ]);
+
+  const onPdfPress = useCallback(async () => {
+    if (isProcessing) {
+      return;
+    }
+
+    try {
+      setProcessingAction('pdf');
+      trackBranchEvent(selfClient, AadhaarEvents.UPLOAD_STARTED);
+
+      const result = await DocumentPicker.getDocumentAsync({
+        type: 'application/pdf',
+        copyToCacheDirectory: true,
+        multiple: false,
+      });
+
+      if (result.canceled || !result.assets?.[0]?.uri) {
+        return;
+      }
+
+      navigation.navigate('AadhaarPdfPassword', {
+        fileUri: result.assets[0].uri,
+        countryCode,
+      } as never);
+    } catch {
+      navigation.navigate('AadhaarUploadError', {
+        errorType: 'general',
+      } as never);
+    } finally {
+      setProcessingAction(null);
+    }
+  }, [isProcessing, selfClient, navigation, countryCode]);
 
   return (
     <PrivacyMask>
@@ -171,12 +217,13 @@ const AadhaarUploadScreen: React.FC = () => {
           <BodyText
             style={{ fontWeight: 'bold', fontSize: 18, textAlign: 'center' }}
           >
-            Generate a QR code from the Aadhaar app
+            Upload your unmasked e-Aadhaar
           </BodyText>
           <BodyText
             style={{ fontSize: 16, textAlign: 'center', color: slate500 }}
           >
-            Save the QR code to your photo library and upload it here.
+            Download the unmasked e-Aadhaar PDF from the mAadhaar app and upload
+            it. Or crop out the QR code and upload it as an image.
           </BodyText>
           <BodyText
             style={{
@@ -190,15 +237,44 @@ const AadhaarUploadScreen: React.FC = () => {
           </BodyText>
         </YStack>
 
-        <YStack paddingHorizontal={25} backgroundColor={white} paddingTop={25}>
+        <YStack
+          paddingHorizontal={25}
+          backgroundColor={white}
+          paddingTop={25}
+          gap="$3"
+        >
+          {isQRScannerPDFAvailable() ? (
+            <XStack gap="$3" alignItems="stretch">
+              <YStack flex={1}>
+                <PrimaryButton disabled={isProcessing} onPress={onPdfPress}>
+                  {processingAction === 'pdf'
+                    ? 'Processing...'
+                    : 'Upload e-Aadhaar PDF'}
+                </PrimaryButton>
+              </YStack>
+            </XStack>
+          ) : null}
           <XStack gap="$3" alignItems="stretch">
             <YStack flex={1}>
-              <PrimaryButton
-                disabled={!isQRScannerPhotoLibraryAvailable() || isProcessing}
-                onPress={onPhotoLibraryPress}
-              >
-                {isProcessing ? 'Processing...' : 'Upload QR code'}
-              </PrimaryButton>
+              {isQRScannerPDFAvailable() ? (
+                <SecondaryButton
+                  disabled={!isQRScannerPhotoLibraryAvailable() || isProcessing}
+                  onPress={onPhotoLibraryPress}
+                >
+                  {processingAction === 'photo'
+                    ? 'Processing...'
+                    : 'Upload QR code'}
+                </SecondaryButton>
+              ) : (
+                <PrimaryButton
+                  disabled={!isQRScannerPhotoLibraryAvailable() || isProcessing}
+                  onPress={onPhotoLibraryPress}
+                >
+                  {processingAction === 'photo'
+                    ? 'Processing...'
+                    : 'Upload QR code'}
+                </PrimaryButton>
+              )}
             </YStack>
           </XStack>
         </YStack>

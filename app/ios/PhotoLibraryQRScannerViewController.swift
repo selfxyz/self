@@ -105,37 +105,7 @@ class PhotoLibraryQRScannerViewController: UIViewController, UIImagePickerContro
   // MARK: - QR Code Detection
 
   private func detectQRCode(in image: UIImage) {
-    guard let ciImage = CIImage(image: image) else {
-      let error = NSError(
-        domain: "QRScannerError",
-        code: 1004,
-        userInfo: [NSLocalizedDescriptionKey: "Failed to process the selected image."]
-      )
-      errorHandler?(error)
-      dismiss(animated: true, completion: nil)
-      return
-    }
-
-    let detector = CIDetector(
-      ofType: CIDetectorTypeQRCode,
-      context: nil,
-      options: [CIDetectorAccuracy: CIDetectorAccuracyHigh]
-    )
-
-    guard let detector = detector else {
-      let error = NSError(
-        domain: "QRScannerError",
-        code: 1005,
-        userInfo: [NSLocalizedDescriptionKey: "Failed to initialize QR code detector."]
-      )
-      errorHandler?(error)
-      dismiss(animated: true, completion: nil)
-      return
-    }
-
-    let features = detector.features(in: ciImage) as? [CIQRCodeFeature] ?? []
-
-    if let firstQRCode = features.first, let qrCodeString = firstQRCode.messageString {
+    if let qrCodeString = QRImageDecoder.decode(image) {
       completionHandler?(qrCodeString)
       dismiss(animated: true, completion: nil)
     } else {
@@ -146,6 +116,44 @@ class PhotoLibraryQRScannerViewController: UIViewController, UIImagePickerContro
       )
       errorHandler?(error)
       dismiss(animated: true, completion: nil)
+    }
+  }
+}
+
+/// Shared CoreImage QR decoding used by both the photo-library and PDF flows.
+enum QRImageDecoder {
+  /// Decodes the first QR code found in the image, or nil if none.
+  static func decode(_ image: UIImage) -> String? {
+    guard let ciImage = CIImage(image: image) else { return nil }
+    let detector = CIDetector(
+      ofType: CIDetectorTypeQRCode,
+      context: nil,
+      options: [CIDetectorAccuracy: CIDetectorAccuracyHigh]
+    )
+    let features = detector?.features(in: ciImage) as? [CIQRCodeFeature] ?? []
+    return features.first?.messageString
+  }
+
+  /// Crops to a normalized (top-left origin) rect and optionally upscales, so a
+  /// dense QR that is too small at full-page resolution can still be decoded.
+  static func crop(_ image: UIImage, normRect: CGRect, upscale: CGFloat) -> UIImage? {
+    guard let cg = image.cgImage else { return nil }
+    let w = CGFloat(cg.width)
+    let h = CGFloat(cg.height)
+    let rect = CGRect(
+      x: (normRect.minX * w).rounded(),
+      y: (normRect.minY * h).rounded(),
+      width: (normRect.width * w).rounded(),
+      height: (normRect.height * h).rounded()
+    ).intersection(CGRect(x: 0, y: 0, width: w, height: h))
+    guard !rect.isNull, rect.width > 0, rect.height > 0,
+          let cropped = cg.cropping(to: rect) else { return nil }
+    if upscale <= 1 { return UIImage(cgImage: cropped) }
+    let size = CGSize(width: rect.width * upscale, height: rect.height * upscale)
+    let format = UIGraphicsImageRendererFormat()
+    format.scale = 1
+    return UIGraphicsImageRenderer(size: size, format: format).image { _ in
+      UIImage(cgImage: cropped).draw(in: CGRect(origin: .zero, size: size))
     }
   }
 }
