@@ -124,14 +124,19 @@ class PhotoLibraryQRScannerViewController: UIViewController, UIImagePickerContro
 enum QRImageDecoder {
   /// Decodes the first QR code found in the image, or nil if none.
   static func decode(_ image: UIImage) -> String? {
-    guard let ciImage = CIImage(image: image) else { return nil }
+    decodeAll(image).first
+  }
+
+  /// Decodes every QR code found in the image.
+  static func decodeAll(_ image: UIImage) -> [String] {
+    guard let ciImage = CIImage(image: image) else { return [] }
     let detector = CIDetector(
       ofType: CIDetectorTypeQRCode,
       context: nil,
       options: [CIDetectorAccuracy: CIDetectorAccuracyHigh]
     )
     let features = detector?.features(in: ciImage) as? [CIQRCodeFeature] ?? []
-    return features.first?.messageString
+    return features.compactMap { $0.messageString }
   }
 
   /// Crops to a normalized (top-left origin) rect and optionally upscales, so a

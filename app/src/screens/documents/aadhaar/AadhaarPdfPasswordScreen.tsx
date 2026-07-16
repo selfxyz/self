@@ -11,20 +11,13 @@ import type { RouteProp } from '@react-navigation/native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import {
-  trackBranchEvent,
-  trackOnboardingStep,
-  useSelfClient,
-} from '@selfxyz/mobile-sdk-alpha';
+import { trackBranchEvent, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
   BodyText,
   PrimaryButton,
   Title,
 } from '@selfxyz/mobile-sdk-alpha/components';
-import {
-  AadhaarEvents,
-  OnboardingEvents,
-} from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { AadhaarEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import {
   black,
   red500,
@@ -85,16 +78,19 @@ const AadhaarPdfPasswordScreen: React.FC = () => {
     };
   }, []);
 
-  // The cached PDF copy holds decrypted-source bytes; remove it when leaving.
-  useEffect(() => {
-    return () => {
-      try {
-        new File(fileUri).delete();
-      } catch {
-        // best-effort cleanup
-      }
-    };
+  const deletePdfCopy = useCallback(() => {
+    try {
+      new File(fileUri).delete();
+    } catch {
+      // best-effort cleanup
+    }
   }, [fileUri]);
+
+  // The cached PDF copy holds decrypted-source bytes. It is deleted as soon as
+  // the native scan is done with it (see onSubmit); this unmount cleanup is a
+  // backstop for leaving the screen without submitting. Unmount alone is not
+  // enough: after success this screen stays mounted under the pushed routes.
+  useEffect(() => deletePdfCopy, [deletePdfCopy]);
 
   const onChangeText = useCallback((text: string) => {
     passwordRef.current = text;
@@ -115,13 +111,11 @@ const AadhaarPdfPasswordScreen: React.FC = () => {
       setErrorText(null);
 
       const qrCodeData = await scanQRCodeFromPDF(fileUri, password);
+      deletePdfCopy();
       trackBranchEvent(selfClient, AadhaarEvents.QR_SELECTED);
       await processAadhaarQRCode(qrCodeData);
-      trackOnboardingStep(selfClient, OnboardingEvents.SCAN_SUCCEEDED, {
-        branch: 'aadhaar',
-      });
-      // Navigation to success/error is driven by the events emitted from
-      // processAadhaarQRCode (see selfClientProvider).
+      // Navigation to success/error and SCAN_SUCCEEDED tracking are driven by
+      // the events emitted from processAadhaarQRCode (see selfClientProvider).
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       const code =
@@ -130,17 +124,26 @@ const AadhaarPdfPasswordScreen: React.FC = () => {
           : '';
 
       if (code === 'INVALID_PASSWORD' || message.includes('INVALID_PASSWORD')) {
+        // Keep the cached copy so the user can retry with another password.
         setErrorText('Incorrect password. Please check and try again.');
         return;
       }
 
+      deletePdfCopy();
       navigation.navigate('AadhaarUploadError', {
         errorType: 'general',
       } as never);
     } finally {
       setIsProcessing(false);
     }
-  }, [isProcessing, fileUri, selfClient, processAadhaarQRCode, navigation]);
+  }, [
+    isProcessing,
+    fileUri,
+    deletePdfCopy,
+    selfClient,
+    processAadhaarQRCode,
+    navigation,
+  ]);
 
   const borderColor = errorText ? red500 : isFocused ? black : slate200;
 

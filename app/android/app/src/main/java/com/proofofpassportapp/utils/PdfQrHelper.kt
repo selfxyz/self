@@ -30,6 +30,14 @@ object PdfQrHelper {
     private const val TARGET_DPI = 500f
     private const val FALLBACK_DPI = 350f
 
+    // ~A4 at TARGET_DPI in RGB_565 (~48 MiB); larger pages render at a
+    // proportionally lower DPI instead of risking OutOfMemoryError.
+    private const val MAX_PIXELS = 25_000_000f
+
+    // The Aadhaar Secure QR is a long numeric string; pages also carry
+    // unrelated QRs (e.g. app-download links) that must not end the search.
+    private fun isAadhaarSecureQr(value: String) = value.length >= 100 && value.all(Char::isDigit)
+
     // Overlapping tile grid (normalized starts; each tile is TILE_SIZE wide/tall).
     private val TILE_STARTS = floatArrayOf(0.0f, 0.3f, 0.6f)
     private const val TILE_SIZE = 0.4f
@@ -71,13 +79,18 @@ object PdfQrHelper {
                             val top = (sy * h).toInt().coerceIn(0, h - 1)
                             val right = ((sx + TILE_SIZE) * w).toInt().coerceIn(left + 1, w)
                             val bottom = ((sy + TILE_SIZE) * h).toInt().coerceIn(top + 1, h)
-                            val tile = Bitmap.createBitmap(page, left, top, right - left, bottom - top)
+                            val tile = try {
+                                Bitmap.createBitmap(page, left, top, right - left, bottom - top)
+                            } catch (e: OutOfMemoryError) {
+                                Log.d(TAG, "tile page=$pageIndex tile=($sx,$sy) OOM")
+                                continue
+                            }
                             try {
                                 decodeMlKit(scanner, tile)?.let {
                                     Log.d(TAG, "mlkit tile page=$pageIndex tile=($sx,$sy) -> HIT")
                                     return it
                                 }
-                                processor.decodeBitmapDirect(tile)?.let {
+                                processor.decodeBitmapDirect(tile)?.takeIf(::isAadhaarSecureQr)?.let {
                                     Log.d(TAG, "zxing tile page=$pageIndex tile=($sx,$sy) -> HIT")
                                     return it
                                 }
@@ -102,9 +115,7 @@ object PdfQrHelper {
             val image = InputImage.fromBitmap(bitmap, 0)
             val barcodes = Tasks.await(scanner.process(image))
             val values = barcodes.mapNotNull { it.rawValue }
-            // Prefer the Aadhaar secure QR (long numeric string).
-            values.firstOrNull { it.length >= 100 && it.all(Char::isDigit) }
-                ?: values.firstOrNull()
+            values.firstOrNull(::isAadhaarSecureQr)
         } catch (e: Exception) {
             Log.d(TAG, "mlkit decode err: ${e.message}")
             null
@@ -124,7 +135,7 @@ object PdfQrHelper {
     ): Bitmap? {
         return try {
             val box = document.getPage(pageIndex).cropBox
-            val scale = dpi / 72f
+            val scale = minOf(dpi / 72f, kotlin.math.sqrt(MAX_PIXELS / (box.width * box.height)))
             val w = Math.round(box.width * scale)
             val h = Math.round(box.height * scale)
             val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.RGB_565)

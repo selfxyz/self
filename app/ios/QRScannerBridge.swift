@@ -84,6 +84,12 @@ enum PdfQRScanner {
   private static let fullPageScale: CGFloat = 220.0 / 72.0
   private static let cropUpscale: CGFloat = 2.0
 
+  // The Aadhaar Secure QR is a long numeric string; pages also carry
+  // unrelated QRs (e.g. app-download links) that must not end the search.
+  private static func isAadhaarSecureQr(_ value: String) -> Bool {
+    value.count >= 100 && value.allSatisfy { $0.isASCII && $0.isNumber }
+  }
+
   static func fileURL(from uri: String) -> URL? {
     if uri.hasPrefix("file://") {
       return URL(string: uri)
@@ -117,7 +123,8 @@ enum PdfQRScanner {
     for (index, _) in candidates {
       guard !triedPages.contains(index) else { continue }
       triedPages.insert(index)
-      if let image = fullPage(index), let qr = QRImageDecoder.decode(image) {
+      if let image = fullPage(index),
+         let qr = QRImageDecoder.decodeAll(image).first(where: isAadhaarSecureQr) {
         return qr
       }
     }
@@ -127,7 +134,7 @@ enum PdfQRScanner {
       guard let image = fullPage(index),
             let cropped = QRImageDecoder.crop(image, normRect: rect, upscale: cropUpscale)
       else { continue }
-      if let qr = QRImageDecoder.decode(cropped) {
+      if let qr = QRImageDecoder.decodeAll(cropped).first(where: isAadhaarSecureQr) {
         return qr
       }
     }

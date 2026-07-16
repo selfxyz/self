@@ -194,8 +194,10 @@ public class QRCodeScannerModule extends ReactContextBaseJavaModule implements L
                 } else {
                     promise.reject("QR_NOT_FOUND", "No QR code found in PDF");
                 }
-            } catch (Exception e) {
-                promise.reject("PDF_PROCESSING_ERROR", e.getMessage());
+            } catch (Throwable t) {
+                // Includes OutOfMemoryError from decoding; the promise must
+                // always settle or the password screen hangs on "Processing...".
+                promise.reject("PDF_PROCESSING_ERROR", t.getMessage());
             } finally {
                 if (document != null) {
                     try {

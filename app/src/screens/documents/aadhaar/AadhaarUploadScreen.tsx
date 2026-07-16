@@ -96,9 +96,9 @@ const AadhaarUploadScreen: React.FC = () => {
       const qrCodeData = await scanQRCodeFromPhotoLibrary();
       trackBranchEvent(selfClient, AadhaarEvents.QR_SELECTED);
       await processAadhaarQRCode(qrCodeData);
-      trackOnboardingStep(selfClient, OnboardingEvents.SCAN_SUCCEEDED, {
-        branch: 'aadhaar',
-      });
+      // SCAN_SUCCEEDED is tracked from the PROVING_AADHAAR_UPLOAD_SUCCESS
+      // event (see selfClientProvider); processAadhaarQRCode resolves even on
+      // failure, so tracking here would count failed uploads as successes.
     } catch (error) {
       // Don't show error for user cancellation
       if (error instanceof Error && error.message.includes('cancelled')) {

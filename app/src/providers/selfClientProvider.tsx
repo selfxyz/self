@@ -309,6 +309,9 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
     });
 
     addListener(SdkEvents.PROVING_AADHAAR_UPLOAD_SUCCESS, () => {
+      trackOnboardingStep({ trackEvent }, OnboardingEvents.SCAN_SUCCEEDED, {
+        branch: 'aadhaar',
+      });
       navigateIfReady('AadhaarUploadSuccess');
     });
     addListener(SdkEvents.PROVING_AADHAAR_UPLOAD_FAILURE, ({ errorType }) => {
