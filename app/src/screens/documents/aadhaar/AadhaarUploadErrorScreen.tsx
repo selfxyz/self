@@ -6,7 +6,11 @@ import React, { useCallback } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, XStack, YStack } from 'tamagui';
 import type { RouteProp } from '@react-navigation/native';
-import { StackActions, useNavigation, useRoute } from '@react-navigation/native';
+import {
+  StackActions,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Image } from '@tamagui/lucide-icons';
 
