@@ -23,7 +23,7 @@ import xyz.self.sdk.nfc.AndroidNfcProvider
  * No passport-derived fields (document number, dates, CAN, MRZ, chip data) are ever
  * logged or forwarded to analytics from this shim.
  */
-class SelfPassportReaderModule(reactContext: ReactApplicationContext) :
+class SelfPassportReaderModule(private val reactContext: ReactApplicationContext) :
     ReactContextBaseJavaModule(reactContext) {
 
     private val scanning = AtomicBoolean(false)
@@ -46,7 +46,7 @@ class SelfPassportReaderModule(reactContext: ReactApplicationContext) :
             return
         }
 
-        val activity = currentActivity
+        val activity = reactContext.currentActivity
         if (activity == null) {
             promise.reject("NO_ACTIVITY", "No foreground activity available for the NFC scan")
             return

@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  * Rejection codes are the ones `CameraHandler` maps: `CAMERA_PERMISSION_DENIED`,
  * `CAMERA_INIT_FAILED`, `MRZ_SCAN_CANCELLED`.
  */
-class SelfMrzScannerModule(reactContext: ReactApplicationContext) :
+class SelfMrzScannerModule(private val reactContext: ReactApplicationContext) :
     ReactContextBaseJavaModule(reactContext) {
 
     override fun getName(): String = MODULE_NAME
@@ -43,7 +43,7 @@ class SelfMrzScannerModule(reactContext: ReactApplicationContext) :
 
     @ReactMethod
     fun startScanning(promise: Promise) {
-        val activity = currentActivity
+        val activity = reactContext.currentActivity
         if (activity == null) {
             promise.reject("CAMERA_INIT_FAILED", "No foreground activity to host the scanner")
             return
@@ -78,7 +78,7 @@ class SelfMrzScannerModule(reactContext: ReactApplicationContext) :
 
     private fun startScanning(promise: Promise, resolveOnce: AtomicBoolean) {
         UiThreadUtil.runOnUiThread {
-            val activity = currentActivity
+            val activity = reactContext.currentActivity
             if (activity == null) {
                 if (resolveOnce.compareAndSet(false, true)) {
                     promise.reject("CAMERA_INIT_FAILED", "Activity was lost before scanning started")
