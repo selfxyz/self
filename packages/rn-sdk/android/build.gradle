@@ -72,7 +72,7 @@ dependencies {
   // SelfCryptoPackage gracefully skips SelfBridgeModule registration if
   // the classes aren't present at runtime. Replace with a stable hosted
   // Maven coordinate once SD-06 (SELF-2534) lands.
-  compileOnly "xyz.self.sdk:shared-android:0.1.0"
+  compileOnly "xyz.self.sdk:shared-android:0.1.1"
   // Match React Native 0.76.x's pinned coroutines version (1.6.1) to avoid
   // version-constraint conflicts in the consumer's resolution graph.
   compileOnly "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1"
