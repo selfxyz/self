@@ -6,6 +6,7 @@ import type { BridgeDomain } from '../bridge/types';
 import type { BridgeHandler } from '../bridge/types';
 import { BridgeHandlerError } from '../bridge/types';
 import type { MessageRouter } from '../bridge/MessageRouter';
+import { NativeModules, Platform } from 'react-native';
 
 export interface NfcManagerModule {
   isSupported(): Promise<boolean>;
@@ -281,10 +282,9 @@ export interface PassportScanOptions {
 
 function loadPassportReader(): PassportReaderModule | undefined {
   try {
-    const { NativeModules, Platform } =
-      require('react-native') as typeof import('react-native');
-    if (Platform.OS === 'android') {
-      const reader = NativeModules.RNPassportReader as
+    const modules = (NativeModules ?? {}) as Record<string, unknown>;
+    if (Platform?.OS === 'android') {
+      const reader = (modules.SelfPassportReader ?? modules.RNPassportReader) as
         | { scan?: (options: PassportScanOptions) => Promise<unknown> }
         | undefined;
       if (reader && typeof reader.scan === 'function') {
@@ -292,8 +292,8 @@ function loadPassportReader(): PassportReaderModule | undefined {
       }
       return undefined;
     }
-    if (Platform.OS === 'ios') {
-      const reader = NativeModules.PassportReader as
+    if (Platform?.OS === 'ios') {
+      const reader = (modules.SelfPassportReader ?? modules.PassportReader) as
         | {
             scanPassport?: (
               passportNumber: string,
@@ -339,7 +339,7 @@ function loadPassportReader(): PassportReaderModule | undefined {
       }
     }
   } catch {
-    // react-native unavailable (unit-test environment) — fall through.
+    // react-native native modules unavailable (unit-test environment) — fall through.
   }
   return undefined;
 }
@@ -375,6 +375,10 @@ export class NfcHandler implements BridgeHandler {
     this.nfc = nfc ?? loadNfc();
     this.passportReader = options?.passportReader ?? loadPassportReader();
     this.apduTimeoutMs = resolveApduTimeoutMs(options?.apduTimeoutMs);
+  }
+
+  isAvailable(): boolean {
+    return this.passportReader !== undefined || this.nfc !== undefined;
   }
 
   async handle(method: string, params: Record<string, unknown>): Promise<unknown> {

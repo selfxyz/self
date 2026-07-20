@@ -20,11 +20,15 @@ interface MrzScanData {
 }
 
 function loadMrzScannerModule(): MrzScannerModule | null {
-  const nativeModules = NativeModules as Record<string, unknown>;
-  const scanner =
-    (nativeModules.SelfMRZScannerModule as MrzScannerModule | undefined) ??
-    (nativeModules.MRZScannerModule as MrzScannerModule | undefined);
-  return scanner ?? null;
+  try {
+    const nativeModules = (NativeModules ?? {}) as Record<string, unknown>;
+    const scanner =
+      (nativeModules.SelfMRZScannerModule as MrzScannerModule | undefined) ??
+      (nativeModules.MRZScannerModule as MrzScannerModule | undefined);
+    return scanner ?? null;
+  } catch {
+    return null;
+  }
 }
 
 function normalizeMrzScanResult(result: unknown): MrzScanData {
@@ -79,6 +83,11 @@ function extractNativeErrorCode(err: unknown): string | undefined {
 
 export class CameraHandler implements BridgeHandler {
   readonly domain: BridgeDomain = 'camera';
+
+  isAvailable(): boolean {
+    const scanner = loadMrzScannerModule();
+    return scanner !== null && typeof scanner.startScanning === 'function';
+  }
 
   async handle(method: string, _params: Record<string, unknown>): Promise<unknown> {
     const scanner = loadMrzScannerModule();

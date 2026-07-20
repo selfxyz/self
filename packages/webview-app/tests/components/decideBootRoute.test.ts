@@ -98,4 +98,55 @@ describe('decideBootRoute', () => {
       errorRoute: '/embed/error',
     });
   });
+
+  it('embed with an NFC-only request but nfc unavailable → fail-closed', () => {
+    expect(
+      decideBootRoute({
+        isReady: true,
+        mode: 'embed',
+        verificationRequest: { ...VALID_REQUEST, documentType: 'passport' },
+        pathname: '/',
+        capabilities: { nfc: false, mrzCamera: false, biometrics: true, secureStorage: true },
+      }),
+    ).toEqual({
+      type: 'fail-closed',
+      error: 'UNSUPPORTED_CAPABILITY',
+      errorRoute: '/embed/error',
+    });
+  });
+
+  it('embed with an NFC-only request and nfc available → proceeds', () => {
+    expect(
+      decideBootRoute({
+        isReady: true,
+        mode: 'embed',
+        verificationRequest: { ...VALID_REQUEST, documentType: 'passport' },
+        pathname: '/',
+        capabilities: { nfc: true, mrzCamera: true, biometrics: true, secureStorage: true },
+      }),
+    ).toEqual({ type: 'navigate', to: '/tour/1', replace: true });
+  });
+
+  it('embed with an aadhaar request and no native capabilities → proceeds', () => {
+    expect(
+      decideBootRoute({
+        isReady: true,
+        mode: 'embed',
+        verificationRequest: { ...VALID_REQUEST, documentType: 'aadhaar' },
+        pathname: '/',
+        capabilities: { nfc: false, mrzCamera: false, biometrics: false, secureStorage: false },
+      }),
+    ).toEqual({ type: 'navigate', to: '/tour/1', replace: true });
+  });
+
+  it('embed with missing capabilities is treated as all-true (backward compat)', () => {
+    expect(
+      decideBootRoute({
+        isReady: true,
+        mode: 'embed',
+        verificationRequest: { ...VALID_REQUEST, documentType: 'passport' },
+        pathname: '/',
+      }),
+    ).toEqual({ type: 'navigate', to: '/tour/1', replace: true });
+  });
 });
