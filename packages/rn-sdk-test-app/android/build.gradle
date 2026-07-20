@@ -43,3 +43,27 @@ allprojects {
         maven { url 'https://jitpack.io' }
     }
 }
+
+// self-sdk-dist injection for the optional capture packages (@selfxyz/rn-mrz-scanner ->
+// xyz.self.sdk:ocr, @selfxyz/rn-nfc-passport -> xyz.self.sdk:nfc). A library module's own
+// repositories are not consulted for the app's classpath, so the private distribution repo
+// must be declared here. Token-gated: partner/CI builds export SELF_SDK_GITHUB_TOKEN; SDK-dev
+// builds fall back to the mavenLocal above. Template mirrors
+// self-sdk-native/rn-sdk-test-app/android/build.gradle. The token value is never written into
+// the project. includeGroupByRegex confines lookups (and their auth failures) to xyz.self.sdk.
+if (System.getenv("SELF_SDK_GITHUB_TOKEN")) {
+    allprojects {
+        repositories {
+            maven {
+                url uri("https://maven.pkg.github.com/selfxyz/self-sdk-dist")
+                credentials {
+                    username = System.getenv("SELF_SDK_GITHUB_USER") ?: "self-sdk"
+                    password = System.getenv("SELF_SDK_GITHUB_TOKEN")
+                }
+                content {
+                    includeGroupByRegex("xyz\\.self\\.sdk(\\..*)?")
+                }
+            }
+        }
+    }
+}

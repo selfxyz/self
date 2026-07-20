@@ -22,6 +22,8 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.28.6",
+    "@selfxyz/rn-mrz-scanner": "workspace:*",
+    "@selfxyz/rn-nfc-passport": "workspace:*",
     "@selfxyz/rn-sdk": "workspace:*",
     "react": "^19.2.0",
     "react-native": "0.83.9",
