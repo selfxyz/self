@@ -94,6 +94,10 @@ dependencies {
   implementation "org.jetbrains.kotlin:kotlin-stdlib:${getExtOrDefault('kotlinVersion') ?: '1.9.24'}"
 
   // Maintained ICAO 9303 NFC reader (jMRTD 0.8.1 / BouncyCastle 1.78.1 / SCUBA), shared with the
-  // KMP SDK. Pulls xyz.self.sdk:shared-android transitively for the NfcProvider API.
+  // KMP SDK.
   implementation "xyz.self.sdk:nfc:${selfNfcAarVersion}"
+  // AndroidNfcProvider implements NfcProvider/CloseableProvider from :shared. The nfc AAR POM
+  // declares :shared at runtime scope only, so it must be on the compile classpath explicitly
+  // or Kotlin cannot resolve the provider's supertypes ("cannot access class NfcProvider").
+  implementation "xyz.self.sdk:shared:${selfNfcAarVersion}"
 }

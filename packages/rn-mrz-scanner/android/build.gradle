@@ -97,7 +97,12 @@ repositories {
 dependencies {
   implementation "com.facebook.react:react-native:+"
   implementation "org.jetbrains.kotlin:kotlin-stdlib:${getExtOrDefault('kotlinVersion') ?: '1.9.24'}"
-  // Canonical Self Android OCR pipeline (CameraX + ML Kit + Tesseract fallback). Pulls
-  // ML Kit text-recognition, CameraX, jMRTD, and coroutines transitively via its POM.
+  // Canonical Self Android OCR pipeline (CameraX + ML Kit + Tesseract fallback).
   implementation "xyz.self.sdk:ocr:${selfOcrVersion}"
+  // The ocr AAR POM declares these at runtime scope only, so they are absent from the compile
+  // classpath. AndroidCameraMrzProvider implements CameraMrzProvider from :shared, and its
+  // scanMrzWithPreview overload set references androidx.camera.view.PreviewView — both types must
+  // be resolvable at compile time for overload resolution / supertype access to succeed.
+  implementation "xyz.self.sdk:shared:${selfOcrVersion}"
+  implementation "androidx.camera:camera-view:1.4.1"
 }
