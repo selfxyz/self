@@ -1,0 +1,46 @@
+{
+  "name": "@selfxyz/rn-mrz-scanner",
+  "version": "0.0.1-alpha.1",
+  "description": "Optional MRZ camera scanner native module for @selfxyz/rn-sdk (registers SelfMRZScannerModule)",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "default": "./dist/index.mjs"
+    }
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "android",
+    "ios",
+    "selfxyz-rn-mrz-scanner.podspec",
+    "react-native.config.cjs",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "prepublishOnly": "pnpm build",
+    "test": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "types": "tsup"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-native": ">=0.83.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.0",
+    "react": "^19.2.0",
+    "react-native": "0.83.9",
+    "tsup": "^8.0.1",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "restricted"
+  }
+}

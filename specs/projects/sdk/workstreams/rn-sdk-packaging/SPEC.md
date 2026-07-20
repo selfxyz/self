@@ -71,11 +71,13 @@
 | ------ | ------------------------------------------------ | ------ | -------- | -------------- | ---- | -------- |
 | RSP-01 | Capabilities handshake + WebView flow gating     | Done     | High     | -              | [plans/RSP-01-capabilities-handshake.md](./plans/RSP-01-capabilities-handshake.md) | ~250 |
 | RSP-02 | Unify NFC native-module name lookup              | Done     | High     | -              | [plans/RSP-02-nfc-module-name-unification.md](./plans/RSP-02-nfc-module-name-unification.md) | ~60 |
-| RSP-03 | `@selfxyz/rn-mrz-scanner` optional package        | Ready    | Medium   | RSP-01         | [plans/RSP-03-rn-mrz-scanner-package.md](./plans/RSP-03-rn-mrz-scanner-package.md) | ~400 |
-| RSP-04 | `@selfxyz/rn-nfc-passport` optional package       | Ready    | Medium   | RSP-01, RSP-02 | [plans/RSP-04-rn-nfc-passport-package.md](./plans/RSP-04-rn-nfc-passport-package.md) | ~500 |
+| RSP-03 | `@selfxyz/rn-mrz-scanner` optional package        | Done*    | Medium   | RSP-01         | [plans/RSP-03-rn-mrz-scanner-package.md](./plans/RSP-03-rn-mrz-scanner-package.md) | ~400 |
+| RSP-04 | `@selfxyz/rn-nfc-passport` optional package       | Done*    | Medium   | RSP-01, RSP-02 | [plans/RSP-04-rn-nfc-passport-package.md](./plans/RSP-04-rn-nfc-passport-package.md) | ~500 |
 | RSP-05 | Expo config plugin + asset wiring                 | Deferred | Medium   | -              | [plans/RSP-05-expo-config-plugin.md](./plans/RSP-05-expo-config-plugin.md) | ~150 |
 
 Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
+
+\* RSP-03/RSP-04: shim code + JS-level validation landed. Native/on-device gates remain before app-ready: Android/iOS native builds against the published AARs (`self-sdk-dist` auth), iOS `pod install` (SelfSdkOcr/SelfSdkNfc may need standalone pods), and the **Android NFC chip-read parity gate on real documents** (RSP-04). ML Kit note: the published `ocr` AAR bundles the model (not the thin/unbundled variant the plan assumed) — no first-run download on Android.
 
 ## Follow-ups (not core specs)
 

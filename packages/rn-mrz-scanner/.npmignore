@@ -1,0 +1,7 @@
+src/
+tsconfig.json
+tsup.config.ts
+.eslintrc*
+.prettierrc*
+node_modules/
+android/build/

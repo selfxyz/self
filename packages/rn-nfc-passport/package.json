@@ -1,0 +1,53 @@
+{
+  "name": "@selfxyz/rn-nfc-passport",
+  "version": "0.0.1-alpha.1",
+  "description": "Optional native NFC passport reader for @selfxyz/rn-sdk — registers the SelfPassportReader module (ICAO 9303 chip read)",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "default": "./dist/index.mjs"
+    }
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "android",
+    "ios",
+    "selfxyz-rn-nfc-passport.podspec",
+    "react-native.config.cjs",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "prepublishOnly": "pnpm build",
+    "test": "tsup && vitest run",
+    "typecheck": "tsc --noEmit",
+    "types": "tsup"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.0",
+    "react": "^19.2.0",
+    "react-native": "0.83.9",
+    "tsup": "^8.0.1",
+    "typescript": "^5.9.3",
+    "vitest": "^2.1.8"
+  },
+  "peerDependencies": {
+    "@selfxyz/rn-sdk": "workspace:^",
+    "react": "^19.0.0",
+    "react-native": ">=0.83.0"
+  },
+  "peerDependenciesMeta": {
+    "@selfxyz/rn-sdk": {
+      "optional": true
+    }
+  },
+  "publishConfig": {
+    "access": "restricted"
+  }
+}
