@@ -6,7 +6,11 @@
 
 @interface RCT_EXTERN_MODULE(SelfMRZScannerModule, NSObject)
 
-RCT_EXTERN_METHOD(startScanning:(RCTPromiseResolveBlock)resolver
+RCT_EXTERN_METHOD(startScanning:(NSDictionary *)options
+                  resolver:(RCTPromiseResolveBlock)resolver
+                  rejecter:(RCTPromiseRejectBlock)rejecter)
+
+RCT_EXTERN_METHOD(stopScanning:(RCTPromiseResolveBlock)resolver
                   rejecter:(RCTPromiseRejectBlock)rejecter)
 
 @end

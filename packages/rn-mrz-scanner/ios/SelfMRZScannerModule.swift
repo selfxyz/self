@@ -32,8 +32,12 @@ class SelfMRZScannerModule: NSObject {
     private var provider: CameraMrzProviderImpl?
   #endif
 
-  @objc(startScanning:rejecter:)
+  // `options` may carry the web viewfinder `scanRect`, but this headless variant scans without
+  // an on-screen preview, so the rect is ignored (documented in the README). The parameter is
+  // accepted to keep the JS bridge contract identical across platforms.
+  @objc(startScanning:resolver:rejecter:)
   func startScanning(
+    options: NSDictionary,
     resolver: @escaping RCTPromiseResolveBlock,
     rejecter: @escaping RCTPromiseRejectBlock
   ) {
@@ -59,6 +63,19 @@ class SelfMRZScannerModule: NSObject {
         nil
       )
     #endif
+  }
+
+  // Web-driven cancel (e.g. leaving the viewfinder route). Best-effort: releases the provider.
+  // Never rejects.
+  @objc(stopScanning:rejecter:)
+  func stopScanning(
+    resolver: @escaping RCTPromiseResolveBlock,
+    rejecter: @escaping RCTPromiseRejectBlock
+  ) {
+    #if canImport(SelfSdkOcr)
+      provider = nil
+    #endif
+    resolver(nil)
   }
 
   #if canImport(SelfSdkOcr)

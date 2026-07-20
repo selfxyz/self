@@ -87,8 +87,15 @@ when the native module is unlinked — nothing touches `NativeModules` at import
 
 ## Platform notes
 
-- **Android** presents a full-screen CameraX preview over the current Activity with a Cancel
-  affordance (`MRZ_SCAN_CANCELLED`).
+- **Android** presents a native CameraX preview over the current Activity. When the web
+  viewfinder reports a `scanRect` (physical px, viewport-relative — passed through by
+  `CameraHandler`), the preview overlay is sized/pinned to that box so it sits over the
+  web-designed viewfinder — parity with the KMP `CameraPreviewMrzProvider` embedded preview. In
+  this mode there is no native chrome; cancel is web-driven via the `camera.stopCamera` bridge
+  call (`stopScanning`), which rejects the in-flight scan with `MRZ_SCAN_CANCELLED`. Without a
+  `scanRect` the overlay fills the screen and shows a native Cancel button. (Coordinate note: the
+  overlay is added to the Activity content view; rect coords assume the WebView shares that
+  origin — verify alignment on-device if the app draws under the status bar.)
 - **iOS** uses the headless `CameraMrzProviderImpl.scanMrz` (Vision processes frames without a
   standalone preview). In the shipped product the live preview is driven through the KMP bridge's
   `CameraPreviewMrzProvider`; this fallback module has no preview UI, so `MRZ_SCAN_CANCELLED` is

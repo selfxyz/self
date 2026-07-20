@@ -8,7 +8,8 @@ import { BridgeHandlerError } from '../bridge/types';
 import { NativeModules } from 'react-native';
 
 interface MrzScannerModule {
-  startScanning: () => Promise<unknown>;
+  startScanning: (options: Record<string, unknown>) => Promise<unknown>;
+  stopScanning?: () => void;
 }
 
 interface MrzScanData {
@@ -89,12 +90,17 @@ export class CameraHandler implements BridgeHandler {
     return scanner !== null && typeof scanner.startScanning === 'function';
   }
 
-  async handle(method: string, _params: Record<string, unknown>): Promise<unknown> {
+  async handle(method: string, params: Record<string, unknown>): Promise<unknown> {
     const scanner = loadMrzScannerModule();
 
     switch (method) {
       case 'isAvailable':
         return scanner !== null && typeof scanner.startScanning === 'function';
+      case 'stopCamera':
+        // Web-driven cancel (e.g. leaving the viewfinder route). No-op when the
+        // module or the method is absent; never rejects.
+        scanner?.stopScanning?.();
+        return null;
       case 'scanMRZ':
         if (!scanner || typeof scanner.startScanning !== 'function') {
           throw new BridgeHandlerError(
@@ -104,7 +110,9 @@ export class CameraHandler implements BridgeHandler {
         }
 
         try {
-          const result = await scanner.startScanning();
+          // params carries the web viewfinder geometry ({ scanRect: {x,y,width,height} }
+          // in physical px); the native module sizes its preview overlay to it.
+          const result = await scanner.startScanning(params);
           return normalizeMrzScanResult(result);
         } catch (err) {
           if (err instanceof BridgeHandlerError) {

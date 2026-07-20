@@ -19,11 +19,30 @@ export interface MrzScanResult {
 }
 
 /**
+ * Web viewfinder geometry, in physical px relative to the WebView viewport. When present the
+ * native preview overlay is sized/pinned to this rect (parity with the KMP embedded preview);
+ * absent → the overlay fills the screen (Android). Ignored on iOS (headless scan).
+ */
+export interface MrzScanRect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export interface MrzScanOptions {
+  scanRect?: MrzScanRect;
+  [key: string]: unknown;
+}
+
+/**
  * Native module surface. Rejections carry a `code` that `CameraHandler` maps:
  * `CAMERA_PERMISSION_DENIED`, `CAMERA_INIT_FAILED`, `MRZ_SCAN_CANCELLED`.
  */
 export interface SelfMRZScannerModule {
-  startScanning(): Promise<MrzScanResult>;
+  startScanning(options: MrzScanOptions): Promise<MrzScanResult>;
+  /** Cancels an in-flight scan (web-driven, e.g. leaving the viewfinder route). */
+  stopScanning(): void;
 }
 
 /**

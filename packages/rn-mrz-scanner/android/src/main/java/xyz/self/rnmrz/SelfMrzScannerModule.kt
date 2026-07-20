@@ -6,6 +6,7 @@ package xyz.self.rnmrz
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.view.Gravity
 import android.view.ViewGroup
 import android.widget.Button
@@ -16,6 +17,7 @@ import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
+import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.UiThreadUtil
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.modules.core.PermissionAwareActivity
@@ -25,10 +27,15 @@ import xyz.self.sdk.ocr.AndroidCameraMrzProvider
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
- * RN native module backing `CameraHandler` in `@selfxyz/rn-sdk`. Presents a full-screen camera
- * preview over the current Activity and adapts the canonical `xyz.self.sdk:ocr`
- * [AndroidCameraMrzProvider] result to the `{ documentNumber, dateOfBirth, dateOfExpiry, ... }`
- * shape the handler expects.
+ * RN native module backing `CameraHandler` in `@selfxyz/rn-sdk`. Presents a native CameraX
+ * preview via the canonical `xyz.self.sdk:ocr` [AndroidCameraMrzProvider] and adapts its result
+ * to the `{ documentNumber, dateOfBirth, dateOfExpiry, ... }` shape the handler expects.
+ *
+ * When the web viewfinder reports a `scanRect` (physical px, viewport-relative), the preview
+ * overlay is sized/pinned to it so it sits over the web-designed viewfinder box — parity with
+ * the KMP embedded-preview mode. Without a rect the overlay fills the screen and shows a native
+ * Cancel button. The rect-pinned mode has no native chrome; cancel is web-driven via
+ * `stopCamera` → [stopScanning].
  *
  * Rejection codes are the ones `CameraHandler` maps: `CAMERA_PERMISSION_DENIED`,
  * `CAMERA_INIT_FAILED`, `MRZ_SCAN_CANCELLED`.
@@ -40,19 +47,24 @@ class SelfMrzScannerModule(private val reactContext: ReactApplicationContext) :
 
     private var provider: AndroidCameraMrzProvider? = null
     private var overlay: FrameLayout? = null
+    private var pendingCancel: (() -> Unit)? = null
+
+    private data class ScanRect(val x: Int, val y: Int, val width: Int, val height: Int)
 
     @ReactMethod
-    fun startScanning(promise: Promise) {
+    fun startScanning(options: ReadableMap, promise: Promise) {
         val activity = reactContext.currentActivity
         if (activity == null) {
             promise.reject("CAMERA_INIT_FAILED", "No foreground activity to host the scanner")
             return
         }
 
+        val scanRect = parseScanRect(options)
+
         val granted = ContextCompat.checkSelfPermission(activity, Manifest.permission.CAMERA) ==
             PackageManager.PERMISSION_GRANTED
         if (granted) {
-            startScanning(promise, resolveOnce = AtomicBoolean(false))
+            startScanning(promise, scanRect, resolveOnce = AtomicBoolean(false))
             return
         }
 
@@ -67,7 +79,7 @@ class SelfMrzScannerModule(private val reactContext: ReactApplicationContext) :
             PermissionListener { requestCode, _, grantResults ->
                 if (requestCode != PERMISSION_REQUEST_CODE) return@PermissionListener false
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    startScanning(promise, resolveOnce = AtomicBoolean(false))
+                    startScanning(promise, scanRect, resolveOnce = AtomicBoolean(false))
                 } else {
                     promise.reject("CAMERA_PERMISSION_DENIED", "Camera permission denied")
                 }
@@ -76,7 +88,16 @@ class SelfMrzScannerModule(private val reactContext: ReactApplicationContext) :
         )
     }
 
-    private fun startScanning(promise: Promise, resolveOnce: AtomicBoolean) {
+    /** Cancels an in-flight scan (web-driven, e.g. leaving the viewfinder route). Never rejects. */
+    @ReactMethod
+    fun stopScanning(promise: Promise) {
+        UiThreadUtil.runOnUiThread {
+            pendingCancel?.invoke()
+            promise.resolve(null)
+        }
+    }
+
+    private fun startScanning(promise: Promise, scanRect: ScanRect?, resolveOnce: AtomicBoolean) {
         UiThreadUtil.runOnUiThread {
             val activity = reactContext.currentActivity
             if (activity == null) {
@@ -86,31 +107,48 @@ class SelfMrzScannerModule(private val reactContext: ReactApplicationContext) :
                 return@runOnUiThread
             }
 
-            val container = FrameLayout(activity)
-            val cancelButton = Button(activity).apply {
-                text = "Cancel"
-                setOnClickListener {
-                    if (resolveOnce.compareAndSet(false, true)) {
-                        teardown()
-                        promise.reject("MRZ_SCAN_CANCELLED", "MRZ scan cancelled")
-                    }
+            val rejectOnce = { code: String, message: String ->
+                if (resolveOnce.compareAndSet(false, true)) {
+                    pendingCancel = null
+                    teardown()
+                    promise.reject(code, message)
                 }
             }
-            container.addView(
-                cancelButton,
+
+            val container = FrameLayout(activity).apply { setBackgroundColor(Color.BLACK) }
+
+            // Full-screen fallback carries a native Cancel affordance; the rect-pinned embedded
+            // preview has no native chrome and relies on the web UI's cancel (stopCamera).
+            if (scanRect == null) {
+                val cancelButton = Button(activity).apply {
+                    text = "Cancel"
+                    setOnClickListener { rejectOnce("MRZ_SCAN_CANCELLED", "MRZ scan cancelled") }
+                }
+                container.addView(
+                    cancelButton,
+                    FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ).apply { gravity = Gravity.TOP or Gravity.END },
+                )
+            }
+
+            val params = if (scanRect != null) {
+                // scanRect is already physical px, viewport-relative; the content view origin
+                // matches the WebView origin, so rect coords map to margins 1:1.
+                FrameLayout.LayoutParams(scanRect.width, scanRect.height, Gravity.TOP or Gravity.START).apply {
+                    leftMargin = scanRect.x
+                    topMargin = scanRect.y
+                }
+            } else {
                 FrameLayout.LayoutParams(
-                    ViewGroup.LayoutParams.WRAP_CONTENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT,
-                ).apply { gravity = Gravity.TOP or Gravity.END },
-            )
-            activity.addContentView(
-                container,
-                ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.MATCH_PARENT,
-                ),
-            )
+                )
+            }
+            activity.addContentView(container, params)
             overlay = container
+            pendingCancel = { rejectOnce("MRZ_SCAN_CANCELLED", "MRZ scan cancelled") }
 
             val mrzProvider = AndroidCameraMrzProvider(activity)
             provider = mrzProvider
@@ -119,20 +157,30 @@ class SelfMrzScannerModule(private val reactContext: ReactApplicationContext) :
                 container,
                 onMrzDetected = { json ->
                     if (resolveOnce.compareAndSet(false, true)) {
+                        pendingCancel = null
                         teardown()
                         promise.resolve(toResult(json))
                     }
                 },
                 onProgress = { /* frame-level progress is not surfaced over the bridge */ },
                 onError = { message ->
-                    if (resolveOnce.compareAndSet(false, true)) {
-                        teardown()
-                        promise.reject("CAMERA_INIT_FAILED", message ?: "Failed to start camera")
-                    }
+                    rejectOnce("CAMERA_INIT_FAILED", message.ifEmpty { "Failed to start camera" })
                 },
             )
         }
     }
+
+    private fun parseScanRect(options: ReadableMap?): ScanRect? {
+        val rect = options?.takeIf { it.hasKey("scanRect") }?.getMap("scanRect") ?: return null
+        val x = readInt(rect, "x") ?: return null
+        val y = readInt(rect, "y") ?: return null
+        val width = readInt(rect, "width") ?: return null
+        val height = readInt(rect, "height") ?: return null
+        return if (width > 0 && height > 0) ScanRect(x, y, width, height) else null
+    }
+
+    private fun readInt(map: ReadableMap, key: String): Int? =
+        if (map.hasKey(key)) map.getDouble(key).toInt() else null
 
     private fun teardown() {
         UiThreadUtil.runOnUiThread {
@@ -157,6 +205,7 @@ class SelfMrzScannerModule(private val reactContext: ReactApplicationContext) :
     }
 
     override fun invalidate() {
+        pendingCancel = null
         teardown()
         super.invalidate()
     }
