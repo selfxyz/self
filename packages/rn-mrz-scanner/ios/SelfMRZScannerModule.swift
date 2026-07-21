@@ -73,6 +73,10 @@ class SelfMRZScannerModule: NSObject {
     rejecter: @escaping RCTPromiseRejectBlock
   ) {
     #if canImport(SelfSdkOcr)
+      // Explicitly stop the capture session before releasing the wrapper — CameraMrzProviderImpl
+      // retains an MrzCameraHelper whose video output retains its delegate, so nil-ing alone
+      // leaves the camera running off-route.
+      provider?.stopCamera()
       provider = nil
     #endif
     resolver(nil)
@@ -94,6 +98,7 @@ class SelfMRZScannerModule: NSObject {
 
       mrzProvider.scanMrz(
         onMrzDetected: { [weak self] json in
+          self?.provider?.stopCamera()
           self?.provider = nil
           // Guard the parse: a malformed/non-JSON payload must reject (not resolve an empty
           // result), so the RN promise settles with an actionable error.
@@ -109,6 +114,7 @@ class SelfMRZScannerModule: NSObject {
         },
         onProgress: { _ in },
         onError: { [weak self] message in
+          self?.provider?.stopCamera()
           self?.provider = nil
           rejecter("CAMERA_INIT_FAILED", message, nil)
         }
