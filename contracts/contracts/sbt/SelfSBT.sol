@@ -51,8 +51,10 @@ contract SelfSBT is SelfVerificationRoot, ERC721 {
     }
 
     /**
-     * @dev userData layout: | 65-byte ECDSA recipient signature | correlation payload |.
-     *      The signature is an EIP-191 personal_sign (EOA-only) by the recipient over
+     * @dev userData layout: | 130 hex chars of a 65-byte ECDSA signature | correlation payload |.
+     *      The sig travels hex-encoded because the Self SDK utf8-encodes userDefinedData —
+     *      raw signature bytes cannot survive the string pipeline. It is an EIP-191
+     *      personal_sign (EOA-only) by the recipient over
      *      keccak256(abi.encodePacked(address(this), correlationPayload)) — binding consent
      *      to this contract and this session, so a prover cannot mint to a wallet that
      *      never agreed to receive an SBT here
@@ -70,20 +72,30 @@ contract SelfSBT is SelfVerificationRoot, ERC721 {
         _mint(to, ++_nextId);
     }
 
+    uint256 private constant SIG_HEX_CHARS = 130;
+
     function _recoverRecipientSigner(bytes memory userData) private view returns (address) {
-        require(userData.length >= 65, "missing recipient sig");
+        require(userData.length >= SIG_HEX_CHARS, "missing recipient sig");
         bytes memory sig = new bytes(65);
-        bytes memory payload = new bytes(userData.length - 65);
         for (uint256 i = 0; i < 65; i++) {
-            sig[i] = userData[i];
+            sig[i] = bytes1((_hexNibble(userData[2 * i]) << 4) | _hexNibble(userData[2 * i + 1]));
         }
+        bytes memory payload = new bytes(userData.length - SIG_HEX_CHARS);
         for (uint256 i = 0; i < payload.length; i++) {
-            payload[i] = userData[65 + i];
+            payload[i] = userData[SIG_HEX_CHARS + i];
         }
         bytes32 digest = MessageHashUtils.toEthSignedMessageHash(keccak256(abi.encodePacked(address(this), payload)));
         (address signer, ECDSA.RecoverError err, ) = ECDSA.tryRecover(digest, sig);
         require(err == ECDSA.RecoverError.NoError, "invalid recipient sig");
         return signer;
+    }
+
+    function _hexNibble(bytes1 c) private pure returns (uint8) {
+        uint8 b = uint8(c);
+        if (b >= 0x30 && b <= 0x39) return b - 0x30;
+        if (b >= 0x61 && b <= 0x66) return b - 0x57;
+        if (b >= 0x41 && b <= 0x46) return b - 0x37;
+        revert("invalid recipient sig");
     }
 
     /// @dev Soulbound: only mints (previous owner == 0) pass; transfers and burns revert

@@ -74,7 +74,8 @@ contract SelfSBTTest is Test {
         });
     }
 
-    /// @dev EIP-191 consent signature over (contract, payload), as hosted-page will produce
+    /// @dev EIP-191 consent signature over (contract, payload), hex-encoded as hosted-page
+    ///      will produce it — the SDK utf8-encodes userDefinedData, so the sig travels as text
     function _consentSig(
         uint256 signerKey,
         address targetContract,
@@ -82,7 +83,16 @@ contract SelfSBTTest is Test {
     ) internal pure returns (bytes memory) {
         bytes32 digest = MessageHashUtils.toEthSignedMessageHash(keccak256(abi.encodePacked(targetContract, payload)));
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(signerKey, digest);
-        return abi.encodePacked(r, s, v);
+        return _hex(abi.encodePacked(r, s, v));
+    }
+
+    function _hex(bytes memory data) internal pure returns (bytes memory out) {
+        bytes memory alphabet = "0123456789abcdef";
+        out = new bytes(data.length * 2);
+        for (uint256 i = 0; i < data.length; i++) {
+            out[2 * i] = alphabet[uint8(data[i]) >> 4];
+            out[2 * i + 1] = alphabet[uint8(data[i]) & 0x0f];
+        }
     }
 
     function _signedUserData(uint256 signerKey) internal view returns (bytes memory) {
@@ -162,6 +172,27 @@ contract SelfSBTTest is Test {
         sbt.onVerificationSuccess(abi.encode(_output(NULLIFIER_1, alice)), "");
     }
 
+    function testShortSigReverts() public {
+        bytes memory userData = new bytes(129);
+        vm.prank(address(hub));
+        vm.expectRevert(bytes("missing recipient sig"));
+        sbt.onVerificationSuccess(abi.encode(_output(NULLIFIER_1, alice)), userData);
+    }
+
+    function testNonHexSigReverts() public {
+        bytes memory userData = abi.encodePacked(_repeat("z", 130), PAYLOAD);
+        vm.prank(address(hub));
+        vm.expectRevert(bytes("invalid recipient sig"));
+        sbt.onVerificationSuccess(abi.encode(_output(NULLIFIER_1, alice)), userData);
+    }
+
+    function _repeat(bytes1 c, uint256 n) internal pure returns (bytes memory out) {
+        out = new bytes(n);
+        for (uint256 i = 0; i < n; i++) {
+            out[i] = c;
+        }
+    }
+
     function testSigFromWrongWalletReverts() public {
         vm.prank(address(hub));
         vm.expectRevert(bytes("recipient sig mismatch"));
@@ -184,7 +215,7 @@ contract SelfSBTTest is Test {
     }
 
     function testGarbageSigReverts() public {
-        bytes memory userData = abi.encodePacked(new bytes(65), PAYLOAD);
+        bytes memory userData = abi.encodePacked(_hex(new bytes(65)), PAYLOAD);
         vm.prank(address(hub));
         vm.expectRevert(bytes("invalid recipient sig"));
         sbt.onVerificationSuccess(abi.encode(_output(NULLIFIER_1, alice)), userData);
