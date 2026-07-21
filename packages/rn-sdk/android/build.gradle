@@ -52,6 +52,28 @@ android {
     main {
       java.srcDirs += "src/main/java"
       kotlin.srcDirs += "src/main/java"
+
+      // Deliver the embedded webview-app bundle into the consuming APK's
+      // android_asset. The bundle is produced by this package's `copy-assets`
+      // step into `assets/self-wallet/` (package.json). Adding the parent
+      // `assets/` dir (not `assets/self-wallet/`) as a library asset source
+      // means AGP's asset merge places `self-wallet/index.html` at
+      // `android_asset/self-wallet/index.html` — the exact URL
+      // SelfVerification loads on Android
+      // (`file:///android_asset/self-wallet/index.html`). Library assets merge
+      // into the host app automatically, so no host-side wiring is required.
+      //
+      // Guarded so KYC-only builds (which don't run copy-assets and have no
+      // bundle) still compile: a missing srcDir would otherwise be a hard
+      // asset-merge failure on some AGP versions.
+      def selfWalletBundle = file("../assets/self-wallet")
+      if (selfWalletBundle.exists()) {
+        assets.srcDirs += file("../assets")
+      } else {
+        logger.warn("[@selfxyz/rn-sdk] assets/self-wallet not found; skipping " +
+          "webview bundle asset delivery. Run `pnpm --filter @selfxyz/rn-sdk build` " +
+          "to produce it, or ignore for KYC-only builds.")
+      }
     }
   }
 }

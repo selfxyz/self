@@ -69,15 +69,24 @@ level. Handlers that depend on missing modules throw a clear error
 
 | Platform | Strategy |
 |----------|----------|
-| Android | `file:///android_asset/self-wallet/index.html` — Gradle auto-bundles `assets/` |
+| Android | `file:///android_asset/self-wallet/index.html` — delivered automatically by the library (see below) |
 | iOS | `${RNFS.MainBundlePath}/self-wallet/index.html` when `react-native-fs` is installed; falls back to `self-wallet/index.html` (relative) otherwise |
 | Dev | `devServerUrl` prop bypasses bundled assets entirely |
 
-Host apps must copy `node_modules/@selfxyz/rn-sdk/assets/self-wallet/`
-into their platform build:
-- **Android:** Gradle `android.sourceSets.main.assets.srcDirs` pointing
-  to the assets folder
-- **iOS:** Add `assets/self-wallet/` to Xcode "Copy Bundle Resources"
+**Android (SELF-3586 / B4): zero host wiring.** `android/build.gradle` adds the
+package's own `assets/` folder to the library's `sourceSets.main.assets.srcDirs`.
+AGP's asset merge then packages `assets/self-wallet/` into the library AAR and
+merges it into the consuming APK's `android_asset/`, so
+`file:///android_asset/self-wallet/index.html` resolves in a normal build with
+no manual host edits. The parent `assets/` dir is added (not `assets/self-wallet/`)
+so the `self-wallet/` subdir is preserved in the merged output. The srcDir is
+added only when `assets/self-wallet/` exists, so KYC-only builds (which skip the
+`copy-assets` step) still compile. Verified: `selfxyz_rn-sdk-debug.aar` contains
+`assets/self-wallet/index.html`.
+
+**iOS: host still wires the bundle.** Add `assets/self-wallet/` to Xcode
+"Copy Bundle Resources", or (Expo) inject `bundleRootUri`. An Expo config plugin
+to automate this is deferred to RSP-05.
 
 ---
 
@@ -214,8 +223,10 @@ cd ios && pod install
 
 ### 2. Bundle Assets
 
-Copy `assets/self-wallet/` into platform-specific locations (see Asset
-Loading section above).
+Android requires no host wiring — the library delivers `self-wallet/` into
+`android_asset/` automatically (see Asset Loading section above). iOS still
+needs the bundle copied into "Copy Bundle Resources" (or `bundleRootUri`
+injected for Expo hosts).
 
 ### 3. Use
 
@@ -245,7 +256,7 @@ import { SelfVerification } from '@selfxyz/rn-sdk';
 | Keychain handler | Done | get, set, remove via react-native-keychain |
 | NFC handler | Done | scan + APDU exchange, cancelScan, isSupported via react-native-nfc-manager |
 | iOS asset path | Done | Absolute path via react-native-fs, relative fallback |
-| Android asset path | Done | `file:///android_asset/` |
+| Android asset path | Done | `file:///android_asset/`; auto-delivered via library `sourceSets` (SELF-3586/B4), no host wiring |
 | Dev server override | Done | `devServerUrl` prop |
 | Camera / MRZ scan | Done | scanMRZ via native SelfMRZScannerModule with result normalization |
 
@@ -262,5 +273,7 @@ import { SelfVerification } from '@selfxyz/rn-sdk';
 
 - Camera/MRZ requires host app to provide a native MRZ scanner module (`SelfMRZScannerModule` or `MRZScannerModule`)
 - No retry/reconnect logic for WebView crashes
-- Asset bundling requires manual platform setup by the host app
+- Asset bundling on iOS requires manual host setup (Xcode "Copy Bundle
+  Resources" or `bundleRootUri`); the RSP-05 Expo config plugin to automate it
+  is deferred. Android is automatic (SELF-3586/B4).
 - Physical-device validation breadth for NFC/APDU and camera across host apps is still limited
