@@ -6,3 +6,6 @@ android/build/
 
 # iOS pod build outputs
 ios/build/
+
+# Fetched prebuilt iOS binaries (scripts/postinstall.js downloads these at install time)
+ios/Frameworks/

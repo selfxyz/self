@@ -6,3 +6,6 @@ vitest.config.ts
 .eslintrc*
 .prettierrc*
 node_modules/
+# Prebuilt binaries are fetched by scripts/postinstall.js at install time, never shipped in the tarball
+ios/Frameworks/
+ios/build/

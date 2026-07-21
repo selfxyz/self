@@ -19,21 +19,31 @@ Pod::Spec.new do |s|
   s.swift_version = "5.9"
   s.static_framework = true
 
-  s.pod_target_xcconfig = {
-    "DEFINES_MODULE" => "YES",
-  }
-
   s.dependency "React-Core"
 
   # NFC readers ship as prebuilt binary xcframeworks (RN-08 policy) — the same b478e1f
-  # NFCPassportReader fork app/ios ships (no iOS parity gap). They are fetched + sha256-verified
-  # at npm install by scripts/postinstall.js into ios/Frameworks/, then vendored here. When
-  # absent, the Swift module compiles in its stub branch (#if canImport(SelfSdkNfc)) and scan
-  # rejects NOT_AVAILABLE, so `pod install` never hard-fails on a missing private artifact.
+  # NFCPassportReader fork app/ios ships (no iOS parity gap). scripts/postinstall.js downloads
+  # + sha256-verifies them from the private selfxyz/self-sdk-dist release (rn-v<version>) into
+  # ios/Frameworks/ at npm install, then they are vendored here. Without a GitHub token (OSS/CI)
+  # the download skips gracefully and the frameworks are absent — the Swift module then compiles
+  # in its stub branch (#if canImport(SelfSdkNfc)) and scan rejects NOT_AVAILABLE, so `pod install`
+  # never hard-fails on a missing private artifact.
   passport_frameworks = %w[SelfSdkNfc SelfNFCPassportReader Mixpanel]
     .map { |name| "ios/Frameworks/#{name}.xcframework" }
     .select { |path| File.directory?(File.join(__dir__, path)) }
   s.vendored_frameworks = passport_frameworks unless passport_frameworks.empty?
+
+  # Honesty guard: define SELF_NFC_AVAILABLE only when the binaries are actually vendored.
+  # Swift self-guards via `#if canImport(SelfSdkNfc)`; ObjC (SelfPassportReader.m) has no
+  # canImport, so the RCT_EXTERN_MODULE registration must be wrapped in
+  # `#if SELF_NFC_AVAILABLE` — otherwise the module registers in the stub build and JS
+  # isSelfPassportReaderAvailable() reports true even though every scan rejects NOT_AVAILABLE.
+  xcconfig = { "DEFINES_MODULE" => "YES" }
+  unless passport_frameworks.empty?
+    xcconfig["GCC_PREPROCESSOR_DEFINITIONS"] = "$(inherited) SELF_NFC_AVAILABLE=1"
+    xcconfig["SWIFT_ACTIVE_COMPILATION_CONDITIONS"] = "$(inherited) SELF_NFC_AVAILABLE"
+  end
+  s.pod_target_xcconfig = xcconfig
 
   # Mixpanel is pulled transitively by the reader fork; its SPM resource bundle is needed at
   # runtime (Bundle.module lookup).
