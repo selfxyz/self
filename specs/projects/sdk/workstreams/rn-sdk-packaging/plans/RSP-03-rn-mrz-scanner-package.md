@@ -19,11 +19,12 @@
 ## Scope
 
 - New package `packages/rn-mrz-scanner` (`@selfxyz/rn-mrz-scanner`), a standard autolinked RN library:
-  - **Android**: depends on AAR `xyz.self.sdk:ocr` (thin/unbundled ML Kit text-recognition). A ~150-line
+  - **Android**: depends on AAR `xyz.self.sdk:ocr`, which **bundles** the ML Kit text-recognition
+    model inside the AAR (no runtime/first-run download). A ~150-line
     RN NativeModule (`getName()` = `SelfMRZScannerModule`) presents the scanner and adapts the
-    `CameraMrzProvider` result to `{ documentNumber, dateOfBirth, dateOfExpiry, ... }`. Handle the
-    first-run model download + failure path; surface `CAMERA_PERMISSION_DENIED`, `CAMERA_INIT_FAILED`,
-    `MRZ_SCAN_CANCELLED` codes that `CameraHandler` already maps.
+    `CameraMrzProvider` result to `{ documentNumber, dateOfBirth, dateOfExpiry, ... }`. Surface the
+    `CAMERA_PERMISSION_DENIED`, `CAMERA_INIT_FAILED`, `MRZ_SCAN_CANCELLED` codes that `CameraHandler`
+    already maps.
   - **iOS**: reuse the shared Vision engine (`MrzScanEngine.swift`/`MrzOcrCorrection.swift`) — the same
     source in `app/ios/` and mirrored in `self-sdk-native/self-sdk-swift/Sources/SelfSdkOcr/`. Expose the
     same `SelfMRZScannerModule` (promise-returning `startScanning`). **Resolve canonical iOS source
@@ -84,7 +85,7 @@ cd packages/rn-mrz-scanner && (android build + pod install)
 
 - On-device: MRZ scan of a sample passport returns the three fields; `camera.isAvailable` is true.
 - Uninstall test: without the package, `camera.isAvailable` false and capture flow hidden (RSP-01).
-- First-run: ML Kit model downloads; offline-before-download surfaces a clear error, not a hang.
+- ML Kit model is bundled in the AAR — no runtime download; MRZ scan works offline on first run.
 
 ## Definition of Done
 
@@ -93,7 +94,7 @@ cd packages/rn-mrz-scanner && (android build + pod install)
 - [ ] Optional peer of `@selfxyz/rn-sdk`; KYC-only install does not pull it.
 - [ ] iOS canonical-source ownership decided and documented.
 - [ ] AAR version pinned; Maven repo injection present.
-- [ ] On-device MRZ scan validated; first-run download path handled.
+- [ ] On-device MRZ scan validated (works offline; no model download).
 - [ ] SPEC.md backlog status updated.
 
 ## Status Log
