@@ -49,6 +49,11 @@ class SelfMrzScannerModule(private val reactContext: ReactApplicationContext) :
     private var overlay: FrameLayout? = null
     private var pendingCancel: (() -> Unit)? = null
 
+    // Identity of the scan whose runtime permission prompt is currently outstanding. A permission
+    // callback only starts scanning if it still matches; a superseded or cancelled request is
+    // settled as MRZ_SCAN_CANCELLED instead of popping an overlay onto an unrelated route.
+    private var activePermissionRequest: AtomicBoolean? = null
+
     private data class ScanRect(val x: Int, val y: Int, val width: Int, val height: Int)
 
     @ReactMethod
@@ -60,11 +65,12 @@ class SelfMrzScannerModule(private val reactContext: ReactApplicationContext) :
         }
 
         val scanRect = parseScanRect(options)
+        val resolveOnce = AtomicBoolean(false)
 
         val granted = ContextCompat.checkSelfPermission(activity, Manifest.permission.CAMERA) ==
             PackageManager.PERMISSION_GRANTED
         if (granted) {
-            startScanning(promise, scanRect, resolveOnce = AtomicBoolean(false))
+            startScanning(promise, scanRect, resolveOnce)
             return
         }
 
@@ -73,19 +79,46 @@ class SelfMrzScannerModule(private val reactContext: ReactApplicationContext) :
             promise.reject("CAMERA_INIT_FAILED", "Host activity cannot request camera permission")
             return
         }
-        permissionAware.requestPermissions(
-            arrayOf(Manifest.permission.CAMERA),
-            PERMISSION_REQUEST_CODE,
-            PermissionListener { requestCode, _, grantResults ->
-                if (requestCode != PERMISSION_REQUEST_CODE) return@PermissionListener false
-                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    startScanning(promise, scanRect, resolveOnce = AtomicBoolean(false))
-                } else {
-                    promise.reject("CAMERA_PERMISSION_DENIED", "Camera permission denied")
+
+        // Register cancellation BEFORE the OS prompt so stopScanning()/dismissal while the dialog
+        // is up settles the promise and neutralises the grant callback.
+        UiThreadUtil.runOnUiThread {
+            activePermissionRequest = resolveOnce
+            pendingCancel = {
+                if (resolveOnce.compareAndSet(false, true)) {
+                    if (activePermissionRequest === resolveOnce) activePermissionRequest = null
+                    pendingCancel = null
+                    promise.reject("MRZ_SCAN_CANCELLED", "MRZ scan cancelled")
                 }
-                true
-            },
-        )
+            }
+            permissionAware.requestPermissions(
+                arrayOf(Manifest.permission.CAMERA),
+                PERMISSION_REQUEST_CODE,
+                PermissionListener { requestCode, _, grantResults ->
+                    if (requestCode != PERMISSION_REQUEST_CODE) return@PermissionListener false
+                    if (activePermissionRequest !== resolveOnce) {
+                        // Superseded by a newer scan request; settle this one as cancelled.
+                        if (resolveOnce.compareAndSet(false, true)) {
+                            promise.reject("MRZ_SCAN_CANCELLED", "MRZ scan cancelled")
+                        }
+                        return@PermissionListener true
+                    }
+                    if (resolveOnce.get()) {
+                        // Cancelled while the prompt was outstanding; stopScanning already rejected.
+                        activePermissionRequest = null
+                        return@PermissionListener true
+                    }
+                    activePermissionRequest = null
+                    pendingCancel = null
+                    if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                        startScanning(promise, scanRect, resolveOnce)
+                    } else if (resolveOnce.compareAndSet(false, true)) {
+                        promise.reject("CAMERA_PERMISSION_DENIED", "Camera permission denied")
+                    }
+                    true
+                },
+            )
+        }
     }
 
     /** Cancels an in-flight scan (web-driven, e.g. leaving the viewfinder route). Never rejects. */
@@ -218,6 +251,7 @@ class SelfMrzScannerModule(private val reactContext: ReactApplicationContext) :
 
     override fun invalidate() {
         pendingCancel = null
+        activePermissionRequest = null
         teardown()
         super.invalidate()
     }
