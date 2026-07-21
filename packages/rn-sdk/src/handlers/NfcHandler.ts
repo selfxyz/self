@@ -380,6 +380,10 @@ export class NfcHandler implements BridgeHandler {
   private readonly passportReader: PassportReaderModule | undefined;
   private readonly apduTimeoutMs: number;
   private scanning = false;
+  // Monotonic scan token. Each scan captures the value at start; a later
+  // cancelScan (or a superseding scan) bumps it, so a superseded scan's late
+  // settle can detect it no longer owns the scan state and skip its cleanup.
+  private scanToken = 0;
 
   constructor(
     router: MessageRouter,
@@ -446,6 +450,7 @@ export class NfcHandler implements BridgeHandler {
     }
 
     this.scanning = true;
+    const token = ++this.scanToken;
     this.pushProgress('initializing', 0);
     try {
       this.pushProgress('waiting_for_tag', 10);
@@ -491,7 +496,12 @@ export class NfcHandler implements BridgeHandler {
           : 'NFC scan failed';
       throw new BridgeHandlerError(code, message);
     } finally {
-      this.scanning = false;
+      // Only clear scan state if this scan still owns it. A cancelScan or a
+      // superseding scan bumps scanToken, so a late-settling superseded scan
+      // must not clobber the state of the scan that replaced it.
+      if (token === this.scanToken) {
+        this.scanning = false;
+      }
     }
   }
 
@@ -635,6 +645,9 @@ export class NfcHandler implements BridgeHandler {
   }
 
   private async cancelScan(): Promise<unknown> {
+    // Bump the token so any in-flight scan is considered superseded and its
+    // late settle will not reset scan state after this cancellation.
+    this.scanToken += 1;
     this.scanning = false;
     if (this.passportReader?.cancel) {
       try {
