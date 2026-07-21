@@ -71,9 +71,7 @@ describe('requestRequiresUnavailableCapability', () => {
   });
 
   it('is false when at least one accepted type is available', () => {
-    expect(
-      requestRequiresUnavailableCapability({ documentTypes: ['passport', 'aadhaar'] }, withoutCamera),
-    ).toBe(false);
+    expect(requestRequiresUnavailableCapability({ documentTypes: ['passport', 'aadhaar'] }, withoutCamera)).toBe(false);
   });
 
   it('is true only when every accepted type needs an unavailable capability', () => {
