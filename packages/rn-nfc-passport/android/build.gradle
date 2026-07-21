@@ -33,7 +33,7 @@ def getExtOrIntegerDefault(name) {
 // version (the AAR derives its version from that repo's rn-sdk/package.json at publish time),
 // NOT to this shim package's version. Keep in lockstep with the ocr AAR pin in
 // @selfxyz/rn-mrz-scanner. Override for local SDK dev with -PSelfRnNfc_nfcAarVersion.
-def selfNfcAarVersion = getExtOrDefault('nfcAarVersion') ?: '0.1.1'
+def selfNfcAarVersion = getExtOrDefault('nfcAarVersion') ?: '0.1.2'
 
 android {
   namespace 'xyz.self.rnnfc'

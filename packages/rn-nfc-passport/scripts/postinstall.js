@@ -177,8 +177,11 @@ async function main() {
     return;
   }
 
-  const pkg = JSON.parse(fs.readFileSync(path.join(PACKAGE_ROOT, 'package.json'), 'utf8'));
-  const version = process.env.SELF_SDK_DIST_VERSION || pkg.version;
+  // The iOS xcframeworks are versioned with the native self-sdk-native release (self-sdk-dist
+  // rn-v* tag), NOT this shim's npm version. Keep in lockstep with the AAR pin in
+  // android/build.gradle (selfNfcAarVersion); override via SELF_SDK_DIST_VERSION.
+  const NATIVE_ARTIFACT_VERSION = '0.1.2';
+  const version = process.env.SELF_SDK_DIST_VERSION || NATIVE_ARTIFACT_VERSION;
   const tag = process.env.SELF_SDK_DIST_TAG || `rn-v${version}`;
 
   const unzip = resolveUnzip();
