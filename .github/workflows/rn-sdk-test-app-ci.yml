@@ -54,6 +54,9 @@ jobs:
         run: pnpm --filter @selfxyz/rn-sdk-test-app types
 
   android-build:
+    # Fork PRs cannot access the self-sdk-dist token (generate-github-token / SELF_SDK_DIST_TOKEN),
+    # so the private AARs (xyz.self.sdk:nfc/:ocr/:shared) never resolve — skip rather than fail red.
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
