@@ -21,7 +21,12 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
 def getExtOrIntegerDefault(name) {
-  return rootProject.ext.has(name) ? rootProject.ext.get(name) : (project.properties['SelfRnNfc_' + name]).toInteger()
+  if (rootProject.ext.has(name)) {
+    return rootProject.ext.get(name)
+  }
+  // Return null (not a crash) when the -P override is absent so the caller's `?:` default applies.
+  def raw = project.properties['SelfRnNfc_' + name]
+  return raw != null ? raw.toInteger() : null
 }
 
 // Published version of the xyz.self.sdk:nfc AAR. Locked to the self-sdk-native RN wrapper

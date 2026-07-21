@@ -159,7 +159,19 @@ class SelfMrzScannerModule(private val reactContext: ReactApplicationContext) :
                     if (resolveOnce.compareAndSet(false, true)) {
                         pendingCancel = null
                         teardown()
-                        promise.resolve(toResult(json))
+                        // Guard the parse: a malformed/non-JSON payload from the provider must
+                        // reject (not throw inside this native callback, which would leave the RN
+                        // promise hanging until the bridge timeout).
+                        val result = try {
+                            toResult(json)
+                        } catch (e: Exception) {
+                            promise.reject(
+                                "MRZ_SCAN_INVALID_RESULT",
+                                e.message ?: "MRZ scan returned an unparseable result",
+                            )
+                            return@scanMrzWithPreview
+                        }
+                        promise.resolve(result)
                     }
                 },
                 onProgress = { /* frame-level progress is not surfaced over the bridge */ },

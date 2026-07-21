@@ -95,7 +95,17 @@ class SelfMRZScannerModule: NSObject {
       mrzProvider.scanMrz(
         onMrzDetected: { [weak self] json in
           self?.provider = nil
-          resolver(Self.toResult(json))
+          // Guard the parse: a malformed/non-JSON payload must reject (not resolve an empty
+          // result), so the RN promise settles with an actionable error.
+          guard let result = Self.toResult(json) else {
+            rejecter(
+              "MRZ_SCAN_INVALID_RESULT",
+              "MRZ scan returned an unparseable result",
+              nil
+            )
+            return
+          }
+          resolver(result)
         },
         onProgress: { _ in },
         onError: { [weak self] message in
@@ -106,12 +116,12 @@ class SelfMRZScannerModule: NSObject {
     }
 
     /// Maps the provider's JSON payload (MrzParser.toDictionary) to the CameraHandler contract.
-    private static func toResult(_ json: String) -> [String: Any] {
+    private static func toResult(_ json: String) -> [String: Any]? {
       guard
         let data = json.data(using: .utf8),
         let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
       else {
-        return [:]
+        return nil
       }
       var result: [String: Any] = [
         "documentNumber": obj["documentNumber"] as? String ?? "",
