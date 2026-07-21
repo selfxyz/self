@@ -20,6 +20,16 @@ The package is autolinked (`react-native.config.cjs` + podspec); no manual regis
 needed. Native artifacts (the Android AAR, the iOS binary xcframeworks) are resolved from Self's
 private distribution channels — see below.
 
+> **pnpm 11+ consumers:** the iOS xcframeworks are fetched by this package's `postinstall`
+> script, which pnpm denies by default. Allow it (once) or iOS NFC stays unavailable:
+> ```yaml
+> # pnpm-workspace.yaml (or package.json pnpm.onlyBuiltDependencies)
+> allowBuilds:
+>   '@selfxyz/rn-nfc-passport': true
+> ```
+> A `read:packages` token (`SELF_SDK_GITHUB_TOKEN`) must also be exported so the script can
+> download from the private `self-sdk-dist` release.
+
 ### Android
 
 The module depends on the AAR `xyz.self.sdk:nfc` (jMRTD 0.8.1 / BouncyCastle 1.78.1 / SCUBA).

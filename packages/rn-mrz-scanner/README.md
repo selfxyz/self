@@ -19,6 +19,17 @@ never installs it for a KYC-only build. The module autolinks via `react-native.c
 `selfxyz-rn-mrz-scanner.podspec`. No manual registration is required (`SelfMrzScannerPackage` on
 Android; the pod on iOS).
 
+> **pnpm 11+ consumers:** the iOS `SelfSdkOcr` xcframework is fetched by this package's
+> `postinstall` script, which pnpm denies by default. Allow it (once) or iOS MRZ stays
+> unavailable:
+> ```yaml
+> # pnpm-workspace.yaml (or package.json pnpm.onlyBuiltDependencies)
+> allowBuilds:
+>   '@selfxyz/rn-mrz-scanner': true
+> ```
+> A `read:packages` token (`SELF_SDK_GITHUB_TOKEN`) must also be exported so the script can
+> download from the private `self-sdk-dist` release.
+
 ### Android — Self SDK Maven repository (required)
 
 The Android side depends on the AAR `xyz.self.sdk:ocr`, published to the private
