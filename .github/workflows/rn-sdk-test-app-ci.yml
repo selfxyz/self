@@ -88,6 +88,9 @@ jobs:
           # Resolve the self-sdk-native AARs (xyz.self.sdk:nfc / :ocr / :shared, 0.1.3) from the
           # private self-sdk-dist Maven — the test app's android/build.gradle activates that repo
           # only when this token is present (falls back to mavenLocal otherwise).
+          # A GitHub App installation token authenticates to GitHub Packages as user
+          # "x-access-token" (the default "self-sdk" username 401s with an App token).
+          SELF_SDK_GITHUB_USER: x-access-token
           SELF_SDK_GITHUB_TOKEN: ${{ steps.github-token.outputs.token }}
         run: |
           chmod +x packages/rn-sdk-test-app/android/gradlew
