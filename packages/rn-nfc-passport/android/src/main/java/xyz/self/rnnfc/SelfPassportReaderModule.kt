@@ -31,6 +31,12 @@ class SelfPassportReaderModule(private val reactContext: ReactApplicationContext
     @Volatile
     private var provider: AndroidNfcProvider? = null
 
+    // Settle guard for the currently-active scan, hoisted so cancelScan() can settle it. A stale
+    // callback from a superseded provider is identified by comparing its captured provider against
+    // [provider] (identity), so it never touches a subsequent scan's state.
+    @Volatile
+    private var activeSettled: AtomicBoolean? = null
+
     override fun getName(): String = MODULE_NAME
 
     @ReactMethod
@@ -60,6 +66,7 @@ class SelfPassportReaderModule(private val reactContext: ReactApplicationContext
         val settled = AtomicBoolean(false)
         val nfcProvider = AndroidNfcProvider(activity)
         provider = nfcProvider
+        activeSettled = settled
 
         try {
             // Advanced BAC/PACE toggles (canNumber, skipPACE, skipCA, extendedMode,
@@ -72,21 +79,21 @@ class SelfPassportReaderModule(private val reactContext: ReactApplicationContext
                 dateOfExpiry = dateOfExpiry,
                 onProgress = { /* state ordinal only; no PII to forward */ },
                 onComplete = { json ->
-                    if (settled.compareAndSet(false, true)) {
-                        cleanup()
+                    if (provider === nfcProvider && settled.compareAndSet(false, true)) {
+                        cleanup(nfcProvider)
                         promise.resolve(json)
                     }
                 },
                 onError = { message ->
-                    if (settled.compareAndSet(false, true)) {
-                        cleanup()
+                    if (provider === nfcProvider && settled.compareAndSet(false, true)) {
+                        cleanup(nfcProvider)
                         promise.reject("NFC_SCAN_FAILED", message)
                     }
                 },
             )
         } catch (err: Throwable) {
-            if (settled.compareAndSet(false, true)) {
-                cleanup()
+            if (provider === nfcProvider && settled.compareAndSet(false, true)) {
+                cleanup(nfcProvider)
                 promise.reject("NFC_SCAN_FAILED", err.message ?: "NFC scan failed")
             }
         }
@@ -94,14 +101,22 @@ class SelfPassportReaderModule(private val reactContext: ReactApplicationContext
 
     @ReactMethod
     fun cancelScan(promise: Promise) {
-        provider?.cancelScan()
-        cleanup()
+        // Settle and tear down only the currently-active scan. Settling before cleanup means a
+        // late callback from the cancelled provider is ignored and never touches a later scan.
+        val active = provider
+        activeSettled?.compareAndSet(false, true)
+        active?.cancelScan()
+        active?.let { cleanup(it) }
         promise.resolve(null)
     }
 
-    private fun cleanup() {
-        provider?.close()
+    private fun cleanup(target: AndroidNfcProvider) {
+        // No-op for a superseded provider: only the active scan may close its provider and clear
+        // the scanning flag, so a stale callback cannot abort a subsequent scan.
+        if (provider !== target) return
+        target.close()
         provider = null
+        activeSettled = null
         scanning.set(false)
     }
 
