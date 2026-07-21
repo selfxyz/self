@@ -44,7 +44,19 @@ type Json = Record<string, unknown>;
 const BASE64_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
 function base64ToBytes(input: string): Uint8Array {
-  const clean = input.replace(/[^A-Za-z0-9+/]/g, '');
+  // STRICT: reject any character outside the base64 alphabet. Optional '='
+  // padding is allowed only at the end; whitespace is NOT silently stripped.
+  // Silently discarding invalid characters (the old behavior) turned a
+  // present-but-malformed field into an empty byte array that passed the
+  // normalizer and only failed later during proving — a fail-open bug.
+  const eqIndex = input.indexOf('=');
+  const body = eqIndex === -1 ? input : input.slice(0, eqIndex);
+  const padding = eqIndex === -1 ? '' : input.slice(eqIndex);
+  if (!/^[A-Za-z0-9+/]*$/.test(body) || !/^={0,2}$/.test(padding)) {
+    throw new Error('NFC normalization failed: invalid base64 (illegal characters)');
+  }
+  const clean = body;
+
   const lookup = new Int16Array(256).fill(-1);
   for (let i = 0; i < BASE64_ALPHABET.length; i++) {
     lookup[BASE64_ALPHABET.charCodeAt(i)] = i;
@@ -52,6 +64,11 @@ function base64ToBytes(input: string): Uint8Array {
 
   const fullGroups = Math.floor(clean.length / 4);
   const remainder = clean.length % 4;
+  // A lone remainder of 1 base64 char carries only 6 bits — not enough for a
+  // single byte, so it is an impossible/truncated encoding.
+  if (remainder === 1) {
+    throw new Error('NFC normalization failed: invalid base64 length (truncated group)');
+  }
   const outLen = fullGroups * 3 + (remainder === 0 ? 0 : remainder - 1);
   const out = new Uint8Array(outLen);
 
@@ -90,11 +107,26 @@ function base64ToSignedBytes(input: string): number[] {
   return out;
 }
 
+function decodeRequiredSignedBytes(input: string, field: string): number[] {
+  const bytes = base64ToSignedBytes(input);
+  if (bytes.length === 0) {
+    throw new Error(`NFC normalization failed: ${field} present but empty/malformed`);
+  }
+  return bytes;
+}
+
 function hexToUnsignedBytes(hex: string): number[] {
-  const clean = hex.replace(/[^0-9a-fA-F]/g, '');
+  // STRICT: reject non-hex characters and odd length rather than silently
+  // stripping/truncating, which would produce a wrong DG hash.
+  if (!/^[0-9a-fA-F]*$/.test(hex)) {
+    throw new Error('NFC normalization failed: invalid hex (illegal characters)');
+  }
+  if (hex.length % 2 !== 0) {
+    throw new Error('NFC normalization failed: invalid hex length (odd)');
+  }
   const out: number[] = [];
-  for (let i = 0; i + 1 < clean.length; i += 2) {
-    out.push(parseInt(clean.slice(i, i + 2), 16));
+  for (let i = 0; i + 1 < hex.length; i += 2) {
+    out.push(parseInt(hex.slice(i, i + 2), 16));
   }
   return out;
 }
@@ -195,10 +227,15 @@ export function normalizeNfcPassport(raw: unknown): PassportData {
     throw new Error(`NFC normalization failed: missing required field(s): ${missing.join(', ')}`);
   }
 
-  const eContent = base64ToSignedBytes(eContentB64!);
-  const signedAttr = base64ToSignedBytes(signedAttrB64!);
-  const encryptedDigest = base64ToSignedBytes(encryptedDigestB64!);
+  const eContent = decodeRequiredSignedBytes(eContentB64!, 'eContent');
+  const signedAttr = decodeRequiredSignedBytes(signedAttrB64!, 'signedAttr');
+  const encryptedDigest = decodeRequiredSignedBytes(encryptedDigestB64!, 'encryptedDigest');
   const dsc = normalizeDsc(dscRaw!);
+  // A required field that is present but decodes to an empty PEM body is
+  // malformed — fail closed rather than persisting an unprovable document.
+  if (dsc.replace(/-----(BEGIN|END) CERTIFICATE-----/g, '').replace(/\s+/g, '').length === 0) {
+    throw new Error('NFC normalization failed: dsc present but empty/malformed');
+  }
 
   const documentType: 'passport' | 'id_card' = mrz.length === 88 ? 'passport' : 'id_card';
 

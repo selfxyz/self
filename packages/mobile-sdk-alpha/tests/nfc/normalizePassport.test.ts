@@ -167,4 +167,46 @@ describe('normalizeNfcPassport', () => {
   it('throws on a non-object input', () => {
     expect(() => normalizeNfcPassport(42)).toThrow(/not an object/i);
   });
+
+  describe('strict decoding (fail-closed)', () => {
+    it('throws on base64 with illegal characters instead of silently stripping', () => {
+      expect(() => normalizeNfcPassport(androidPayload({ encapContent: '!' }))).toThrow(/invalid base64/i);
+      expect(() => normalizeNfcPassport(androidPayload({ encapContent: 'AB!' }))).toThrow(/invalid base64/i);
+    });
+
+    it('throws on base64 with a lone remainder of 1 (truncated group)', () => {
+      // 5 valid chars => remainder 1, impossible encoding.
+      expect(() => normalizeNfcPassport(androidPayload({ encapContent: 'AAAAA' }))).toThrow(/invalid base64 length/i);
+    });
+
+    it('throws when a required byte field decodes to empty (padding only)', () => {
+      expect(() => normalizeNfcPassport(androidPayload({ encryptedDigest: '==' }))).toThrow(
+        /encryptedDigest present but empty/i,
+      );
+    });
+
+    it('accepts valid base64 with proper padding unchanged', () => {
+      // bytesToBase64 emits '=' padding; ensure padding is still accepted.
+      const pd = normalizeNfcPassport(androidPayload({ encapContent: bytesToBase64([1, 2]) }));
+      expect(pd.eContent).toEqual(SIGNED([1, 2]));
+    });
+
+    it('throws on DG hash hex with illegal characters', () => {
+      expect(() => normalizeNfcPassport(androidPayload({ dataGroupHashes: { '1': 'aaxx', '2': 'ccdd' } }))).toThrow(
+        /invalid hex/i,
+      );
+    });
+
+    it('throws on DG hash hex with odd length', () => {
+      expect(() => normalizeNfcPassport(androidPayload({ dataGroupHashes: { '1': 'aab', '2': 'ccdd' } }))).toThrow(
+        /invalid hex length/i,
+      );
+    });
+
+    it('throws when the DSC is present but decodes to an empty PEM body', () => {
+      expect(() => normalizeNfcPassport(androidPayload({ documentSigningCertificate: '   ' }))).toThrow(
+        /dsc present but empty/i,
+      );
+    });
+  });
 });
