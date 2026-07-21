@@ -13,10 +13,12 @@ import {SelfUtils} from "../../contracts/libraries/SelfUtils.sol";
 /// @dev Mirrors the real hub's setVerificationConfigV2: configId = sha256(abi.encode(config))
 contract MockIdentityVerificationHubV2 {
     bytes public lastConfigEncoded;
+    address public lastConfigCaller;
     uint256 public setConfigCalls;
 
     function setVerificationConfigV2(SelfStructs.VerificationConfigV2 memory config) external returns (bytes32) {
         lastConfigEncoded = abi.encode(config);
+        lastConfigCaller = msg.sender;
         setConfigCalls++;
         return sha256(lastConfigEncoded);
     }
