@@ -4,6 +4,12 @@
 
 #import <React/RCTBridgeModule.h>
 
+// Register the module only when the SelfSdkOcr binary is vendored (podspec defines
+// SELF_OCR_AVAILABLE). ObjC has no `canImport`, so without this guard the module would register in
+// a stub build and JS isAvailable() would report true even though every scan rejects NOT_AVAILABLE.
+// The Swift side self-guards via `#if canImport(SelfSdkOcr)`.
+#if SELF_OCR_AVAILABLE
+
 @interface RCT_EXTERN_MODULE(SelfMRZScannerModule, NSObject)
 
 RCT_EXTERN_METHOD(startScanning:(NSDictionary *)options
@@ -14,3 +20,5 @@ RCT_EXTERN_METHOD(stopScanning:(RCTPromiseResolveBlock)resolver
                   rejecter:(RCTPromiseRejectBlock)rejecter)
 
 @end
+
+#endif

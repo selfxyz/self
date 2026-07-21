@@ -18,12 +18,14 @@
     "dist",
     "android",
     "ios",
+    "scripts/postinstall.js",
     "selfxyz-rn-mrz-scanner.podspec",
     "react-native.config.cjs",
     "README.md"
   ],
   "scripts": {
     "build": "tsup",
+    "postinstall": "node scripts/postinstall.js",
     "prepublishOnly": "pnpm build",
     "test": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
