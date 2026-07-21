@@ -4,11 +4,12 @@
 
 import { Paths } from 'expo-file-system';
 import React, { useCallback, useEffect, useMemo } from 'react';
-import { Alert, Platform, View } from 'react-native';
+import { Platform, View } from 'react-native';
 import type { RouteProp } from '@react-navigation/native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
   type AnalyticsSink,
   type DocumentsStore,
@@ -40,6 +41,7 @@ const WebViewHostScreen: React.FC = () => {
   const navigation =
     useNavigation() as NativeStackScreenProps<RootStackParamList>['navigation'];
   const route = useRoute<RouteProp<RootStackParamList, 'WebViewHost'>>();
+  const selfClient = useSelfClient();
   const request = useMemo<VerificationRequest>(
     () => (route.params?.request ?? {}) as VerificationRequest,
     [route.params?.request],
@@ -88,29 +90,58 @@ const WebViewHostScreen: React.FC = () => {
     [],
   );
 
-  const handleSuccess = useCallback(
-    (result: VerificationResult) => {
-      Alert.alert(
-        'WebView host',
-        `Verification finished: ${JSON.stringify(result)}`,
-        [{ text: 'Close', onPress: () => navigation.goBack() }],
-      );
+  // The host owns the relayer socket (opened in deeplinks via startAppListener).
+  // The WebView's proving machine can't own it, so it hands its terminal result
+  // back over the bridge (lifecycle.setResult) and the host emits to the relayer,
+  // which is what notifies the requesting website.
+  const emitRelayerResult = useCallback(
+    (proofVerified: boolean, error?: SelfSdkError) => {
+      const selfAppState = selfClient.getSelfAppState();
+      // Only emit while the socket still tracks this request's session, so a
+      // stale/reused socket never notifies the wrong website.
+      if (
+        request.verificationId &&
+        selfAppState.sessionId &&
+        selfAppState.sessionId !== request.verificationId
+      ) {
+        trackEvent('webview_relayer_session_mismatch', {
+          request_session: request.verificationId,
+          socket_session: selfAppState.sessionId,
+        });
+        return;
+      }
+      selfAppState.handleProofResult(proofVerified, error?.code, error?.message);
     },
-    [navigation],
+    [request.verificationId, selfClient],
+  );
+
+  const handleSuccess = useCallback(
+    (_result: VerificationResult) => {
+      emitRelayerResult(true);
+      navigation.goBack();
+    },
+    [emitRelayerResult, navigation],
   );
 
   const handleFailure = useCallback(
     (error: SelfSdkError) => {
-      Alert.alert('WebView host', `Failure: ${error.code} — ${error.message}`, [
-        { text: 'Close', onPress: () => navigation.goBack() },
-      ]);
+      emitRelayerResult(false, error);
+      navigation.goBack();
     },
-    [navigation],
+    [emitRelayerResult, navigation],
   );
 
   const handleCancelled = useCallback(() => {
     navigation.goBack();
   }, [navigation]);
+
+  // Tear down the relayer socket when the host leaves so it isn't orphaned.
+  useEffect(
+    () => () => {
+      selfClient.getSelfAppState().cleanSelfApp();
+    },
+    [selfClient],
+  );
 
   const handleLoadDiagnostic = useCallback((event: LoadDiagnosticEvent) => {
     captureWebViewLoadDiagnostic(event.kind, event.source, event.detail);

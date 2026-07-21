@@ -129,6 +129,50 @@ describe('LifecycleHandler', () => {
       });
     });
 
+    it('calls onFailure with nested error (bridge VerificationResult shape)', async () => {
+      const { handler, onFailure } = createHandler();
+      await handler.handle('setResult', {
+        success: false,
+        verificationId: 'vid-1',
+        claims: { resultType: 'proofRequested' },
+        error: { code: 'proof_generation_failed', message: 'The proof request could not be completed.' },
+      });
+
+      expect(onFailure).toHaveBeenCalledWith({
+        code: 'proof_generation_failed',
+        message: 'The proof request could not be completed.',
+      });
+    });
+
+    it('does not misread a nested-error failure as a cancellation', async () => {
+      const { handler, onCancelled, onFailure } = createHandler();
+      await handler.handle('setResult', {
+        success: false,
+        error: { code: 'timeout', message: 'timed out' },
+      });
+
+      expect(onCancelled).not.toHaveBeenCalled();
+      expect(onFailure).toHaveBeenCalledWith({ code: 'timeout', message: 'timed out' });
+    });
+
+    it('carries proof and claims through onSuccess', async () => {
+      const { handler, onSuccess } = createHandler();
+      await handler.handle('setResult', {
+        success: true,
+        verificationId: 'vid-9',
+        proof: { a: 1 },
+        claims: { resultType: 'proofRequested' },
+      });
+
+      expect(onSuccess).toHaveBeenCalledWith({
+        success: true,
+        userId: undefined,
+        verificationId: 'vid-9',
+        proof: { a: 1 },
+        claims: { resultType: 'proofRequested' },
+      });
+    });
+
     it('calls onSuccess for flat payload with type field', async () => {
       const { handler, onSuccess } = createHandler();
       await handler.handle('setResult', { type: 'proofRequested' });

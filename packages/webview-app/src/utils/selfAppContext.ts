@@ -73,5 +73,10 @@ export function initSelfAppFromRequest(client: SelfClient, ctx: ParsedVerificati
     selfDefinedData: ctx.selfDefinedData ?? '',
   };
 
+  // Register the session id for end-to-end correlation, but pass a null relay so
+  // the WebView never opens its own relayer socket — the host owns it and emits
+  // the proof result on our behalf. Must run before setSelfApp: the embedded
+  // branch of startAppListener resets the cached selfApp.
+  client.getSelfAppState().startAppListener(selfApp.sessionId, null);
   client.getSelfAppState().setSelfApp(selfApp);
 }

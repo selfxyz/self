@@ -206,6 +206,9 @@ export const handleUrl = async (selfClient: SelfClient, uri: string) => {
         }
         return;
       }
+      // This is the single relayer socket for the session. Native proving drives
+      // it directly; in the WIA path WebViewHostScreen owns it — emitting the
+      // proof result on the WebView's behalf and tearing it down on unmount.
       selfClient.getSelfAppState().setSelfApp(selfAppJson);
       selfClient.getSelfAppState().startAppListener(selfAppJson.sessionId);
 
