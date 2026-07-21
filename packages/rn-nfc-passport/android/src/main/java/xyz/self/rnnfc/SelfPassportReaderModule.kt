@@ -37,10 +37,16 @@ class SelfPassportReaderModule(private val reactContext: ReactApplicationContext
     @Volatile
     private var activeSettled: AtomicBoolean? = null
 
+    // The active scan's Promise, hoisted so cancelScan() can settle it (reject as cancelled).
+    // Cleared on every settle path via [cleanup] so it is never double-settled.
+    @Volatile
+    private var activePromise: Promise? = null
+
     override fun getName(): String = MODULE_NAME
 
     @ReactMethod
     fun scan(options: ReadableMap, promise: Promise) {
+        // TODO(RSP follow-up): EU-ID PACE-CAN access requires reader support in self-sdk-native; not wired yet.
         val documentNumber = options.getString("documentNumber")
         val dateOfBirth = options.getString("dateOfBirth")
         val dateOfExpiry = options.getString("dateOfExpiry")
@@ -67,6 +73,7 @@ class SelfPassportReaderModule(private val reactContext: ReactApplicationContext
         val nfcProvider = AndroidNfcProvider(activity)
         provider = nfcProvider
         activeSettled = settled
+        activePromise = promise
 
         try {
             // Advanced BAC/PACE toggles (canNumber, skipPACE, skipCA, extendedMode,
@@ -104,9 +111,15 @@ class SelfPassportReaderModule(private val reactContext: ReactApplicationContext
         // Settle and tear down only the currently-active scan. Settling before cleanup means a
         // late callback from the cancelled provider is ignored and never touches a later scan.
         val active = provider
-        activeSettled?.compareAndSet(false, true)
+        val original = activePromise
+        // Only reject the original scan promise if we win the settle race; if a completion/error
+        // callback already settled it, the CAS fails and we leave it alone (settle exactly once).
+        if (activeSettled?.compareAndSet(false, true) == true) {
+            original?.reject("NFC_SCAN_CANCELLED", "NFC scan cancelled")
+        }
         active?.cancelScan()
         active?.let { cleanup(it) }
+        activePromise = null
         promise.resolve(null)
     }
 
@@ -117,6 +130,7 @@ class SelfPassportReaderModule(private val reactContext: ReactApplicationContext
         target.close()
         provider = null
         activeSettled = null
+        activePromise = null
         scanning.set(false)
     }
 
