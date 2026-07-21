@@ -34,7 +34,7 @@ def getExtOrIntegerDefault(name) {
 // package.json at publish time (kmp-sdk/ocr/build.gradle.kts) and the rn-sdk-test-app consumes
 // xyz.self.sdk:full at the same coordinate. Bump in lockstep with that release.
 // TODO(RSP-03): pull from a shared version catalog once the RN packages share one.
-def selfOcrVersion = getExtOrDefault('selfOcrVersion') ?: '0.1.2'
+def selfOcrVersion = getExtOrDefault('selfOcrVersion') ?: '0.1.3'
 
 android {
   namespace 'xyz.self.rnmrz'

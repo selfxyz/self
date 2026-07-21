@@ -180,7 +180,7 @@ async function main() {
   // The iOS xcframeworks are versioned with the native self-sdk-native release (self-sdk-dist
   // rn-v* tag), NOT this shim's npm version. Keep in lockstep with the AAR pin in
   // android/build.gradle (selfNfcAarVersion); override via SELF_SDK_DIST_VERSION.
-  const NATIVE_ARTIFACT_VERSION = '0.1.2';
+  const NATIVE_ARTIFACT_VERSION = '0.1.3';
   const version = process.env.SELF_SDK_DIST_VERSION || NATIVE_ARTIFACT_VERSION;
   const tag = process.env.SELF_SDK_DIST_TAG || `rn-v${version}`;
 
