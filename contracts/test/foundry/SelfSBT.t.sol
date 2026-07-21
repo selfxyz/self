@@ -2,6 +2,7 @@
 pragma solidity 0.8.28;
 
 import {Test} from "forge-std/Test.sol";
+import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
 import {SelfSBT} from "../../contracts/sbt/SelfSBT.sol";
 import {SelfVerificationRoot} from "../../contracts/abstract/SelfVerificationRoot.sol";
@@ -25,13 +26,18 @@ contract SelfSBTTest is Test {
     MockIdentityVerificationHubV2 hub;
     SelfSBT sbt;
 
-    address alice = makeAddr("alice");
-    address bob = makeAddr("bob");
+    address alice;
+    uint256 aliceKey;
+    address bob;
+    uint256 bobKey;
 
     uint256 constant NULLIFIER_1 = 111;
     uint256 constant NULLIFIER_2 = 222;
+    bytes constant PAYLOAD = bytes('{"verificationId":"00000000-0000-0000-0000-000000000001"}');
 
     function setUp() public {
+        (alice, aliceKey) = makeAddrAndKey("alice");
+        (bob, bobKey) = makeAddrAndKey("bob");
         hub = new MockIdentityVerificationHubV2();
         sbt = new SelfSBT(address(hub), "test-scope-seed", "Self SBT", "SSBT", _cfg());
     }
@@ -68,9 +74,24 @@ contract SelfSBTTest is Test {
         });
     }
 
-    function _verify(uint256 nullifier, address recipient) internal {
+    /// @dev EIP-191 consent signature over (contract, payload), as hosted-page will produce
+    function _consentSig(
+        uint256 signerKey,
+        address targetContract,
+        bytes memory payload
+    ) internal pure returns (bytes memory) {
+        bytes32 digest = MessageHashUtils.toEthSignedMessageHash(keccak256(abi.encodePacked(targetContract, payload)));
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(signerKey, digest);
+        return abi.encodePacked(r, s, v);
+    }
+
+    function _signedUserData(uint256 signerKey) internal view returns (bytes memory) {
+        return abi.encodePacked(_consentSig(signerKey, address(sbt), PAYLOAD), PAYLOAD);
+    }
+
+    function _verify(uint256 nullifier, address recipient, uint256 recipientKey) internal {
         vm.prank(address(hub));
-        sbt.onVerificationSuccess(abi.encode(_output(nullifier, recipient)), "");
+        sbt.onVerificationSuccess(abi.encode(_output(nullifier, recipient)), _signedUserData(recipientKey));
     }
 
     // ── Constructor / config registration ──────────────────────────────
@@ -94,15 +115,15 @@ contract SelfSBTTest is Test {
     // ── Minting via the verification hook ───────────────────────────────
 
     function testHookMintsToUserIdentifier() public {
-        _verify(NULLIFIER_1, alice);
+        _verify(NULLIFIER_1, alice, aliceKey);
         assertEq(sbt.balanceOf(alice), 1);
         assertEq(sbt.ownerOf(1), alice);
         assertTrue(sbt.usedNullifier(NULLIFIER_1));
     }
 
     function testTokenIdsIncrement() public {
-        _verify(NULLIFIER_1, alice);
-        _verify(NULLIFIER_2, bob);
+        _verify(NULLIFIER_1, alice, aliceKey);
+        _verify(NULLIFIER_2, bob, bobKey);
         assertEq(sbt.ownerOf(1), alice);
         assertEq(sbt.ownerOf(2), bob);
     }
@@ -110,47 +131,83 @@ contract SelfSBTTest is Test {
     function testZeroAddressRecipientReverts() public {
         vm.prank(address(hub));
         vm.expectRevert(bytes("bad recipient"));
-        sbt.onVerificationSuccess(abi.encode(_output(NULLIFIER_1, address(0))), "");
+        sbt.onVerificationSuccess(abi.encode(_output(NULLIFIER_1, address(0))), _signedUserData(aliceKey));
     }
 
     function testNullifierReplayReverts() public {
-        _verify(NULLIFIER_1, alice);
+        _verify(NULLIFIER_1, alice, aliceKey);
         vm.prank(address(hub));
         vm.expectRevert(bytes("already minted"));
-        sbt.onVerificationSuccess(abi.encode(_output(NULLIFIER_1, bob)), "");
+        sbt.onVerificationSuccess(abi.encode(_output(NULLIFIER_1, bob)), _signedUserData(bobKey));
     }
 
     function testOneSbtPerWallet() public {
-        _verify(NULLIFIER_1, alice);
+        _verify(NULLIFIER_1, alice, aliceKey);
         vm.prank(address(hub));
         vm.expectRevert(bytes("already holds SBT"));
-        sbt.onVerificationSuccess(abi.encode(_output(NULLIFIER_2, alice)), "");
+        sbt.onVerificationSuccess(abi.encode(_output(NULLIFIER_2, alice)), _signedUserData(aliceKey));
     }
 
     function testHookRejectsNonHubCaller() public {
         vm.prank(alice);
         vm.expectRevert(SelfVerificationRoot.UnauthorizedCaller.selector);
+        sbt.onVerificationSuccess(abi.encode(_output(NULLIFIER_1, alice)), _signedUserData(aliceKey));
+    }
+
+    // ── Recipient consent signature ──────────────────────────────────────
+
+    function testMissingSigReverts() public {
+        vm.prank(address(hub));
+        vm.expectRevert(bytes("missing recipient sig"));
         sbt.onVerificationSuccess(abi.encode(_output(NULLIFIER_1, alice)), "");
+    }
+
+    function testSigFromWrongWalletReverts() public {
+        vm.prank(address(hub));
+        vm.expectRevert(bytes("recipient sig mismatch"));
+        sbt.onVerificationSuccess(abi.encode(_output(NULLIFIER_1, alice)), _signedUserData(bobKey));
+    }
+
+    function testSigForOtherContractReverts() public {
+        bytes memory userData = abi.encodePacked(_consentSig(aliceKey, address(0xdead), PAYLOAD), PAYLOAD);
+        vm.prank(address(hub));
+        vm.expectRevert(bytes("recipient sig mismatch"));
+        sbt.onVerificationSuccess(abi.encode(_output(NULLIFIER_1, alice)), userData);
+    }
+
+    function testSigOverTamperedPayloadReverts() public {
+        bytes memory tampered = bytes('{"verificationId":"00000000-0000-0000-0000-000000000002"}');
+        bytes memory userData = abi.encodePacked(_consentSig(aliceKey, address(sbt), PAYLOAD), tampered);
+        vm.prank(address(hub));
+        vm.expectRevert(bytes("recipient sig mismatch"));
+        sbt.onVerificationSuccess(abi.encode(_output(NULLIFIER_1, alice)), userData);
+    }
+
+    function testGarbageSigReverts() public {
+        bytes memory userData = abi.encodePacked(new bytes(65), PAYLOAD);
+        vm.prank(address(hub));
+        vm.expectRevert(bytes("invalid recipient sig"));
+        sbt.onVerificationSuccess(abi.encode(_output(NULLIFIER_1, alice)), userData);
     }
 
     // ── Soulbound enforcement ────────────────────────────────────────────
 
     function testTransferFromReverts() public {
-        _verify(NULLIFIER_1, alice);
+        _verify(NULLIFIER_1, alice, aliceKey);
         vm.prank(alice);
         vm.expectRevert(bytes("soulbound: non-transferable"));
         sbt.transferFrom(alice, bob, 1);
     }
 
     function testSafeTransferFromReverts() public {
-        _verify(NULLIFIER_1, alice);
+        _verify(NULLIFIER_1, alice, aliceKey);
         vm.prank(alice);
         vm.expectRevert(bytes("soulbound: non-transferable"));
         sbt.safeTransferFrom(alice, bob, 1);
     }
 
     function testApprovedTransferStillReverts() public {
-        _verify(NULLIFIER_1, alice);
+        _verify(NULLIFIER_1, alice, aliceKey);
         vm.prank(alice);
         sbt.approve(bob, 1);
         vm.prank(bob);

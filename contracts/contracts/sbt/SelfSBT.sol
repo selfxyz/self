@@ -2,6 +2,8 @@
 pragma solidity 0.8.28;
 
 import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
 import {SelfVerificationRoot} from "../abstract/SelfVerificationRoot.sol";
 import {ISelfVerificationRoot} from "../interfaces/ISelfVerificationRoot.sol";
@@ -42,21 +44,46 @@ contract SelfSBT is SelfVerificationRoot, ERC721 {
         );
     }
 
-    /// @dev Static config; userDefinedData carries off-chain correlation JSON, not routing data — ignore it
+    /// @dev Static config; userDefinedData carries the recipient sig + correlation payload
+    ///      (validated in the hook), not config-routing data — ignore it here
     function getConfigId(bytes32, bytes32, bytes memory) public view override returns (bytes32) {
         return verificationConfigId;
     }
 
+    /**
+     * @dev userData layout: | 65-byte ECDSA recipient signature | correlation payload |.
+     *      The signature is an EIP-191 personal_sign (EOA-only) by the recipient over
+     *      keccak256(abi.encodePacked(address(this), correlationPayload)) — binding consent
+     *      to this contract and this session, so a prover cannot mint to a wallet that
+     *      never agreed to receive an SBT here
+     */
     function customVerificationHook(
         ISelfVerificationRoot.GenericDiscloseOutputV2 memory output,
-        bytes memory /* userData */
+        bytes memory userData
     ) internal override {
         require(!usedNullifier[output.nullifier], "already minted");
         address to = address(uint160(output.userIdentifier));
         require(to != address(0), "bad recipient");
         require(balanceOf(to) == 0, "already holds SBT");
+        require(_recoverRecipientSigner(userData) == to, "recipient sig mismatch");
         usedNullifier[output.nullifier] = true;
         _mint(to, ++_nextId);
+    }
+
+    function _recoverRecipientSigner(bytes memory userData) private view returns (address) {
+        require(userData.length >= 65, "missing recipient sig");
+        bytes memory sig = new bytes(65);
+        bytes memory payload = new bytes(userData.length - 65);
+        for (uint256 i = 0; i < 65; i++) {
+            sig[i] = userData[i];
+        }
+        for (uint256 i = 0; i < payload.length; i++) {
+            payload[i] = userData[65 + i];
+        }
+        bytes32 digest = MessageHashUtils.toEthSignedMessageHash(keccak256(abi.encodePacked(address(this), payload)));
+        (address signer, ECDSA.RecoverError err, ) = ECDSA.tryRecover(digest, sig);
+        require(err == ECDSA.RecoverError.NoError, "invalid recipient sig");
+        return signer;
     }
 
     /// @dev Soulbound: only mints (previous owner == 0) pass; transfers and burns revert
