@@ -49,6 +49,11 @@ class SelfMrzScannerModule(private val reactContext: ReactApplicationContext) :
     private var overlay: FrameLayout? = null
     private var pendingCancel: (() -> Unit)? = null
 
+    // Guards against a second concurrent scan clobbering the first. Acquired at the top of
+    // startScanning() and released on every terminal branch (resolve / any reject) so the module
+    // never deadlocks itself on the next scan.
+    private val isScanning = AtomicBoolean(false)
+
     // Identity of the scan whose runtime permission prompt is currently outstanding. A permission
     // callback only starts scanning if it still matches; a superseded or cancelled request is
     // settled as MRZ_SCAN_CANCELLED instead of popping an overlay onto an unrelated route.
@@ -58,8 +63,14 @@ class SelfMrzScannerModule(private val reactContext: ReactApplicationContext) :
 
     @ReactMethod
     fun startScanning(options: ReadableMap, promise: Promise) {
+        if (!isScanning.compareAndSet(false, true)) {
+            promise.reject("MRZ_SCAN_IN_PROGRESS", "An MRZ scan is already in progress")
+            return
+        }
+
         val activity = reactContext.currentActivity
         if (activity == null) {
+            isScanning.set(false)
             promise.reject("CAMERA_INIT_FAILED", "No foreground activity to host the scanner")
             return
         }
@@ -76,6 +87,7 @@ class SelfMrzScannerModule(private val reactContext: ReactApplicationContext) :
 
         val permissionAware = activity as? PermissionAwareActivity
         if (permissionAware == null) {
+            isScanning.set(false)
             promise.reject("CAMERA_INIT_FAILED", "Host activity cannot request camera permission")
             return
         }
@@ -88,6 +100,7 @@ class SelfMrzScannerModule(private val reactContext: ReactApplicationContext) :
                 if (resolveOnce.compareAndSet(false, true)) {
                     if (activePermissionRequest === resolveOnce) activePermissionRequest = null
                     pendingCancel = null
+                    isScanning.set(false)
                     promise.reject("MRZ_SCAN_CANCELLED", "MRZ scan cancelled")
                 }
             }
@@ -99,6 +112,7 @@ class SelfMrzScannerModule(private val reactContext: ReactApplicationContext) :
                     if (activePermissionRequest !== resolveOnce) {
                         // Superseded by a newer scan request; settle this one as cancelled.
                         if (resolveOnce.compareAndSet(false, true)) {
+                            isScanning.set(false)
                             promise.reject("MRZ_SCAN_CANCELLED", "MRZ scan cancelled")
                         }
                         return@PermissionListener true
@@ -113,6 +127,7 @@ class SelfMrzScannerModule(private val reactContext: ReactApplicationContext) :
                     if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                         startScanning(promise, scanRect, resolveOnce)
                     } else if (resolveOnce.compareAndSet(false, true)) {
+                        isScanning.set(false)
                         promise.reject("CAMERA_PERMISSION_DENIED", "Camera permission denied")
                     }
                     true
@@ -135,6 +150,7 @@ class SelfMrzScannerModule(private val reactContext: ReactApplicationContext) :
             val activity = reactContext.currentActivity
             if (activity == null) {
                 if (resolveOnce.compareAndSet(false, true)) {
+                    isScanning.set(false)
                     promise.reject("CAMERA_INIT_FAILED", "Activity was lost before scanning started")
                 }
                 return@runOnUiThread
@@ -144,6 +160,7 @@ class SelfMrzScannerModule(private val reactContext: ReactApplicationContext) :
                 if (resolveOnce.compareAndSet(false, true)) {
                     pendingCancel = null
                     teardown()
+                    isScanning.set(false)
                     promise.reject(code, message)
                 }
             }
@@ -192,6 +209,7 @@ class SelfMrzScannerModule(private val reactContext: ReactApplicationContext) :
                     if (resolveOnce.compareAndSet(false, true)) {
                         pendingCancel = null
                         teardown()
+                        isScanning.set(false)
                         // Guard the parse: a malformed/non-JSON payload from the provider must
                         // reject (not throw inside this native callback, which would leave the RN
                         // promise hanging until the bridge timeout).
@@ -252,6 +270,7 @@ class SelfMrzScannerModule(private val reactContext: ReactApplicationContext) :
     override fun invalidate() {
         pendingCancel = null
         activePermissionRequest = null
+        isScanning.set(false)
         teardown()
         super.invalidate()
     }
