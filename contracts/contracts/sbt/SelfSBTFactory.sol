@@ -1,21 +1,25 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.28;
 
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+
 import {SelfSBT} from "./SelfSBT.sol";
 import {SelfUtils} from "../libraries/SelfUtils.sol";
 
 /**
  * @title SelfSBTFactory
  * @notice Deploys per-flow SelfSBT contracts; one factory per network, owned by Self
- * @dev The factory never calls the hub — each SelfSBT registers its own verification
- *      config in its constructor. Consumers parse SBTDeployed from the receipt
+ * @dev deploy is owner-gated so third parties cannot mint collections that carry the
+ *      official factory as on-chain creator. The factory never calls the hub — each
+ *      SelfSBT registers its own verification config in its constructor. Consumers
+ *      parse SBTDeployed from the receipt
  */
-contract SelfSBTFactory {
+contract SelfSBTFactory is Ownable {
     address public immutable hubV2;
 
     event SBTDeployed(address indexed contractAddr, uint256 scope, address indexed deployer);
 
-    constructor(address _hubV2) {
+    constructor(address _hubV2, address initialOwner) Ownable(initialOwner) {
         hubV2 = _hubV2;
     }
 
@@ -24,7 +28,7 @@ contract SelfSBTFactory {
         string calldata name_,
         string calldata symbol_,
         SelfUtils.UnformattedVerificationConfigV2 calldata cfg
-    ) external returns (address) {
+    ) external onlyOwner returns (address) {
         SelfSBT sbt = new SelfSBT(hubV2, scopeSeed, name_, symbol_, cfg);
         emit SBTDeployed(address(sbt), sbt.scope(), msg.sender);
         return address(sbt);
