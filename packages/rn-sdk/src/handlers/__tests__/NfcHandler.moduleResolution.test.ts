@@ -40,25 +40,25 @@ describe('NfcHandler native module resolution (android)', () => {
   });
 
   it('prefers SelfPassportReader when both modules are present', async () => {
-    const selfScan = vi.fn().mockResolvedValue('self');
-    const legacyScan = vi.fn().mockResolvedValue('legacy');
+    const selfScan = vi.fn().mockResolvedValue(JSON.stringify({ source: 'self' }));
+    const legacyScan = vi.fn().mockResolvedValue(JSON.stringify({ source: 'legacy' }));
     nativeModules.SelfPassportReader = { scan: selfScan };
     nativeModules.RNPassportReader = { scan: legacyScan };
 
     const result = await createHandler().handle('scanPassport', SCAN_PARAMS);
 
-    expect(result).toBe('self');
+    expect(result).toEqual({ source: 'self' });
     expect(selfScan).toHaveBeenCalledOnce();
     expect(legacyScan).not.toHaveBeenCalled();
   });
 
   it('falls back to RNPassportReader when only the legacy module exists', async () => {
-    const legacyScan = vi.fn().mockResolvedValue('legacy');
+    const legacyScan = vi.fn().mockResolvedValue(JSON.stringify({ source: 'legacy' }));
     nativeModules.RNPassportReader = { scan: legacyScan };
 
     const result = await createHandler().handle('scanPassport', SCAN_PARAMS);
 
-    expect(result).toBe('legacy');
+    expect(result).toEqual({ source: 'legacy' });
     expect(legacyScan).toHaveBeenCalledOnce();
   });
 
@@ -78,14 +78,18 @@ describe('NfcHandler native module resolution (ios)', () => {
   });
 
   it('prefers SelfPassportReader when both modules are present', async () => {
-    const selfScanPassport = vi.fn().mockResolvedValue('self');
-    const legacyScanPassport = vi.fn().mockResolvedValue('legacy');
+    const selfScanPassport = vi
+      .fn()
+      .mockResolvedValue(JSON.stringify({ source: 'self' }));
+    const legacyScanPassport = vi
+      .fn()
+      .mockResolvedValue(JSON.stringify({ source: 'legacy' }));
     nativeModules.SelfPassportReader = { scanPassport: selfScanPassport };
     nativeModules.PassportReader = { scanPassport: legacyScanPassport };
 
     const result = await createHandler().handle('scanPassport', SCAN_PARAMS);
 
-    expect(result).toBe('self');
+    expect(result).toEqual({ source: 'self' });
     expect(selfScanPassport).toHaveBeenCalledOnce();
     expect(selfScanPassport).toHaveBeenCalledWith(
       'AB1234567',
@@ -103,12 +107,14 @@ describe('NfcHandler native module resolution (ios)', () => {
   });
 
   it('falls back to PassportReader when only the legacy module exists', async () => {
-    const legacyScanPassport = vi.fn().mockResolvedValue('legacy');
+    const legacyScanPassport = vi
+      .fn()
+      .mockResolvedValue(JSON.stringify({ source: 'legacy' }));
     nativeModules.PassportReader = { scanPassport: legacyScanPassport };
 
     const result = await createHandler().handle('scanPassport', SCAN_PARAMS);
 
-    expect(result).toBe('legacy');
+    expect(result).toEqual({ source: 'legacy' });
     expect(legacyScanPassport).toHaveBeenCalledOnce();
   });
 

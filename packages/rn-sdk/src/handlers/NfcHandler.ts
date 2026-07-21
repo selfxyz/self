@@ -22,7 +22,7 @@ export interface NfcTechEnum {
   [key: string]: string;
 }
 
-interface NfcDeps {
+export interface NfcDeps {
   manager: NfcManagerModule;
   tech: NfcTechEnum;
 }
@@ -263,6 +263,7 @@ function loadNfc(): NfcDeps | undefined {
 
 export interface PassportReaderModule {
   scan(options: PassportScanOptions): Promise<unknown>;
+  cancel?(): Promise<void>;
 }
 
 export interface PassportScanOptions {
@@ -285,10 +286,19 @@ function loadPassportReader(): PassportReaderModule | undefined {
     const modules = (NativeModules ?? {}) as Record<string, unknown>;
     if (Platform?.OS === 'android') {
       const reader = (modules.SelfPassportReader ?? modules.RNPassportReader) as
-        | { scan?: (options: PassportScanOptions) => Promise<unknown> }
+        | {
+            scan?: (options: PassportScanOptions) => Promise<unknown>;
+            cancelScan?: () => Promise<void>;
+          }
         | undefined;
       if (reader && typeof reader.scan === 'function') {
-        return { scan: options => reader.scan!(options) };
+        return {
+          scan: options => reader.scan!(options),
+          cancel:
+            typeof reader.cancelScan === 'function'
+              ? () => reader.cancelScan!()
+              : undefined,
+        };
       }
       return undefined;
     }
@@ -307,10 +317,15 @@ function loadPassportReader(): PassportReaderModule | undefined {
               usePacePolling: boolean,
               sessionId: string,
             ) => Promise<unknown>;
+            cancelScan?: () => Promise<void>;
           }
         | undefined;
       if (reader && typeof reader.scanPassport === 'function') {
         return {
+          cancel:
+            typeof reader.cancelScan === 'function'
+              ? () => reader.cancelScan!()
+              : undefined,
           scan: ({
             documentNumber,
             dateOfBirth,
@@ -378,7 +393,10 @@ export class NfcHandler implements BridgeHandler {
   }
 
   isAvailable(): boolean {
-    return this.passportReader !== undefined || this.nfc !== undefined;
+    // The WebView NFC path only drives scanPassport, which needs the native
+    // passport reader. A host with react-native-nfc-manager but no passport
+    // reader cannot fulfil that path, so gate availability on the reader alone.
+    return this.passportReader !== undefined;
   }
 
   async handle(method: string, params: Record<string, unknown>): Promise<unknown> {
@@ -391,6 +409,11 @@ export class NfcHandler implements BridgeHandler {
       }
       return this.scanPassport(params);
     }
+    // cancelScan must work with only the passport reader installed, so it is
+    // routed before the nfc-manager availability guard below.
+    if (method === 'cancelScan') {
+      return this.cancelScan();
+    }
     if (!this.nfc) {
       throw new BridgeHandlerError('NOT_AVAILABLE', 'react-native-nfc-manager is not installed');
     }
@@ -400,8 +423,6 @@ export class NfcHandler implements BridgeHandler {
         return this.nfc.manager.isSupported();
       case 'scan':
         return this.scan(params);
-      case 'cancelScan':
-        return this.cancelScan();
       default:
         throw new BridgeHandlerError('METHOD_NOT_FOUND', `Unknown nfc method: ${method}`);
     }
@@ -454,7 +475,7 @@ export class NfcHandler implements BridgeHandler {
             : false,
       });
       this.pushProgress('complete', 100);
-      return result;
+      return this.parseScanResult(result);
     } catch (err) {
       this.pushProgress('error', 0);
       if (err instanceof BridgeHandlerError) {
@@ -595,14 +616,39 @@ export class NfcHandler implements BridgeHandler {
     }
   }
 
-  private async cancelScan(): Promise<unknown> {
-    const { manager } = this.nfc!;
-
-    this.scanning = false;
+  // The native readers resolve the ICAO 9303 document contract as a JSON string.
+  // Parse it here so downstream consumers (e.g. saveDocument's keychain adapter,
+  // which JSON.stringify's the value) receive an IDDocument object rather than a
+  // double-encoded string. Objects pass through unchanged.
+  private parseScanResult(result: unknown): unknown {
+    if (typeof result !== 'string') {
+      return result;
+    }
     try {
-      await manager.cancelTechnologyRequest();
+      return JSON.parse(result);
     } catch {
-      // already cancelled or no active session
+      throw new BridgeHandlerError(
+        'NFC_SCAN_FAILED',
+        'Native passport reader returned a malformed JSON result',
+      );
+    }
+  }
+
+  private async cancelScan(): Promise<unknown> {
+    this.scanning = false;
+    if (this.passportReader?.cancel) {
+      try {
+        await this.passportReader.cancel();
+      } catch {
+        // already cancelled or no active passport session
+      }
+    }
+    if (this.nfc) {
+      try {
+        await this.nfc.manager.cancelTechnologyRequest();
+      } catch {
+        // already cancelled or no active session
+      }
     }
     return { cancelled: true };
   }

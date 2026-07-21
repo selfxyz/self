@@ -28,13 +28,17 @@ typealias RCTPromiseRejectBlock = (String?, String?, Error?) -> Void
 
  No passport-derived fields are logged or sent to analytics from this shim.
  */
+// Registered only when the SelfSdkNfc framework is actually vendored (fetched by
+// scripts/postinstall.js). Without it the class does not exist and the RN module is not
+// registered (see SelfPassportReader.m + the SELF_NFC_AVAILABLE podspec macro), so
+// NativeModules.SelfPassportReader is absent and the JS capability honestly reports NFC
+// unavailable instead of advertising a reader whose every scan rejects.
+#if canImport(SelfSdkNfc)
 @objc(SelfPassportReader)
 class SelfPassportReader: NSObject {
 
-  #if canImport(SelfSdkNfc)
   // Retained across the async scan to prevent ARC deallocation mid-session.
   private var helper: NfcPassportHelper?
-  #endif
 
   @objc
   static func requiresMainQueueSetup() -> Bool { false }
@@ -111,6 +115,24 @@ class SelfPassportReader: NSObject {
     #endif
   }
 
+  // Cancels an in-flight scan. Releasing the retained helper ends the CoreNFC
+  // session via ARC (mirroring NfcProviderImpl.cancelScan). Safe to call when no
+  // scan is active. Routed from NfcHandler's cancel path in @selfxyz/rn-sdk.
+  @objc(cancelScan:rejecter:)
+  func cancelScan(
+    resolver: @escaping RCTPromiseResolveBlock,
+    rejecter: @escaping RCTPromiseRejectBlock
+  ) {
+    #if canImport(SelfSdkNfc)
+    DispatchQueue.main.async { [weak self] in
+      self?.helper = nil
+      resolver(nil)
+    }
+    #else
+    resolver(nil)
+    #endif
+  }
+
   #if canImport(SelfSdkNfc)
   private static func hasNfcUsageDescription() -> Bool {
     let description =
@@ -119,3 +141,4 @@ class SelfPassportReader: NSObject {
   }
   #endif
 }
+#endif
