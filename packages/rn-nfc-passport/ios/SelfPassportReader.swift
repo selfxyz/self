@@ -38,7 +38,11 @@ typealias RCTPromiseRejectBlock = (String?, String?, Error?) -> Void
 class SelfPassportReader: NSObject {
 
   // Retained across the async scan to prevent ARC deallocation mid-session.
+  // Guarded by `helperLock`: the scan-start check-and-set runs on RN's module queue while the
+  // completion handler clears it on an arbitrary callback thread, so the ALREADY_SCANNING gate
+  // must be serialized with a lock rather than relying on queue affinity.
   private var helper: NfcPassportHelper?
+  private let helperLock = NSLock()
 
   @objc
   static func requiresMainQueueSetup() -> Bool { false }
@@ -77,16 +81,24 @@ class SelfPassportReader: NSObject {
       )
       return
     }
-    guard helper == nil else {
-      rejecter("ALREADY_SCANNING", "An NFC scan is already in progress", nil as Error?)
-      return
-    }
-
     // Advanced BAC/PACE toggles (canNumber, useCan, skipPACE, skipCA, extendedMode,
     // usePacePolling) are accepted for signature compatibility with NfcHandler; the fork's
     // helper negotiates PACE→BAC automatically and does not yet expose them.
     let scanHelper = NfcPassportHelper()
-    helper = scanHelper
+
+    // Atomic check-and-set of the ALREADY_SCANNING gate under the lock, so a concurrent clear
+    // from a prior scan's completion cannot leave a stale non-nil `helper` observed here.
+    helperLock.lock()
+    let scanInProgress = helper != nil
+    if !scanInProgress {
+      helper = scanHelper
+    }
+    helperLock.unlock()
+
+    guard !scanInProgress else {
+      rejecter("ALREADY_SCANNING", "An NFC scan is already in progress", nil as Error?)
+      return
+    }
 
     DispatchQueue.main.async {
       scanHelper.scanPassport(
@@ -95,8 +107,14 @@ class SelfPassportReader: NSObject {
         dateOfExpiry: dateOfExpiry as String,
         progress: { _, _, _ in /* state index only; no PII to forward */ },
         completion: { [weak self] success, result in
+          // Clear the gate under the lock so the next scan-start read (on the module queue)
+          // always observes the cleared state, regardless of which thread fires completion.
+          if let self {
+            self.helperLock.lock()
+            self.helper = nil
+            self.helperLock.unlock()
+          }
           DispatchQueue.main.async {
-            self?.helper = nil
             if success {
               resolver(result)
             } else {
