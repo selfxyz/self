@@ -115,22 +115,19 @@ class SelfPassportReader: NSObject {
     #endif
   }
 
-  // Cancels an in-flight scan. Releasing the retained helper ends the CoreNFC
-  // session via ARC (mirroring NfcProviderImpl.cancelScan). Safe to call when no
-  // scan is active. Routed from NfcHandler's cancel path in @selfxyz/rn-sdk.
+  // Stopgap cancel. NfcPassportHelper exposes no cancel API, and its scanPassport Task strongly
+  // retains the helper, so nil-ing `helper` here would NOT end the CoreNFC session — it would only
+  // clear the ALREADY_SCANNING guard and let a conflicting second scan start while the first
+  // session is still live. So we leave `helper` set (the scan's own completion handler clears it)
+  // and just resolve: the guard stays honest, at the cost of the CoreNFC sheet lingering until the
+  // read finishes or times out.
+  // TODO(self-sdk-native): call helper?.cancelScan() once the fork exposes PassportReader.stopReading().
   @objc(cancelScan:rejecter:)
   func cancelScan(
     resolver: @escaping RCTPromiseResolveBlock,
     rejecter: @escaping RCTPromiseRejectBlock
   ) {
-    #if canImport(SelfSdkNfc)
-    DispatchQueue.main.async { [weak self] in
-      self?.helper = nil
-      resolver(nil)
-    }
-    #else
     resolver(nil)
-    #endif
   }
 
   #if canImport(SelfSdkNfc)
