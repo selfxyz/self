@@ -23,6 +23,11 @@ plugins {
     id("com.facebook.react.rootproject")
 }
 
+// @selfxyz/rn-sdk's optional KMP-bridge compileOnly (xyz.self.sdk:shared-android) resolves to
+// this version; pin it to the self-sdk-native release so it matches the capture packages' AARs
+// (resolved from self-sdk-dist). app/ leaves it unset and uses the in-repo kmp-sdk 0.1.0 default.
+ext.selfSharedAndroidVersion = "0.1.3"
+
 allprojects {
     repositories {
         // mavenLocal resolves @selfxyz/rn-sdk's KMP AAR dependency during the

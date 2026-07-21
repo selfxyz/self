@@ -72,7 +72,10 @@ dependencies {
   // SelfCryptoPackage gracefully skips SelfBridgeModule registration if
   // the classes aren't present at runtime. Replace with a stable hosted
   // Maven coordinate once SD-06 (SELF-2534) lands.
-  compileOnly "xyz.self.sdk:shared-android:0.1.3"
+  // Host-overridable via rootProject ext `selfSharedAndroidVersion` (or -PSelfRnSdk_… ):
+  // app/ resolves the in-repo kmp-sdk 0.1.0 from mavenLocal (default), while rn-sdk-test-app
+  // sets 0.1.3 to match the self-sdk-native AARs from self-sdk-dist.
+  compileOnly "xyz.self.sdk:shared-android:${getExtOrDefault('selfSharedAndroidVersion') ?: '0.1.0'}"
   // Match React Native 0.76.x's pinned coroutines version (1.6.1) to avoid
   // version-constraint conflicts in the consumer's resolution graph.
   compileOnly "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1"
