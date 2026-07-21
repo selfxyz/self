@@ -19,11 +19,12 @@ export const ALL_CAPABILITIES: Capabilities = {
 // from this map (Aadhaar, KYC/other-IDs disclosed against existing documents)
 // require no optional native module and stay reachable regardless.
 const DOCUMENT_CAPABILITY_REQUIREMENTS: Record<string, (keyof Capabilities)[]> = {
-  // IDSelection ids
-  p: ['nfc'],
+  // IDSelection ids. Passport onboarding always scans the MRZ (via the passport
+  // CodeScanViewfinderRoute) before the NFC read, so it needs mrzCamera too.
+  p: ['nfc', 'mrzCamera'],
   i: ['nfc', 'mrzCamera'],
   // verification-request / route document type strings
-  passport: ['nfc'],
+  passport: ['nfc', 'mrzCamera'],
   id_card: ['nfc', 'mrzCamera'],
 };
 

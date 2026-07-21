@@ -53,8 +53,13 @@ export const IDSelectionScreen: React.FC = () => {
   const availableDocumentTypes = documentTypes.filter(docType => isDocumentTypeAvailable(docType, capabilities));
 
   useEffect(() => {
-    if (!countryCode || availableDocumentTypes.length === 0) {
+    if (!countryCode) {
       navigate('/pick-country', { replace: true });
+    } else if (availableDocumentTypes.length === 0) {
+      // Every document type this country offers needs an unavailable native
+      // capability. Route to coming-soon rather than back to the picker, which
+      // still lists this country and would loop.
+      navigate('/coming-soon', { state: { countryCode }, replace: true });
     }
   }, [countryCode, availableDocumentTypes.length, navigate]);
 
