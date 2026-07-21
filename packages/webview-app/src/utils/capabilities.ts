@@ -27,9 +27,7 @@ const DOCUMENT_CAPABILITY_REQUIREMENTS: Record<string, (keyof Capabilities)[]> =
   id_card: ['nfc', 'mrzCamera'],
 };
 
-export function normalizeCapabilities(
-  raw: Partial<Capabilities> | null | undefined,
-): Capabilities {
+export function normalizeCapabilities(raw: Partial<Capabilities> | null | undefined): Capabilities {
   if (!raw) return ALL_CAPABILITIES;
   return {
     nfc: raw.nfc ?? true,
@@ -39,19 +37,14 @@ export function normalizeCapabilities(
   };
 }
 
-export function isDocumentTypeAvailable(
-  documentType: string,
-  capabilities: Capabilities,
-): boolean {
+export function isDocumentTypeAvailable(documentType: string, capabilities: Capabilities): boolean {
   const required = DOCUMENT_CAPABILITY_REQUIREMENTS[documentType] ?? [];
   return required.every(capability => capabilities[capability]);
 }
 
 // Document types an inbound verification request will accept, if it constrains
 // them. Supports a single `documentType` string or `documentTypes`/`ids` arrays.
-function requestedDocumentTypes(
-  request: Record<string, unknown> | null | undefined,
-): string[] {
+function requestedDocumentTypes(request: Record<string, unknown> | null | undefined): string[] {
   if (!request) return [];
   const collected: string[] = [];
   if (typeof request.documentType === 'string') collected.push(request.documentType);
@@ -75,7 +68,5 @@ export function requestRequiresUnavailableCapability(
 ): boolean {
   const documentTypes = requestedDocumentTypes(request);
   if (documentTypes.length === 0) return false;
-  return documentTypes.every(
-    documentType => !isDocumentTypeAvailable(documentType, capabilities),
-  );
+  return documentTypes.every(documentType => !isDocumentTypeAvailable(documentType, capabilities));
 }

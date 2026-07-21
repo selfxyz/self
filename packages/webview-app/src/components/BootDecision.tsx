@@ -21,8 +21,7 @@ import { decideBootRoute } from './decideBootRoute';
  */
 const FAIL_CLOSED_MESSAGES: Record<string, string> = {
   INVALID_REQUEST: 'Embed mode requires a verificationRequest with userId and scope',
-  UNSUPPORTED_CAPABILITY:
-    'This request needs a document capability that is not available on this device',
+  UNSUPPORTED_CAPABILITY: 'This request needs a document capability that is not available on this device',
 };
 
 export const BootDecision: React.FC = () => {

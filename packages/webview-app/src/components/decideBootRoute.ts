@@ -5,10 +5,7 @@
 import type { OperatingMode, VerificationRequestPayload } from '../providers/OperatingModeProvider';
 import { hasValidVerificationRequest } from '../providers/OperatingModeProvider';
 import type { Capabilities } from '../utils/capabilities';
-import {
-  ALL_CAPABILITIES,
-  requestRequiresUnavailableCapability,
-} from '../utils/capabilities';
+import { ALL_CAPABILITIES, requestRequiresUnavailableCapability } from '../utils/capabilities';
 
 const EMBED_HOME_ROUTE = '/tour/1';
 const EMBED_ERROR_ROUTE = '/embed/error';

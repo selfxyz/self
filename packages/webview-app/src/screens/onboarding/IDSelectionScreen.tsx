@@ -50,9 +50,7 @@ export const IDSelectionScreen: React.FC = () => {
 
   // Hide document types whose required native capability is unavailable. Types
   // needing no optional module (Aadhaar, other-IDs/KYC) are always kept.
-  const availableDocumentTypes = documentTypes.filter(docType =>
-    isDocumentTypeAvailable(docType, capabilities),
-  );
+  const availableDocumentTypes = documentTypes.filter(docType => isDocumentTypeAvailable(docType, capabilities));
 
   useEffect(() => {
     if (!countryCode || availableDocumentTypes.length === 0) {
