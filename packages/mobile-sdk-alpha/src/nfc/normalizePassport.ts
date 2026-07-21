@@ -163,7 +163,14 @@ function normalizeDsc(raw: string): string {
       // keep original string
     }
   }
-  if (s.includes('BEGIN CERTIFICATE')) return s;
+  const hasBegin = s.includes('BEGIN CERTIFICATE');
+  const hasEnd = s.includes('END CERTIFICATE');
+  // A truncated/malformed PEM with only one of the two markers would pass
+  // through and fail later at proving — fail closed here instead.
+  if (hasBegin !== hasEnd) {
+    throw new Error('NFC normalization failed: dsc has mismatched BEGIN/END certificate markers');
+  }
+  if (hasBegin) return s;
   const body = s.replace(/\s+/g, '');
   return `-----BEGIN CERTIFICATE-----\n${body}\n-----END CERTIFICATE-----`;
 }

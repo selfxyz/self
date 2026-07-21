@@ -208,5 +208,27 @@ describe('normalizeNfcPassport', () => {
         /dsc present but empty/i,
       );
     });
+
+    it('throws when the DSC has a BEGIN marker but no matching END marker', () => {
+      expect(() =>
+        normalizeNfcPassport(
+          androidPayload({ documentSigningCertificate: '-----BEGIN CERTIFICATE-----\nMIICdummy' }),
+        ),
+      ).toThrow(/mismatched BEGIN\/END certificate markers/i);
+    });
+
+    it('throws when the DSC has an END marker but no matching BEGIN marker', () => {
+      expect(() =>
+        normalizeNfcPassport(
+          androidPayload({ documentSigningCertificate: 'MIICdummy\n-----END CERTIFICATE-----' }),
+        ),
+      ).toThrow(/mismatched BEGIN\/END certificate markers/i);
+    });
+
+    it('accepts a well-formed PEM with both BEGIN and END markers', () => {
+      const pd = normalizeNfcPassport(androidPayload({ documentSigningCertificate: PEM }));
+      expect(pd.dsc).toContain('BEGIN CERTIFICATE');
+      expect(pd.dsc).toContain('END CERTIFICATE');
+    });
   });
 });
