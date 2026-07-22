@@ -78,6 +78,33 @@ android {
   }
 }
 
+// Fail a RELEASE build when the embedded webview bundle is missing, so we never
+// ship a release AAR/APK that 404s on `file:///android_asset/self-wallet/index.html`
+// at runtime. Debug/smoke builds (`assembleDebug`) are unaffected — CI's
+// rn-sdk-test-app android-build runs assembleDebug without producing the bundle,
+// and the sourceSets block above already degrades gracefully there. Escape hatch:
+// set selfWalletBundleOptional=true for KYC-only / host-injects-the-bundle
+// (bundleRootUri/devServerUrl) release builds.
+tasks.configureEach { task ->
+  if (task.name == 'mergeReleaseAssets' || task.name == 'packageReleaseAssets') {
+    task.doFirst {
+      def bundleIndex = file("../assets/self-wallet/index.html")
+      def optional = (getExtOrDefault('selfWalletBundleOptional') ?: 'false').toString().toBoolean()
+      if (!bundleIndex.exists()) {
+        def msg = "[@selfxyz/rn-sdk] assets/self-wallet/index.html is missing for a release build. " +
+          "Run `pnpm --filter @selfxyz/rn-sdk build` to produce the embedded webview bundle, " +
+          "or set -PSelfRnSdk_selfWalletBundleOptional=true (or rootProject.ext.selfWalletBundleOptional) " +
+          "for a host that injects the bundle at runtime."
+        if (optional) {
+          logger.warn(msg + " Continuing because selfWalletBundleOptional=true.")
+        } else {
+          throw new GradleException(msg)
+        }
+      }
+    }
+  }
+}
+
 repositories {
   mavenLocal()
   mavenCentral()
