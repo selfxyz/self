@@ -75,21 +75,18 @@ export class LifecycleHandler implements BridgeHandler {
   }
 
   private setResult(params: Record<string, unknown>): null {
+    // A flat lifecycle payload (e.g. { type: 'proofRequested' }) is a success.
     const type = params.type as string | undefined;
     const success = params.success === true || params.success === 'true';
-    const errorCode = params.errorCode as string | undefined;
-    const errorMessage = params.errorMessage as string | undefined;
+    // Failures arrive either flat (errorCode/errorMessage) or as the bridge
+    // VerificationResult's nested `error: { code, message }`. The nested form is
+    // what the WebView proving flow emits (DiscloseResultScreen); without it a
+    // failed proof was misread as a cancellation and never reached onFailure.
+    const nestedError = params.error as { code?: string; message?: string } | undefined;
+    const errorCode = (params.errorCode as string | undefined) ?? nestedError?.code;
+    const errorMessage = (params.errorMessage as string | undefined) ?? nestedError?.message;
 
-    if (type) {
-      // Flat lifecycle payload (e.g. { type: 'proofRequested' }) — treat as success
-      this.config.onSuccess({
-        success: true,
-        userId: params.userId as string | undefined,
-        verificationId: params.verificationId as string | undefined,
-        proof: params.proof,
-        claims: params.claims as Record<string, unknown> | undefined,
-      });
-    } else if (success) {
+    if (type || success) {
       this.config.onSuccess({
         success: true,
         userId: params.userId as string | undefined,
