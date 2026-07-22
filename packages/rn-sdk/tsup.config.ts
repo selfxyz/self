@@ -11,7 +11,14 @@ export default defineConfig({
   format: ['esm', 'cjs'],
   dts: true,
   sourcemap: true,
-  clean: true,
+  // `clean` intentionally disabled: under the parallel workspace typecheck
+  // (turbo), a redundant rebuild can re-run while rn-sdk-test-app#types is
+  // reading dist/. `clean` deletes dist/index.d.ts first, so tsc briefly sees
+  // dist/index.js with no declarations and falls back to it via allowJs — the
+  // consumer then fails with phantom "no exported member" / all-`any` props.
+  // tsup overwrites the single `index` entry in place, so stale outputs are a
+  // non-issue and dropping clean keeps the .d.ts present throughout a rebuild.
+  clean: false,
   outDir: 'dist',
   target: 'es2020',
   external: [

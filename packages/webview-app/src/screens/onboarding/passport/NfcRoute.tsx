@@ -7,6 +7,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { PassportNfcInstructionsScreen } from '@selfxyz/euclid';
+import { normalizeNfcPassport } from '@selfxyz/mobile-sdk-alpha/browser';
 import { bridgeNFCScannerAdapter, onNfcProgress } from '@selfxyz/webview-bridge/adapters';
 
 import { useBridge } from '../../../providers/BridgeProvider';
@@ -98,8 +99,10 @@ export const PassportNfcRoute: React.FC = () => {
         if (activeNfcScan === scan) activeNfcScan = null;
         if (cancelled) return;
 
+        const passportData = normalizeNfcPassport(result);
+
         const docId = `passport-${mrz.passportNumber}`;
-        await documents.saveDocument(docId, result as never);
+        await documents.saveDocument(docId, passportData as never);
         const catalog = await documents.loadDocumentCatalog();
         const entry = {
           id: docId,

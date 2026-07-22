@@ -3,9 +3,40 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type { IDCardProps } from '@selfxyz/euclid';
-import type { BridgeError } from '@selfxyz/webview-bridge';
+import type { BridgeError, VerificationResult } from '@selfxyz/webview-bridge';
 
 export type GenerationStep = 'readingRegistry' | 'generatingProof' | 'awaitingVerification' | 'finishingUp';
+
+// Builds the terminal VerificationResult delivered to the host via
+// `lifecycle.setResult`. Shared by DiscloseResultScreen (Continue button) and
+// ProofGenerationRouteScreen (terminal store state) so both emit an identical
+// payload. Field names mirror `emitVerificationComplete` in provingMachine.ts.
+export function buildVerificationResult(params: {
+  success: boolean;
+  userId?: string;
+  verificationId?: string;
+  error?: BridgeError;
+}): VerificationResult {
+  const { success, userId, verificationId, error } = params;
+  if (success) {
+    return {
+      success: true,
+      userId,
+      verificationId,
+      claims: { resultType: 'proofRequested' },
+    };
+  }
+  return {
+    success: false,
+    userId,
+    verificationId,
+    claims: { resultType: 'proofRequested' },
+    error: error ?? {
+      code: 'proof_generation_failed',
+      message: 'The proof request could not be completed.',
+    },
+  };
+}
 
 export function getFailureState(
   currentState: string,

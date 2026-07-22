@@ -257,6 +257,19 @@ dependencies {
 
     implementation 'com.github.blikoon:QRCodeScanner:0.1.2'
 
+    // e-Aadhaar PDF decrypt + rasterize (pure-JVM, ships no .so -> no 16KB alignment impact).
+    // Exclude its bundled bouncycastle (jdk15to18:1.72): it duplicates the app's existing
+    // bouncycastle jdk18on:1.80 (same org.bouncycastle.* classes) and fails the dex merge.
+    // Reuse the app's newer bouncycastle instead, adding bcpkix for pdfbox's crypto.
+    implementation('com.tom-roush:pdfbox-android:2.0.27.0') {
+        exclude group: 'org.bouncycastle'
+    }
+    implementation 'org.bouncycastle:bcpkix-jdk18on:1.80'
+    // ML Kit barcode scanner: localizes + decodes the dense Secure QR inside the
+    // cluttered e-Aadhaar page (ZXing needs an isolated QR). Version matches the
+    // one already resolved transitively.
+    implementation 'com.google.mlkit:barcode-scanning:17.3.0'
+
     // Firebase Dependencies
     implementation platform('com.google.firebase:firebase-bom:32.7.3')
     implementation 'com.google.firebase:firebase-messaging'

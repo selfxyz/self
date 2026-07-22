@@ -10,19 +10,38 @@ import { CountryPickerScreen as EuclidCountryPickerScreen } from '@selfxyz/eucli
 
 import { MockRegistrationFailureButton } from '../../components/MockRegistrationFailureButton';
 import countryDocumentTypes from '../../data/country-document-types.json';
+import { useCapabilities } from '../../providers/OperatingModeProvider';
 import { useSelfClient } from '../../providers/SelfClientProvider';
+import type { Capabilities } from '../../utils/capabilities';
+import { isDocumentTypeAvailable } from '../../utils/capabilities';
 import { getCountryName, renderFlag } from '../../utils/countryFlags';
 import { WEB_SAFE_AREA } from '../../utils/insets';
 
 type CountryData = Record<string, string[]>;
 const countryData = countryDocumentTypes as CountryData;
 
+// A country is a dead-end when it lists document types but every one needs a
+// native capability the host lacks. Selecting it would land on an empty
+// IDSelection that bounces straight back here, so hide it. Countries with no
+// listed types keep the existing coming-soon path.
+function isCountrySelectable(docTypes: string[] | undefined, capabilities: Capabilities): boolean {
+  if (!docTypes || docTypes.length === 0) return true;
+  return docTypes.some(docType => isDocumentTypeAvailable(docType, capabilities));
+}
+
 export const CountryPickerScreen: React.FC = () => {
   const navigate = useNavigate();
   const { analytics, haptic } = useSelfClient();
+  const capabilities = useCapabilities();
   const [search, setSearch] = useState('');
 
-  const countries = useMemo(() => Object.keys(countryData).map(code => ({ countryCode: code })), []);
+  const countries = useMemo(
+    () =>
+      Object.keys(countryData)
+        .filter(code => isCountrySelectable(countryData[code], capabilities))
+        .map(code => ({ countryCode: code })),
+    [capabilities],
+  );
 
   const onSelect = useCallback(
     (countryCode: string) => {

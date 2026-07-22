@@ -4,48 +4,50 @@
 
 import UIKit
 import React
+import React_RCTAppDelegate
+import ReactAppDependencyProvider
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
   var window: UIWindow?
+  var reactNativeDelegate: ReactNativeDelegate?
+  var reactNativeFactory: RCTReactNativeFactory?
 
   func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
   ) -> Bool {
+    let delegate = ReactNativeDelegate()
+    let factory = RCTReactNativeFactory(delegate: delegate)
+    delegate.dependencyProvider = RCTAppDependencyProvider()
+
+    reactNativeDelegate = delegate
+    reactNativeFactory = factory
 
     window = UIWindow(frame: UIScreen.main.bounds)
 
-    guard let bridge = RCTBridge(
-      delegate: self,
+    factory.startReactNative(
+      withModuleName: "SelfRNTestApp",
+      in: window,
       launchOptions: launchOptions
-    ) else {
-      assertionFailure("Failed to initialize RCTBridge")
-      return false
-    }
-
-    let rootView = RCTRootView(
-      bridge: bridge,
-      moduleName: "SelfRNTestApp",
-      initialProperties: nil
     )
-
-    let rootViewController = UIViewController()
-    rootViewController.view = rootView
-
-    window?.rootViewController = rootViewController
-    window?.makeKeyAndVisible()
 
     return true
   }
 }
 
-extension AppDelegate: RCTBridgeDelegate {
-  func sourceURL(for bridge: RCTBridge) -> URL? {
-#if DEBUG
+class ReactNativeDelegate: RCTDefaultReactNativeFactoryDelegate {
+  override func sourceURL(for bridge: RCTBridge) -> URL? {
+    self.bundleURL()
+  }
+
+  // Run from the JS bundle embedded in the app so the device does not depend
+  // on a reachable Metro packager. Rebuild after changing JS. Falls back to
+  // Metro only if the embedded bundle is missing.
+  override func bundleURL() -> URL? {
+    if let embedded = Bundle.main.url(forResource: "main", withExtension: "jsbundle") {
+      return embedded
+    }
     return RCTBundleURLProvider.sharedSettings().jsBundleURL(forBundleRoot: "index")
-#else
-    return Bundle.main.url(forResource: "main", withExtension: "jsbundle")
-#endif
   }
 }

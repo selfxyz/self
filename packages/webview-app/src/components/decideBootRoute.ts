@@ -4,6 +4,8 @@
 
 import type { OperatingMode, VerificationRequestPayload } from '../providers/OperatingModeProvider';
 import { hasValidVerificationRequest } from '../providers/OperatingModeProvider';
+import type { Capabilities } from '../utils/capabilities';
+import { ALL_CAPABILITIES, requestRequiresUnavailableCapability } from '../utils/capabilities';
 
 const EMBED_HOME_ROUTE = '/tour/1';
 const EMBED_ERROR_ROUTE = '/embed/error';
@@ -13,9 +15,11 @@ export interface BootInputs {
   mode: OperatingMode;
   verificationRequest: VerificationRequestPayload | null;
   pathname: string;
+  // Absent → all-true (backward compat with pre-handshake hosts).
+  capabilities?: Capabilities;
 }
 
-export type BootErrorCode = 'INVALID_REQUEST';
+export type BootErrorCode = 'INVALID_REQUEST' | 'UNSUPPORTED_CAPABILITY';
 
 export type BootAction =
   | { type: 'wait' }
@@ -41,6 +45,14 @@ export function decideBootRoute(input: BootInputs): BootAction {
       return {
         type: 'fail-closed',
         error: 'INVALID_REQUEST',
+        errorRoute: EMBED_ERROR_ROUTE,
+      };
+    }
+    const capabilities = input.capabilities ?? ALL_CAPABILITIES;
+    if (requestRequiresUnavailableCapability(input.verificationRequest, capabilities)) {
+      return {
+        type: 'fail-closed',
+        error: 'UNSUPPORTED_CAPABILITY',
         errorRoute: EMBED_ERROR_ROUTE,
       };
     }

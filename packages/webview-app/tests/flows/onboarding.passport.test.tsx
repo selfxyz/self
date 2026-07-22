@@ -16,7 +16,16 @@ const MRZ_FIXTURE = {
   dateOfExpiry: '300115',
 };
 
-const CHIP_FIXTURE = { dg1: 'mock-dg1', sod: 'mock-sod' };
+// A minimally-valid reader payload (Android io.tradle.nfc shape) that the
+// PassportData normalizer in NfcRoute can convert without throwing.
+const CHIP_FIXTURE = {
+  mrz: 'P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<L898902C36UTO7408122F1204159ZE184226B<<<<<10',
+  documentSigningCertificate: '-----BEGIN CERTIFICATE-----\nMIICdummy\n-----END CERTIFICATE-----',
+  eContent: 'AQIDBA==', // signed attributes
+  encapContent: 'AQIDBA==', // encapsulated content -> PassportData.eContent
+  encryptedDigest: 'AQIDBA==',
+  dataGroupHashes: { '1': 'aabb', '2': 'ccdd' },
+};
 
 describe('passport onboarding flow', () => {
   afterEach(cleanup);

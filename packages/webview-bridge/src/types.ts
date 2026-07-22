@@ -81,6 +81,26 @@ export type HapticMethod = 'trigger';
 
 export type LifecycleMethod = 'ready' | 'dismiss' | 'setResult';
 
+// Optional native capabilities advertised by the host in the `lifecycle.getConfig`
+// response. Consumers MUST treat a missing `capabilities` field (older hosts) as
+// all-true so pre-handshake behavior is preserved.
+export interface Capabilities {
+  nfc: boolean;
+  mrzCamera: boolean;
+  biometrics: boolean;
+  secureStorage: boolean;
+}
+
+export interface LifecycleConfigResponse {
+  mode?: 'self-app' | 'embed';
+  verificationRequest?: Record<string, unknown> | null;
+  debug?: boolean;
+  platform?: string;
+  referenceId?: string;
+  // Added in protocol minor 1 (capabilities handshake). Absent on older hosts.
+  capabilities?: Capabilities;
+}
+
 export interface NativeTransport {
   postMessage(json: string): void;
   kind?: 'native' | 'browser-host';
@@ -149,6 +169,14 @@ export interface WebViewBridgeOptions {
   browserHost?: BrowserHostOptions;
 }
 
+// Wire-compatibility gate: peers must agree on this exact value (see schema.ts).
+// It changes only on a breaking envelope change.
 export const BRIDGE_PROTOCOL_VERSION = 1;
+
+// Feature level within a wire version. Bumped for additive, backward-compatible
+// additions. Minor 1 introduced the `lifecycle.getConfig` capabilities handshake;
+// consumers on an older minor simply see no `capabilities` field and treat it as
+// all-true.
+export const BRIDGE_PROTOCOL_MINOR_VERSION = 1;
 
 export const DEFAULT_TIMEOUT_MS = 30_000;

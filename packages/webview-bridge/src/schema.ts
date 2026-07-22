@@ -5,6 +5,12 @@
 import type { BridgeDomain, BridgeEvent, BridgeMessage, BridgeRequest, BridgeResponse } from './types';
 import { BRIDGE_PROTOCOL_VERSION } from './types';
 
+// Protocol minor 1: the `lifecycle.getConfig` response carries an optional
+// `capabilities: { nfc, mrzCamera, biometrics, secureStorage }` object (see
+// `LifecycleConfigResponse` in types.ts). It rides inside response `data`, so it
+// is not envelope-validated here. Consumers MUST treat an absent `capabilities`
+// field as all-true to stay backward-compatible with pre-handshake hosts.
+
 const VALID_DOMAINS: BridgeDomain[] = [
   'nfc',
   'biometrics',

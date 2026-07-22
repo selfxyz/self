@@ -8,7 +8,8 @@ import { BridgeHandlerError } from '../bridge/types';
 import { NativeModules } from 'react-native';
 
 interface MrzScannerModule {
-  startScanning: () => Promise<unknown>;
+  startScanning: (options: Record<string, unknown>) => Promise<unknown>;
+  stopScanning?: () => void;
 }
 
 interface MrzScanData {
@@ -20,11 +21,15 @@ interface MrzScanData {
 }
 
 function loadMrzScannerModule(): MrzScannerModule | null {
-  const nativeModules = NativeModules as Record<string, unknown>;
-  const scanner =
-    (nativeModules.SelfMRZScannerModule as MrzScannerModule | undefined) ??
-    (nativeModules.MRZScannerModule as MrzScannerModule | undefined);
-  return scanner ?? null;
+  try {
+    const nativeModules = (NativeModules ?? {}) as Record<string, unknown>;
+    const scanner =
+      (nativeModules.SelfMRZScannerModule as MrzScannerModule | undefined) ??
+      (nativeModules.MRZScannerModule as MrzScannerModule | undefined);
+    return scanner ?? null;
+  } catch {
+    return null;
+  }
 }
 
 function normalizeMrzScanResult(result: unknown): MrzScanData {
@@ -80,12 +85,22 @@ function extractNativeErrorCode(err: unknown): string | undefined {
 export class CameraHandler implements BridgeHandler {
   readonly domain: BridgeDomain = 'camera';
 
-  async handle(method: string, _params: Record<string, unknown>): Promise<unknown> {
+  isAvailable(): boolean {
+    const scanner = loadMrzScannerModule();
+    return scanner !== null && typeof scanner.startScanning === 'function';
+  }
+
+  async handle(method: string, params: Record<string, unknown>): Promise<unknown> {
     const scanner = loadMrzScannerModule();
 
     switch (method) {
       case 'isAvailable':
         return scanner !== null && typeof scanner.startScanning === 'function';
+      case 'stopCamera':
+        // Web-driven cancel (e.g. leaving the viewfinder route). No-op when the
+        // module or the method is absent; never rejects.
+        scanner?.stopScanning?.();
+        return null;
       case 'scanMRZ':
         if (!scanner || typeof scanner.startScanning !== 'function') {
           throw new BridgeHandlerError(
@@ -95,7 +110,9 @@ export class CameraHandler implements BridgeHandler {
         }
 
         try {
-          const result = await scanner.startScanning();
+          // params carries the web viewfinder geometry ({ scanRect: {x,y,width,height} }
+          // in physical px); the native module sizes its preview overlay to it.
+          const result = await scanner.startScanning(params);
           return normalizeMrzScanResult(result);
         } catch (err) {
           if (err instanceof BridgeHandlerError) {

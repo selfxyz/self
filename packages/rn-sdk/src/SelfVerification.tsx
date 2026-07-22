@@ -62,6 +62,13 @@ export interface VerificationRequest {
   selfDefinedData?: string;
   excludedCountries?: string[];
   proofItems?: string[];
+  // Document constraints forwarded to the WebView so its embed fail-closed
+  // capability guard (webview-app capabilities.ts) can decide whether a
+  // required native module (nfc / mrzCamera) is missing. Dropping these makes
+  // that guard a no-op, so they are serialized in buildRequestSearch.
+  documentType?: string;
+  documentTypes?: string[];
+  ids?: string[];
   userIdType?: 'hex' | 'uuid';
   timestamp?: number;
   // Host-minted WebView reference session id. When omitted, SelfVerification
@@ -226,6 +233,13 @@ function buildRequestSearch(request: VerificationRequest, referenceId: string): 
   }
   if (request.proofItems && request.proofItems.length > 0) {
     params.set('proofItems', request.proofItems.join(','));
+  }
+  set('documentType', request.documentType);
+  if (request.documentTypes && request.documentTypes.length > 0) {
+    params.set('documentTypes', request.documentTypes.join(','));
+  }
+  if (request.ids && request.ids.length > 0) {
+    params.set('ids', request.ids.join(','));
   }
   set('appName', request.appName);
   set('appEndpoint', request.appEndpoint);
