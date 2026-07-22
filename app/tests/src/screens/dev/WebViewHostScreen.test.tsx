@@ -87,7 +87,7 @@ describe('WebViewHostScreen relayer result handling', () => {
     mockSelfVerificationProps.current = null;
   });
 
-  it('emits proof_verified to the relayer on success and navigates back', () => {
+  it('emits proof_verified to the relayer on success without navigating back', () => {
     render(<WebViewHostScreen />);
 
     act(() => {
@@ -99,10 +99,10 @@ describe('WebViewHostScreen relayer result handling', () => {
       undefined,
       undefined,
     );
-    expect(mockGoBack).toHaveBeenCalled();
+    expect(mockGoBack).not.toHaveBeenCalled();
   });
 
-  it('emits proof_generation_failed with the error details on failure', () => {
+  it('emits proof_generation_failed with the error details without navigating back', () => {
     render(<WebViewHostScreen />);
 
     act(() => {
@@ -117,7 +117,29 @@ describe('WebViewHostScreen relayer result handling', () => {
       'timeout',
       'took too long',
     );
+    expect(mockGoBack).not.toHaveBeenCalled();
+  });
+
+  it('navigates back on cancel (dismiss) without emitting a result', () => {
+    render(<WebViewHostScreen />);
+
+    act(() => {
+      mockSelfVerificationProps.current.onCancelled();
+    });
+
     expect(mockGoBack).toHaveBeenCalled();
+    expect(mockHandleProofResult).not.toHaveBeenCalled();
+  });
+
+  it('emits the terminal result once when success fires twice', () => {
+    render(<WebViewHostScreen />);
+
+    act(() => {
+      mockSelfVerificationProps.current.onSuccess({ success: true });
+      mockSelfVerificationProps.current.onSuccess({ success: true });
+    });
+
+    expect(mockHandleProofResult).toHaveBeenCalledTimes(1);
   });
 
   it('does not emit when the socket tracks a different session', () => {

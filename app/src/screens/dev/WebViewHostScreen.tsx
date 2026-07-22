@@ -98,6 +98,13 @@ const WebViewHostScreen: React.FC = () => {
   // which is what notifies the requesting website.
   const emitRelayerResult = useCallback(
     (proofVerified: boolean, error?: SelfSdkError) => {
+      // Emit exactly once. The WebView can hand back its terminal result twice
+      // (PROVING-TERMINAL setResult and the result-screen Continue button race),
+      // so guard here to keep handleProofResult idempotent. Emit is decoupled
+      // from navigation: dismiss/cancel drives goBack, not this path.
+      if (resultEmittedRef.current) {
+        return;
+      }
       const selfAppState = selfClient.getSelfAppState();
       // Only emit while the socket still tracks this request's session, so a
       // stale/reused socket never notifies the wrong website.
@@ -121,20 +128,23 @@ const WebViewHostScreen: React.FC = () => {
     [request.verificationId, selfClient],
   );
 
+  // Emit-vs-navigation split: success/failure only emit the terminal result to
+  // the relayer (fired from the WebView's lifecycle.setResult), leaving the
+  // in-WebView result screen visible. Navigation happens solely on dismiss →
+  // onCancelled, which the result-screen Continue button triggers via
+  // lifecycle.dismiss after setResult.
   const handleSuccess = useCallback(
     (_result: VerificationResult) => {
       emitRelayerResult(true);
-      navigation.goBack();
     },
-    [emitRelayerResult, navigation],
+    [emitRelayerResult],
   );
 
   const handleFailure = useCallback(
     (error: SelfSdkError) => {
       emitRelayerResult(false, error);
-      navigation.goBack();
     },
-    [emitRelayerResult, navigation],
+    [emitRelayerResult],
   );
 
   const handleCancelled = useCallback(() => {
