@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { Paths } from 'expo-file-system';
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { Platform, View } from 'react-native';
 import type { RouteProp } from '@react-navigation/native';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -46,6 +46,8 @@ const WebViewHostScreen: React.FC = () => {
     () => (route.params?.request ?? {}) as VerificationRequest,
     [route.params?.request],
   );
+
+  const resultEmittedRef = useRef(false);
 
   const bundleRootUri = useMemo(() => {
     if (Platform.OS !== 'ios') return undefined;
@@ -105,11 +107,11 @@ const WebViewHostScreen: React.FC = () => {
         selfAppState.sessionId !== request.verificationId
       ) {
         trackEvent('webview_relayer_session_mismatch', {
-          request_session: request.verificationId,
-          socket_session: selfAppState.sessionId,
+          request_session_match: false,
         });
         return;
       }
+      resultEmittedRef.current = true;
       selfAppState.handleProofResult(proofVerified, error?.code, error?.message);
     },
     [request.verificationId, selfClient],
@@ -135,12 +137,28 @@ const WebViewHostScreen: React.FC = () => {
     navigation.goBack();
   }, [navigation]);
 
-  // Tear down the relayer socket when the host leaves so it isn't orphaned.
+  // Tear down the relayer socket when the host leaves so it isn't orphaned,
+  // but only for a truly abandoned session. Two guards protect live sockets:
   useEffect(
     () => () => {
-      selfClient.getSelfAppState().cleanSelfApp();
+      const selfAppState = selfClient.getSelfAppState();
+      // Never tear down a socket a newer deeplink re-pointed to another session.
+      if (
+        request.verificationId &&
+        selfAppState.sessionId &&
+        selfAppState.sessionId !== request.verificationId
+      ) {
+        return;
+      }
+      // A terminal result was handed to the relayer: leave the socket so
+      // socket.io can flush a buffered emit after a transient reconnect (the
+      // relay server closes the session on receipt).
+      if (resultEmittedRef.current) {
+        return;
+      }
+      selfAppState.cleanSelfApp();
     },
-    [selfClient],
+    [selfClient, request.verificationId],
   );
 
   const handleLoadDiagnostic = useCallback((event: LoadDiagnosticEvent) => {

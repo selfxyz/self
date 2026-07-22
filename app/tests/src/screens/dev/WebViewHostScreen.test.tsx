@@ -125,16 +125,38 @@ describe('WebViewHostScreen relayer result handling', () => {
     expect(mockHandleProofResult).not.toHaveBeenCalled();
     expect(mockTrackEvent).toHaveBeenCalledWith(
       'webview_relayer_session_mismatch',
-      expect.objectContaining({
-        request_session: 'session-1',
-        socket_session: 'stale-session',
-      }),
+      { request_session_match: false },
     );
+    const [, payload] = mockTrackEvent.mock.calls.find(
+      ([name]) => name === 'webview_relayer_session_mismatch',
+    ) as [string, Record<string, unknown>];
+    expect(payload).not.toHaveProperty('request_session');
+    expect(payload).not.toHaveProperty('socket_session');
+    expect(Object.values(payload)).not.toContain('session-1');
+    expect(Object.values(payload)).not.toContain('stale-session');
   });
 
   it('tears down the relayer socket on unmount', () => {
     const { unmount } = render(<WebViewHostScreen />);
     unmount();
     expect(mockCleanSelfApp).toHaveBeenCalled();
+  });
+
+  it('does not tear down the socket when the store session differs from the request', () => {
+    const { unmount } = render(<WebViewHostScreen />);
+    mockSelfAppState.sessionId = 'stale-session';
+    unmount();
+    expect(mockCleanSelfApp).not.toHaveBeenCalled();
+  });
+
+  it('does not tear down the socket after a terminal result was emitted', () => {
+    const { unmount } = render(<WebViewHostScreen />);
+
+    act(() => {
+      mockSelfVerificationProps.current.onSuccess({ success: true });
+    });
+
+    unmount();
+    expect(mockCleanSelfApp).not.toHaveBeenCalled();
   });
 });
