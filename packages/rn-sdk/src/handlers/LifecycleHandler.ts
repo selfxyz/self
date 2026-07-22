@@ -9,6 +9,22 @@ import type { VerificationRequest, VerificationResult, SelfSdkError } from '../S
 
 export type OperatingMode = 'self-app' | 'embed';
 
+// Optional native capabilities advertised to the WebView at boot so it can
+// gate flow selection before a bridge call rejects with NOT_AVAILABLE.
+export interface Capabilities {
+  nfc: boolean;
+  mrzCamera: boolean;
+  biometrics: boolean;
+  secureStorage: boolean;
+}
+
+const ALL_CAPABILITIES: Capabilities = {
+  nfc: true,
+  mrzCamera: true,
+  biometrics: true,
+  secureStorage: true,
+};
+
 interface LifecycleConfig {
   request: VerificationRequest;
   onSuccess: (result: VerificationResult) => void;
@@ -19,6 +35,9 @@ interface LifecycleConfig {
   // Host-minted WebView reference session id surfaced to the WebView so both
   // runtimes can tag Sentry `reference_id` for the same session.
   referenceId?: string;
+  // Absent capabilities are treated as all-true so a host that omits them keeps
+  // pre-handshake behavior.
+  capabilities?: Capabilities;
 }
 
 export class LifecycleHandler implements BridgeHandler {
@@ -40,6 +59,7 @@ export class LifecycleHandler implements BridgeHandler {
           debug: this.config.debug,
           platform: 'react-native',
           referenceId: this.config.referenceId,
+          capabilities: this.config.capabilities ?? ALL_CAPABILITIES,
         };
       case 'setResult':
         return this.setResult(params);

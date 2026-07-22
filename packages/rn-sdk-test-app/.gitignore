@@ -16,6 +16,7 @@ ios/*.xcworkspace/xcuserdata/
 ios/*.xcodeproj/xcuserdata/
 ios/*.xcodeproj/project.xcworkspace/xcuserdata/
 *.ipa
+vendor/*
 
 # Android
 android/app/build/

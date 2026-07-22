@@ -10,7 +10,9 @@ import type { IDType } from '@selfxyz/euclid';
 import { IDTypeScreen } from '@selfxyz/euclid';
 
 import { MockRegistrationFailureButton } from '../../components/MockRegistrationFailureButton';
+import { useCapabilities } from '../../providers/OperatingModeProvider';
 import { useSelfClient } from '../../providers/SelfClientProvider';
+import { isDocumentTypeAvailable } from '../../utils/capabilities';
 import { getCountryName, renderFlag } from '../../utils/countryFlags';
 import { WEB_SAFE_AREA } from '../../utils/insets';
 
@@ -38,6 +40,7 @@ export const IDSelectionScreen: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { analytics, haptic } = useSelfClient();
+  const capabilities = useCapabilities();
 
   const { countryCode = '', documentTypes = [] } =
     (location.state as {
@@ -45,17 +48,26 @@ export const IDSelectionScreen: React.FC = () => {
       documentTypes?: string[];
     }) || {};
 
-  useEffect(() => {
-    if (!countryCode || documentTypes.length === 0) {
-      navigate('/pick-country', { replace: true });
-    }
-  }, [countryCode, documentTypes.length, navigate]);
+  // Hide document types whose required native capability is unavailable. Types
+  // needing no optional module (Aadhaar, other-IDs/KYC) are always kept.
+  const availableDocumentTypes = documentTypes.filter(docType => isDocumentTypeAvailable(docType, capabilities));
 
-  if (!countryCode || documentTypes.length === 0) {
+  useEffect(() => {
+    if (!countryCode) {
+      navigate('/pick-country', { replace: true });
+    } else if (availableDocumentTypes.length === 0) {
+      // Every document type this country offers needs an unavailable native
+      // capability. Route to coming-soon rather than back to the picker, which
+      // still lists this country and would loop.
+      navigate('/coming-soon', { state: { countryCode }, replace: true });
+    }
+  }, [countryCode, availableDocumentTypes.length, navigate]);
+
+  if (!countryCode || availableDocumentTypes.length === 0) {
     return null;
   }
 
-  const idTypes = documentTypes.map(docTypeToIDType);
+  const idTypes = availableDocumentTypes.map(docTypeToIDType);
 
   const onSelect = useCallback(
     (idType: IDType) => {

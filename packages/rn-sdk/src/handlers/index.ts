@@ -5,7 +5,7 @@
 import type { BridgeHandler } from '../bridge/types';
 import type { MessageRouter } from '../bridge/MessageRouter';
 import type { VerificationRequest, VerificationResult, SelfSdkError } from '../SelfVerification';
-import { LifecycleHandler, type OperatingMode } from './LifecycleHandler';
+import { LifecycleHandler, type OperatingMode, type Capabilities } from './LifecycleHandler';
 import { BiometricHandler } from './BiometricHandler';
 import { KeychainHandler } from './KeychainHandler';
 import { NfcHandler } from './NfcHandler';
@@ -32,6 +32,18 @@ export interface HandlersConfig {
 }
 
 export function createHandlers(config: HandlersConfig): BridgeHandler[] {
+  const biometric = new BiometricHandler();
+  const keychain = new KeychainHandler();
+  const nfc = new NfcHandler(config.router);
+  const camera = new CameraHandler();
+
+  const capabilities: Capabilities = {
+    nfc: nfc.isAvailable(),
+    mrzCamera: camera.isAvailable(),
+    biometrics: biometric.isAvailable(),
+    secureStorage: keychain.isAvailable(),
+  };
+
   return [
     new LifecycleHandler({
       request: config.request,
@@ -41,11 +53,12 @@ export function createHandlers(config: HandlersConfig): BridgeHandler[] {
       debug: config.debug,
       mode: config.mode,
       referenceId: config.referenceId,
+      capabilities,
     }),
-    new BiometricHandler(),
-    new KeychainHandler(),
-    new NfcHandler(config.router),
-    new CameraHandler(),
+    biometric,
+    keychain,
+    nfc,
+    camera,
     new AnalyticsHandler(config.analytics),
     new HapticHandler(),
     new NavigationHandler(config.navigation),
@@ -64,4 +77,4 @@ export type { DocumentsStore } from './DocumentsHandler';
 export { CryptoHandler } from './CryptoHandler';
 export type { SelfCryptoModule } from './CryptoHandler';
 export { LifecycleHandler } from './LifecycleHandler';
-export type { OperatingMode } from './LifecycleHandler';
+export type { OperatingMode, Capabilities } from './LifecycleHandler';

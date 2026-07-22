@@ -31,6 +31,10 @@ export class BiometricHandler implements BridgeHandler {
     this.BiometricsClass = biometricsClass ?? loadBiometrics();
   }
 
+  isAvailable(): boolean {
+    return this.BiometricsClass !== undefined;
+  }
+
   async handle(method: string, params: Record<string, unknown>): Promise<unknown> {
     if (!this.BiometricsClass) {
       throw new BridgeHandlerError('NOT_AVAILABLE', 'react-native-biometrics is not installed');
