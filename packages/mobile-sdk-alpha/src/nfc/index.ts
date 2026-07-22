@@ -11,6 +11,9 @@ export type { DG1, DG2, ParsedNFCResponse } from '../processing/nfc';
 // Re-export processing functions
 export { parseNFCResponse } from '../processing/nfc';
 
+// Browser-safe normalizer: raw reader JSON -> provable PassportData.
+export { normalizeNfcPassport } from './normalizePassport';
+
 /**
  * Scan NFC chip on a passport or ID card.
  *

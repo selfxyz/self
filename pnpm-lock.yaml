@@ -1401,8 +1401,53 @@ importers:
         specifier: ^2.1.8
         version: 2.1.9(@types/node@22.19.19)(@vitest/ui@2.1.9)(jsdom@25.0.1)(less@4.6.4)(lightningcss@1.32.0)(sass@1.99.0)(supports-color@8.1.1)(terser@5.47.1)
 
+  packages/rn-mrz-scanner:
+    devDependencies:
+      '@types/react':
+        specifier: ^19.2.0
+        version: 19.2.15
+      react:
+        specifier: ^19.2.0
+        version: 19.2.6
+      react-native:
+        specifier: 0.83.9
+        version: 0.83.9(@babel/core@7.29.0)(@react-native-community/cli@20.1.3(typescript@5.9.3))(@react-native/metro-config@0.83.9(@babel/core@7.29.0))(@types/react@19.2.15)(react@19.2.6)
+      tsup:
+        specifier: ^8.0.1
+        version: 8.5.1(@swc/core@1.7.36)(jiti@2.7.0)(postcss@8.5.14)(supports-color@8.1.1)(tsx@4.23.0)(typescript@5.9.3)(yaml@2.9.0)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  packages/rn-nfc-passport:
+    devDependencies:
+      '@types/react':
+        specifier: ^19.2.0
+        version: 19.2.15
+      react:
+        specifier: ^19.2.0
+        version: 19.2.6
+      react-native:
+        specifier: 0.83.9
+        version: 0.83.9(@babel/core@7.29.0)(@react-native-community/cli@20.1.3(typescript@5.9.3))(@react-native/metro-config@0.83.9(@babel/core@7.29.0))(@types/react@19.2.15)(react@19.2.6)
+      tsup:
+        specifier: ^8.0.1
+        version: 8.5.1(@swc/core@1.7.36)(jiti@2.7.0)(postcss@8.5.14)(supports-color@8.1.1)(tsx@4.23.0)(typescript@5.9.3)(yaml@2.9.0)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.8
+        version: 2.1.9(@types/node@22.19.19)(@vitest/ui@2.1.9)(jsdom@25.0.1)(less@4.6.4)(lightningcss@1.32.0)(sass@1.99.0)(supports-color@8.1.1)(terser@5.47.1)
+
   packages/rn-sdk:
     dependencies:
+      '@selfxyz/rn-mrz-scanner':
+        specifier: workspace:^
+        version: link:../rn-mrz-scanner
+      '@selfxyz/rn-nfc-passport':
+        specifier: workspace:^
+        version: link:../rn-nfc-passport
       '@selfxyz/webview-bridge':
         specifier: workspace:^
         version: link:../webview-bridge
@@ -1449,6 +1494,12 @@ importers:
       '@babel/runtime':
         specifier: ^7.28.6
         version: 7.29.2
+      '@selfxyz/rn-mrz-scanner':
+        specifier: workspace:*
+        version: link:../rn-mrz-scanner
+      '@selfxyz/rn-nfc-passport':
+        specifier: workspace:*
+        version: link:../rn-nfc-passport
       '@selfxyz/rn-sdk':
         specifier: workspace:*
         version: link:../rn-sdk

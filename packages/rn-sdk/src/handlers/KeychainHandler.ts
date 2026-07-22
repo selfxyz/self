@@ -30,6 +30,10 @@ export class KeychainHandler implements BridgeHandler {
     this.keychain = keychain ?? loadKeychain();
   }
 
+  isAvailable(): boolean {
+    return this.keychain !== undefined;
+  }
+
   async handle(method: string, params: Record<string, unknown>): Promise<unknown> {
     if (!this.keychain) {
       throw new BridgeHandlerError('NOT_AVAILABLE', 'react-native-keychain is not installed');

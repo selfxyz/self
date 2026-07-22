@@ -7,6 +7,7 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { EuIdNfcInstructionsScreen } from '@selfxyz/euclid';
+import { normalizeNfcPassport } from '@selfxyz/mobile-sdk-alpha/browser';
 import { bridgeNFCScannerAdapter } from '@selfxyz/webview-bridge/adapters';
 
 import { useBridge } from '../../../providers/BridgeProvider';
@@ -76,9 +77,10 @@ export const EuIdNfcInstructionsRoute: React.FC = () => {
     void (async () => {
       try {
         const result = await nfcScanner.scan(scanParams);
+        const documentData = normalizeNfcPassport(result);
         const documentNumber = state.mrz?.passportNumber ?? state.canValue ?? 'unknown';
         const docId = `id_card-${documentNumber}`;
-        await documents.saveDocument(docId, result as never);
+        await documents.saveDocument(docId, documentData as never);
 
         const catalog = await documents.loadDocumentCatalog();
         const entry = {

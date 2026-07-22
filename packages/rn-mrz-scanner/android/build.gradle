@@ -1,0 +1,113 @@
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+
+buildscript {
+  ext.getExtOrDefault = { name ->
+    return rootProject.ext.has(name) ? rootProject.ext.get(name) : project.properties['SelfRnMrz_' + name]
+  }
+
+  repositories {
+    google()
+    mavenCentral()
+  }
+
+  dependencies {
+    classpath "com.android.tools.build:gradle:7.4.2"
+    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${getExtOrDefault('kotlinVersion') ?: '1.9.24'}"
+  }
+}
+
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+
+def getExtOrIntegerDefault(name) {
+  if (rootProject.ext.has(name)) {
+    return rootProject.ext.get(name)
+  }
+  // Return null (not a crash) when the -P override is absent so the caller's `?:` default applies.
+  def raw = project.properties['SelfRnMrz_' + name]
+  return raw != null ? raw.toInteger() : null
+}
+
+// Published version of the xyz.self.sdk:ocr AAR. Locked to the self-sdk-native RN wrapper
+// (@selfxyz/react-native-sdk) npm version — the ocr AAR version is derived from that
+// package.json at publish time (kmp-sdk/ocr/build.gradle.kts) and the rn-sdk-test-app consumes
+// xyz.self.sdk:full at the same coordinate. Bump in lockstep with that release.
+// TODO(RSP-03): pull from a shared version catalog once the RN packages share one.
+def selfOcrVersion = getExtOrDefault('selfOcrVersion') ?: '0.1.3'
+
+android {
+  namespace 'xyz.self.rnmrz'
+  compileSdkVersion getExtOrIntegerDefault('compileSdkVersion') ?: 34
+
+  defaultConfig {
+    minSdkVersion getExtOrIntegerDefault('minSdkVersion') ?: 24
+    targetSdkVersion getExtOrIntegerDefault('targetSdkVersion') ?: 34
+  }
+
+  buildTypes {
+    release {
+      minifyEnabled false
+    }
+  }
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_17
+    targetCompatibility JavaVersion.VERSION_17
+  }
+
+  kotlinOptions {
+    jvmTarget = '17'
+  }
+
+  sourceSets {
+    main {
+      java.srcDirs += "src/main/java"
+      kotlin.srcDirs += "src/main/java"
+    }
+  }
+}
+
+// Maven repo injection for the xyz.self.sdk:* artifacts. Template mirrors
+// self-sdk-native/rn-sdk-test-app/android/build.gradle:35-58. Resolves the ocr AAR while
+// compiling THIS library module.
+//
+// NOTE: a library module's own repositories are NOT consulted for the consuming app's
+// classpath — the app project's repositories govern that resolution. The consuming app must
+// therefore also add these repositories to its root allprojects block (see README). mavenLocal
+// comes first so SDK-dev / pre-release builds resolve `make publish-android-local` versions from
+// ~/.m2, and the self-sdk-dist repo is added only when SELF_SDK_GITHUB_TOKEN is exported.
+repositories {
+  mavenLocal {
+    content {
+      includeGroupByRegex("xyz\\.self\\.sdk(\\..*)?")
+    }
+  }
+  mavenCentral()
+  google()
+  if (System.getenv("SELF_SDK_GITHUB_TOKEN")) {
+    maven {
+      url uri("https://maven.pkg.github.com/selfxyz/self-sdk-dist")
+      credentials {
+        username = System.getenv("SELF_SDK_GITHUB_USER") ?: "self-sdk"
+        password = System.getenv("SELF_SDK_GITHUB_TOKEN")
+      }
+      content {
+        includeGroupByRegex("xyz\\.self\\.sdk(\\..*)?")
+      }
+    }
+  }
+}
+
+dependencies {
+  implementation "com.facebook.react:react-native:+"
+  implementation "org.jetbrains.kotlin:kotlin-stdlib:${getExtOrDefault('kotlinVersion') ?: '1.9.24'}"
+  // Canonical Self Android OCR pipeline (CameraX + ML Kit + Tesseract fallback).
+  implementation "xyz.self.sdk:ocr:${selfOcrVersion}"
+  // The ocr AAR POM declares these at runtime scope only, so they are absent from the compile
+  // classpath. AndroidCameraMrzProvider implements CameraMrzProvider from :shared, and its
+  // scanMrzWithPreview overload set references androidx.camera.view.PreviewView — both types must
+  // be resolvable at compile time for overload resolution / supertype access to succeed.
+  implementation "xyz.self.sdk:shared:${selfOcrVersion}"
+  implementation "androidx.camera:camera-view:1.4.1"
+}

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <uses-permission android:name="android.permission.NFC" />
+  <!-- NFC hardware is optional: the module is capability-gated, so devices without NFC must
+       still install (they fall back to non-NFC flows). Without this, the NFC permission makes
+       Google Play infer android.hardware.nfc is required and filters those devices out. -->
+  <uses-feature android:name="android.hardware.nfc" android:required="false" />
+</manifest>

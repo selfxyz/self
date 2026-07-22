@@ -31,6 +31,13 @@ describe('LifecycleHandler', () => {
     });
   });
 
+  const ALL_CAPABILITIES = {
+    nfc: true,
+    mrzCamera: true,
+    biometrics: true,
+    secureStorage: true,
+  };
+
   describe('getConfig', () => {
     it('returns mode, verification request, debug flag, and platform', async () => {
       const { handler } = createHandler({ debug: true, mode: 'embed' });
@@ -40,7 +47,21 @@ describe('LifecycleHandler', () => {
         verificationRequest: { userId: 'user-1', scope: 'test', disclosures: ['nationality'] },
         debug: true,
         platform: 'react-native',
+        capabilities: ALL_CAPABILITIES,
       });
+    });
+
+    it('returns the provided capabilities', async () => {
+      const capabilities = { nfc: false, mrzCamera: false, biometrics: true, secureStorage: true };
+      const { handler } = createHandler({ capabilities });
+      const result = (await handler.handle('getConfig', {})) as Record<string, unknown>;
+      expect(result.capabilities).toEqual(capabilities);
+    });
+
+    it('treats missing capabilities as all-true (backward compat)', async () => {
+      const { handler } = createHandler();
+      const result = (await handler.handle('getConfig', {})) as Record<string, unknown>;
+      expect(result.capabilities).toEqual(ALL_CAPABILITIES);
     });
 
     it('defaults mode to "self-app" when not specified', async () => {
@@ -69,6 +90,7 @@ describe('LifecycleHandler', () => {
         verificationRequest: {},
         debug: false,
         platform: 'react-native',
+        capabilities: ALL_CAPABILITIES,
       });
     });
   });

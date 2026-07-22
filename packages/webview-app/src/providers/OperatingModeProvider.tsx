@@ -5,6 +5,8 @@
 import type React from 'react';
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
+import type { Capabilities } from '../utils/capabilities';
+import { ALL_CAPABILITIES, normalizeCapabilities } from '../utils/capabilities';
 import { useBridge } from './BridgeProvider';
 
 export type OperatingMode = 'self-app' | 'embed';
@@ -16,6 +18,9 @@ export interface OperatingModeContextValue {
   // Host-minted WebView reference session id (Sentry `reference_id`).
   // Undefined for old hosts / standalone browser mode.
   referenceId?: string;
+  // Optional native capabilities advertised by the host. A host that omits the
+  // field (pre-handshake) is treated as all-true.
+  capabilities: Capabilities;
 }
 
 export interface VerificationRequestPayload {
@@ -31,6 +36,7 @@ interface HostConfigResponse {
   debug?: boolean;
   platform?: string;
   referenceId?: string;
+  capabilities?: Partial<Capabilities> | null;
 }
 
 const GETCONFIG_TIMEOUT_MS = 800;
@@ -50,6 +56,7 @@ export const OperatingModeProvider: React.FC<{ children: React.ReactNode }> = ({
     mode: 'self-app',
     verificationRequest: null,
     isReady: false,
+    capabilities: ALL_CAPABILITIES,
   });
 
   useEffect(() => {
@@ -65,6 +72,7 @@ export const OperatingModeProvider: React.FC<{ children: React.ReactNode }> = ({
           verificationRequest: config?.verificationRequest ?? null,
           isReady: true,
           referenceId: config?.referenceId ?? referenceIdFromUrl(),
+          capabilities: normalizeCapabilities(config?.capabilities),
         });
       } catch {
         // Browser-host fallback, missing transport, or a host that doesn't
@@ -76,6 +84,7 @@ export const OperatingModeProvider: React.FC<{ children: React.ReactNode }> = ({
           verificationRequest: null,
           isReady: true,
           referenceId: referenceIdFromUrl(),
+          capabilities: ALL_CAPABILITIES,
         });
       }
     })();
@@ -102,6 +111,11 @@ export function useOperatingMode(): OperatingModeContextValue {
 // consumer re-renders if the id resolves after first paint (getConfig is async).
 export function useReferenceId(): string | undefined {
   return useOperatingMode().referenceId;
+}
+
+// Reactive selector for the host-advertised native capabilities.
+export function useCapabilities(): Capabilities {
+  return useOperatingMode().capabilities;
 }
 
 export function hasValidVerificationRequest(
