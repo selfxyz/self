@@ -97,9 +97,28 @@ jobs:
           # GitHub Packages accepts "x-access-token" as the username for either token type.
           SELF_SDK_GITHUB_USER: x-access-token
           SELF_SDK_GITHUB_TOKEN: ${{ secrets.SELF_SDK_DIST_TOKEN || steps.github-token.outputs.token }}
+        shell: bash
         run: |
+          set -euo pipefail
           chmod +x packages/rn-sdk-test-app/android/gradlew
-          cd packages/rn-sdk-test-app/android && ./gradlew assembleDebug --quiet --parallel --build-cache --no-configuration-cache
+          cd packages/rn-sdk-test-app/android
+          # The self-sdk-dist GitHub Packages Maven occasionally returns a transient HTTP 500,
+          # and Gradle disables the whole repo for the rest of that invocation once one lookup
+          # fails — turning a blip into a hard failure across nfc/ocr/shared. Retry the build in a
+          # fresh Gradle process (which re-enables the repo) before giving up.
+          for attempt in 1 2 3; do
+            echo "Gradle assembleDebug attempt ${attempt}/3..."
+            if ./gradlew assembleDebug --quiet --parallel --build-cache --no-configuration-cache; then
+              exit 0
+            fi
+            echo "assembleDebug failed on attempt ${attempt}."
+            if [ "${attempt}" -lt 3 ]; then
+              echo "Retrying in 15s..."
+              sleep 15
+            fi
+          done
+          echo "assembleDebug failed after 3 attempts." >&2
+          exit 1
 
   ios-build:
     if: |
