@@ -17,7 +17,9 @@ jest.mock('@selfxyz/rn-sdk', () => ({
 
 const mockHandleProofResult = jest.fn();
 const mockCleanSelfApp = jest.fn();
-const mockSelfAppState: { sessionId: string | null } = { sessionId: 'session-1' };
+const mockSelfAppState: { sessionId: string | null } = {
+  sessionId: 'session-1',
+};
 jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
   __esModule: true,
   useSelfClient: () => ({
@@ -92,7 +94,11 @@ describe('WebViewHostScreen relayer result handling', () => {
       mockSelfVerificationProps.current.onSuccess({ success: true });
     });
 
-    expect(mockHandleProofResult).toHaveBeenCalledWith(true, undefined, undefined);
+    expect(mockHandleProofResult).toHaveBeenCalledWith(
+      true,
+      undefined,
+      undefined,
+    );
     expect(mockGoBack).toHaveBeenCalled();
   });
 

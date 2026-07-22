@@ -112,7 +112,11 @@ const WebViewHostScreen: React.FC = () => {
         return;
       }
       resultEmittedRef.current = true;
-      selfAppState.handleProofResult(proofVerified, error?.code, error?.message);
+      selfAppState.handleProofResult(
+        proofVerified,
+        error?.code,
+        error?.message,
+      );
     },
     [request.verificationId, selfClient],
   );
