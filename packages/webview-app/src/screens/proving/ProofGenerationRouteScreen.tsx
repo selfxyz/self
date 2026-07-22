@@ -8,7 +8,6 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 import { ProofProgressScreen, SelfLogo } from '@selfxyz/euclid';
 import { useProvingStore } from '@selfxyz/mobile-sdk-alpha/browser';
-
 import type { BridgeError } from '@selfxyz/webview-bridge';
 
 import { useOperatingMode } from '../../providers/OperatingModeProvider';
@@ -157,7 +156,17 @@ export const ProofGenerationRouteScreen: React.FC = () => {
         },
       );
     }
-  }, [circuitType, client, currentState, emitTerminalResult, errorCode, location.search, navigate, reason, setUserConfirmed]);
+  }, [
+    circuitType,
+    client,
+    currentState,
+    emitTerminalResult,
+    errorCode,
+    location.search,
+    navigate,
+    reason,
+    setUserConfirmed,
+  ]);
 
   if (!hasValidRequestContext) {
     return null;
