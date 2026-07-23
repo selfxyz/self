@@ -73,7 +73,9 @@ export const useSelfAppStore = create<SelfAppState>((set, get) => ({
     }
 
     try {
-      const resolvedRelayUrl = relayUrl ?? WS_DB_RELAYER;
+      // An explicit null/empty relay opts out of the socket (embedded/WebView
+      // mode, where the host owns it); only undefined falls back to the default.
+      const resolvedRelayUrl = relayUrl === undefined ? WS_DB_RELAYER : relayUrl;
 
       if (!resolvedRelayUrl) {
         // Embedded/WebView mode can skip the relay listener and rely on host lifecycle payloads.
@@ -145,7 +147,16 @@ export const useSelfAppStore = create<SelfAppState>((set, get) => ({
     const socket = get().socket;
     const sessionId = get().sessionId;
 
-    if (!socket || !sessionId) {
+    if (!socket) {
+      // Embedded/WebView runtimes intentionally hold a session but no relayer
+      // socket — the host emits the result on their behalf. Only a total absence
+      // (no session either) is an actual error worth surfacing.
+      if (!sessionId) {
+        console.error('[SelfAppStore] Cannot handleProofResult: Socket or SessionId missing.');
+      }
+      return;
+    }
+    if (!sessionId) {
       console.error('[SelfAppStore] Cannot handleProofResult: Socket or SessionId missing.');
       return;
     }

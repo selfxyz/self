@@ -91,10 +91,14 @@ jest.mock('@selfxyz/mobile-sdk-alpha/components', () => ({
 
 const mockNavigate = jest.fn();
 const mockNavigateToHome = jest.fn();
+const mockPopTo = jest.fn();
+let mockStackRoutes: Array<{ name: string; params?: unknown }> = [];
 
 jest.mock('@react-navigation/native', () => ({
   useNavigation: () => ({
     navigate: mockNavigate,
+    popTo: mockPopTo,
+    getState: () => ({ routes: mockStackRoutes }),
   }),
   useRoute: () => ({
     params: undefined,
@@ -129,6 +133,7 @@ function changeDocumentNumber(value: string) {
 describe('DataConfirmationScreen', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockStackRoutes = [];
   });
 
   it('renders correctly with initial MRZ data', () => {
@@ -148,6 +153,55 @@ describe('DataConfirmationScreen', () => {
     fireEvent.press(screen.getByText('Continue'));
 
     expect(mockNavigate).toHaveBeenCalledWith('DocumentNFCScan');
+  });
+
+  describe('NFC-debug detour', () => {
+    it('pops back to Troubleshooting when its route is marked pending', () => {
+      mockStackRoutes = [
+        { name: 'Home' },
+        { name: 'Troubleshooting', params: { nfcDebug: 'pending' } },
+        { name: 'DocumentCamera' },
+        { name: 'DataConfirmation' },
+      ];
+      render(<DataConfirmationScreen />);
+
+      fireEvent.press(screen.getByText('Continue'));
+
+      expect(mockPopTo).toHaveBeenCalledWith('Troubleshooting', {
+        nfcDebug: 'run',
+      });
+      expect(mockNavigate).not.toHaveBeenCalledWith('DocumentNFCScan');
+    });
+
+    it('ignores a stale pending mark buried under a different flow', () => {
+      mockStackRoutes = [
+        { name: 'Home' },
+        { name: 'Troubleshooting', params: { nfcDebug: 'pending' } },
+        { name: 'DocumentOnboarding' },
+        { name: 'DocumentCamera' },
+        { name: 'DataConfirmation' },
+      ];
+      render(<DataConfirmationScreen />);
+
+      fireEvent.press(screen.getByText('Continue'));
+
+      expect(mockPopTo).not.toHaveBeenCalled();
+      expect(mockNavigate).toHaveBeenCalledWith('DocumentNFCScan');
+    });
+
+    it('ignores a Troubleshooting route without the pending mark', () => {
+      mockStackRoutes = [
+        { name: 'Home' },
+        { name: 'Troubleshooting' },
+        { name: 'DataConfirmation' },
+      ];
+      render(<DataConfirmationScreen />);
+
+      fireEvent.press(screen.getByText('Continue'));
+
+      expect(mockPopTo).not.toHaveBeenCalled();
+      expect(mockNavigate).toHaveBeenCalledWith('DocumentNFCScan');
+    });
   });
 
   it('navigates to home screen on cancel', () => {

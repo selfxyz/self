@@ -24,6 +24,17 @@ const EUID_MRZ_SCAN = {
   dateOfExpiry: '300115',
 };
 
+// Valid-shape chip payload so the fail-closed normalizeNfcPassport (strict
+// base64) accepts it and the flow reaches the success route.
+const EUID_CHIP_FIXTURE = {
+  mrz: 'IDUTOEU1234567<<<<<<<<<<<<<<<9001156M3001151UTO<<<<<<<<<<<8ANNA<<MARIA<<<<<<<<<<<<<<<<<<',
+  documentSigningCertificate: '-----BEGIN CERTIFICATE-----\nMIICdummy\n-----END CERTIFICATE-----',
+  eContent: 'AQIDBA==',
+  encapContent: 'AQIDBA==',
+  encryptedDigest: 'AQIDBA==',
+  dataGroupHashes: { '1': 'aabb', '2': 'ccdd' },
+};
+
 describe('EU-ID and Aadhaar onboarding flows', () => {
   afterEach(cleanup);
 
@@ -89,7 +100,7 @@ describe('EU-ID and Aadhaar onboarding flows', () => {
       strictMode: true,
       setupHandlers: mock => {
         mock.handle('camera', 'scanMRZ', () => new Promise<typeof EUID_MRZ_SCAN>(resolve => (resolveScan = resolve)));
-        mock.handleWith('nfc', 'scanPassport', { dg1: 'mock-dg1', sod: 'mock-sod' });
+        mock.handleWith('nfc', 'scanPassport', EUID_CHIP_FIXTURE);
       },
     });
 

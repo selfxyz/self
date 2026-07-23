@@ -3,12 +3,13 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { Paths } from 'expo-file-system';
-import React, { useCallback, useEffect, useMemo } from 'react';
-import { Alert, Platform, View } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+import { Platform, View } from 'react-native';
 import type { RouteProp } from '@react-navigation/native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
+import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import {
   type AnalyticsSink,
   type DocumentsStore,
@@ -40,10 +41,13 @@ const WebViewHostScreen: React.FC = () => {
   const navigation =
     useNavigation() as NativeStackScreenProps<RootStackParamList>['navigation'];
   const route = useRoute<RouteProp<RootStackParamList, 'WebViewHost'>>();
+  const selfClient = useSelfClient();
   const request = useMemo<VerificationRequest>(
     () => (route.params?.request ?? {}) as VerificationRequest,
     [route.params?.request],
   );
+
+  const resultEmittedRef = useRef(false);
 
   const bundleRootUri = useMemo(() => {
     if (Platform.OS !== 'ios') return undefined;
@@ -88,29 +92,88 @@ const WebViewHostScreen: React.FC = () => {
     [],
   );
 
-  const handleSuccess = useCallback(
-    (result: VerificationResult) => {
-      Alert.alert(
-        'WebView host',
-        `Verification finished: ${JSON.stringify(result)}`,
-        [{ text: 'Close', onPress: () => navigation.goBack() }],
+  // The host owns the relayer socket (opened in deeplinks via startAppListener).
+  // The WebView's proving machine can't own it, so it hands its terminal result
+  // back over the bridge (lifecycle.setResult) and the host emits to the relayer,
+  // which is what notifies the requesting website.
+  const emitRelayerResult = useCallback(
+    (proofVerified: boolean, error?: SelfSdkError) => {
+      // Emit exactly once. The WebView can hand back its terminal result twice
+      // (PROVING-TERMINAL setResult and the result-screen Continue button race),
+      // so guard here to keep handleProofResult idempotent. Emit is decoupled
+      // from navigation: dismiss/cancel drives goBack, not this path.
+      if (resultEmittedRef.current) {
+        return;
+      }
+      const selfAppState = selfClient.getSelfAppState();
+      // Only emit while the socket still tracks this request's session, so a
+      // stale/reused socket never notifies the wrong website.
+      if (
+        request.verificationId &&
+        selfAppState.sessionId &&
+        selfAppState.sessionId !== request.verificationId
+      ) {
+        trackEvent('webview_relayer_session_mismatch', {
+          request_session_match: false,
+        });
+        return;
+      }
+      resultEmittedRef.current = true;
+      selfAppState.handleProofResult(
+        proofVerified,
+        error?.code,
+        error?.message,
       );
     },
-    [navigation],
+    [request.verificationId, selfClient],
+  );
+
+  // Emit-vs-navigation split: success/failure only emit the terminal result to
+  // the relayer (fired from the WebView's lifecycle.setResult), leaving the
+  // in-WebView result screen visible. Navigation happens solely on dismiss →
+  // onCancelled, which the result-screen Continue button triggers via
+  // lifecycle.dismiss after setResult.
+  const handleSuccess = useCallback(
+    (_result: VerificationResult) => {
+      emitRelayerResult(true);
+    },
+    [emitRelayerResult],
   );
 
   const handleFailure = useCallback(
     (error: SelfSdkError) => {
-      Alert.alert('WebView host', `Failure: ${error.code} — ${error.message}`, [
-        { text: 'Close', onPress: () => navigation.goBack() },
-      ]);
+      emitRelayerResult(false, error);
     },
-    [navigation],
+    [emitRelayerResult],
   );
 
   const handleCancelled = useCallback(() => {
     navigation.goBack();
   }, [navigation]);
+
+  // Tear down the relayer socket when the host leaves so it isn't orphaned,
+  // but only for a truly abandoned session. Two guards protect live sockets:
+  useEffect(
+    () => () => {
+      const selfAppState = selfClient.getSelfAppState();
+      // Never tear down a socket a newer deeplink re-pointed to another session.
+      if (
+        request.verificationId &&
+        selfAppState.sessionId &&
+        selfAppState.sessionId !== request.verificationId
+      ) {
+        return;
+      }
+      // A terminal result was handed to the relayer: leave the socket so
+      // socket.io can flush a buffered emit after a transient reconnect (the
+      // relay server closes the session on receipt).
+      if (resultEmittedRef.current) {
+        return;
+      }
+      selfAppState.cleanSelfApp();
+    },
+    [selfClient, request.verificationId],
+  );
 
   const handleLoadDiagnostic = useCallback((event: LoadDiagnosticEvent) => {
     captureWebViewLoadDiagnostic(event.kind, event.source, event.detail);

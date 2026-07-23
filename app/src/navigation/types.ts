@@ -17,6 +17,10 @@ export type AadhaarRoutesParamList = {
   AadhaarUpload: {
     countryCode: string;
   };
+  AadhaarPdfPassword: {
+    fileUri: string;
+    countryCode: string;
+  };
   AadhaarUploadSuccess: undefined;
   AadhaarUploadError: {
     errorType: string;
@@ -92,8 +96,11 @@ export type WebViewHostRequest = {
 
 export type DevRoutesParamList = {
   CreateMock: undefined;
+  DevApduCapture: undefined;
+  DevNfcDebug: undefined;
   MockDataDeepLink: undefined;
   SocialLoginDemo: undefined;
+  Troubleshooting: { nfcDebug?: 'pending' | 'run' } | undefined;
   WebViewHost: { request?: WebViewHostRequest } | undefined;
 };
 

@@ -9,6 +9,22 @@ import type { VerificationRequest, VerificationResult, SelfSdkError } from '../S
 
 export type OperatingMode = 'self-app' | 'embed';
 
+// Optional native capabilities advertised to the WebView at boot so it can
+// gate flow selection before a bridge call rejects with NOT_AVAILABLE.
+export interface Capabilities {
+  nfc: boolean;
+  mrzCamera: boolean;
+  biometrics: boolean;
+  secureStorage: boolean;
+}
+
+const ALL_CAPABILITIES: Capabilities = {
+  nfc: true,
+  mrzCamera: true,
+  biometrics: true,
+  secureStorage: true,
+};
+
 interface LifecycleConfig {
   request: VerificationRequest;
   onSuccess: (result: VerificationResult) => void;
@@ -19,6 +35,9 @@ interface LifecycleConfig {
   // Host-minted WebView reference session id surfaced to the WebView so both
   // runtimes can tag Sentry `reference_id` for the same session.
   referenceId?: string;
+  // Absent capabilities are treated as all-true so a host that omits them keeps
+  // pre-handshake behavior.
+  capabilities?: Capabilities;
 }
 
 export class LifecycleHandler implements BridgeHandler {
@@ -40,6 +59,7 @@ export class LifecycleHandler implements BridgeHandler {
           debug: this.config.debug,
           platform: 'react-native',
           referenceId: this.config.referenceId,
+          capabilities: this.config.capabilities ?? ALL_CAPABILITIES,
         };
       case 'setResult':
         return this.setResult(params);
@@ -55,21 +75,18 @@ export class LifecycleHandler implements BridgeHandler {
   }
 
   private setResult(params: Record<string, unknown>): null {
+    // A flat lifecycle payload (e.g. { type: 'proofRequested' }) is a success.
     const type = params.type as string | undefined;
     const success = params.success === true || params.success === 'true';
-    const errorCode = params.errorCode as string | undefined;
-    const errorMessage = params.errorMessage as string | undefined;
+    // Failures arrive either flat (errorCode/errorMessage) or as the bridge
+    // VerificationResult's nested `error: { code, message }`. The nested form is
+    // what the WebView proving flow emits (DiscloseResultScreen); without it a
+    // failed proof was misread as a cancellation and never reached onFailure.
+    const nestedError = params.error as { code?: string; message?: string } | undefined;
+    const errorCode = (params.errorCode as string | undefined) ?? nestedError?.code;
+    const errorMessage = (params.errorMessage as string | undefined) ?? nestedError?.message;
 
-    if (type) {
-      // Flat lifecycle payload (e.g. { type: 'proofRequested' }) — treat as success
-      this.config.onSuccess({
-        success: true,
-        userId: params.userId as string | undefined,
-        verificationId: params.verificationId as string | undefined,
-        proof: params.proof,
-        claims: params.claims as Record<string, unknown> | undefined,
-      });
-    } else if (success) {
+    if (type || success) {
       this.config.onSuccess({
         success: true,
         userId: params.userId as string | undefined,

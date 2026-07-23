@@ -24,7 +24,7 @@
   ],
   "scripts": {
     "build": "pnpm --filter @selfxyz/webview-app build && pnpm copy-assets && tsup",
-    "copy-assets": "mkdir -p ./assets/self-wallet && cp -r ../webview-app/dist/. ./assets/self-wallet/ && node scripts/strip-embedded-sri.cjs",
+    "copy-assets": "rm -rf ./assets/self-wallet && mkdir -p ./assets/self-wallet && cp -r ../webview-app/dist/. ./assets/self-wallet/ && node scripts/strip-embedded-sri.cjs",
     "prepublishOnly": "pnpm build",
     "test": "pnpm copy-assets && tsup && vitest run",
     "typecheck": "tsc --noEmit",
@@ -48,6 +48,8 @@
     "vitest": "^2.1.8"
   },
   "peerDependencies": {
+    "@selfxyz/rn-mrz-scanner": "workspace:^",
+    "@selfxyz/rn-nfc-passport": "workspace:^",
     "react": "^19.0.0",
     "react-native": ">=0.83.0",
     "react-native-biometrics": "^3.0.1",
@@ -57,6 +59,12 @@
     "react-native-webview": ">=13.0.0"
   },
   "peerDependenciesMeta": {
+    "@selfxyz/rn-mrz-scanner": {
+      "optional": true
+    },
+    "@selfxyz/rn-nfc-passport": {
+      "optional": true
+    },
     "react-native-biometrics": {
       "optional": true
     },

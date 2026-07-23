@@ -3,10 +3,11 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type React from 'react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { PassportNfcInstructionsScreen } from '@selfxyz/euclid';
+import { normalizeNfcPassport } from '@selfxyz/mobile-sdk-alpha/browser';
 import { bridgeNFCScannerAdapter, onNfcProgress } from '@selfxyz/webview-bridge/adapters';
 
 import { useBridge } from '../../../providers/BridgeProvider';
@@ -45,6 +46,14 @@ const progressStepToNfcStep = (progressStep: string): NfcStep => {
   }
 };
 
+// Shared across StrictMode's dev double-effect so the scan result isn't
+// stranded in the first (cancelled) effect run. `nfcScanClaims` counts live
+// effect runs: at 0 (a real route exit) the scan is cancelled natively and
+// invalidated so the next passport starts a fresh scan with its own session.
+let activeNfcScan: Promise<unknown> | null = null;
+let activeNfcSessionId: string | null = null;
+let nfcScanClaims = 0;
+
 export const PassportNfcRoute: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -53,8 +62,6 @@ export const PassportNfcRoute: React.FC = () => {
   const state = (location.state as RouteState | null) ?? {};
   const mrz = state.mrz;
   const nfcScanner = useMemo(() => bridgeNFCScannerAdapter(bridge), [bridge]);
-  const startedRef = useRef(false);
-  const cancelledRef = useRef(false);
   const [step, setStep] = useState<NfcStep>(1);
 
   useEffect(() => {
@@ -62,11 +69,6 @@ export const PassportNfcRoute: React.FC = () => {
       navigate('/capture/passport/code-scan-instructions', { replace: true });
       return;
     }
-    // Reset each setup so StrictMode's benign setup→cleanup→setup can't cancel the one
-    // in-flight scan the start-once guard lets us begin. This screen auto-scans with no
-    // manual button, so a dropped result strands the user on the instructions forever;
-    // only a real unmount keeps cancel set.
-    cancelledRef.current = false;
 
     // Subscribe outside the start-once guard so the progress listener is re-established
     // on the StrictMode remount; the scan itself (started once below) keeps running.
@@ -75,32 +77,34 @@ export const PassportNfcRoute: React.FC = () => {
       setStep(prev => (next > prev ? next : prev));
     });
 
-    if (startedRef.current) {
-      return () => {
-        cancelledRef.current = true;
-        unsubscribe();
-      };
-    }
-    startedRef.current = true;
-
-    const sessionId =
-      typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
-        ? crypto.randomUUID()
-        : `sess-${Date.now()}`;
+    let cancelled = false;
+    nfcScanClaims += 1;
 
     void (async () => {
-      analytics.trackEvent('passport_nfc_scan_started');
-      try {
-        const result = await nfcScanner.scan({
+      if (!activeNfcScan) {
+        analytics.trackEvent('passport_nfc_scan_started');
+        const sessionId =
+          typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+            ? crypto.randomUUID()
+            : `sess-${Date.now()}`;
+        activeNfcSessionId = sessionId;
+        activeNfcScan = nfcScanner.scan({
           passportNumber: mrz.passportNumber,
           dateOfBirth: mrz.dateOfBirth,
           dateOfExpiry: mrz.dateOfExpiry,
           sessionId,
         });
-        if (cancelledRef.current) return;
+      }
+      const scan = activeNfcScan;
+      try {
+        const result = await scan;
+        if (activeNfcScan === scan) activeNfcScan = null;
+        if (cancelled) return;
+
+        const passportData = normalizeNfcPassport(result);
 
         const docId = `passport-${mrz.passportNumber}`;
-        await documents.saveDocument(docId, result as never);
+        await documents.saveDocument(docId, passportData as never);
         const catalog = await documents.loadDocumentCatalog();
         const entry = {
           id: docId,
@@ -126,7 +130,8 @@ export const PassportNfcRoute: React.FC = () => {
           replace: true,
         });
       } catch (err) {
-        if (cancelledRef.current) return;
+        if (activeNfcScan === scan) activeNfcScan = null;
+        if (cancelled) return;
         const message = err instanceof Error ? err.message : 'NFC scan failed';
         analytics.trackEvent('passport_nfc_scan_failed', { error: message });
         haptic.trigger('warning');
@@ -142,8 +147,18 @@ export const PassportNfcRoute: React.FC = () => {
     })();
 
     return () => {
-      cancelledRef.current = true;
+      cancelled = true;
       unsubscribe();
+      nfcScanClaims -= 1;
+      // Deferred: a StrictMode remount re-claims synchronously before this
+      // runs; only a real route exit leaves the count at 0.
+      setTimeout(() => {
+        if (nfcScanClaims === 0 && activeNfcScan) {
+          activeNfcScan = null;
+          bridge.fire('nfc', 'cancelScan', { sessionId: activeNfcSessionId });
+          activeNfcSessionId = null;
+        }
+      }, 0);
     };
   }, [analytics, bridge, documents, haptic, mrz, navigate, nfcScanner, state.countryCode, state.documentType]);
 

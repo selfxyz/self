@@ -6,7 +6,11 @@ import React, { useCallback } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, XStack, YStack } from 'tamagui';
 import type { RouteProp } from '@react-navigation/native';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import {
+  StackActions,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Image } from '@tamagui/lucide-icons';
 
@@ -84,7 +88,10 @@ const AadhaarUploadErrorScreen: React.FC = () => {
   }, [navigation]);
 
   const handleTryAgain = useCallback(() => {
-    navigation.goBack();
+    // On the PDF path, goBack would land on the password screen for the same
+    // unusable PDF; pop to the picker instead. popTo keeps the existing
+    // AadhaarUpload params (countryCode).
+    navigation.dispatch(StackActions.popTo('AadhaarUpload'));
   }, [navigation]);
 
   const handleTryAlternative = useCallback(async () => {

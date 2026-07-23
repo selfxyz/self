@@ -7,7 +7,6 @@ const path = require('node:path');
 
 const projectRoot = __dirname;
 const workspaceRoot = path.resolve(__dirname, '../..');
-const workspaceRootEscaped = workspaceRoot.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 module.exports = mergeConfig(getDefaultConfig(projectRoot), {
   projectRoot,
@@ -18,10 +17,6 @@ module.exports = mergeConfig(getDefaultConfig(projectRoot), {
     unstable_enableSymlinks: true,
     nodeModulesPaths: [path.resolve(projectRoot, 'node_modules'), path.resolve(workspaceRoot, 'node_modules')],
     blockList: [
-      new RegExp(`^${workspaceRootEscaped}/node_modules/react(/|$)`),
-      new RegExp(`^${workspaceRootEscaped}/node_modules/react-native(/|$)`),
-      new RegExp(`^${workspaceRootEscaped}/node_modules/react-dom(/|$)`),
-      new RegExp(`^${workspaceRootEscaped}/node_modules/scheduler(/|$)`),
       /.*\/app\/node_modules\/react-native\/.*/,
       /.*\/app\/node_modules\/react\/.*/,
       /.*\/packages\/mobile-sdk-demo\/node_modules\/react-native\/.*/,

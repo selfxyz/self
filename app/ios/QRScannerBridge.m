@@ -16,4 +16,6 @@ RCT_EXTERN_METHOD(scanQRCode:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromis
 
 RCT_EXTERN_METHOD(scanQRCodeFromPhotoLibrary:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 
+RCT_EXTERN_METHOD(scanQRCodeFromPDF:(NSString *)uri password:(NSString *)password resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
+
 @end

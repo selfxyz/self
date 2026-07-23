@@ -23,10 +23,21 @@ export const AadhaarNavBar = (props: NativeStackHeaderProps) => {
   const insets = useSafeAreaInsets();
 
   const currentRouteName = props.route.name;
-  const isFirstStep = currentRouteName === 'AadhaarUpload';
-  const isSecondStep =
-    currentRouteName === 'AadhaarUploadSuccess' ||
-    currentRouteName === 'AadhaarUploadError';
+  // The PDF path inserts a password step, making it a 3-step flow; the QR
+  // image path stays 2 steps. On success/error the current route alone can't
+  // tell the paths apart, so check the stack for the password screen.
+  const isPdfFlow =
+    currentRouteName === 'AadhaarPdfPassword' ||
+    props.navigation
+      .getState()
+      .routes.some(route => route.name === 'AadhaarPdfPassword');
+  const totalSteps = isPdfFlow ? 3 : 2;
+  const currentStep =
+    currentRouteName === 'AadhaarUpload'
+      ? 1
+      : currentRouteName === 'AadhaarPdfPassword'
+        ? 2
+        : totalSteps;
 
   const handleClose = () => {
     buttonTap();
@@ -102,18 +113,15 @@ export const AadhaarNavBar = (props: NativeStackHeaderProps) => {
         backgroundColor={slate100}
       >
         <XStack gap={8}>
-          <YStack
-            flex={1}
-            height={4}
-            backgroundColor={isFirstStep ? '#00D4FF' : slate300}
-            borderRadius={2}
-          />
-          <YStack
-            flex={1}
-            height={4}
-            backgroundColor={isSecondStep ? '#00D4FF' : slate300}
-            borderRadius={2}
-          />
+          {Array.from({ length: totalSteps }, (_, index) => (
+            <YStack
+              key={index}
+              flex={1}
+              height={4}
+              backgroundColor={index < currentStep ? '#00D4FF' : slate300}
+              borderRadius={2}
+            />
+          ))}
         </XStack>
       </YStack>
     </YStack>

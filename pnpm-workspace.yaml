@@ -20,6 +20,8 @@ strictPeerDependencies: false
 allowBuilds:
   '@parcel/watcher': true # native file-watcher; install builds from source
   '@scarf/scarf': false # telemetry phone-home; denied
+  '@selfxyz/rn-mrz-scanner': true # postinstall fetches + sha256-verifies the SelfSdkOcr iOS xcframework from self-sdk-dist
+  '@selfxyz/rn-nfc-passport': true # postinstall fetches + sha256-verifies the SelfSdkNfc/NFCPassportReader iOS xcframeworks from self-sdk-dist
   '@sentry/cli': true # postinstall downloads the sentry-cli binary
   '@swc/core': true # postinstall fetches the native SWC binary
   '@zk-email/zk-regex-circom': false # install script is a bare `echo`; nothing to build
@@ -48,6 +50,7 @@ patchedDependencies:
   react-native-date-picker@5.0.13: pnpm-patches/react-native-date-picker@5.0.13.patch
   react-native-keychain@10.0.0: pnpm-patches/react-native-keychain@10.0.0.patch
   react-native-passport-reader@1.0.3: pnpm-patches/react-native-passport-reader@1.0.3.patch
+  '@segment/analytics-react-native@2.23.0': pnpm-patches/@segment__analytics-react-native@2.23.0.patch
 
 # Pin jsdom to v25 across the workspace. jsdom v26+ uses cssstyle v5, which
 # turns CSSStyleDeclaration into a strict Proxy that rejects react-dom v18's

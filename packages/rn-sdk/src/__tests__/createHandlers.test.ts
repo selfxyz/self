@@ -46,6 +46,27 @@ describe('createHandlers', () => {
     expect(config.referenceId).toBe('corr-abc');
   });
 
+  it('advertises capabilities as false when optional native modules are absent', async () => {
+    const router = new MessageRouter({ sendToWebView: vi.fn() });
+    const handlers = createHandlers({
+      request: {},
+      onSuccess: vi.fn(),
+      onFailure: vi.fn(),
+      onCancelled: vi.fn(),
+      debug: false,
+      router,
+    });
+
+    const lifecycle = handlers.find(h => h.domain === 'lifecycle');
+    const config = (await lifecycle?.handle('getConfig', {})) as Record<string, unknown>;
+    expect(config.capabilities).toEqual({
+      nfc: false,
+      mrzCamera: false,
+      biometrics: false,
+      secureStorage: false,
+    });
+  });
+
   it('returns handlers for all bridge domains', () => {
     const router = new MessageRouter({ sendToWebView: vi.fn() });
     const handlers = createHandlers({

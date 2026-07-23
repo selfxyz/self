@@ -49,6 +49,7 @@ describe('navigation', () => {
       const navigationScreens = require('@/navigation').navigationScreens;
       const listOfScreens = Object.keys(navigationScreens).sort();
       expect(listOfScreens).toEqual([
+        'AadhaarPdfPassword',
         'AadhaarUpload',
         'AadhaarUploadError',
         'AadhaarUploadSuccess',
@@ -62,10 +63,12 @@ describe('navigation', () => {
         'CreateMock',
         'DataConfirmation',
         'DeferredLinkingInfo',
+        'DevApduCapture',
         'DevDangerZone',
         'DevFeatureFlags',
         'DevHapticFeedback',
         'DevLoadingScreen',
+        'DevNfcDebug',
         'DevPrivateKey',
         'DevSettings',
         'Disclaimer',

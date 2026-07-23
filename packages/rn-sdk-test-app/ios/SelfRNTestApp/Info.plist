@@ -24,11 +24,19 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NFCReaderUsageDescription</key>
+	<string>Needed to read passport NFC chip for identity verification.</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
-	  <key>NSAllowsArbitraryLoads</key>
+		<key>NSAllowsArbitraryLoads</key>
 		<false/>
 	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>Needed to scan the passport MRZ.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Needed to authorize biometric verification.</string>
+	<key>RCTNewArchEnabled</key>
+	<true/>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIRequiredDeviceCapabilities</key>
@@ -43,11 +51,5 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-	<key>NSCameraUsageDescription</key>
-	<string>Needed to scan the passport MRZ.</string>
-	<key>NSFaceIDUsageDescription</key>
-	<string>Needed to authorize biometric verification.</string>
-	<key>NFCReaderUsageDescription</key>
-	<string>Needed to read passport NFC chip for identity verification.</string>
 </dict>
 </plist>
