@@ -38,9 +38,7 @@ describe('derivePrivateKey (BIP44 parity guard)', () => {
   // app and WebView derive it independently from the same recovery phrase.
   it('derives the canonical BIP44 account-0 key for the Hardhat mnemonic', () => {
     const mnemonic = 'test test test test test test test test test test test junk';
-    expect(derivePrivateKey(mnemonic)).toBe(
-      '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80',
-    );
+    expect(derivePrivateKey(mnemonic)).toBe('0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80');
   });
 });
 
