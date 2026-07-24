@@ -8,6 +8,7 @@ import {
 } from '@selfxyz/mobile-sdk-alpha';
 
 import {
+  evaluateGoogleUsatEntryGate,
   evaluateGoogleUsatGate,
   evaluateGoogleUsatGateForDocument,
   FORCE_GOOGLE_USAT_FOR_TESTING,
@@ -204,5 +205,117 @@ describe('evaluateGoogleUsatGate', () => {
       evaluateGoogleUsatGateForDocument(selfClient, app, 'selected', docs),
     ).resolves.toBe('allow');
     expect(mockGetAllDocuments).not.toHaveBeenCalled();
+  });
+});
+
+describe('evaluateGoogleUsatEntryGate', () => {
+  const selfClient = {
+    loadDocumentCatalog: jest.fn(),
+  } as any;
+  const app = {
+    sessionId: 'session-id',
+    endpointType: 'celo',
+    chainID: 42220,
+    endpoint: '0xabc',
+  } as any;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockIsGoogleUsatProofRequest.mockReturnValue(false);
+    mockGetAllDocuments.mockResolvedValue({});
+    selfClient.loadDocumentCatalog.mockResolvedValue({});
+  });
+
+  it('allows non Google USAT requests without loading documents', async () => {
+    await expect(evaluateGoogleUsatEntryGate(selfClient, app)).resolves.toBe(
+      'allow',
+    );
+    expect(selfClient.loadDocumentCatalog).not.toHaveBeenCalled();
+  });
+
+  it('allows when no document is selected (defers to downstream selection)', async () => {
+    mockIsGoogleUsatProofRequest.mockReturnValue(true);
+    selfClient.loadDocumentCatalog.mockResolvedValue({});
+    await expect(evaluateGoogleUsatEntryGate(selfClient, app)).resolves.toBe(
+      'allow',
+    );
+  });
+
+  it('allows when the selected document is eligible', async () => {
+    mockIsGoogleUsatProofRequest.mockReturnValue(true);
+    selfClient.loadDocumentCatalog.mockResolvedValue({
+      selectedDocumentId: 'b',
+    });
+    mockGetAllDocuments.mockResolvedValue({
+      b: { data: { documentCategory: 'passport', mock: false } } as any,
+    });
+    await expect(evaluateGoogleUsatEntryGate(selfClient, app)).resolves.toBe(
+      'allow',
+    );
+  });
+
+  it('allows (defers to selector) when selected is kyc but an eligible alternative exists', async () => {
+    mockIsGoogleUsatProofRequest.mockReturnValue(true);
+    selfClient.loadDocumentCatalog.mockResolvedValue({
+      selectedDocumentId: 'a',
+    });
+    mockGetAllDocuments.mockResolvedValue({
+      a: { data: { documentCategory: 'kyc', mock: false } } as any,
+      b: { data: { documentCategory: 'aadhaar', mock: false } } as any,
+    });
+    await expect(evaluateGoogleUsatEntryGate(selfClient, app)).resolves.toBe(
+      'allow',
+    );
+  });
+
+  it('blocks when selected is kyc and no eligible alternative exists', async () => {
+    mockIsGoogleUsatProofRequest.mockReturnValue(true);
+    selfClient.loadDocumentCatalog.mockResolvedValue({
+      selectedDocumentId: 'a',
+    });
+    mockGetAllDocuments.mockResolvedValue({
+      a: { data: { documentCategory: 'kyc', mock: false } } as any,
+    });
+    await expect(evaluateGoogleUsatEntryGate(selfClient, app)).resolves.toBe(
+      'block',
+    );
+  });
+
+  it('blocks when the only alternative is a mock document', async () => {
+    mockIsGoogleUsatProofRequest.mockReturnValue(true);
+    selfClient.loadDocumentCatalog.mockResolvedValue({
+      selectedDocumentId: 'a',
+    });
+    mockGetAllDocuments.mockResolvedValue({
+      a: { data: { documentCategory: 'kyc', mock: false } } as any,
+      b: { data: { documentCategory: 'passport', mock: true } } as any,
+    });
+    await expect(evaluateGoogleUsatEntryGate(selfClient, app)).resolves.toBe(
+      'block',
+    );
+  });
+
+  it('allows (defers) when the selected document is missing but an eligible alternative exists', async () => {
+    mockIsGoogleUsatProofRequest.mockReturnValue(true);
+    selfClient.loadDocumentCatalog.mockResolvedValue({
+      selectedDocumentId: 'missing',
+    });
+    mockGetAllDocuments.mockResolvedValue({
+      b: { data: { documentCategory: 'passport', mock: false } } as any,
+    });
+    await expect(evaluateGoogleUsatEntryGate(selfClient, app)).resolves.toBe(
+      'allow',
+    );
+  });
+
+  it('fails open when getAllDocuments throws', async () => {
+    mockIsGoogleUsatProofRequest.mockReturnValue(true);
+    selfClient.loadDocumentCatalog.mockResolvedValue({
+      selectedDocumentId: 'a',
+    });
+    mockGetAllDocuments.mockRejectedValue(new Error('network down'));
+    await expect(evaluateGoogleUsatEntryGate(selfClient, app)).resolves.toBe(
+      'allow',
+    );
   });
 });

@@ -46,10 +46,18 @@ describe('isGoogleUsatProofRequest', () => {
     expect(isGoogleUsatProofRequest(buildApp({ scope: 'some-other-scope' }))).toBe(false);
   });
 
-  it('returns false when endpoint differs', () => {
-    expect(isGoogleUsatProofRequest(buildApp({ endpoint: 'https://example.com/api/verify' }))).toBe(false);
+  // TEMPORARY(SELF-3667): endpoint is excluded from the identity match, so a
+  // differing endpoint (with matching scope+appName) now matches. Restore the
+  // original `toBe(false)` assertion (and rename back to "returns false when
+  // endpoint differs") when endpoint matching is re-enabled via Remote Config.
+  it('matches even when endpoint differs (endpoint excluded from match)', () => {
+    expect(isGoogleUsatProofRequest(buildApp({ endpoint: 'https://example.com/api/verify' }))).toBe(true);
   });
 
+  // TEMPORARY(SELF-3667): the following endpoint-normalization cases still pass
+  // but no longer exercise endpoint matching (endpoint is currently excluded
+  // from the match). They become meaningful again once endpoint matching is
+  // restored via Remote Config; kept here so that restoration re-covers them.
   it('is case-insensitive on the endpoint host and tolerates surrounding whitespace', () => {
     const variant = ` ${GOOGLE_USAT_FAUCET_ENDPOINT.toUpperCase()} `;
     expect(isGoogleUsatProofRequest(buildApp({ endpoint: variant }))).toBe(true);

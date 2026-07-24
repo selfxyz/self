@@ -19,7 +19,7 @@ import {
 } from '@/services/points';
 import useUserStore from '@/stores/userStore';
 import { useVerificationGateStore } from '@/stores/verificationGateStore';
-import { evaluateGoogleUsatGate } from '@/utils/googleUsatGate';
+import { evaluateGoogleUsatEntryGate } from '@/utils/googleUsatGate';
 import { registerModalCallbacks } from '@/utils/modalCallbackRegistry';
 
 type UseEarnPointsFlowParams = {
@@ -40,7 +40,7 @@ export const useEarnPointsFlow = ({
 
   const navigateToPointsProof = useCallback(async () => {
     const selfApp = await pointsSelfApp();
-    const gate = await evaluateGoogleUsatGate(selfClient, selfApp);
+    const gate = await evaluateGoogleUsatEntryGate(selfClient, selfApp);
     if (gate === 'block') {
       selfClient.trackEvent(ProofEvents.GOOGLE_USAT_BLOCKED, {
         entry_point: 'earn_points',

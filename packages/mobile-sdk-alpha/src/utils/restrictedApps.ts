@@ -7,23 +7,30 @@ import type { DocumentCategory } from '@selfxyz/common/utils/types';
 
 import { RESTRICTED_APP_REGISTRY, type RestrictedAppPolicy } from '../constants/restrictedApps';
 
-function normalizeEndpoint(value: string | undefined): string {
-  return value?.trim().toLowerCase() ?? '';
-}
+// TEMPORARY(SELF-3667): the endpoint clause is disabled so the Google USAT gate
+// keeps matching when the faucet's endpoint rotates, without shipping an app
+// release each time. Restore `normalizeEndpoint`, the `endpoint` local, and the
+// endpoint clause below once the endpoint is driven by Remote Config. SELF-3667.
+// function normalizeEndpoint(value: string | undefined): string {
+//   return value?.trim().toLowerCase() ?? '';
+// }
 
 /**
  * Returns the RestrictedAppPolicy whose identity matches the given SelfApp,
- * or null if none match. Endpoint comparison is trim+lowercase normalized on
- * both sides; scope and appName are exact (case-sensitive) matches.
+ * or null if none match. scope and appName are exact (case-sensitive) matches.
+ *
+ * TEMPORARY(SELF-3667): endpoint is intentionally excluded from the match; only
+ * scope + appName are compared. See the note above.
  */
 export function findRestrictedAppPolicy(
   app: SelfApp,
   registry: ReadonlyArray<RestrictedAppPolicy> = RESTRICTED_APP_REGISTRY,
 ): RestrictedAppPolicy | null {
-  const endpoint = normalizeEndpoint(app.endpoint);
+  // TEMPORARY(SELF-3667): endpoint check disabled — see note above.
+  // const endpoint = normalizeEndpoint(app.endpoint);
   for (const policy of registry) {
     if (
-      endpoint === normalizeEndpoint(policy.match.endpoint) &&
+      // endpoint === normalizeEndpoint(policy.match.endpoint) &&
       app.scope === policy.match.scope &&
       app.appName === policy.match.appName
     ) {
