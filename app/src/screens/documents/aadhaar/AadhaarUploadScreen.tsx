@@ -7,15 +7,8 @@ import type { RouteProp } from '@react-navigation/native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import {
-  trackBranchEvent,
-  trackOnboardingStep,
-  useSelfClient,
-} from '@selfxyz/mobile-sdk-alpha';
-import {
-  AadhaarEvents,
-  OnboardingEvents,
-} from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import { trackBranchEvent, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
+import { AadhaarEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import DownloadMockup from '@/assets/images/aadhaar_download_mockup.png';
 import { buttonTap } from '@/integrations/haptics';
@@ -32,9 +25,8 @@ const AadhaarUploadScreen: React.FC = () => {
   const selfClient = useSelfClient();
 
   useEffect(() => {
-    trackOnboardingStep(selfClient, OnboardingEvents.SCAN_STARTED, {
-      branch: 'aadhaar',
-    });
+    // SCAN_STARTED intentionally fires later, when the picker opens on the
+    // "Select Unmasked" screen (per analytics SPEC), not on this intro screen.
     trackBranchEvent(selfClient, AadhaarEvents.INSTRUCTIONS_VIEWED, {
       screen: 'download',
     });

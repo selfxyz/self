@@ -9,12 +9,20 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ImageUp } from '@tamagui/lucide-icons';
 
-import { trackBranchEvent, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
-import { AadhaarEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import {
+  trackBranchEvent,
+  trackOnboardingStep,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
+import {
+  AadhaarEvents,
+  OnboardingEvents,
+} from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import { black } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 
 import UnmaskedMockup from '@/assets/images/aadhaar_unmasked_mockup.png';
 import { buttonTap } from '@/integrations/haptics';
+import { isQRScannerPDFAvailable } from '@/integrations/qrScanner';
 import type { RootStackParamList } from '@/navigation';
 import type { AadhaarRoutesParamList } from '@/navigation/types';
 import { PrivacyMask } from '@/observability/PrivacyMask';
@@ -28,6 +36,9 @@ const AadhaarSelectVersionScreen: React.FC = () => {
   const countryCode = route.params?.countryCode ?? '';
   const selfClient = useSelfClient();
   const [isProcessing, setIsProcessing] = useState(false);
+  // Native PDF QR scanning is unavailable on web; without it the picker would
+  // only ever lead to a general error, so gate the action on the capability.
+  const pdfUploadAvailable = isQRScannerPDFAvailable();
 
   useEffect(() => {
     trackBranchEvent(selfClient, AadhaarEvents.INSTRUCTIONS_VIEWED, {
@@ -36,13 +47,18 @@ const AadhaarSelectVersionScreen: React.FC = () => {
   }, [selfClient]);
 
   const onUploadPress = useCallback(async () => {
-    if (isProcessing) {
+    if (isProcessing || !pdfUploadAvailable) {
       return;
     }
 
     try {
       buttonTap();
       setIsProcessing(true);
+      // Aadhaar SCAN_STARTED fires when the picker opens (per analytics SPEC),
+      // immediately before the branch UPLOAD_STARTED event.
+      trackOnboardingStep(selfClient, OnboardingEvents.SCAN_STARTED, {
+        branch: 'aadhaar',
+      });
       trackBranchEvent(selfClient, AadhaarEvents.UPLOAD_STARTED);
 
       const result = await DocumentPicker.getDocumentAsync({
@@ -66,7 +82,7 @@ const AadhaarSelectVersionScreen: React.FC = () => {
     } finally {
       setIsProcessing(false);
     }
-  }, [isProcessing, selfClient, navigation, countryCode]);
+  }, [isProcessing, pdfUploadAvailable, selfClient, navigation, countryCode]);
 
   return (
     <PrivacyMask>
@@ -78,7 +94,7 @@ const AadhaarSelectVersionScreen: React.FC = () => {
         secondaryLabel="Upload"
         secondaryIcon={<ImageUp size={20} color={black} />}
         onSecondaryPress={onUploadPress}
-        secondaryDisabled={isProcessing}
+        secondaryDisabled={isProcessing || !pdfUploadAvailable}
       />
     </PrivacyMask>
   );
