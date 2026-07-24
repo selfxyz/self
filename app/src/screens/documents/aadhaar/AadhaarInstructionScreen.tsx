@@ -61,7 +61,10 @@ const AadhaarInstructionScreen: React.FC<AadhaarInstructionScreenProps> = ({
       Platform.OS === 'ios'
         ? aadhaarIosAppStoreUrl
         : aadhaarAndroidPlayStoreUrl,
-    );
+    ).catch(() => {
+      // Store app unavailable / URL not handled; fail silently rather than
+      // surfacing an unhandled promise rejection.
+    });
   };
 
   return (
