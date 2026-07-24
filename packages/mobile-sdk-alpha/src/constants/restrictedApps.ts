@@ -14,6 +14,11 @@ import { GOOGLE_USAT_FAUCET_APP_NAME, GOOGLE_USAT_FAUCET_ENDPOINT, GOOGLE_USAT_F
  * Add entries to RESTRICTED_APP_REGISTRY to apply the same UX gate to a new
  * partner without changing call-site code. The gate is a UX guard, not a
  * security boundary — server-side checks remain authoritative.
+ *
+ * TEMPORARY(SELF-3667): the `endpoint` field of `match` is currently ignored by
+ * findRestrictedAppPolicy (matches on scope + appName only) so the gate survives
+ * faucet endpoint rotation without an app release. It will be matched again once
+ * the endpoint is driven by Remote Config.
  */
 export interface RestrictedAppPolicy {
   /** Stable identifier used in analytics and modal copy lookup. */

@@ -50,6 +50,7 @@ describe('navigation', () => {
       const listOfScreens = Object.keys(navigationScreens).sort();
       expect(listOfScreens).toEqual([
         'AadhaarPdfPassword',
+        'AadhaarSelectVersion',
         'AadhaarUpload',
         'AadhaarUploadError',
         'AadhaarUploadSuccess',

@@ -38,7 +38,7 @@ import type { RootStackParamList } from '@/navigation';
 import { parseAndValidateUrlParams } from '@/navigation/deeplinks';
 import { useVerificationGateStore } from '@/stores/verificationGateStore';
 import {
-  evaluateGoogleUsatGate,
+  evaluateGoogleUsatEntryGate,
   isGoogleUsatForceEnabledForTesting,
 } from '@/utils/googleUsatGate';
 
@@ -83,7 +83,10 @@ const QRCodeViewFinderScreen: React.FC = () => {
         if (selfApp) {
           try {
             const selfAppJson = JSON.parse(selfApp);
-            const gate = await evaluateGoogleUsatGate(selfClient, selfAppJson);
+            const gate = await evaluateGoogleUsatEntryGate(
+              selfClient,
+              selfAppJson,
+            );
             if (gate === 'block') {
               selfClient.trackEvent(ProofEvents.GOOGLE_USAT_BLOCKED, {
                 entry_point: 'qr_scan',

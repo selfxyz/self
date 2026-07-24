@@ -3,12 +3,16 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 export const AadhaarEvents = {
+  APP_INSTALL_PRESSED: 'Aadhaar: App Install Pressed',
   CONTINUE_PRESSED: 'Aadhaar: Continue Pressed',
   DATA_STORED: 'Aadhaar: Data Stored',
+  DOWNLOAD_NEXT_PRESSED: 'Aadhaar: Download Next Pressed',
+  INSTRUCTIONS_VIEWED: 'Aadhaar: Instructions Viewed',
   PHOTO_PERMISSION_DENIED: 'Aadhaar: Photo Permission Denied',
   QR_PARSE_FAILED: 'Aadhaar: QR Parse Failed',
   QR_SELECTED: 'Aadhaar: QR Selected',
   TIMESTAMP_EXPIRED: 'Aadhaar: Timestamp Expired',
+  UPLOAD_FAILED: 'Aadhaar: Upload Failed',
   UPLOAD_STARTED: 'Aadhaar: Upload Started',
 } as const;
 

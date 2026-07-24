@@ -20,7 +20,7 @@ import {
   POINTS_SELF_APP_NAME,
 } from '@/services/points/constants';
 import useUserStore from '@/stores/userStore';
-import { evaluateGoogleUsatGate } from '@/utils/googleUsatGate';
+import { evaluateGoogleUsatEntryGate } from '@/utils/googleUsatGate';
 import { getModalCallbacks } from '@/utils/modalCallbackRegistry';
 
 jest.mock('@react-navigation/native', () => ({
@@ -45,7 +45,7 @@ jest.mock('@/services/points', () => ({
 }));
 
 jest.mock('@/utils/googleUsatGate', () => ({
-  evaluateGoogleUsatGate: jest.fn(),
+  evaluateGoogleUsatEntryGate: jest.fn(),
 }));
 
 // userStore is used as-is, no mock needed
@@ -71,12 +71,15 @@ const mockHasUserDoneThePointsDisclosure =
 const mockPointsSelfApp = pointsSelfApp as jest.MockedFunction<
   typeof pointsSelfApp
 >;
-const mockEvaluateGoogleUsatGate =
-  evaluateGoogleUsatGate as jest.MockedFunction<typeof evaluateGoogleUsatGate>;
+const mockEvaluateGoogleUsatEntryGate =
+  evaluateGoogleUsatEntryGate as jest.MockedFunction<
+    typeof evaluateGoogleUsatEntryGate
+  >;
 
 describe('useEarnPointsFlow', () => {
   const mockSetSelfApp = jest.fn();
   const mockSelfClient = {
+    trackEvent: jest.fn(),
     getSelfAppState: jest.fn(() => ({
       setSelfApp: mockSetSelfApp,
     })),
@@ -98,7 +101,7 @@ describe('useEarnPointsFlow', () => {
     } as any);
 
     mockUseSelfClient.mockReturnValue(mockSelfClient as any);
-    mockEvaluateGoogleUsatGate.mockResolvedValue('allow');
+    mockEvaluateGoogleUsatEntryGate.mockResolvedValue('allow');
 
     mockUseRegisterReferral.mockReturnValue({
       registerReferral: mockRegisterReferral,
@@ -289,6 +292,45 @@ describe('useEarnPointsFlow', () => {
       expect(mockNavigate).toHaveBeenCalledWith('ProvingScreenRouter', {
         entryPoint: 'earn_points',
       });
+    });
+
+    it('does not start the proof when the gate blocks (no eligible document)', async () => {
+      mockHasUserAnIdentityDocumentRegistered.mockResolvedValue(true);
+      mockHasUserDoneThePointsDisclosure.mockResolvedValue(false);
+      mockPointsSelfApp.mockResolvedValue(mockSelfApp as any);
+      mockEvaluateGoogleUsatEntryGate.mockResolvedValue('block');
+
+      const { result } = renderHook(() =>
+        useEarnPointsFlow({
+          hasReferrer: false,
+          isReferralConfirmed: undefined,
+        }),
+      );
+
+      await act(async () => {
+        await result.current.onEarnPointsPress();
+      });
+
+      const pointsInfoCallbackId = mockNavigate.mock.calls[0][1].callbackId;
+      await act(async () => {
+        await getModalCallbacks(pointsInfoCallbackId)!.onButtonPress();
+      });
+
+      const disclosureCallbackId = mockNavigate.mock.calls[1][1].callbackId;
+      await act(async () => {
+        await getModalCallbacks(disclosureCallbackId)!.onButtonPress();
+      });
+
+      act(() => {
+        jest.advanceTimersByTime(100);
+      });
+
+      // Blocked path must not start proving or route to ProvingScreenRouter.
+      expect(mockSetSelfApp).not.toHaveBeenCalled();
+      expect(mockNavigate).not.toHaveBeenCalledWith(
+        'ProvingScreenRouter',
+        expect.anything(),
+      );
     });
 
     it('should clear referrer when points disclosure modal is dismissed with referrer', async () => {
