@@ -7,6 +7,7 @@ import type { DocumentCatalog, IDDocument } from '@selfxyz/common/utils/types';
 import {
   getAllDocuments,
   GOOGLE_USAT_FAUCET_POLICY,
+  hasEligibleAlternativeDocumentForPolicy,
   isDocumentEligibleForPolicy,
   isGoogleUsatProofRequest,
   type SelfClient,
@@ -92,6 +93,62 @@ export async function evaluateGoogleUsatGate(
       selectedDocumentId,
       docs,
     );
+  } catch {
+    // Fail open: this gate is a UX guard, not a security boundary. Faucet
+    // eligibility is enforced server-side. A transient local-storage failure
+    // must not permanently block the proof session.
+    return 'allow';
+  }
+}
+
+/**
+ * Entry-point variant of the gate: blocks ONLY when the selected document is
+ * ineligible AND no other registered document is eligible. When an eligible
+ * alternative exists it returns 'allow' so the caller proceeds to
+ * ProvingScreenRouter, which forces the document selector (see
+ * ProvingScreenRouter.tsx alternative-document handling). Unlike
+ * evaluateGoogleUsatGate — a selected-doc-only contract ProvingScreenRouter
+ * relies on — this is the guard the pre-navigation entry points should use so a
+ * user with e.g. a KYC doc selected but an eligible Aadhaar registered is routed
+ * to the selector instead of hard-blocked.
+ */
+export async function evaluateGoogleUsatEntryGate(
+  selfClient: SelfClient,
+  app: SelfApp,
+  context: GoogleUsatGateContext = {},
+): Promise<GoogleUsatGateResult> {
+  if (!shouldTreatAsGoogleUsat(app)) {
+    return 'allow';
+  }
+
+  try {
+    const catalog = context.catalog ?? (await selfClient.loadDocumentCatalog());
+    const selectedDocumentId = catalog.selectedDocumentId;
+
+    if (!selectedDocumentId) {
+      // No selection yet — defer to downstream selection checks.
+      return 'allow';
+    }
+
+    const docs = context.docs ?? (await getAllDocuments(selfClient));
+    const selected = await evaluateGoogleUsatGateForDocument(
+      selfClient,
+      app,
+      selectedDocumentId,
+      docs,
+    );
+    if (selected === 'allow') {
+      return 'allow';
+    }
+
+    // Selected doc is ineligible; only block if there is no eligible alternative.
+    return hasEligibleAlternativeDocumentForPolicy(
+      GOOGLE_USAT_FAUCET_POLICY,
+      docs,
+      selectedDocumentId,
+    )
+      ? 'allow'
+      : 'block';
   } catch {
     // Fail open: this gate is a UX guard, not a security boundary. Faucet
     // eligibility is enforced server-side. A transient local-storage failure
