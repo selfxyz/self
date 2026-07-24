@@ -12,7 +12,7 @@ import {
 } from '@/navigation/deeplinks';
 import { useVerificationGateStore } from '@/stores/verificationGateStore';
 import {
-  evaluateGoogleUsatGate,
+  evaluateGoogleUsatEntryGate,
   isGoogleUsatForceEnabledForTesting,
 } from '@/utils/googleUsatGate';
 
@@ -56,7 +56,7 @@ jest.mock('@/stores/userStore', () => {
 });
 
 jest.mock('@/utils/googleUsatGate', () => ({
-  evaluateGoogleUsatGate: jest.fn(),
+  evaluateGoogleUsatEntryGate: jest.fn(),
   isGoogleUsatForceEnabledForTesting: jest.fn(() => false),
 }));
 
@@ -69,8 +69,10 @@ const mockUserStore = jest.requireMock('@/stores/userStore') as {
 };
 
 let setDeepLinkUserDetails: jest.Mock;
-const mockEvaluateGoogleUsatGate =
-  evaluateGoogleUsatGate as jest.MockedFunction<typeof evaluateGoogleUsatGate>;
+const mockEvaluateGoogleUsatEntryGate =
+  evaluateGoogleUsatEntryGate as jest.MockedFunction<
+    typeof evaluateGoogleUsatEntryGate
+  >;
 const mockIsGoogleUsatForceEnabledForTesting =
   isGoogleUsatForceEnabledForTesting as jest.MockedFunction<
     typeof isGoogleUsatForceEnabledForTesting
@@ -91,7 +93,7 @@ describe('deeplinks', () => {
       setDeepLinkUserDetails,
     });
     mockPlatform.OS = 'ios';
-    mockEvaluateGoogleUsatGate.mockResolvedValue('allow');
+    mockEvaluateGoogleUsatEntryGate.mockResolvedValue('allow');
     mockIsGoogleUsatForceEnabledForTesting.mockReturnValue(false);
     mockGateStoreGetState.mockReturnValue({ open: jest.fn() });
 
@@ -134,7 +136,7 @@ describe('deeplinks', () => {
     it('opens gate and resets off Splash when selfApp is blocked on cold launch', async () => {
       const open = jest.fn();
       mockGateStoreGetState.mockReturnValue({ open });
-      mockEvaluateGoogleUsatGate.mockResolvedValue('block');
+      mockEvaluateGoogleUsatEntryGate.mockResolvedValue('block');
 
       const selfApp = { sessionId: 'abc', appName: 'TestApp' };
       const url = `scheme://open?selfApp=${encodeURIComponent(JSON.stringify(selfApp))}`;
@@ -172,7 +174,7 @@ describe('deeplinks', () => {
     it('does not navigate on warm launch when selfApp is blocked', async () => {
       const open = jest.fn();
       mockGateStoreGetState.mockReturnValue({ open });
-      mockEvaluateGoogleUsatGate.mockResolvedValue('block');
+      mockEvaluateGoogleUsatEntryGate.mockResolvedValue('block');
       (MockNavigationRef.getCurrentRoute as jest.Mock).mockReturnValue({
         name: 'SettingsScreen',
       });
