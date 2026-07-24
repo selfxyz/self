@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import * as DocumentPicker from 'expo-document-picker';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import type { RouteProp } from '@react-navigation/native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -28,6 +28,12 @@ const AadhaarSelectVersionScreen: React.FC = () => {
   const countryCode = route.params?.countryCode ?? '';
   const selfClient = useSelfClient();
   const [isProcessing, setIsProcessing] = useState(false);
+
+  useEffect(() => {
+    trackBranchEvent(selfClient, AadhaarEvents.INSTRUCTIONS_VIEWED, {
+      screen: 'select_version',
+    });
+  }, [selfClient]);
 
   const onUploadPress = useCallback(async () => {
     if (isProcessing) {
@@ -65,6 +71,7 @@ const AadhaarSelectVersionScreen: React.FC = () => {
   return (
     <PrivacyMask>
       <AadhaarInstructionScreen
+        screen="select_version"
         mockupImage={UnmaskedMockup}
         headerText="Select 'Unmasked'"
         bodyText="This is the only version of Aadhaar that can be accepted for verification."

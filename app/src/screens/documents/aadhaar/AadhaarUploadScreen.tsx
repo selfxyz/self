@@ -7,8 +7,15 @@ import type { RouteProp } from '@react-navigation/native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { trackOnboardingStep, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
-import { OnboardingEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import {
+  trackBranchEvent,
+  trackOnboardingStep,
+  useSelfClient,
+} from '@selfxyz/mobile-sdk-alpha';
+import {
+  AadhaarEvents,
+  OnboardingEvents,
+} from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import DownloadMockup from '@/assets/images/aadhaar_download_mockup.png';
 import { buttonTap } from '@/integrations/haptics';
@@ -28,16 +35,21 @@ const AadhaarUploadScreen: React.FC = () => {
     trackOnboardingStep(selfClient, OnboardingEvents.SCAN_STARTED, {
       branch: 'aadhaar',
     });
+    trackBranchEvent(selfClient, AadhaarEvents.INSTRUCTIONS_VIEWED, {
+      screen: 'download',
+    });
   }, [selfClient]);
 
   const onNextPress = useCallback(() => {
     buttonTap();
+    trackBranchEvent(selfClient, AadhaarEvents.DOWNLOAD_NEXT_PRESSED);
     navigation.navigate('AadhaarSelectVersion', { countryCode });
-  }, [navigation, countryCode]);
+  }, [selfClient, navigation, countryCode]);
 
   return (
     <PrivacyMask>
       <AadhaarInstructionScreen
+        screen="download"
         mockupImage={DownloadMockup}
         headerText="Download Aadhaar"
         bodyText="Next you'll need to select the type of Aadhaar you'll download"

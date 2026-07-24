@@ -10,7 +10,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image, XStack, YStack } from 'tamagui';
 import { Download } from '@tamagui/lucide-icons';
 
+import { trackBranchEvent, useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { BodyText, Button, Title } from '@selfxyz/mobile-sdk-alpha/components';
+import { AadhaarEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import {
   black,
   slate100,
@@ -27,6 +29,7 @@ import { buttonTap } from '@/integrations/haptics';
 import { extraYPadding } from '@/utils/styleUtils';
 
 interface AadhaarInstructionScreenProps {
+  screen: 'download' | 'select_version';
   mockupImage: ImageSourcePropType;
   headerText: string;
   bodyText: string;
@@ -37,6 +40,7 @@ interface AadhaarInstructionScreenProps {
 }
 
 const AadhaarInstructionScreen: React.FC<AadhaarInstructionScreenProps> = ({
+  screen,
   mockupImage,
   headerText,
   bodyText,
@@ -46,11 +50,13 @@ const AadhaarInstructionScreen: React.FC<AadhaarInstructionScreenProps> = ({
   secondaryDisabled = false,
 }) => {
   const insets = useSafeAreaInsets();
+  const selfClient = useSelfClient();
 
   // Points the user to the respective store for the Aadhaar app. When the app
   // is already installed the store shows "Open" instead of "Install".
   const handleInstall = () => {
     buttonTap();
+    trackBranchEvent(selfClient, AadhaarEvents.APP_INSTALL_PRESSED, { screen });
     Linking.openURL(
       Platform.OS === 'ios'
         ? aadhaarIosAppStoreUrl
