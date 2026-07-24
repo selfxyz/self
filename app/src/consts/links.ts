@@ -8,6 +8,10 @@
 // All external URLs used in the mobile app are centralized here for easy
 // maintenance and testing. Links are sorted alphabetically.
 
+export const aadhaarAndroidPlayStoreUrl =
+  'https://play.google.com/store/apps/details?id=in.gov.uidai.pehchaan';
+export const aadhaarIosAppStoreUrl =
+  'https://apps.apple.com/in/app/aadhaar/id6744029871';
 export const androidBackupDocsUrl =
   'https://developer.android.com/identity/data/autobackup';
 export const apiBaseUrl = 'https://api.self.xyz';
