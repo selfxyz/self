@@ -10,6 +10,7 @@ import { ChevronLeft, HelpCircle } from '@tamagui/lucide-icons';
 import { Button, XStack, YStack } from '@selfxyz/mobile-sdk-alpha/components';
 import {
   black,
+  cyan300,
   slate100,
   slate300,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
@@ -23,21 +24,18 @@ export const AadhaarNavBar = (props: NativeStackHeaderProps) => {
   const insets = useSafeAreaInsets();
 
   const currentRouteName = props.route.name;
-  // The PDF path inserts a password step, making it a 3-step flow; the QR
-  // image path stays 2 steps. On success/error the current route alone can't
-  // tell the paths apart, so check the stack for the password screen.
-  const isPdfFlow =
-    currentRouteName === 'AadhaarPdfPassword' ||
-    props.navigation
-      .getState()
-      .routes.some(route => route.name === 'AadhaarPdfPassword');
-  const totalSteps = isPdfFlow ? 3 : 2;
+  // Aadhaar registration is a 3-step flow: instructions (download the app),
+  // select the unmasked version, then enter the PDF password. Success/error
+  // screens fall through to the final step.
+  const totalSteps = 3;
   const currentStep =
     currentRouteName === 'AadhaarUpload'
       ? 1
-      : currentRouteName === 'AadhaarPdfPassword'
+      : currentRouteName === 'AadhaarSelectVersion'
         ? 2
-        : totalSteps;
+        : currentRouteName === 'AadhaarPdfPassword'
+          ? 3
+          : totalSteps;
 
   const handleClose = () => {
     buttonTap();
@@ -118,7 +116,7 @@ export const AadhaarNavBar = (props: NativeStackHeaderProps) => {
               key={index}
               flex={1}
               height={4}
-              backgroundColor={index < currentStep ? '#00D4FF' : slate300}
+              backgroundColor={index < currentStep ? cyan300 : slate300}
               borderRadius={2}
             />
           ))}

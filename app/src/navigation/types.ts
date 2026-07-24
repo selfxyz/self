@@ -17,6 +17,9 @@ export type AadhaarRoutesParamList = {
   AadhaarUpload: {
     countryCode: string;
   };
+  AadhaarSelectVersion: {
+    countryCode: string;
+  };
   AadhaarPdfPassword: {
     fileUri: string;
     countryCode: string;
