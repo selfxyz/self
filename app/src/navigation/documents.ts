@@ -9,6 +9,7 @@ import { black, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { AadhaarNavBar, IdDetailsNavBar } from '@/components/navbar';
 import { HeadlessNavForEuclid } from '@/components/navbar/HeadlessNavForEuclid';
 import AadhaarPdfPasswordScreen from '@/screens/documents/aadhaar/AadhaarPdfPasswordScreen';
+import AadhaarSelectVersionScreen from '@/screens/documents/aadhaar/AadhaarSelectVersionScreen';
 import AadhaarUploadedSuccessScreen from '@/screens/documents/aadhaar/AadhaarUploadedSuccessScreen';
 import AadhaarUploadErrorScreen from '@/screens/documents/aadhaar/AadhaarUploadErrorScreen';
 import AadhaarUploadScreen from '@/screens/documents/aadhaar/AadhaarUploadScreen';
@@ -158,6 +159,14 @@ const documentsScreens = {
   },
   AadhaarUpload: {
     screen: AadhaarUploadScreen,
+    options: {
+      title: 'AADHAAR REGISTRATION',
+      header: AadhaarNavBar,
+      headerBackVisible: false,
+    } as NativeStackNavigationOptions,
+  },
+  AadhaarSelectVersion: {
+    screen: AadhaarSelectVersionScreen,
     options: {
       title: 'AADHAAR REGISTRATION',
       header: AadhaarNavBar,
