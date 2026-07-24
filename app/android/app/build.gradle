@@ -159,7 +159,7 @@ android {
         applicationId "com.proofofpassportapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 168
+        versionCode 169
         versionName "2.9.28"
         manifestPlaceholders = [appAuthRedirectScheme: 'com.proofofpassportapp']
         // Tesseract OCR fallback when ML Kit yields no check-digit-valid MRZ (SELF-3447).
