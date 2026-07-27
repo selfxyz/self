@@ -34,14 +34,16 @@ export function useAadhaar() {
 
   const validateAAdhaarTimestamp = useCallback(
     async (timestamp: string): Promise<{ isValid: boolean; ageDays: number }> => {
-      //timestamp is in YYYY-MM-DD HH:MM format
-      const currentTimestamp = new Date().getTime();
-      const timestampTimestamp = new Date(timestamp).getTime();
-      const diffMinutes = (currentTimestamp - timestampTimestamp) / (1000 * 60);
+      // UIDAI QR timestamp is IST, format "YYYY-MM-DD HH:MM"; parse as IST so the
+      // check is device-timezone independent and matches the on-chain window.
+      const timestampMs = new Date(timestamp.replace(' ', 'T') + '+05:30').getTime();
+      const diffMinutes = (Date.now() - timestampMs) / (1000 * 60);
       const ageDays = parseFloat((diffMinutes / (60 * 24)).toFixed(2));
 
+      // Mirror the on-chain symmetric ±window (RegisterProofVerifierLib) so a fresh
+      // QR is not rejected client-side for clock skew in either direction.
       const allowedWindow = await getAadharRegistrationWindow();
-      const isValid = Number.isFinite(diffMinutes) && diffMinutes >= 0 && diffMinutes <= allowedWindow;
+      const isValid = Number.isFinite(diffMinutes) && Math.abs(diffMinutes) <= allowedWindow;
 
       return { isValid, ageDays };
     },
