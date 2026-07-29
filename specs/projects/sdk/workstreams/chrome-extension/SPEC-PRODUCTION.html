@@ -233,6 +233,7 @@
     <a href="#versioning">Versioning &amp; cross-compat</a>
     <h4>Gates &amp; scope</h4>
     <a href="#security-gates">Security gates</a>
+    <a href="#session-policy">Session &amp; lock policy</a>
     <a href="#out-of-scope">Out of scope</a>
     <h4>Backlog</h4>
     <a href="#backlog">Backlog table</a>
@@ -449,7 +450,24 @@ flowchart LR
         <li>Origin policy for the site shim: explicit origin allowlist decision (open vs registry), <code>externally_connectable</code> vs content-script relay decision, and anti-phishing UX for the approval popup (origin display, spoofing review).</li>
         <li>Store-listing privacy disclosures + data-handling declaration (nothing leaves the device unencrypted; no analytics without consent).</li>
         <li>Dependency + supply-chain: extension bundle is built from the monorepo only, no remote code (MV3 requirement), CSP stays <code>script-src 'self' 'wasm-unsafe-eval'</code>.</li>
+        <li>Session and lock policy conformance (below).</li>
       </ol>
+    </section>
+
+    <section id="session-policy">
+      <h2>Session &amp; lock policy: secrets at rest, keys in memory, sessions that end</h2>
+      <p>Invariants, in decreasing strength:</p>
+      <table>
+        <thead><tr><th>Layer</th><th>Policy</th></tr></thead>
+        <tbody>
+          <tr><td>At rest (<code>chrome.storage.local</code>)</td><td>Always ciphertext: AES-256-GCM under the vault key. The vault key itself is never stored at rest unwrapped: it exists only password-derived (PBKDF2 600k) or PRF-wrapped (passkey custody). No plaintext write path exists.</td></tr>
+          <tr><td>Unlocked session key (<code>chrome.storage.session</code>)</td><td>Memory-backed, extension-pages-only access level, cleared by Chrome on browser exit. The session record carries <code>expiresAt</code> (absolute TTL, 12h) and <code>lastActivityAt</code> (idle TTL, 30 min): every vault access validates both and self-locks on violation. Expiry constants are code-level constants, not user settings, until security review says otherwise.</td></tr>
+          <tr><td>Lock triggers</td><td>Manual: "Lock" from the extension action context menu (v1) and a settings item once screens move into webview-app (CEP-07). Automatic: idle TTL, absolute TTL, OS session lock (<code>chrome.idle</code> locked state), browser exit.</td></tr>
+          <tr><td>Mid-session lock behavior</td><td>A locked vault fails closed: any in-flight bridge <code>secureStorage</code> call rejects with <code>VAULT_LOCKED</code> and the page redirects to unlock, preserving the return path. No cached plaintext survives the redirect.</td></tr>
+          <tr><td>Transient plaintext (JS heap)</td><td>Honest limit: document plaintext exists in page memory while rendering and while building proof inputs, exactly as it does in app memory on the phone. Mitigations: decrypt on demand per key (no bulk decrypt cache), popup lifetime is minutes, and the proving heavy lifting happens in the TEE. Heap zeroization of JS strings is not achievable and is not claimed.</td></tr>
+          <tr><td>Unlock attempts</td><td>Throttling/lockout policy on password unlock is CEP-04 scope (counter after 3 failures per UX.md; hard policy set at security review).</td></tr>
+        </tbody>
+      </table>
     </section>
 
     <section id="out-of-scope">
