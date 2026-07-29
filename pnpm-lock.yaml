@@ -1098,6 +1098,12 @@ importers:
         specifier: ^4.8.3
         version: 4.8.3(supports-color@8.1.1)
     devDependencies:
+      '@selfxyz/webview-app':
+        specifier: workspace:*
+        version: link:../webview-app
+      '@selfxyz/webview-bridge':
+        specifier: workspace:*
+        version: link:../webview-bridge
       '@types/chrome':
         specifier: ^0.0.328
         version: 0.0.328
@@ -32544,7 +32550,7 @@ snapshots:
       whatwg-encoding: 3.1.1
       whatwg-mimetype: 4.0.0
       whatwg-url: 14.2.0
-      ws: 8.20.1
+      ws: 8.21.1
       xml-name-validator: 5.0.0
     transitivePeerDependencies:
       - bufferutil

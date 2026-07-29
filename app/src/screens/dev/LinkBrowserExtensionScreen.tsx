@@ -17,7 +17,12 @@ import { io, type Socket } from 'socket.io-client';
 import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
 
 import { ec, encryptAES256GCM } from '@selfxyz/common/utils/proving';
-import { black, slate200, slate500, white } from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import {
+  black,
+  slate200,
+  slate500,
+  white,
+} from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 import { sasEmojis } from '@selfxyz/mobile-sdk-alpha/utils/sas';
 
@@ -43,10 +48,16 @@ type Step = 'scan' | 'confirm' | 'sending' | 'success' | 'error';
 
 function parseQrContent(raw: string): LinkQrContent {
   const parsed = JSON.parse(raw) as Partial<LinkQrContent>;
-  if (typeof parsed.transferSessionId !== 'string' || parsed.transferSessionId.length < 16) {
+  if (
+    typeof parsed.transferSessionId !== 'string' ||
+    parsed.transferSessionId.length < 16
+  ) {
     throw new Error('Missing transfer session id');
   }
-  if (typeof parsed.receiverPublicKey !== 'string' || !parsed.receiverPublicKey.startsWith('04')) {
+  if (
+    typeof parsed.receiverPublicKey !== 'string' ||
+    !parsed.receiverPublicKey.startsWith('04')
+  ) {
     throw new Error('Receiver key must be an uncompressed P-256 public key');
   }
   if (typeof parsed.relay !== 'string' || !/^wss?:\/\//.test(parsed.relay)) {
@@ -63,12 +74,20 @@ interface Channel {
 function openChannelKeys(receiverPublicKeyHex: string): Channel {
   const ephemeral = ec.genKeyPair();
   const receiver = ec.keyFromPublic(receiverPublicKeyHex, 'hex');
-  const sharedKey = Buffer.from(ephemeral.derive(receiver.getPublic()).toArray('be', 32));
-  return { sharedKey, senderPublicKey: ephemeral.getPublic(false, 'hex') as string };
+  const sharedKey = Buffer.from(
+    ephemeral.derive(receiver.getPublic()).toArray('be', 32),
+  );
+  return {
+    sharedKey,
+    senderPublicKey: ephemeral.getPublic(false, 'hex') as string,
+  };
 }
 
 function encryptWithChannel(channel: Channel, plaintext: string) {
-  const enc = encryptAES256GCM(plaintext, forge.util.createBuffer(channel.sharedKey.toString('binary')));
+  const enc = encryptAES256GCM(
+    plaintext,
+    forge.util.createBuffer(channel.sharedKey.toString('binary')),
+  );
   return {
     nonce: Buffer.from(enc.nonce).toString('base64'),
     cipherText: Buffer.from(enc.cipher_text).toString('base64'),
@@ -156,20 +175,27 @@ export const LinkBrowserExtensionScreen: React.FC = () => {
             });
           });
         }
-        socket.on('mobile_status', (data: { status?: string; reason?: string }) => {
-          switch (data?.status) {
-            case 'proof_verified':
-              if (!messageRef.current) return;
-              cleanup();
-              setStep('success');
-              break;
-            case 'proof_generation_failed':
-              fail(data?.reason ? `Extension rejected the transfer: ${data.reason}` : 'Extension rejected the transfer');
-              break;
-            default:
-              break;
-          }
-        });
+        socket.on(
+          'mobile_status',
+          (data: { status?: string; reason?: string }) => {
+            switch (data?.status) {
+              case 'proof_verified':
+                if (!messageRef.current) return;
+                cleanup();
+                setStep('success');
+                break;
+              case 'proof_generation_failed':
+                fail(
+                  data?.reason
+                    ? `Extension rejected the transfer: ${data.reason}`
+                    : 'Extension rejected the transfer',
+                );
+                break;
+              default:
+                break;
+            }
+          },
+        );
         socket.on('connect_error', (error: Error) => {
           fail(`Relayer connection error: ${error.message}`);
         });
@@ -212,7 +238,9 @@ export const LinkBrowserExtensionScreen: React.FC = () => {
         version: 1,
         mnemonic: stored.data,
         documentCatalog: catalog,
-        documents: Object.fromEntries(Object.entries(allDocs).map(([id, entry]) => [id, entry.data])),
+        documents: Object.fromEntries(
+          Object.entries(allDocs).map(([id, entry]) => [id, entry.data]),
+        ),
       };
 
       setStatusText('Encrypting…');
@@ -224,11 +252,16 @@ export const LinkBrowserExtensionScreen: React.FC = () => {
       };
       const wireSize = JSON.stringify(message).length;
       if (wireSize > MAX_WIRE_BYTES) {
-        throw new Error(`Payload too large for the relayer (${Math.round(wireSize / 1024)}KB > 512KB)`);
+        throw new Error(
+          `Payload too large for the relayer (${Math.round(wireSize / 1024)}KB > 512KB)`,
+        );
       }
 
       messageRef.current = message;
-      timeoutRef.current = setTimeout(() => fail('Timed out waiting for the extension'), ACK_TIMEOUT_MS);
+      timeoutRef.current = setTimeout(
+        () => fail('Timed out waiting for the extension'),
+        ACK_TIMEOUT_MS,
+      );
       if (socket.connected) {
         setStatusText(`Sending ${Math.round(wireSize / 1024)}KB…`);
         socket.emit('self_app', message);
@@ -248,13 +281,24 @@ export const LinkBrowserExtensionScreen: React.FC = () => {
             <>
               <Text style={styles.title}>Link browser extension</Text>
               <Text style={styles.body}>
-                Open the Self extension in Chrome and scan the code it shows. Your secret and documents will be
-                sent end-to-end encrypted. Only link a browser you own.
+                Open the Self extension in Chrome and scan the code it shows.
+                Your secret and documents will be sent end-to-end encrypted.
+                Only link a browser you own.
               </Text>
-              <YStack height={280} borderRadius={12} overflow="hidden" backgroundColor={black}>
-                <QRCodeScannerView isMounted={step === 'scan'} onQRData={handleScan} />
+              <YStack
+                height={280}
+                borderRadius={12}
+                overflow="hidden"
+                backgroundColor={black}
+              >
+                <QRCodeScannerView
+                  isMounted={step === 'scan'}
+                  onQRData={handleScan}
+                />
               </YStack>
-              <Text style={styles.body}>Or paste the link code (emulator):</Text>
+              <Text style={styles.body}>
+                Or paste the link code (emulator):
+              </Text>
               <TextInput
                 style={styles.input}
                 value={pasted}
@@ -282,12 +326,15 @@ export const LinkBrowserExtensionScreen: React.FC = () => {
               <Text style={styles.title}>Send account to this browser?</Text>
               <Text style={styles.sas}>{sas.join('  ')}</Text>
               <Text style={styles.body}>
-                Check that the extension window shows these same emojis. Matching emojis confirm the connection is
-                end-to-end encrypted with that browser and nothing in between. If they differ, cancel.
+                Check that the extension window shows these same emojis.
+                Matching emojis confirm the connection is end-to-end encrypted
+                with that browser and nothing in between. If they differ,
+                cancel.
               </Text>
               <Text style={styles.body}>
-                This sends your recovery secret and every registered document to the extension over an
-                end-to-end encrypted channel. Anyone controlling that browser can prove with your identity.
+                This sends your recovery secret and every registered document to
+                the extension over an end-to-end encrypted channel. Anyone
+                controlling that browser can prove with your identity.
               </Text>
               <XStack gap={12}>
                 <Button
@@ -301,7 +348,12 @@ export const LinkBrowserExtensionScreen: React.FC = () => {
                 >
                   <Text fontFamily={dinot}>Cancel</Text>
                 </Button>
-                <Button flex={1} style={{ backgroundColor: black }} borderRadius="$10" onPress={() => void send()}>
+                <Button
+                  flex={1}
+                  style={{ backgroundColor: black }}
+                  borderRadius="$10"
+                  onPress={() => void send()}
+                >
                   <Text color={white} fontFamily={dinot}>
                     Send account
                   </Text>
@@ -318,7 +370,8 @@ export const LinkBrowserExtensionScreen: React.FC = () => {
                 <>
                   <Text style={styles.sas}>{sas.join('  ')}</Text>
                   <Text style={styles.body}>
-                    Security check: the browser extension shows the same emojis. If they differ, cancel and unlink.
+                    Security check: the browser extension shows the same emojis.
+                    If they differ, cancel and unlink.
                   </Text>
                 </>
               )}
@@ -329,10 +382,15 @@ export const LinkBrowserExtensionScreen: React.FC = () => {
             <>
               <Text style={styles.title}>Account linked</Text>
               <Text style={styles.body}>
-                The extension confirmed the import{docCount > 0 ? ` (${docCount} document${docCount === 1 ? '' : 's'})` : ''}.
-                Finish the password setup in the browser.
+                The extension confirmed the import
+                {docCount > 0
+                  ? ` (${docCount} document${docCount === 1 ? '' : 's'})`
+                  : ''}
+                . Finish the password setup in the browser.
               </Text>
-              {sas.length > 0 && <Text style={styles.sas}>{sas.join('  ')}</Text>}
+              {sas.length > 0 && (
+                <Text style={styles.sas}>{sas.join('  ')}</Text>
+              )}
             </>
           )}
 
@@ -340,7 +398,11 @@ export const LinkBrowserExtensionScreen: React.FC = () => {
             <>
               <Text style={styles.title}>Transfer failed</Text>
               <Text style={styles.body}>{statusText}</Text>
-              <Button style={{ backgroundColor: black }} borderRadius="$10" onPress={() => setStep('scan')}>
+              <Button
+                style={{ backgroundColor: black }}
+                borderRadius="$10"
+                onPress={() => setStep('scan')}
+              >
                 <Text color={white} fontFamily={dinot}>
                   Try again
                 </Text>

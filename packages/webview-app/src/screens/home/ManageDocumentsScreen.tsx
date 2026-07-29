@@ -52,6 +52,9 @@ export const ManageDocumentsScreen: React.FC = () => {
       const updated = { ...catalog, selectedDocumentId: id };
       setCatalog(updated);
       void documents.saveDocumentCatalog(updated as Parameters<typeof documents.saveDocumentCatalog>[0]);
+      const selectedDoc = updated.documents.find(doc => doc.id === id);
+      const label = getIdCardProps(selectedDoc?.documentCategory, selectedDoc?.mock).title ?? 'Document';
+      setDialogue({ title: label, description: 'Selected for proofs.' });
     },
     [catalog, documents, haptic, analytics],
   );
@@ -66,7 +69,6 @@ export const ManageDocumentsScreen: React.FC = () => {
     analytics.trackEvent('manage_docs_add_pressed');
     navigate('/pick-country');
   }, [navigate, haptic, analytics]);
-
 
   const onViewIdDetails = useCallback(() => {
     haptic.trigger('selection');

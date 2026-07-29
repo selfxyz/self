@@ -19,7 +19,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 const analytics = { trackEvent: vi.fn() };
 const haptic = { trigger: vi.fn() };
 const lifecycle = { dismiss: vi.fn() };
-const documents = { loadDocumentCatalog: vi.fn() };
+const documents = { loadDocumentCatalog: vi.fn(), saveDocumentCatalog: vi.fn() };
 
 vi.mock('../../../src/providers/SelfClientProvider', () => ({
   useSelfClient: () => ({
@@ -173,7 +173,16 @@ describe('WV-14 support screens', () => {
     fireEvent.click(screen.getByRole('button', { name: /manage documents/i }));
     expect(screen.getByTestId('location').textContent).toBe('/docs');
 
+    // The catalog loads async; tapping a document selects it for proofs and
+    // opens the dialogue, which carries the path to the ID data screen.
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /passport/i })).toBeTruthy();
+    });
     fireEvent.click(screen.getByRole('button', { name: /passport/i }));
+    expect(documents.saveDocumentCatalog).toHaveBeenCalledWith(
+      expect.objectContaining({ selectedDocumentId: 'doc-1' }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: /view details/i }));
     expect(screen.getByTestId('location').textContent).toBe('/docs/current');
 
     fireEvent.click(screen.getByRole('button', { name: /manage id/i }));

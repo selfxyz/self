@@ -20,6 +20,8 @@
     "socket.io-client": "^4.8.3"
   },
   "devDependencies": {
+    "@selfxyz/webview-app": "workspace:*",
+    "@selfxyz/webview-bridge": "workspace:*",
     "@types/chrome": "^0.0.328",
     "@types/qrcode": "^1.5.6",
     "esbuild": "^0.25.0",
