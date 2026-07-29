@@ -85,6 +85,7 @@ function runSender(qr, sharedOut = {}) {
         sessionId: qr.transferSessionId,
         receiverPublicKey: qr.receiverPublicKey,
         senderPublicKey,
+        linkSecret: qr.linkSecret,
       };
       sharedOut.secret = shared;
       sharedOut.binding = binding;
@@ -202,6 +203,7 @@ try {
     sessionId: qr.transferSessionId,
     receiverPublicKey: qr.receiverPublicKey,
     senderPublicKey: attackerPub,
+    linkSecret: qr.linkSecret,
   };
   const rogue = io(`${qr.relay}/websocket`, {
     path: '/',
@@ -228,6 +230,43 @@ try {
     throw new Error('substituted-sender envelope was not refused');
   }
   console.log('[harness] substituted-sender envelope refused (hello key pinned)');
+
+  // 2c-bis. Protocol v3: an attacker in relayer position who never saw the QR
+  // knows the session ids and both public keys but NOT linkSecret, so the key
+  // they derive cannot authenticate. This must fail even if the hello pin were
+  // absent, i.e. authentication no longer depends on the human emoji check.
+  const offPath = createECDH('prime256v1');
+  offPath.generateKeys();
+  const offPathPub = offPath.getPublicKey('hex', 'uncompressed');
+  const offPathShared = offPath.computeSecret(Buffer.from(qr.receiverPublicKey, 'hex'));
+  const guessedBinding = {
+    sessionId: qr.transferSessionId,
+    receiverPublicKey: qr.receiverPublicKey,
+    senderPublicKey: offPathPub,
+    linkSecret: randomBytes(32).toString('base64'), // never saw the QR
+  };
+  const offPathSocket = io(`${qr.relay}/websocket`, {
+    path: '/',
+    transports: ['websocket'],
+    forceNew: true,
+    query: { sessionId: qr.transferSessionId, clientType: 'web' },
+  });
+  await new Promise(resolve => offPathSocket.on('connect', resolve));
+  offPathSocket.emit('self_app', {
+    sessionId: qr.transferSessionId,
+    transferType: 'self-account-transfer',
+    senderPublicKey: offPathPub,
+    envelope: encryptEnvelope(
+      Buffer.from(deriveTransferKey(new Uint8Array(offPathShared), guessedBinding)),
+      Buffer.from(JSON.stringify({ ...PAYLOAD, mnemonic: { phrase: 'off path' } }), 'utf8'),
+      transferAad(guessedBinding),
+    ),
+  });
+  await new Promise(resolve => setTimeout(resolve, 1_500));
+  offPathSocket.close();
+  const sasUnchanged = (await page.$eval('#sas', node => node.textContent)).trim();
+  if (sasUnchanged !== expectedSas) throw new Error('off-path envelope altered the session');
+  console.log('[harness] off-path envelope refused (linkSecret unknown to attacker)');
 
   // 2d. Error surfacing: an expired link code must dim the QR, offer a new
   // code, and say so. Drives the timer forward instead of waiting 5 minutes.

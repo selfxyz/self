@@ -6,6 +6,9 @@ import { describe, expect, it } from 'vitest';
 
 import {
   deriveTransferKey,
+  generateLinkSecret,
+  isValidLinkSecret,
+  LINK_SECRET_BYTES,
   SAS_EMOJIS,
   SAS_LENGTH,
   sasEmojis,
@@ -17,7 +20,9 @@ const binding = {
   sessionId: 'session-aaaaaaaaaaaaaaaa',
   receiverPublicKey: '04' + 'ab'.repeat(64),
   senderPublicKey: '04' + 'cd'.repeat(64),
+  linkSecret: Buffer.alloc(LINK_SECRET_BYTES, 3).toString('base64'),
 };
+const otherLinkSecret = Buffer.alloc(LINK_SECRET_BYTES, 4).toString('base64');
 const secret = new Uint8Array(32).fill(7);
 
 describe('SAS emoji table', () => {
@@ -80,5 +85,32 @@ describe('transfer key derivation', () => {
     expect(Array.from(transferAad(binding))).toEqual(Array.from(transferTranscript(binding)));
     const upper = { ...binding, senderPublicKey: binding.senderPublicKey.toUpperCase() };
     expect(Array.from(transferTranscript(upper))).toEqual(Array.from(transferTranscript(binding)));
+  });
+});
+
+describe('linkSecret (QR channel authentication)', () => {
+  it('generates a valid 32-byte secret', () => {
+    const secretValue = generateLinkSecret();
+    expect(isValidLinkSecret(secretValue)).toBe(true);
+    expect(Buffer.from(secretValue, 'base64')).toHaveLength(LINK_SECRET_BYTES);
+    expect(generateLinkSecret()).not.toBe(secretValue);
+  });
+
+  it('rejects missing, short, or malformed secrets', () => {
+    expect(isValidLinkSecret(undefined)).toBe(false);
+    expect(isValidLinkSecret('')).toBe(false);
+    expect(isValidLinkSecret(Buffer.alloc(16, 1).toString('base64'))).toBe(false);
+  });
+
+  // The point of v3: an attacker who never saw the QR cannot derive the
+  // channel key even with both public keys and the session id.
+  it('changes the envelope key, so a non-scanner cannot authenticate', () => {
+    const withSecret = Array.from(deriveTransferKey(secret, binding));
+    const withOther = Array.from(deriveTransferKey(secret, { ...binding, linkSecret: otherLinkSecret }));
+    expect(withOther).not.toEqual(withSecret);
+  });
+
+  it('changes the SAS too', () => {
+    expect(sasEmojis(secret, { ...binding, linkSecret: otherLinkSecret })).not.toEqual(sasEmojis(secret, binding));
   });
 });

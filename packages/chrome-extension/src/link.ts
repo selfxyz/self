@@ -12,7 +12,13 @@ import { mnemonicToSeedSync } from '@scure/bip39';
 import QRCode from 'qrcode';
 import { io, type Socket } from 'socket.io-client';
 
-import { deriveTransferKey, sasEmojis, transferAad, type TransferBinding } from '@selfxyz/mobile-sdk-alpha/utils/sas';
+import {
+  deriveTransferKey,
+  generateLinkSecret,
+  sasEmojis,
+  transferAad,
+  type TransferBinding,
+} from '@selfxyz/mobile-sdk-alpha/utils/sas';
 
 import type { Envelope } from './crypto';
 import { aesKeyFromSecret, decryptEnvelope, deriveSharedSecretBits, generateEcdhKeyPair, hex } from './crypto';
@@ -125,10 +131,15 @@ async function main(): Promise<void> {
   // the FIRST self_app per session, so the hello cannot share the transfer room.
   const helloSessionId = crypto.randomUUID();
   const { keyPair, publicKeyHex } = await generateEcdhKeyPair();
+  // Out-of-band channel authentication: this secret rides the QR only, never
+  // the relayer, and salts the envelope key. Only a device that scanned the
+  // code can produce an envelope that authenticates.
+  const linkSecret = generateLinkSecret();
   const qrContent = JSON.stringify({
     transferSessionId: sessionId,
     helloSessionId,
     receiverPublicKey: publicKeyHex,
+    linkSecret,
     relay,
   });
 
@@ -219,6 +230,7 @@ async function main(): Promise<void> {
           sessionId,
           receiverPublicKey: publicKeyHex,
           senderPublicKey: message.senderPublicKey,
+          linkSecret,
         };
         helloSenderKey = message.senderPublicKey;
         el('sas-scan').textContent = sasEmojis(bits, binding).join('  ');
@@ -258,6 +270,7 @@ async function main(): Promise<void> {
           sessionId,
           receiverPublicKey: publicKeyHex,
           senderPublicKey: message.senderPublicKey,
+          linkSecret,
         };
         const sharedKey = await aesKeyFromSecret(deriveTransferKey(sharedSecret, binding));
         const plain = await decryptEnvelope(sharedKey, message.envelope, transferAad(binding));

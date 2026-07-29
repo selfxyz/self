@@ -26,6 +26,7 @@ import {
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 import {
   deriveTransferKey,
+  isValidLinkSecret,
   sasEmojis,
   transferAad,
   type TransferBinding,
@@ -51,6 +52,8 @@ interface LinkQrContent {
   /** Absent on older extension builds; the pre-send SAS display is skipped then. */
   helloSessionId?: string;
   receiverPublicKey: string;
+  /** Out-of-band channel authenticator; absent on pre-v3 extension builds. */
+  linkSecret: string;
   relay: string;
 }
 
@@ -100,6 +103,7 @@ function openChannelKeys(qr: LinkQrContent): Channel {
       sessionId: qr.transferSessionId,
       receiverPublicKey: qr.receiverPublicKey,
       senderPublicKey,
+      linkSecret: qr.linkSecret,
     },
   };
 }

@@ -11,16 +11,25 @@ import { sha256 } from '@noble/hashes/sha256';
  * cannot drift: transcript, envelope key, GCM additional data, and the emoji
  * short authentication string all derive from the same inputs.
  *
- * Security review 2026-07-29 drove three changes from v1:
- * - the raw ECDH x-coordinate is no longer used directly as an AES key,
- * - the key and the SAS are bound to the session id AND both public keys, so
- *   substituting a sender key fails the GCM tag instead of decrypting cleanly,
- * - the SAS widened from 4 to 6 emojis (24 -> 36 bits) so grinding a preimage
- *   against the emojis a user is about to compare is not feasible.
+ * Security review 2026-07-29 drove these changes:
+ * - v2: the raw ECDH x-coordinate is no longer used directly as an AES key,
+ *   and the key plus the SAS are bound to the session id and both public keys,
+ *   so substituting a sender key fails the GCM tag rather than decrypting
+ *   cleanly. SAS widened from 4 to 6 emojis.
+ * - v3: the QR carries a 32-byte `linkSecret` that never reaches the relayer
+ *   and is mixed in as the HKDF salt, so ONLY a device that physically scanned
+ *   the QR can derive an authenticating key. Sender authentication is now
+ *   cryptographic (256-bit) instead of resting on a human emoji comparison.
+ *   The emoji step remains as the defense for an observed QR (shoulder-surf,
+ *   screen share, remote support) and as the moment the user authorizes the
+ *   send. Spec: SPEC-PRODUCTION.html, link channel authentication.
  */
 
-const TRANSFER_LABEL = 'self-ext-transfer-v2';
-const SAS_LABEL = 'self-ext-link-sas-v2';
+const TRANSFER_LABEL = 'self-ext-transfer-v3';
+const SAS_LABEL = 'self-ext-link-sas-v3';
+
+/** Bytes of QR-carried secret that authenticate the link channel. */
+export const LINK_SECRET_BYTES = 32;
 
 /** Emoji count in the short authentication string: 6 x log2(64) = 36 bits. */
 export const SAS_LENGTH = 6;
@@ -101,6 +110,40 @@ export interface TransferBinding {
   receiverPublicKey: string;
   /** Phone (sender) ephemeral uncompressed P-256 public key, hex. */
   senderPublicKey: string;
+  /**
+   * Base64 `linkSecret` from the QR: the out-of-band proof that this sender
+   * scanned the code. Never transmitted through the relayer.
+   */
+  linkSecret: string;
+}
+
+const b64ToBytes = (value: string): Uint8Array => {
+  const binary = atob(value);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+};
+
+/** Generates a fresh `linkSecret` for a QR, base64 encoded. */
+export function generateLinkSecret(): string {
+  const bytes = crypto.getRandomValues(new Uint8Array(LINK_SECRET_BYTES));
+  let binary = '';
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary);
+}
+
+export function isValidLinkSecret(value: unknown): value is string {
+  if (typeof value !== 'string' || value.length === 0) return false;
+  try {
+    return b64ToBytes(value).length === LINK_SECRET_BYTES;
+  } catch {
+    return false;
+  }
+}
+
+/** HKDF salt: the QR secret, so a non-scanner cannot derive the channel key. */
+function linkSalt(binding: TransferBinding): Uint8Array {
+  return b64ToBytes(binding.linkSecret);
 }
 
 const utf8 = (value: string) => new TextEncoder().encode(value);
@@ -123,7 +166,7 @@ export function transferTranscript(binding: TransferBinding): Uint8Array {
  * x-coordinate as an AES key.
  */
 export function deriveTransferKey(sharedSecretX: Uint8Array, binding: TransferBinding): Uint8Array {
-  return hkdf(sha256, sharedSecretX, utf8(binding.sessionId), transferTranscript(binding), 32);
+  return hkdf(sha256, sharedSecretX, linkSalt(binding), transferTranscript(binding), 32);
 }
 
 /** GCM additional data: a swapped sender key or session id fails the tag. */
@@ -137,6 +180,9 @@ export function transferAad(binding: TransferBinding): Uint8Array {
  * key agreement the user is about to verify.
  */
 export function sasEmojis(sharedSecretX: Uint8Array, binding: TransferBinding, count = SAS_LENGTH): string[] {
-  const digest = hkdf(sha256, sharedSecretX, utf8(SAS_LABEL), transferTranscript(binding), count);
+  const salt = new Uint8Array(linkSalt(binding).length + SAS_LABEL.length);
+  salt.set(linkSalt(binding));
+  salt.set(utf8(SAS_LABEL), linkSalt(binding).length);
+  const digest = hkdf(sha256, sharedSecretX, salt, transferTranscript(binding), count);
   return Array.from(digest, byte => SAS_EMOJIS[byte % SAS_EMOJIS.length]);
 }

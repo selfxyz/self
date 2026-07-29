@@ -65,6 +65,7 @@ async function run() {
   const qrContent = {
     transferSessionId: sessionId,
     receiverPublicKey: receiverEcdh.getPublicKey('hex', 'uncompressed'),
+    linkSecret: randomBytes(32).toString('base64'),
   };
   log('receiver', `QR content: ${JSON.stringify(qrContent).length} bytes`);
 
@@ -109,6 +110,7 @@ async function run() {
         sessionId,
         receiverPublicKey: qrContent.receiverPublicKey,
         senderPublicKey: msg.senderPublicKey,
+        linkSecret: qrContent.linkSecret,
       };
       try {
         const plain = decryptEnvelope(
@@ -136,7 +138,12 @@ async function run() {
         senderEcdh.generateKeys();
         const shared = senderEcdh.computeSecret(Buffer.from(qrContent.receiverPublicKey, 'hex'));
         const senderPublicKey = senderEcdh.getPublicKey('hex', 'uncompressed');
-        const binding = { sessionId, receiverPublicKey: qrContent.receiverPublicKey, senderPublicKey };
+        const binding = {
+          sessionId,
+          receiverPublicKey: qrContent.receiverPublicKey,
+          senderPublicKey,
+          linkSecret: qrContent.linkSecret,
+        };
         const message = {
           sessionId,
           transferType: 'self-account-transfer',
