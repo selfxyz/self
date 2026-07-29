@@ -74,5 +74,5 @@ A Chrome extension that holds the user's Self account (transferred once from the
 ## Open decisions for review
 
 1. ~~Which repo/team owns the Enterprise hosted verification page?~~ RESOLVED (2026-07-29): `self-dashboard` repo, `apps/hosted-page` (QR rendering in `src/client/components/features/verification/`). CEP-09 lands there as a feature PR, coordinated with the dashboard owner.
-2. Store identity: existing Self Google developer account vs dedicated org account (CEP-03 OAuth).
-3. Popup scope in v1: mini home (documents + settings) as specced, or disclosure-only? UX.md recommends keeping the mini home.
+2. ~~Store identity~~ RESOLVED (2026-07-29): same Google Workspace org as the Play Store presence; register a Chrome Web Store **group publisher** under it so publish rights are group-managed, never personal. CI OAuth project lives in the same org. Setup mechanics in CEP-03.
+3. ~~Popup scope in v1~~ RESOLVED (2026-07-29): mini home (ID card, document list with active-document selection, settings with lock/reset/relink) - existing webview-app screens, and F4 document selection needs a surface.
