@@ -234,6 +234,7 @@
     <h4>Gates &amp; scope</h4>
     <a href="#security-gates">Security gates</a>
     <a href="#session-policy">Session &amp; lock policy</a>
+    <a href="#link-auth">Link channel authentication</a>
     <a href="#threat-model">Threat model &amp; review log</a>
     <a href="#out-of-scope">Out of scope</a>
     <h4>Backlog</h4>
@@ -471,6 +472,24 @@ flowchart LR
       </table>
     </section>
 
+    <section id="link-auth">
+      <h2>Link channel authentication: the QR is the anchor, not the emojis</h2>
+      <p>The QR is a trusted out-of-band channel with hundreds of bytes of capacity. v2 under-used it: it carried the extension's ephemeral public key (so only the real extension could <em>decrypt</em>, giving confidentiality) but nothing that proved the sender had physically scanned it. Both session ids travel to the relayer as connection parameters, so they are visible in relayer position. That left <strong>sender authentication resting entirely on a human comparing 6 emojis</strong>.</p>
+      <p><strong>v3 puts a secret in the QR.</strong> A 32-byte random <code>linkSecret</code>, generated per link attempt, never sent to the relayer, mixed into the envelope key as the HKDF salt. Only a device that scanned the QR can derive a key that authenticates, so a substituted sender key fails the GCM tag instead of being caught (or missed) by a person. This is the pattern used by mainstream device-linking flows; the emoji comparison is not where this class of product places its trust anchor.</p>
+      <table>
+        <thead><tr><th>Property</th><th>v2</th><th>v3</th></tr></thead>
+        <tbody>
+          <tr><td>Payload confidentiality against the relayer</td><td>Cryptographic (QR-carried receiver key)</td><td>Unchanged</td></tr>
+          <tr><td>Sender authentication</td><td>Human: 6-emoji comparison (36 bits, and only if the user actually looks)</td><td><strong>Cryptographic: 256-bit <code>linkSecret</code> from the QR</strong></td></tr>
+          <tr><td>Attacker in relayer position, never saw the QR</td><td>Blocked only if the user notices mismatched emojis</td><td>Blocked by the AEAD tag; no user action involved</td></tr>
+          <tr><td>Attacker who observed the QR (shoulder-surf, screen share, remote support)</td><td>Emoji mismatch is the only defense</td><td>Emoji mismatch is still the defense: this is the case the QR secret cannot cover, and the reason the emoji step stays</td></tr>
+          <tr><td>User effort</td><td>Compare 6 emojis, press send</td><td>Unchanged (the emoji step keeps its UX role)</td></tr>
+        </tbody>
+      </table>
+      <p class="callout note"><strong>Correction to the review finding on SAS entropy.</strong> Grinding a keypair toward the emojis the phone displays requires the phone-to-extension shared secret, which an attacker does not have, so the displayed target is unknown and the "grind to a chosen SAS" attack does not apply; a blind attempt succeeds with probability 2^-36 per link. The real weakness of a human check is <strong>habituation</strong>, not bit width, which is exactly why v3 moves the trust anchor into the QR rather than adding more emojis.</p>
+      <p>The emoji step is therefore <strong>demoted, not removed</strong>: it covers the observed-QR case and remains the moment where the user consciously authorizes sending their identity. Keeping it passive (compare, then press) is deliberate. If it ever needs to be attention-forcing, the pattern is selection over comparison (the phone offers three emoji sets, the user taps the one the extension shows), which trades friction for engagement and is unnecessary while <code>linkSecret</code> carries the security.</p>
+    </section>
+
     <section id="threat-model">
       <h2>Threat model &amp; security review log</h2>
       <p>First adversarial review of the extension code: 2026-07-29. Fixed in the same pass unless noted.</p>
@@ -480,7 +499,7 @@ flowchart LR
         <tbody>
           <tr><td>High</td><td><strong>Account substitution</strong>: the transfer handler derived its key from whatever <code>senderPublicKey</code> arrived, independent of the hello key whose SAS the user verified. Anyone who could reach the transfer room and read the QR (camera, screen share, remote support, the copy-code path) could import an attacker-chosen mnemonic and documents that the user then discloses with.</td><td>The hello key is pinned: a mismatched sender key, a transfer with no hello, or conflicting hellos are refused. Regression test in the import harness.</td></tr>
           <tr><td>Med</td><td>Raw ECDH x-coordinate used directly as the AES-GCM key, bound to nothing, so a swapped sender key decrypted cleanly instead of failing.</td><td>Protocol v2: HKDF-SHA256 salted by session id, bound to a transcript of both public keys, with the transcript as GCM additional data. One shared module drives both ends and the harnesses.</td></tr>
-          <tr><td>Med</td><td>24-bit SAS (4 emojis) was grindable to a chosen target inside a link session, which would have made the substitution silent.</td><td>6 emojis (36 bits), derived from the transcript rather than the bare secret.</td></tr>
+          <tr><td>Med</td><td>SAS was the only sender authentication, and a 4-emoji check is easy to click through.</td><td>Widened to 6 emojis and bound to the transcript; then superseded as the trust anchor by <code>linkSecret</code> in protocol v3 (see link channel authentication). Review claim about grindability corrected there.</td></tr>
           <tr><td>Med</td><td><strong>Plaintext at rest</strong>: the bridge crypto keystore wrote private JWKs unencrypted next to the vault, and signed while locked, violating the at-rest invariant. <code>reset()</code> also left <code>cryptoKey:*</code> and <code>passkeyMeta</code> behind.</td><td>Keys go through the vault (encryption + session gate inherited); reset sweeps every secret prefix.</td></tr>
           <tr><td>Med</td><td>Extension-pages CSP set no <code>connect-src</code>, so anything running in the page could exfiltrate to any host.</td><td><code>default-src 'self'</code> plus <code>connect-src</code> limited to Self hosts.</td></tr>
           <tr><td>Med</td><td>A junk first <code>self_app</code> burned the session (<code>handled</code> latched before decrypt), a free denial of service and the race that won the substitution.</td><td>Latch only after decrypt and payload validation; keep listening otherwise.</td></tr>
