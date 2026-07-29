@@ -19,6 +19,9 @@ const CANARY_TEXT = 'self-vault';
 // unlocked session ends at the absolute TTL, after the idle TTL without a
 // vault access, on manual/OS lock, or on browser exit (storage.session).
 const SESSION_ABSOLUTE_TTL_MS = 12 * 60 * 60 * 1000;
+// meta.iterations comes back from storage an attacker with disk access could
+// edit; never derive with less work than we shipped with.
+const MIN_PBKDF2_ITERATIONS = 600_000;
 const SESSION_IDLE_TTL_MS = 30 * 60 * 1000;
 
 interface SessionRecord {
@@ -88,6 +91,7 @@ export async function isUnlocked(): Promise<boolean> {
 }
 
 export async function initialize(password: string): Promise<void> {
+  if (await isInitialized()) throw new Error('A vault already exists in this browser; reset it first');
   const salt = crypto.getRandomValues(new Uint8Array(16));
   const key = await deriveVaultKey(password, salt, PBKDF2_ITERATIONS);
   const canary = await encryptEnvelope(key, new TextEncoder().encode(CANARY_TEXT));
@@ -98,6 +102,7 @@ export async function initialize(password: string): Promise<void> {
 
 /** Creates a vault around a caller-provided random key (passkey custody - no password exists). */
 export async function initializeWithKey(raw: Uint8Array): Promise<void> {
+  if (await isInitialized()) throw new Error('A vault already exists in this browser; reset it first');
   const key = await importVaultKey(raw);
   const canary = await encryptEnvelope(key, new TextEncoder().encode(CANARY_TEXT));
   const meta: VaultMeta = { v: 1, salt: '', iterations: 0, canary, mode: 'passkey' };
@@ -114,6 +119,10 @@ export async function vaultMode(): Promise<'password' | 'passkey' | null> {
 export async function unlock(password: string): Promise<boolean> {
   const meta = await readMeta();
   if (!meta) return false;
+  // Passkey-only vault: there is no password to verify.
+  if ((meta.mode ?? 'password') === 'passkey' || !meta.salt || meta.iterations < MIN_PBKDF2_ITERATIONS) {
+    return false;
+  }
   const key = await deriveVaultKey(password, b64.decode(meta.salt), meta.iterations);
   try {
     const canary = await decryptEnvelope(key, meta.canary);
@@ -129,10 +138,18 @@ export async function lock(): Promise<void> {
   await chrome.storage.session.remove(SESSION_KEY);
 }
 
-/** Deletes the vault (meta + every encrypted entry + session key). The phone copy is unaffected. */
+/** Deletes everything account-related: vault meta, encrypted entries, any
+ *  pre-vault key material, the passkey wrap, and the session key. "Delete this
+ *  browser's account" must leave nothing behind. The phone copy is unaffected. */
 export async function reset(): Promise<void> {
   const all = await chrome.storage.local.get(null);
-  const keys = Object.keys(all).filter(key => key === META_KEY || key.startsWith(VAULT_PREFIX));
+  const keys = Object.keys(all).filter(
+    key =>
+      key === META_KEY ||
+      key === 'passkeyMeta' ||
+      key.startsWith(VAULT_PREFIX) ||
+      key.startsWith('cryptoKey:'),
+  );
   if (keys.length > 0) await chrome.storage.local.remove(keys);
   await chrome.storage.session.remove(SESSION_KEY);
 }

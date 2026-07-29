@@ -68,11 +68,11 @@ export async function deriveSharedKey(privateKey: CryptoKey, peerPublicKeyHex: s
 }
 
 /** WebCrypto AES-GCM emits ciphertext||tag; the envelope keeps them split like node-forge does. */
-export async function encryptEnvelope(key: CryptoKey, plaintext: Uint8Array): Promise<Envelope> {
+export async function encryptEnvelope(key: CryptoKey, plaintext: Uint8Array, aad?: Uint8Array): Promise<Envelope> {
   const nonce = crypto.getRandomValues(new Uint8Array(12));
-  const sealed = new Uint8Array(
-    await crypto.subtle.encrypt({ name: 'AES-GCM', iv: nonce }, key, plaintext as BufferSource),
-  );
+  const params: AesGcmParams = { name: 'AES-GCM', iv: nonce };
+  if (aad) params.additionalData = aad as BufferSource;
+  const sealed = new Uint8Array(await crypto.subtle.encrypt(params, key, plaintext as BufferSource));
   return {
     nonce: b64.encode(nonce),
     cipherText: b64.encode(sealed.slice(0, sealed.length - 16)),
@@ -80,13 +80,15 @@ export async function encryptEnvelope(key: CryptoKey, plaintext: Uint8Array): Pr
   };
 }
 
-export async function decryptEnvelope(key: CryptoKey, envelope: Envelope): Promise<Uint8Array> {
+export async function decryptEnvelope(key: CryptoKey, envelope: Envelope, aad?: Uint8Array): Promise<Uint8Array> {
   const cipherText = b64.decode(envelope.cipherText);
   const authTag = b64.decode(envelope.authTag);
   const sealed = new Uint8Array(cipherText.length + authTag.length);
   sealed.set(cipherText);
   sealed.set(authTag, cipherText.length);
-  const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64.decode(envelope.nonce) }, key, sealed);
+  const params: AesGcmParams = { name: 'AES-GCM', iv: b64.decode(envelope.nonce) };
+  if (aad) params.additionalData = aad as BufferSource;
+  const plain = await crypto.subtle.decrypt(params, key, sealed);
   return new Uint8Array(plain);
 }
 

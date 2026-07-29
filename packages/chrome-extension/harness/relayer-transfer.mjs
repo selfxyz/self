@@ -8,6 +8,7 @@
 //   --size is the plaintext payload size in KB.
 
 import { createECDH, createCipheriv, createDecipheriv, createHash, randomBytes, randomUUID } from 'node:crypto';
+import { deriveTransferKey, transferAad } from '@selfxyz/mobile-sdk-alpha/utils/sas';
 import { io } from 'socket.io-client';
 
 const args = process.argv.slice(2);
@@ -23,9 +24,10 @@ const OVERALL_TIMEOUT_MS = 30_000;
 // Envelope crypto: mirrors the TEE handshake convention in common/src/utils/proving.ts
 // (P-256 ECDH, shared key = x-coordinate as 32 bytes BE, AES-256-GCM, 12-byte nonce,
 // 128-bit tag) but encodes fields as base64 instead of byte arrays to keep the JSON small.
-function encryptEnvelope(sharedKey, plaintextBuf) {
+function encryptEnvelope(sharedKey, plaintextBuf, aad) {
   const nonce = randomBytes(12);
   const cipher = createCipheriv('aes-256-gcm', sharedKey, nonce);
+  if (aad) cipher.setAAD(Buffer.from(aad));
   const cipherText = Buffer.concat([cipher.update(plaintextBuf), cipher.final()]);
   return {
     nonce: nonce.toString('base64'),
@@ -34,9 +36,10 @@ function encryptEnvelope(sharedKey, plaintextBuf) {
   };
 }
 
-function decryptEnvelope(sharedKey, envelope) {
+function decryptEnvelope(sharedKey, envelope, aad) {
   const decipher = createDecipheriv('aes-256-gcm', sharedKey, Buffer.from(envelope.nonce, 'base64'));
   decipher.setAuthTag(Buffer.from(envelope.authTag, 'base64'));
+  if (aad) decipher.setAAD(Buffer.from(aad));
   return Buffer.concat([decipher.update(Buffer.from(envelope.cipherText, 'base64')), decipher.final()]);
 }
 
@@ -102,8 +105,17 @@ async function run() {
       }
       results.selfAppDelivered = true;
       const shared = receiverEcdh.computeSecret(Buffer.from(msg.senderPublicKey, 'hex'));
+      const binding = {
+        sessionId,
+        receiverPublicKey: qrContent.receiverPublicKey,
+        senderPublicKey: msg.senderPublicKey,
+      };
       try {
-        const plain = decryptEnvelope(shared, msg.envelope);
+        const plain = decryptEnvelope(
+          Buffer.from(deriveTransferKey(new Uint8Array(shared), binding)),
+          msg.envelope,
+          transferAad(binding),
+        );
         results.decryptOk = sha(plain) === payloadHash;
         log('receiver', `self_app envelope received (${JSON.stringify(msg).length} bytes on the wire), decrypt ${results.decryptOk ? 'OK, hash matches' : 'FAILED'}`);
       } catch (err) {
@@ -123,11 +135,17 @@ async function run() {
         const senderEcdh = createECDH('prime256v1');
         senderEcdh.generateKeys();
         const shared = senderEcdh.computeSecret(Buffer.from(qrContent.receiverPublicKey, 'hex'));
+        const senderPublicKey = senderEcdh.getPublicKey('hex', 'uncompressed');
+        const binding = { sessionId, receiverPublicKey: qrContent.receiverPublicKey, senderPublicKey };
         const message = {
           sessionId,
           transferType: 'self-account-transfer',
-          senderPublicKey: senderEcdh.getPublicKey('hex', 'uncompressed'),
-          envelope: encryptEnvelope(shared, payload),
+          senderPublicKey,
+          envelope: encryptEnvelope(
+            Buffer.from(deriveTransferKey(new Uint8Array(shared), binding)),
+            payload,
+            transferAad(binding),
+          ),
         };
         log('sender', `emitting '${CUSTOM_EVENT}' (probe) then 'self_app' (${JSON.stringify(message).length} bytes)`);
         sender.emit(CUSTOM_EVENT, { sessionId, probe: true });

@@ -16,7 +16,7 @@ import { StyleSheet, TextInput } from 'react-native';
 import { io, type Socket } from 'socket.io-client';
 import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
 
-import { ec, encryptAES256GCM } from '@selfxyz/common/utils/proving';
+import { ec } from '@selfxyz/common/utils/proving';
 import {
   black,
   slate200,
@@ -24,7 +24,12 @@ import {
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
-import { sasEmojis } from '@selfxyz/mobile-sdk-alpha/utils/sas';
+import {
+  deriveTransferKey,
+  sasEmojis,
+  transferAad,
+  type TransferBinding,
+} from '@selfxyz/mobile-sdk-alpha/utils/sas';
 
 import { QRCodeScannerView } from '@/components/native/QRCodeScanner';
 import { useAuth } from '@/providers/authProvider';
@@ -34,6 +39,11 @@ import {
 } from '@/providers/passportDataProvider';
 
 const MAX_WIRE_BYTES = 512 * 1024;
+// A QR-declared relay is attacker-controllable input: only Self relays, wss only.
+const RELAY_ALLOWED = [
+  'wss://websocket.self.xyz',
+  'wss://websocket.staging.self.xyz',
+];
 const ACK_TIMEOUT_MS = 60_000;
 
 interface LinkQrContent {
@@ -60,38 +70,68 @@ function parseQrContent(raw: string): LinkQrContent {
   ) {
     throw new Error('Receiver key must be an uncompressed P-256 public key');
   }
-  if (typeof parsed.relay !== 'string' || !/^wss?:\/\//.test(parsed.relay)) {
-    throw new Error('Missing relay URL');
+  if (
+    typeof parsed.relay !== 'string' ||
+    !RELAY_ALLOWED.includes(parsed.relay)
+  ) {
+    throw new Error('Link code points at an unrecognized relay');
   }
   return parsed as LinkQrContent;
 }
 
 interface Channel {
-  sharedKey: Buffer;
+  /** Raw ECDH x-coordinate; never used as an encryption key directly. */
+  sharedSecret: Uint8Array;
+  binding: TransferBinding;
   senderPublicKey: string;
 }
 
-function openChannelKeys(receiverPublicKeyHex: string): Channel {
+function openChannelKeys(qr: LinkQrContent): Channel {
   const ephemeral = ec.genKeyPair();
-  const receiver = ec.keyFromPublic(receiverPublicKeyHex, 'hex');
-  const sharedKey = Buffer.from(
+  const receiver = ec.keyFromPublic(qr.receiverPublicKey, 'hex');
+  const sharedSecret = new Uint8Array(
     ephemeral.derive(receiver.getPublic()).toArray('be', 32),
   );
+  const senderPublicKey = ephemeral.getPublic(false, 'hex') as string;
   return {
-    sharedKey,
-    senderPublicKey: ephemeral.getPublic(false, 'hex') as string,
+    sharedSecret,
+    senderPublicKey,
+    binding: {
+      sessionId: qr.transferSessionId,
+      receiverPublicKey: qr.receiverPublicKey,
+      senderPublicKey,
+    },
   };
 }
 
 function encryptWithChannel(channel: Channel, plaintext: string) {
-  const enc = encryptAES256GCM(
-    plaintext,
-    forge.util.createBuffer(channel.sharedKey.toString('binary')),
+  // HKDF-derived, transcript-bound key plus GCM additional data: substituting
+  // a sender key or session id fails the tag on the extension side instead of
+  // decrypting into a different account.
+  const key = Buffer.from(
+    deriveTransferKey(channel.sharedSecret, channel.binding),
   );
+  const aad = Buffer.from(transferAad(channel.binding));
+  const cipher = forge.cipher.createCipher(
+    'AES-GCM',
+    forge.util.createBuffer(key.toString('binary')),
+  );
+  const nonce = forge.random.getBytesSync(12);
+  cipher.start({
+    iv: nonce,
+    additionalData: aad.toString('binary'),
+    tagLength: 128,
+  });
+  cipher.update(forge.util.createBuffer(forge.util.encodeUtf8(plaintext)));
+  cipher.finish();
   return {
-    nonce: Buffer.from(enc.nonce).toString('base64'),
-    cipherText: Buffer.from(enc.cipher_text).toString('base64'),
-    authTag: Buffer.from(enc.auth_tag).toString('base64'),
+    nonce: Buffer.from(nonce, 'binary').toString('base64'),
+    cipherText: Buffer.from(cipher.output.getBytes(), 'binary').toString(
+      'base64',
+    ),
+    authTag: Buffer.from(cipher.mode.tag.getBytes(), 'binary').toString(
+      'base64',
+    ),
   };
 }
 
@@ -134,9 +174,9 @@ export const LinkBrowserExtensionScreen: React.FC = () => {
     (raw: string) => {
       try {
         const parsed = parseQrContent(raw.trim());
-        const channel = openChannelKeys(parsed.receiverPublicKey);
+        const channel = openChannelKeys(parsed);
         channelRef.current = channel;
-        setSas(sasEmojis(channel.sharedKey));
+        setSas(sasEmojis(channel.sharedSecret, channel.binding));
         setQrContent(parsed);
 
         const socket = io(`${parsed.relay}/websocket`, {

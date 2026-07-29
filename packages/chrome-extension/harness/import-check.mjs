@@ -10,7 +10,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { sasEmojis } from '@selfxyz/mobile-sdk-alpha/utils/sas';
+import { deriveTransferKey, sasEmojis, transferAad } from '@selfxyz/mobile-sdk-alpha/utils/sas';
 import puppeteer from 'puppeteer';
 import { io } from 'socket.io-client';
 
@@ -45,9 +45,10 @@ const PAYLOAD = {
   },
 };
 
-function encryptEnvelope(sharedKey, plaintextBuf) {
+function encryptEnvelope(sharedKey, plaintextBuf, aad) {
   const nonce = randomBytes(12);
   const cipher = createCipheriv('aes-256-gcm', sharedKey, nonce);
+  if (aad) cipher.setAAD(Buffer.from(aad));
   const cipherText = Buffer.concat([cipher.update(plaintextBuf), cipher.final()]);
   return {
     nonce: nonce.toString('base64'),
@@ -79,7 +80,14 @@ function runSender(qr, sharedOut = {}) {
       const ecdh = createECDH('prime256v1');
       ecdh.generateKeys();
       const shared = ecdh.computeSecret(Buffer.from(qr.receiverPublicKey, 'hex'));
+      const senderPublicKey = ecdh.getPublicKey('hex', 'uncompressed');
+      const binding = {
+        sessionId: qr.transferSessionId,
+        receiverPublicKey: qr.receiverPublicKey,
+        senderPublicKey,
+      };
       sharedOut.secret = shared;
+      sharedOut.binding = binding;
       // Hello goes to its own room (the relayer forwards one self_app per
       // session), envelope to the transfer room - like the phone.
       const helloSocket = io(`${qr.relay}/websocket`, {
@@ -92,7 +100,7 @@ function runSender(qr, sharedOut = {}) {
         helloSocket.emit('self_app', {
           sessionId: qr.helloSessionId,
           transferType: 'self-account-transfer-hello',
-          senderPublicKey: ecdh.getPublicKey('hex', 'uncompressed'),
+          senderPublicKey,
         });
         console.log('[sender] hello pushed');
         // Envelope follows once the page had time to render the pre-send SAS,
@@ -102,8 +110,12 @@ function runSender(qr, sharedOut = {}) {
           socket.emit('self_app', {
             sessionId: qr.transferSessionId,
             transferType: 'self-account-transfer',
-            senderPublicKey: ecdh.getPublicKey('hex', 'uncompressed'),
-            envelope: encryptEnvelope(shared, Buffer.from(JSON.stringify(PAYLOAD), 'utf8')),
+            senderPublicKey,
+            envelope: encryptEnvelope(
+              Buffer.from(deriveTransferKey(new Uint8Array(shared), binding)),
+              Buffer.from(JSON.stringify(PAYLOAD), 'utf8'),
+              transferAad(binding),
+            ),
           });
           console.log('[sender] envelope pushed');
         }, 1_500);
@@ -173,10 +185,49 @@ try {
   // including the pre-send display triggered by the hello message.
   const pageSas = (await page.$eval('#sas', node => node.textContent)).trim();
   const scanSas = (await page.$eval('#sas-scan', node => node.textContent)).trim();
-  const expectedSas = sasEmojis(new Uint8Array(sharedOut.secret)).join('  ');
+  const expectedSas = sasEmojis(new Uint8Array(sharedOut.secret), sharedOut.binding).join('  ');
   if (pageSas !== expectedSas) throw new Error(`SAS mismatch: page="${pageSas}" sender="${expectedSas}"`);
   if (scanSas !== expectedSas) throw new Error(`pre-send SAS mismatch: scan="${scanSas}" sender="${expectedSas}"`);
   console.log(`[harness] SAS matches on both sides (pre-send + import): ${pageSas}`);
+
+  // 2c. Security regression (review finding 2026-07-29): an envelope whose
+  // senderPublicKey differs from the SAS-verified hello key must be refused,
+  // even though it is validly encrypted under its own ECDH secret. Without the
+  // hello pin this imported an attacker-chosen account silently.
+  const attacker = createECDH('prime256v1');
+  attacker.generateKeys();
+  const attackerPub = attacker.getPublicKey('hex', 'uncompressed');
+  const attackerShared = attacker.computeSecret(Buffer.from(qr.receiverPublicKey, 'hex'));
+  const attackerBinding = {
+    sessionId: qr.transferSessionId,
+    receiverPublicKey: qr.receiverPublicKey,
+    senderPublicKey: attackerPub,
+  };
+  const rogue = io(`${qr.relay}/websocket`, {
+    path: '/',
+    transports: ['websocket'],
+    forceNew: true,
+    query: { sessionId: qr.transferSessionId, clientType: 'web' },
+  });
+  await new Promise(resolve => rogue.on('connect', resolve));
+  rogue.emit('self_app', {
+    sessionId: qr.transferSessionId,
+    transferType: 'self-account-transfer',
+    senderPublicKey: attackerPub,
+    envelope: encryptEnvelope(
+      Buffer.from(deriveTransferKey(new Uint8Array(attackerShared), attackerBinding)),
+      Buffer.from(JSON.stringify({ ...PAYLOAD, mnemonic: { phrase: 'attacker owned' } }), 'utf8'),
+      transferAad(attackerBinding),
+    ),
+  });
+  await new Promise(resolve => setTimeout(resolve, 1_500));
+  rogue.close();
+  const stillOnPassword = await page.$eval('#step-password', node => !node.classList.contains('hidden'));
+  const pageSasAfter = (await page.$eval('#sas', node => node.textContent)).trim();
+  if (!stillOnPassword || pageSasAfter !== expectedSas) {
+    throw new Error('substituted-sender envelope was not refused');
+  }
+  console.log('[harness] substituted-sender envelope refused (hello key pinned)');
 
   // 3. Set the password; sender must receive the ack.
   await page.type('#pw1', PASSWORD);

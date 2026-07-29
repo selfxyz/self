@@ -142,14 +142,19 @@ const b64 = {
 async function loadKeyPair(keyRef: string): Promise<{ privateJwk: JsonWebKey; publicJwk: JsonWebKey } | null> {
   const storageKey = CRYPTO_KEY_PREFIX + keyRef;
   const record = await chrome.storage.local.get(storageKey);
-  return (record[storageKey] as { privateJwk: JsonWebKey; publicJwk: JsonWebKey } | undefined) ?? null;
+  const raw = record[storageKey] as { privateJwk: JsonWebKey; publicJwk: JsonWebKey } | undefined;
+  if (raw) return raw; // pre-vault keys; migrated on next generateKey
+  const stored = await createVault().get(CRYPTO_KEY_PREFIX + keyRef);
+  return stored ? (JSON.parse(stored) as { privateJwk: JsonWebKey; publicJwk: JsonWebKey }) : null;
 }
 
 async function generateKey(keyRef: string): Promise<{ keyRef: string; success: boolean }> {
   const pair = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']);
   const privateJwk = await crypto.subtle.exportKey('jwk', pair.privateKey);
   const publicJwk = await crypto.subtle.exportKey('jwk', pair.publicKey);
-  await chrome.storage.local.set({ [CRYPTO_KEY_PREFIX + keyRef]: { privateJwk, publicJwk } });
+  // Through the vault, never raw storage: a private key is a secret and
+  // inherits the same at-rest encryption and session gate as the mnemonic.
+  await createVault().set(CRYPTO_KEY_PREFIX + keyRef, JSON.stringify({ privateJwk, publicJwk }));
   return { keyRef, success: true };
 }
 

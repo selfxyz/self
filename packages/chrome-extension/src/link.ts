@@ -12,7 +12,7 @@ import { mnemonicToSeedSync } from '@scure/bip39';
 import QRCode from 'qrcode';
 import { io, type Socket } from 'socket.io-client';
 
-import { sasEmojis } from '@selfxyz/mobile-sdk-alpha/utils/sas';
+import { deriveTransferKey, sasEmojis, transferAad, type TransferBinding } from '@selfxyz/mobile-sdk-alpha/utils/sas';
 
 import type { Envelope } from './crypto';
 import { aesKeyFromSecret, decryptEnvelope, deriveSharedSecretBits, generateEcdhKeyPair, hex } from './crypto';
@@ -20,6 +20,18 @@ import { enablePasskeyUnlock, setupPasskeyVault } from './passkey';
 import { initialize as initializeVault, createVault } from './vault';
 
 const RELAY_DEFAULT = 'wss://websocket.staging.self.xyz';
+// Relay host allowlist: an attacker-supplied relay would hand them the
+// transport (session ids, payload sizes, message ordering). wss only.
+const RELAY_ALLOWED = ['wss://websocket.self.xyz', 'wss://websocket.staging.self.xyz'];
+
+function resolveRelay(requested: string | null): string {
+  if (!requested) return RELAY_DEFAULT;
+  if (RELAY_ALLOWED.includes(requested)) return requested;
+  // Local dev/harness override, never a remote host.
+  if (/^wss?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(requested)) return requested;
+  console.warn('Ignoring relay override outside the allowlist');
+  return RELAY_DEFAULT;
+}
 const DERIVATION_PATH = "m/44'/60'/0'/0/0";
 
 interface TransferMessage {
@@ -103,7 +115,7 @@ async function persistDocuments(payload: TransferPayload): Promise<void> {
 
 async function main(): Promise<void> {
   const params = new URLSearchParams(window.location.search);
-  const relay = params.get('relay') ?? RELAY_DEFAULT;
+  const relay = resolveRelay(params.get('relay'));
 
   const sessionId = crypto.randomUUID();
   // Separate room for the pre-send SAS handshake: the relayer forwards only
@@ -146,14 +158,30 @@ async function main(): Promise<void> {
     query: { sessionId: helloSessionId, clientType: 'mobile' },
   });
 
+  let helloSenderKey: string | null = null;
+  let helloConflict = false;
+
   helloSocket.on('self_app', (data: unknown) => {
     void (async () => {
       const message = (typeof data === 'string' ? JSON.parse(data) : data) as TransferMessage;
       if (message.sessionId !== helloSessionId || message.transferType !== 'self-account-transfer-hello') return;
       if (typeof message.senderPublicKey !== 'string') return;
+      if (helloSenderKey && helloSenderKey !== message.senderPublicKey) {
+        // A second, different hello means someone else is talking to this
+        // session. Refuse rather than showing a SAS the user might accept.
+        el('scan-status').textContent = 'Conflicting handshakes on this code. Close this window and start again.';
+        helloConflict = true;
+        return;
+      }
       try {
         const bits = await deriveSharedSecretBits(keyPair.privateKey, message.senderPublicKey);
-        el('sas-scan').textContent = sasEmojis(bits).join('  ');
+        const binding: TransferBinding = {
+          sessionId,
+          receiverPublicKey: publicKeyHex,
+          senderPublicKey: message.senderPublicKey,
+        };
+        helloSenderKey = message.senderPublicKey;
+        el('sas-scan').textContent = sasEmojis(bits, binding).join('  ');
         el('scan-status').textContent =
           'Check that your phone shows the same emojis, then press "Send account" on the phone.';
       } catch {
@@ -168,17 +196,37 @@ async function main(): Promise<void> {
       const message = (typeof data === 'string' ? JSON.parse(data) : data) as TransferMessage;
       if (message.transferType !== 'self-account-transfer' || message.sessionId !== sessionId) return;
       if (handled) return; // the phone re-emits on reconnect
-      handled = true;
-      helloSocket.disconnect();
+
+      // The envelope must come from the same ephemeral key whose SAS the user
+      // compared. Without this pin, anyone who can reach the transfer room and
+      // read the QR could substitute their own keypair and account.
+      if (helloConflict) return;
+      if (!helloSenderKey) {
+        el('scan-status').textContent = 'Transfer arrived without a handshake. Close this window and start again.';
+        return;
+      }
+      if (message.senderPublicKey !== helloSenderKey) {
+        el('scan-status').textContent = 'Transfer did not match the verified handshake. Close this window and start again.';
+        return;
+      }
 
       try {
         const sharedSecret = await deriveSharedSecretBits(keyPair.privateKey, message.senderPublicKey);
-        const sharedKey = await aesKeyFromSecret(sharedSecret);
-        const plain = await decryptEnvelope(sharedKey, message.envelope);
+        const binding: TransferBinding = {
+          sessionId,
+          receiverPublicKey: publicKeyHex,
+          senderPublicKey: message.senderPublicKey,
+        };
+        const sharedKey = await aesKeyFromSecret(deriveTransferKey(sharedSecret, binding));
+        const plain = await decryptEnvelope(sharedKey, message.envelope, transferAad(binding));
         const payload = JSON.parse(new TextDecoder().decode(plain)) as TransferPayload;
         const { catalogSize } = validatePayload(payload);
+        // Latch only once the payload is authenticated: a junk first message
+        // must not burn the session.
+        handled = true;
+        helloSocket.disconnect();
 
-        el('sas').textContent = sasEmojis(sharedSecret).join('  ');
+        el('sas').textContent = sasEmojis(sharedSecret, binding).join('  ');
         show('password');
 
         const finish = (custody: 'passkey' | 'password') => {

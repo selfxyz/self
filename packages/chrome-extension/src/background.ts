@@ -1,7 +1,7 @@
 // MV3 service worker. Owns popup windows, routes by vault state, and manages
 // one pending site verification session at a time (fail-closed on overlap).
 
-import { lock } from './vault';
+import { isUnlocked, lock } from './vault';
 import { selfAppToPopupQuery, type SelfAppLike } from './verification-url';
 
 const POPUP_WIDTH = 430;
@@ -23,8 +23,9 @@ let pending: PendingSession | null = null;
 async function vaultState(): Promise<'uninitialized' | 'locked' | 'unlocked'> {
   const local = await chrome.storage.local.get('vaultMeta');
   if (!local.vaultMeta) return 'uninitialized';
-  const session = await chrome.storage.session.get('vaultSessionKey');
-  return session.vaultSessionKey ? 'unlocked' : 'locked';
+  // Share the vault's TTL-aware check: reading the raw session record here
+  // would route an expired session straight into the app.
+  return (await isUnlocked()) ? 'unlocked' : 'locked';
 }
 
 async function gatedUrl(target: string): Promise<string> {
@@ -128,6 +129,10 @@ async function lockNow(): Promise<void> {
     closeSessionWindow();
   }
 }
+
+// Pin the session key to trusted contexts so a future access-level change
+// elsewhere cannot expose it to content scripts.
+void chrome.storage.session.setAccessLevel?.({ accessLevel: 'TRUSTED_CONTEXTS' });
 
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({
