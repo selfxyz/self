@@ -13,12 +13,18 @@ import puppeteer from 'puppeteer';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const SOURCE = join(root, '../webview-app/public/logos/self.svg');
 const OUT_DIR = join(root, 'icons');
-const SIZES = [16, 32, 48, 128];
+// Small icons get less padding: at 16px the toolbar has no room to spare, while
+// the 128px store icon wants the breathing room the icon guidelines expect.
+const SIZES = [
+  { size: 16, artRatio: 0.92 },
+  { size: 32, artRatio: 0.86 },
+  { size: 48, artRatio: 0.8 },
+  { size: 128, artRatio: 0.75 },
+];
 // The store renders icons on light and dark chrome, so the mark sits on an
 // opaque brand ground rather than transparent, with the padding the store's
 // icon guidelines expect (art at ~75% of the canvas).
 const BACKGROUND = '#0B0B0B';
-const ART_RATIO = 0.75;
 
 const svg = readFileSync(SOURCE, 'utf8');
 mkdirSync(OUT_DIR, { recursive: true });
@@ -39,8 +45,8 @@ const browser = await puppeteer.launch({
 });
 try {
   const page = await browser.newPage();
-  for (const size of SIZES) {
-    const art = Math.round(size * ART_RATIO);
+  for (const { size, artRatio } of SIZES) {
+    const art = Math.round(size * artRatio);
     await page.setViewport({ width: size, height: size, deviceScaleFactor: 1 });
     await page.setContent(
       `<!doctype html><style>
