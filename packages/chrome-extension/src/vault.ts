@@ -22,6 +22,54 @@ const SESSION_ABSOLUTE_TTL_MS = 12 * 60 * 60 * 1000;
 // meta.iterations comes back from storage an attacker with disk access could
 // edit; never derive with less work than we shipped with.
 const MIN_PBKDF2_ITERATIONS = 600_000;
+// A stolen storage dump is brute-forceable offline at roughly 10^4-10^5
+// guesses/s per GPU against PBKDF2, so the password floor carries real weight.
+export const MIN_PASSWORD_LENGTH = 12;
+const FAILED_ATTEMPTS_KEY = 'unlockFailures';
+const THROTTLE_AFTER = 3;
+const THROTTLE_STEP_MS = 15_000;
+const THROTTLE_MAX_MS = 5 * 60_000;
+
+interface FailureRecord {
+  count: number;
+  blockedUntil: number;
+}
+
+async function readFailures(): Promise<FailureRecord> {
+  const record = await chrome.storage.session.get(FAILED_ATTEMPTS_KEY);
+  return (record[FAILED_ATTEMPTS_KEY] as FailureRecord | undefined) ?? { count: 0, blockedUntil: 0 };
+}
+
+/** Milliseconds the caller must wait, 0 when unlocking is allowed now. */
+export async function unlockCooldownMs(): Promise<number> {
+  const { blockedUntil } = await readFailures();
+  return Math.max(0, blockedUntil - Date.now());
+}
+
+async function recordFailure(): Promise<void> {
+  const failures = await readFailures();
+  const count = failures.count + 1;
+  const over = Math.max(0, count - THROTTLE_AFTER + 1);
+  const delay = over > 0 ? Math.min(THROTTLE_MAX_MS, THROTTLE_STEP_MS * 2 ** (over - 1)) : 0;
+  await chrome.storage.session.set({
+    [FAILED_ATTEMPTS_KEY]: { count, blockedUntil: delay > 0 ? Date.now() + delay : 0 },
+  });
+}
+
+async function clearFailures(): Promise<void> {
+  await chrome.storage.session.remove(FAILED_ATTEMPTS_KEY);
+}
+
+/** Rough strength signal for the UI. Not a substitute for the length floor. */
+export function passwordStrength(password: string): { score: 0 | 1 | 2 | 3; label: string } {
+  const classes = [/[a-z]/, /[A-Z]/, /[0-9]/, /[^A-Za-z0-9]/].filter(re => re.test(password)).length;
+  const long = password.length >= 16;
+  const veryLong = password.length >= 20;
+  if (password.length < MIN_PASSWORD_LENGTH) return { score: 0, label: 'Too short' };
+  if (veryLong && classes >= 3) return { score: 3, label: 'Strong' };
+  if (long || classes >= 3) return { score: 2, label: 'Good' };
+  return { score: 1, label: 'Weak: add length or variety' };
+}
 const SESSION_IDLE_TTL_MS = 30 * 60 * 1000;
 
 interface SessionRecord {
@@ -92,6 +140,9 @@ export async function isUnlocked(): Promise<boolean> {
 
 export async function initialize(password: string): Promise<void> {
   if (await isInitialized()) throw new Error('A vault already exists in this browser; reset it first');
+  if (password.length < MIN_PASSWORD_LENGTH) {
+    throw new Error(`Password must be at least ${MIN_PASSWORD_LENGTH} characters`);
+  }
   const salt = crypto.getRandomValues(new Uint8Array(16));
   const key = await deriveVaultKey(password, salt, PBKDF2_ITERATIONS);
   const canary = await encryptEnvelope(key, new TextEncoder().encode(CANARY_TEXT));
@@ -123,13 +174,21 @@ export async function unlock(password: string): Promise<boolean> {
   if ((meta.mode ?? 'password') === 'passkey' || !meta.salt || meta.iterations < MIN_PBKDF2_ITERATIONS) {
     return false;
   }
+  // Throttle guessing against a live browser (an offline dump is a separate
+  // problem, addressed by the length floor and the KDF cost).
+  if ((await unlockCooldownMs()) > 0) return false;
   const key = await deriveVaultKey(password, b64.decode(meta.salt), meta.iterations);
   try {
     const canary = await decryptEnvelope(key, meta.canary);
-    if (new TextDecoder().decode(canary) !== CANARY_TEXT) return false;
+    if (new TextDecoder().decode(canary) !== CANARY_TEXT) {
+      await recordFailure();
+      return false;
+    }
   } catch {
+    await recordFailure();
     return false;
   }
+  await clearFailures();
   await startSession(b64.encode(await exportVaultKey(key)));
   return true;
 }
@@ -171,6 +230,7 @@ export async function unlockWithRawKey(raw: Uint8Array): Promise<boolean> {
   } catch {
     return false;
   }
+  await clearFailures();
   await startSession(b64.encode(raw));
   return true;
 }

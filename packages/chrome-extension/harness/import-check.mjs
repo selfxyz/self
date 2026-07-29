@@ -18,7 +18,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const dist = join(root, 'dist');
 const headed = process.argv.includes('--headed');
 const EXTENSION_ID = 'ogmglcibieieclolmenndchnccbbmmcf';
-const PASSWORD = 'import-check-password';
+const PASSWORD = 'import-check-password-12plus';
 
 // Test account: throwaway mnemonic + a minimal mock document pair.
 const TEST_MNEMONIC =
@@ -340,6 +340,22 @@ try {
     timeout: 15_000,
   });
   console.log('[harness] wrong password rejected');
+
+  // 6b. CEP-04: repeated wrong passwords must throttle, not allow unlimited
+  // online guessing against a live browser.
+  for (let attempt = 0; attempt < 3; attempt++) {
+    await page.$eval('#pw', node => {
+      node.value = '';
+    });
+    await page.type('#pw', `wrong-${attempt}`);
+    await page.click('#pw-submit');
+    await new Promise(resolve => setTimeout(resolve, 400));
+  }
+  const throttleText = await page.$eval('#pw-error', node => node.textContent ?? '');
+  if (!/wait \d+s|Try again in \d+s/i.test(throttleText)) {
+    throw new Error(`expected a throttle message, got: ${throttleText}`);
+  }
+  console.log('[harness] unlock throttles after repeated failures');
 
   // 7. Lost-password reset: wipes the vault and returns to the link page.
   await page.click('#reset-start');

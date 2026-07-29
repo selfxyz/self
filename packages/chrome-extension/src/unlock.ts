@@ -2,7 +2,7 @@
 // chrome.storage.session, then continues to the requested page.
 
 import { disablePasskeyUnlock, enablePasskeyUnlock, isPasskeyEnabled, unlockWithPasskey } from './passkey';
-import { reset, unlock, vaultMode } from './vault';
+import { reset, unlock, unlockCooldownMs, vaultMode } from './vault';
 
 const pw = document.getElementById('pw') as HTMLInputElement;
 const submit = document.getElementById('pw-submit') as HTMLButtonElement;
@@ -31,13 +31,23 @@ function nextUrl(): string {
 async function attempt(): Promise<void> {
   submit.disabled = true;
   error.textContent = '';
+  const cooldown = await unlockCooldownMs();
+  if (cooldown > 0) {
+    error.textContent = `Too many attempts. Try again in ${Math.ceil(cooldown / 1000)}s.`;
+    submit.disabled = false;
+    return;
+  }
   const ok = await unlock(pw.value);
   if (ok) {
     window.location.href = nextUrl();
     return;
   }
   submit.disabled = false;
-  error.textContent = 'Wrong password.';
+  const nextCooldown = await unlockCooldownMs();
+  error.textContent =
+    nextCooldown > 0
+      ? `Wrong password. Too many attempts: wait ${Math.ceil(nextCooldown / 1000)}s before trying again.`
+      : 'Wrong password.';
 }
 
 async function attemptPasskey(): Promise<void> {

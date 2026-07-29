@@ -23,7 +23,7 @@ import {
 import type { Envelope } from './crypto';
 import { aesKeyFromSecret, decryptEnvelope, deriveSharedSecretBits, generateEcdhKeyPair, hex } from './crypto';
 import { enablePasskeyUnlock, setupPasskeyVault } from './passkey';
-import { initialize as initializeVault, createVault } from './vault';
+import { initialize as initializeVault, createVault, MIN_PASSWORD_LENGTH, passwordStrength } from './vault';
 
 const RELAY_DEFAULT = 'wss://websocket.staging.self.xyz';
 // Relay host allowlist: an attacker-supplied relay would hand them the
@@ -295,6 +295,19 @@ async function main(): Promise<void> {
           setTimeout(() => socket.disconnect(), 1_000);
         };
 
+        const pw1El = el<HTMLInputElement>('pw1');
+        const meter = el('pw-strength');
+        const renderStrength = () => {
+          if (!pw1El.value) {
+            meter.textContent = '';
+            return;
+          }
+          const { score, label } = passwordStrength(pw1El.value);
+          meter.textContent = label;
+          meter.style.color = score === 0 ? 'var(--danger, #ff6b6b)' : score >= 2 ? '#46AA44' : '#8A6A1F';
+        };
+        pw1El.addEventListener('input', renderStrength);
+
         const securePasskey = el<HTMLButtonElement>('secure-passkey');
         const submit = el<HTMLButtonElement>('pw-submit');
         const error = el('pw-error');
@@ -320,8 +333,8 @@ async function main(): Promise<void> {
           void (async () => {
             const pw1 = el<HTMLInputElement>('pw1').value;
             const pw2 = el<HTMLInputElement>('pw2').value;
-            if (pw1.length < 8) {
-              error.textContent = 'Password must be at least 8 characters.';
+            if (pw1.length < MIN_PASSWORD_LENGTH) {
+              error.textContent = `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`;
               return;
             }
             if (pw1 !== pw2) {

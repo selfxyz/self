@@ -45,7 +45,8 @@
         <p>Your account arrived. Choose how to encrypt it on this computer.</p>
         <button class="primary" id="secure-passkey">Secure with Touch ID</button>
         <p class="status">or set a password (needed each time the browser restarts):</p>
-        <input id="pw1" type="password" placeholder="Password (min 8 characters)" autocomplete="new-password" />
+        <input id="pw1" type="password" placeholder="Password (min 12 characters)" autocomplete="new-password" />
+        <p class="status" id="pw-strength"></p>
         <input id="pw2" type="password" placeholder="Repeat password" autocomplete="new-password" />
         <p class="error" id="pw-error"></p>
         <button class="secondary" id="pw-submit">Encrypt with password</button>
