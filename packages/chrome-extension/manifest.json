@@ -17,7 +17,9 @@
   "permissions": [
     "storage",
     "contextMenus",
-    "idle"
+    "idle",
+    "alarms",
+    "tabs"
   ],
   "content_scripts": [
     {

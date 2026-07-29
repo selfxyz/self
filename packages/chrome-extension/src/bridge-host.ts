@@ -14,6 +14,16 @@
 import { startRelayerSession, type RelayerSession } from './relayer-session';
 import { createVault, isInitialized, isUnlocked, VaultLockedError } from './vault';
 
+// A lock elsewhere (manual, idle TTL, OS lock) must evict this page: it holds
+// decrypted documents and the mnemonic in memory, so clearing the session key
+// is not enough on its own. Watch the key and leave immediately (CEP-15).
+chrome.storage.session.onChanged?.addListener(changes => {
+  if (!changes.vaultSessionKey) return;
+  if (changes.vaultSessionKey.newValue) return; // unlocked or refreshed
+  const here = window.location.pathname.slice(1) + window.location.search;
+  window.location.replace(chrome.runtime.getURL(`unlock.html?next=${encodeURIComponent(here)}`));
+});
+
 // The app page assumes an unlocked vault. If someone lands here directly
 // (deep link, reload after browser restart), bounce through link/unlock first.
 void (async () => {

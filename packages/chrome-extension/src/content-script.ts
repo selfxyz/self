@@ -71,6 +71,10 @@ window.addEventListener('message', event => {
 
 chrome.runtime.onMessage.addListener(message => {
   if (message?.type === 'self-ext:result') {
+    // The worker stamps the origin that made the request. If this document is
+    // not that origin, the tab navigated after asking and the result is not
+    // ours to deliver.
+    if (message.origin && message.origin !== window.origin) return;
     window.postMessage(
       { type: 'self:ext:result', sessionId: message.sessionId, result: message.result },
       window.origin,

@@ -302,12 +302,14 @@ try {
   console.log(`[harness] app state after import: ${JSON.stringify(state)}`);
   await page.screenshot({ path: join(root, 'import-check.png') });
 
-  // 5. Locked-vault path: clearing the session key must bounce to unlock.html.
+  // 5. Lock eviction (CEP-15): clearing the session key must evict the OPEN
+  // page, not just future navigations. A page that already read the vault holds
+  // decrypted documents in memory, so it has to leave on its own.
   const workerTarget = await browser.waitForTarget(t => t.type() === 'service_worker', { timeout: 15_000 });
   const worker = await workerTarget.worker();
   await worker.evaluate(() => chrome.storage.session.remove('vaultSessionKey'));
-  await page.goto(`chrome-extension://${EXTENSION_ID}/index.html`, { waitUntil: 'load' });
   await page.waitForFunction(() => window.location.pathname.endsWith('unlock.html'), { timeout: 10_000 });
+  console.log('[harness] lock evicts the open page to unlock');
   await page.type('#pw', PASSWORD);
   await page.click('#pw-submit');
   await page.waitForFunction(() => window.location.pathname.endsWith('index.html'), { timeout: 15_000 });
@@ -327,9 +329,11 @@ try {
   await page.waitForFunction(() => window.location.pathname.endsWith('index.html'), { timeout: 15_000 });
   console.log('[harness] idle-expired session treated as locked');
 
-  // 6. Wrong password fails closed.
+  // 6. Wrong password fails closed. Clearing the key evicts the open page to
+  // unlock on its own (step 5), so wait for that rather than racing it with a
+  // manual navigation.
   await worker.evaluate(() => chrome.storage.session.remove('vaultSessionKey'));
-  await page.goto(`chrome-extension://${EXTENSION_ID}/unlock.html?next=index.html`, { waitUntil: 'load' });
+  await page.waitForFunction(() => window.location.pathname.endsWith('unlock.html'), { timeout: 10_000 });
   await page.type('#pw', 'wrong-password');
   await page.click('#pw-submit');
   await page.waitForFunction(() => document.getElementById('pw-error')?.textContent?.includes('Wrong'), {
@@ -349,6 +353,28 @@ try {
   });
   if (!metaGone) throw new Error('reset left vault data behind');
   console.log('[harness] reset wipes vault and returns to link page');
+
+  // 8. CEP-15: pending verification state must survive a service-worker
+  // restart. Chrome kills an idle MV3 worker after ~30s, which always happens
+  // while a user reads the consent screen; with state in module memory the
+  // result was silently dropped and the RP page hung.
+  await worker.evaluate(async () => {
+    await chrome.storage.session.set({
+      pendingSession: { sessionId: 'restart-probe', tabId: -1, origin: null, windowId: null, resolved: false },
+    });
+  });
+  // Force a restart: stopping the worker discards every module global.
+  const workerClient = await worker.client;
+  await workerClient.send('ServiceWorker.stopAllWorkers').catch(() => {});
+  await new Promise(resolve => setTimeout(resolve, 1_000));
+  const revived = await (await browser.waitForTarget(t => t.type() === 'service_worker', { timeout: 15_000 })).worker();
+  const survived = await revived.evaluate(async () => {
+    const record = await chrome.storage.session.get('pendingSession');
+    return record.pendingSession?.sessionId ?? null;
+  });
+  if (survived !== 'restart-probe') throw new Error(`pending session lost across worker restart: ${survived}`);
+  await revived.evaluate(() => chrome.storage.session.remove('pendingSession'));
+  console.log('[harness] pending session survives a worker restart');
 
   const fatal = errors.filter(e => !e.includes('WebSocket'));
   console.log(fatal.length === 0 ? 'IMPORT CHECK OK' : `IMPORT CHECK FAILED: ${fatal.join('; ')}`);
