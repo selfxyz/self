@@ -2,13 +2,6 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-// Dev-only: sends the full account (mnemonic + document catalog + documents)
-// to the Self browser extension, end-to-end encrypted through the websocket
-// relayer. Protocol: specs/projects/sdk/workstreams/chrome-extension/plans/
-// CE-01-transfer-protocol.md. The extension is the receiver ('mobile' client);
-// this screen is the sender ('web' client) and treats the extension's
-// `proof_verified` status as the delivery ack.
-
 import { Buffer } from 'buffer';
 import forge from 'node-forge';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -40,7 +33,6 @@ import {
 } from '@/providers/passportDataProvider';
 
 const MAX_WIRE_BYTES = 512 * 1024;
-// A QR-declared relay is attacker-controllable input: only Self relays, wss only.
 const RELAY_ALLOWED = [
   'wss://websocket.self.xyz',
   'wss://websocket.staging.self.xyz',
@@ -49,10 +41,8 @@ const ACK_TIMEOUT_MS = 60_000;
 
 interface LinkQrContent {
   transferSessionId: string;
-  /** Absent on older extension builds; the pre-send SAS display is skipped then. */
   helloSessionId?: string;
   receiverPublicKey: string;
-  /** Out-of-band channel authenticator; absent on pre-v3 extension builds. */
   linkSecret: string;
   relay: string;
 }
@@ -83,7 +73,6 @@ function parseQrContent(raw: string): LinkQrContent {
 }
 
 interface Channel {
-  /** Raw ECDH x-coordinate; never used as an encryption key directly. */
   sharedSecret: Uint8Array;
   binding: TransferBinding;
   senderPublicKey: string;
@@ -109,9 +98,6 @@ function openChannelKeys(qr: LinkQrContent): Channel {
 }
 
 function encryptWithChannel(channel: Channel, plaintext: string) {
-  // HKDF-derived, transcript-bound key plus GCM additional data: substituting
-  // a sender key or session id fails the tag on the extension side instead of
-  // decrypting into a different account.
   const key = Buffer.from(
     deriveTransferKey(channel.sharedSecret, channel.binding),
   );
@@ -164,9 +150,6 @@ export const LinkBrowserExtensionScreen: React.FC = () => {
     messageRef.current = null;
   }, []);
 
-  // Leaving the screen must cancel the transfer: otherwise the sockets, the ack
-  // timer, and the pending encrypted payload stay alive and the account can
-  // still be delivered after the user backed out.
   useEffect(() => cleanup, [cleanup]);
 
   const fail = useCallback(
@@ -196,18 +179,11 @@ export const LinkBrowserExtensionScreen: React.FC = () => {
         });
         socketRef.current = socket;
 
-        // Emit on connect, never wait for `mobile_connected`: the relayer's
-        // presence status expires seconds after the extension joins, but room
-        // forwarding and the proof_verified ack are not TTL'd (validated on
-        // staging).
         socket.on('connect', () => {
           const pending = messageRef.current;
           if (pending) socket.emit('self_app', pending);
         });
 
-        // The hello travels in its own room: the relayer forwards only the
-        // first self_app per session, so it cannot share the transfer room.
-        // It lets the extension display the SAS emojis before any secret moves.
         if (parsed.helloSessionId) {
           const helloSocket = io(`${parsed.relay}/websocket`, {
             path: '/',
@@ -250,8 +226,6 @@ export const LinkBrowserExtensionScreen: React.FC = () => {
             `Cannot reach the Self relay: ${error.message}. Check your connection and scan the code again.`,
           );
         });
-        // The relayer rejects malformed joins with its own `error` event, and a
-        // mid-send drop must surface rather than sit behind the spinner.
         socket.on('error', (payload: { message?: string } | string) => {
           const detail =
             typeof payload === 'string' ? payload : payload?.message;
@@ -301,9 +275,6 @@ export const LinkBrowserExtensionScreen: React.FC = () => {
       const allDocs = await getAllDocumentsDirectlyFromKeychain();
       setDocCount(catalog.documents.length);
 
-      // An account with nothing registered cannot prove anything, so linking
-      // it would hand the browser a vault it can only fail with. Refuse here
-      // rather than leaving the extension in an unreachable empty state.
       const registered = catalog.documents.filter(
         doc => (doc as { isRegistered?: boolean }).isRegistered,
       );
@@ -315,8 +286,6 @@ export const LinkBrowserExtensionScreen: React.FC = () => {
 
       const payload = {
         version: 1,
-        // Stamped so the extension can show how old its copy is: transfer is a
-        // copy, and the phone can add documents afterwards (CEP-14).
         linkedAt: new Date().toISOString(),
         mnemonic: stored.data,
         documentCatalog: catalog,

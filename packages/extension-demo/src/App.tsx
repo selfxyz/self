@@ -4,11 +4,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { isSelfExtensionAvailable, requestVerification } from '@selfxyz/chrome-extension/sdk';
 import { SelfAppBuilder, SelfQRcodeWrapper } from '@selfxyz/qrcode';
 
-// The endpoint must be reachable by the TEE (and SelfAppBuilder rejects
-// localhost), so run `ngrok http 3111` and set VITE_VERIFY_ENDPOINT +
-// VERIFY_ENDPOINT (backend) to https://<tunnel>/api/verify. Scope+endpoint
-// must match the backend verifier exactly. The placeholder default keeps the
-// page functional for wiring tests; proof delivery needs the tunnel.
 const VERIFY_ENDPOINT = import.meta.env.VITE_VERIFY_ENDPOINT ?? 'https://self-ext-demo.example/api/verify';
 const SCOPE = 'ext-spike-demo';
 
@@ -47,9 +42,6 @@ export function App() {
     void isSelfExtensionAvailable().then(setExtensionAvailable);
   }, []);
 
-  // Backend confirmation: poll the demo backend's record of the TEE-delivered
-  // proof, so the page can show *server-side* verification, not just the
-  // relayer status.
   useEffect(() => {
     if (phase !== 'succeeded') return;
     const timer = setInterval(async () => {
@@ -62,7 +54,6 @@ export function App() {
           clearInterval(timer);
         }
       } catch {
-        // backend not up; keep polling
       }
     }, 1_000);
     return () => clearInterval(timer);

@@ -38,9 +38,6 @@ describe('sasEmojis', () => {
     expect(SAS_LENGTH).toBe(6);
   });
 
-  // Both devices must render the same string for the same channel. Changing the
-  // table order, the labels, or the transcript shape is a protocol break and
-  // must fail here.
   it('is deterministic for a fixed secret and binding', () => {
     const first = sasEmojis(secret, binding);
     expect(sasEmojis(secret, binding)).toEqual(first);
@@ -102,8 +99,6 @@ describe('linkSecret (QR channel authentication)', () => {
     expect(isValidLinkSecret(Buffer.alloc(16, 1).toString('base64'))).toBe(false);
   });
 
-  // The point of v3: an attacker who never saw the QR cannot derive the
-  // channel key even with both public keys and the session id.
   it('changes the envelope key, so a non-scanner cannot authenticate', () => {
     const withSecret = Array.from(deriveTransferKey(secret, binding));
     const withOther = Array.from(deriveTransferKey(secret, { ...binding, linkSecret: otherLinkSecret }));

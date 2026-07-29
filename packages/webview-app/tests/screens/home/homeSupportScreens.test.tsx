@@ -173,8 +173,6 @@ describe('WV-14 support screens', () => {
     fireEvent.click(screen.getByRole('button', { name: /manage documents/i }));
     expect(screen.getByTestId('location').textContent).toBe('/docs');
 
-    // The catalog loads async; tapping a document selects it for proofs and
-    // opens the dialogue, which carries the path to the ID data screen.
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /passport/i })).toBeTruthy();
     });

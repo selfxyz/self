@@ -1,28 +1,27 @@
-// Unlock page: derives the vault key from the password and stores it in
-// chrome.storage.session, then continues to the requested page.
-
-import { disablePasskeyUnlock, enablePasskeyUnlock, isPasskeyEnabled, unlockWithPasskey } from './passkey';
+import {
+  disablePasskeyUnlock,
+  enablePasskeyUnlock,
+  isPasskeyEnabled,
+  unlockWithPasskey,
+} from './passkey';
 import { reset, unlock, unlockCooldownMs, vaultMode } from './vault';
 
 const pw = document.getElementById('pw') as HTMLInputElement;
 const submit = document.getElementById('pw-submit') as HTMLButtonElement;
 const passkeyBtn = document.getElementById('pw-passkey') as HTMLButtonElement;
-const enablePasskeyBtn = document.getElementById('pw-enable-passkey') as HTMLButtonElement;
+const enablePasskeyBtn = document.getElementById(
+  'pw-enable-passkey',
+) as HTMLButtonElement;
 const error = document.getElementById('pw-error') as HTMLElement;
 
-// Extension pages we will continue to after unlock. An allowlist of paths
-// beats a character regex: the disclosure target carries a percent-encoded
-// embed query (appEndpoint and friends), which a charset check rejects, and
-// the first verification after a browser restart would then land on the home
-// screen instead of the request.
 const NEXT_ALLOWED_PATHS = ['index.html', 'link.html'];
 
 function nextUrl(): string {
   const next = new URLSearchParams(window.location.search).get('next');
   if (!next) return chrome.runtime.getURL('index.html');
   const [path, query] = next.split('?', 2);
-  if (!NEXT_ALLOWED_PATHS.includes(path)) return chrome.runtime.getURL('index.html');
-  // Re-serialize the query so only well-formed params survive.
+  if (!NEXT_ALLOWED_PATHS.includes(path))
+    return chrome.runtime.getURL('index.html');
   const params = new URLSearchParams(query ?? '');
   const search = params.toString();
   return chrome.runtime.getURL(search ? `${path}?${search}` : path);
@@ -79,7 +78,6 @@ async function attemptEnablePasskey(): Promise<void> {
     window.location.href = nextUrl();
     return;
   } catch (err) {
-    // Vault is unlocked at this point; continue rather than trap the user.
     error.textContent = err instanceof Error ? err.message : String(err);
     setTimeout(() => {
       window.location.href = nextUrl();
@@ -97,16 +95,18 @@ void Promise.all([isPasskeyEnabled(), vaultMode()]).then(([enabled, mode]) => {
   passkeyBtn.classList.toggle('hidden', !enabled);
   enablePasskeyBtn.classList.toggle('hidden', enabled || mode === 'passkey');
   if (mode === 'passkey') {
-    // Passkey custody: there is no password to type.
     pw.classList.add('hidden');
     submit.classList.add('hidden');
-    document.querySelector('main > p')!.textContent = 'Unlock with Touch ID to decrypt your account on this computer.';
+    document.querySelector('main > p')!.textContent =
+      'Unlock with Touch ID to decrypt your account on this computer.';
   }
 });
 
 const resetStart = document.getElementById('reset-start') as HTMLButtonElement;
 const resetConfirm = document.getElementById('reset-confirm') as HTMLElement;
-const resetConfirmBtn = document.getElementById('reset-confirm-btn') as HTMLButtonElement;
+const resetConfirmBtn = document.getElementById(
+  'reset-confirm-btn',
+) as HTMLButtonElement;
 
 resetStart.addEventListener('click', () => {
   resetConfirm.classList.toggle('hidden');

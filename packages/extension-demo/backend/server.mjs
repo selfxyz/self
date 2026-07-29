@@ -1,12 +1,3 @@
-// Demo verification backend: the TEE POSTs {attestationId, proof,
-// publicSignals, userContextData} here after generating the disclosure proof;
-// SelfBackendVerifier checks it against the on-chain registry (staging /
-// mock = Celo Sepolia). Nothing mocked: this is the real verifier.
-//
-// The endpoint must be reachable by the TEE. For local demos:
-//   ngrok http 3111
-//   VERIFY_ENDPOINT=https://<tunnel>/api/verify node backend/server.mjs
-// and start vite with VITE_VERIFY_ENDPOINT set to the same URL.
 
 import { createServer } from 'node:http';
 
@@ -14,13 +5,8 @@ import { AllIds, DefaultConfigStore, SelfBackendVerifier } from '@selfxyz/core';
 
 const PORT = Number(process.env.PORT ?? 3111);
 const SCOPE = 'ext-spike-demo';
-// Must match the frontend's VITE_VERIFY_ENDPOINT exactly (the scope is hashed
-// with the endpoint). The placeholder default matches the frontend's.
 const VERIFY_ENDPOINT = process.env.VERIFY_ENDPOINT ?? 'https://self-ext-demo.example/api/verify';
 const MINIMUM_AGE = 18;
-// true = staging/mock registry (Celo Sepolia), false = production registry
-// (real documents). Must match the document being disclosed or verification
-// fails with "Onchain root does not exist".
 const MOCK_DOCS = (process.env.MOCK_DOCS ?? 'true') !== 'false';
 
 const verifier = new SelfBackendVerifier(

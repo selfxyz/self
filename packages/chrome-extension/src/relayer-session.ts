@@ -1,13 +1,3 @@
-// Relayer session for embed (disclosure) popups.
-//
-// The webview-app embed flow builds its SelfApp from URL params and never
-// opens a relayer socket, so `handleProofResult` inside the SDK store has no
-// socket to emit on. This module fills the mobile-client role instead: it
-// joins the room for the RP page's sessionId (mobile_connected fires the
-// page's progress UI) and translates the terminal lifecycle result into the
-// `proof_verified` / `proof_generation_failed` statuses the RP's websocket
-// flow (sdk/qrcode) expects.
-
 import { io, type Socket } from 'socket.io-client';
 
 const RELAY_PROD = 'wss://websocket.self.xyz';
@@ -19,12 +9,16 @@ export interface RelayerSession {
   close(): void;
 }
 
-export function startRelayerSession(params: URLSearchParams): RelayerSession | null {
+export function startRelayerSession(
+  params: URLSearchParams,
+): RelayerSession | null {
   const sessionId = params.get('verificationId');
   if (!sessionId) return null;
 
   const env = params.get('environment');
-  const relay = params.get('relay') ?? (env === 'stg' || env === 'staging' ? RELAY_STAGING : RELAY_PROD);
+  const relay =
+    params.get('relay') ??
+    (env === 'stg' || env === 'staging' ? RELAY_STAGING : RELAY_PROD);
 
   const socket: Socket = io(`${relay}/websocket`, {
     path: '/',

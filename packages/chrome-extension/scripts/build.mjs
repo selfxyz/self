@@ -1,19 +1,12 @@
-// Builds the unpacked extension into dist/:
-//   dist/                       copy of ../webview-app/dist at the ROOT, so the
-//                               absolute public-asset URLs euclid hardcodes
-//                               (/animations/..., /fonts/...) resolve on
-//                               chrome-extension:// pages (the app's asset-path
-//                               shim only activates on file:)
-//   dist/index.html             gains a bridge-host.js script tag before the
-//                               app bundle (SRI-hashed assets stay untouched)
-//   dist/bridge-host.js         esbuild src/bridge-host.ts (classic script)
-//   dist/background.js          esbuild src/background.ts (module worker)
-//   dist/manifest.json          copied
-//
-// Prereq: the webview-app dist must exist (see the error below for the chain).
-
 import { execFileSync } from 'node:child_process';
-import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  cpSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -60,16 +53,21 @@ const indexPath = join(dist, 'index.html');
 const html = readFileSync(indexPath, 'utf8');
 const marker = '<script type="module"';
 if (!html.includes(marker)) {
-  console.error('Could not find the app module script tag in webview-app index.html');
+  console.error(
+    'Could not find the app module script tag in webview-app index.html',
+  );
   process.exit(1);
 }
-writeFileSync(indexPath, html.replace(marker, `<script src="./bridge-host.js"></script>\n    ${marker}`));
+writeFileSync(
+  indexPath,
+  html.replace(
+    marker,
+    `<script src="./bridge-host.js"></script>\n    ${marker}`,
+  ),
+);
 
 cpSync(join(root, 'icons'), join(dist, 'icons'), { recursive: true });
 
-// Store builds differ from dev builds in two ways: the pinned `key` (which
-// fixes the extension id for local loads and the harnesses) must not ship, and
-// the version is a monotonic date stamp the store orders releases by.
 const storeBuild = process.argv.includes('--store');
 const manifest = JSON.parse(readFileSync(join(root, 'manifest.json'), 'utf8'));
 if (storeBuild) {
@@ -84,7 +82,10 @@ if (storeBuild) {
   manifest.version = stamp;
   console.log(`Store build: key stripped, version ${stamp}`);
 }
-writeFileSync(join(dist, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n');
+writeFileSync(
+  join(dist, 'manifest.json'),
+  JSON.stringify(manifest, null, 2) + '\n',
+);
 
 if (storeBuild) {
   const zip = join(root, `self-extension-${manifest.version}.zip`);
@@ -94,7 +95,5 @@ if (storeBuild) {
 
 try {
   execFileSync('du', ['-sh', dist], { stdio: 'inherit' });
-} catch {
-  // best-effort size report
-}
+} catch {}
 console.log(`Built unpacked extension at ${dist}`);

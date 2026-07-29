@@ -1,11 +1,3 @@
-// Page-side shim: the premise of a relying-party SDK for the Self extension.
-//
-// The page builds its config with the standard SelfAppBuilder (from
-// @selfxyz/qrcode) and calls requestVerification(selfApp). The extension's
-// content script relays to the background, which opens the approval popup;
-// the result comes back as a window message. Detection is a ping/pong so the
-// page can fall back to rendering the QR when the extension is absent.
-
 export interface ExtensionVerificationResult {
   success: boolean;
   userId?: string;
@@ -47,11 +39,24 @@ export function requestVerification(
 
     function onMessage(event: MessageEvent): void {
       if (event.source !== window) return;
-      const data = event.data as { type?: string; sessionId?: string; result?: ExtensionVerificationResult };
-      if (data?.type !== 'self:ext:result' || data.sessionId !== selfApp.sessionId) return;
+      const data = event.data as {
+        type?: string;
+        sessionId?: string;
+        result?: ExtensionVerificationResult;
+      };
+      if (
+        data?.type !== 'self:ext:result' ||
+        data.sessionId !== selfApp.sessionId
+      )
+        return;
       clearTimeout(timer);
       window.removeEventListener('message', onMessage);
-      resolve(data.result ?? { success: false, error: { code: 'NO_RESULT', message: 'Empty result' } });
+      resolve(
+        data.result ?? {
+          success: false,
+          error: { code: 'NO_RESULT', message: 'Empty result' },
+        },
+      );
     }
 
     window.addEventListener('message', onMessage);

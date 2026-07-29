@@ -1,12 +1,3 @@
-// Link page: receives the account from the phone and stores it encrypted.
-//
-// Protocol (specs/.../plans/CE-01-transfer-protocol.md): this page is the
-// RECEIVER. It renders a QR {transferSessionId, receiverPublicKey}, joins the
-// relayer room as clientType 'mobile', and waits for the phone (joined as
-// 'web') to push the encrypted envelope via the `self_app` event. After
-// decrypt + password setup it acks with `proof_verified` so the phone shows
-// success.
-
 import { HDKey } from '@scure/bip32';
 import { mnemonicToSeedSync } from '@scure/bip39';
 import QRCode from 'qrcode';
@@ -21,23 +12,33 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/utils/sas';
 
 import type { Envelope } from './crypto';
-import { aesKeyFromSecret, decryptEnvelope, deriveSharedSecretBits, generateEcdhKeyPair, hex } from './crypto';
+import {
+  aesKeyFromSecret,
+  decryptEnvelope,
+  deriveSharedSecretBits,
+  generateEcdhKeyPair,
+  hex,
+} from './crypto';
 import { enablePasskeyUnlock, setupPasskeyVault } from './passkey';
-import { initialize as initializeVault, createVault, MIN_PASSWORD_LENGTH, passwordStrength } from './vault';
+import {
+  initialize as initializeVault,
+  createVault,
+  MIN_PASSWORD_LENGTH,
+  passwordStrength,
+} from './vault';
 
 const RELAY_DEFAULT = 'wss://websocket.staging.self.xyz';
-// Relay host allowlist: an attacker-supplied relay would hand them the
-// transport (session ids, payload sizes, message ordering). wss only.
-const RELAY_ALLOWED = ['wss://websocket.self.xyz', 'wss://websocket.staging.self.xyz'];
-// A link code is a live capability: expire it so a QR left on screen (or in a
-// screenshot) stops being usable.
+const RELAY_ALLOWED = [
+  'wss://websocket.self.xyz',
+  'wss://websocket.staging.self.xyz',
+];
 const QR_TTL_MS = 5 * 60_000;
 
 function resolveRelay(requested: string | null): string {
   if (!requested) return RELAY_DEFAULT;
   if (RELAY_ALLOWED.includes(requested)) return requested;
-  // Local dev/harness override, never a remote host.
-  if (/^wss?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(requested)) return requested;
+  if (/^wss?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(requested))
+    return requested;
   console.warn('Ignoring relay override outside the allowlist');
   return RELAY_DEFAULT;
 }
@@ -52,7 +53,6 @@ interface TransferMessage {
 
 interface TransferPayload {
   version: number;
-  /** When the phone sent this copy; absent on pre-CEP-14 senders. */
   linkedAt?: string;
   mnemonic: unknown;
   documentCatalog: { documents: unknown[]; selectedDocumentId?: string | null };
@@ -72,8 +72,6 @@ function show(step: 'scan' | 'password' | 'done'): void {
 }
 
 function extractMnemonicPhrase(raw: unknown): string {
-  // The phone sends the keychain 'secret' entry as stored: either an
-  // ethers.Mnemonic JSON object or a bare phrase string.
   if (typeof raw === 'string') {
     try {
       const parsed = JSON.parse(raw) as { phrase?: string };
@@ -83,7 +81,11 @@ function extractMnemonicPhrase(raw: unknown): string {
     }
     return raw.trim();
   }
-  if (raw && typeof raw === 'object' && typeof (raw as { phrase?: string }).phrase === 'string') {
+  if (
+    raw &&
+    typeof raw === 'object' &&
+    typeof (raw as { phrase?: string }).phrase === 'string'
+  ) {
     return (raw as { phrase: string }).phrase;
   }
   throw new Error('Unrecognized mnemonic format in transfer payload');
@@ -97,15 +99,22 @@ function derivePrivateKey(phrase: string): string {
 }
 
 function validatePayload(payload: TransferPayload): { catalogSize: number } {
-  if (!payload || typeof payload !== 'object') throw new Error('Payload is not an object');
-  // Unknown future envelope versions are refused rather than best-effort
-  // parsed: a partially understood account is worse than none (CEP-05).
-  if (typeof payload.version !== 'number' || payload.version < 1 || payload.version > 1) {
-    throw new Error(`Unsupported transfer version ${String(payload.version)}; update this extension`);
+  if (!payload || typeof payload !== 'object')
+    throw new Error('Payload is not an object');
+  if (
+    typeof payload.version !== 'number' ||
+    payload.version < 1 ||
+    payload.version > 1
+  ) {
+    throw new Error(
+      `Unsupported transfer version ${String(payload.version)}; update this extension`,
+    );
   }
   const catalog = payload.documentCatalog;
-  if (!catalog || !Array.isArray(catalog.documents)) throw new Error('Missing document catalog');
-  if (!payload.documents || typeof payload.documents !== 'object') throw new Error('Missing documents map');
+  if (!catalog || !Array.isArray(catalog.documents))
+    throw new Error('Missing document catalog');
+  if (!payload.documents || typeof payload.documents !== 'object')
+    throw new Error('Missing documents map');
   for (const entry of catalog.documents) {
     const id = (entry as { id?: string })?.id;
     if (typeof id !== 'string' || !(id in payload.documents)) {
@@ -115,7 +124,6 @@ function validatePayload(payload: TransferPayload): { catalogSize: number } {
   return { catalogSize: catalog.documents.length };
 }
 
-/** Writes the account into the vault; the vault must already be initialized and unlocked. */
 async function persistDocuments(payload: TransferPayload): Promise<void> {
   const phrase = extractMnemonicPhrase(payload.mnemonic);
   const privateKey = derivePrivateKey(phrase);
@@ -123,8 +131,14 @@ async function persistDocuments(payload: TransferPayload): Promise<void> {
   const vault = createVault();
   await vault.set('self_mnemonic', phrase);
   await vault.set('self_private_key', privateKey);
-  await vault.set('self_document_catalog', JSON.stringify(payload.documentCatalog));
-  await vault.set('self_linked_at', payload.linkedAt ?? new Date().toISOString());
+  await vault.set(
+    'self_document_catalog',
+    JSON.stringify(payload.documentCatalog),
+  );
+  await vault.set(
+    'self_linked_at',
+    payload.linkedAt ?? new Date().toISOString(),
+  );
   for (const [id, doc] of Object.entries(payload.documents)) {
     await vault.set(`self_doc_${id}`, JSON.stringify(doc));
   }
@@ -135,13 +149,8 @@ async function main(): Promise<void> {
   const relay = resolveRelay(params.get('relay'));
 
   const sessionId = crypto.randomUUID();
-  // Separate room for the pre-send SAS handshake: the relayer forwards only
-  // the FIRST self_app per session, so the hello cannot share the transfer room.
   const helloSessionId = crypto.randomUUID();
   const { keyPair, publicKeyHex } = await generateEcdhKeyPair();
-  // Out-of-band channel authentication: this secret rides the QR only, never
-  // the relayer, and salts the envelope key. Only a device that scanned the
-  // code can produce an envelope that authenticates.
   const linkSecret = generateLinkSecret();
   const qrContent = JSON.stringify({
     transferSessionId: sessionId,
@@ -173,9 +182,6 @@ async function main(): Promise<void> {
     el('scan-status').textContent = text;
   };
 
-  // Every terminal or degraded state gets a line the user can act on. A silent
-  // spinner is a bug: the scan step can fail from the relayer, from expiry, or
-  // from a hostile handshake, and each needs different user action.
   let expired = false;
   const expireAt = setTimeout(() => {
     expired = true;
@@ -191,21 +197,27 @@ async function main(): Promise<void> {
   });
 
   socket.on('connect', () => {
-    if (!expired) status('Waiting for your phone. Open Self and scan this code.');
+    if (!expired)
+      status('Waiting for your phone. Open Self and scan this code.');
   });
   socket.on('connect_error', (err: Error) => {
-    status(`Cannot reach the Self relay: ${err.message}. Check your connection, then get a new code.`);
+    status(
+      `Cannot reach the Self relay: ${err.message}. Check your connection, then get a new code.`,
+    );
     el('regenerate').classList.remove('hidden');
   });
   socket.on('disconnect', (reason: string) => {
     if (expired || handled) return;
-    status(`Connection to the Self relay dropped (${reason}). Reconnecting; get a new code if this persists.`);
+    status(
+      `Connection to the Self relay dropped (${reason}). Reconnecting; get a new code if this persists.`,
+    );
     el('regenerate').classList.remove('hidden');
   });
-  // The relayer rejects malformed joins with its own `error` event.
   socket.on('error', (payload: { message?: string } | string) => {
     const message = typeof payload === 'string' ? payload : payload?.message;
-    status(`The Self relay rejected this session${message ? `: ${message}` : ''}. Get a new code.`);
+    status(
+      `The Self relay rejected this session${message ? `: ${message}` : ''}. Get a new code.`,
+    );
     el('regenerate').classList.remove('hidden');
   });
 
@@ -222,18 +234,27 @@ async function main(): Promise<void> {
 
   helloSocket.on('self_app', (data: unknown) => {
     void (async () => {
-      const message = (typeof data === 'string' ? JSON.parse(data) : data) as TransferMessage;
-      if (message.sessionId !== helloSessionId || message.transferType !== 'self-account-transfer-hello') return;
+      const message = (
+        typeof data === 'string' ? JSON.parse(data) : data
+      ) as TransferMessage;
+      if (
+        message.sessionId !== helloSessionId ||
+        message.transferType !== 'self-account-transfer-hello'
+      )
+        return;
       if (typeof message.senderPublicKey !== 'string') return;
       if (helloSenderKey && helloSenderKey !== message.senderPublicKey) {
-        // A second, different hello means someone else is talking to this
-        // session. Refuse rather than showing a SAS the user might accept.
-        status('Conflicting handshakes on this code. Close this window and start again.');
+        status(
+          'Conflicting handshakes on this code. Close this window and start again.',
+        );
         helloConflict = true;
         return;
       }
       try {
-        const bits = await deriveSharedSecretBits(keyPair.privateKey, message.senderPublicKey);
+        const bits = await deriveSharedSecretBits(
+          keyPair.privateKey,
+          message.senderPublicKey,
+        );
         const binding: TransferBinding = {
           sessionId,
           receiverPublicKey: publicKeyHex,
@@ -242,7 +263,9 @@ async function main(): Promise<void> {
         };
         helloSenderKey = message.senderPublicKey;
         el('sas-scan').textContent = sasEmojis(bits, binding).join('  ');
-        status('Check that your phone shows the same emojis, then press "Send account" on the phone.');
+        status(
+          'Check that your phone shows the same emojis, then press "Send account" on the phone.',
+        );
       } catch {
         status('Received an invalid handshake. Rescan the code.');
       }
@@ -251,41 +274,59 @@ async function main(): Promise<void> {
 
   socket.on('self_app', (data: unknown) => {
     void (async () => {
-      const message = (typeof data === 'string' ? JSON.parse(data) : data) as TransferMessage;
-      if (message.transferType !== 'self-account-transfer' || message.sessionId !== sessionId) return;
+      const message = (
+        typeof data === 'string' ? JSON.parse(data) : data
+      ) as TransferMessage;
+      if (
+        message.transferType !== 'self-account-transfer' ||
+        message.sessionId !== sessionId
+      )
+        return;
       if (handled) return; // the phone re-emits on reconnect
       if (expired) {
-        status('This code expired before the transfer arrived. Get a new code and try again.');
+        status(
+          'This code expired before the transfer arrived. Get a new code and try again.',
+        );
         return;
       }
 
-      // The envelope must come from the same ephemeral key whose SAS the user
-      // compared. Without this pin, anyone who can reach the transfer room and
-      // read the QR could substitute their own keypair and account.
       if (helloConflict) return;
       if (!helloSenderKey) {
-        status('Transfer arrived without a handshake. Close this window and start again.');
+        status(
+          'Transfer arrived without a handshake. Close this window and start again.',
+        );
         return;
       }
       if (message.senderPublicKey !== helloSenderKey) {
-        status('Transfer did not match the verified handshake. Close this window and start again.');
+        status(
+          'Transfer did not match the verified handshake. Close this window and start again.',
+        );
         return;
       }
 
       try {
-        const sharedSecret = await deriveSharedSecretBits(keyPair.privateKey, message.senderPublicKey);
+        const sharedSecret = await deriveSharedSecretBits(
+          keyPair.privateKey,
+          message.senderPublicKey,
+        );
         const binding: TransferBinding = {
           sessionId,
           receiverPublicKey: publicKeyHex,
           senderPublicKey: message.senderPublicKey,
           linkSecret,
         };
-        const sharedKey = await aesKeyFromSecret(deriveTransferKey(sharedSecret, binding));
-        const plain = await decryptEnvelope(sharedKey, message.envelope, transferAad(binding));
-        const payload = JSON.parse(new TextDecoder().decode(plain)) as TransferPayload;
+        const sharedKey = await aesKeyFromSecret(
+          deriveTransferKey(sharedSecret, binding),
+        );
+        const plain = await decryptEnvelope(
+          sharedKey,
+          message.envelope,
+          transferAad(binding),
+        );
+        const payload = JSON.parse(
+          new TextDecoder().decode(plain),
+        ) as TransferPayload;
         const { catalogSize } = validatePayload(payload);
-        // Latch only once the payload is authenticated: a junk first message
-        // must not burn the session.
         handled = true;
         clearTimeout(expireAt);
         helloSocket.disconnect();
@@ -298,7 +339,8 @@ async function main(): Promise<void> {
           el('done-summary').textContent =
             `${catalogSize} document${catalogSize === 1 ? '' : 's'} imported and encrypted. ` +
             'You can close the Self app on your phone.';
-          if (custody === 'passkey') el('enable-passkey').classList.add('hidden');
+          if (custody === 'passkey')
+            el('enable-passkey').classList.add('hidden');
           show('done');
           setTimeout(() => socket.disconnect(), 1_000);
         };
@@ -312,7 +354,12 @@ async function main(): Promise<void> {
           }
           const { score, label } = passwordStrength(pw1El.value);
           meter.textContent = label;
-          meter.style.color = score === 0 ? 'var(--danger, #ff6b6b)' : score >= 2 ? '#46AA44' : '#8A6A1F';
+          meter.style.color =
+            score === 0
+              ? 'var(--danger, #ff6b6b)'
+              : score >= 2
+                ? '#46AA44'
+                : '#8A6A1F';
         };
         pw1El.addEventListener('input', renderStrength);
 
@@ -332,7 +379,8 @@ async function main(): Promise<void> {
             } catch (err) {
               securePasskey.disabled = false;
               submit.disabled = false;
-              error.textContent = err instanceof Error ? err.message : String(err);
+              error.textContent =
+                err instanceof Error ? err.message : String(err);
             }
           })();
         });
@@ -359,12 +407,15 @@ async function main(): Promise<void> {
             } catch (err) {
               submit.disabled = false;
               securePasskey.disabled = false;
-              error.textContent = err instanceof Error ? err.message : String(err);
+              error.textContent =
+                err instanceof Error ? err.message : String(err);
             }
           })();
         });
       } catch (err) {
-        status(`Transfer failed: ${err instanceof Error ? err.message : String(err)}. Get a new code and try again.`);
+        status(
+          `Transfer failed: ${err instanceof Error ? err.message : String(err)}. Get a new code and try again.`,
+        );
         el('regenerate').classList.remove('hidden');
         socket.emit('proof_generation_failed', {
           session_id: sessionId,
@@ -388,7 +439,8 @@ async function main(): Promise<void> {
       try {
         await enablePasskeyUnlock();
         passkeyBtn.classList.add('hidden');
-        status.textContent = 'Touch ID unlock enabled. Next unlock will offer it.';
+        status.textContent =
+          'Touch ID unlock enabled. Next unlock will offer it.';
       } catch (err) {
         passkeyBtn.disabled = false;
         status.textContent = err instanceof Error ? err.message : String(err);

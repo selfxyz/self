@@ -1,17 +1,11 @@
-// Content script (isolated world, every http/https page). Relays verification
-// requests from the page to the background and results back. The page-facing
-// contract is implemented by the shim in sdk/shim.ts:
-//   page -> ext:  {type:'self:ext:ping'} | {type:'self:ext:request', selfApp}
-//   ext -> page:  {type:'self:ext:pong'} | {type:'self:ext:result', sessionId, result}
-// Only same-window messages are accepted; the relayed request carries the
-// page origin so the background can attribute sessions.
-
 interface PageRequestMessage {
   type: 'self:ext:request';
   selfApp: Record<string, unknown>;
 }
 
-function isPlausibleSelfApp(candidate: unknown): candidate is Record<string, unknown> {
+function isPlausibleSelfApp(
+  candidate: unknown,
+): candidate is Record<string, unknown> {
   if (!candidate || typeof candidate !== 'object') return false;
   const selfApp = candidate as Record<string, unknown>;
   return (
@@ -39,7 +33,10 @@ window.addEventListener('message', event => {
         {
           type: 'self:ext:result',
           sessionId: (selfApp as { sessionId?: string })?.sessionId ?? null,
-          result: { success: false, error: { code: 'INVALID_REQUEST', message: 'Malformed SelfApp' } },
+          result: {
+            success: false,
+            error: { code: 'INVALID_REQUEST', message: 'Malformed SelfApp' },
+          },
         },
         window.origin,
       );
@@ -47,11 +44,19 @@ window.addEventListener('message', event => {
     }
 
     void chrome.runtime
-      .sendMessage({ type: 'self-ext:verify', selfApp, pageOrigin: window.origin })
+      .sendMessage({
+        type: 'self-ext:verify',
+        selfApp,
+        pageOrigin: window.origin,
+      })
       .then(response => {
         if (response && response.accepted !== true) {
           window.postMessage(
-            { type: 'self:ext:result', sessionId: selfApp.sessionId, result: response.result },
+            {
+              type: 'self:ext:result',
+              sessionId: selfApp.sessionId,
+              result: response.result,
+            },
             window.origin,
           );
         }
@@ -61,7 +66,13 @@ window.addEventListener('message', event => {
           {
             type: 'self:ext:result',
             sessionId: selfApp.sessionId,
-            result: { success: false, error: { code: 'EXTENSION_UNAVAILABLE', message: 'Background unreachable' } },
+            result: {
+              success: false,
+              error: {
+                code: 'EXTENSION_UNAVAILABLE',
+                message: 'Background unreachable',
+              },
+            },
           },
           window.origin,
         );
@@ -71,12 +82,13 @@ window.addEventListener('message', event => {
 
 chrome.runtime.onMessage.addListener(message => {
   if (message?.type === 'self-ext:result') {
-    // The worker stamps the origin that made the request. If this document is
-    // not that origin, the tab navigated after asking and the result is not
-    // ours to deliver.
     if (message.origin && message.origin !== window.origin) return;
     window.postMessage(
-      { type: 'self:ext:result', sessionId: message.sessionId, result: message.result },
+      {
+        type: 'self:ext:result',
+        sessionId: message.sessionId,
+        result: message.result,
+      },
       window.origin,
     );
   }
