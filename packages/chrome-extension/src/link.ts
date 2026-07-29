@@ -52,6 +52,8 @@ interface TransferMessage {
 
 interface TransferPayload {
   version: number;
+  /** When the phone sent this copy; absent on pre-CEP-14 senders. */
+  linkedAt?: string;
   mnemonic: unknown;
   documentCatalog: { documents: unknown[]; selectedDocumentId?: string | null };
   documents: Record<string, unknown>;
@@ -96,6 +98,11 @@ function derivePrivateKey(phrase: string): string {
 
 function validatePayload(payload: TransferPayload): { catalogSize: number } {
   if (!payload || typeof payload !== 'object') throw new Error('Payload is not an object');
+  // Unknown future envelope versions are refused rather than best-effort
+  // parsed: a partially understood account is worse than none (CEP-05).
+  if (typeof payload.version !== 'number' || payload.version < 1 || payload.version > 1) {
+    throw new Error(`Unsupported transfer version ${String(payload.version)}; update this extension`);
+  }
   const catalog = payload.documentCatalog;
   if (!catalog || !Array.isArray(catalog.documents)) throw new Error('Missing document catalog');
   if (!payload.documents || typeof payload.documents !== 'object') throw new Error('Missing documents map');
@@ -117,6 +124,7 @@ async function persistDocuments(payload: TransferPayload): Promise<void> {
   await vault.set('self_mnemonic', phrase);
   await vault.set('self_private_key', privateKey);
   await vault.set('self_document_catalog', JSON.stringify(payload.documentCatalog));
+  await vault.set('self_linked_at', payload.linkedAt ?? new Date().toISOString());
   for (const [id, doc] of Object.entries(payload.documents)) {
     await vault.set(`self_doc_${id}`, JSON.stringify(doc));
   }

@@ -301,8 +301,23 @@ export const LinkBrowserExtensionScreen: React.FC = () => {
       const allDocs = await getAllDocumentsDirectlyFromKeychain();
       setDocCount(catalog.documents.length);
 
+      // An account with nothing registered cannot prove anything, so linking
+      // it would hand the browser a vault it can only fail with. Refuse here
+      // rather than leaving the extension in an unreachable empty state.
+      const registered = catalog.documents.filter(
+        doc => (doc as { isRegistered?: boolean }).isRegistered,
+      );
+      if (registered.length === 0) {
+        throw new Error(
+          'No registered document to send yet. Finish registering a document in Self, then link this browser.',
+        );
+      }
+
       const payload = {
         version: 1,
+        // Stamped so the extension can show how old its copy is: transfer is a
+        // copy, and the phone can add documents afterwards (CEP-14).
+        linkedAt: new Date().toISOString(),
         mnemonic: stored.data,
         documentCatalog: catalog,
         documents: Object.fromEntries(

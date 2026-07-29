@@ -26,6 +26,7 @@ const TEST_MNEMONIC =
 const DOC_ID = 'a'.repeat(64);
 const PAYLOAD = {
   version: 1,
+  linkedAt: '2026-07-29T00:00:00.000Z',
   mnemonic: { phrase: TEST_MNEMONIC, password: '', entropy: '', wordlist: { locale: 'en' } },
   documentCatalog: {
     documents: [
@@ -322,8 +323,10 @@ try {
     session.lastActivityAt = Date.now() - 31 * 60 * 1000;
     await chrome.storage.session.set({ vaultSessionKey: session });
   });
-  await page.goto(`chrome-extension://${EXTENSION_ID}/index.html`, { waitUntil: 'load' });
-  await page.waitForFunction(() => window.location.pathname.endsWith('unlock.html'), { timeout: 10_000 });
+  // The eviction redirect can pre-empt this navigation; either path must land
+  // on unlock, so tolerate the abort and assert the destination.
+  await page.goto(`chrome-extension://${EXTENSION_ID}/index.html`, { waitUntil: 'load' }).catch(() => {});
+  await page.waitForFunction(() => window.location.pathname.endsWith('unlock.html'), { timeout: 20_000 });
   await page.type('#pw', PASSWORD);
   await page.click('#pw-submit');
   await page.waitForFunction(() => window.location.pathname.endsWith('index.html'), { timeout: 15_000 });
@@ -391,6 +394,13 @@ try {
   if (survived !== 'restart-probe') throw new Error(`pending session lost across worker restart: ${survived}`);
   await revived.evaluate(() => chrome.storage.session.remove('pendingSession'));
   console.log('[harness] pending session survives a worker restart');
+
+  // CEP-05 note: the unknown-envelope-version refusal is implemented in
+  // validatePayload but not asserted here. It needs a second concurrent
+  // session, and today's deployed relayer drops a message that arrives before
+  // its peer joins the room without buffering it, so the test races the
+  // extension's own join. Add the case once self-infra PR #166 is deployed:
+  // buffering makes it deterministic.
 
   const fatal = errors.filter(e => !e.includes('WebSocket'));
   console.log(fatal.length === 0 ? 'IMPORT CHECK OK' : `IMPORT CHECK FAILED: ${fatal.join('; ')}`);
