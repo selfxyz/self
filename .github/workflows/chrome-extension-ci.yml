@@ -8,6 +8,9 @@ on:
       - "packages/webview-app/**"
       - "packages/webview-bridge/**"
       - "packages/mobile-sdk-alpha/**"
+      # common is a build input: a fix there changes the published bundle, so a
+      # filter that omits it would leave that fix unpublished.
+      - "packages/common/**"
       - ".github/workflows/chrome-extension-ci.yml"
       - ".github/actions/**"
       - ".github/CI_FORCE_RUN"
