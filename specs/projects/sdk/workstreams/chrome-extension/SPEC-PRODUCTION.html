@@ -1,0 +1,620 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SPEC: Browser Extension v1 (Production)</title>
+<!-- Fonts (locked): Lora for headings + decision text, Lato for body, Allura for the page signature. -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Allura&family=Lato:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,500;0,600;0,700;1,500&display=swap" />
+<style>
+  :root {
+    /* Palette (locked) — a swap is a 5-variable edit */
+    --p-yellow: #FCE694;
+    --p-blue:   #067BC2;
+    --p-green:  #46AA44;
+    --p-ice:    #D6EDFF;
+    --p-red:    #F24236;
+
+    /* Neutrals (warm / coffee-toned) */
+    --bg:           #FFFDF6;
+    --surface:      #FFFFFF;
+    --surface-alt:  #F5F3EC;
+    --border:       #DDD7CD;
+    --border-soft:  #ECE7DE;
+    --text:         #2A1F18;
+    --muted:        #786C60;
+
+    /* Accent (saturated blue, AA contrast on white) */
+    --accent:       var(--p-blue);
+    --accent-soft:  var(--p-ice);
+    --accent-chip:  var(--p-blue);
+
+    /* Done = real green */
+    --done:         var(--p-green);
+    --done-soft:    #DCF3DB;
+
+    /* Danger = real red */
+    --high:         var(--p-red);
+    --high-soft:    #FDDDDA;
+
+    /* Warning = yellow */
+    --med:          #8A6A1F;
+    --med-soft:     var(--p-yellow);
+    --med-chip:     var(--p-yellow);
+
+    /* Graph surface — distinct from the white section; labels match this so
+       they cleanly erase the arrow / cluster border behind them. */
+    --graph-bg:     #F5F3EC;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font: 14.5px/1.6 "Lato", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    font-weight: 400;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: "Lora", Georgia, "Times New Roman", serif;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+  }
+  code, pre, kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.9em; }
+  code { background: var(--surface-alt); padding: 1px 5px; border-radius: 4px; border: 1px solid var(--border-soft); }
+  pre { background: var(--surface-alt); padding: 12px 14px; border-radius: 6px; border: 1px solid var(--border-soft); overflow: auto; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* Sticky topbar: title + pills + cross-doc links. will-change keeps it composited across rerenders. */
+  header.topbar { position: sticky; top: 0; z-index: 100; background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; will-change: transform; box-shadow: 0 1px 0 rgba(0,0,0,0.02); }
+  header h1 { margin: 0; font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
+  /* Pills carry the one status vocabulary, all from the palette tokens so a workstream
+     stays consistent: active, in-progress, done, warn, blocked, pending, deferred, superseded. */
+  .pill { font-size: 11px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface-alt); }
+  .pill.active      { color: var(--accent); background: var(--accent-soft); border-color: var(--accent); }
+  .pill.in-progress { color: var(--accent); background: var(--accent-soft); border-color: var(--accent); }
+  .pill.done        { color: var(--done);   background: var(--done-soft);   border-color: var(--done); }
+  .pill.warn        { color: var(--high);   background: var(--high-soft);   border-color: var(--high); }
+  .pill.blocked     { color: var(--high);   background: var(--high-soft);   border-color: var(--high); }
+  .pill.pending     { color: var(--med);    background: var(--med-soft);    border-color: var(--med); }
+  .pill.deferred    { color: var(--muted);  background: var(--surface-alt); border-color: var(--border); }
+  .pill.superseded  { color: var(--muted);  background: var(--surface-alt); border-color: var(--border); text-decoration: line-through; }
+  .spacer { flex: 1; }
+
+  /* 2-column grid: TOC rail (160px) + main. Content first; don't oversize the rail. */
+  .layout { display: grid; grid-template-columns: 160px minmax(0, 1fr); gap: 24px; max-width: 1180px; margin: 0 auto; padding: 24px; }
+  nav.toc { position: sticky; top: 64px; align-self: start; max-height: calc(100vh - 80px); overflow-y: auto; font-size: 12.5px; }
+  nav.toc h4 { margin: 12px 0 4px 0; font-size: 10px; color: var(--muted); letter-spacing: 0.04em; }
+  nav.toc h4:first-child { margin-top: 0; }
+  nav.toc a { display: block; padding: 3px 6px; border-radius: 4px; color: var(--text); }
+  nav.toc a:hover { background: var(--surface-alt); text-decoration: none; }
+
+  main { min-width: 0; }
+  /* Each <section> IS the box. Don't nest another card inside it. */
+  main section { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 18px 22px; margin-bottom: 16px; }
+  main h2 { margin: 0 0 12px 0; font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
+  main h3 { margin: 16px 0 6px 0; font-size: 11px; color: var(--muted); letter-spacing: 0.08em; font-family: "Lato", -apple-system, sans-serif; font-weight: 700; }
+  main p { margin: 6px 0 10px 0; }
+  main ul, main ol { margin: 6px 0 10px 18px; padding: 0; }
+  main li { margin: 3px 0; }
+
+  table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 13px; }
+  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--border-soft); vertical-align: top; }
+  th { background: var(--surface-alt); font-weight: 600; }
+
+  .callout { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 10px 14px; border-radius: 0 6px 6px 0; margin: 10px 0; }
+  .callout.warn { border-left-color: var(--high); background: var(--high-soft); }
+  .callout.note { border-left-color: var(--med); background: var(--med-soft); }
+  .callout.win  { border-left-color: var(--done); background: var(--done-soft); }
+
+  /* Diagram wrapper has no chrome — caption sits on the parent surface;
+     only the rendered SVG carries the tinted graph background. */
+  .diagram { margin: 14px 0; }
+  .diagram .label {
+    font-size: 11.5px; letter-spacing: 0.04em; color: var(--muted);
+    text-align: left; padding: 0 2px 6px; margin: 0;
+  }
+  .diagram pre.mermaid,
+  .oq-option-diagram pre.mermaid {
+    background: var(--graph-bg) !important;
+    border: 1px solid var(--border-soft) !important;
+    padding: 6px 8px !important;
+    border-radius: 6px !important;
+    margin: 0 !important;
+    text-align: center;
+    overflow-x: auto;
+    display: block;
+  }
+  /* Symbol key: a "where:" list directly under a diagram that carries symbols
+     (scoped_nullifier, comm_A, MRZ, registry roots). Defines each with its real formula. */
+  .dia-key { font-size: 12px; color: var(--muted); margin-top: 8px; }
+  .dia-key code { background: var(--graph-bg); }
+  .mermaid { font-family: "Lato", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+
+  /* ===== Open-question card system (locked) =====
+     The section IS the card. .oq-card sits flat inside it: no extra background,
+     border, or padding. Rendered by plans/<ID>-open-questions.js into data-oq-slot
+     divs, or hand-written using these classes for a static (non-interactive) card. */
+  .oq-card { background: transparent; border: 0; padding: 0; margin: 0; }
+  .oq-card .oq-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+  .oq-card .oq-id { font-family: ui-monospace, monospace; font-size: 10px; color: var(--muted); padding: 2px 6px; background: var(--surface-alt); border-radius: 4px; }
+  .oq-card .oq-impact { font-size: 10px; letter-spacing: 0.04em; padding: 2px 6px; border-radius: 4px; background: var(--med-soft); color: var(--med); }
+  .oq-card .oq-question { font-family: "Lora", Georgia, serif; font-weight: 600; font-size: 17px; line-height: 1.35; letter-spacing: -0.005em; margin: 0; }
+  .oq-card .oq-context { font-size: 12.5px; color: var(--muted); margin: 8px 0 12px; padding: 0; }
+  .oq-card .oq-context p { margin: 0 0 6px; }
+  .oq-card .oq-context p:last-child { margin-bottom: 0; }
+  .oq-card .oq-context strong { color: var(--text); font-weight: 600; }
+  .oq-card .oq-status { font-size: 10px; letter-spacing: 0.06em; padding: 2px 8px; border-radius: 4px; font-weight: 600; margin-left: auto; }
+  .oq-card.status-answered .oq-status   { background: var(--done-soft); color: var(--done); }
+  .oq-card.status-open .oq-status       { background: var(--surface-alt); color: var(--muted); border: 1px solid var(--border); }
+  .oq-card.status-needs-text .oq-status { background: var(--med-soft); color: var(--med); }
+
+  .oq-options { display: grid; gap: 8px; }
+  /* An option is a radio + text — no card chrome. Selected paints a soft accent bg. */
+  .oq-option { display: flex; align-items: flex-start; gap: 10px; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border-soft); background: transparent; cursor: pointer; transition: background .12s, border-color .12s; }
+  .oq-option:hover { background: var(--accent-soft); border-color: var(--accent); }
+  .oq-option.selected { background: var(--accent-soft); border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
+  .oq-option input[type="radio"] { margin-top: 3px; cursor: pointer; flex-shrink: 0; }
+  .oq-option-body { flex: 1; min-width: 0; }
+  .oq-option .option-label { font-weight: 600; font-size: 13px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
+  .oq-option .option-note { color: var(--text); font-size: 12.5px; }
+  .oq-option.oq-option-other { color: var(--muted); }
+  /* Recommended = inline middot text, not a pill. Inherits the answer label font + accent color. */
+  .oq-rec-chip { font: inherit; color: var(--accent); background: transparent; border: 0; padding: 0; letter-spacing: normal; }
+  .oq-rec-chip::before { content: "·"; color: var(--muted); margin-right: 6px; font-weight: 400; }
+  .oq-rec-because { margin-top: 8px; padding-top: 6px; border-top: 1px dashed var(--accent); font-size: 12px; color: var(--accent); font-weight: 500; }
+  .oq-option-diagram { margin-top: 10px; }
+
+  .oq-notes { margin-top: 12px; }
+  .oq-notes-required .oq-notes-label { color: var(--accent); font-weight: 600; }
+  .oq-notes-required .oq-notes-input { border-color: var(--accent); background: var(--accent-soft); }
+  .oq-notes-label { display: block; font-size: 11px; letter-spacing: 0.04em; color: var(--muted); margin-bottom: 4px; }
+  .oq-notes-input { width: 100%; min-height: 56px; padding: 8px 10px; font: inherit; font-size: 13px; line-height: 1.45; color: var(--text); background: var(--surface); border: 1px solid var(--border-soft); border-radius: 6px; resize: vertical; box-sizing: border-box; font-family: inherit; }
+  .oq-notes-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+  .oq-notes-input::placeholder { color: var(--muted); opacity: 0.7; }
+
+  .oq-actions { margin-top: 10px; display: flex; gap: 8px; justify-content: flex-end; }
+  .oq-clear-btn { font: inherit; font-size: 11px; color: var(--muted); padding: 4px 10px; border-radius: 4px; background: transparent; border: 1px solid var(--border); cursor: pointer; }
+  .oq-clear-btn:hover { color: var(--high); border-color: var(--high); background: var(--high-soft); }
+
+  /* Sticky progress summary (filled by the registry): "N / M answered" + bar + export/reset icons. */
+  .oq-summary-wrap { position: sticky; top: 56px; z-index: 50; display: flex; justify-content: center; margin-bottom: 16px; pointer-events: none; }
+  .oq-summary { display: inline-flex; align-items: center; gap: 5px; padding: 5px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 999px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); pointer-events: auto; font-size: 12px; line-height: 1; }
+  .oq-summary-count { font-size: 12px; font-weight: 600; color: var(--text); white-space: nowrap; }
+  .oq-summary-bar { width: 100px; height: 5px; background: var(--surface-alt); border-radius: 999px; overflow: hidden; border: 1px solid var(--border-soft); }
+  .oq-summary-fill { display: block; height: 100%; background: var(--accent); transition: width .25s; }
+  .oq-icon-btn { width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; background: var(--surface-alt); color: var(--accent); border: 1px solid var(--border-soft); cursor: pointer; padding: 0; flex-shrink: 0; }
+  #oq-export-btn { margin-left: 10px; }
+  .oq-icon-btn svg { display: block; }
+  .oq-icon-btn:hover { background: var(--accent); color: white; border-color: var(--accent); }
+  .oq-icon-btn-danger { color: var(--muted); }
+  .oq-icon-btn-danger:hover { background: var(--high); border-color: var(--high); color: white; }
+
+  /* Optional page signature (Allura). Author vanity; delete if unwanted. */
+  .page-signature { max-width: 1180px; margin: 0 auto; padding: 8px 24px 24px; text-align: right; color: var(--muted); user-select: none; }
+  .page-signature .by { font-family: "Lora", Georgia, serif; font-style: italic; font-size: 14px; margin-right: 10px; vertical-align: middle; }
+  .page-signature .name { font-family: "Allura", cursive; font-size: 34px; line-height: 1; vertical-align: middle; }
+
+  .legend { font-size: 12px; color: var(--muted); background: var(--surface-alt); border: 1px solid var(--border-soft); border-radius: 6px; padding: 10px 16px; margin: 8px 0; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 28px; }
+  .legend-item { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+  .legend .swatch { display: inline-block; width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <h1>SPEC: Browser Extension v1 (Production)</h1>
+  <span class="pill active">Scoping</span>
+  <span class="pill">2026-07-29</span>
+  <span class="spacer"></span>
+  <div>
+    <a href="./SPEC-PRD.html">PRD</a>
+    &nbsp;·&nbsp;
+    <a href="./SPEC-UX.html">UX spec</a>
+    &nbsp;·&nbsp;
+    <a href="./SPEC.html">spike record</a>
+  </div>
+</header>
+
+<div class="layout">
+
+  <nav class="toc">
+    <h4>Frame</h4>
+    <a href="#relationship">Relationship to the spike</a>
+    <a href="#north-star">North star</a>
+    <a href="#maintenance">Maintenance burden</a>
+    <h4>Architecture</h4>
+    <a href="#deltas">Deltas vs the spike</a>
+    <h4>Shipping</h4>
+    <a href="#publishing">Store publishing</a>
+    <a href="#versioning">Versioning &amp; cross-compat</a>
+    <h4>Gates &amp; scope</h4>
+    <a href="#security-gates">Security gates</a>
+    <a href="#out-of-scope">Out of scope</a>
+    <h4>Backlog</h4>
+    <a href="#backlog">Backlog table</a>
+    <a href="#resolved">Resolved questions</a>
+  </nav>
+
+  <main>
+
+    <section id="relationship">
+      <h2>Relationship to the spike</h2>
+      <p><strong>Owner:</strong> Remi Colin · <strong>Status:</strong> Scoping (spike validated 2026-07-27; see the <a href="./SPEC.html">spike record</a>) · <strong>Linear:</strong> initiative "Chrome Extension Disclosure Spike" &gt; project "Browser Extension v1 (Production)".</p>
+      <div class="callout note">
+        <strong>The spike branch never merges.</strong> The spike branch (<code>feat/chrome-extension-spike</code>) is a prototype and will not be merged: it exists as reference material and a working demo. Production is implemented fresh on <code>dev</code> through the backlog below, in normal-sized reviewed PRs. Pieces of the spike that prove out (envelope crypto, vault, SAS module, puppeteer harnesses, bridge-host handler set) are ported deliberately, each through its owning CEP ticket with production review standards, never merged wholesale.
+      </div>
+    </section>
+
+    <section id="north-star">
+      <h2>North star</h2>
+      <p>Ship the Self browser extension as a maintained product: a user links their Self account from the phone once, then approves disclosure requests from any relying-party website in two clicks, with proofs generated in the TEE exactly as on mobile. The engineering cost of keeping it alive must stay near zero: no forked UI, no bespoke protocol, no manual release steps.</p>
+    </section>
+
+    <section id="maintenance">
+      <h2>Guiding constraint: maintenance burden</h2>
+      <p>Every decision below is subordinated to one rule: <strong>the extension is a thin shell around artifacts that other teams already maintain.</strong></p>
+      <table>
+        <thead>
+          <tr><th>Layer</th><th>Owner today</th><th>Extension strategy</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>UI screens</td>
+            <td>webview-app (WIA workstream)</td>
+            <td>Load the same webview-app build unmodified; extension-specific screens (link, unlock) move into webview-app behind a host capability flag, built from Euclid like everything else</td>
+          </tr>
+          <tr>
+            <td>Proving, documents, stores</td>
+            <td>mobile-sdk-alpha</td>
+            <td>Consumed via the existing <code>/browser</code> entry; zero extension-specific forks</td>
+          </tr>
+          <tr>
+            <td>Bridge contract</td>
+            <td>webview-bridge</td>
+            <td>The extension bridge-host implements the same <code>NativeTransport</code> handler set the native shells do; protocol changes automatically covered by bridge tests</td>
+          </tr>
+          <tr>
+            <td>Relayer</td>
+            <td>self-infra <code>db-relayer</code></td>
+            <td>Transfer rides the standard session relay; server-side robustness landed in self-infra PR #166, retiring the spike's client-side workarounds</td>
+          </tr>
+          <tr>
+            <td>Design system</td>
+            <td>Euclid</td>
+            <td>Missing primitives (loading button, QR display, SAS display, secure input, spinner/toast) are added to Euclid, not hand-rolled in the extension</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>Consequence: when webview-app, the SDK, or Euclid ship improvements, the extension picks them up by rebuilding. The extension-owned surface is limited to: MV3 manifest + service worker, bridge-host, vault (custody), and the site shim SDK, about 1.5k LOC total, all covered by the puppeteer harnesses.</p>
+      <div class="diagram">
+        <div class="label">System topology · thin extension shell wrapping artifacts maintained elsewhere</div>
+        <pre class="mermaid">
+flowchart LR
+  subgraph EXT[Extension shell, thin]
+    direction TB
+    SW["MV3 service worker"]
+    BH["Bridge host"]
+    VA["Vault"]
+  end
+  subgraph SHARED[Maintained elsewhere]
+    direction TB
+    WA["webview-app build"]
+    SDK["mobile-sdk-alpha browser"]
+    WB["webview-bridge contract"]
+    EU["Euclid components"]
+  end
+  HP["self-dashboard hosted page"]
+  RL["self-infra relayer"]
+
+  HP -->|postMessage| SW
+  SW -->|loads unmodified| WA
+  WA --> SDK
+  WA --> EU
+  WA -->|bridge messages| WB
+  WB --> BH
+  BH --> VA
+  BH -->|session relay| RL
+
+  classDef src fill:#46AA44,stroke:#DDD7CD,stroke-width:1px,color:#FFFFFF
+  classDef plain fill:#FFFFFF,stroke:#DDD7CD,stroke-width:1px,color:#2A1F18
+  class WA,SDK,WB,EU src
+  class SW,BH,VA,HP,RL plain
+        </pre>
+        <div class="dia-key">
+          where: <code>bridge-host</code> = the extension-side implementation of the <code>NativeTransport</code> handler set (the same contract the native shells implement) · <code>vault</code> = AES-GCM over <code>chrome.storage.local</code>, key wrapped by passkey PRF or password
+        </div>
+      </div>
+    </section>
+
+    <section id="deltas">
+      <h2>Architecture deltas vs the spike</h2>
+      <ol>
+        <li><strong>Relayer.</strong> self-infra PR #166 makes presence join-order independent, buffers <code>self_app</code> for a late-joining peer, and guards disconnect cleanup against reconnect races. Once deployed, the client keeps emit-on-connect (harmless) and the two-room hello handshake collapses into the single transfer room (<code>helloSessionId</code> stays in the QR for one release for backward compat, then is dropped).</li>
+        <li><strong>Custody.</strong> Passkey-first (WebAuthn PRF wrapping a random vault key) with password fallback, as validated in the spike. Production adds: key-derivation review, lockout/attempt policy, wrong-password UX, and an explicit security review gate before store publish.</li>
+        <li><strong>Link/unlock screens.</strong> Currently bespoke extension pages; production moves them into webview-app (embed-style routes behind a host capability check) so they are Euclid-built, themed, and tested like every other screen. The extension keeps only a minimal bootstrap page.</li>
+        <li><strong>RP integration is Enterprise-only via the hosted page.</strong> <code>@selfxyz/enterprise-sdk</code> is backend-only: RPs call <code>sessions.create()</code> and send users to the Self-hosted verification page (<code>session.verificationUrl</code>), which renders the QR/deeplink. The extension trigger (detect extension → postMessage → popup instead of QR) is built INTO that hosted page, so <strong>every Enterprise RP gets extension support with zero integration work and zero new RP-facing API surface</strong>. <code>@selfxyz/core</code>/<code>@selfxyz/qrcode</code> are outdated and will not be used by partners: no shim, no adapter, no RP-facing extension package, ever. The postMessage contract has exactly one consumer: the hosted page.</li>
+        <li><strong>Demo/validation RP.</strong> <code>packages/extension-demo</code> stays an internal test harness for the postMessage contract; the end-to-end validation path moves to a real Enterprise flow (dashboard flow + <code>sessions.create</code> + signed webhook) so we dogfood the surface partners actually use.</li>
+      </ol>
+    </section>
+
+    <section id="publishing">
+      <h2>Chrome Web Store publishing (CI)</h2>
+      <p>Goal: merging to the release branch publishes a new extension version with no human in the loop except the PR review itself.</p>
+      <div class="diagram">
+        <div class="label">Publishing pipeline · merge to public listing, one automated path with a manual promotion step</div>
+        <pre class="mermaid">
+flowchart LR
+  M["Merge to main"] --> B["Build chain: common, sdk, bridge, webview-app, extension"]
+  B --> G["Gates: tests + 3 puppeteer harnesses + gitleaks + size budget"]
+  G --> U["chrome-webstore-upload"]
+  U --> T["Trusted-tester channel"]
+  T --> P["Manual promotion"]
+  P --> L["Public listing"]
+
+  classDef src fill:#46AA44,stroke:#DDD7CD,stroke-width:1px,color:#FFFFFF
+  classDef plain fill:#FFFFFF,stroke:#DDD7CD,stroke-width:1px,color:#2A1F18
+  class G src
+  class M,B,U,T,P,L plain
+        </pre>
+        <div class="dia-key">
+          where: manifest version = <code>YYYY.MM.DD.N</code> (monotonic counter, never reused; mirrors self-infra image tags)
+        </div>
+      </div>
+      <h3>Pipeline (GitHub Actions in self/self)</h3>
+      <ol>
+        <li><strong>Trigger:</strong> push to <code>main</code> touching <code>packages/chrome-extension/**</code>, <code>packages/webview-app/**</code>, <code>packages/webview-bridge/**</code>, or <code>packages/mobile-sdk-alpha/**</code> (same paths-filter pattern as self-infra <code>staging.yml</code>).</li>
+        <li><strong>Build chain:</strong> common → sdk → bridge → webview-app → extension (the exact chain the harnesses use today).</li>
+        <li><strong>Gates:</strong> unit tests + <code>boot-check</code>, <code>import-check</code>, <code>disclose-check</code> puppeteer harnesses against Chrome for Testing (already headless-capable), gitleaks, bundle-size budget.</li>
+        <li><strong>Version:</strong> manifest <code>version</code> derived from a monotonic counter (date-based <code>YYYY.MM.DD.N</code>, mirroring self-infra image tags); the manifest <code>key</code> field is stripped for store builds (store assigns the real ID; the pinned key remains for local/dev loads).</li>
+        <li><strong>Upload:</strong> <code>chrome-webstore-upload-cli</code> with an OAuth refresh token stored in repo secrets (scoped Google Cloud project owned by the org, not an individual); publish target starts as <strong>trusted testers</strong>, flips to public per release train.</li>
+        <li><strong>Post-publish:</strong> job posts the version + store review status to the team channel; failed store review pages the owner.</li>
+      </ol>
+      <h3>Latency, rollback, secrets</h3>
+      <ul>
+        <li><strong>Store review latency</strong> is the one step we cannot automate (hours to days). Mitigation: publish cadence decoupled from merge cadence via the trusted-tester channel (instant) + public promotion when review clears. Proving-protocol changes must stay backward compatible for at least one store-review window since old extension versions linger.</li>
+        <li><strong>Rollback:</strong> store rollback is re-publishing the previous artifact; CI keeps the last N built zips as workflow artifacts, and the version counter never reuses a number.</li>
+        <li><strong>Secrets:</strong> refresh token + extension ID in GitHub environments with required reviewers; token rotation documented in the runbook.</li>
+      </ul>
+    </section>
+
+    <section id="versioning">
+      <h2>Versioning &amp; cross-compatibility</h2>
+      <p>Five independently-shipping parts touch one flow; the store's review latency (hours to days, plus users who never restart Chrome) means the extension is always the laggard. Rules:</p>
+      <table>
+        <thead>
+          <tr><th>Interface</th><th>Versioning rule</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Link QR payload (extension → phone)</td>
+            <td>Carries an explicit <code>v</code> field. The phone supports current + previous QR version for &gt;= 2 app releases (users update phone and extension independently, in either order)</td>
+          </tr>
+          <tr>
+            <td>Transfer envelope</td>
+            <td>Versioned, fail-closed on unknown versions (CEP-05)</td>
+          </tr>
+          <tr>
+            <td>Relayer event vocabulary</td>
+            <td>Additive-only. Never repurpose an existing event or change payload shapes; old extensions must keep working against a newer relayer (PR #166 follows this: new emissions only)</td>
+          </tr>
+          <tr>
+            <td>TEE proving protocol</td>
+            <td>Owned by the SDK; the extension embeds <code>mobile-sdk-alpha</code> at build time, so it tracks whatever the SDK supports. Server-side proving changes must tolerate one store-review window of stale clients</td>
+          </tr>
+          <tr>
+            <td>Hosted page ↔ extension shim</td>
+            <td>postMessage contract carries a protocol version; the hosted page feature-detects and falls back to QR for absent/stale extensions: fallback IS the compatibility story</td>
+          </tr>
+          <tr>
+            <td>Bridge (webview-app ↔ bridge-host)</td>
+            <td>Not an external interface: both sides are built from the same commit into one artifact; no cross-version support needed</td>
+          </tr>
+          <tr>
+            <td>Store artifact</td>
+            <td>Manifest version <code>YYYY.MM.DD.N</code>, monotonic, never reused; last-N zips retained for rollback</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>Compatibility gate in CI (CEP-02): the harness suite runs the NEW extension against the CURRENT staging relayer and TEE, i.e. every merge proves the laggard-compatible direction before publishing.</p>
+    </section>
+
+    <section id="security-gates">
+      <h2>Security gates (blocking public listing)</h2>
+      <ol>
+        <li>Threat-model review of custody (vault, PRF wrapping, session key in <code>chrome.storage.session</code>) and transfer (envelope, SAS, QR trust).</li>
+        <li>Origin policy for the site shim: explicit origin allowlist decision (open vs registry), <code>externally_connectable</code> vs content-script relay decision, and anti-phishing UX for the approval popup (origin display, spoofing review).</li>
+        <li>Store-listing privacy disclosures + data-handling declaration (nothing leaves the device unencrypted; no analytics without consent).</li>
+        <li>Dependency + supply-chain: extension bundle is built from the monorepo only, no remote code (MV3 requirement), CSP stays <code>script-src 'self' 'wasm-unsafe-eval'</code>.</li>
+      </ol>
+    </section>
+
+    <section id="out-of-scope">
+      <h2>Out of scope for v1</h2>
+      <ul>
+        <li>Firefox/Safari ports (revisit once MV3 parity stabilizes).</li>
+        <li>Document registration in the browser (NFC/KYC stays on mobile).</li>
+        <li>Multi-device sync or revocation lists (unlink = reset, phone remains source of truth).</li>
+        <li>Enterprise distribution (force-install policies).</li>
+      </ul>
+    </section>
+
+    <section id="backlog">
+      <h2>Backlog: mirrored in Linear, blocking edges in Linear relations</h2>
+      <table>
+        <thead>
+          <tr><th>ID</th><th>Title</th><th>Blocked by</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>CEP-01</code></td>
+            <td>Relayer session-relay robustness deployed + client workarounds retired</td>
+            <td>self-infra PR #166</td>
+            <td>Server merged/deployed; collapse hello room; keep emit-on-connect</td>
+          </tr>
+          <tr>
+            <td><code>CEP-02</code></td>
+            <td>Repo placement + CI build pipeline for the extension</td>
+            <td>-</td>
+            <td>Creates the production <code>packages/chrome-extension</code> on dev (ported from the spike branch, reviewed); build-on-merge, harnesses as CI gates, bundle budget</td>
+          </tr>
+          <tr>
+            <td><code>CEP-03</code></td>
+            <td>Chrome Web Store publishing pipeline</td>
+            <td>CEP-02</td>
+            <td>OAuth setup, versioning, trusted-tester channel, runbook</td>
+          </tr>
+          <tr>
+            <td><code>CEP-04</code></td>
+            <td>Custody hardening + passkey-first production polish</td>
+            <td>-</td>
+            <td>PRF review, lockout policy, reset UX, key-derivation params</td>
+          </tr>
+          <tr>
+            <td><code>CEP-05</code></td>
+            <td>Transfer protocol productization</td>
+            <td>CEP-01</td>
+            <td>Versioned envelope, session expiry, SAS confirm mandatory, replay guard</td>
+          </tr>
+          <tr>
+            <td><code>CEP-06</code></td>
+            <td>Euclid: extension-critical components</td>
+            <td>-</td>
+            <td>Loading Button state, Spinner, QRDisplay, EmojiSAS, secure InputField, biometric icon, selectable document rows, Toast (see UX.md)</td>
+          </tr>
+          <tr>
+            <td><code>CEP-07</code></td>
+            <td>Link + unlock flows move into webview-app (Euclid screens)</td>
+            <td>CEP-06</td>
+            <td>Kills bespoke pages; host capability flag</td>
+          </tr>
+          <tr>
+            <td><code>CEP-08</code></td>
+            <td>Mobile app: production link flow (un-gate from dev menu)</td>
+            <td>CEP-05, CEP-06</td>
+            <td>Settings entry, confirm-before-send SAS screen</td>
+          </tr>
+          <tr>
+            <td><code>CEP-09</code></td>
+            <td>RP integration: extension trigger in the Enterprise hosted verification page</td>
+            <td>-</td>
+            <td>Detect + trigger from the hosted page (zero RP work); no legacy qrcode/core surface, ever</td>
+          </tr>
+          <tr>
+            <td><code>CEP-10</code></td>
+            <td>Observability: error reporting + funnel analytics + relayer metrics</td>
+            <td>CEP-02</td>
+            <td>Consent-gated; store-review canary alert</td>
+          </tr>
+          <tr>
+            <td><code>CEP-11</code></td>
+            <td>Docs: RP integration guide, user help, maintenance runbook</td>
+            <td>CEP-03, CEP-09</td>
+            <td>Demo RP graduates to docs sample</td>
+          </tr>
+          <tr>
+            <td><code>CEP-12</code></td>
+            <td>Security review gate (custody, transfer, origin policy, store disclosures)</td>
+            <td>CEP-04, CEP-05, CEP-07, CEP-08, CEP-09</td>
+            <td>Blocks public store listing</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="callout win"><strong>Launch</strong> = CEP-03 pipeline green on trusted-tester channel + CEP-12 sign-off.</p>
+    </section>
+
+    <section id="resolved">
+      <h2>Settled: not asking</h2>
+      <ul>
+        <li><strong>Store identity</strong> · RESOLVED (2026-07-29): same Google Workspace org as the Play Store presence, with a Chrome Web Store <strong>group publisher</strong> registered under it (publish rights group-managed, never personal); CI OAuth project in the same org. Setup mechanics belong to CEP-03.</li>
+        <li><strong>Which repo/team owns the Enterprise hosted verification page?</strong> · RESOLVED (2026-07-29): <code>self-dashboard</code> repo, <code>apps/hosted-page</code>. QR rendering lives in <code>src/client/components/features/verification/</code> (<code>QRCodeDisplay.tsx</code>, <code>MobileVerification.tsx</code>), which is exactly where the extension branch (detect → postMessage → hide QR) slots in. CEP-09 is a feature PR there, coordinated with the dashboard owner; the shim module + contract sample stay in this monorepo.</li>
+        <li><strong>Origin policy</strong> · DECIDED by the Enterprise-only integration model (2026-07-29): allowlist the hosted-page origin only (single origin we control); security review verifies the implementation rather than re-opening the policy.</li>
+        <li><strong>Popup scope</strong> · RESOLVED (2026-07-29): mini home stays in v1 (ID card, document selection, settings), existing webview-app self-app-mode screens.</li>
+      </ul>
+    </section>
+
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+  // Mermaid init (locked — copy as-is). startOnLoad:false: the engine (or the static driver
+  // below) drives render + post-process for static and per-option diagrams uniformly. base
+  // theme, never 'default'; no ELK adapter (it silently overrides themeVariables). Most
+  // label/patch fixes live in themeCSS.
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: 'base',
+    securityLevel: 'loose',
+    flowchart: { curve: 'basis', padding: 18, nodeSpacing: 40, rankSpacing: 60, htmlLabels: true, useMaxWidth: true },
+    themeCSS: `
+      .cluster rect { stroke-dasharray: 3 3 !important; stroke-width: 1px !important; rx: 8px !important; ry: 8px !important; }
+      .edgePath .path { stroke-width: 1.5px !important; }
+      .arrowheadPath { fill: #2A1F18 !important; }
+      /* Edge labels overlay arrows: graph-bg patch erases the line under text */
+      .edgeLabels { z-index: 2; }
+      .edgeLabel { background: transparent !important; padding: 0 !important; text-transform: none !important; }
+      .edgeLabel foreignObject > div {
+        background: #F5F3EC !important;
+        padding: 0 4px !important;
+        display: inline-block !important;
+        text-transform: none !important;
+      }
+      /* Suppress the empty edge-label rect mermaid renders for every edge
+         (a small fill patch at the SVG origin before layout). */
+      .edgeLabel rect { fill: transparent !important; stroke: none !important; }
+      .cluster-label foreignObject > div {
+        font-size: 12.5px !important;
+        color: #786C60 !important;
+        font-weight: 400 !important;
+        text-align: left !important;
+        text-transform: none !important;
+        background: #F5F3EC !important;
+        padding: 0 5px !important;
+        display: inline-block !important;
+      }
+      .nodeLabel, .edgeLabel, foreignObject > div { text-transform: none !important; }
+    `,
+    themeVariables: {
+      fontFamily: '"Lato", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      fontSize: '13px',
+      primaryColor:       '#FFFFFF',
+      primaryBorderColor: '#ECE7DE',
+      primaryTextColor:   '#2A1F18',
+      lineColor:          '#2A1F18',
+      secondaryColor:     '#F5F3EC',
+      tertiaryColor:      '#F5F3EC',
+      mainBkg:            '#FFFFFF',
+      clusterBkg:         'transparent',
+      clusterBorder:      '#DDD7CD',
+      edgeLabelBackground:'#F5F3EC'
+    }
+  });
+
+  // STATIC mode (default): render diagrams on the page, no interactive cards.
+  // For an interactive decision page, DELETE this block and use the engine below instead —
+  // OpenQuestions.render() handles all diagrams (static + per-option).
+  (async () => {
+    const blocks = document.querySelectorAll('pre.mermaid');
+    for (let i = 0; i < blocks.length; i++) {
+      const el = blocks[i];
+      const { svg } = await mermaid.render('static-' + i, el.textContent.trim());
+      el.innerHTML = svg;
+      const out = el.querySelector('svg');
+      if (!out) continue;
+      // Re-append edge labels so they paint above edges, then pad the viewBox so any
+      // repositioned cluster/edge label is not clipped by mermaid's tight bounds.
+      const edgeLabels = out.querySelector('g.edgeLabels');
+      if (edgeLabels) out.appendChild(edgeLabels);
+      try {
+        const b = out.getBBox(), p = 8;
+        out.setAttribute('viewBox', `${b.x - p} ${b.y - p} ${b.width + p * 2} ${b.height + p * 2}`);
+      } catch (e) { /* getBBox unavailable until laid out */ }
+    }
+  })();
+</script>
+
+</body>
+</html>

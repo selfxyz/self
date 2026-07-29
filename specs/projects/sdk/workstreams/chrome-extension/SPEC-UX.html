@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SPEC: Browser Extension UX</title>
+<!-- Fonts (locked): Lora for headings + decision text, Lato for body, Allura for the page signature. -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Allura&family=Lato:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,500;0,600;0,700;1,500&display=swap" />
+<style>
+  :root {
+    /* Palette (locked) — a swap is a 5-variable edit */
+    --p-yellow: #FCE694;
+    --p-blue:   #067BC2;
+    --p-green:  #46AA44;
+    --p-ice:    #D6EDFF;
+    --p-red:    #F24236;
+
+    /* Neutrals (warm / coffee-toned) */
+    --bg:           #FFFDF6;
+    --surface:      #FFFFFF;
+    --surface-alt:  #F5F3EC;
+    --border:       #DDD7CD;
+    --border-soft:  #ECE7DE;
+    --text:         #2A1F18;
+    --muted:        #786C60;
+
+    /* Accent (saturated blue, AA contrast on white) */
+    --accent:       var(--p-blue);
+    --accent-soft:  var(--p-ice);
+    --accent-chip:  var(--p-blue);
+
+    /* Done = real green */
+    --done:         var(--p-green);
+    --done-soft:    #DCF3DB;
+
+    /* Danger = real red */
+    --high:         var(--p-red);
+    --high-soft:    #FDDDDA;
+
+    /* Warning = yellow */
+    --med:          #8A6A1F;
+    --med-soft:     var(--p-yellow);
+    --med-chip:     var(--p-yellow);
+
+    /* Graph surface — distinct from the white section; labels match this so
+       they cleanly erase the arrow / cluster border behind them. */
+    --graph-bg:     #F5F3EC;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font: 14.5px/1.6 "Lato", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    font-weight: 400;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: "Lora", Georgia, "Times New Roman", serif;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+  }
+  code, pre, kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.9em; }
+  code { background: var(--surface-alt); padding: 1px 5px; border-radius: 4px; border: 1px solid var(--border-soft); }
+  pre { background: var(--surface-alt); padding: 12px 14px; border-radius: 6px; border: 1px solid var(--border-soft); overflow: auto; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* Sticky topbar: title + pills + cross-doc links. will-change keeps it composited across rerenders. */
+  header.topbar { position: sticky; top: 0; z-index: 100; background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; will-change: transform; box-shadow: 0 1px 0 rgba(0,0,0,0.02); }
+  header h1 { margin: 0; font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
+  /* Pills carry the one status vocabulary, all from the palette tokens so a workstream
+     stays consistent: active, in-progress, done, warn, blocked, pending, deferred, superseded. */
+  .pill { font-size: 11px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface-alt); }
+  .pill.active      { color: var(--accent); background: var(--accent-soft); border-color: var(--accent); }
+  .pill.in-progress { color: var(--accent); background: var(--accent-soft); border-color: var(--accent); }
+  .pill.done        { color: var(--done);   background: var(--done-soft);   border-color: var(--done); }
+  .pill.warn        { color: var(--high);   background: var(--high-soft);   border-color: var(--high); }
+  .pill.blocked     { color: var(--high);   background: var(--high-soft);   border-color: var(--high); }
+  .pill.pending     { color: var(--med);    background: var(--med-soft);    border-color: var(--med); }
+  .pill.deferred    { color: var(--muted);  background: var(--surface-alt); border-color: var(--border); }
+  .pill.superseded  { color: var(--muted);  background: var(--surface-alt); border-color: var(--border); text-decoration: line-through; }
+  .spacer { flex: 1; }
+
+  /* 2-column grid: TOC rail (160px) + main. Content first; don't oversize the rail. */
+  .layout { display: grid; grid-template-columns: 160px minmax(0, 1fr); gap: 24px; max-width: 1180px; margin: 0 auto; padding: 24px; }
+  nav.toc { position: sticky; top: 64px; align-self: start; max-height: calc(100vh - 80px); overflow-y: auto; font-size: 12.5px; }
+  nav.toc h4 { margin: 12px 0 4px 0; font-size: 10px; color: var(--muted); letter-spacing: 0.04em; }
+  nav.toc h4:first-child { margin-top: 0; }
+  nav.toc a { display: block; padding: 3px 6px; border-radius: 4px; color: var(--text); }
+  nav.toc a:hover { background: var(--surface-alt); text-decoration: none; }
+
+  main { min-width: 0; }
+  /* Each <section> IS the box. Don't nest another card inside it. */
+  main section { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 18px 22px; margin-bottom: 16px; }
+  main h2 { margin: 0 0 12px 0; font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
+  main h3 { margin: 16px 0 6px 0; font-size: 11px; color: var(--muted); letter-spacing: 0.08em; font-family: "Lato", -apple-system, sans-serif; font-weight: 700; }
+  main p { margin: 6px 0 10px 0; }
+  main ul, main ol { margin: 6px 0 10px 18px; padding: 0; }
+  main li { margin: 3px 0; }
+
+  table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 13px; }
+  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--border-soft); vertical-align: top; }
+  th { background: var(--surface-alt); font-weight: 600; }
+
+  .callout { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 10px 14px; border-radius: 0 6px 6px 0; margin: 10px 0; }
+  .callout.warn { border-left-color: var(--high); background: var(--high-soft); }
+  .callout.note { border-left-color: var(--med); background: var(--med-soft); }
+  .callout.win  { border-left-color: var(--done); background: var(--done-soft); }
+
+  /* Diagram wrapper has no chrome — caption sits on the parent surface;
+     only the rendered SVG carries the tinted graph background. */
+  .diagram { margin: 14px 0; }
+  .diagram .label {
+    font-size: 11.5px; letter-spacing: 0.04em; color: var(--muted);
+    text-align: left; padding: 0 2px 6px; margin: 0;
+  }
+  .diagram pre.mermaid,
+  .oq-option-diagram pre.mermaid {
+    background: var(--graph-bg) !important;
+    border: 1px solid var(--border-soft) !important;
+    padding: 6px 8px !important;
+    border-radius: 6px !important;
+    margin: 0 !important;
+    text-align: center;
+    overflow-x: auto;
+    display: block;
+  }
+  /* Symbol key: a "where:" list directly under a diagram that carries symbols
+     (scoped_nullifier, comm_A, MRZ, registry roots). Defines each with its real formula. */
+  .dia-key { font-size: 12px; color: var(--muted); margin-top: 8px; }
+  .dia-key code { background: var(--graph-bg); }
+  .mermaid { font-family: "Lato", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+
+  /* ===== Open-question card system (locked) =====
+     The section IS the card. .oq-card sits flat inside it: no extra background,
+     border, or padding. Rendered by plans/<ID>-open-questions.js into data-oq-slot
+     divs, or hand-written using these classes for a static (non-interactive) card. */
+  .oq-card { background: transparent; border: 0; padding: 0; margin: 0; }
+  .oq-card .oq-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+  .oq-card .oq-id { font-family: ui-monospace, monospace; font-size: 10px; color: var(--muted); padding: 2px 6px; background: var(--surface-alt); border-radius: 4px; }
+  .oq-card .oq-impact { font-size: 10px; letter-spacing: 0.04em; padding: 2px 6px; border-radius: 4px; background: var(--med-soft); color: var(--med); }
+  .oq-card .oq-question { font-family: "Lora", Georgia, serif; font-weight: 600; font-size: 17px; line-height: 1.35; letter-spacing: -0.005em; margin: 0; }
+  .oq-card .oq-context { font-size: 12.5px; color: var(--muted); margin: 8px 0 12px; padding: 0; }
+  .oq-card .oq-context p { margin: 0 0 6px; }
+  .oq-card .oq-context p:last-child { margin-bottom: 0; }
+  .oq-card .oq-context strong { color: var(--text); font-weight: 600; }
+  .oq-card .oq-status { font-size: 10px; letter-spacing: 0.06em; padding: 2px 8px; border-radius: 4px; font-weight: 600; margin-left: auto; }
+  .oq-card.status-answered .oq-status   { background: var(--done-soft); color: var(--done); }
+  .oq-card.status-open .oq-status       { background: var(--surface-alt); color: var(--muted); border: 1px solid var(--border); }
+  .oq-card.status-needs-text .oq-status { background: var(--med-soft); color: var(--med); }
+
+  .oq-options { display: grid; gap: 8px; }
+  /* An option is a radio + text — no card chrome. Selected paints a soft accent bg. */
+  .oq-option { display: flex; align-items: flex-start; gap: 10px; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border-soft); background: transparent; cursor: pointer; transition: background .12s, border-color .12s; }
+  .oq-option:hover { background: var(--accent-soft); border-color: var(--accent); }
+  .oq-option.selected { background: var(--accent-soft); border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
+  .oq-option input[type="radio"] { margin-top: 3px; cursor: pointer; flex-shrink: 0; }
+  .oq-option-body { flex: 1; min-width: 0; }
+  .oq-option .option-label { font-weight: 600; font-size: 13px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
+  .oq-option .option-note { color: var(--text); font-size: 12.5px; }
+  .oq-option.oq-option-other { color: var(--muted); }
+  /* Recommended = inline middot text, not a pill. Inherits the answer label font + accent color. */
+  .oq-rec-chip { font: inherit; color: var(--accent); background: transparent; border: 0; padding: 0; letter-spacing: normal; }
+  .oq-rec-chip::before { content: "·"; color: var(--muted); margin-right: 6px; font-weight: 400; }
+  .oq-rec-because { margin-top: 8px; padding-top: 6px; border-top: 1px dashed var(--accent); font-size: 12px; color: var(--accent); font-weight: 500; }
+  .oq-option-diagram { margin-top: 10px; }
+
+  .oq-notes { margin-top: 12px; }
+  .oq-notes-required .oq-notes-label { color: var(--accent); font-weight: 600; }
+  .oq-notes-required .oq-notes-input { border-color: var(--accent); background: var(--accent-soft); }
+  .oq-notes-label { display: block; font-size: 11px; letter-spacing: 0.04em; color: var(--muted); margin-bottom: 4px; }
+  .oq-notes-input { width: 100%; min-height: 56px; padding: 8px 10px; font: inherit; font-size: 13px; line-height: 1.45; color: var(--text); background: var(--surface); border: 1px solid var(--border-soft); border-radius: 6px; resize: vertical; box-sizing: border-box; font-family: inherit; }
+  .oq-notes-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+  .oq-notes-input::placeholder { color: var(--muted); opacity: 0.7; }
+
+  .oq-actions { margin-top: 10px; display: flex; gap: 8px; justify-content: flex-end; }
+  .oq-clear-btn { font: inherit; font-size: 11px; color: var(--muted); padding: 4px 10px; border-radius: 4px; background: transparent; border: 1px solid var(--border); cursor: pointer; }
+  .oq-clear-btn:hover { color: var(--high); border-color: var(--high); background: var(--high-soft); }
+
+  /* Sticky progress summary (filled by the registry): "N / M answered" + bar + export/reset icons. */
+  .oq-summary-wrap { position: sticky; top: 56px; z-index: 50; display: flex; justify-content: center; margin-bottom: 16px; pointer-events: none; }
+  .oq-summary { display: inline-flex; align-items: center; gap: 5px; padding: 5px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 999px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); pointer-events: auto; font-size: 12px; line-height: 1; }
+  .oq-summary-count { font-size: 12px; font-weight: 600; color: var(--text); white-space: nowrap; }
+  .oq-summary-bar { width: 100px; height: 5px; background: var(--surface-alt); border-radius: 999px; overflow: hidden; border: 1px solid var(--border-soft); }
+  .oq-summary-fill { display: block; height: 100%; background: var(--accent); transition: width .25s; }
+  .oq-icon-btn { width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; background: var(--surface-alt); color: var(--accent); border: 1px solid var(--border-soft); cursor: pointer; padding: 0; flex-shrink: 0; }
+  #oq-export-btn { margin-left: 10px; }
+  .oq-icon-btn svg { display: block; }
+  .oq-icon-btn:hover { background: var(--accent); color: white; border-color: var(--accent); }
+  .oq-icon-btn-danger { color: var(--muted); }
+  .oq-icon-btn-danger:hover { background: var(--high); border-color: var(--high); color: white; }
+
+  /* Optional page signature (Allura). Author vanity; delete if unwanted. */
+  .page-signature { max-width: 1180px; margin: 0 auto; padding: 8px 24px 24px; text-align: right; color: var(--muted); user-select: none; }
+  .page-signature .by { font-family: "Lora", Georgia, serif; font-style: italic; font-size: 14px; margin-right: 10px; vertical-align: middle; }
+  .page-signature .name { font-family: "Allura", cursive; font-size: 34px; line-height: 1; vertical-align: middle; }
+
+  .legend { font-size: 12px; color: var(--muted); background: var(--surface-alt); border: 1px solid var(--border-soft); border-radius: 6px; padding: 10px 16px; margin: 8px 0; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 28px; }
+  .legend-item { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+  .legend .swatch { display: inline-block; width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <h1>SPEC: Browser Extension UX</h1>
+  <span class="pill active">Draft for review</span>
+  <span class="pill">2026-07-29</span>
+  <span class="spacer"></span>
+  <div>
+    <a href="./SPEC-PRD.html">PRD</a>
+    &nbsp;·&nbsp;
+    <a href="./SPEC-PRODUCTION.html">engineering spec</a>
+    &nbsp;·&nbsp;
+    <a href="./SPEC.html">spike record</a>
+  </div>
+</header>
+
+<div class="layout">
+
+  <nav class="toc">
+    <h4>Principles</h4>
+    <a href="#principles">Principles</a>
+    <h4>Flows</h4>
+    <a href="#flow-1">Flow 1: link</a>
+    <a href="#flow-2">Flow 2: unlock</a>
+    <a href="#flow-3">Flow 3: disclosure</a>
+    <a href="#flow-4">Flow 4: documents</a>
+    <h4>States</h4>
+    <a href="#loading-inventory">Loading inventory</a>
+    <h4>Euclid</h4>
+    <a href="#euclid-missing">Gap analysis: missing</a>
+    <a href="#euclid-states">State additions</a>
+    <a href="#euclid-covered">Covered</a>
+    <h4>Deliverables</h4>
+    <a href="#deliverables">Deliverables</a>
+  </nav>
+
+  <main>
+
+    <section id="principles">
+      <h2>Principles</h2>
+      <p class="callout warn"><strong>Version caveat.</strong> Component citations reference <code>@selfxyz/euclid</code> <strong>v1.4.6</strong> (<code>packages/webview-app/node_modules/@selfxyz/euclid/src/</code>), the version webview-app compiles against. The <code>selfxyz/euclid</code> checkout at <code>../storybook</code> is 4+ months stale; do not spec against it.</p>
+      <p>Owner: Remi Colin. Status: draft for review, last updated 2026-07-29.</p>
+      <ol>
+        <li><strong>Every click answers within 100ms.</strong> Press feedback, then a state change or spinner. No control may be clickable twice for the same intent (buttons enter a loading state and disable).</li>
+        <li><strong>No dead air.</strong> Every wait (relayer join, transfer, passkey prompt, proof generation) shows what is happening, how long it typically takes, and what the user can do if it stalls. Proof generation reuses the established "10-30 seconds" + "don't close" pattern (<code>ProofGeneration</code>, <code>CircuitProgressCard</code>).</li>
+        <li><strong>Security checks are gates, not decoration.</strong> The SAS emoji comparison happens BEFORE any secret moves, and the send action lives on the phone, under the emojis, so the check is on the path, not beside it.</li>
+        <li><strong>Terminal states are explicit.</strong> Success, failure, and cancel each get a distinct screen with one primary next action (<code>StatusState</code> variants). Silent timeouts are bugs.</li>
+        <li><strong>The extension feels like the app.</strong> Same Euclid components, tokens, and motion as mobile; the popup is a small Self app, not a browser dialog.</li>
+      </ol>
+    </section>
+
+    <section id="flow-1">
+      <h2>Flow 1: link account (phone to extension)</h2>
+      <div class="diagram">
+        <div class="label">Link flow · extension and phone screens in lockstep · green = the SAS safety gate</div>
+        <pre class="mermaid">
+flowchart TB
+  subgraph EXTCOL[Extension]
+    direction TB
+    E1["QR screen"] --> E2["Phone connected"]
+    E2 --> E3["SAS emojis shown"]
+    E3 --> E4["Receiving"]
+    E4 --> E5["Custody choice: Touch ID or password"]
+    E5 --> E6["Success"]
+  end
+  subgraph PHONE[Phone]
+    direction TB
+    P1["Scan QR"] --> P2["Emoji check screen"]
+    P2 --> P3["Encrypt and send my account"]
+    P3 --> P4["Sending progress"]
+    P4 --> P5["Success"]
+  end
+  P1 -->|"hello: public key only"| E3
+  P3 -->|"encrypted envelope"| E4
+
+  classDef src fill:#46AA44,stroke:#DDD7CD,stroke-width:1px,color:#FFFFFF
+  classDef plain fill:#FFFFFF,stroke:#DDD7CD,stroke-width:1px,color:#2A1F18
+  class E3,P2 src
+  class E1,E2,E4,E5,E6,P1,P3,P4,P5 plain
+        </pre>
+        <div class="dia-key">
+          where: <code>SAS = 4 emojis from sha256 of context and ECDH shared secret</code> · <code>hello = phone ephemeral public key, no secret material</code>
+        </div>
+      </div>
+      <p>Success copy: the phone success screen says "finish in the browser"; the extension success screen says "n documents imported" with an "Open Self" primary action. The custody screen leads with "Secure with Touch ID" as primary and "or set a password" as the collapsed fallback.</p>
+      <ul>
+        <li>The emoji step is the user-confirmed pattern: <strong>visual emoji check first, then one explicit button press ("Encrypt &amp; send my account") fires the transfer.</strong> The hello handshake (public key only) is what makes both sides able to show the emojis before any secret exists on the wire.</li>
+        <li>QR screen needs states: <code>generating</code> (skeleton), <code>ready</code>, <code>phone-connected</code> (dim QR, swap status line), <code>expired</code> (regenerate CTA after 5 min), <code>error</code> (relayer unreachable, retry).</li>
+        <li>Custody: passkey primary with the passkey ceremony's own OS prompt treated as the loading state (button shows <code>verifying</code> until resolve); password fallback collapsed behind a text link to keep one obvious path. Cancelled Touch ID returns to the choice, never to a half-created vault.</li>
+        <li>Failure branches: decrypt/validation failure on the extension side must also fail the phone side (relayer nack) with matching copy on both screens - never one side success, one side error.</li>
+      </ul>
+    </section>
+
+    <section id="flow-2">
+      <h2>Flow 2: unlock</h2>
+      <ul>
+        <li>Passkey vault: single "Unlock with Touch ID" button, auto-triggered on popup open (with the button as the retry affordance), password UI absent.</li>
+        <li>Password vault: password field (secure input with reveal toggle), inline error message on wrong password + field shake, attempt counter after 3 failures, and "Unlock &amp; enable Touch ID" upsell button when PRF is available.</li>
+        <li>"Forgot password? Reset" stays a two-step destructive pattern: link, then explanation ("this browser only; your phone keeps everything"), then red confirm.</li>
+      </ul>
+    </section>
+
+    <section id="flow-3">
+      <h2>Flow 3: disclosure consent (embed)</h2>
+      <ul>
+        <li>Best-covered flow today: keep <code>ProofRequestScreen</code> + <code>ProofButton</code> (press-and-hold) + <code>ProofGenerationScreen</code>/<code>ProofProgressScreen</code>.</li>
+        <li>Additions: requesting-origin display (favicon + host, anti-phishing) pinned at the top of the consent screen; explicit cancelled state that closes the popup AND resolves the page promise with a typed failure.</li>
+        <li>Proof generation: <code>CircuitProgressCard</code> with caller-controlled progress (TEE stages map to segments), estimated time, and "closing this window cancels the proof".</li>
+      </ul>
+    </section>
+
+    <section id="flow-4">
+      <h2>Flow 4: documents</h2>
+      <ul>
+        <li>List = selection list: tapping a document makes it the active proving document (matches the spike behavior now in <code>ManageDocumentsScreen</code> in webview-app).</li>
+        <li>Selected row shows a radio/check + "In use for proofs"; switching shows a row-scoped pending state until the catalog write confirms.</li>
+        <li>Home ID card reflects the selection (already true) and deep-links to the list.</li>
+      </ul>
+    </section>
+
+    <section id="loading-inventory">
+      <h2>Loading-state inventory: what must exist</h2>
+      <table>
+        <thead>
+          <tr><th>Wait</th><th>Duration</th><th>Surface</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>QR generation</td><td>&lt;500ms</td><td>skeleton in QR frame</td></tr>
+          <tr><td>Phone joins relayer room</td><td>1-30s</td><td>pulse on QR screen status line</td></tr>
+          <tr><td>Hello to SAS displayed</td><td>&lt;1s</td><td>emoji slots skeleton, then pop-in</td></tr>
+          <tr><td>Transfer payload</td><td>1-5s</td><td>progress on both sides, KB count on phone</td></tr>
+          <tr><td>Passkey ceremony</td><td>OS-controlled</td><td>button <code>verifying</code> state</td></tr>
+          <tr><td>Vault decrypt on unlock</td><td>&lt;1s</td><td>button <code>verifying</code> state</td></tr>
+          <tr><td>Proof generation</td><td>10-30s</td><td>staged progress card (existing pattern)</td></tr>
+          <tr><td>Backend confirmation (RP page)</td><td>1-10s</td><td>page-side; SDK exposes status stream</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="euclid-missing">
+      <h2>Euclid gap analysis (v1.4.6): missing components</h2>
+      <p>Convention note: Euclid models loading as a <strong>state/variant union on the component</strong> (<code>ProofButtonState</code>, <code>SwipeToSignState</code>, <code>StatusStateVariant</code>), not an <code>isLoading</code> boolean. New work follows that convention. Styling is inline style objects; there is no <code>className</code> escape hatch, so every gap below must land IN Euclid, not be patched from outside.</p>
+      <table>
+        <thead>
+          <tr><th>Component</th><th>Need</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>Spinner</code></td>
+            <td>exported, sized variants, <code>role="status"</code></td>
+            <td>Today: two private duplicated keyframe spinners (<code>ProofButton.tsx</code>, <code>EmptyState.tsx</code>); <code>ProofButton</code>'s injects an unguarded <code>&lt;style&gt;</code> per import - fix while extracting</td>
+          </tr>
+          <tr>
+            <td><code>QRDisplay</code></td>
+            <td>value to QR with <code>generating/ready/dimmed/expired</code> states, logo overlay</td>
+            <td>Nothing exists; only scanner-side viewfinder UI (<code>ViewFinder</code>, <code>QRViewfinderScreen</code>). Renderer lib is caller-supplied</td>
+          </tr>
+          <tr>
+            <td><code>EmojiSas</code></td>
+            <td>4 large glyph slots, pending/redacted state, per-glyph <code>aria-label</code>, "must match other device" caption</td>
+            <td><code>NovaPin</code> (4-slot PIN) had the right geometry but was deleted in 1.4.6; <code>SecretPhraseClip</code> is the nearest survivor</td>
+          </tr>
+          <tr>
+            <td>Secure <code>InputField</code></td>
+            <td><code>secure</code> mode, reveal toggle, error <strong>message</strong> slot (today <code>error</code> is a boolean border flag), <code>autoComplete</code></td>
+            <td>Blocks password custody + unlock</td>
+          </tr>
+          <tr>
+            <td>Biometric icon/button</td>
+            <td>Touch ID / passkey affordance</td>
+            <td><code>FaceIdIcon</code> existed pre-1.4.6 (<code>LivenessIcons.tsx</code>) and was removed; nearest live icons: <code>LockIcon</code>, <code>ShieldLockIcon</code></td>
+          </tr>
+          <tr>
+            <td><code>Toast</code></td>
+            <td>transient confirmations (copied, saved)</td>
+            <td>Zero hits repo-wide; only ad-hoc pattern is <code>RecoveryPhrase</code>'s hardcoded <code>copied</code> variant</td>
+          </tr>
+          <tr>
+            <td><code>Skeleton</code></td>
+            <td>text/card/row shapes</td>
+            <td>Zero hits; <code>EmptyState loading</code> is a blocking spinner, not a skeleton</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="euclid-states">
+      <h2>Existing components needing a state or variant</h2>
+      <table>
+        <thead>
+          <tr><th>Component</th><th>Gap</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>Button</code> (<code>components/actions/Button.tsx</code>)</td>
+            <td>No loading state - the single biggest gap; add a <code>state</code> union (idle/loading/success?) with width-stable label, <code>aria-busy</code>, auto-disable. Also: press feedback binds mouse events only - add touch handlers</td>
+          </tr>
+          <tr>
+            <td><code>ManageDocumentsScreen</code> (<code>screens/settings/ManageDocumentsScreen.tsx</code>)</td>
+            <td><code>DocumentItem</code> has no <code>selected</code>/<code>activeDocumentId</code>; it is a navigation list, not a selection list. Add selection + row-scoped pending state</td>
+          </tr>
+          <tr>
+            <td><code>DetailedTableViewCell</code> (<code>components/data-display/DetailedTableViewCell.tsx</code>)</td>
+            <td><code>document-detail</code> variant lacks <code>selected</code>; only the non-document <code>radio*</code> variants select. Unify</td>
+          </tr>
+          <tr>
+            <td><code>ProofRequestScreen</code> / <code>ProofButton</code></td>
+            <td>Add requesting-origin slot; press-and-hold needs a keyboard-accessible equivalent</td>
+          </tr>
+          <tr>
+            <td><code>ProofGeneration</code> (<code>components/proof/ProofGeneration.tsx</code>)</td>
+            <td>Steps/copy/estimated time hardcoded; parameterize or standardize on <code>CircuitProgressCard</code> (already caller-controlled) for extension stages</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="euclid-covered">
+      <h2>Covered today: reuse, do not rebuild</h2>
+      <ul>
+        <li>Consent + proving: <code>ProofRequestScreen</code>, <code>ProofButton</code> (waiting/preparing/ready/verifying/disabled + hold-to-confirm), <code>ProofGenerationScreen</code>, <code>ProofProgressScreen</code>, <code>CircuitProgressCard</code>.</li>
+        <li>Terminal states: <code>StatusState</code> (success/fail/loading) + success screens family; needs caller-supplied Lottie (library ships no JSON assets - source a checkmark animation once, reuse everywhere).</li>
+        <li>Custody choice layout: <code>GroupedButtons</code> + <code>Button</code> mega variants; <code>SocialSignOnMethodPickerScreen</code> is the structural precedent for a 2-option picker with a collapsed fallback.</li>
+        <li>Selection sheet: <code>IDPicker</code> (<code>selectedId</code>, <code>onSelect</code>, <code>inline</code>) for document pickers inside consent.</li>
+        <li>Press feedback convention: local pressed state, <code>opacity 0.75 / scale 0.993 / 0.15s ease</code> - keep for new components.</li>
+      </ul>
+    </section>
+
+    <section id="deliverables">
+      <h2>Deliverables</h2>
+      <ol>
+        <li>CEP-06 (Euclid): the two tables above, in priority order - <code>Button</code> loading state, <code>Spinner</code>, <code>QRDisplay</code>, <code>EmojiSas</code>, secure <code>InputField</code>, biometric icon, document selection, <code>Toast</code>, <code>Skeleton</code>. Each with a Storybook story and touch+keyboard+screen-reader coverage.</li>
+        <li>CEP-07/CEP-08 (screens): link/unlock flows in webview-app and phone link flow, composed from the above; bespoke extension HTML pages deleted.</li>
+        <li>Copy review: one pass over all states with the "matching emojis = end-to-end encrypted with that browser and nothing in between" framing on both devices.</li>
+      </ol>
+    </section>
+
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+  // Mermaid init (locked — copy as-is). startOnLoad:false: the engine (or the static driver
+  // below) drives render + post-process for static and per-option diagrams uniformly. base
+  // theme, never 'default'; no ELK adapter (it silently overrides themeVariables). Most
+  // label/patch fixes live in themeCSS.
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: 'base',
+    securityLevel: 'loose',
+    flowchart: { curve: 'basis', padding: 18, nodeSpacing: 40, rankSpacing: 60, htmlLabels: true, useMaxWidth: true },
+    themeCSS: `
+      .cluster rect { stroke-dasharray: 3 3 !important; stroke-width: 1px !important; rx: 8px !important; ry: 8px !important; }
+      .edgePath .path { stroke-width: 1.5px !important; }
+      .arrowheadPath { fill: #2A1F18 !important; }
+      /* Edge labels overlay arrows: graph-bg patch erases the line under text */
+      .edgeLabels { z-index: 2; }
+      .edgeLabel { background: transparent !important; padding: 0 !important; text-transform: none !important; }
+      .edgeLabel foreignObject > div {
+        background: #F5F3EC !important;
+        padding: 0 4px !important;
+        display: inline-block !important;
+        text-transform: none !important;
+      }
+      /* Suppress the empty edge-label rect mermaid renders for every edge
+         (a small fill patch at the SVG origin before layout). */
+      .edgeLabel rect { fill: transparent !important; stroke: none !important; }
+      .cluster-label foreignObject > div {
+        font-size: 12.5px !important;
+        color: #786C60 !important;
+        font-weight: 400 !important;
+        text-align: left !important;
+        text-transform: none !important;
+        background: #F5F3EC !important;
+        padding: 0 5px !important;
+        display: inline-block !important;
+      }
+      .nodeLabel, .edgeLabel, foreignObject > div { text-transform: none !important; }
+    `,
+    themeVariables: {
+      fontFamily: '"Lato", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      fontSize: '13px',
+      primaryColor:       '#FFFFFF',
+      primaryBorderColor: '#ECE7DE',
+      primaryTextColor:   '#2A1F18',
+      lineColor:          '#2A1F18',
+      secondaryColor:     '#F5F3EC',
+      tertiaryColor:      '#F5F3EC',
+      mainBkg:            '#FFFFFF',
+      clusterBkg:         'transparent',
+      clusterBorder:      '#DDD7CD',
+      edgeLabelBackground:'#F5F3EC'
+    }
+  });
+
+  // STATIC mode (default): render diagrams on the page, no interactive cards.
+  // For an interactive decision page, DELETE this block and use the engine below instead —
+  // OpenQuestions.render() handles all diagrams (static + per-option).
+  (async () => {
+    const blocks = document.querySelectorAll('pre.mermaid');
+    for (let i = 0; i < blocks.length; i++) {
+      const el = blocks[i];
+      const { svg } = await mermaid.render('static-' + i, el.textContent.trim());
+      el.innerHTML = svg;
+      const out = el.querySelector('svg');
+      if (!out) continue;
+      // Re-append edge labels so they paint above edges, then pad the viewBox so any
+      // repositioned cluster/edge label is not clipped by mermaid's tight bounds.
+      const edgeLabels = out.querySelector('g.edgeLabels');
+      if (edgeLabels) out.appendChild(edgeLabels);
+      try {
+        const b = out.getBBox(), p = 8;
+        out.setAttribute('viewBox', `${b.x - p} ${b.y - p} ${b.width + p * 2} ${b.height + p * 2}`);
+      } catch (e) { /* getBBox unavailable until laid out */ }
+    }
+  })();
+</script>
+
+</body>
+</html>
