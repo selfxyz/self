@@ -229,6 +229,7 @@
     <a href="#deltas">Deltas vs the spike</a>
     <h4>Shipping</h4>
     <a href="#publishing">Store publishing</a>
+    <a href="#listing">Store listing package</a>
     <a href="#versioning">Versioning &amp; cross-compat</a>
     <h4>Gates &amp; scope</h4>
     <a href="#security-gates">Security gates</a>
@@ -380,6 +381,26 @@ flowchart LR
       </ul>
     </section>
 
+    <section id="listing">
+      <h2>Store listing package: what the store demands before anything ships</h2>
+      <p>The Chrome Web Store requires a complete listing before the FIRST upload, even to the unlisted trusted-tester channel. This is its own deliverable (CEP-13) and blocks CEP-03.</p>
+      <table>
+        <thead><tr><th>Item</th><th>Requirement</th><th>State today</th></tr></thead>
+        <tbody>
+          <tr><td>Manifest icons</td><td>16 / 32 / 48 / 128 px PNGs in the manifest <code>icons</code> field</td><td><strong>Missing entirely</strong>: the spike manifest has none. Derive from existing Self brand assets (app icons, webview-app logos); needs a design sign-off on the export</td></tr>
+          <tr><td>Store icon</td><td>128x128 with the store's padding rules (art ~96x96 in the canvas)</td><td>Same source as manifest icons</td></tr>
+          <tr><td>Screenshots</td><td>At least 1, up to 5; 1280x800 or 640x400</td><td>Produce from the polished flows after CEP-07 (link, consent, success)</td></tr>
+          <tr><td>Small promo tile</td><td>440x280, required for listing</td><td>Design task</td></tr>
+          <tr><td>Short description</td><td>Manifest <code>description</code>, max 132 chars, doubles as the search summary</td><td>Draft: "Prove who you are from your browser. Link your Self app once, then approve identity requests in two clicks."</td></tr>
+          <tr><td>Detailed description + category + language</td><td>Store listing tab</td><td>Write from the PRD's product section</td></tr>
+          <tr><td>Privacy policy URL</td><td>Mandatory for extensions handling user data</td><td>Point at the Self privacy policy, extended with an extension section if legal wants it</td></tr>
+          <tr><td>Privacy practices tab</td><td>Single-purpose statement, per-permission justification, data-usage certification</td><td>Strong story (nothing leaves the device unencrypted; no analytics without consent) but must be written and filed; reviewed under CEP-12</td></tr>
+          <tr><td>Publisher verification</td><td>Verified publisher + EU DSA trader declaration on the developer account</td><td>Part of the group-publisher setup (CEP-03)</td></tr>
+        </tbody>
+      </table>
+      <p class="callout note"><strong>Review-speed lever:</strong> the spike's content script matches <code>https://*/*</code>, which puts the extension in the store's slow-review track for broad host access. The hosted-page-only origin decision lets us narrow <code>content_scripts.matches</code> to that single origin: faster reviews, trivial permission justifications, and a smaller attack surface. Lands with CEP-09.</p>
+    </section>
+
     <section id="versioning">
       <h2>Versioning &amp; cross-compatibility</h2>
       <p>Five independently-shipping parts touch one flow; the store's review latency (hours to days, plus users who never restart Chrome) means the extension is always the laggard. Rules:</p>
@@ -519,6 +540,12 @@ flowchart LR
             <td>Security review gate (custody, transfer, origin policy, store disclosures)</td>
             <td>CEP-04, CEP-05, CEP-07, CEP-08, CEP-09</td>
             <td>Blocks public store listing</td>
+          </tr>
+          <tr>
+            <td><code>CEP-13</code></td>
+            <td>Store listing package: icons, promo assets, descriptions, privacy policy + practices</td>
+            <td>-</td>
+            <td>Required before the FIRST store upload, even trusted-tester; blocks CEP-03 (see the store listing section)</td>
           </tr>
         </tbody>
       </table>
