@@ -36,7 +36,7 @@ jobs:
       - name: Install Chrome for Testing
         id: cft
         run: |
-          out=$(npx --yes @puppeteer/browsers install chrome@stable --path "$PWD/packages/chrome-extension/chrome")
+          out=$(pnpm --filter @selfxyz/chrome-extension exec puppeteer browsers install chrome@stable --path "$PWD/packages/chrome-extension/chrome")
           echo "path=$(echo "$out" | tail -1 | cut -d' ' -f2)" >> "$GITHUB_OUTPUT"
 
       - name: Boot check (fresh install gates to link page + QR)

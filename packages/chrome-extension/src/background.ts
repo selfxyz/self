@@ -84,30 +84,46 @@ async function startVerification(selfApp: SelfAppLike, tabId: number): Promise<{
   if (pending && !pending.resolved) {
     return { accepted: false, result: failureResult('BUSY', 'Another verification is in progress') };
   }
-  if ((await vaultState()) === 'uninitialized') {
-    return { accepted: false, result: failureResult('NO_ACCOUNT', 'No account linked in the Self extension') };
-  }
 
-  const target = `index.html?${selfAppToPopupQuery(selfApp)}`;
-  const created = await chrome.windows.create({
-    url: await gatedUrl(target),
-    type: 'popup',
-    width: POPUP_WIDTH,
-    height: POPUP_HEIGHT,
-  });
-
+  // Reserve the slot synchronously, before any await: two back-to-back
+  // requests would otherwise both pass the check above and open two popups
+  // with only the later one tracked. Default-deny on overlap.
   pending = {
     sessionId: selfApp.sessionId,
     tabId,
-    windowId: created.id ?? null,
+    windowId: null,
     resolved: false,
     timer: setTimeout(() => {
       settleSession(failureResult('TIMEOUT', 'Verification timed out'));
       closeSessionWindow();
     }, SESSION_TIMEOUT_MS),
   };
+  const reserved = pending;
 
-  return { accepted: true };
+  try {
+    if ((await vaultState()) === 'uninitialized') {
+      clearTimeout(reserved.timer);
+      if (pending === reserved) pending = null;
+      return { accepted: false, result: failureResult('NO_ACCOUNT', 'No account linked in the Self extension') };
+    }
+
+    const target = `index.html?${selfAppToPopupQuery(selfApp)}`;
+    const created = await chrome.windows.create({
+      url: await gatedUrl(target),
+      type: 'popup',
+      width: POPUP_WIDTH,
+      height: POPUP_HEIGHT,
+    });
+    if (pending === reserved) reserved.windowId = created.id ?? null;
+    return { accepted: true };
+  } catch (err) {
+    clearTimeout(reserved.timer);
+    if (pending === reserved) pending = null;
+    return {
+      accepted: false,
+      result: failureResult('POPUP_FAILED', err instanceof Error ? err.message : 'Could not open the Self popup'),
+    };
+  }
 }
 
 chrome.action.onClicked.addListener(() => {

@@ -10,13 +10,22 @@ const passkeyBtn = document.getElementById('pw-passkey') as HTMLButtonElement;
 const enablePasskeyBtn = document.getElementById('pw-enable-passkey') as HTMLButtonElement;
 const error = document.getElementById('pw-error') as HTMLElement;
 
+// Extension pages we will continue to after unlock. An allowlist of paths
+// beats a character regex: the disclosure target carries a percent-encoded
+// embed query (appEndpoint and friends), which a charset check rejects, and
+// the first verification after a browser restart would then land on the home
+// screen instead of the request.
+const NEXT_ALLOWED_PATHS = ['index.html', 'link.html'];
+
 function nextUrl(): string {
   const next = new URLSearchParams(window.location.search).get('next');
-  // Only ever continue to our own pages.
-  if (next && /^[a-z0-9./?=&_-]+$/i.test(next) && !next.startsWith('//')) {
-    return chrome.runtime.getURL(next);
-  }
-  return chrome.runtime.getURL('index.html');
+  if (!next) return chrome.runtime.getURL('index.html');
+  const [path, query] = next.split('?', 2);
+  if (!NEXT_ALLOWED_PATHS.includes(path)) return chrome.runtime.getURL('index.html');
+  // Re-serialize the query so only well-formed params survive.
+  const params = new URLSearchParams(query ?? '');
+  const search = params.toString();
+  return chrome.runtime.getURL(search ? `${path}?${search}` : path);
 }
 
 async function attempt(): Promise<void> {

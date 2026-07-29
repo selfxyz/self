@@ -11,7 +11,7 @@
 
 import { Buffer } from 'buffer';
 import forge from 'node-forge';
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, TextInput } from 'react-native';
 import { io, type Socket } from 'socket.io-client';
 import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
@@ -163,6 +163,11 @@ export const LinkBrowserExtensionScreen: React.FC = () => {
     channelRef.current = null;
     messageRef.current = null;
   }, []);
+
+  // Leaving the screen must cancel the transfer: otherwise the sockets, the ack
+  // timer, and the pending encrypted payload stay alive and the account can
+  // still be delivered after the user backed out.
+  useEffect(() => cleanup, [cleanup]);
 
   const fail = useCallback(
     (message: string) => {
