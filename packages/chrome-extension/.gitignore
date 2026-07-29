@@ -1,3 +1,5 @@
 dist/
 chrome/
 *.png
+!icons/*.png
+*.zip

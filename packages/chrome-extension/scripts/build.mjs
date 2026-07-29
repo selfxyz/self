@@ -65,7 +65,32 @@ if (!html.includes(marker)) {
 }
 writeFileSync(indexPath, html.replace(marker, `<script src="./bridge-host.js"></script>\n    ${marker}`));
 
-cpSync(join(root, 'manifest.json'), join(dist, 'manifest.json'));
+cpSync(join(root, 'icons'), join(dist, 'icons'), { recursive: true });
+
+// Store builds differ from dev builds in two ways: the pinned `key` (which
+// fixes the extension id for local loads and the harnesses) must not ship, and
+// the version is a monotonic date stamp the store orders releases by.
+const storeBuild = process.argv.includes('--store');
+const manifest = JSON.parse(readFileSync(join(root, 'manifest.json'), 'utf8'));
+if (storeBuild) {
+  delete manifest.key;
+  const now = new Date();
+  const stamp = [
+    now.getUTCFullYear(),
+    String(now.getUTCMonth() + 1).padStart(2, '0'),
+    String(now.getUTCDate()).padStart(2, '0'),
+    process.env.STORE_BUILD_NUMBER ?? '1',
+  ].join('.');
+  manifest.version = stamp;
+  console.log(`Store build: key stripped, version ${stamp}`);
+}
+writeFileSync(join(dist, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n');
+
+if (storeBuild) {
+  const zip = join(root, `self-extension-${manifest.version}.zip`);
+  execFileSync('zip', ['-qr', zip, '.'], { cwd: dist });
+  console.log(`Store package: ${zip}`);
+}
 
 try {
   execFileSync('du', ['-sh', dist], { stdio: 'inherit' });
