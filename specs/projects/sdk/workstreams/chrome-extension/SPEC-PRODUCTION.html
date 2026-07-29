@@ -369,7 +369,7 @@ flowchart LR
       </div>
       <h3>Pipeline (GitHub Actions in self/self)</h3>
       <ol>
-        <li><strong>Trigger:</strong> push to <code>main</code> touching <code>packages/chrome-extension/**</code>, <code>packages/webview-app/**</code>, <code>packages/webview-bridge/**</code>, or <code>packages/mobile-sdk-alpha/**</code> (same paths-filter pattern as self-infra <code>staging.yml</code>).</li>
+        <li><strong>Trigger:</strong> push to <code>main</code> touching any path whose output lands in the bundle: <code>packages/chrome-extension/**</code>, <code>packages/webview-app/**</code>, <code>packages/webview-bridge/**</code>, <code>packages/mobile-sdk-alpha/**</code>, <code>packages/common/**</code>, plus the workflow itself. <strong>The filter must cover every artifact-changing dependency</strong>: a fix in <code>common</code> silently changes the published extension, and a filter that misses it leaves that fix unpublished.</li>
         <li><strong>Build chain:</strong> common → sdk → bridge → webview-app → extension (the exact chain the harnesses use today).</li>
         <li><strong>Gates:</strong> unit tests + <code>boot-check</code>, <code>import-check</code>, <code>disclose-check</code> puppeteer harnesses against Chrome for Testing (already headless-capable), gitleaks, bundle-size budget.</li>
         <li><strong>Version:</strong> manifest <code>version</code> derived from a monotonic counter (date-based <code>YYYY.MM.DD.N</code>, mirroring self-infra image tags); the manifest <code>key</code> field is stripped for store builds (store assigns the real ID; the pinned key remains for local/dev loads).</li>
@@ -442,7 +442,11 @@ flowchart LR
           </tr>
         </tbody>
       </table>
-      <p>Compatibility gate in CI (CEP-02): the harness suite runs the NEW extension against the CURRENT staging relayer and TEE, i.e. every merge proves the laggard-compatible direction before publishing.</p>
+            <p><strong>Compatibility gates in CI, both directions</strong> (CEP-02). One is not enough: the rule above says an old extension must keep working against a newer relayer, and that is the direction store-review lag actually exposes.</p>
+      <ul>
+        <li><em>New client, current server</em> (every extension PR): the harness suite runs the new extension against the current staging relayer and TEE, so a merge cannot publish an artifact that is already broken.</li>
+        <li><em>Old client, candidate server</em> (every relayer PR, self-infra): run the <strong>last published extension artifact</strong> against the candidate relayer. Without it, a relayer rollout can break every installed extension not yet updated through store review, the failure mode with no fast rollback. CI retains published zips, so the artifact is available.</li>
+      </ul>
     </section>
 
     <section id="security-gates">

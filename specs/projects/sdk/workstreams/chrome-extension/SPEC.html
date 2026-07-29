@@ -310,6 +310,7 @@
 
     <section id="transfer">
       <h2>Architecture 1: account transfer (mobile to extension)</h2>
+      <p class="callout warn"><strong>Superseded as a protocol reference.</strong> This records the spike as built (v1). The transfer protocol is now at v3 with a different QR contract and key schedule: <a href="./plans/CE-01-transfer-protocol.md">the versioned protocol doc</a> is authoritative, including <code>helloSessionId</code>, <code>linkSecret</code>, the receiver fail-closed rules, and typed failure/nack behavior.</p>
       <p>New protocol, same primitives as the TEE handshake (<code>elliptic</code> P-256 ECDH + AES-256-GCM from <code>@selfxyz/common</code>):</p>
       <div class="diagram">
         <div class="label">Transfer handshake · the relayer room is the transport under test in CE-01</div>

@@ -1,86 +1,142 @@
-# CE-01: Account Transfer Protocol (mobile -> extension)
+# Account Transfer Protocol (phone -> browser extension)
 
-> Status: Validated on staging 2026-07-21
-> Linear: SELF-3597
-> Harness: `packages/chrome-extension/harness/relayer-transfer.mjs`
+> Version: **v3** (2026-07-29)
+> Status: implemented on `feat/browser-extension-v1`; v1 and v2 are historical
+> Canonical implementation: `packages/mobile-sdk-alpha/src/utils/sas.ts` (shared by both ends), `packages/chrome-extension/src/link.ts` (receiver), `app/src/screens/dev/LinkBrowserExtensionScreen.tsx` (sender)
+> Context: [PRD](../SPEC-PRD.html), [engineering spec](../SPEC-PRODUCTION.html) (link channel authentication, threat model), [spike record](../SPEC.html)
 
-## Conclusion
+Moves a Self account (mnemonic + document catalog + documents) from the phone to a browser extension, end-to-end encrypted, over the existing websocket relayer. The relayer is untrusted: it must not be able to read the payload or substitute one.
 
-The existing relayer carries the transfer with **no server-side changes**, using the reverse `self_app` path:
+## Trust model
 
-- The **extension (receiver)** joins the relayer room as `clientType: 'mobile'` and listens for `self_app`.
-- The **phone (sender)** joins the same room as `clientType: 'web'` and emits the encrypted envelope via the `self_app` event immediately on connect. It must **not** wait for `mobile_status: 'mobile_connected'`: that presence status is backed by a short-TTL session record and stops being reported to late-joining web clients within ~30s of the extension joining (found in real-device QA 2026-07-27; a receiver reconnect does not refresh it). Room forwarding of `self_app` and the `proof_verified` ack are not TTL'd (validated after 60s+ idle on staging).
-- Custom event names are **not** forwarded by the relayer (verified: `account_transfer` probe never delivered). Only the existing event vocabulary relays.
-- The relayer forwards only the **first** `self_app` per session (verified 2026-07-27: second emits are dropped, on the same or a fresh connection). The pre-send SAS handshake therefore uses a second room: the QR carries `helloSessionId`; the phone emits `{transferType: 'self-account-transfer-hello', senderPublicKey}` there so both sides can render the SAS emojis (`@selfxyz/mobile-sdk-alpha/utils/sas`) before the user presses Send; the encrypted envelope goes to `transferSessionId`.
-
-Measured on `wss://websocket.staging.self.xyz`:
-
-| Plaintext | On-wire message | Result |
+| Channel | Trust | Carries |
 | --- | --- | --- |
-| 120KB | 164KB | Delivered, decrypt OK |
-| 400KB | 547KB | Delivered, decrypt OK |
-| 800KB | 1.09MB | Delivered after a visible reconnect/retransmit |
+| QR (extension screen -> phone camera) | **Trusted, out-of-band.** The anchor for everything below. | Session ids, receiver public key, `linkSecret`, relay URL |
+| Relayer (socket.io) | **Untrusted.** Sees everything sent through it, may drop, reorder, or inject. | Hello message, encrypted envelope, ack |
+| Human (emoji comparison) | Attentive at best; assume habituation. | Confirms the channel when the QR itself was observed |
 
-**Envelope cap: 512KB on the wire.** Above that the socket reconnected mid-send (socket.io server buffer limit is likely 1MB). A realistic account (mnemonic + catalog + a few documents) is 100-200KB, so chunking is out of scope; if a payload ever exceeds the cap, fail with a clear error rather than chunking (spike scope).
+Consequence: authentication must come from the QR, not the human. v1 and v2 got this wrong (see [engineering spec](../SPEC-PRODUCTION.html) link channel authentication).
 
-## QR content (extension -> phone, out of band)
+## QR contract
 
 ```json
 {
   "transferSessionId": "<uuid v4>",
+  "helloSessionId": "<uuid v4>",
   "receiverPublicKey": "<P-256 uncompressed public key (04||X||Y), hex>",
-  "relay": "<relayer base URL, e.g. wss://websocket.staging.self.xyz>"
+  "linkSecret": "<32 random bytes, base64>",
+  "relay": "wss://websocket.self.xyz | wss://websocket.staging.self.xyz"
 }
 ```
 
-Keys travel uncompressed because WebCrypto's raw P-256 import does not reliably
-accept compressed points; elliptic on the phone handles either form.
+- **`helloSessionId`** is a second relayer room, required because the relayer forwards only the **first** `self_app` per session (validated on staging 2026-07-27). The pre-send handshake cannot share the transfer room.
+- **`linkSecret`** never travels through the relayer. It is the proof that a sender physically scanned this code.
+- **`receiverPublicKey`** is uncompressed: WebCrypto's raw P-256 import does not reliably accept compressed points; `elliptic` on the phone accepts either.
+- **`relay`** is validated against a compiled-in allowlist on both ends (wss only; localhost tolerated for harnesses). A QR-declared relay is attacker-controllable input.
+- The code is **single-use and expires after 5 minutes**. On expiry the extension dims the QR, offers a new code, and refuses late transfers.
 
-Rendered as a QR on the extension link screen plus a copyable string for emulator development. The session id is single-use; the receiver keypair is ephemeral (generated per link attempt, never persisted).
+## Key schedule
 
-## Wire message (phone -> extension, via relayer `self_app` event)
+Both ends derive identically from the shared module, so they cannot drift.
+
+```
+sharedSecretX = ECDH_P256(sender_ephemeral_priv, receiverPublicKey).x   // 32 bytes
+transcript    = "self-ext-transfer-v3" | transferSessionId | receiverPublicKey | senderPublicKey
+envelopeKey   = HKDF-SHA256(ikm = sharedSecretX, salt = linkSecret, info = transcript, len = 32)
+aad           = transcript
+sas           = HKDF-SHA256(ikm = sharedSecretX, salt = linkSecret || "self-ext-link-sas-v3", info = transcript, len = 6)
+                mapped byte-wise over a 64-emoji table
+```
+
+Why each part:
+
+- **HKDF rather than the raw x-coordinate**: an EC point coordinate is not uniformly random, and a bare secret is bound to nothing.
+- **`linkSecret` as salt**: an attacker in relayer position knows both public keys and the session ids but not `linkSecret`, so the key they derive cannot authenticate. This is the protocol's authentication, replacing the human check.
+- **transcript as `info` and as GCM `aad`**: swapping the sender key or session id fails the tag instead of decrypting into a different account.
+- **6 emojis (36 bits)**: enough for a human comparison that now only has to cover the observed-QR case. Table order and labels are protocol-frozen; entries may only be appended under a new label version.
+
+## Message flow
+
+```
+extension                              phone
+  |-- QR (out of band) ------------------>|
+  |                                       | validate QR (linkSecret present, relay allowlisted)
+  |                                       | generate ephemeral keypair, derive sharedSecretX
+  |<-- hello  {senderPublicKey} ----------|   room: helloSessionId
+  | pin senderPublicKey                   |
+  | show SAS                              | show SAS
+  |          [user compares, presses "Encrypt & send my account"]
+  |<-- self_app {envelope} ---------------|   room: transferSessionId
+  | verify sender key == pinned key       |
+  | decrypt (AEAD), validate payload      |
+  |-- proof_verified (ack) -------------->|   room: transferSessionId
+```
+
+Wire message (both hello and transfer ride the `self_app` event, the only relayer event that carries payloads):
 
 ```json
 {
-  "sessionId": "<transferSessionId>",
-  "transferType": "self-account-transfer",
-  "senderPublicKey": "<P-256 uncompressed public key (04||X||Y), hex, ephemeral>",
-  "envelope": {
-    "nonce": "<12 bytes, base64>",
-    "cipherText": "<base64>",
-    "authTag": "<16 bytes, base64>"
-  }
+  "sessionId": "<matching room id>",
+  "transferType": "self-account-transfer-hello | self-account-transfer",
+  "senderPublicKey": "<hex>",
+  "envelope": { "nonce": "<b64, 12 bytes>", "cipherText": "<b64>", "authTag": "<b64, 16 bytes>" }
 }
 ```
 
-Receivers ignore any `self_app` payload whose `transferType` is not `self-account-transfer` or whose `sessionId` does not match, so the path cannot collide with real verification sessions (distinct uuid rooms anyway).
+`envelope` is present only on `self-account-transfer`. Plaintext is `{version, mnemonic, documentCatalog, documents}`.
 
-## Cryptography
+## Receiver rules (fail closed)
 
-Mirrors the TEE handshake convention (`common/src/utils/proving.ts`, `provingMachine.ts`):
+1. **Ignore** messages whose `sessionId` does not match the room, or whose `transferType` is unknown.
+2. **Pin** the hello's `senderPublicKey`. A second hello with a *different* key marks the session conflicted and refuses everything after it: someone else is talking to this code.
+3. **Refuse** a transfer that arrives with no hello, or whose `senderPublicKey` differs from the pinned one.
+4. **Latch only after success.** `handled` is set after decrypt *and* payload validation, so a junk first message cannot burn the session (it used to: a single garbage frame denied the transfer).
+5. **Validate shape**: every catalog entry must have a matching document; unknown envelope versions are rejected rather than best-effort parsed.
+6. **Refuse after expiry**, with an explanation and a regenerate affordance.
+7. **Never re-key an existing vault**: import into an initialized browser requires an explicit reset first.
 
-- ECDH on P-256; shared secret = x-coordinate as 32 bytes big-endian (`derive().toArray('be', 32)` in elliptic, `computeSecret()` in node, raw ECDH bits in WebCrypto).
-- The 32-byte shared secret is used directly as the AES-256-GCM key; 12-byte random nonce; 128-bit auth tag.
-- Encoding: base64 fields (not the byte-array JSON the TEE payloads use) to keep the wire size sane.
-- Phone side uses `elliptic` + `node-forge` (already in the RN bundle); extension side uses WebCrypto (`ECDH` + `AES-GCM`). Interop is exercised by the harness (node crypto matches both).
+## Failure signaling
 
-## Plaintext payload (inside the envelope)
+Both devices must land in a matching terminal state; one-side-success is a bug class, not an edge case.
 
-```json
-{
-  "version": 1,
-  "mnemonic": { "phrase": "...", "password": "", "entropy": "...", "wordlist": { "locale": "en" } },
-  "documentCatalog": { "documents": ["<DocumentMetadata>"], "selectedDocumentId": "<id>" },
-  "documents": { "<contentHash>": "<IDDocument JSON>" }
-}
-```
+| Failure | Receiver | Sender |
+| --- | --- | --- |
+| Decrypt or validation fails | status line + `proof_generation_failed` nack with `TRANSFER_DECRYPT_FAILED` | "Extension rejected the transfer" + reason, retry available |
+| Sender key mismatch / no hello / conflict | status line naming the cause, session refused | times out at 60s (no ack), retry available |
+| Code expired | QR dimmed, "Get a new code" | times out, or fails fast on a rescan |
+| Relay unreachable, drops, or rejects the join | actionable status + regenerate | actionable status; mid-send drop surfaces rather than hiding behind the spinner |
+| Payload over the 512KB cap | not reached | sender-side guard with the measured size |
+| User leaves the phone screen | times out | unmount cancels sockets, timer, and the pending payload |
 
-- `mnemonic` is the keychain `secret` entry as stored (`app/src/types/mnemonic.ts` shape).
-- `documents` maps each catalog entry id to the full document JSON from keychain `document-{contentHash}`.
-- Receiver validates with the `DocumentCatalog` / `IDDocument` guards from `@selfxyz/common` before accepting, and derives `self_private_key` from the mnemonic the same way the app does (`m/44'/60'/0'/0/0`).
+Retry is always "scan a fresh code", never "resend into the same session": session ids are single-use.
 
-## Security notes
+## Size cap
 
-- End-to-end encrypted: the relayer only ever sees the envelope; the receiver private key never leaves the extension; both keypairs are ephemeral.
-- The QR flows out-of-band (screen -> camera), so a relayer man-in-the-middle cannot substitute keys without also controlling the QR channel.
-- No sender authentication in the spike: anyone who scans the QR could push a payload. Acceptable because the payload only ever *adds* an account chosen by the person holding the phone; flagged as a production gap.
+Measured on staging (v1, unchanged since):
+
+| Plaintext | On-wire | Result |
+| --- | --- | --- |
+| 120KB | 164KB | delivered |
+| 400KB | 547KB | delivered |
+| 800KB | 1.09MB | delivered only after a visible reconnect |
+
+**512KB on-wire cap.** A realistic account (mnemonic + catalog + a few documents) is 100-200KB. Above the cap the sender fails with a clear error rather than chunking.
+
+## Relayer facts this protocol depends on
+
+Validated against staging; the first two are why the design looks the way it does.
+
+- Custom event names are **not** forwarded. Only the existing vocabulary relays, hence `self_app` for both message types.
+- Only the **first** `self_app` per session is forwarded, hence the separate hello room.
+- `mobile_status` presence (`mobile_connected`) expires shortly after the mobile client joins and is **not** re-sent to a later-joining web client, so the sender emits on `connect` instead of waiting for presence.
+- Room forwarding and the `proof_verified` ack are not TTL'd (validated after 5 minutes idle).
+
+self-infra PR #166 fixes the presence and ordering issues server-side. Once deployed, the hello room can collapse into the transfer room (CEP-01): keep `helloSessionId` in the QR for one release for compatibility, then drop it.
+
+## Version history
+
+| Version | Change |
+| --- | --- |
+| v1 | QR + `self_app` relay validated; raw ECDH x-coordinate as the AES key; 4-emoji SAS over the bare secret |
+| v2 | HKDF with the session id as salt, transcript as `info` and `aad`, SAS widened to 6 and bound to the transcript; hello key pinned; latch after decrypt |
+| **v3** | `linkSecret` in the QR as HKDF salt: sender authentication becomes cryptographic, and the emoji check is demoted to covering an observed QR. Pre-v3 codes are **refused** by the phone with copy telling the user to update the extension: silent downgrade to weaker authentication is how this fix would get undone |
