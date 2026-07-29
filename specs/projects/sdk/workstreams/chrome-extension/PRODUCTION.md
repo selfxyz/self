@@ -102,6 +102,6 @@ Launch = CEP-03 pipeline green on trusted-tester channel + CEP-12 sign-off.
 ## Open questions
 
 - Store identity: publish under the existing Self Google developer account or a dedicated org account? (Owner decision; affects OAuth setup in CEP-03.)
-- Which repo/team owns the Enterprise hosted verification page, and can the extension trigger land there as a normal feature PR? (Determines CEP-09 execution; the shim module itself stays in this monorepo.)
+- ~~Which repo/team owns the Enterprise hosted verification page?~~ RESOLVED (2026-07-29): `self-dashboard` repo, `apps/hosted-page` - QR rendering lives in `src/client/components/features/verification/` (`QRCodeDisplay.tsx`, `MobileVerification.tsx`), which is exactly where the extension branch (detect -> postMessage -> hide QR) slots in. CEP-09 is a feature PR there, coordinated with the dashboard owner; the shim module + contract sample stay in this monorepo.
 - Origin policy: allowlist the hosted-page origin only (single origin we control). DECIDED by the Enterprise-only integration model (2026-07-29); security review verifies the implementation rather than re-opening the policy.
 - Whether the webview-app "self-app mode" home stays in the extension v1 or the popup becomes disclosure-only with a settings page (UX.md recommends keeping mini home).

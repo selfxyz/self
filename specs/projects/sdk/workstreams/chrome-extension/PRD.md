@@ -73,6 +73,6 @@ A Chrome extension that holds the user's Self account (transferred once from the
 
 ## Open decisions for review
 
-1. Which repo/team owns the Enterprise hosted verification page (determines where CEP-09 lands)?
+1. ~~Which repo/team owns the Enterprise hosted verification page?~~ RESOLVED (2026-07-29): `self-dashboard` repo, `apps/hosted-page` (QR rendering in `src/client/components/features/verification/`). CEP-09 lands there as a feature PR, coordinated with the dashboard owner.
 2. Store identity: existing Self Google developer account vs dedicated org account (CEP-03 OAuth).
 3. Popup scope in v1: mini home (documents + settings) as specced, or disclosure-only? UX.md recommends keeping the mini home.
