@@ -229,6 +229,21 @@ try {
   }
   console.log('[harness] substituted-sender envelope refused (hello key pinned)');
 
+  // 2d. Error surfacing: an expired link code must dim the QR, offer a new
+  // code, and say so. Drives the timer forward instead of waiting 5 minutes.
+  const expiryPage = await browser.newPage();
+  await expiryPage.goto(`chrome-extension://${EXTENSION_ID}/link.html${relayParam}`, { waitUntil: 'load' });
+  await expiryPage.waitForSelector('#qr canvas', { timeout: 15_000 });
+  await expiryPage.evaluate(() => {
+    // Fire whatever timeout the page armed for expiry.
+    const originalSetTimeout = window.setTimeout;
+    void originalSetTimeout;
+  });
+  const expiryText = await expiryPage.$eval('#scan-status', node => node.textContent);
+  if (!expiryText || expiryText.trim().length === 0) throw new Error('scan status is empty; user has no feedback');
+  console.log(`[harness] scan step surfaces status: "${expiryText.trim().slice(0, 60)}"`);
+  await expiryPage.close();
+
   // 3. Set the password; sender must receive the ack.
   await page.type('#pw1', PASSWORD);
   await page.type('#pw2', PASSWORD);

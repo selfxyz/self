@@ -237,7 +237,25 @@ export const LinkBrowserExtensionScreen: React.FC = () => {
           },
         );
         socket.on('connect_error', (error: Error) => {
-          fail(`Relayer connection error: ${error.message}`);
+          fail(
+            `Cannot reach the Self relay: ${error.message}. Check your connection and scan the code again.`,
+          );
+        });
+        // The relayer rejects malformed joins with its own `error` event, and a
+        // mid-send drop must surface rather than sit behind the spinner.
+        socket.on('error', (payload: { message?: string } | string) => {
+          const detail =
+            typeof payload === 'string' ? payload : payload?.message;
+          fail(
+            `The Self relay rejected this session${detail ? `: ${detail}` : ''}. Scan the code again.`,
+          );
+        });
+        socket.on('disconnect', (reason: string) => {
+          if (reason === 'io client disconnect') return; // our own cleanup
+          if (!messageRef.current) return; // nothing in flight yet
+          setStatusText(
+            `Connection dropped (${reason}). Retrying; the code may have expired.`,
+          );
         });
 
         setStep('confirm');

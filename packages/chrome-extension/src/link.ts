@@ -23,6 +23,9 @@ const RELAY_DEFAULT = 'wss://websocket.staging.self.xyz';
 // Relay host allowlist: an attacker-supplied relay would hand them the
 // transport (session ids, payload sizes, message ordering). wss only.
 const RELAY_ALLOWED = ['wss://websocket.self.xyz', 'wss://websocket.staging.self.xyz'];
+// A link code is a live capability: expire it so a QR left on screen (or in a
+// screenshot) stops being usable.
+const QR_TTL_MS = 5 * 60_000;
 
 function resolveRelay(requested: string | null): string {
   if (!requested) return RELAY_DEFAULT;
@@ -137,7 +140,7 @@ async function main(): Promise<void> {
 
   el<HTMLButtonElement>('copy-payload').addEventListener('click', () => {
     void navigator.clipboard.writeText(qrContent);
-    el('scan-status').textContent = 'Code copied. Paste it in the Self app dev screen.';
+    status('Code copied. Paste it in the Self app dev screen.');
   });
 
   const socket: Socket = io(`${relay}/websocket`, {
@@ -147,8 +150,44 @@ async function main(): Promise<void> {
     query: { sessionId, clientType: 'mobile' },
   });
 
+  const status = (text: string) => {
+    el('scan-status').textContent = text;
+  };
+
+  // Every terminal or degraded state gets a line the user can act on. A silent
+  // spinner is a bug: the scan step can fail from the relayer, from expiry, or
+  // from a hostile handshake, and each needs different user action.
+  let expired = false;
+  const expireAt = setTimeout(() => {
+    expired = true;
+    socket.disconnect();
+    helloSocket.disconnect();
+    el('qr').style.opacity = '0.25';
+    el('regenerate').classList.remove('hidden');
+    status('This code expired for your safety. Get a new one to link.');
+  }, QR_TTL_MS);
+
+  el<HTMLButtonElement>('regenerate').addEventListener('click', () => {
+    window.location.reload();
+  });
+
+  socket.on('connect', () => {
+    if (!expired) status('Waiting for your phone. Open Self and scan this code.');
+  });
   socket.on('connect_error', (err: Error) => {
-    el('scan-status').textContent = `Relayer connection error: ${err.message}`;
+    status(`Cannot reach the Self relay: ${err.message}. Check your connection, then get a new code.`);
+    el('regenerate').classList.remove('hidden');
+  });
+  socket.on('disconnect', (reason: string) => {
+    if (expired || handled) return;
+    status(`Connection to the Self relay dropped (${reason}). Reconnecting; get a new code if this persists.`);
+    el('regenerate').classList.remove('hidden');
+  });
+  // The relayer rejects malformed joins with its own `error` event.
+  socket.on('error', (payload: { message?: string } | string) => {
+    const message = typeof payload === 'string' ? payload : payload?.message;
+    status(`The Self relay rejected this session${message ? `: ${message}` : ''}. Get a new code.`);
+    el('regenerate').classList.remove('hidden');
   });
 
   const helloSocket: Socket = io(`${relay}/websocket`, {
@@ -160,6 +199,7 @@ async function main(): Promise<void> {
 
   let helloSenderKey: string | null = null;
   let helloConflict = false;
+  let handled = false;
 
   helloSocket.on('self_app', (data: unknown) => {
     void (async () => {
@@ -169,7 +209,7 @@ async function main(): Promise<void> {
       if (helloSenderKey && helloSenderKey !== message.senderPublicKey) {
         // A second, different hello means someone else is talking to this
         // session. Refuse rather than showing a SAS the user might accept.
-        el('scan-status').textContent = 'Conflicting handshakes on this code. Close this window and start again.';
+        status('Conflicting handshakes on this code. Close this window and start again.');
         helloConflict = true;
         return;
       }
@@ -182,31 +222,33 @@ async function main(): Promise<void> {
         };
         helloSenderKey = message.senderPublicKey;
         el('sas-scan').textContent = sasEmojis(bits, binding).join('  ');
-        el('scan-status').textContent =
-          'Check that your phone shows the same emojis, then press "Send account" on the phone.';
+        status('Check that your phone shows the same emojis, then press "Send account" on the phone.');
       } catch {
-        el('scan-status').textContent = 'Received an invalid handshake. Rescan the code.';
+        status('Received an invalid handshake. Rescan the code.');
       }
     })();
   });
 
-  let handled = false;
   socket.on('self_app', (data: unknown) => {
     void (async () => {
       const message = (typeof data === 'string' ? JSON.parse(data) : data) as TransferMessage;
       if (message.transferType !== 'self-account-transfer' || message.sessionId !== sessionId) return;
       if (handled) return; // the phone re-emits on reconnect
+      if (expired) {
+        status('This code expired before the transfer arrived. Get a new code and try again.');
+        return;
+      }
 
       // The envelope must come from the same ephemeral key whose SAS the user
       // compared. Without this pin, anyone who can reach the transfer room and
       // read the QR could substitute their own keypair and account.
       if (helloConflict) return;
       if (!helloSenderKey) {
-        el('scan-status').textContent = 'Transfer arrived without a handshake. Close this window and start again.';
+        status('Transfer arrived without a handshake. Close this window and start again.');
         return;
       }
       if (message.senderPublicKey !== helloSenderKey) {
-        el('scan-status').textContent = 'Transfer did not match the verified handshake. Close this window and start again.';
+        status('Transfer did not match the verified handshake. Close this window and start again.');
         return;
       }
 
@@ -224,6 +266,7 @@ async function main(): Promise<void> {
         // Latch only once the payload is authenticated: a junk first message
         // must not burn the session.
         handled = true;
+        clearTimeout(expireAt);
         helloSocket.disconnect();
 
         el('sas').textContent = sasEmojis(sharedSecret, binding).join('  ');
@@ -287,7 +330,8 @@ async function main(): Promise<void> {
           })();
         });
       } catch (err) {
-        el('scan-status').textContent = `Transfer failed: ${err instanceof Error ? err.message : String(err)}`;
+        status(`Transfer failed: ${err instanceof Error ? err.message : String(err)}. Get a new code and try again.`);
+        el('regenerate').classList.remove('hidden');
         socket.emit('proof_generation_failed', {
           session_id: sessionId,
           error_code: 'TRANSFER_DECRYPT_FAILED',

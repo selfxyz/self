@@ -95,8 +95,15 @@ resetStart.addEventListener('click', () => {
 resetConfirmBtn.addEventListener('click', () => {
   void (async () => {
     resetConfirmBtn.disabled = true;
-    await reset();
-    await disablePasskeyUnlock();
+    error.textContent = '';
+    try {
+      await reset();
+      await disablePasskeyUnlock();
+    } catch (err) {
+      resetConfirmBtn.disabled = false;
+      error.textContent = `Could not clear this browser: ${err instanceof Error ? err.message : String(err)}`;
+      return;
+    }
     window.location.href = chrome.runtime.getURL('link.html');
   })();
 });
