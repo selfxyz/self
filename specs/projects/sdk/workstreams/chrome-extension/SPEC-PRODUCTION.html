@@ -234,6 +234,7 @@
     <h4>Gates &amp; scope</h4>
     <a href="#security-gates">Security gates</a>
     <a href="#session-policy">Session &amp; lock policy</a>
+    <a href="#threat-model">Threat model &amp; review log</a>
     <a href="#out-of-scope">Out of scope</a>
     <h4>Backlog</h4>
     <a href="#backlog">Backlog table</a>
@@ -468,6 +469,40 @@ flowchart LR
           <tr><td>Unlock attempts</td><td>Throttling/lockout policy on password unlock is CEP-04 scope (counter after 3 failures per UX.md; hard policy set at security review).</td></tr>
         </tbody>
       </table>
+    </section>
+
+    <section id="threat-model">
+      <h2>Threat model &amp; security review log</h2>
+      <p>First adversarial review of the extension code: 2026-07-29. Fixed in the same pass unless noted.</p>
+      <h3>Fixed</h3>
+      <table>
+        <thead><tr><th>Sev</th><th>Finding</th><th>Fix</th></tr></thead>
+        <tbody>
+          <tr><td>High</td><td><strong>Account substitution</strong>: the transfer handler derived its key from whatever <code>senderPublicKey</code> arrived, independent of the hello key whose SAS the user verified. Anyone who could reach the transfer room and read the QR (camera, screen share, remote support, the copy-code path) could import an attacker-chosen mnemonic and documents that the user then discloses with.</td><td>The hello key is pinned: a mismatched sender key, a transfer with no hello, or conflicting hellos are refused. Regression test in the import harness.</td></tr>
+          <tr><td>Med</td><td>Raw ECDH x-coordinate used directly as the AES-GCM key, bound to nothing, so a swapped sender key decrypted cleanly instead of failing.</td><td>Protocol v2: HKDF-SHA256 salted by session id, bound to a transcript of both public keys, with the transcript as GCM additional data. One shared module drives both ends and the harnesses.</td></tr>
+          <tr><td>Med</td><td>24-bit SAS (4 emojis) was grindable to a chosen target inside a link session, which would have made the substitution silent.</td><td>6 emojis (36 bits), derived from the transcript rather than the bare secret.</td></tr>
+          <tr><td>Med</td><td><strong>Plaintext at rest</strong>: the bridge crypto keystore wrote private JWKs unencrypted next to the vault, and signed while locked, violating the at-rest invariant. <code>reset()</code> also left <code>cryptoKey:*</code> and <code>passkeyMeta</code> behind.</td><td>Keys go through the vault (encryption + session gate inherited); reset sweeps every secret prefix.</td></tr>
+          <tr><td>Med</td><td>Extension-pages CSP set no <code>connect-src</code>, so anything running in the page could exfiltrate to any host.</td><td><code>default-src 'self'</code> plus <code>connect-src</code> limited to Self hosts.</td></tr>
+          <tr><td>Med</td><td>A junk first <code>self_app</code> burned the session (<code>handled</code> latched before decrypt), a free denial of service and the race that won the substitution.</td><td>Latch only after decrypt and payload validation; keep listening otherwise.</td></tr>
+          <tr><td>Low-Med</td><td>Unvalidated relay URL from the QR and the <code>?relay=</code> param handed an attacker the transport.</td><td>Host allowlist, wss only, localhost tolerated for harnesses.</td></tr>
+          <tr><td>Low</td><td><code>initialize()</code> could re-key over an existing vault, orphaning entries; <code>meta.iterations</code> was trusted from storage; password unlock on a passkey vault threw an uncaught error.</td><td>Init guard, iteration clamp, mode check.</td></tr>
+          <tr><td>Low</td><td><code>storage.session</code> access level relied on the default; background vault state skipped the TTL check.</td><td>Access level pinned to trusted contexts; background shares the TTL-aware check.</td></tr>
+        </tbody>
+      </table>
+      <h3>Accepted into the backlog</h3>
+      <table>
+        <thead><tr><th>Sev</th><th>Finding</th><th>Where</th></tr></thead>
+        <tbody>
+          <tr><td>High</td><td>Pending verification state lives in service-worker memory with a <code>setTimeout</code>; MV3 terminates the worker after ~30s idle, so results can be lost mid-flow and the single-session and cancel guards silently stop working. Needs <code>storage.session</code> + <code>chrome.alarms</code> with startup reconciliation.</td><td>CEP-15</td></tr>
+          <tr><td>High</td><td>Any https origin can drive the extension today (spike-era content script), including popping the real unlock prompt for credential phishing, window spam, and unauthenticated fingerprinting via ping/pong. The approval popup also cannot show a verified requester because the page origin is dropped.</td><td>CEP-09 (origin allowlist in the manifest, <code>sender.origin</code> plumbed into the popup and displayed, ping gated, rate limiting) + CEP-12</td></tr>
+          <tr><td>Med</td><td>Lock does not evict plaintext already held by an open extension page, and idle TTL only advances on vault access, so an open popup can keep using decrypted data after a lock. Needs a lock broadcast every page obeys, and window enumeration instead of cached ids.</td><td>CEP-15</td></tr>
+          <tr><td>Med</td><td>The app bundle shares the extension page origin, so any dependency can read the session key and decrypt the vault directly: the bridge is not a security boundary. Sandboxed iframe hosting is the structural fix; CSP egress limits reduce the blast radius today.</td><td>CEP-12 (design decision), CEP-16</td></tr>
+          <tr><td>Med</td><td>Password mode: 8-character minimum with PBKDF2 is GPU-feasible offline against a stolen storage dump. Raise the minimum, add a strength meter, prefer passkey, consider Argon2id via wasm.</td><td>CEP-04</td></tr>
+          <tr><td>Low</td><td>Results are delivered to a tab id with no origin binding, so a navigated tab could receive another origin's result.</td><td>CEP-09</td></tr>
+          <tr><td>Low</td><td>Passkey <code>rpId</code> is the whole <code>self.xyz</code> registrable domain, so any subdomain script plus a storage dump could evaluate the PRF behind a plausible Touch ID prompt. Scope to a dedicated host.</td><td>CEP-04</td></tr>
+        </tbody>
+      </table>
+      <p class="callout note"><strong>Verified not issues:</strong> envelope replay (fresh session id per page load, checked on both handlers), GCM nonce reuse (fresh 12 random bytes per envelope on both ends), tag handling, prototype pollution via host config params, and web pages opening extension pages (no <code>web_accessible_resources</code>, no <code>externally_connectable</code>).</p>
     </section>
 
     <section id="out-of-scope">
