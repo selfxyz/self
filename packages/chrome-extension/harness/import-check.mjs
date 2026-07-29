@@ -208,6 +208,20 @@ try {
   await page.waitForFunction(() => window.location.pathname.endsWith('index.html'), { timeout: 15_000 });
   console.log('[harness] lock -> unlock -> app roundtrip OK');
 
+  // 5b. Session TTLs: an idle-expired session record must be treated as locked.
+  await worker.evaluate(async () => {
+    const record = await chrome.storage.session.get('vaultSessionKey');
+    const session = record.vaultSessionKey;
+    session.lastActivityAt = Date.now() - 31 * 60 * 1000;
+    await chrome.storage.session.set({ vaultSessionKey: session });
+  });
+  await page.goto(`chrome-extension://${EXTENSION_ID}/index.html`, { waitUntil: 'load' });
+  await page.waitForFunction(() => window.location.pathname.endsWith('unlock.html'), { timeout: 10_000 });
+  await page.type('#pw', PASSWORD);
+  await page.click('#pw-submit');
+  await page.waitForFunction(() => window.location.pathname.endsWith('index.html'), { timeout: 15_000 });
+  console.log('[harness] idle-expired session treated as locked');
+
   // 6. Wrong password fails closed.
   await worker.evaluate(() => chrome.storage.session.remove('vaultSessionKey'));
   await page.goto(`chrome-extension://${EXTENSION_ID}/unlock.html?next=index.html`, { waitUntil: 'load' });

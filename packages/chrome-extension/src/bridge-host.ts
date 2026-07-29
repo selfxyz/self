@@ -253,6 +253,13 @@ async function handle(request: BridgeRequest): Promise<void> {
       code: err instanceof VaultLockedError ? 'VAULT_LOCKED' : 'HOST_ERROR',
       message: err instanceof Error ? err.message : String(err),
     });
+    // Session ended mid-use (TTL, manual lock, OS lock): fail closed and
+    // bounce to unlock, preserving the return path. No cached plaintext
+    // survives the navigation.
+    if (err instanceof VaultLockedError) {
+      const here = window.location.pathname.slice(1) + window.location.search;
+      window.location.replace(chrome.runtime.getURL(`unlock.html?next=${encodeURIComponent(here)}`));
+    }
   }
 }
 

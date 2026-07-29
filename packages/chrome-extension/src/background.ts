@@ -1,6 +1,7 @@
 // MV3 service worker. Owns popup windows, routes by vault state, and manages
 // one pending site verification session at a time (fail-closed on overlap).
 
+import { lock } from './vault';
 import { selfAppToPopupQuery, type SelfAppLike } from './verification-url';
 
 const POPUP_WIDTH = 430;
@@ -110,6 +111,39 @@ async function startVerification(selfApp: SelfAppLike, tabId: number): Promise<{
 
 chrome.action.onClicked.addListener(() => {
   void openHomeWindow();
+});
+
+// Manual lock: right-click the toolbar icon. Locking closes any open
+// extension windows so no unlocked surface survives the lock.
+const LOCK_MENU_ID = 'self-lock';
+
+async function lockNow(): Promise<void> {
+  await lock();
+  if (homeWindowId !== null) {
+    void chrome.windows.remove(homeWindowId).catch(() => {});
+    homeWindowId = null;
+  }
+  if (pending && !pending.resolved) {
+    settleSession(failureResult('LOCKED', 'Extension was locked'));
+    closeSessionWindow();
+  }
+}
+
+chrome.runtime.onInstalled.addListener(() => {
+  chrome.contextMenus.create({
+    id: LOCK_MENU_ID,
+    title: 'Lock Self',
+    contexts: ['action'],
+  });
+});
+
+chrome.contextMenus.onClicked.addListener(info => {
+  if (info.menuItemId === LOCK_MENU_ID) void lockNow();
+});
+
+// OS session lock locks the vault (spec: session & lock policy).
+chrome.idle.onStateChanged.addListener(state => {
+  if (state === 'locked') void lockNow();
 });
 
 chrome.windows.onRemoved.addListener(windowId => {

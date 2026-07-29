@@ -15,6 +15,18 @@ const SESSION_KEY = 'vaultSessionKey';
 const VAULT_PREFIX = 'vault:';
 const CANARY_TEXT = 'self-vault';
 
+// Session policy (spec: SPEC-PRODUCTION.html, session & lock policy): an
+// unlocked session ends at the absolute TTL, after the idle TTL without a
+// vault access, on manual/OS lock, or on browser exit (storage.session).
+const SESSION_ABSOLUTE_TTL_MS = 12 * 60 * 60 * 1000;
+const SESSION_IDLE_TTL_MS = 30 * 60 * 1000;
+
+interface SessionRecord {
+  key: string;
+  expiresAt: number;
+  lastActivityAt: number;
+}
+
 export class VaultLockedError extends Error {
   code = 'VAULT_LOCKED';
   constructor() {
@@ -36,11 +48,35 @@ async function readMeta(): Promise<VaultMeta | null> {
   return (record[META_KEY] as VaultMeta | undefined) ?? null;
 }
 
+async function startSession(rawKey: string): Promise<void> {
+  const now = Date.now();
+  const session: SessionRecord = {
+    key: rawKey,
+    expiresAt: now + SESSION_ABSOLUTE_TTL_MS,
+    lastActivityAt: now,
+  };
+  await chrome.storage.session.set({ [SESSION_KEY]: session });
+}
+
+/** Returns the session key if the session is live; self-locks on TTL violations.
+ *  Each successful access refreshes the idle window (never the absolute one). */
 async function sessionKey(): Promise<CryptoKey | null> {
   const record = await chrome.storage.session.get(SESSION_KEY);
-  const raw = record[SESSION_KEY];
-  if (typeof raw !== 'string') return null;
-  return importVaultKey(b64.decode(raw));
+  const session = record[SESSION_KEY] as SessionRecord | string | undefined;
+  if (!session) return null;
+  // Pre-TTL sessions stored the bare key string; treat them as expired.
+  if (typeof session === 'string') {
+    await chrome.storage.session.remove(SESSION_KEY);
+    return null;
+  }
+  const now = Date.now();
+  if (now > session.expiresAt || now - session.lastActivityAt > SESSION_IDLE_TTL_MS) {
+    await chrome.storage.session.remove(SESSION_KEY);
+    return null;
+  }
+  session.lastActivityAt = now;
+  await chrome.storage.session.set({ [SESSION_KEY]: session });
+  return importVaultKey(b64.decode(session.key));
 }
 
 export async function isInitialized(): Promise<boolean> {
@@ -57,7 +93,7 @@ export async function initialize(password: string): Promise<void> {
   const canary = await encryptEnvelope(key, new TextEncoder().encode(CANARY_TEXT));
   const meta: VaultMeta = { v: 1, salt: b64.encode(salt), iterations: PBKDF2_ITERATIONS, canary, mode: 'password' };
   await chrome.storage.local.set({ [META_KEY]: meta });
-  await chrome.storage.session.set({ [SESSION_KEY]: b64.encode(await exportVaultKey(key)) });
+  await startSession(b64.encode(await exportVaultKey(key)));
 }
 
 /** Creates a vault around a caller-provided random key (passkey custody - no password exists). */
@@ -66,7 +102,7 @@ export async function initializeWithKey(raw: Uint8Array): Promise<void> {
   const canary = await encryptEnvelope(key, new TextEncoder().encode(CANARY_TEXT));
   const meta: VaultMeta = { v: 1, salt: '', iterations: 0, canary, mode: 'passkey' };
   await chrome.storage.local.set({ [META_KEY]: meta });
-  await chrome.storage.session.set({ [SESSION_KEY]: b64.encode(raw) });
+  await startSession(b64.encode(raw));
 }
 
 export async function vaultMode(): Promise<'password' | 'passkey' | null> {
@@ -85,7 +121,7 @@ export async function unlock(password: string): Promise<boolean> {
   } catch {
     return false;
   }
-  await chrome.storage.session.set({ [SESSION_KEY]: b64.encode(await exportVaultKey(key)) });
+  await startSession(b64.encode(await exportVaultKey(key)));
   return true;
 }
 
@@ -118,7 +154,7 @@ export async function unlockWithRawKey(raw: Uint8Array): Promise<boolean> {
   } catch {
     return false;
   }
-  await chrome.storage.session.set({ [SESSION_KEY]: b64.encode(raw) });
+  await startSession(b64.encode(raw));
   return true;
 }
 
