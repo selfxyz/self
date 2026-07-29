@@ -1,0 +1,62 @@
+name: Chrome Extension CI
+
+on:
+  pull_request:
+    paths:
+      - "packages/chrome-extension/**"
+      - "packages/extension-demo/**"
+      - "packages/webview-app/**"
+      - "packages/webview-bridge/**"
+      - "packages/mobile-sdk-alpha/**"
+      - ".github/workflows/chrome-extension-ci.yml"
+      - ".github/actions/**"
+      - ".github/CI_FORCE_RUN"
+
+jobs:
+  build-and-harness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Dependencies
+        uses: ./.github/actions/pnpm-install
+
+      - name: Build extension chain
+        run: |
+          pnpm --filter @selfxyz/common build
+          pnpm --filter @selfxyz/mobile-sdk-alpha build:ts-only
+          pnpm --filter @selfxyz/webview-bridge build
+          pnpm --filter @selfxyz/webview-app build
+          pnpm --filter @selfxyz/chrome-extension build
+
+      - name: Typecheck extension
+        run: pnpm --filter @selfxyz/chrome-extension types
+
+      - name: Install Chrome for Testing
+        id: cft
+        run: |
+          out=$(npx --yes @puppeteer/browsers install chrome@stable --path "$PWD/packages/chrome-extension/chrome")
+          echo "path=$(echo "$out" | tail -1 | cut -d' ' -f2)" >> "$GITHUB_OUTPUT"
+
+      - name: Boot check (fresh install gates to link page + QR)
+        env:
+          CHROME_PATH: ${{ steps.cft.outputs.path }}
+        run: node packages/chrome-extension/harness/boot-check.mjs
+
+      # Full transfer flow against the real staging relayer: envelope relay,
+      # SAS match on both sides, custody, lock/unlock, wrong password, reset.
+      - name: Import check (staging relayer end-to-end)
+        env:
+          CHROME_PATH: ${{ steps.cft.outputs.path }}
+        run: node packages/chrome-extension/harness/import-check.mjs
+
+      # disclose-check and demo-check need staging TEE proving and a tunnel;
+      # they stay manual/nightly until CEP-10 wires a canary.
+
+      - name: Upload store zip artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: chrome-extension-dist
+          path: packages/chrome-extension/dist
+          retention-days: 14

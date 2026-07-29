@@ -34,6 +34,7 @@ allowBuilds:
   node-forge: true # remicolin/forge fork builds native crypto; pnpm matches by name
   node-forge@https://codeload.github.com/remicolin/forge/tar.gz/17a11a632dd0e50343b3b8393245a2696f78afbb: true # explicit tarball-key form of the fork above
   protobufjs: true # postinstall generates the CLI shim
+  puppeteer: false # postinstall auto-downloads Chrome for Testing; we fetch a pinned CfT via @puppeteer/browsers CLI instead
   react-native-inappbrowser-reborn: false # postinstall only prints an OpenCollective donation message
   snarkjs: true # sampritipanda/snarkjs fork; pnpm matches the build by name
   snarkjs@https://codeload.github.com/sampritipanda/snarkjs/tar.gz/fef81fc51d17a734637555c6edbd585ecda02d9e: true # explicit tarball-key form of the fork above

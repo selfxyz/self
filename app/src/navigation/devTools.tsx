@@ -16,6 +16,7 @@ import DevLoadingScreen from '@/screens/dev/DevLoadingScreen';
 import DevNfcDebugScreen from '@/screens/dev/DevNfcDebugScreen';
 import DevPrivateKeyScreen from '@/screens/dev/DevPrivateKeyScreen';
 import DevSettingsScreen from '@/screens/dev/DevSettingsScreen';
+import LinkBrowserExtensionScreen from '@/screens/dev/LinkBrowserExtensionScreen';
 import SocialLoginDemoScreen from '@/screens/dev/SocialLoginDemoScreen';
 import TroubleshootingScreen from '@/screens/dev/TroubleshootingScreen';
 import WebViewHostScreen from '@/screens/dev/WebViewHostScreen';
@@ -62,6 +63,13 @@ const devScreens = {
     options: {
       ...devHeaderOptions,
       title: 'Dev Mode',
+    } as NativeStackNavigationOptions,
+  },
+  LinkBrowserExtension: {
+    screen: LinkBrowserExtensionScreen,
+    options: {
+      ...devHeaderOptions,
+      title: 'Link Browser Extension',
     } as NativeStackNavigationOptions,
   },
   DevDangerZone: {

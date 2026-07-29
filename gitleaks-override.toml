@@ -7,6 +7,8 @@ paths = [
     '''(?:^|/)Podfile\.lock$''',
     '''(?:^|/)app/src/services/points/constants\.ts$''',
     '''(?:^|/)packages/native-shell-android/src/main/assets/self-wallet/assets/.*\.js$''',
+    # MV3 manifest "key" is the extension's PUBLIC key (pins the extension id); not a secret.
+    '''(?:^|/)packages/chrome-extension/manifest\.json$''',
 ]
 regexes = [
     '''(?i)(?:token|key|address)[\w\s]*contract[\w\s]*=\s*['"]0x[a-f0-9]{40}['"]''',

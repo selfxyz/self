@@ -52,7 +52,9 @@ export const HomeScreen: React.FC = () => {
 
   const allDocuments = [...(catalog?.documents ?? []), ...mockCatalog.documents];
   const hasDocuments = allDocuments.length > 0;
-  const firstDoc = hasDocuments ? allDocuments[0] : undefined;
+  const firstDoc = hasDocuments
+    ? (allDocuments.find(doc => doc.id === catalog?.selectedDocumentId) ?? allDocuments[0])
+    : undefined;
   const skipOnboardingRedirect = Boolean(
     (location.state as { skipOnboardingRedirect?: boolean } | null)?.skipOnboardingRedirect,
   );

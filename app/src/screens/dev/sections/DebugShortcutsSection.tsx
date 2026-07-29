@@ -127,6 +127,10 @@ export const DebugShortcutsSection: React.FC<DebugShortcutsSectionProps> = ({
           label="WebView Host (rn-sdk)"
           onPress={() => navigation.navigate('WebViewHost')}
         />
+        <ShortcutRow
+          label="Link Browser Extension"
+          onPress={() => navigation.navigate('LinkBrowserExtension')}
+        />
         {isFixtureCaptureSupported && (
           <ShortcutRow
             label="APDU Fixture Capture"
