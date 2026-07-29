@@ -5,6 +5,10 @@
 > Status: Scoping (spike validated 2026-07-27; see [SPEC.md](./SPEC.md) for the spike record)
 > Linear: initiative "Chrome Extension Disclosure Spike" > project "Browser Extension v1 (Production)"
 
+## Relationship to the spike
+
+The spike branch (`feat/chrome-extension-spike`) is a prototype and **will not be merged** - it exists as reference material and a working demo. Production is implemented fresh on `dev` through the backlog below, in normal-sized reviewed PRs. Pieces of the spike that prove out (envelope crypto, vault, SAS module, puppeteer harnesses, bridge-host handler set) are ported deliberately, each through its owning CEP ticket with production review standards - never merged wholesale.
+
 ## North star
 
 Ship the Self browser extension as a maintained product: a user links their Self account from the phone once, then approves disclosure requests from any relying-party website in two clicks, with proofs generated in the TEE exactly as on mobile. The engineering cost of keeping it alive must stay near zero: no forked UI, no bespoke protocol, no manual release steps.
@@ -81,7 +85,7 @@ Compatibility gate in CI (CEP-02): the harness suite runs the NEW extension agai
 | ID | Title | Blocked by | Notes |
 | --- | --- | --- | --- |
 | CEP-01 | Relayer session-relay robustness deployed + client workarounds retired | self-infra PR #166 | Server merged/deployed; collapse hello room; keep emit-on-connect |
-| CEP-02 | Repo placement + CI build pipeline for the extension | - | Build-on-merge, harnesses as CI gates, bundle budget |
+| CEP-02 | Repo placement + CI build pipeline for the extension | - | Creates the production `packages/chrome-extension` on dev (ported from the spike branch, reviewed); build-on-merge, harnesses as CI gates, bundle budget |
 | CEP-03 | Chrome Web Store publishing pipeline | CEP-02 | OAuth setup, versioning, trusted-tester channel, runbook |
 | CEP-04 | Custody hardening + passkey-first production polish | - | PRF review, lockout policy, reset UX, key-derivation params |
 | CEP-05 | Transfer protocol productization | CEP-01 | Versioned envelope, session expiry, SAS confirm mandatory, replay guard |
