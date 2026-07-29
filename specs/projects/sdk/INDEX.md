@@ -24,6 +24,8 @@ Status: Active (WebView-first; Self app adopts WebView as host via `webview-in-a
 | Analytics            | [Analytics Spec](./workstreams/analytics/SPEC.md)                   | Canonical onboarding funnel events + Mixpanel dashboard |
 | Monorepo Tooling     | [Monorepo Tooling Spec](./workstreams/monorepo-tooling/SPEC.md)     | pnpm follow-ups, Turborepo, blur dependency swap        |
 | Codebase Audits      | [Audits Spec](./workstreams/audits/SPEC.md)                         | Sequential surface audits: findings → issues → fixes    |
+| Chrome Extension     | [Chrome Extension Spec](./workstreams/chrome-extension/SPEC.md)     | Spike: account transfer + browser disclosure proofs     |
+| Browser Extension v1 | [Production Spec](./workstreams/chrome-extension/PRODUCTION.md), [UX Spec](./workstreams/chrome-extension/UX.md) | Production scoping: store CI, custody, relayer, Euclid UX |
 
 ## Paused Workstreams
 
