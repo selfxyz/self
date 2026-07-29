@@ -248,7 +248,7 @@ flowchart LR
           <tr>
             <td><span class="screen-id">B2</span></td>
             <td><span class="surface-chip ext">Extension</span></td>
-            <td>Unlock (only if locked) <em>(exists, rebuilt per CEP-07)</em></td>
+            <td>Unlock <em>(exists, rebuilt per CEP-07)</em></td>
             <td>Passkey vault: single <strong>[Unlock with Touch ID]</strong>, auto-triggered on open · password vault: secure field + unlock + "Unlock &amp; enable Touch ID" upsell when PRF available</td>
             <td>Verifying (button loading) · wrong password (inline message + shake, counter after 3) · forgot password → C5 reset</td>
             <td><code>Button</code> loading, secure <code>InputField</code>, biometric icon</td>
@@ -279,7 +279,7 @@ flowchart LR
           </tr>
         </tbody>
       </table>
-      <p class="callout"><strong>Two-click promise:</strong> for an unlocked extension the loop is B1 (click) → B3 (hold to approve). Unlock is the only extra step and only after a browser restart.</p>
+      <p class="callout"><strong>Click budget, honestly:</strong> with a live session the loop is B1 (click) then B3 (hold to approve). The session policy (30 min idle) makes unlock the <strong>common</strong> path rather than the rare one, so budget three interactions plus a Touch ID prompt for a typical verification and design B2 as a first-class step, not an interstitial.</p>
     </section>
 
     <section id="journey-c">
@@ -301,7 +301,7 @@ flowchart LR
             <td><span class="surface-chip ext">Extension</span></td>
             <td>Manage documents <em>(exists)</em></td>
             <td>All transferred documents; tap selects for proofs (radio + "In use for proofs") and opens dialogue with <strong>View ID details</strong></td>
-            <td>Row-scoped pending while the catalog write confirms · empty state (should be unreachable: no docs = no import)</td>
+            <td>Row-scoped pending while the catalog write confirms · expired documents marked and refused for proving · empty state guarded upstream (the phone refuses to link without at least one registered document)</td>
             <td><code>ManageDocumentsScreen</code> + selection state (CEP-06 slice 2)</td>
           </tr>
           <tr>
@@ -316,7 +316,7 @@ flowchart LR
             <td><span class="screen-id">C4</span></td>
             <td><span class="surface-chip ext">Extension</span></td>
             <td>Unlock <em>(same as B2)</em></td>
-            <td>Reached on any popup open after browser restart</td>
+            <td>Reached on any popup open with an ended session: 30 min idle, 12h absolute, manual or OS lock, or browser exit</td>
             <td>See B2</td>
             <td>See B2</td>
           </tr>

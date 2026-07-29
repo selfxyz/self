@@ -227,6 +227,7 @@
     <a href="#users">Users</a>
     <h4>Scope</h4>
     <a href="#requirements">Requirements</a>
+    <a href="#lifecycle">Post-link lifecycle</a>
     <a href="#non-goals">Non-goals</a>
     <h4>Success</h4>
     <a href="#metrics">Metrics</a>
@@ -313,15 +314,43 @@ flowchart LR
             <td>Feedback</td>
             <td>Every wait has a state (per the UX spec loading inventory); failures are explicit and mirrored on both devices during linking</td>
           </tr>
+          <tr>
+            <td>F6</td>
+            <td>Post-link lifecycle</td>
+            <td><strong>Re-link is the sync mechanism</strong> (linking again overwrites the browser copy). The extension detects a stale account at proof time via an account key epoch and fails closed to the QR path rather than proving from a superseded identity. Expired documents are marked in the popup and refused for proving. Linking requires at least one registered document.</td>
+          </tr>
+          <tr>
+            <td>F7</td>
+            <td>Custody lifetime</td>
+            <td>Secrets and documents are always ciphertext at rest; the unlocked session ends on 30 min idle, 12h absolute, manual lock, OS session lock, or browser exit, and a lock mid-use fails closed (see the engineering spec session and lock policy)</td>
+          </tr>
         </tbody>
       </table>
+    </section>
+
+    <section id="lifecycle">
+      <h2>Post-link lifecycle: the account is not frozen at link time</h2>
+      <p>Transfer is a copy, so the browser and the phone can drift. Decisions:</p>
+      <table>
+        <thead><tr><th>Event</th><th>Behavior in v1</th></tr></thead>
+        <tbody>
+          <tr><td>New document registered on the phone</td><td>Not pushed. The user re-links to sync (the link flow overwrites the browser copy). The popup shows what it holds and when it was linked, so drift is visible rather than silent.</td></tr>
+          <tr><td>Document expires</td><td>Marked expired in the document list and refused for proving, with copy pointing at the phone.</td></tr>
+          <tr><td>Account recovered or rotated on the phone</td><td><strong>Security-relevant, not polish</strong>: the browser copy must stop proving. The account carries a key epoch; the extension includes it at proof time and a mismatch fails closed to the QR path with a re-link prompt. Detection design lands in CEP-05.</td></tr>
+          <tr><td>Phone lost or stolen</td><td>The browser copy keeps working: it is an independent copy, and remote revocation is out of scope for v1. Stated honestly in user docs; the mitigation is browser-side reset plus the phone's own recovery flow.</td></tr>
+          <tr><td>Extension uninstalled</td><td>Chrome wipes extension storage. The phone cannot learn this, so the phone's "Linked browsers" surface is a <strong>log of link events, not a live device registry and not a revoke control</strong>. Copy must say so.</td></tr>
+          <tr><td>Multiple browsers, profiles, machines</td><td>Allowed and unlimited: each link is an independent encrypted copy with its own custody. Chrome profiles are separate vaults. Incognito is unsupported.</td></tr>
+          <tr><td>Linking with no usable document</td><td>The phone refuses to send until at least one document is registered, with copy explaining why (kills the "empty extension" state).</td></tr>
+        </tbody>
+      </table>
+      <p class="callout note"><strong>Open for security review (CEP-12):</strong> whether v1 ships key-epoch staleness detection (above) or defers it, given that deferring means a rotated-away identity can still prove from a linked browser until the user resets it.</p>
     </section>
 
     <section id="non-goals">
       <h2>Non-goals (v1)</h2>
       <ul>
         <li>Document registration in the browser (NFC/KYC stays on mobile).</li>
-        <li>Firefox/Safari, enterprise force-install, multi-device sync, revocation lists.</li>
+        <li>Firefox/Safari, enterprise force-install, multi-device sync, server-side revocation lists. Consequence stated plainly in the post-link lifecycle section: a linked browser cannot be killed remotely, and the phone's linked-browser surface is a log, not a revoke control.</li>
         <li>Any integration surface for legacy <code>@selfxyz/qrcode</code>/<code>@selfxyz/core</code>: those packages are dead for partners; the hosted page is the only trigger origin.</li>
         <li>Standalone identity: the extension never registers or recovers an account; no phone, no extension.</li>
       </ul>
@@ -329,30 +358,41 @@ flowchart LR
 
     <section id="metrics">
       <h2>Success metrics</h2>
+      <p class="callout warn"><strong>Instrumentation constraint:</strong> the headline comparison metrics are measured <strong>server-side on the hosted page</strong>, so they do not depend on client analytics consent. Consent-gated client analytics (CEP-10) covers diagnostics and the extension-side funnel only; if the headline metrics were consent-gated they would be unmeasurable whenever users decline.</p>
       <table>
         <thead>
-          <tr><th>Metric</th><th>Target (first 90 days public)</th></tr>
+          <tr><th>Metric</th><th>Target (first 90 days public)</th><th>Instrument</th></tr>
         </thead>
         <tbody>
           <tr>
-            <td>Desktop verification completion rate (extension vs QR baseline)</td>
-            <td>measurably higher; instrumented from day one (CEP-10)</td>
+            <td><strong>Activation</strong>: installs that reach a linked account</td>
+            <td>&gt; 60%</td>
+            <td>Extension-side funnel events (CEP-10). The number that says whether the product works at all; missing from the first draft of this table</td>
           </tr>
           <tr>
-            <td>Median time-to-proof on desktop, request to verified</td>
-            <td>&lt; 45s (vs QR flow baseline)</td>
+            <td>Desktop verification completion, extension path vs QR path</td>
+            <td>+10 points over the QR baseline</td>
+            <td><strong>Server-side</strong> hosted-page funnel: session created, path chosen, verification completed. Lands in self-dashboard with CEP-09, NOT in the extension, and the QR baseline must be instrumented BEFORE the extension ships or there is no baseline</td>
           </tr>
           <tr>
-            <td>Link-flow completion once QR is scanned</td>
+            <td>Median time-to-proof, desktop</td>
+            <td>&lt; 60s including unlock</td>
+            <td>Server-side clock: <code>sessions.create</code> to <code>verification.completed</code> webhook. Target raised from 45s because the session policy makes unlock (plus a passkey prompt) the common path, not the rare one</td>
+          </tr>
+          <tr>
+            <td>Link-flow completion once the QR is scanned</td>
             <td>&gt; 90%</td>
+            <td>Extension + phone funnel events (CEP-08/CEP-10)</td>
           </tr>
           <tr>
             <td>Repeat verification via extension for linked users</td>
             <td>&gt; 80% choose extension over QR</td>
+            <td>Server-side path choice per session (same instrument as completion)</td>
           </tr>
           <tr>
             <td>Maintenance load</td>
-            <td>extension keeps working across webview-app/SDK releases with zero extension-only PRs in a normal month; store publish requires zero manual steps</td>
+            <td>zero extension-only PRs in a normal month; zero manual release steps</td>
+            <td>Repo/CI observation, reviewed per release train</td>
           </tr>
         </tbody>
       </table>
@@ -363,7 +403,7 @@ flowchart LR
       <ol>
         <li>Relayer robustness deployed (self-infra PR #166) · CEP-01.</li>
         <li>Store CI pipeline green on trusted-tester channel · CEP-02/03.</li>
-        <li>Security review sign-off (custody, transfer, origin policy, store disclosures) · CEP-12. Blocks public listing; trusted testers may precede it.</li>
+        <li>Security review sign-off (custody, transfer, origin policy, store disclosures) · CEP-12. Blocks public listing. Trusted testers may precede it under an <strong>explicit accepted risk</strong>: internal team plus test documents only until CEP-12 signs off, external partner testers after. Real identity data does not enter un-reviewed browser custody.</li>
         <li>Enterprise-flow dogfood: one real dashboard flow verifying end-to-end through the extension (session, popup, TEE, signed webhook).</li>
       </ol>
     </section>

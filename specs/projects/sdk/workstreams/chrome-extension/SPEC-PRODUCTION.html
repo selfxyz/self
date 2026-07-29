@@ -539,7 +539,7 @@ flowchart LR
             <td><code>CEP-09</code></td>
             <td>RP integration: extension trigger in the Enterprise hosted verification page</td>
             <td>-</td>
-            <td>Detect + trigger from the hosted page (zero RP work); no legacy qrcode/core surface, ever</td>
+            <td>Detect + trigger from the hosted page (zero RP work); no legacy qrcode/core surface, ever. Flag is <strong>per-flow, default on with dashboard opt-out</strong>, not one global switch: regulated RPs must be able to hold a compliance-critical funnel steady. Also carries the post-verification "get the extension" promo (acquisition) and the hosted-page funnel instrumentation the headline metrics depend on</td>
           </tr>
           <tr>
             <td><code>CEP-10</code></td>
@@ -568,6 +568,8 @@ flowchart LR
         </tbody>
       </table>
       <p class="callout win"><strong>Launch</strong> = CEP-03 pipeline green on trusted-tester channel + CEP-12 sign-off.</p>
+      <p class="callout warn"><strong>Long poles, start them first:</strong> <code>CEP-08</code> ships on the mobile release train (app review adds days to weeks) and <code>CEP-09</code> lands in another team's repo (self-dashboard). Both are on the critical path to any demo and neither is gated by our own velocity, so both start immediately: CEP-08 via an internal/TestFlight build so the trusted-tester demo does not wait for a public app release, CEP-09 as an owner-committed date from the dashboard team.</p>
+      <p class="callout note"><strong>Demo-blocking vs public-listing:</strong> the fastest path to a trusted-tester demo is CEP-02, CEP-03 (+CEP-13), CEP-05, CEP-08, CEP-09. Everything else is public-listing scope. Deferrable past the demo: Toast and Skeleton in CEP-06, the ID-details screen, the "Unlock and enable Touch ID" upsell, the success Lottie, and even CEP-07 (the spike's bespoke link/unlock pages work) - keep those out of the demo critical path and split the CEP-06/CEP-07 tickets accordingly.</p>
     </section>
 
     <section id="resolved">
