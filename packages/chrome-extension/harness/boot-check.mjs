@@ -40,7 +40,13 @@ const browser = await puppeteer.launch({
   executablePath,
   headless: !headed,
   userDataDir: join(tmpdir(), `self-ext-boot-${Date.now()}`),
-  args: [`--disable-extensions-except=${dist}`, `--load-extension=${dist}`, '--no-first-run'],
+  args: [
+    `--disable-extensions-except=${dist}`,
+    `--load-extension=${dist}`,
+    '--no-first-run',
+    // Linux CI runners: Chrome segfaults with the sandbox and overflows /dev/shm.
+    ...(process.env.CI ? ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'] : []),
+  ],
 });
 
 // Deterministic id derived from the "key" pinned in manifest.json.
