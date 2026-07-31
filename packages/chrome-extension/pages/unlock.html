@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Unlock Self</title>
+    <style>
+      :root { color-scheme: dark; }
+      body { margin: 0; font-family: -apple-system, system-ui, sans-serif; background: #0b0b0b; color: #f2f2f2;
+             display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+      main { max-width: 400px; padding: 48px 24px; text-align: center; }
+      h1 { font-size: 22px; margin: 8px 0 4px; }
+      p { color: #b5b5b5; font-size: 14px; line-height: 1.5; }
+      input[type='password'] { width: 100%; box-sizing: border-box; padding: 12px; margin: 6px 0; border-radius: 8px;
+             border: 1px solid #333; background: #161616; color: #f2f2f2; font-size: 15px; }
+      button.primary { width: 100%; padding: 13px; margin-top: 12px; border: none; border-radius: 24px;
+             background: #fff; color: #000; font-size: 15px; font-weight: 600; cursor: pointer; }
+      button.primary:disabled { opacity: 0.4; cursor: default; }
+      button.secondary { width: 100%; padding: 13px; margin-top: 10px; border: 1px solid #444; border-radius: 24px;
+             background: transparent; color: #f2f2f2; font-size: 15px; font-weight: 600; cursor: pointer; }
+      button.secondary:disabled { opacity: 0.4; cursor: default; }
+      button.linklike { border: none; background: none; color: #8f8f8f; font-size: 13px; cursor: pointer;
+             text-decoration: underline; margin-top: 20px; }
+      button.danger { width: 100%; padding: 13px; margin-top: 10px; border: 1px solid #a33; border-radius: 24px;
+             background: transparent; color: #ff6b6b; font-size: 15px; font-weight: 600; cursor: pointer; }
+      button.danger:disabled { opacity: 0.4; cursor: default; }
+      .hidden { display: none !important; }
+      .error { color: #ff6b6b; font-size: 13px; min-height: 18px; margin: 6px 0 0; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Unlock Self</h1>
+      <p>Enter your password to decrypt your account on this computer.</p>
+      <input id="pw" type="password" placeholder="Password" autocomplete="current-password" />
+      <p class="error" id="pw-error"></p>
+      <button class="primary" id="pw-submit">Unlock</button>
+      <button class="secondary hidden" id="pw-passkey">Unlock with Touch ID</button>
+      <button class="secondary hidden" id="pw-enable-passkey">Unlock &amp; enable Touch ID</button>
+      <button class="linklike" id="reset-start">Forgot your password? Reset this browser's account</button>
+      <div id="reset-confirm" class="hidden">
+        <p>
+          This deletes the account and all documents from <b>this browser only</b>. Your phone keeps everything -
+          you can scan the link code again afterwards.
+        </p>
+        <button class="danger" id="reset-confirm-btn">Delete and start over</button>
+      </div>
+    </main>
+    <script src="./unlock.js"></script>
+  </body>
+</html>

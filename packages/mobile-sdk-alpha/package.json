@@ -99,6 +99,12 @@
       "import": "./dist/esm/utils/utils.js",
       "require": "./dist/cjs/utils/utils.cjs"
     },
+    "./utils/sas": {
+      "types": "./dist/esm/utils/sas.d.ts",
+      "react-native": "./dist/esm/utils/sas.js",
+      "import": "./dist/esm/utils/sas.js",
+      "require": "./dist/cjs/utils/sas.cjs"
+    },
     "./svgs/*.svg": {
       "react-native": "./dist/svgs/*.svg",
       "import": "./dist/svgs/*.svg",

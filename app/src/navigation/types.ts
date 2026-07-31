@@ -101,6 +101,7 @@ export type DevRoutesParamList = {
   CreateMock: undefined;
   DevApduCapture: undefined;
   DevNfcDebug: undefined;
+  LinkBrowserExtension: undefined;
   MockDataDeepLink: undefined;
   SocialLoginDemo: undefined;
   Troubleshooting: { nfcDebug?: 'pending' | 'run' } | undefined;

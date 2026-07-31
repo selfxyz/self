@@ -63,6 +63,7 @@ const entry = {
   stores: 'src/stores/index.ts',
   observability: 'src/observability/onboardingContext.ts',
   'utils/utils': 'src/utils/utils.ts',
+  'utils/sas': 'src/utils/sas.ts',
   'adapters/react-native/index': 'src/adapters/react-native/index.ts',
   ...flowEntries,
 };

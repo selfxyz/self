@@ -90,6 +90,7 @@ describe('navigation', () => {
         'KycConnectionError',
         'KycFailure',
         'KycSuccess',
+        'LinkBrowserExtension',
         'Loading',
         'LogoConfirmation',
         'ManageDocuments',

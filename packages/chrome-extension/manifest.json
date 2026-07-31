@@ -1,0 +1,54 @@
+{
+  "manifest_version": 3,
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqQMfM/wCVzP/iUIJod5MvVsNTOYhG36eGAd/KnvDBM3Mt+D3ZjZiBIIIBS04ldYs8UDkUptMfD6CM6y3+Vi10t+9z2QV2nIjMPcg/+K4oN+luFJzHT3g/tFbfhJ1LdzDHeWWnzCeiTz4hLsAO5HM4lWKtmAnLW3VMbH2XAY9BtImYzLK0I+/2uwQp2rBdYPtDQFNzRBA50QNmBBJ0Tix5E8fE7npPyhdmN8VcWhRB0T1ySNZkq/++4nFo+lOkLC0wLodqOtb69Pd5a9RrwZV97fIAoQqMkTUSUCvGuTOCN7z0MSMNKVh/k9DsG2nFOjV5AN52CioeIS+MC7aB/llHwIDAQAB",
+  "name": "Self: Verify Your Identity",
+  "description": "Prove who you are from your browser. Link your Self app once, then approve identity requests in two clicks.",
+  "version": "0.0.1",
+  "action": {
+    "default_title": "Self",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_security_policy": {
+    "extension_pages": "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://*.self.xyz wss://*.self.xyz"
+  },
+  "permissions": [
+    "storage",
+    "contextMenus",
+    "idle",
+    "alarms",
+    "tabs"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "http://localhost/*",
+        "http://127.0.0.1/*",
+        "https://*/*"
+      ],
+      "js": [
+        "content-script.js"
+      ],
+      "run_at": "document_start"
+    }
+  ],
+  "host_permissions": [
+    "https://*.self.xyz/*",
+    "http://localhost/*",
+    "http://127.0.0.1/*"
+  ],
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  }
+}
