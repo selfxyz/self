@@ -7,9 +7,14 @@ export type {
   KycVerificationResult,
   SessionResponse,
 } from '@/integrations/kyc/types';
-export { KYC_PROVIDER } from '@/integrations/kyc/constants';
+export {
+  KYC_PROVIDER,
+  KYC_UNSUPPORTED_DEVICE_MESSAGE,
+} from '@/integrations/kyc/constants';
 export {
   type KycLaunchConfig,
   createKycSession,
+  isKycSupportedOnDevice,
+  isRetryableKycFailure,
   launchKycVerification,
 } from '@/integrations/kyc/kycService';

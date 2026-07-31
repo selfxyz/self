@@ -140,6 +140,7 @@ const DocumentNFCScanScreen: React.FC = () => {
     launchKycVerification,
     showKycFallbackModal,
     isLoading: isKycLoading,
+    isKycSupported,
   } = useKycLauncher({
     countryCode,
   });
@@ -725,7 +726,7 @@ const DocumentNFCScanScreen: React.FC = () => {
                 <SecondaryButton onPress={onReportIssue}>
                   {SUPPORT_FORM_BUTTON_TEXT}
                 </SecondaryButton>
-                {(!isNfcSupported || !isNfcEnabled) && (
+                {(!isNfcSupported || !isNfcEnabled) && isKycSupported && (
                   <SecondaryButton
                     onPress={launchKycVerification}
                     disabled={isKycLoading}

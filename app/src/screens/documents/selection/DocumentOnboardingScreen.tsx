@@ -46,10 +46,11 @@ const DocumentOnboardingScreen: React.FC = () => {
     state => state.documentType,
   );
   const countryCode = selfClient.useMRZStore(state => state.countryCode);
-  const { launchKycVerification, showKycFallbackModal } = useKycLauncher({
-    countryCode: countryCode ?? '',
-    cancelLabel: 'Go Back',
-  });
+  const { launchKycVerification, showKycFallbackModal, isKycSupported } =
+    useKycLauncher({
+      countryCode: countryCode ?? '',
+      cancelLabel: 'Go Back',
+    });
   const testRegistrationCircuitArmed = useSettingStore(
     state => state.testRegistrationCircuitArmed,
   );
@@ -58,13 +59,13 @@ const DocumentOnboardingScreen: React.FC = () => {
   );
   const handleCameraPress = useCallback(async () => {
     impactLight();
-    const ok = await ensureCameraForPassportScan({
-      onFallback: launchKycVerification,
-    });
+    const ok = await ensureCameraForPassportScan(
+      isKycSupported ? { onFallback: launchKycVerification } : undefined,
+    );
     if (ok) {
       navigation.navigate('DocumentCamera');
     }
-  }, [launchKycVerification, navigation]);
+  }, [isKycSupported, launchKycVerification, navigation]);
   const animationRef = useRef<LottieView>(null);
 
   const scanPrompt = getDocumentScanPrompt(selectedDocumentType);

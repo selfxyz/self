@@ -2,7 +2,14 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { createKycSession } from '@/integrations/kyc/kycService';
+import { Platform } from 'react-native';
+import { startVerification } from '@didit-protocol/sdk-react-native';
+
+import {
+  createKycSession,
+  isRetryableKycFailure,
+  launchKycVerification,
+} from '@/integrations/kyc/kycService';
 
 jest.mock('@env', () => ({
   KYC_TEE_URL: 'https://kyc-tee.test',
@@ -11,6 +18,8 @@ jest.mock('@env', () => ({
 jest.mock('@didit-protocol/sdk-react-native', () => ({
   startVerification: jest.fn(),
 }));
+
+const mockStartVerification = startVerification as jest.Mock;
 
 describe('createKycSession', () => {
   const okResponse = () =>
@@ -77,5 +86,89 @@ describe('createKycSession', () => {
       nationality: 'USA',
     });
     expect(result).toEqual({ sessionId: 'sid', sessionToken: 'tok' });
+  });
+});
+
+describe('launchKycVerification', () => {
+  const originalOS = Object.getOwnPropertyDescriptor(Platform, 'OS')!;
+  const originalVersion = Object.getOwnPropertyDescriptor(Platform, 'Version')!;
+
+  const setPlatform = (os: string, version: number | string) => {
+    Object.defineProperty(Platform, 'OS', {
+      get: () => os,
+      configurable: true,
+    });
+    Object.defineProperty(Platform, 'Version', {
+      get: () => version,
+      configurable: true,
+    });
+  };
+
+  beforeEach(() => {
+    mockStartVerification.mockResolvedValue({
+      type: 'completed',
+      session: { status: 'Approved', sessionId: 'sid' },
+    });
+  });
+
+  afterEach(() => {
+    Object.defineProperty(Platform, 'OS', originalOS);
+    Object.defineProperty(Platform, 'Version', originalVersion);
+    mockStartVerification.mockReset();
+  });
+
+  it('fails without launching the SDK on Android below API 28', async () => {
+    setPlatform('android', 27);
+
+    const result = await launchKycVerification('tok');
+
+    expect(result.type).toBe('failed');
+    expect(result.error?.type).toBe('unsupportedDevice');
+    expect(mockStartVerification).not.toHaveBeenCalled();
+  });
+
+  it('launches the SDK on Android API 28 and above', async () => {
+    setPlatform('android', 28);
+
+    const result = await launchKycVerification('tok');
+
+    expect(mockStartVerification).toHaveBeenCalledWith(
+      'tok',
+      expect.objectContaining({ languageCode: 'en' }),
+    );
+    expect(result.type).toBe('completed');
+  });
+
+  it('launches the SDK on iOS regardless of version', async () => {
+    setPlatform('ios', '15.0');
+
+    const result = await launchKycVerification('tok');
+
+    expect(mockStartVerification).toHaveBeenCalled();
+    expect(result.type).toBe('completed');
+  });
+});
+
+describe('isRetryableKycFailure', () => {
+  it('is false for unsupportedDevice failures', () => {
+    expect(
+      isRetryableKycFailure({
+        type: 'failed',
+        error: { type: 'unsupportedDevice', message: 'unsupported' },
+      }),
+    ).toBe(false);
+  });
+
+  it('is true for other failure types', () => {
+    expect(
+      isRetryableKycFailure({
+        type: 'failed',
+        error: { type: 'networkError', message: 'offline' },
+      }),
+    ).toBe(true);
+  });
+
+  it('is true when no error details are present', () => {
+    expect(isRetryableKycFailure({ type: 'failed' })).toBe(true);
   });
 });

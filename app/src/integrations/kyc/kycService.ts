@@ -2,9 +2,14 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+import { Platform } from 'react-native';
 import { startVerification } from '@didit-protocol/sdk-react-native';
 import { KYC_TEE_URL } from '@env';
 
+import {
+  KYC_MIN_ANDROID_API_LEVEL,
+  KYC_UNSUPPORTED_DEVICE_MESSAGE,
+} from '@/integrations/kyc/constants';
 import type {
   KycVerificationResult,
   SessionResponse,
@@ -73,10 +78,27 @@ export const createKycSession = async (
   }
 };
 
+export const isKycSupportedOnDevice = (): boolean =>
+  Platform.OS !== 'android' ||
+  Number(Platform.Version) >= KYC_MIN_ANDROID_API_LEVEL;
+
+export const isRetryableKycFailure = (result: KycVerificationResult): boolean =>
+  result.error?.type !== 'unsupportedDevice';
+
 export const launchKycVerification = async (
   sessionToken: string,
   config?: KycLaunchConfig,
 ): Promise<KycVerificationResult> => {
+  if (!isKycSupportedOnDevice()) {
+    return {
+      type: 'failed',
+      error: {
+        type: 'unsupportedDevice',
+        message: KYC_UNSUPPORTED_DEVICE_MESSAGE,
+      },
+    };
+  }
+
   const result = await startVerification(sessionToken, {
     languageCode: config?.locale ?? 'en',
     loggingEnabled: config?.debug ?? __DEV__,

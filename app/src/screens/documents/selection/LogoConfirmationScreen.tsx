@@ -39,7 +39,10 @@ import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { buttonTap } from '@/integrations/haptics';
 import {
   createKycSession,
+  isKycSupportedOnDevice,
+  isRetryableKycFailure,
   KYC_PROVIDER,
+  KYC_UNSUPPORTED_DEVICE_MESSAGE,
   launchKycVerification,
 } from '@/integrations/kyc';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
@@ -67,6 +70,15 @@ const LogoConfirmationScreen: React.FC = () => {
 
   const handleNotFound = useCallback(() => {
     buttonTap();
+    if (!isKycSupportedOnDevice()) {
+      showModal({
+        titleText: 'Device not supported',
+        bodyText: KYC_UNSUPPORTED_DEVICE_MESSAGE,
+        buttonText: 'Dismiss',
+        onButtonPress: () => {},
+      });
+      return;
+    }
     // "No" on the chip-symbol check routes through the KYC provider —
     // update the canonical funnel branch accordingly.
     setOnboardingBranch('kyc');
@@ -136,7 +148,7 @@ const LogoConfirmationScreen: React.FC = () => {
             );
             navigation.navigate('KycFailure', {
               countryCode,
-              canRetry: true,
+              canRetry: isRetryableKycFailure(result),
             });
             return;
           }

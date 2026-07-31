@@ -101,6 +101,7 @@ jest.mock('@selfxyz/mobile-sdk-alpha', () => {
 jest.mock('@/integrations/kyc', () => ({
   createKycSession: jest.fn(),
   launchKycVerification: jest.fn(),
+  isKycSupportedOnDevice: jest.fn(() => true),
   KYC_PROVIDER: 'didit',
 }));
 

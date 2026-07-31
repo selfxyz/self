@@ -74,7 +74,11 @@ const RegistrationFallbackNFCScreen: React.FC = () => {
 
   const headerTitle = getHeaderTitle(documentType);
 
-  const { launchKycVerification, isLoading: isRetrying } = useKycLauncher({
+  const {
+    launchKycVerification,
+    isLoading: isRetrying,
+    isKycSupported,
+  } = useKycLauncher({
     countryCode,
     onCancel: () => {
       navigation.goBack();
@@ -107,9 +111,13 @@ const RegistrationFallbackNFCScreen: React.FC = () => {
   const handleTryAlternative = useCallback(async () => {
     // User is switching from biometric to the KYC provider fallback —
     // update the funnel's branch so subsequent canonical events reflect it.
-    setOnboardingBranch('kyc');
+    // Only mutate the branch when the launch can actually proceed; on
+    // unsupported devices the hook shows the safety modal instead.
+    if (isKycSupported) {
+      setOnboardingBranch('kyc');
+    }
     await launchKycVerification();
-  }, [launchKycVerification]);
+  }, [isKycSupported, launchKycVerification]);
 
   const handleRetryOriginal = useCallback(() => {
     trackOnboardingRetry(selfClient, 'scan_started', 'nfc_scan_failed');
@@ -232,26 +240,30 @@ const RegistrationFallbackNFCScreen: React.FC = () => {
           <BodyText style={styles.buttonText}>Check scanned data</BodyText>
         </Button>
 
-        <Button
-          backgroundColor={white}
-          borderWidth={1}
-          borderColor={slate200}
-          borderRadius={100}
-          height={52}
-          pressStyle={{ opacity: 0.8 }}
-          onPress={handleTryAlternative}
-          disabled={isRetrying}
-        >
-          <BodyText style={styles.buttonText}>
-            {isRetrying ? 'Loading...' : 'Try a different method'}
-          </BodyText>
-        </Button>
+        {isKycSupported && (
+          <>
+            <Button
+              backgroundColor={white}
+              borderWidth={1}
+              borderColor={slate200}
+              borderRadius={100}
+              height={52}
+              pressStyle={{ opacity: 0.8 }}
+              onPress={handleTryAlternative}
+              disabled={isRetrying}
+            >
+              <BodyText style={styles.buttonText}>
+                {isRetrying ? 'Loading...' : 'Try a different method'}
+              </BodyText>
+            </Button>
 
-        {/* Footer Text - Not italic */}
-        <BodyText style={styles.footerText}>
-          Registering with alternative methods may take longer to verify your
-          document.
-        </BodyText>
+            {/* Footer Text - Not italic */}
+            <BodyText style={styles.footerText}>
+              Registering with alternative methods may take longer to verify
+              your document.
+            </BodyText>
+          </>
+        )}
       </YStack>
     </YStack>
   );

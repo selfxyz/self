@@ -1,8 +1,16 @@
 diff --git a/android/src/main/java/com/segmentanalyticsreactnative/AnalyticsReactNativeModule.kt b/android/src/main/java/com/segmentanalyticsreactnative/AnalyticsReactNativeModule.kt
-index 3cf9c4604c86e334d59cb683c1998b0213bbb929..49a51b37e537c2871003af6ba12f2c3e9b3bb927 100644
+index 3cf9c4604c86e334d59cb683c1998b0213bbb929..67fd5b2cdc1e57b42016c86c2aa45c5004f4789a 100644
 --- a/android/src/main/java/com/segmentanalyticsreactnative/AnalyticsReactNativeModule.kt
 +++ b/android/src/main/java/com/segmentanalyticsreactnative/AnalyticsReactNativeModule.kt
-@@ -217,11 +217,9 @@ class AnalyticsReactNativeModule : ReactContextBaseJavaModule, ActivityEventList
+@@ -14,7 +14,6 @@ import android.os.Build
+ import android.util.Log
+ import androidx.core.content.pm.PackageInfoCompat
+ import com.facebook.react.ReactActivity
+-import com.facebook.react.ReactApplication
+ import com.facebook.react.bridge.*
+ import com.facebook.react.module.annotations.ReactModule
+ import com.sovranreactnative.SovranModule
+@@ -217,11 +216,7 @@ class AnalyticsReactNativeModule : ReactContextBaseJavaModule, ActivityEventList
      }
  
      Log.d(name, "Sending Deeplink data to store: uri=${uri}, referrer=${referrer}")
@@ -11,8 +19,6 @@ index 3cf9c4604c86e334d59cb683c1998b0213bbb929..49a51b37e537c2871003af6ba12f2c3e
 -      ?.reactInstanceManager
 -      ?.currentReactContext
 -      ?.getNativeModule(SovranModule::class.java)
-+    // reactNativeHost.reactInstanceManager throws UnsupportedOperationException under
-+    // bridgeless/new architecture; the module's own react context already hosts SovranModule.
 +    val sovran = reactApplicationContext.getNativeModule(SovranModule::class.java)
      sovran?.dispatch("add-deepLink-data", properties)
  
