@@ -5,6 +5,10 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import {
+  deriveTransferKey,
+  transferAad,
+} from '@selfxyz/mobile-sdk-alpha/utils/sas';
 import puppeteer from 'puppeteer';
 import { io } from 'socket.io-client';
 
@@ -19,6 +23,7 @@ const DEMO_URL = 'http://localhost:5199';
 const DOC_ID = 'c'.repeat(64);
 const ACCOUNT = {
   version: 1,
+  linkedAt: '2026-07-29T00:00:00.000Z',
   mnemonic: {
     phrase: 'test test test test test test test test test test test junk',
     password: '',
@@ -47,9 +52,10 @@ const ACCOUNT = {
   },
 };
 
-function encryptEnvelope(sharedKey, buf) {
+function encryptEnvelope(sharedKey, buf, aad) {
   const nonce = randomBytes(12);
   const cipher = createCipheriv('aes-256-gcm', sharedKey, nonce);
+  if (aad) cipher.setAAD(Buffer.from(aad));
   const cipherText = Buffer.concat([cipher.update(buf), cipher.final()]);
   return {
     nonce: nonce.toString('base64'),
@@ -60,33 +66,60 @@ function encryptEnvelope(sharedKey, buf) {
 
 function importAccount(qr) {
   return new Promise((resolvePromise, reject) => {
+    const timer = setTimeout(() => {
+      socket.close();
+      reject(new Error('import ack timeout'));
+    }, 60_000);
+
     const socket = io(`${qr.relay}/websocket`, {
       path: '/',
       transports: ['websocket'],
       forceNew: true,
       query: { sessionId: qr.transferSessionId, clientType: 'web' },
     });
-    const timer = setTimeout(() => {
-      socket.close();
-      reject(new Error('import ack timeout'));
-    }, 60_000);
-    socket.on('mobile_status', data => {
-      if (data?.status === 'mobile_connected') {
-        const ecdh = createECDH('prime256v1');
-        ecdh.generateKeys();
-        const shared = ecdh.computeSecret(
-          Buffer.from(qr.receiverPublicKey, 'hex'),
-        );
-        socket.emit('self_app', {
-          sessionId: qr.transferSessionId,
-          transferType: 'self-account-transfer',
-          senderPublicKey: ecdh.getPublicKey('hex', 'uncompressed'),
-          envelope: encryptEnvelope(
-            shared,
-            Buffer.from(JSON.stringify(ACCOUNT)),
-          ),
+
+    socket.on('connect', () => {
+      const ecdh = createECDH('prime256v1');
+      ecdh.generateKeys();
+      const shared = ecdh.computeSecret(
+        Buffer.from(qr.receiverPublicKey, 'hex'),
+      );
+      const senderPublicKey = ecdh.getPublicKey('hex', 'uncompressed');
+      const binding = {
+        sessionId: qr.transferSessionId,
+        receiverPublicKey: qr.receiverPublicKey,
+        senderPublicKey,
+        linkSecret: qr.linkSecret,
+      };
+      const helloSocket = io(`${qr.relay}/websocket`, {
+        path: '/',
+        transports: ['websocket'],
+        forceNew: true,
+        query: { sessionId: qr.helloSessionId, clientType: 'web' },
+      });
+      helloSocket.on('connect', () => {
+        helloSocket.emit('self_app', {
+          sessionId: qr.helloSessionId,
+          transferType: 'self-account-transfer-hello',
+          senderPublicKey,
         });
-      }
+        setTimeout(() => {
+          helloSocket.close();
+          socket.emit('self_app', {
+            sessionId: qr.transferSessionId,
+            transferType: 'self-account-transfer',
+            senderPublicKey,
+            envelope: encryptEnvelope(
+              Buffer.from(deriveTransferKey(new Uint8Array(shared), binding)),
+              Buffer.from(JSON.stringify(ACCOUNT)),
+              transferAad(binding),
+            ),
+          });
+        }, 1_500);
+      });
+    });
+
+    socket.on('mobile_status', data => {
       if (data?.status === 'proof_verified') {
         clearTimeout(timer);
         socket.close();
