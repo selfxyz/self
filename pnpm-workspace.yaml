@@ -1,3 +1,12 @@
+# Quarantine freshly-published versions (14 days) as supply-chain protection.
+# Must live here, not in root package.json's `pnpm` field — pnpm 11 reads
+# workspace settings from this file and ignores that field entirely.
+minimumReleaseAge: 20160
+minimumReleaseAgeExclude:
+  - '@selfxyz/anon-aadhaar-core'
+  - '@selfxyz/euclid'
+  - '@selfxyz/euclid-core'
+
 packages:
   - app
   - circuits
@@ -93,7 +102,7 @@ overrides:
   '@swc/core': 1.7.36
   '@tamagui/animations-react-native': 1.144.4
   '@tamagui/toast': 1.144.4
-  '@types/node': ^22.18.3
+  '@types/node': ^22.20.1
   '@types/react': ^19.2.0
   '@types/react-dom': ^19.2.0
   ethereum-cryptography: 3.2.0
