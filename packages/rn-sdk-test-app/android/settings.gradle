@@ -5,8 +5,8 @@ extensions.configure(com.facebook.react.ReactSettingsExtension){ ex ->
 }
 rootProject.name = 'SelfRNSDKTestApp'
 include ':app'
-includeBuild('../../kmp-sdk') {
-  dependencySubstitution {
-    substitute module('xyz.self.sdk:shared') using project(':shared')
-  }
-}
+// The in-repo packages/kmp-sdk composite is intentionally NOT included: its :shared is a
+// diverged fork missing CloseableProvider/CameraPreviewMrzProvider, which the self-sdk-native
+// 0.1.1 nfc/ocr AARs (consumed by @selfxyz/rn-mrz-scanner / rn-nfc-passport) require. All
+// xyz.self.sdk:* artifacts resolve from mavenLocal / self-sdk-dist at 0.1.1 instead. See SD-07
+// (decommission vendored KMP SDK).

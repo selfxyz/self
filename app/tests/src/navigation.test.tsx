@@ -49,6 +49,8 @@ describe('navigation', () => {
       const navigationScreens = require('@/navigation').navigationScreens;
       const listOfScreens = Object.keys(navigationScreens).sort();
       expect(listOfScreens).toEqual([
+        'AadhaarPdfPassword',
+        'AadhaarSelectVersion',
         'AadhaarUpload',
         'AadhaarUploadError',
         'AadhaarUploadSuccess',

@@ -10,6 +10,7 @@ import { ChevronLeft, HelpCircle } from '@tamagui/lucide-icons';
 import { Button, XStack, YStack } from '@selfxyz/mobile-sdk-alpha/components';
 import {
   black,
+  cyan300,
   slate100,
   slate300,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
@@ -23,10 +24,18 @@ export const AadhaarNavBar = (props: NativeStackHeaderProps) => {
   const insets = useSafeAreaInsets();
 
   const currentRouteName = props.route.name;
-  const isFirstStep = currentRouteName === 'AadhaarUpload';
-  const isSecondStep =
-    currentRouteName === 'AadhaarUploadSuccess' ||
-    currentRouteName === 'AadhaarUploadError';
+  // Aadhaar registration is a 3-step flow: instructions (download the app),
+  // select the unmasked version, then enter the PDF password. Success/error
+  // screens fall through to the final step.
+  const totalSteps = 3;
+  const currentStep =
+    currentRouteName === 'AadhaarUpload'
+      ? 1
+      : currentRouteName === 'AadhaarSelectVersion'
+        ? 2
+        : currentRouteName === 'AadhaarPdfPassword'
+          ? 3
+          : totalSteps;
 
   const handleClose = () => {
     buttonTap();
@@ -102,18 +111,15 @@ export const AadhaarNavBar = (props: NativeStackHeaderProps) => {
         backgroundColor={slate100}
       >
         <XStack gap={8}>
-          <YStack
-            flex={1}
-            height={4}
-            backgroundColor={isFirstStep ? '#00D4FF' : slate300}
-            borderRadius={2}
-          />
-          <YStack
-            flex={1}
-            height={4}
-            backgroundColor={isSecondStep ? '#00D4FF' : slate300}
-            borderRadius={2}
-          />
+          {Array.from({ length: totalSteps }, (_, index) => (
+            <YStack
+              key={index}
+              flex={1}
+              height={4}
+              backgroundColor={index < currentStep ? cyan300 : slate300}
+              borderRadius={2}
+            />
+          ))}
         </XStack>
       </YStack>
     </YStack>

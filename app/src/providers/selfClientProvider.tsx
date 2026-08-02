@@ -24,6 +24,7 @@ import {
   type WsConn,
 } from '@selfxyz/mobile-sdk-alpha';
 import {
+  AadhaarEvents,
   KycEvents,
   OnboardingEvents,
 } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
@@ -309,9 +310,17 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
     });
 
     addListener(SdkEvents.PROVING_AADHAAR_UPLOAD_SUCCESS, () => {
+      trackOnboardingStep({ trackEvent }, OnboardingEvents.SCAN_SUCCEEDED, {
+        branch: 'aadhaar',
+      });
       navigateIfReady('AadhaarUploadSuccess');
     });
     addListener(SdkEvents.PROVING_AADHAAR_UPLOAD_FAILURE, ({ errorType }) => {
+      // Keeps the attempt open so a retry stays in the same funnel, mirroring
+      // how NFC scan failures are tracked (branch event, not attempt end).
+      trackBranchEvent({ trackEvent }, AadhaarEvents.UPLOAD_FAILED, {
+        errorType,
+      });
       navigateIfReady('AadhaarUploadError', { errorType });
     });
 

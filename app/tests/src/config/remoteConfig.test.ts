@@ -83,7 +83,20 @@ describe('RemoteConfig', () => {
       expect(result).toBe('override value');
     });
 
-    it('should return default value when no override exists', async () => {
+    it('should return default value for string flags when not set remotely', async () => {
+      mockAsyncStorage.getItem.mockResolvedValue('{}');
+      mockRemoteConfig.getValue.mockReturnValue({
+        asString: () => '',
+        asBoolean: () => false,
+        asNumber: () => 0,
+        getSource: () => 'default',
+      });
+
+      const result = await getFeatureFlag('testFlag', 'default value');
+      expect(result).toBe('default value');
+    });
+
+    it('should return remote value for string flags when set remotely', async () => {
       mockAsyncStorage.getItem.mockResolvedValue('{}');
       mockRemoteConfig.getValue.mockReturnValue({
         asString: () => 'remote value',
@@ -93,7 +106,20 @@ describe('RemoteConfig', () => {
       });
 
       const result = await getFeatureFlag('testFlag', 'default value');
-      expect(result).toBe('default value');
+      expect(result).toBe('remote value');
+    });
+
+    it('should return an explicit empty remote string (used to hide optional copy)', async () => {
+      mockAsyncStorage.getItem.mockResolvedValue('{}');
+      mockRemoteConfig.getValue.mockReturnValue({
+        asString: () => '',
+        asBoolean: () => false,
+        asNumber: () => 0,
+        getSource: () => 'remote',
+      });
+
+      const result = await getFeatureFlag('testFlag', 'default value');
+      expect(result).toBe('');
     });
 
     it('should preserve type for number flags', async () => {

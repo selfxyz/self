@@ -1,0 +1,108 @@
+// SPDX-FileCopyrightText: 2025-2026 Social Connect Labs, Inc.
+// SPDX-License-Identifier: BUSL-1.1
+
+buildscript {
+  ext.getExtOrDefault = { name ->
+    return rootProject.ext.has(name) ? rootProject.ext.get(name) : project.properties['SelfRnNfc_' + name]
+  }
+
+  repositories {
+    google()
+    mavenCentral()
+  }
+
+  dependencies {
+    classpath "com.android.tools.build:gradle:7.4.2"
+    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${getExtOrDefault('kotlinVersion') ?: '1.9.24'}"
+  }
+}
+
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+
+def getExtOrIntegerDefault(name) {
+  if (rootProject.ext.has(name)) {
+    return rootProject.ext.get(name)
+  }
+  // Return null (not a crash) when the -P override is absent so the caller's `?:` default applies.
+  def raw = project.properties['SelfRnNfc_' + name]
+  return raw != null ? raw.toInteger() : null
+}
+
+// Published version of the xyz.self.sdk:nfc AAR. Locked to the self-sdk-native RN wrapper
+// version (the AAR derives its version from that repo's rn-sdk/package.json at publish time),
+// NOT to this shim package's version. Keep in lockstep with the ocr AAR pin in
+// @selfxyz/rn-mrz-scanner. Override for local SDK dev with -PSelfRnNfc_nfcAarVersion.
+def selfNfcAarVersion = getExtOrDefault('nfcAarVersion') ?: '0.1.3'
+
+android {
+  namespace 'xyz.self.rnnfc'
+  compileSdkVersion getExtOrIntegerDefault('compileSdkVersion') ?: 34
+
+  defaultConfig {
+    minSdkVersion getExtOrIntegerDefault('minSdkVersion') ?: 24
+    targetSdkVersion getExtOrIntegerDefault('targetSdkVersion') ?: 34
+    consumerProguardFiles 'consumer-rules.pro'
+  }
+
+  buildTypes {
+    release {
+      minifyEnabled false
+    }
+  }
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_17
+    targetCompatibility JavaVersion.VERSION_17
+  }
+
+  kotlinOptions {
+    jvmTarget = '17'
+  }
+
+  sourceSets {
+    main {
+      java.srcDirs += "src/main/java"
+      kotlin.srcDirs += "src/main/java"
+    }
+  }
+}
+
+// A library module's own repositories resolve ITS dependencies at compile time. The consumer
+// app must inject the same repositories into its app-level build.gradle (a library's
+// repositories are not consulted for the app's classpath) — see README for the app-level
+// snippet. mavenLocal comes first so SDK development resolves versions published only to ~/.m2.
+repositories {
+  mavenLocal {
+    content {
+      includeGroupByRegex("xyz\\.self\\.sdk(\\..*)?")
+    }
+  }
+  if (System.getenv("SELF_SDK_GITHUB_TOKEN")) {
+    maven {
+      url uri("https://maven.pkg.github.com/selfxyz/self-sdk-dist")
+      credentials {
+        username = System.getenv("SELF_SDK_GITHUB_USER") ?: "self-sdk"
+        password = System.getenv("SELF_SDK_GITHUB_TOKEN")
+      }
+      content {
+        includeGroupByRegex("xyz\\.self\\.sdk(\\..*)?")
+      }
+    }
+  }
+  mavenCentral()
+  google()
+}
+
+dependencies {
+  implementation "com.facebook.react:react-native:+"
+  implementation "org.jetbrains.kotlin:kotlin-stdlib:${getExtOrDefault('kotlinVersion') ?: '1.9.24'}"
+
+  // Maintained ICAO 9303 NFC reader (jMRTD 0.8.1 / BouncyCastle 1.78.1 / SCUBA), shared with the
+  // KMP SDK.
+  implementation "xyz.self.sdk:nfc:${selfNfcAarVersion}"
+  // AndroidNfcProvider implements NfcProvider/CloseableProvider from :shared. The nfc AAR POM
+  // declares :shared at runtime scope only, so it must be on the compile classpath explicitly
+  // or Kotlin cannot resolve the provider's supertypes ("cannot access class NfcProvider").
+  implementation "xyz.self.sdk:shared:${selfNfcAarVersion}"
+}

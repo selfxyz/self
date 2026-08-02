@@ -15,10 +15,12 @@ export type {
   BridgeResponse,
   BrowserHostOptions,
   CameraMethod,
+  Capabilities,
   CryptoMethod,
   DocumentsMethod,
   EventHandler,
   HapticMethod,
+  LifecycleConfigResponse,
   LifecycleMethod,
   NativeTransport,
   NavigationMethod,
@@ -34,5 +36,5 @@ export type {
   VerificationResult,
   WebViewBridgeOptions,
 } from './types';
-export { BRIDGE_PROTOCOL_VERSION, DEFAULT_TIMEOUT_MS } from './types';
+export { BRIDGE_PROTOCOL_MINOR_VERSION, BRIDGE_PROTOCOL_VERSION, DEFAULT_TIMEOUT_MS } from './types';
 export { WebViewBridge } from './bridge';

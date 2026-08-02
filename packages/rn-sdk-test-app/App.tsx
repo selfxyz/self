@@ -14,7 +14,16 @@ import {
   View,
 } from 'react-native';
 
-import { SelfVerification, type SelfSdkError, type VerificationResult } from '@selfxyz/rn-sdk';
+import {
+  SelfVerification,
+  type SelfSdkError,
+  type VerificationResult,
+} from '@selfxyz/rn-sdk';
+// Optional capture packages. Installing them autolinks the native modules and
+// makes the nfc / mrzCamera capabilities available; the exported helpers are
+// safe to import even when unlinked (they never touch NativeModules at import).
+import { isMrzScannerAvailable } from '@selfxyz/rn-mrz-scanner';
+import { isSelfPassportReaderAvailable } from '@selfxyz/rn-nfc-passport';
 
 import { KmpBridgeSmokeScreen } from './KmpBridgeSmokeScreen';
 
@@ -25,21 +34,46 @@ type CallbackState =
   | { status: 'Failure'; code: string; message: string }
   | { status: 'Cancelled' };
 
+type LaunchFlow = 'prove' | 'self-app';
+
 function App(): React.JSX.Element {
   const [isVerifying, setIsVerifying] = useState(false);
+  const [flow, setFlow] = useState<LaunchFlow>('prove');
   const [showSmoke, setShowSmoke] = useState(false);
   const [userId, setUserId] = useState('test-user');
   const [scope, setScope] = useState('identity');
   const [callback, setCallback] = useState<CallbackState>({ status: 'Idle' });
 
+  // Diagnostics for the optional capture packages. Reflects whether the native
+  // modules linked in this build (mrzCamera / nfc capabilities).
+  const captureCaps = useMemo(
+    () => ({
+      mrzCamera: isMrzScannerAvailable(),
+      nfc: isSelfPassportReaderAvailable(),
+    }),
+    [],
+  );
+
+  // The WebView's InitialRouteRedirect sends any request carrying `disclosures`
+  // (or `proofItems`) straight to /disclose/request (the prove flow). Omitting
+  // them lands on the Self-app home, from which the passport MRZ + NFC
+  // onboarding can be started.
   const request = useMemo(
     () => ({
       userId: userId || undefined,
       scope: scope || undefined,
-      disclosures: ['name', 'nationality', 'date_of_birth'],
+      ...(flow === 'prove'
+        ? { disclosures: ['name', 'nationality', 'date_of_birth'] }
+        : {}),
     }),
-    [userId, scope],
+    [userId, scope, flow],
   );
+
+  const launch = (nextFlow: LaunchFlow) => {
+    setFlow(nextFlow);
+    setCallback({ status: 'Launching verification...' });
+    setIsVerifying(true);
+  };
 
   const handleSuccess = (result: VerificationResult) => {
     setCallback({
@@ -73,6 +107,7 @@ function App(): React.JSX.Element {
         <StatusBar barStyle="dark-content" />
         <SelfVerification
           request={request}
+          mode="self-app"
           onSuccess={handleSuccess}
           onFailure={handleFailure}
           onCancelled={handleCancelled}
@@ -116,27 +151,53 @@ function App(): React.JSX.Element {
 
         <TouchableOpacity
           style={styles.primaryButton}
-          onPress={() => {
-            setCallback({ status: 'Launching verification...' });
-            setIsVerifying(true);
-          }}
+          onPress={() => launch('prove')}
         >
-          <Text style={styles.primaryButtonText}>Launch Verification</Text>
+          <Text style={styles.primaryButtonText}>
+            Launch Verification (Prove)
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.primaryButton}
+          onPress={() => launch('self-app')}
+        >
+          <Text style={styles.primaryButtonText}>
+            Open Self App (MRZ + NFC)
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.secondaryButton}
           onPress={() => setShowSmoke(true)}
         >
-          <Text style={styles.secondaryButtonText}>Open KMP Bridge Smoke Screen</Text>
+          <Text style={styles.secondaryButtonText}>
+            Open KMP Bridge Smoke Screen
+          </Text>
         </TouchableOpacity>
 
         <View style={styles.callbackCard}>
-          <Text style={styles.callbackLabel}>Callback Status: {callback.status}</Text>
+          <Text style={styles.callbackLabel}>Capture Modules</Text>
+          <Text style={styles.callbackDetail}>
+            mrzCamera: {captureCaps.mrzCamera ? 'available' : 'unavailable'}
+          </Text>
+          <Text style={styles.callbackDetail}>
+            nfc: {captureCaps.nfc ? 'available' : 'unavailable'}
+          </Text>
+        </View>
+
+        <View style={styles.callbackCard}>
+          <Text style={styles.callbackLabel}>
+            Callback Status: {callback.status}
+          </Text>
           {callback.status === 'Failure' && (
             <>
-              <Text style={styles.callbackDetail}>Error Code: {callback.code}</Text>
-              <Text style={styles.callbackDetail}>Error Message: {callback.message}</Text>
+              <Text style={styles.callbackDetail}>
+                Error Code: {callback.code}
+              </Text>
+              <Text style={styles.callbackDetail}>
+                Error Message: {callback.message}
+              </Text>
             </>
           )}
           {callback.status === 'Success' && (

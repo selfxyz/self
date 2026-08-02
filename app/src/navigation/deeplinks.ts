@@ -17,7 +17,7 @@ import useUserStore from '@/stores/userStore';
 import { useVerificationGateStore } from '@/stores/verificationGateStore';
 import { IS_DEV_MODE, IS_WIA_ENABLED } from '@/utils/devUtils';
 import {
-  evaluateGoogleUsatGate,
+  evaluateGoogleUsatEntryGate,
   isGoogleUsatForceEnabledForTesting,
 } from '@/utils/googleUsatGate';
 
@@ -184,7 +184,7 @@ export const handleUrl = async (selfClient: SelfClient, uri: string) => {
   if (selfAppStr) {
     try {
       const selfAppJson = JSON.parse(selfAppStr);
-      const gate = await evaluateGoogleUsatGate(selfClient, selfAppJson);
+      const gate = await evaluateGoogleUsatEntryGate(selfClient, selfAppJson);
       if (gate === 'block') {
         selfClient.trackEvent(ProofEvents.GOOGLE_USAT_BLOCKED, {
           entry_point: 'deeplink',
@@ -206,6 +206,9 @@ export const handleUrl = async (selfClient: SelfClient, uri: string) => {
         }
         return;
       }
+      // This is the single relayer socket for the session. Native proving drives
+      // it directly; in the WIA path WebViewHostScreen owns it — emitting the
+      // proof result on the WebView's behalf and tearing it down on unmount.
       selfClient.getSelfAppState().setSelfApp(selfAppJson);
       selfClient.getSelfAppState().startAppListener(selfAppJson.sessionId);
 

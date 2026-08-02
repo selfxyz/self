@@ -109,6 +109,6 @@ export { hasEligibleAlternativeDocumentForPolicy, isDocumentEligibleForPolicy } 
 export { isGoogleUsatProofRequest } from './utils/googleUsat';
 export { isPassportDataValid } from './validation/document';
 export { mergeConfig } from './config/merge';
-export { parseNFCResponse, scanNFC } from './nfc';
+export { normalizeNfcPassport, parseNFCResponse, scanNFC } from './nfc';
 export { sanitizeErrorMessage } from './utils/utils';
 export { webNFCScannerShim } from './adapters/web/shims';

@@ -12,6 +12,11 @@ export interface BridgeCameraAdapter {
 export interface MrzScanParams {
   documentType?: string;
   countryCode?: string;
+  /**
+   * Web viewfinder rect (physical px, viewport-relative). When present, the native scanner
+   * sizes its preview overlay to this box (parity with the KMP embedded preview).
+   */
+  scanRect?: { x: number; y: number; width: number; height: number };
   [key: string]: unknown;
 }
 

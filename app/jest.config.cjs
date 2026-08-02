@@ -44,6 +44,8 @@ module.exports = {
     '^expo-camera$': '<rootDir>/tests/__setup__/expoCameraMock.js',
     '^expo-application$': '<rootDir>/tests/__setup__/expoApplicationMock.js',
     '^expo-file-system$': '<rootDir>/tests/__setup__/expoFileSystemMock.js',
+    '^expo-document-picker$':
+      '<rootDir>/tests/__setup__/expoDocumentPickerMock.js',
     // Avoid loading lottie-react-native's nested react-native runtime in Jest.
     '^lottie-react-native$': '<rootDir>/tests/__setup__/lottieMock.js',
     // Mock react-native-blur-effect: under pnpm hoisted, it ships a nested

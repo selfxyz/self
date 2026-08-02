@@ -27,22 +27,30 @@ describe('branch event constants (ANA-12)', () => {
     expect(KycEvents.RETRY_TRIGGERED).toBe('KYC: Retry Triggered');
   });
 
-  it('AadhaarEvents is curated to exactly seven milestone events', () => {
+  it('AadhaarEvents is curated to exactly eleven milestone events', () => {
     expect(Object.keys(AadhaarEvents).sort()).toEqual([
+      'APP_INSTALL_PRESSED',
       'CONTINUE_PRESSED',
       'DATA_STORED',
+      'DOWNLOAD_NEXT_PRESSED',
+      'INSTRUCTIONS_VIEWED',
       'PHOTO_PERMISSION_DENIED',
       'QR_PARSE_FAILED',
       'QR_SELECTED',
       'TIMESTAMP_EXPIRED',
+      'UPLOAD_FAILED',
       'UPLOAD_STARTED',
     ]);
     expect(AadhaarEvents.UPLOAD_STARTED).toBe('Aadhaar: Upload Started');
+    expect(AadhaarEvents.UPLOAD_FAILED).toBe('Aadhaar: Upload Failed');
     expect(AadhaarEvents.PHOTO_PERMISSION_DENIED).toBe('Aadhaar: Photo Permission Denied');
     expect(AadhaarEvents.QR_SELECTED).toBe('Aadhaar: QR Selected');
     expect(AadhaarEvents.QR_PARSE_FAILED).toBe('Aadhaar: QR Parse Failed');
     expect(AadhaarEvents.TIMESTAMP_EXPIRED).toBe('Aadhaar: Timestamp Expired');
     expect(AadhaarEvents.DATA_STORED).toBe('Aadhaar: Data Stored');
     expect(AadhaarEvents.CONTINUE_PRESSED).toBe('Aadhaar: Continue Pressed');
+    expect(AadhaarEvents.INSTRUCTIONS_VIEWED).toBe('Aadhaar: Instructions Viewed');
+    expect(AadhaarEvents.APP_INSTALL_PRESSED).toBe('Aadhaar: App Install Pressed');
+    expect(AadhaarEvents.DOWNLOAD_NEXT_PRESSED).toBe('Aadhaar: Download Next Pressed');
   });
 });

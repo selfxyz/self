@@ -19,8 +19,13 @@ import { decideBootRoute } from './decideBootRoute';
  *
  * Renders null. Mounted inside BrowserRouter + OperatingModeProvider in App.
  */
+const FAIL_CLOSED_MESSAGES: Record<string, string> = {
+  INVALID_REQUEST: 'Embed mode requires a verificationRequest with userId and scope',
+  UNSUPPORTED_CAPABILITY: 'This request needs a document capability that is not available on this device',
+};
+
 export const BootDecision: React.FC = () => {
-  const { mode, verificationRequest, isReady } = useOperatingMode();
+  const { mode, verificationRequest, isReady, capabilities } = useOperatingMode();
   const navigate = useNavigate();
   const location = useLocation();
   const bridge = useBridge();
@@ -32,6 +37,7 @@ export const BootDecision: React.FC = () => {
       mode,
       verificationRequest,
       pathname: location.pathname,
+      capabilities,
     });
 
     switch (action.type) {
@@ -53,7 +59,7 @@ export const BootDecision: React.FC = () => {
             await bridge.request('lifecycle', 'setResult', {
               success: false,
               errorCode: action.error,
-              errorMessage: 'Embed mode requires a verificationRequest with userId and scope',
+              errorMessage: FAIL_CLOSED_MESSAGES[action.error] ?? FAIL_CLOSED_MESSAGES.INVALID_REQUEST,
             });
           } catch {
             // Host transport may be unavailable; the /embed/error route holds the UI.
@@ -66,7 +72,7 @@ export const BootDecision: React.FC = () => {
         })();
         return;
     }
-  }, [bridge, isReady, mode, verificationRequest, location.pathname, navigate]);
+  }, [bridge, isReady, mode, verificationRequest, capabilities, location.pathname, navigate]);
 
   return null;
 };

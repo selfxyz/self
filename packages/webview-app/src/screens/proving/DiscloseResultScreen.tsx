@@ -13,7 +13,7 @@ import { SupportReference } from '../../components/SupportReference';
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { useVerificationRequest } from '../../providers/VerificationRequestProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
-import { normalizeError } from '../../utils/provingUtils';
+import { buildVerificationResult, normalizeError } from '../../utils/provingUtils';
 
 interface DiscloseResultLocationState {
   success?: boolean;
@@ -31,23 +31,12 @@ export const DiscloseResultScreen: React.FC = () => {
   const normalizedError = normalizeError(error);
   const result = useMemo<VerificationResult>(
     () =>
-      success
-        ? {
-            success: true,
-            userId: request.userId,
-            verificationId,
-            claims: { resultType: 'proofRequested' },
-          }
-        : {
-            success: false,
-            userId: request.userId,
-            verificationId,
-            claims: { resultType: 'proofRequested' },
-            error: normalizedError ?? {
-              code: 'proof_generation_failed',
-              message: 'The proof request could not be completed.',
-            },
-          },
+      buildVerificationResult({
+        success,
+        userId: request.userId,
+        verificationId,
+        error: normalizedError,
+      }),
     [normalizedError, request.userId, success, verificationId],
   );
 

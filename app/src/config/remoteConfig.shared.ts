@@ -41,8 +41,18 @@ export interface StorageBackend {
 
 export const LOCAL_OVERRIDES_KEY = 'feature_flag_overrides';
 
+// Remotely-controllable hint shown on the e-Aadhaar PDF password screen. The
+// UIDAI password format is decided by Aadhaar and may change, so this copy is
+// served from Remote Config. Setting the remote value to an empty string hides
+// the hint entirely.
+export const AADHAAR_PDF_PASSWORD_HINT_FLAG = 'aadhaar_pdf_password_hint';
+export const DEFAULT_AADHAAR_PDF_PASSWORD_HINT =
+  'Password is the first 4 letters of your name in CAPITALS + your birth year, e.g. SELF2026.';
+
 // Default feature flags - this should be defined by the consuming application
-const defaultFlags: Record<string, string | boolean> = {};
+const defaultFlags: Record<string, string | boolean> = {
+  [AADHAAR_PDF_PASSWORD_HINT_FLAG]: DEFAULT_AADHAAR_PDF_PASSWORD_HINT,
+};
 
 export const clearAllLocalOverrides = async (
   storage: StorageBackend,
@@ -163,8 +173,15 @@ export const getFeatureFlag = async <T extends FeatureFlagValue>(
       return localOverrides[flag] as T;
     }
 
-    // Return default value for string flags
+    // For string flags, only override the baked-in default when the server has
+    // actually set a value. An explicit empty string is a valid remote value
+    // (used to hide optional UI copy), so we key off the value source rather
+    // than emptiness.
     if (typeof defaultValue === 'string') {
+      const configValue = remoteConfig.getValue(flag);
+      if (configValue.getSource() === 'remote') {
+        return configValue.asString() as T;
+      }
       return defaultValue;
     }
 
