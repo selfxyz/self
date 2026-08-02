@@ -31,16 +31,16 @@
     "typecheck": "tsc --noEmit",
     "types": "tsup"
   },
-  "peerDependencies": {
-    "react": "^19.0.0",
-    "react-native": ">=0.83.0"
-  },
   "devDependencies": {
     "@types/react": "^19.2.0",
     "react": "^19.2.0",
     "react-native": "0.83.9",
     "tsup": "^8.0.1",
     "typescript": "^5.9.3"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-native": ">=0.83.0"
   },
   "publishConfig": {
     "access": "restricted"
