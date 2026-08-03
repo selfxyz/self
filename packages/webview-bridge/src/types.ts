@@ -21,7 +21,8 @@ export type BridgeDomain =
   | 'analytics'
   | 'lifecycle'
   | 'documents'
-  | 'navigation';
+  | 'navigation'
+  | 'custody';
 
 export interface BridgeError {
   code: string;
@@ -89,6 +90,9 @@ export interface Capabilities {
   mrzCamera: boolean;
   biometrics: boolean;
   secureStorage: boolean;
+  // Host-managed custody surface (lock/reset). Unlike the fields above, absent
+  // means false: only hosts that implement the custody domain may advertise it.
+  custodyControls?: boolean;
 }
 
 export interface LifecycleConfigResponse {

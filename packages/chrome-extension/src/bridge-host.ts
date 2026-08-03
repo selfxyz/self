@@ -1,12 +1,19 @@
+import { disablePasskeyUnlock } from './passkey';
 import { startRelayerSession, type RelayerSession } from './relayer-session';
 import {
   createVault,
   isInitialized,
   isUnlocked,
+  reset as vaultReset,
   VaultLockedError,
 } from './vault';
 
+// Suppresses the lock-eviction redirect while custody.reset is tearing the
+// vault down, so the page lands on link.html instead of unlock.html.
+let resettingVault = false;
+
 chrome.storage.session.onChanged?.addListener(changes => {
+  if (resettingVault) return;
   if (!changes.vaultSessionKey) return;
   if (changes.vaultSessionKey.newValue) return; // unlocked or refreshed
   const here = window.location.pathname.slice(1) + window.location.search;
@@ -91,6 +98,13 @@ interface HostConfig {
   verificationRequest: Record<string, unknown> | null;
   platform: string;
   debug: boolean;
+  capabilities: {
+    nfc: boolean;
+    mrzCamera: boolean;
+    biometrics: boolean;
+    secureStorage: boolean;
+    custodyControls: boolean;
+  };
 }
 
 function hostConfigFromUrl(): HostConfig {
@@ -114,6 +128,15 @@ function hostConfigFromUrl(): HostConfig {
     verificationRequest,
     platform: 'chrome-extension',
     debug: true,
+    capabilities: {
+      // The four legacy fields mirror the pre-handshake defaults (absent =
+      // true) so advertising them changes no existing flow.
+      nfc: true,
+      mrzCamera: true,
+      biometrics: true,
+      secureStorage: true,
+      custodyControls: true,
+    },
   };
 }
 
@@ -239,6 +262,19 @@ async function handle(request: BridgeRequest): Promise<void> {
         respond(request, { ok: true });
         window.close();
         return;
+
+      case 'custody.lock':
+        respond(request, { ok: true });
+        void chrome.runtime.sendMessage({ type: 'self-ext:lock' });
+        return;
+      case 'custody.reset': {
+        resettingVault = true;
+        await vaultReset();
+        await disablePasskeyUnlock();
+        respond(request, { ok: true });
+        window.location.replace(chrome.runtime.getURL('link.html'));
+        return;
+      }
 
       case 'secureStorage.get':
         return respond(request, await vault.get(String(params.key)));

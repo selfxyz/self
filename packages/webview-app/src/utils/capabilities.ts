@@ -13,6 +13,7 @@ export const ALL_CAPABILITIES: Capabilities = {
   mrzCamera: true,
   biometrics: true,
   secureStorage: true,
+  custodyControls: false,
 };
 
 // Native capabilities each onboarding document type depends on. Types absent
@@ -35,6 +36,8 @@ export function normalizeCapabilities(raw: Partial<Capabilities> | null | undefi
     mrzCamera: raw.mrzCamera ?? true,
     biometrics: raw.biometrics ?? true,
     secureStorage: raw.secureStorage ?? true,
+    // Fail closed: custody controls only exist on hosts that declare them.
+    custodyControls: raw.custodyControls === true,
   };
 }
 

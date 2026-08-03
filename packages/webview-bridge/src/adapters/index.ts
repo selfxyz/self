@@ -20,6 +20,7 @@ export type { BridgeBiometricsAdapter } from './biometrics';
 export type { BridgeCameraAdapter, MrzScanParams, MrzScanResult } from './camera';
 
 export type { BridgeCryptoAdapter } from './crypto';
+export type { BridgeCustodyAdapter } from './custody';
 export type { BridgeDocumentsAdapter } from './documents';
 
 export type { BridgeHapticAdapter } from './haptic';
@@ -39,6 +40,7 @@ export { bridgeBiometricsAdapter } from './biometrics';
 export { bridgeCameraAdapter } from './camera';
 
 export { bridgeCryptoAdapter } from './crypto';
+export { bridgeCustodyAdapter } from './custody';
 export { bridgeDocumentsAdapter } from './documents';
 
 export { bridgeHapticAdapter } from './haptic';

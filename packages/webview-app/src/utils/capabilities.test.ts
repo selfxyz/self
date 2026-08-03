@@ -60,7 +60,14 @@ describe('normalizeCapabilities', () => {
       mrzCamera: false,
       biometrics: true,
       secureStorage: true,
+      custodyControls: false,
     });
+  });
+
+  it('enables custody controls only when explicitly advertised', () => {
+    expect(normalizeCapabilities({ custodyControls: true }).custodyControls).toBe(true);
+    expect(normalizeCapabilities({}).custodyControls).toBe(false);
+    expect(normalizeCapabilities(undefined).custodyControls).toBe(false);
   });
 });
 

@@ -261,6 +261,11 @@ chrome.windows.onRemoved.addListener(windowId => {
 });
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message?.type === 'self-ext:lock') {
+    void lockNow().then(() => sendResponse({ ok: true }));
+    return true;
+  }
+
   if (message?.type === 'self-ext:verify') {
     const tabId = sender.tab?.id;
     if (typeof tabId !== 'number') {

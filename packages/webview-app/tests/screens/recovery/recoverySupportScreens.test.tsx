@@ -52,6 +52,7 @@ vi.mock('../../../src/providers/SelfClientProvider', () => ({
     haptic,
     lifecycle,
     client,
+    custody: { lock: vi.fn(), reset: vi.fn() },
   }),
 }));
 
@@ -61,7 +62,19 @@ vi.mock('../../../src/providers/BridgeProvider', () => ({
 
 vi.mock('../../../src/providers/OperatingModeProvider', () => ({
   useReferenceId: () => undefined,
-  useOperatingMode: () => ({ mode: 'self-app', referenceId: undefined, isReady: true, verificationRequest: null }),
+  useOperatingMode: () => ({
+    mode: 'self-app',
+    referenceId: undefined,
+    isReady: true,
+    verificationRequest: null,
+    capabilities: {
+      nfc: true,
+      mrzCamera: true,
+      biometrics: true,
+      secureStorage: true,
+      custodyControls: false,
+    },
+  }),
 }));
 
 vi.mock('@selfxyz/mobile-sdk-alpha/browser', () => ({

@@ -27,6 +27,20 @@ vi.mock('../../../src/providers/SelfClientProvider', () => ({
     haptic,
     lifecycle,
     documents,
+    custody: { lock: vi.fn(), reset: vi.fn() },
+  }),
+}));
+
+vi.mock('../../../src/providers/OperatingModeProvider', () => ({
+  useOperatingMode: () => ({
+    mode: 'self-app',
+    capabilities: {
+      nfc: true,
+      mrzCamera: true,
+      biometrics: true,
+      secureStorage: true,
+      custodyControls: false,
+    },
   }),
 }));
 

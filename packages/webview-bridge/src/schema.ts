@@ -22,6 +22,7 @@ const VALID_DOMAINS: BridgeDomain[] = [
   'lifecycle',
   'documents',
   'navigation',
+  'custody',
 ];
 
 const VALID_TYPES = ['request', 'response', 'event'] as const;

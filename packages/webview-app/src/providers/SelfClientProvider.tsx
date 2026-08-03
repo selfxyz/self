@@ -11,11 +11,13 @@ import { createListenersMap, createSelfClient, createWebAnalyticsAdapter } from 
 import type {
   BridgeAnalyticsAdapter,
   BridgeBiometricsAdapter,
+  BridgeCustodyAdapter,
   BridgeHapticAdapter,
   BridgeLifecycleAdapter,
 } from '@selfxyz/webview-bridge/adapters';
 import {
   bridgeBiometricsAdapter,
+  bridgeCustodyAdapter,
   bridgeHapticAdapter,
   bridgeLifecycleAdapter,
   bridgeStorageAdapter,
@@ -38,6 +40,7 @@ export interface WebViewAdapters {
   biometrics: BridgeBiometricsAdapter;
   analytics: BridgeAnalyticsAdapter;
   documents: DocumentsAdapter;
+  custody: BridgeCustodyAdapter;
 }
 
 const SelfClientContext = createContext<WebViewAdapters | null>(null);
@@ -83,6 +86,7 @@ export const SelfClientProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       biometrics: bridgeBiometricsAdapter(bridge),
       analytics: withCohortTags(consoleAnalyticsAdapter()),
       documents,
+      custody: bridgeCustodyAdapter(bridge),
     };
   }, [bridge, stableNavigate, stableGoBack]);
 

@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type React from 'react';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import {
@@ -16,14 +16,34 @@ import {
   QuestionCircleStrokeIcon,
   SettingsViewScreen,
   ShareIcon,
+  TrashIcon,
 } from '@selfxyz/euclid';
 
+import { useOperatingMode } from '../../providers/OperatingModeProvider';
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
 
 export const SettingsScreen: React.FC = () => {
   const navigate = useNavigate();
-  const { analytics, haptic, lifecycle } = useSelfClient();
+  const { analytics, haptic, lifecycle, custody } = useSelfClient();
+  const { capabilities } = useOperatingMode();
+  const [confirmingReset, setConfirmingReset] = useState(false);
+
+  const handleLock = useCallback(() => {
+    haptic.trigger('selection');
+    analytics.trackEvent('settings_lock_pressed');
+    void custody.lock();
+  }, [haptic, analytics, custody]);
+
+  const handleReset = useCallback(() => {
+    haptic.trigger('selection');
+    if (!confirmingReset) {
+      setConfirmingReset(true);
+      return;
+    }
+    analytics.trackEvent('settings_reset_confirmed');
+    void custody.reset();
+  }, [haptic, analytics, custody, confirmingReset]);
 
   const handleBack = useCallback(() => {
     haptic.trigger('selection');
@@ -78,6 +98,29 @@ export const SettingsScreen: React.FC = () => {
             },
           ],
         },
+        ...(capabilities.custodyControls
+          ? [
+              {
+                title: 'Browser extension',
+                items: [
+                  {
+                    icon: LockIcon,
+                    label: 'Lock extension',
+                    description: 'Require unlock before the next use',
+                    onPress: handleLock,
+                  },
+                  {
+                    icon: TrashIcon,
+                    label: confirmingReset ? 'Press again to confirm' : 'Reset extension',
+                    description: confirmingReset
+                      ? 'Permanently erases this browser’s copy. Your phone keeps everything.'
+                      : 'Erase this browser’s account copy and unlink',
+                    onPress: handleReset,
+                  },
+                ],
+              },
+            ]
+          : []),
         {
           title: 'Support & feedback',
           items: [

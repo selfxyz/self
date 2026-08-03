@@ -374,6 +374,70 @@ try {
   );
   console.log('[harness] lock -> unlock -> app roundtrip OK');
 
+  // Settings custody controls (CEP-14): drive them from a real popup window,
+  // mirroring production - lock closes every window holding an extension tab,
+  // so the main harness page must sit on a neutral URL first.
+  await page.goto('about:blank');
+  await worker.evaluate(
+    url =>
+      chrome.windows.create({ url, type: 'popup', width: 420, height: 700 }),
+    `chrome-extension://${EXTENSION_ID}/index.html`,
+  );
+  const popupTarget = await browser.waitForTarget(
+    t => t.type() === 'page' && t.url().includes('index.html'),
+    { timeout: 15_000 },
+  );
+  const popup = await popupTarget.page();
+  await popup.waitForFunction(() => document.body.innerText.length > 20, {
+    timeout: 20_000,
+  });
+  await popup.evaluate(() => {
+    window.history.pushState({}, '', '/settings');
+    window.dispatchEvent(new PopStateEvent('popstate'));
+  });
+  const clickByText = text =>
+    popup.evaluate(label => {
+      const leaf = [...document.querySelectorAll('*')].find(
+        el => el.children.length === 0 && el.textContent?.trim() === label,
+      );
+      if (!leaf) throw new Error(`no element with text "${label}"`);
+      leaf.click();
+    }, text);
+  await popup.waitForFunction(
+    () => document.body.innerText.includes('Lock extension'),
+    { timeout: 15_000 },
+  );
+  await clickByText('Reset extension');
+  await popup.waitForFunction(
+    () => document.body.innerText.includes('Press again to confirm'),
+    { timeout: 10_000 },
+  );
+  console.log('[harness] settings reset requires a second press');
+  await clickByText('Lock extension');
+  {
+    const deadline = Date.now() + 15_000;
+    while (!popup.isClosed() && Date.now() < deadline)
+      await new Promise(resolve => setTimeout(resolve, 250));
+    if (!popup.isClosed())
+      throw new Error('settings lock did not close the popup window');
+  }
+  await page
+    .goto(`chrome-extension://${EXTENSION_ID}/index.html`, {
+      waitUntil: 'load',
+    })
+    .catch(() => {});
+  await page.waitForFunction(
+    () => window.location.pathname.endsWith('unlock.html'),
+    { timeout: 15_000 },
+  );
+  console.log('[harness] settings lock closes the popup and locks the vault');
+  await page.type('#pw', PASSWORD);
+  await page.click('#pw-submit');
+  await page.waitForFunction(
+    () => window.location.pathname.endsWith('index.html'),
+    { timeout: 15_000 },
+  );
+
   await worker.evaluate(async () => {
     const record = await chrome.storage.session.get('vaultSessionKey');
     const session = record.vaultSessionKey;

@@ -21,13 +21,31 @@ const lifecycle = { dismiss: vi.fn() };
 
 const client = { id: 'client' };
 
+const custody = { lock: vi.fn(), reset: vi.fn() };
+
 vi.mock('../../../src/providers/SelfClientProvider', () => ({
   useSelfClient: () => ({
     analytics,
     haptic,
     lifecycle,
     client,
+    custody,
   }),
+}));
+
+const operatingMode = {
+  mode: 'self-app' as const,
+  capabilities: {
+    nfc: true,
+    mrzCamera: true,
+    biometrics: true,
+    secureStorage: true,
+    custodyControls: false,
+  },
+};
+
+vi.mock('../../../src/providers/OperatingModeProvider', () => ({
+  useOperatingMode: () => operatingMode,
 }));
 
 const { generateMockDocumentMock, mockDocumentStore, storePassportDataMock } = vi.hoisted(() => ({
@@ -62,6 +80,7 @@ vi.mock('@selfxyz/euclid', () => ({
   DocumentDetailsIcon: () => null,
   LeftArrowIcon: () => null,
   LockIcon: () => null,
+  TrashIcon: () => null,
   NotificationIcon: () => null,
   QuestionCircleStrokeIcon: () => null,
   ShareIcon: () => null,
@@ -202,6 +221,7 @@ describe('WV-16 settings screens', () => {
     vi.clearAllMocks();
     generateMockDocumentMock.mockResolvedValue({ documentCategory: 'passport', mock: true });
     storePassportDataMock.mockResolvedValue(undefined);
+    operatingMode.capabilities.custodyControls = false;
   });
 
   afterEach(() => {
@@ -245,6 +265,30 @@ describe('WV-16 settings screens', () => {
       fireEvent.click(screen.getByRole('button', { name: /close self/i }));
       expect(lifecycle.dismiss).toHaveBeenCalledWith({ reason: 'user_cancel' });
       expect(analytics.trackEvent).toHaveBeenCalledWith('settings_dismiss_pressed');
+    });
+
+    it('hides custody controls when the host does not advertise them', () => {
+      renderRoutes(['/settings']);
+      expect(screen.queryByRole('button', { name: /lock extension/i })).toBeNull();
+      expect(screen.queryByRole('button', { name: /reset extension/i })).toBeNull();
+    });
+
+    it('locks through the custody adapter when advertised', () => {
+      operatingMode.capabilities.custodyControls = true;
+      renderRoutes(['/settings']);
+      fireEvent.click(screen.getByRole('button', { name: /lock extension/i }));
+      expect(custody.lock).toHaveBeenCalled();
+      expect(analytics.trackEvent).toHaveBeenCalledWith('settings_lock_pressed');
+    });
+
+    it('requires a second press before resetting', () => {
+      operatingMode.capabilities.custodyControls = true;
+      renderRoutes(['/settings']);
+      fireEvent.click(screen.getByRole('button', { name: /reset extension/i }));
+      expect(custody.reset).not.toHaveBeenCalled();
+      fireEvent.click(screen.getByRole('button', { name: /press again to confirm/i }));
+      expect(custody.reset).toHaveBeenCalled();
+      expect(analytics.trackEvent).toHaveBeenCalledWith('settings_reset_confirmed');
     });
   });
 
