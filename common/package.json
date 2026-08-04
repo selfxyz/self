@@ -2,6 +2,10 @@
   "name": "@selfxyz/common",
   "version": "0.0.10",
   "description": "Constants and utils for self sdks",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/selfxyz/self"
+  },
   "license": "MIT",
   "author": "@Selfxyz Team",
   "sideEffects": [
