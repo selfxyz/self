@@ -73,7 +73,7 @@ jobs:
         uses: ./.github/actions/cache-core-sdk-build
         with:
           mode: save
-          cache-version: v1
+          cache-version: v2
 
   lint:
     runs-on: ubuntu-latest
@@ -90,7 +90,7 @@ jobs:
         uses: ./.github/actions/cache-core-sdk-build
         with:
           mode: restore
-          cache-version: v1
+          cache-version: v2
           fail-on-cache-miss: false
       - name: Install Dependencies
         uses: ./.github/actions/pnpm-install
@@ -117,7 +117,7 @@ jobs:
         uses: ./.github/actions/cache-core-sdk-build
         with:
           mode: restore
-          cache-version: v1
+          cache-version: v2
           fail-on-cache-miss: false
       - name: Install Dependencies
         uses: ./.github/actions/pnpm-install
@@ -144,7 +144,7 @@ jobs:
         uses: ./.github/actions/cache-core-sdk-build
         with:
           mode: restore
-          cache-version: v1
+          cache-version: v2
           fail-on-cache-miss: false
       - name: Install Dependencies
         uses: ./.github/actions/pnpm-install
