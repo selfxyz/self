@@ -114,3 +114,7 @@ packageExtensions:
     peerDependenciesMeta:
       react-native-blur-effect:
         optional: true
+
+minimumReleaseAgeExclude:
+  - '@selfxyz/euclid-core@1.4.7'
+  - '@selfxyz/euclid@1.4.7'
