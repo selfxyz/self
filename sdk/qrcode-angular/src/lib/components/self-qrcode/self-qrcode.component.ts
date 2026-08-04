@@ -30,6 +30,12 @@ export interface SelfQRcodeProps {
   darkMode?: boolean;
 }
 
+/**
+ * @deprecated The open-source Self Pass SDK is legacy. New integrations must use
+ * `@selfxyz/enterprise-sdk`: redirect the user to the hosted `verificationUrl` —
+ * you no longer render your own QR code.
+ * Migration guide: https://docs.self.xyz/docs/self-enterprise/migration/from-self-pass-sdk/
+ */
 @Component({
   selector: 'lib-self-qrcode',
   standalone: true,
