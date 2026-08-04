@@ -44,6 +44,12 @@ vi.mock('../../../src/providers/OperatingModeProvider', () => ({
   }),
 }));
 
+vi.mock('../../../src/providers/BridgeProvider', () => ({
+  useBridge: () => ({
+    request: vi.fn().mockResolvedValue(null),
+  }),
+}));
+
 // Keeps the suite off @selfxyz/common's ESM dist (blakejs CJS interop breaks
 // under vitest externalization).
 vi.mock('@selfxyz/mobile-sdk-alpha/browser', () => ({

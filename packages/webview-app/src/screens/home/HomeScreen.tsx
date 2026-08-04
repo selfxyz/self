@@ -8,10 +8,15 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 import { GearIcon, HomeScreen as EuclidHomeScreen } from '@selfxyz/euclid';
 
+import { bridgeStorageAdapter } from '@selfxyz/webview-bridge/adapters';
+
+import { useBridge } from '../../providers/BridgeProvider';
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
 import { mockDocumentStore } from '../../utils/mockDocumentStore';
+import { derivePointsAddress, fetchIncomingPoints, fetchTotalPoints } from '../../utils/points';
 import { getIdCardProps } from '../../utils/provingUtils';
+import { MNEMONIC_KEY } from '../../utils/secretManager';
 
 interface DocumentEntry {
   id: string;
@@ -31,8 +36,31 @@ export const HomeScreen: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { documents, analytics, haptic } = useSelfClient();
+  const bridge = useBridge();
   const [catalog, setCatalog] = useState<DocumentCatalog | null>(null);
   const [loading, setLoading] = useState(true);
+  const [points, setPoints] = useState(0);
+  const [incomingPoints, setIncomingPoints] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const mnemonic = await bridgeStorageAdapter(bridge).get(MNEMONIC_KEY);
+        if (!mnemonic || cancelled) return;
+        const address = derivePointsAddress(mnemonic);
+        const [total, incoming] = await Promise.all([fetchTotalPoints(address), fetchIncomingPoints(address)]);
+        if (cancelled) return;
+        setPoints(total);
+        setIncomingPoints(incoming);
+      } catch {
+        // Points stay at 0 when the mnemonic is unavailable or the API fails.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [bridge]);
   const mockCatalog = useSyncExternalStore(mockDocumentStore.subscribe, () => mockDocumentStore.getCatalog());
 
   const loadCatalog = useCallback(async () => {
@@ -143,7 +171,7 @@ export const HomeScreen: React.FC = () => {
               }
             : undefined
         }
-        pointsCardProps={{ points: 0 }}
+        pointsCardProps={{ points, incomingPoints }}
         showAddIdCTA={!hasDocuments}
         onAddIdPress={onAddDocument}
         topNavigationPrimaryButton={{

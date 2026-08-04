@@ -20,6 +20,8 @@
   },
   "dependencies": {
     "@didit-protocol/sdk-web": "^0.2.0",
+    "@noble/curves": "^1.9.7",
+    "@noble/hashes": "^1.8.0",
     "@scure/bip32": "^2.0.1",
     "@scure/bip39": "^1.6.0",
     "@selfxyz/euclid": "1.4.6",
