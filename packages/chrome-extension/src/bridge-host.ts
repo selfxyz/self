@@ -42,6 +42,31 @@ chrome.storage.session.onChanged?.addListener(changes => {
   window.location.replace(gateUrl('unlock.html', here));
 });
 
+function mountApp(): void {
+  performance.mark('self-ext-gate-done');
+  const preload = document.getElementById(
+    'self-app-module',
+  ) as HTMLLinkElement | null;
+  if (!preload) return; // dev layout without the build-time transform
+  const script = document.createElement('script');
+  script.type = 'module';
+  script.src = preload.href;
+  if (preload.integrity) script.integrity = preload.integrity;
+  script.crossOrigin = 'anonymous';
+  document.head.appendChild(script);
+
+  const splash = document.getElementById('self-splash');
+  const root = document.getElementById('root');
+  if (!splash || !root) return;
+  const observer = new MutationObserver(() => {
+    if (root.childElementCount > 0) {
+      splash.remove();
+      observer.disconnect();
+    }
+  });
+  observer.observe(root, { childList: true });
+}
+
 void (async () => {
   if (!(await isInitialized())) {
     window.location.replace(gateUrl('link.html'));
@@ -50,7 +75,9 @@ void (async () => {
   if (!(await isUnlocked())) {
     const here = window.location.pathname.slice(1) + window.location.search;
     window.location.replace(gateUrl('unlock.html', here));
+    return;
   }
+  mountApp();
 })();
 
 interface BridgeRequest {
