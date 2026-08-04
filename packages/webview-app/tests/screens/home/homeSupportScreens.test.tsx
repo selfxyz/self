@@ -71,6 +71,7 @@ vi.mock('@selfxyz/euclid', () => ({
     insets: { top, bottom, left: 0, right: 0 },
     safeArea: { top, bottom, left: 0, right: 0 },
   }),
+  ChevronRightIcon: () => null,
   GearIcon: () => null,
   LeftArrowIcon: () => null,
   PlusIcon: () => null,
@@ -118,16 +119,19 @@ vi.mock('@selfxyz/euclid', () => ({
     onDismissDialogue,
     dialogue,
   }: {
-    documents: Array<{ id: string; label: string; onPress: () => void }>;
+    documents: Array<{ id: string; label: string; badge?: React.ReactNode; onPress: () => void }>;
     onViewIdDetails: () => void;
     onDismissDialogue: () => void;
     dialogue?: { title: string };
   }) => (
     <div>
       {docs.map(doc => (
-        <button key={doc.id} onClick={doc.onPress} type="button">
-          {doc.label}
-        </button>
+        <span key={doc.id}>
+          <button onClick={doc.onPress} type="button">
+            {doc.label}
+          </button>
+          {doc.badge}
+        </span>
       ))}
       {dialogue ? (
         <div>
@@ -212,10 +216,14 @@ describe('WV-14 support screens', () => {
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /passport/i })).toBeTruthy();
     });
+    // Tap selects in place without opening anything (mirrors the phone app).
     fireEvent.click(screen.getByRole('button', { name: /passport/i }));
     expect(documents.saveDocumentCatalog).toHaveBeenCalledWith(
       expect.objectContaining({ selectedDocumentId: 'doc-1' }),
     );
+    expect(screen.queryByRole('button', { name: /view details/i })).toBeNull();
+    // Details live behind the row's chevron.
+    fireEvent.click(screen.getByRole('button', { name: /document details/i }));
     fireEvent.click(screen.getByRole('button', { name: /view details/i }));
     expect(screen.getByTestId('location').textContent).toBe('/docs/current');
 

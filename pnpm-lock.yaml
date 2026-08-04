@@ -1647,11 +1647,11 @@ importers:
         specifier: ^1.6.0
         version: 1.6.0
       '@selfxyz/euclid':
-        specifier: 1.4.6
-        version: 1.4.6(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
+        specifier: 1.4.7
+        version: 1.4.7(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       '@selfxyz/euclid-core':
-        specifier: 1.4.6
-        version: 1.4.6(react@19.2.6)
+        specifier: 1.4.7
+        version: 1.4.7(react@19.2.6)
       '@selfxyz/mobile-sdk-alpha':
         specifier: workspace:^
         version: link:../mobile-sdk-alpha
@@ -6716,6 +6716,11 @@ packages:
     peerDependencies:
       react: ^19.2.0
 
+  '@selfxyz/euclid-core@1.4.7':
+    resolution: {integrity: sha512-TDpSfgXM8Dekle0clVSIl3PtjIwCdGuuZB490RZRMM+PlqGnG9j3cXrRUAza3+2tAcekRpln3QQQei/f3Rg4gg==}
+    peerDependencies:
+      react: ^19.2.0
+
   '@selfxyz/euclid@0.6.1':
     resolution: {integrity: sha512-4C7OTA7YLXrBAVZgUeX5N8HJAU1jHjZY8btN5gJrc/GwavGTdOHE9I+h0+cZhKmK3yYcug/v7/o+24GRoUcQ2w==}
     peerDependencies:
@@ -6728,8 +6733,8 @@ packages:
       react-native-blur-effect:
         optional: true
 
-  '@selfxyz/euclid@1.4.6':
-    resolution: {integrity: sha512-nBHhXKWOoVuGNsyYid4pbFJh3o2Hjny4UsigfYMdjxnfacFXgivwMiWW/rRFMlHubhxzjGExu8srKbD0ceU/dw==}
+  '@selfxyz/euclid@1.4.7':
+    resolution: {integrity: sha512-wOqw/W/fod1KWyF7fxCHyNz/BLufE2dw8GbtN6qwGUHftSOtc8XaFlpo0ZIZsP7d2sOe5smSdpT50ln3Y4mdKQ==}
     peerDependencies:
       react: ^19.2.0
       react-dom: ^19.2.0
@@ -23367,6 +23372,10 @@ snapshots:
     dependencies:
       react: 19.2.6
 
+  '@selfxyz/euclid-core@1.4.7(react@19.2.6)':
+    dependencies:
+      react: 19.2.6
+
   '@selfxyz/euclid@0.6.1(041f29c2add7fbce191f8bc453119a0d)':
     dependencies:
       react: 19.2.6
@@ -23376,10 +23385,10 @@ snapshots:
     optionalDependencies:
       react-native-blur-effect: 1.1.3(react-native-webview@13.16.0(react-native@0.83.9(@babel/core@7.29.0)(@react-native-community/cli@20.1.3(typescript@5.9.3))(@react-native/metro-config@0.83.9(@babel/core@7.29.0))(@types/react@19.2.15)(react@19.2.6))(react@19.2.6))(react-native@0.83.9(@babel/core@7.29.0)(@react-native-community/cli@20.1.3(typescript@5.9.3))(@react-native/metro-config@0.83.9(@babel/core@7.29.0))(@types/react@19.2.15)(react@19.2.6))(react@19.2.6)
 
-  '@selfxyz/euclid@1.4.6(react-dom@19.2.6(react@19.2.6))(react@19.2.6)':
+  '@selfxyz/euclid@1.4.7(react-dom@19.2.6(react@19.2.6))(react@19.2.6)':
     dependencies:
       '@lottiefiles/dotlottie-react': 0.18.10(react@19.2.6)
-      '@selfxyz/euclid-core': 1.4.6(react@19.2.6)
+      '@selfxyz/euclid-core': 1.4.7(react@19.2.6)
       lottie-react: 2.4.1(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       react: 19.2.6
       react-dom: 19.2.6(react@19.2.6)

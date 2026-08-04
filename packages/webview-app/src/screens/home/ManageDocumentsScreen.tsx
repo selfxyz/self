@@ -6,7 +6,12 @@ import type React from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { LeftArrowIcon, ManageDocumentsScreen as EuclidManageDocumentsScreen, PlusIcon } from '@selfxyz/euclid';
+import {
+  ChevronRightIcon,
+  LeftArrowIcon,
+  ManageDocumentsScreen as EuclidManageDocumentsScreen,
+  PlusIcon,
+} from '@selfxyz/euclid';
 
 import { useSelfClient } from '../../providers/SelfClientProvider';
 import { WEB_SAFE_AREA } from '../../utils/insets';
@@ -45,18 +50,38 @@ export const ManageDocumentsScreen: React.FC = () => {
     };
   }, [documents]);
 
+  // Mirrors the phone app: tapping a row selects it in place (radio indicator
+  // flips); nothing pops. Unregistered documents explain why they cannot be
+  // selected. Details live behind the row's chevron.
   const selectDocument = useCallback(
-    (id: string) => {
+    (doc: DocumentEntry) => {
       haptic.trigger('selection');
+      if (!doc.isRegistered) {
+        setDialogue({
+          title: getIdCardProps(doc.documentCategory, doc.mock).title ?? 'Document',
+          description: 'This document is not registered yet, so it cannot be used for proofs.',
+        });
+        return;
+      }
+      if (doc.id === catalog.selectedDocumentId) return;
       analytics.trackEvent('manage_docs_document_selected');
-      const updated = { ...catalog, selectedDocumentId: id };
+      const updated = { ...catalog, selectedDocumentId: doc.id };
       setCatalog(updated);
       void documents.saveDocumentCatalog(updated as Parameters<typeof documents.saveDocumentCatalog>[0]);
-      const selectedDoc = updated.documents.find(doc => doc.id === id);
-      const label = getIdCardProps(selectedDoc?.documentCategory, selectedDoc?.mock).title ?? 'Document';
-      setDialogue({ title: label, description: 'Selected for proofs.' });
     },
     [catalog, documents, haptic, analytics],
+  );
+
+  const openDocumentActions = useCallback(
+    (doc: DocumentEntry) => {
+      haptic.trigger('selection');
+      analytics.trackEvent('manage_docs_actions_opened');
+      setDialogue({
+        title: getIdCardProps(doc.documentCategory, doc.mock).title ?? 'Document',
+        description: doc.isRegistered ? 'Registered' : 'Pending registration',
+      });
+    },
+    [haptic, analytics],
   );
 
   const handleBack = useCallback(() => {
@@ -93,19 +118,26 @@ export const ManageDocumentsScreen: React.FC = () => {
       insets={WEB_SAFE_AREA.insets}
       escapeIcon={({ size, color }) => <LeftArrowIcon size={size} color={color} />}
       addIcon={({ size, color }) => <PlusIcon size={size} color={color} />}
-      documents={catalog.documents.map(doc => {
-        const selected = doc.id === catalog.selectedDocumentId;
-        const registration = doc.isRegistered ? 'Registered' : 'Pending registration';
-        const title = getIdCardProps(doc.documentCategory, doc.mock).title ?? 'Document';
-        return {
-          id: doc.id,
-          // euclid 1.4.6 has no selected-state prop on document rows, so the
-          // marker lives in the label until the DocumentItem.selected work ships.
-          label: selected ? `${title} ✓` : title,
-          description: selected ? `In use for proofs - ${registration}` : `${registration} - tap to use for proofs`,
-          onPress: () => selectDocument(doc.id),
-        };
-      })}
+      activeDocumentId={catalog.selectedDocumentId ?? undefined}
+      documents={catalog.documents.map(doc => ({
+        id: doc.id,
+        label: getIdCardProps(doc.documentCategory, doc.mock).title ?? 'Document',
+        description: doc.isRegistered ? 'Registered' : 'Pending registration',
+        badge: (
+          <button
+            type="button"
+            aria-label="Document details"
+            onClick={event => {
+              event.stopPropagation();
+              openDocumentActions(doc);
+            }}
+            style={{ background: 'none', border: 'none', padding: 4, cursor: 'pointer', display: 'flex' }}
+          >
+            <ChevronRightIcon size={20} color="#94A3B8" />
+          </button>
+        ),
+        onPress: () => selectDocument(doc),
+      }))}
       onBack={handleBack}
       onAddDocument={onAddDocument}
       dialogue={dialogue}
