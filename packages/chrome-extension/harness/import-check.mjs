@@ -19,6 +19,7 @@ import {
   resetFromUnlock,
   unlockWithPassword,
   waitForText,
+  waitForVerifyStep,
 } from './ext-ui.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -204,19 +205,31 @@ try {
 
   const sharedOut = {};
   const senderDone = runSender(qr, sharedOut);
-  await waitForText(page, 'Secure this browser', 60_000);
-  console.log('[harness] custody step visible');
-
+  const shown = await waitForVerifyStep(page);
   const expected = sasEmojis(
     new Uint8Array(sharedOut.secret),
     sharedOut.binding,
   );
-  const shown = await readSas(page);
   if (shown.join(' ') !== expected.join(' '))
     throw new Error(
       `SAS mismatch: page="${shown.join(' ')}" sender="${expected.join(' ')}"`,
     );
-  console.log(`[harness] SAS matches on both sides: ${shown.join('  ')}`);
+  console.log(`[harness] verify step shows only the SAS: ${shown.join('  ')}`);
+  const qrGone = await page.evaluate(
+    () => document.querySelector('[data-qr-content]') === null,
+  );
+  if (!qrGone) throw new Error('QR still visible on the verify step');
+
+  // The real envelope lands next; the rogue senders below must not disturb
+  // the session once it has.
+  await waitForText(page, 'Secure this browser', 60_000);
+  const sasGone = await page.evaluate(() =>
+    [...document.querySelectorAll('[role="img"]')].every(
+      node => !/\p{Extended_Pictographic}/u.test(node.textContent ?? ''),
+    ),
+  );
+  if (!sasGone) throw new Error('SAS still visible on the custody step');
+  console.log('[harness] custody step drops the SAS');
 
   const attacker = createECDH('prime256v1');
   attacker.generateKeys();
@@ -257,8 +270,7 @@ try {
   const stillOnCustody = (
     await page.evaluate(() => document.body?.innerText ?? '')
   ).includes('Secure this browser');
-  const sasAfter = await readSas(page);
-  if (!stillOnCustody || sasAfter.join(' ') !== expected.join(' ')) {
+  if (!stillOnCustody) {
     throw new Error('substituted-sender envelope was not refused');
   }
   console.log(
@@ -301,9 +313,10 @@ try {
   });
   await new Promise(resolve => setTimeout(resolve, 1_500));
   offPathSocket.close();
-  const sasUnchanged = await readSas(page);
-  if (sasUnchanged.join(' ') !== expected.join(' '))
-    throw new Error('off-path envelope altered the session');
+  const custodyIntact = (
+    await page.evaluate(() => document.body?.innerText ?? '')
+  ).includes('Secure this browser');
+  if (!custodyIntact) throw new Error('off-path envelope altered the session');
   console.log(
     '[harness] off-path envelope refused (linkSecret unknown to attacker)',
   );

@@ -51,23 +51,25 @@ export const ExtensionLinkScreen: React.FC = () => {
           break;
         case 'hello':
           setSas(event.sas ?? []);
-          setQrCaption('Same emojis on your phone? Then press "Send account" there.');
+          setStep('verify');
           break;
         case 'imported':
-          setSas(event.sas ?? []);
           setDocCount(event.docCount ?? 0);
           setStep('custody');
           break;
         case 'expired':
+          setStep('qr');
           setQrState('expired');
           setQrCaption('This code expired for your safety.');
           break;
         case 'error':
-          if (stepRef.current === 'qr') {
-            setQrState('expired');
-            setQrCaption(event.message ?? 'Something went wrong. Get a new code.');
-          } else {
+          if (stepRef.current === 'custody') {
+            // Keep the user on custody: the account is already here, only
+            // securing it failed.
             setError(event.message ?? 'Something went wrong.');
+          } else {
+            setError(event.message ?? 'Something went wrong. Get a new code.');
+            setStep('error');
           }
           break;
         case 'done':
@@ -77,7 +79,7 @@ export const ExtensionLinkScreen: React.FC = () => {
     return () => {
       cancelled = true;
       unsubscribe();
-      if (stepRef.current === 'qr') void custody.cancelLinkSession();
+      if (stepRef.current === 'qr' || stepRef.current === 'verify') void custody.cancelLinkSession();
     };
     // `session` bumps tear down and recreate the link session (regenerate).
   }, [custody, session]);
@@ -98,6 +100,9 @@ export const ExtensionLinkScreen: React.FC = () => {
 
   const regenerate = useCallback(() => {
     haptic.trigger('selection');
+    setStep('qr');
+    setError('');
+    setSas([]);
     setSession(count => count + 1);
   }, [haptic]);
 

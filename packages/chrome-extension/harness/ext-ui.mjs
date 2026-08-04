@@ -69,9 +69,15 @@ export async function readSas(page) {
   );
 }
 
+/** Waits for the emoji-verify step (QR gone) and returns the emojis shown. */
+export async function waitForVerifyStep(page, timeout = 60_000) {
+  await waitForText(page, 'Check these emojis', timeout);
+  return readSas(page);
+}
+
 /** Fills the two password fields on the custody step and submits. */
 export async function completeCustodyWithPassword(page, password) {
-  await waitForText(page, 'Secure this browser');
+  await waitForText(page, 'Secure this browser', 60_000);
   const fields = await page.$$('input[type="password"]');
   if (fields.length < 2)
     throw new Error(`expected two password inputs, found ${fields.length}`);
