@@ -1,10 +1,20 @@
-import { disablePasskeyUnlock } from './passkey';
+import { startLinkSession, type LinkSessionHandle } from './link-session';
+import {
+  disablePasskeyUnlock,
+  enablePasskeyUnlock,
+  isPasskeyEnabled,
+  unlockWithPasskey,
+} from './passkey';
 import { startRelayerSession, type RelayerSession } from './relayer-session';
 import {
   createVault,
   isInitialized,
   isUnlocked,
+  passwordStrength,
   reset as vaultReset,
+  unlock as vaultUnlock,
+  unlockCooldownMs,
+  vaultMode,
   VaultLockedError,
 } from './vault';
 
@@ -137,6 +147,25 @@ function respond(
 function unsupported(code: string, message: string): BridgeErrorShape {
   return { code, message };
 }
+
+function emitEvent(domain: string, event: string, data: unknown): void {
+  const bridge = (globalThis as { SelfNativeBridge?: SelfNativeBridgeGlobal })
+    .SelfNativeBridge;
+  if (!bridge) return;
+  bridge._handleEvent(
+    JSON.stringify({
+      type: 'event',
+      version: BRIDGE_PROTOCOL_VERSION,
+      id: crypto.randomUUID(),
+      domain,
+      event,
+      data,
+      timestamp: Date.now(),
+    }),
+  );
+}
+
+let linkSession: LinkSessionHandle | null = null;
 
 interface HostConfig {
   mode: 'self-app' | 'embed';
@@ -308,6 +337,52 @@ async function handle(request: BridgeRequest): Promise<void> {
         window.close();
         return;
 
+      case 'custody.state':
+        return respond(request, {
+          initialized: await isInitialized(),
+          unlocked: await isUnlocked(),
+          mode: await vaultMode(),
+          passkeyEnabled: await isPasskeyEnabled(),
+        });
+      case 'custody.passwordStrength':
+        return respond(request, passwordStrength(String(params.password)));
+      case 'custody.createLinkSession': {
+        linkSession?.cancel();
+        linkSession = await startLinkSession(
+          pageParams.get('relay'),
+          event => emitEvent('custody', 'link', event),
+        );
+        return respond(request, {
+          qrContent: linkSession.qrContent,
+          ttlMs: linkSession.ttlMs,
+        });
+      }
+      case 'custody.cancelLinkSession':
+        linkSession?.cancel();
+        linkSession = null;
+        return respond(request, { ok: true });
+      case 'custody.completeLink': {
+        if (!linkSession) throw new Error('No link session in progress');
+        const docCount = await linkSession.complete(
+          params.kind === 'passkey' ? 'passkey' : 'password',
+          typeof params.password === 'string' ? params.password : undefined,
+        );
+        return respond(request, { ok: true, docCount });
+      }
+      case 'custody.unlock': {
+        const cooldownMs = await unlockCooldownMs();
+        if (cooldownMs > 0) return respond(request, { ok: false, cooldownMs });
+        const ok = await vaultUnlock(String(params.password));
+        return respond(request, {
+          ok,
+          cooldownMs: ok ? 0 : await unlockCooldownMs(),
+        });
+      }
+      case 'custody.unlockPasskey':
+        return respond(request, { ok: await unlockWithPasskey() });
+      case 'custody.enablePasskey':
+        await enablePasskeyUnlock();
+        return respond(request, { ok: true });
       case 'custody.lock':
         respond(request, { ok: true });
         void chrome.runtime.sendMessage({ type: 'self-ext:lock' });

@@ -20,7 +20,13 @@ export type { BridgeBiometricsAdapter } from './biometrics';
 export type { BridgeCameraAdapter, MrzScanParams, MrzScanResult } from './camera';
 
 export type { BridgeCryptoAdapter } from './crypto';
-export type { BridgeCustodyAdapter } from './custody';
+export type {
+  BridgeCustodyAdapter,
+  CustodyLinkEvent,
+  CustodyLinkSession,
+  CustodyState,
+  CustodyUnlockResult,
+} from './custody';
 export type { BridgeDocumentsAdapter } from './documents';
 
 export type { BridgeHapticAdapter } from './haptic';
