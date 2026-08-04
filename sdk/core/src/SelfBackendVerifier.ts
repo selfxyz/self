@@ -33,9 +33,7 @@ const CELO_TESTNET_RPC_URL = 'https://forno.celo-sepolia.celo-testnet.org';
 const IDENTITY_VERIFICATION_HUB_ADDRESS = '0xe57F4773bd9c9d8b6Cd70431117d353298B9f5BF';
 const IDENTITY_VERIFICATION_HUB_ADDRESS_STAGING = '0x16ECBA51e18a4a7e61fdC417f0d47AFEeDfbed74';
 
-// Warn once per process, not per instantiation, so servers constructing a
-// verifier per request don't flood their logs.
-let deprecationWarned = false;
+const DEPRECATION_WARNED_KEY = Symbol.for('selfxyz.core.deprecation-warned');
 
 export class SelfBackendVerifier {
   protected scope: string;
@@ -53,8 +51,8 @@ export class SelfBackendVerifier {
     configStorage: IConfigStorage,
     userIdentifierType: UserIdType
   ) {
-    if (!deprecationWarned) {
-      deprecationWarned = true;
+    if (!(globalThis as Record<symbol, unknown>)[DEPRECATION_WARNED_KEY]) {
+      (globalThis as Record<symbol, unknown>)[DEPRECATION_WARNED_KEY] = true;
       console.warn(
         '[@selfxyz/core] SelfBackendVerifier is deprecated — new integrations must use @selfxyz/enterprise-sdk. Migration guide: https://docs.self.xyz/docs/self-enterprise/migration/from-self-pass-sdk/'
       );
