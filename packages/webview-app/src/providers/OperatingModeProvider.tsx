@@ -21,6 +21,9 @@ export interface OperatingModeContextValue {
   // Optional native capabilities advertised by the host. A host that omits the
   // field (pre-handshake) is treated as all-true.
   capabilities: Capabilities;
+  // Host platform string from lifecycle.getConfig (e.g. 'chrome-extension');
+  // undefined for hosts that omit it.
+  hostPlatform?: string;
 }
 
 export interface VerificationRequestPayload {
@@ -73,6 +76,7 @@ export const OperatingModeProvider: React.FC<{ children: React.ReactNode }> = ({
           isReady: true,
           referenceId: config?.referenceId ?? referenceIdFromUrl(),
           capabilities: normalizeCapabilities(config?.capabilities),
+          hostPlatform: config?.platform,
         });
       } catch {
         // Browser-host fallback, missing transport, or a host that doesn't

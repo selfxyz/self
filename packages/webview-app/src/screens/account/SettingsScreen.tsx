@@ -26,7 +26,7 @@ import { WEB_SAFE_AREA } from '../../utils/insets';
 export const SettingsScreen: React.FC = () => {
   const navigate = useNavigate();
   const { analytics, haptic, lifecycle, custody } = useSelfClient();
-  const { capabilities } = useOperatingMode();
+  const { capabilities, hostPlatform } = useOperatingMode();
   const [confirmingReset, setConfirmingReset] = useState(false);
 
   const handleLock = useCallback(() => {
@@ -87,15 +87,19 @@ export const SettingsScreen: React.FC = () => {
                 navigate('/settings/security');
               },
             },
-            {
-              icon: NotificationIcon,
-              label: 'Notifications',
-              description: 'Preferences, notification types',
-              onPress: () => {
-                haptic.trigger('selection');
-                navigate('/settings/notifications');
-              },
-            },
+            ...(hostPlatform === 'chrome-extension'
+              ? []
+              : [
+                  {
+                    icon: NotificationIcon,
+                    label: 'Notifications',
+                    description: 'Preferences, notification types',
+                    onPress: () => {
+                      haptic.trigger('selection');
+                      navigate('/settings/notifications');
+                    },
+                  },
+                ]),
           ],
         },
         ...(capabilities.custodyControls

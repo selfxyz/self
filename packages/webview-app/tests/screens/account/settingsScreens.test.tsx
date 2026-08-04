@@ -35,6 +35,7 @@ vi.mock('../../../src/providers/SelfClientProvider', () => ({
 
 const operatingMode = {
   mode: 'self-app' as const,
+  hostPlatform: undefined as string | undefined,
   capabilities: {
     nfc: true,
     mrzCamera: true,
@@ -222,6 +223,7 @@ describe('WV-16 settings screens', () => {
     generateMockDocumentMock.mockResolvedValue({ documentCategory: 'passport', mock: true });
     storePassportDataMock.mockResolvedValue(undefined);
     operatingMode.capabilities.custodyControls = false;
+    operatingMode.hostPlatform = undefined;
   });
 
   afterEach(() => {
@@ -279,6 +281,17 @@ describe('WV-16 settings screens', () => {
       fireEvent.click(screen.getByRole('button', { name: /lock extension/i }));
       expect(custody.lock).toHaveBeenCalled();
       expect(analytics.trackEvent).toHaveBeenCalledWith('settings_lock_pressed');
+    });
+
+    it('hides Notifications when hosted by the extension', () => {
+      operatingMode.hostPlatform = 'chrome-extension';
+      renderRoutes(['/settings']);
+      expect(screen.queryByRole('button', { name: /notifications/i })).toBeNull();
+    });
+
+    it('shows Notifications on non-extension hosts', () => {
+      renderRoutes(['/settings']);
+      expect(screen.getByRole('button', { name: /notifications/i })).toBeTruthy();
     });
 
     it('requires a second press before resetting', () => {
