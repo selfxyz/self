@@ -35,6 +35,11 @@ const IDENTITY_VERIFICATION_HUB_ADDRESS_STAGING = '0x16ECBA51e18a4a7e61fdC417f0d
 
 const DEPRECATION_WARNED_KEY = Symbol.for('selfxyz.core.deprecation-warned');
 
+/**
+ * @deprecated The open-source Self Pass SDK is legacy. New integrations must use
+ * `SelfClient` from `@selfxyz/enterprise-sdk` — the managed verifier replaces this class.
+ * Migration guide: https://docs.self.xyz/docs/self-enterprise/migration/from-self-pass-sdk/
+ */
 export class SelfBackendVerifier {
   protected scope: string;
   protected identityVerificationHubContract: IdentityVerificationHubImpl;
