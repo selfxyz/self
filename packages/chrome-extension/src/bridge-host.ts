@@ -8,10 +8,27 @@ import {
   VaultLockedError,
 } from './vault';
 
-// Floor the document size so the toolbar popup (action.default_popup) opens
-// at a usable size instead of collapsing to fit-content.
-document.documentElement.style.minWidth = '400px';
-document.documentElement.style.minHeight = '600px';
+// The anchored action popup (default_popup) sizes itself to the document, so
+// pin an exact frame there; other contexts (verification window, tabs) keep
+// their own sizing. The marker rides the ctx=popup query param through every
+// custody redirect.
+const inActionPopup =
+  new URLSearchParams(window.location.search).get('ctx') === 'popup';
+if (inActionPopup) {
+  const style = document.documentElement.style;
+  style.width = '400px';
+  style.height = '600px';
+  style.overflowX = 'hidden';
+  style.overflowY = 'auto';
+}
+
+function gateUrl(page: 'link.html' | 'unlock.html', next?: string): string {
+  const params = new URLSearchParams();
+  if (inActionPopup) params.set('ctx', 'popup');
+  if (next) params.set('next', next);
+  const query = params.toString();
+  return chrome.runtime.getURL(query ? `${page}?${query}` : page);
+}
 
 // Suppresses the lock-eviction redirect while custody.reset is tearing the
 // vault down, so the page lands on link.html instead of unlock.html.
@@ -22,21 +39,17 @@ chrome.storage.session.onChanged?.addListener(changes => {
   if (!changes.vaultSessionKey) return;
   if (changes.vaultSessionKey.newValue) return; // unlocked or refreshed
   const here = window.location.pathname.slice(1) + window.location.search;
-  window.location.replace(
-    chrome.runtime.getURL(`unlock.html?next=${encodeURIComponent(here)}`),
-  );
+  window.location.replace(gateUrl('unlock.html', here));
 });
 
 void (async () => {
   if (!(await isInitialized())) {
-    window.location.replace(chrome.runtime.getURL('link.html'));
+    window.location.replace(gateUrl('link.html'));
     return;
   }
   if (!(await isUnlocked())) {
     const here = window.location.pathname.slice(1) + window.location.search;
-    window.location.replace(
-      chrome.runtime.getURL(`unlock.html?next=${encodeURIComponent(here)}`),
-    );
+    window.location.replace(gateUrl('unlock.html', here));
   }
 })();
 
@@ -277,7 +290,7 @@ async function handle(request: BridgeRequest): Promise<void> {
         await vaultReset();
         await disablePasskeyUnlock();
         respond(request, { ok: true });
-        window.location.replace(chrome.runtime.getURL('link.html'));
+        window.location.replace(gateUrl('link.html'));
         return;
       }
 

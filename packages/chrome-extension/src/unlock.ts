@@ -6,6 +6,17 @@ import {
 } from './passkey';
 import { reset, unlock, unlockCooldownMs, vaultMode } from './vault';
 
+// Exact frame when hosted in the anchored action popup (see bridge-host).
+const inActionPopup =
+  new URLSearchParams(window.location.search).get('ctx') === 'popup';
+if (inActionPopup) {
+  const style = document.documentElement.style;
+  style.width = '400px';
+  style.height = '600px';
+  style.overflowX = 'hidden';
+  style.overflowY = 'auto';
+}
+
 const pw = document.getElementById('pw') as HTMLInputElement;
 const submit = document.getElementById('pw-submit') as HTMLButtonElement;
 const passkeyBtn = document.getElementById('pw-passkey') as HTMLButtonElement;
@@ -123,6 +134,8 @@ resetConfirmBtn.addEventListener('click', () => {
       error.textContent = `Could not clear this browser: ${err instanceof Error ? err.message : String(err)}`;
       return;
     }
-    window.location.href = chrome.runtime.getURL('link.html');
+    window.location.href = chrome.runtime.getURL(
+      inActionPopup ? 'link.html?ctx=popup' : 'link.html',
+    );
   })();
 });

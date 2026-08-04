@@ -59,6 +59,21 @@ interface TransferPayload {
   documents: Record<string, unknown>;
 }
 
+// Exact frame when hosted in the anchored action popup (see bridge-host).
+const inActionPopup =
+  new URLSearchParams(window.location.search).get('ctx') === 'popup';
+if (inActionPopup) {
+  const style = document.documentElement.style;
+  style.width = '400px';
+  style.height = '600px';
+  style.overflowX = 'hidden';
+  style.overflowY = 'auto';
+}
+
+const withPopupCtx = (page: string): string => {
+  return chrome.runtime.getURL(inActionPopup ? `${page}?ctx=popup` : page);
+};
+
 const el = <T extends HTMLElement>(id: string): T => {
   const node = document.getElementById(id);
   if (!node) throw new Error(`missing #${id}`);
@@ -427,7 +442,7 @@ async function main(): Promise<void> {
   });
 
   el<HTMLButtonElement>('open-app').addEventListener('click', () => {
-    window.location.href = chrome.runtime.getURL('index.html');
+    window.location.href = withPopupCtx('index.html');
   });
 
   const passkeyBtn = el<HTMLButtonElement>('enable-passkey');
