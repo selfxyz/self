@@ -8,6 +8,11 @@ import {
   VaultLockedError,
 } from './vault';
 
+// Floor the document size so the toolbar popup (action.default_popup) opens
+// at a usable size instead of collapsing to fit-content.
+document.documentElement.style.minWidth = '400px';
+document.documentElement.style.minHeight = '600px';
+
 // Suppresses the lock-eviction redirect while custody.reset is tearing the
 // vault down, so the page lands on link.html instead of unlock.html.
 let resettingVault = false;

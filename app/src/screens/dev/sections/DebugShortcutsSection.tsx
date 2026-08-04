@@ -133,6 +133,14 @@ export const DebugShortcutsSection: React.FC<DebugShortcutsSectionProps> = ({
             onPress={() => navigation.navigate('LinkBrowserExtension')}
           />
         )}
+        {IS_DEV_MODE && (
+          <ShortcutRow
+            label="Send Account screen (demo)"
+            onPress={() =>
+              navigation.navigate('LinkBrowserExtension', { demo: true })
+            }
+          />
+        )}
         {isFixtureCaptureSupported && (
           <ShortcutRow
             label="APDU Fixture Capture"

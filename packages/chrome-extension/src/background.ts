@@ -5,7 +5,6 @@ const POPUP_WIDTH = 430;
 const POPUP_HEIGHT = 800;
 const SESSION_TIMEOUT_MS = 5 * 60_000;
 const PENDING_KEY = 'pendingSession';
-const HOME_WINDOW_KEY = 'homeWindowId';
 const TIMEOUT_ALARM = 'self-pending-timeout';
 const LOCK_MENU_ID = 'self-lock';
 
@@ -27,12 +26,6 @@ async function writePending(session: PendingSession | null): Promise<void> {
   else await chrome.storage.session.remove(PENDING_KEY);
 }
 
-async function readHomeWindowId(): Promise<number | null> {
-  const record = await chrome.storage.session.get(HOME_WINDOW_KEY);
-  const value = record[HOME_WINDOW_KEY];
-  return typeof value === 'number' ? value : null;
-}
-
 async function vaultState(): Promise<'uninitialized' | 'locked' | 'unlocked'> {
   const local = await chrome.storage.local.get('vaultMeta');
   if (!local.vaultMeta) return 'uninitialized';
@@ -50,24 +43,6 @@ async function gatedUrl(target: string): Promise<string> {
     case 'unlocked':
       return chrome.runtime.getURL(target);
   }
-}
-
-async function openHomeWindow(): Promise<void> {
-  const existing = await readHomeWindowId();
-  if (existing !== null) {
-    try {
-      await chrome.windows.update(existing, { focused: true });
-      return;
-    } catch {}
-  }
-
-  const created = await chrome.windows.create({
-    url: await gatedUrl('index.html'),
-    type: 'popup',
-    width: POPUP_WIDTH,
-    height: POPUP_HEIGHT,
-  });
-  await chrome.storage.session.set({ [HOME_WINDOW_KEY]: created.id ?? null });
 }
 
 function failureResult(code: string, message: string) {
@@ -183,7 +158,6 @@ async function closeAllExtensionWindows(): Promise<void> {
     if (ours && win.id != null)
       await chrome.windows.remove(win.id).catch(() => {});
   }
-  await chrome.storage.session.remove(HOME_WINDOW_KEY);
 }
 
 async function lockNow(): Promise<void> {
@@ -199,10 +173,6 @@ async function lockNow(): Promise<void> {
 
 void chrome.storage.session.setAccessLevel?.({
   accessLevel: 'TRUSTED_CONTEXTS',
-});
-
-chrome.action.onClicked.addListener(() => {
-  void openHomeWindow();
 });
 
 chrome.runtime.onInstalled.addListener(() => {
@@ -248,8 +218,6 @@ void reconcile();
 
 chrome.windows.onRemoved.addListener(windowId => {
   void (async () => {
-    if ((await readHomeWindowId()) === windowId)
-      await chrome.storage.session.remove(HOME_WINDOW_KEY);
     const session = await readPending();
     if (session?.windowId === windowId) {
       await settleSession(

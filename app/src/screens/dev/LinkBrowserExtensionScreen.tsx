@@ -6,14 +6,23 @@ import { Buffer } from 'buffer';
 import forge from 'node-forge';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, TextInput } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { io, type Socket } from 'socket.io-client';
-import { Button, ScrollView, Text, XStack, YStack } from 'tamagui';
+import { ScrollView, Text, XStack, YStack } from 'tamagui';
+
+import type { RouteProp } from '@react-navigation/native';
+import { useRoute } from '@react-navigation/native';
 
 import { ec } from '@selfxyz/common/utils/proving';
 import {
+  Description,
+  PrimaryButton,
+  SecondaryButton,
+  Title,
+} from '@selfxyz/mobile-sdk-alpha/components';
+import {
   black,
   slate200,
-  slate500,
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
 import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
@@ -26,6 +35,7 @@ import {
 } from '@selfxyz/mobile-sdk-alpha/utils/sas';
 
 import { QRCodeScannerView } from '@/components/native/QRCodeScanner';
+import type { RootStackParamList } from '@/navigation';
 import { useAuth } from '@/providers/authProvider';
 import {
   getAllDocumentsDirectlyFromKeychain,
@@ -125,14 +135,22 @@ function encryptWithChannel(channel: Channel, plaintext: string) {
   };
 }
 
+// Styling QA fixture (dev shortcut): stages the confirm step with no live
+// channel behind it.
+const DEMO_SAS = ['🦊', '🌈', '🚀', '🍀'];
+
 export const LinkBrowserExtensionScreen: React.FC = () => {
   const { getOrCreateMnemonic } = useAuth();
-  const [step, setStep] = useState<Step>('scan');
+  const route =
+    useRoute<RouteProp<RootStackParamList, 'LinkBrowserExtension'>>();
+  const demo = route.params?.demo === true;
+  const { bottom } = useSafeAreaInsets();
+  const [step, setStep] = useState<Step>(demo ? 'confirm' : 'scan');
   const [qrContent, setQrContent] = useState<LinkQrContent | null>(null);
   const [pasted, setPasted] = useState('');
   const [docCount, setDocCount] = useState(0);
   const [statusText, setStatusText] = useState('');
-  const [sas, setSas] = useState<string[]>([]);
+  const [sas, setSas] = useState<string[]>(demo ? DEMO_SAS : []);
   const socketRef = useRef<Socket | null>(null);
   const helloSocketRef = useRef<Socket | null>(null);
   const channelRef = useRef<Channel | null>(null);
@@ -262,6 +280,11 @@ export const LinkBrowserExtensionScreen: React.FC = () => {
   );
 
   const send = useCallback(async () => {
+    if (demo) {
+      setDocCount(2);
+      setStep('success');
+      return;
+    }
     const channel = channelRef.current;
     const socket = socketRef.current;
     if (!qrContent || !channel || !socket) return;
@@ -322,20 +345,38 @@ export const LinkBrowserExtensionScreen: React.FC = () => {
     } catch (error) {
       fail(error instanceof Error ? error.message : 'Transfer failed');
     }
-  }, [qrContent, getOrCreateMnemonic, fail]);
+  }, [demo, qrContent, getOrCreateMnemonic, fail]);
+
+  const cancelToScan = useCallback(() => {
+    cleanup();
+    setSas(demo ? DEMO_SAS : []);
+    setStep(demo ? 'confirm' : 'scan');
+  }, [cleanup, demo]);
+
+  const sasRow = (
+    <XStack justifyContent="center" gap={20} flexWrap="nowrap">
+      {sas.map((emoji, index) => (
+        <Text key={index} style={styles.sasEmoji} numberOfLines={1}>
+          {emoji}
+        </Text>
+      ))}
+    </XStack>
+  );
 
   return (
-    <YStack flex={1} backgroundColor={white}>
-      <ScrollView>
+    <YStack
+      flex={1}
+      backgroundColor={white}
+      paddingBottom={Math.max(bottom, 16)}
+    >
+      <ScrollView flex={1}>
         <YStack padding={20} gap={16}>
           {step === 'scan' && (
             <>
-              <Text style={styles.title}>Link browser extension</Text>
-              <Text style={styles.body}>
-                Open the Self extension in Chrome and scan the code it shows.
-                Your secret and documents will be sent end-to-end encrypted.
-                Only link a browser you own.
-              </Text>
+              <Title>Link browser extension</Title>
+              <Description>
+                Scan the code shown by the Self extension.
+              </Description>
               <YStack
                 height={280}
                 borderRadius={12}
@@ -347,9 +388,7 @@ export const LinkBrowserExtensionScreen: React.FC = () => {
                   onQRData={handleScan}
                 />
               </YStack>
-              <Text style={styles.body}>
-                Or paste the link code (emulator):
-              </Text>
+              <Description>Or paste the link code (emulator):</Description>
               <TextInput
                 style={styles.input}
                 value={pasted}
@@ -359,130 +398,85 @@ export const LinkBrowserExtensionScreen: React.FC = () => {
                 autoCorrect={false}
                 multiline
               />
-              <Button
-                style={{ backgroundColor: black }}
-                borderRadius="$10"
-                disabled={pasted.trim().length === 0}
-                onPress={() => acceptCode(pasted)}
-              >
-                <Text color={white} fontFamily={dinot}>
-                  Use pasted code
-                </Text>
-              </Button>
             </>
           )}
 
           {step === 'confirm' && (
             <>
-              <Text style={styles.title}>Send account to this browser?</Text>
-              <Text style={styles.sas}>{sas.join('  ')}</Text>
-              <Text style={styles.body}>
-                Check that the extension window shows these same emojis.
-                Matching emojis confirm the connection is end-to-end encrypted
-                with that browser and nothing in between. If they differ,
-                cancel.
-              </Text>
-              <Text style={styles.body}>
-                This sends your recovery secret and every registered document to
-                the extension over an end-to-end encrypted channel. Anyone
-                controlling that browser can prove with your identity.
-              </Text>
-              <XStack gap={12}>
-                <Button
-                  flex={1}
-                  borderColor={slate200}
-                  onPress={() => {
-                    cleanup();
-                    setSas([]);
-                    setStep('scan');
-                  }}
-                >
-                  <Text fontFamily={dinot}>Cancel</Text>
-                </Button>
-                <Button
-                  flex={1}
-                  style={{ backgroundColor: black }}
-                  borderRadius="$10"
-                  onPress={() => void send()}
-                >
-                  <Text color={white} fontFamily={dinot}>
-                    Send account
-                  </Text>
-                </Button>
-              </XStack>
+              <Title>Send account to this browser?</Title>
+              {sasRow}
+              <Description>
+                Send only if your browser shows these exact emojis. That browser
+                will be able to prove with your identity.
+              </Description>
             </>
           )}
 
           {step === 'sending' && (
             <>
-              <Text style={styles.title}>Sending…</Text>
-              <Text style={styles.body}>{statusText}</Text>
-              {sas.length > 0 && (
-                <>
-                  <Text style={styles.sas}>{sas.join('  ')}</Text>
-                  <Text style={styles.body}>
-                    Security check: the browser extension shows the same emojis.
-                    If they differ, cancel and unlink.
-                  </Text>
-                </>
-              )}
+              <Title>Sending…</Title>
+              {sasRow}
+              <Description>{statusText}</Description>
             </>
           )}
 
           {step === 'success' && (
             <>
-              <Text style={styles.title}>Account linked</Text>
-              <Text style={styles.body}>
-                The extension confirmed the import
+              <Title>Account linked</Title>
+              {sasRow}
+              <Description>
                 {docCount > 0
-                  ? ` (${docCount} document${docCount === 1 ? '' : 's'})`
+                  ? `${docCount} document${docCount === 1 ? '' : 's'} sent. `
                   : ''}
-                . Finish the password setup in the browser.
-              </Text>
-              {sas.length > 0 && (
-                <Text style={styles.sas}>{sas.join('  ')}</Text>
-              )}
+                Finish setup in the browser.
+              </Description>
             </>
           )}
 
           {step === 'error' && (
             <>
-              <Text style={styles.title}>Transfer failed</Text>
-              <Text style={styles.body}>{statusText}</Text>
-              <Button
-                style={{ backgroundColor: black }}
-                borderRadius="$10"
-                onPress={() => setStep('scan')}
-              >
-                <Text color={white} fontFamily={dinot}>
-                  Try again
-                </Text>
-              </Button>
+              <Title>Transfer failed</Title>
+              <Description>{statusText}</Description>
             </>
           )}
         </YStack>
       </ScrollView>
+
+      {step === 'scan' && (
+        <YStack paddingHorizontal={20} paddingTop={12}>
+          <PrimaryButton
+            disabled={pasted.trim().length === 0}
+            onPress={() => acceptCode(pasted)}
+          >
+            Use pasted code
+          </PrimaryButton>
+        </YStack>
+      )}
+      {step === 'confirm' && (
+        <XStack gap={12} paddingHorizontal={20} paddingTop={12}>
+          <YStack flex={1}>
+            <SecondaryButton onPress={cancelToScan}>Cancel</SecondaryButton>
+          </YStack>
+          <YStack flex={1}>
+            <PrimaryButton onPress={() => void send()}>
+              Send account
+            </PrimaryButton>
+          </YStack>
+        </XStack>
+      )}
+      {step === 'error' && (
+        <YStack paddingHorizontal={20} paddingTop={12}>
+          <PrimaryButton onPress={cancelToScan}>Try again</PrimaryButton>
+        </YStack>
+      )}
     </YStack>
   );
 };
 
 const styles = StyleSheet.create({
-  title: {
-    fontFamily: dinot,
-    fontSize: 22,
-    color: black,
-  },
-  body: {
-    fontFamily: dinot,
-    fontSize: 15,
-    lineHeight: 21,
-    color: slate500,
-  },
-  sas: {
+  sasEmoji: {
     fontSize: 34,
     lineHeight: 44,
-    textAlign: 'center',
-    letterSpacing: 4,
   },
   input: {
     borderWidth: 1,
@@ -492,6 +486,7 @@ const styles = StyleSheet.create({
     padding: 10,
     fontSize: 12,
     color: black,
+    fontFamily: dinot,
   },
 });
 
