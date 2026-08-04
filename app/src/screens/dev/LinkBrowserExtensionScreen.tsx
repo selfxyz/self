@@ -136,8 +136,9 @@ function encryptWithChannel(channel: Channel, plaintext: string) {
 }
 
 // Styling QA fixture (dev shortcut): stages the confirm step with no live
-// channel behind it.
-const DEMO_SAS = ['🦊', '🌈', '🚀', '🍀'];
+// channel behind it. Must match SAS_LENGTH (6) so layout QA sees the real
+// row width.
+const DEMO_SAS = ['🦊', '🌈', '🚀', '🍀', '⛵', '🏀'];
 
 export const LinkBrowserExtensionScreen: React.FC = () => {
   const { getOrCreateMnemonic } = useAuth();
