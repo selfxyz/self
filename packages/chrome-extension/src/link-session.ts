@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-// Account-transfer receiver engine, UI-free: link.html (legacy) and the
-// bridge custody domain both drive it. Owns the relayer sockets, the SAS
-// handshake, envelope decryption, and vault persistence.
+// Account-transfer receiver engine, UI-free: driven by the bridge custody
+// domain. Owns the relayer sockets, the SAS handshake, envelope decryption,
+// and vault persistence.
 import { HDKey } from '@scure/bip32';
 import { mnemonicToSeedSync } from '@scure/bip39';
 import { io, type Socket } from 'socket.io-client';
@@ -115,7 +115,9 @@ export function validatePayload(payload: TransferPayload): {
   return { catalogSize: catalog.documents.length };
 }
 
-export async function persistDocuments(payload: TransferPayload): Promise<void> {
+export async function persistDocuments(
+  payload: TransferPayload,
+): Promise<void> {
   const phrase = extractMnemonicPhrase(payload.mnemonic);
   const privateKey = derivePrivateKey(phrase);
 
@@ -136,13 +138,7 @@ export async function persistDocuments(payload: TransferPayload): Promise<void> 
 }
 
 export interface LinkEvent {
-  stage:
-    | 'waiting'
-    | 'hello'
-    | 'imported'
-    | 'expired'
-    | 'done'
-    | 'error';
+  stage: 'waiting' | 'hello' | 'imported' | 'expired' | 'done' | 'error';
   sas?: string[];
   docCount?: number;
   message?: string;
@@ -208,17 +204,23 @@ export async function startLinkSession(
   });
   socket.on('connect_error', (err: Error) => {
     if (!handled)
-      fail(`Cannot reach the Self relay: ${err.message}. Check your connection, then get a new code.`);
+      fail(
+        `Cannot reach the Self relay: ${err.message}. Check your connection, then get a new code.`,
+      );
   });
   socket.on('disconnect', (reason: string) => {
     if (expired || handled || cancelled) return;
     if (reason === 'io client disconnect') return;
-    fail(`Connection to the Self relay dropped (${reason}). Get a new code if this persists.`);
+    fail(
+      `Connection to the Self relay dropped (${reason}). Get a new code if this persists.`,
+    );
   });
   socket.on('error', (payload: { message?: string } | string) => {
     const message = typeof payload === 'string' ? payload : payload?.message;
     if (!handled)
-      fail(`The Self relay rejected this session${message ? `: ${message}` : ''}. Get a new code.`);
+      fail(
+        `The Self relay rejected this session${message ? `: ${message}` : ''}. Get a new code.`,
+      );
   });
 
   helloSocket.on('self_app', (data: unknown) => {
@@ -234,7 +236,9 @@ export async function startLinkSession(
       if (typeof message.senderPublicKey !== 'string') return;
       if (helloSenderKey && helloSenderKey !== message.senderPublicKey) {
         helloConflict = true;
-        fail('Conflicting handshakes on this code. Get a new code and start again.');
+        fail(
+          'Conflicting handshakes on this code. Get a new code and start again.',
+        );
         return;
       }
       try {
@@ -268,16 +272,22 @@ export async function startLinkSession(
         return;
       if (handled) return; // the phone re-emits on reconnect
       if (expired) {
-        fail('This code expired before the transfer arrived. Get a new code and try again.');
+        fail(
+          'This code expired before the transfer arrived. Get a new code and try again.',
+        );
         return;
       }
       if (helloConflict) return;
       if (!helloSenderKey) {
-        fail('Transfer arrived without a handshake. Get a new code and start again.');
+        fail(
+          'Transfer arrived without a handshake. Get a new code and start again.',
+        );
         return;
       }
       if (message.senderPublicKey !== helloSenderKey) {
-        fail('Transfer did not match the verified handshake. Get a new code and start again.');
+        fail(
+          'Transfer did not match the verified handshake. Get a new code and start again.',
+        );
         return;
       }
 

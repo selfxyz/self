@@ -32,24 +32,51 @@ if (inActionPopup) {
   style.overflowY = 'auto';
 }
 
-function gateUrl(page: 'link.html' | 'unlock.html', next?: string): string {
+// Custody gating routes inside the app now (euclid screens at /ext/link and
+// /ext/unlock); the app is a hash-free SPA served from index.html, so the
+// route rides a query param the boot code reads before React mounts.
+function gateUrl(route: 'link' | 'unlock', next?: string): string {
   const params = new URLSearchParams();
+  params.set('ext_route', route);
   if (inActionPopup) params.set('ctx', 'popup');
   if (next) params.set('next', next);
-  const query = params.toString();
-  return chrome.runtime.getURL(query ? `${page}?${query}` : page);
+  return chrome.runtime.getURL(`index.html?${params.toString()}`);
 }
 
 // Suppresses the lock-eviction redirect while custody.reset is tearing the
-// vault down, so the page lands on link.html instead of unlock.html.
+// vault down, so the page lands on the link screen instead of unlock.
 let resettingVault = false;
+
+// Boot-time marker: decides whether this load starts on a gate screen.
+const initialGateRoute = new URLSearchParams(window.location.search).get(
+  'ext_route',
+);
+
+// Live check: the app navigates client-side (gate -> home), so the boot-time
+// marker goes stale. Anything reacting to later events must ask where we are
+// now, or a page that unlocked in place would ignore the next lock.
+function onGateScreen(): boolean {
+  if (window.location.pathname.startsWith('/ext/')) return true;
+  return new URLSearchParams(window.location.search).get('ext_route') !== null;
+}
+
+// Return target for after an unlock, with gate params stripped: leaving them in
+// would nest ext_route/next into the next gate URL on every hop.
+function returnTarget(): string {
+  const params = new URLSearchParams(window.location.search);
+  params.delete('ext_route');
+  params.delete('next');
+  params.delete('ctx');
+  const query = params.toString();
+  return window.location.pathname.slice(1) + (query ? `?${query}` : '');
+}
 
 chrome.storage.session.onChanged?.addListener(changes => {
   if (resettingVault) return;
+  if (onGateScreen()) return; // already on a gate screen
   if (!changes.vaultSessionKey) return;
   if (changes.vaultSessionKey.newValue) return; // unlocked or refreshed
-  const here = window.location.pathname.slice(1) + window.location.search;
-  window.location.replace(gateUrl('unlock.html', here));
+  window.location.replace(gateUrl('unlock', returnTarget()));
 });
 
 function mountApp(): void {
@@ -78,13 +105,17 @@ function mountApp(): void {
 }
 
 void (async () => {
+  // Gate screens are app routes themselves: mount and let them run.
+  if (initialGateRoute) {
+    mountApp();
+    return;
+  }
   if (!(await isInitialized())) {
-    window.location.replace(gateUrl('link.html'));
+    window.location.replace(gateUrl('link'));
     return;
   }
   if (!(await isUnlocked())) {
-    const here = window.location.pathname.slice(1) + window.location.search;
-    window.location.replace(gateUrl('unlock.html', here));
+    window.location.replace(gateUrl('unlock', returnTarget()));
     return;
   }
   mountApp();
@@ -348,9 +379,8 @@ async function handle(request: BridgeRequest): Promise<void> {
         return respond(request, passwordStrength(String(params.password)));
       case 'custody.createLinkSession': {
         linkSession?.cancel();
-        linkSession = await startLinkSession(
-          pageParams.get('relay'),
-          event => emitEvent('custody', 'link', event),
+        linkSession = await startLinkSession(pageParams.get('relay'), event =>
+          emitEvent('custody', 'link', event),
         );
         return respond(request, {
           qrContent: linkSession.qrContent,
@@ -392,7 +422,7 @@ async function handle(request: BridgeRequest): Promise<void> {
         await vaultReset();
         await disablePasskeyUnlock();
         respond(request, { ok: true });
-        window.location.replace(gateUrl('link.html'));
+        window.location.replace(gateUrl('link'));
         return;
       }
 
@@ -469,11 +499,10 @@ async function handle(request: BridgeRequest): Promise<void> {
       code: err instanceof VaultLockedError ? 'VAULT_LOCKED' : 'HOST_ERROR',
       message: err instanceof Error ? err.message : String(err),
     });
-    if (err instanceof VaultLockedError) {
-      const here = window.location.pathname.slice(1) + window.location.search;
-      window.location.replace(
-        chrome.runtime.getURL(`unlock.html?next=${encodeURIComponent(here)}`),
-      );
+    // Gate screens legitimately touch a locked vault (state checks, link
+    // persistence); bouncing from them would loop forever.
+    if (err instanceof VaultLockedError && !onGateScreen()) {
+      window.location.replace(gateUrl('unlock', returnTarget()));
     }
   }
 }

@@ -17,6 +17,8 @@ import { DevModeScreen } from './screens/account/DevModeScreen';
 import { NotificationPreferencesScreen } from './screens/account/NotificationPreferencesScreen';
 import { SecurityScreen } from './screens/account/SecurityScreen';
 import { SettingsScreen } from './screens/account/SettingsScreen';
+import { ExtensionLinkScreen } from './screens/extension/ExtensionLinkScreen';
+import { ExtensionUnlockScreen } from './screens/extension/ExtensionUnlockScreen';
 import { ComingSoonScreen } from './screens/ComingSoonScreen';
 import { KeychainDebugScreen } from './screens/debug/KeychainDebugScreen';
 import { EmbedDiscloseScreen } from './screens/embed/EmbedDiscloseScreen';
@@ -286,6 +288,8 @@ export const AppRoutes: React.FC = () => (
           })}
 
           {ModeRoute({ mode: 'shared', path: '/coming-soon', element: <ComingSoonScreen /> })}
+          {ModeRoute({ mode: 'shared', path: '/ext/link', element: <ExtensionLinkScreen /> })}
+          {ModeRoute({ mode: 'shared', path: '/ext/unlock', element: <ExtensionUnlockScreen /> })}
           {ModeRoute({ mode: 'embed', path: '/embed/error', element: <EmbedErrorScreen /> })}
           {import.meta.env.DEV && <Route path="/dev/keychain" element={<KeychainDebugScreen />} />}
 

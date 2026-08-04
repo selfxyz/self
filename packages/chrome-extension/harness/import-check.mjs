@@ -12,6 +12,15 @@ import {
 import puppeteer from 'puppeteer';
 import { io } from 'socket.io-client';
 
+import {
+  clickByText,
+  completeCustodyWithPassword,
+  readSas,
+  resetFromUnlock,
+  unlockWithPassword,
+  waitForText,
+} from './ext-ui.mjs';
+
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const dist = join(root, 'dist');
 const headed = process.argv.includes('--headed');
@@ -179,14 +188,15 @@ try {
   page.on('pageerror', err => errors.push(err.message));
 
   const relayParam = process.env.RELAY_URL
-    ? `?relay=${encodeURIComponent(process.env.RELAY_URL)}`
+    ? `&relay=${encodeURIComponent(process.env.RELAY_URL)}`
     : '';
-  await page.goto(`chrome-extension://${EXTENSION_ID}/link.html${relayParam}`, {
-    waitUntil: 'load',
-  });
-  await page.waitForSelector('#qr[data-qr-content]', { timeout: 15_000 });
+  await page.goto(
+    `chrome-extension://${EXTENSION_ID}/index.html?ext_route=link${relayParam}`,
+    { waitUntil: 'load' },
+  );
+  await page.waitForSelector('[data-qr-content]', { timeout: 30_000 });
   const qr = JSON.parse(
-    await page.$eval('#qr', node => node.dataset.qrContent),
+    await page.$eval('[data-qr-content]', node => node.dataset.qrContent),
   );
   console.log(
     `[harness] QR: session=${qr.transferSessionId} relay=${qr.relay}`,
@@ -194,28 +204,19 @@ try {
 
   const sharedOut = {};
   const senderDone = runSender(qr, sharedOut);
-  await page.waitForSelector('#step-password:not(.hidden)', {
-    timeout: 60_000,
-  });
-  console.log('[harness] password step visible');
+  await waitForText(page, 'Secure this browser', 60_000);
+  console.log('[harness] custody step visible');
 
-  const pageSas = (await page.$eval('#sas', node => node.textContent)).trim();
-  const scanSas = (
-    await page.$eval('#sas-scan', node => node.textContent)
-  ).trim();
-  const expectedSas = sasEmojis(
+  const expected = sasEmojis(
     new Uint8Array(sharedOut.secret),
     sharedOut.binding,
-  ).join('  ');
-  if (pageSas !== expectedSas)
-    throw new Error(`SAS mismatch: page="${pageSas}" sender="${expectedSas}"`);
-  if (scanSas !== expectedSas)
-    throw new Error(
-      `pre-send SAS mismatch: scan="${scanSas}" sender="${expectedSas}"`,
-    );
-  console.log(
-    `[harness] SAS matches on both sides (pre-send + import): ${pageSas}`,
   );
+  const shown = await readSas(page);
+  if (shown.join(' ') !== expected.join(' '))
+    throw new Error(
+      `SAS mismatch: page="${shown.join(' ')}" sender="${expected.join(' ')}"`,
+    );
+  console.log(`[harness] SAS matches on both sides: ${shown.join('  ')}`);
 
   const attacker = createECDH('prime256v1');
   attacker.generateKeys();
@@ -253,14 +254,11 @@ try {
   });
   await new Promise(resolve => setTimeout(resolve, 1_500));
   rogue.close();
-  const stillOnPassword = await page.$eval(
-    '#step-password',
-    node => !node.classList.contains('hidden'),
-  );
-  const pageSasAfter = (
-    await page.$eval('#sas', node => node.textContent)
-  ).trim();
-  if (!stillOnPassword || pageSasAfter !== expectedSas) {
+  const stillOnCustody = (
+    await page.evaluate(() => document.body?.innerText ?? '')
+  ).includes('Secure this browser');
+  const sasAfter = await readSas(page);
+  if (!stillOnCustody || sasAfter.join(' ') !== expected.join(' ')) {
     throw new Error('substituted-sender envelope was not refused');
   }
   console.log(
@@ -303,40 +301,28 @@ try {
   });
   await new Promise(resolve => setTimeout(resolve, 1_500));
   offPathSocket.close();
-  const sasUnchanged = (
-    await page.$eval('#sas', node => node.textContent)
-  ).trim();
-  if (sasUnchanged !== expectedSas)
+  const sasUnchanged = await readSas(page);
+  if (sasUnchanged.join(' ') !== expected.join(' '))
     throw new Error('off-path envelope altered the session');
   console.log(
     '[harness] off-path envelope refused (linkSecret unknown to attacker)',
   );
 
-  const expiryPage = await browser.newPage();
-  await expiryPage.goto(
-    `chrome-extension://${EXTENSION_ID}/link.html${relayParam}`,
+  const statusPage = await browser.newPage();
+  await statusPage.goto(
+    `chrome-extension://${EXTENSION_ID}/index.html?ext_route=link${relayParam}`,
     { waitUntil: 'load' },
   );
-  await expiryPage.waitForSelector('#qr canvas', { timeout: 15_000 });
-  await expiryPage.evaluate(() => {
-    const originalSetTimeout = window.setTimeout;
-    void originalSetTimeout;
-  });
-  const expiryText = await expiryPage.$eval(
-    '#scan-status',
-    node => node.textContent,
+  await statusPage.waitForSelector('[data-qr-content]', { timeout: 30_000 });
+  const statusText = await statusPage.evaluate(
+    () => document.body?.innerText ?? '',
   );
-  if (!expiryText || expiryText.trim().length === 0)
-    throw new Error('scan status is empty; user has no feedback');
-  console.log(
-    `[harness] scan step surfaces status: "${expiryText.trim().slice(0, 60)}"`,
-  );
-  await expiryPage.close();
+  if (!statusText.includes('Scan this code'))
+    throw new Error('scan step gives the user no status feedback');
+  console.log('[harness] scan step surfaces status copy');
+  await statusPage.close();
 
-  await page.type('#pw1', PASSWORD);
-  await page.type('#pw2', PASSWORD);
-  await page.click('#pw-submit');
-  await page.waitForSelector('#step-done:not(.hidden)', { timeout: 60_000 });
+  await completeCustodyWithPassword(page, PASSWORD);
   await senderDone;
   console.log('[harness] import completed + acked');
 
@@ -361,17 +347,14 @@ try {
   );
   const worker = await workerTarget.worker();
   await worker.evaluate(() => chrome.storage.session.remove('vaultSessionKey'));
-  await page.waitForFunction(
-    () => window.location.pathname.endsWith('unlock.html'),
-    { timeout: 10_000 },
-  );
+  await page.waitForFunction(() => window.location.pathname === '/ext/unlock', {
+    timeout: 10_000,
+  });
   console.log('[harness] lock evicts the open page to unlock');
-  await page.type('#pw', PASSWORD);
-  await page.click('#pw-submit');
-  await page.waitForFunction(
-    () => window.location.pathname.endsWith('index.html'),
-    { timeout: 15_000 },
-  );
+  await unlockWithPassword(page, PASSWORD);
+  await page.waitForFunction(() => window.location.pathname === '/', {
+    timeout: 20_000,
+  });
   console.log('[harness] lock -> unlock -> app roundtrip OK');
 
   // Settings custody controls (CEP-14): drive them from a real popup window,
@@ -388,32 +371,27 @@ try {
     { timeout: 15_000 },
   );
   const popup = await popupTarget.page();
-  await popup.waitForFunction(() => document.body.innerText.length > 20, {
-    timeout: 20_000,
-  });
+  await popup.waitForFunction(
+    () => (document.body?.innerText ?? '').length > 20,
+    {
+      timeout: 20_000,
+    },
+  );
   await popup.evaluate(() => {
     window.history.pushState({}, '', '/settings');
     window.dispatchEvent(new PopStateEvent('popstate'));
   });
-  const clickByText = text =>
-    popup.evaluate(label => {
-      const leaf = [...document.querySelectorAll('*')].find(
-        el => el.children.length === 0 && el.textContent?.trim() === label,
-      );
-      if (!leaf) throw new Error(`no element with text "${label}"`);
-      leaf.click();
-    }, text);
   await popup.waitForFunction(
     () => document.body.innerText.includes('Lock extension'),
     { timeout: 15_000 },
   );
-  await clickByText('Reset extension');
+  await clickByText(popup, 'Reset extension');
   await popup.waitForFunction(
     () => document.body.innerText.includes('Press again to confirm'),
     { timeout: 10_000 },
   );
   console.log('[harness] settings reset requires a second press');
-  await clickByText('Lock extension');
+  await clickByText(popup, 'Lock extension');
   {
     const deadline = Date.now() + 15_000;
     while (!popup.isClosed() && Date.now() < deadline)
@@ -426,17 +404,14 @@ try {
       waitUntil: 'load',
     })
     .catch(() => {});
-  await page.waitForFunction(
-    () => window.location.pathname.endsWith('unlock.html'),
-    { timeout: 15_000 },
-  );
+  await page.waitForFunction(() => window.location.pathname === '/ext/unlock', {
+    timeout: 15_000,
+  });
   console.log('[harness] settings lock closes the popup and locks the vault');
-  await page.type('#pw', PASSWORD);
-  await page.click('#pw-submit');
-  await page.waitForFunction(
-    () => window.location.pathname.endsWith('index.html'),
-    { timeout: 15_000 },
-  );
+  await unlockWithPassword(page, PASSWORD);
+  await page.waitForFunction(() => window.location.pathname === '/', {
+    timeout: 20_000,
+  });
 
   await worker.evaluate(async () => {
     const record = await chrome.storage.session.get('vaultSessionKey');
@@ -449,58 +424,42 @@ try {
       waitUntil: 'load',
     })
     .catch(() => {});
-  await page.waitForFunction(
-    () => window.location.pathname.endsWith('unlock.html'),
-    { timeout: 20_000 },
-  );
-  await page.type('#pw', PASSWORD);
-  await page.click('#pw-submit');
-  await page.waitForFunction(
-    () => window.location.pathname.endsWith('index.html'),
-    { timeout: 15_000 },
-  );
+  await page.waitForFunction(() => window.location.pathname === '/ext/unlock', {
+    timeout: 20_000,
+  });
+  await unlockWithPassword(page, PASSWORD);
+  await page.waitForFunction(() => window.location.pathname === '/', {
+    timeout: 20_000,
+  });
   console.log('[harness] idle-expired session treated as locked');
 
   await worker.evaluate(() => chrome.storage.session.remove('vaultSessionKey'));
-  await page.waitForFunction(
-    () => window.location.pathname.endsWith('unlock.html'),
-    { timeout: 10_000 },
-  );
-  await page.type('#pw', 'wrong-password');
-  await page.click('#pw-submit');
-  await page.waitForFunction(
-    () => document.getElementById('pw-error')?.textContent?.includes('Wrong'),
-    {
-      timeout: 15_000,
-    },
-  );
+  await page.waitForFunction(() => window.location.pathname === '/ext/unlock', {
+    timeout: 10_000,
+  });
+  await unlockWithPassword(page, 'wrong-password');
+  await waitForText(page, 'Wrong password');
   console.log('[harness] wrong password rejected');
 
   for (let attempt = 0; attempt < 3; attempt++) {
-    await page.$eval('#pw', node => {
-      node.value = '';
-    });
-    await page.type('#pw', `wrong-${attempt}`);
-    await page.click('#pw-submit');
-    await new Promise(resolve => setTimeout(resolve, 400));
+    await unlockWithPassword(page, `wrong-${attempt}`);
+    await new Promise(resolve => setTimeout(resolve, 500));
   }
-  const throttleText = await page.$eval(
-    '#pw-error',
-    node => node.textContent ?? '',
+  const throttleText = await page.evaluate(
+    () => document.body?.innerText ?? '',
   );
   if (!/wait \d+s|Try again in \d+s/i.test(throttleText)) {
-    throw new Error(`expected a throttle message, got: ${throttleText}`);
+    throw new Error(
+      `expected a throttle message, got: ${throttleText.slice(0, 200)}`,
+    );
   }
   console.log('[harness] unlock throttles after repeated failures');
 
-  await page.click('#reset-start');
-  await page.waitForSelector('#reset-confirm:not(.hidden)', { timeout: 5_000 });
-  await page.click('#reset-confirm-btn');
-  await page.waitForFunction(
-    () => window.location.pathname.endsWith('link.html'),
-    { timeout: 15_000 },
-  );
-  await page.waitForSelector('#qr canvas', { timeout: 15_000 });
+  await resetFromUnlock(page);
+  await page.waitForFunction(() => window.location.pathname === '/ext/link', {
+    timeout: 20_000,
+  });
+  await page.waitForSelector('[data-qr-content]', { timeout: 30_000 });
   const metaGone = await worker.evaluate(async () => {
     const local = await chrome.storage.local.get(null);
     return (

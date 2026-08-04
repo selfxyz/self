@@ -36,7 +36,7 @@ await build({
   target: 'chrome120',
 });
 
-for (const entry of ['bridge-host', 'link', 'unlock', 'content-script']) {
+for (const entry of ['bridge-host', 'content-script']) {
   await build({
     entryPoints: [join(root, `src/${entry}.ts`)],
     bundle: true,
@@ -45,9 +45,6 @@ for (const entry of ['bridge-host', 'link', 'unlock', 'content-script']) {
     target: 'chrome120',
   });
 }
-
-cpSync(join(root, 'pages/link.html'), join(dist, 'link.html'));
-cpSync(join(root, 'pages/unlock.html'), join(dist, 'unlock.html'));
 
 const indexPath = join(dist, 'index.html');
 const html = readFileSync(indexPath, 'utf8');

@@ -35,10 +35,10 @@ async function vaultState(): Promise<'uninitialized' | 'locked' | 'unlocked'> {
 async function gatedUrl(target: string): Promise<string> {
   switch (await vaultState()) {
     case 'uninitialized':
-      return chrome.runtime.getURL('link.html');
+      return chrome.runtime.getURL('index.html?ext_route=link');
     case 'locked':
       return chrome.runtime.getURL(
-        `unlock.html?next=${encodeURIComponent(target)}`,
+        `index.html?ext_route=unlock&next=${encodeURIComponent(target)}`,
       );
     case 'unlocked':
       return chrome.runtime.getURL(target);

@@ -12,6 +12,8 @@ import {
 import puppeteer from 'puppeteer';
 import { io } from 'socket.io-client';
 
+import { completeCustodyWithPassword } from './ext-ui.mjs';
+
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const demoRoot = resolve(root, '../extension-demo');
 const dist = join(root, 'dist');
@@ -190,21 +192,16 @@ try {
   });
 
   const setup = await browser.newPage();
-  await setup.goto(`chrome-extension://${EXTENSION_ID}/link.html`, {
-    waitUntil: 'load',
-  });
-  await setup.waitForSelector('#qr[data-qr-content]', { timeout: 15_000 });
+  await setup.goto(
+    `chrome-extension://${EXTENSION_ID}/index.html?ext_route=link`,
+    { waitUntil: 'load' },
+  );
+  await setup.waitForSelector('[data-qr-content]', { timeout: 30_000 });
   const qr = JSON.parse(
-    await setup.$eval('#qr', node => node.dataset.qrContent),
+    await setup.$eval('[data-qr-content]', node => node.dataset.qrContent),
   );
   const importDone = importAccount(qr);
-  await setup.waitForSelector('#step-password:not(.hidden)', {
-    timeout: 60_000,
-  });
-  await setup.type('#pw1', PASSWORD);
-  await setup.type('#pw2', PASSWORD);
-  await setup.click('#pw-submit');
-  await setup.waitForSelector('#step-done:not(.hidden)', { timeout: 30_000 });
+  await completeCustodyWithPassword(setup, PASSWORD);
   await importDone;
   await setup.close();
   console.log('[harness] account imported');

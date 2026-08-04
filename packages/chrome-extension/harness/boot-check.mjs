@@ -61,23 +61,28 @@ try {
     waitUntil: 'load',
   });
 
-  await page.waitForFunction(() => window.location.pathname === '/link.html', {
-    timeout: 20_000,
+  await page.waitForFunction(() => window.location.pathname === '/ext/link', {
+    timeout: 30_000,
   });
-  await page.waitForSelector('#qr canvas', { timeout: 20_000 });
+  await page.waitForSelector('[data-qr-content]', { timeout: 30_000 });
 
   const health = await page.evaluate(() => {
     let qr = null;
     try {
       qr = JSON.parse(
-        document.getElementById('qr')?.dataset.qrContent ?? 'null',
+        document.querySelector('[data-qr-content]')?.dataset.qrContent ??
+          'null',
       );
     } catch {
       qr = null;
     }
     return {
       path: window.location.pathname,
-      qrRendered: Boolean(document.querySelector('#qr canvas')),
+      qrRendered: Boolean(
+        document.querySelector(
+          '[data-qr-content] svg, [data-qr-content] canvas',
+        ),
+      ),
       qrSessionId:
         typeof qr?.transferSessionId === 'string' &&
         qr.transferSessionId.length >= 16,
@@ -85,7 +90,7 @@ try {
         typeof qr?.receiverPublicKey === 'string' &&
         qr.receiverPublicKey.startsWith('04'),
       qrRelay: typeof qr?.relay === 'string' && /^wss?:\/\//.test(qr.relay),
-      bodyText: document.body.innerText.slice(0, 200),
+      bodyText: (document.body?.innerText ?? '').slice(0, 200),
     };
   });
 
@@ -104,7 +109,7 @@ try {
   console.log(`screenshot: ${screenshotPath}`);
 
   const ok =
-    health.path === '/link.html' &&
+    health.path === '/ext/link' &&
     health.qrRendered &&
     health.qrSessionId &&
     health.qrPublicKey &&

@@ -91,6 +91,10 @@ export const SelfClientProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   }, [bridge, stableNavigate, stableGoBack]);
 
   useEffect(() => {
+    // Extension custody gates (/ext/link, /ext/unlock) run before a vault
+    // exists or while it is locked, so provisioning the secret there would
+    // always fail; the account arrives with the transfer instead.
+    if (window.location.pathname.startsWith('/ext/')) return;
     const storage = bridgeStorageAdapter(bridge);
     ensureSecret(storage).catch(() => {
       console.error('Failed to ensure secret');
