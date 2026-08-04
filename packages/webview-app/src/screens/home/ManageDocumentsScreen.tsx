@@ -96,9 +96,12 @@ export const ManageDocumentsScreen: React.FC = () => {
       documents={catalog.documents.map(doc => {
         const selected = doc.id === catalog.selectedDocumentId;
         const registration = doc.isRegistered ? 'Registered' : 'Pending registration';
+        const title = getIdCardProps(doc.documentCategory, doc.mock).title ?? 'Document';
         return {
           id: doc.id,
-          label: getIdCardProps(doc.documentCategory, doc.mock).title ?? 'Document',
+          // euclid 1.4.6 has no selected-state prop on document rows, so the
+          // marker lives in the label until the DocumentItem.selected work ships.
+          label: selected ? `${title} ✓` : title,
           description: selected ? `In use for proofs - ${registration}` : `${registration} - tap to use for proofs`,
           onPress: () => selectDocument(doc.id),
         };
