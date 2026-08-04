@@ -355,7 +355,7 @@ export const LinkBrowserExtensionScreen: React.FC = () => {
   }, [cleanup, demo]);
 
   const sasRow = (
-    <XStack justifyContent="center" gap={20} flexWrap="nowrap">
+    <XStack justifyContent="center" gap={12} flexWrap="nowrap">
       {sas.map((emoji, index) => (
         <Text key={index} style={styles.sasEmoji} numberOfLines={1}>
           {emoji}
@@ -476,8 +476,8 @@ export const LinkBrowserExtensionScreen: React.FC = () => {
 
 const styles = StyleSheet.create({
   sasEmoji: {
-    fontSize: 34,
-    lineHeight: 44,
+    fontSize: 28,
+    lineHeight: 38,
   },
   input: {
     borderWidth: 1,
