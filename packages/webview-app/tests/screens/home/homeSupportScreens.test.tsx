@@ -44,6 +44,22 @@ vi.mock('../../../src/providers/OperatingModeProvider', () => ({
   }),
 }));
 
+// Keeps the suite off @selfxyz/common's ESM dist (blakejs CJS interop breaks
+// under vitest externalization).
+vi.mock('@selfxyz/mobile-sdk-alpha/browser', () => ({
+  getDocumentAttributes: () => ({
+    nameSlice: '',
+    dobSlice: '',
+    yobSlice: '',
+    issuingStateSlice: '',
+    nationalitySlice: '',
+    passNoSlice: '',
+    sexSlice: '',
+    expiryDateSlice: '',
+    isPassportType: true,
+  }),
+}));
+
 vi.mock('@selfxyz/euclid', () => ({
   createSafeAreaProps: ({ top, bottom }: { top: number; bottom: number }) => ({
     insets: { top, bottom, left: 0, right: 0 },

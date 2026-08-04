@@ -64,6 +64,8 @@ export {
   GOOGLE_USAT_FAUCET_SCOPE,
 } from './constants/googleUsat';
 export { GOOGLE_USAT_FAUCET_POLICY } from './constants/restrictedApps';
+export type { DocumentAttributes } from './documents/validation';
+export { checkDocumentExpiration, getDocumentAttributes } from './documents/validation';
 export {
   InitError,
   LivenessError,

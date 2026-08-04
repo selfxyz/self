@@ -56,13 +56,33 @@ describe('WIA-13 PrivacyMask presence on PII screens', () => {
   afterEach(cleanup);
 
   it('masks document data on IDDataScreen', async () => {
-    const result = renderWithBridge({ initialEntries: ['/docs/passport-1'] });
-    await waitFor(() => {
-      const mask = result.container.querySelector('.sentry-mask');
-      expect(mask).not.toBeNull();
-      // A PII value rendered by the screen lives inside the masked subtree.
-      expect(mask?.textContent).toContain('18-299217823');
+    // TD3 specimen (Utopia): document number L898902C3, holder DOE JOHN.
+    const mrz = 'P<UTODOE<<JOHN<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<' + 'L898902C36UTO7408122F1204159ZE184226B<<<<<10';
+    const docId = 'passport-1';
+    const result = renderWithBridge({
+      initialEntries: ['/docs/passport-1'],
+      storage: {
+        self_document_catalog: JSON.stringify({
+          documents: [{ id: docId, documentCategory: 'passport', mock: false, isRegistered: true }],
+          selectedDocumentId: docId,
+        }),
+        [`self_doc_${docId}`]: JSON.stringify({
+          documentType: 'passport',
+          documentCategory: 'passport',
+          mock: false,
+          mrz,
+        }),
+      },
     });
+    await waitFor(
+      () => {
+        const mask = result.container.querySelector('.sentry-mask');
+        expect(mask).not.toBeNull();
+        // A PII value loaded from the document store lives inside the masked subtree.
+        expect(mask?.textContent).toContain('L898902C3');
+      },
+      { timeout: 4000 },
+    );
   });
 
   it('masks the recovery phrase on RecoveryPhraseScreen', async () => {
