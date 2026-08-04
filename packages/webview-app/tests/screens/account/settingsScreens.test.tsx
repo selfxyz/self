@@ -289,6 +289,16 @@ describe('WV-16 settings screens', () => {
       expect(screen.queryByRole('button', { name: /notifications/i })).toBeNull();
     });
 
+    it('hides developer tools and coming-soon items on the extension host', () => {
+      operatingMode.hostPlatform = 'chrome-extension';
+      renderRoutes(['/settings']);
+      expect(screen.queryByRole('button', { name: /dev mode/i })).toBeNull();
+      expect(screen.queryByRole('button', { name: /disclosure demo/i })).toBeNull();
+      expect(screen.queryByRole('button', { name: /tunnel flow/i })).toBeNull();
+      expect(screen.queryByRole('button', { name: /get support/i })).toBeNull();
+      expect(screen.queryByRole('button', { name: /share self/i })).toBeNull();
+    });
+
     it('shows Notifications on non-extension hosts', () => {
       renderRoutes(['/settings']);
       expect(screen.getByRole('button', { name: /notifications/i })).toBeTruthy();

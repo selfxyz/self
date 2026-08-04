@@ -125,63 +125,73 @@ export const SettingsScreen: React.FC = () => {
               },
             ]
           : []),
-        {
-          title: 'Support & feedback',
-          items: [
-            {
-              icon: ChatStrokeIcon,
-              label: 'Get support',
-              description: 'Help center & support',
-              onPress: () => {
-                haptic.trigger('selection');
-                navigate('/coming-soon');
+        // The extension hides the coming-soon items (no dead ends in a
+        // shipped surface) and every developer entry point.
+        ...(hostPlatform === 'chrome-extension'
+          ? []
+          : [
+              {
+                title: 'Support & feedback',
+                items: [
+                  {
+                    icon: ChatStrokeIcon,
+                    label: 'Get support',
+                    description: 'Help center & support',
+                    onPress: () => {
+                      haptic.trigger('selection');
+                      navigate('/coming-soon');
+                    },
+                  },
+                  {
+                    icon: ShareIcon,
+                    label: 'Share Self',
+                    description: 'Share Self with friends',
+                    onPress: () => {
+                      haptic.trigger('selection');
+                      navigate('/coming-soon');
+                    },
+                  },
+                ],
               },
-            },
-            {
-              icon: ShareIcon,
-              label: 'Share Self',
-              description: 'Share Self with friends',
-              onPress: () => {
-                haptic.trigger('selection');
-                navigate('/coming-soon');
+            ]),
+        ...(hostPlatform === 'chrome-extension'
+          ? []
+          : [
+              {
+                title: 'Developer tools',
+                items: [
+                  {
+                    icon: CodeIcon,
+                    label: 'Dev mode',
+                    description: 'Manage mock IDs, simulate proofs',
+                    onPress: () => {
+                      haptic.trigger('selection');
+                      navigate('/settings/dev-mode');
+                    },
+                  },
+                  {
+                    icon: CodeIcon,
+                    label: 'Disclosure demo',
+                    description: 'Mock disclosure request (name, nationality, age, DOB)',
+                    onPress: () => {
+                      haptic.trigger('selection');
+                      navigate(
+                        '/disclose/request?disclosures=name,nationality,age_above_18,date_of_birth&appName=Playground&appEndpoint=https%3A%2F%2Fplayground.staging.self.xyz%2Fapi%2Fverify&environment=stg&endpointType=staging_https&userIdType=hex&userId=0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
+                      );
+                    },
+                  },
+                  {
+                    icon: CodeIcon,
+                    label: 'Tunnel flow',
+                    description: 'Demo: register + disclose in one flow',
+                    onPress: () => {
+                      haptic.trigger('selection');
+                      navigate('/tour/1');
+                    },
+                  },
+                ],
               },
-            },
-          ],
-        },
-        {
-          title: 'Developer tools',
-          items: [
-            {
-              icon: CodeIcon,
-              label: 'Dev mode',
-              description: 'Manage mock IDs, simulate proofs',
-              onPress: () => {
-                haptic.trigger('selection');
-                navigate('/settings/dev-mode');
-              },
-            },
-            {
-              icon: CodeIcon,
-              label: 'Disclosure demo',
-              description: 'Mock disclosure request (name, nationality, age, DOB)',
-              onPress: () => {
-                haptic.trigger('selection');
-                navigate(
-                  '/disclose/request?disclosures=name,nationality,age_above_18,date_of_birth&appName=Playground&appEndpoint=https%3A%2F%2Fplayground.staging.self.xyz%2Fapi%2Fverify&environment=stg&endpointType=staging_https&userIdType=hex&userId=0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
-                );
-              },
-            },
-            {
-              icon: CodeIcon,
-              label: 'Tunnel flow',
-              description: 'Demo: register + disclose in one flow',
-              onPress: () => {
-                haptic.trigger('selection');
-                navigate('/tour/1');
-              },
-            },
-          ],
-        },
+            ]),
       ]}
       connectHeading=""
       connectSubheading=""
