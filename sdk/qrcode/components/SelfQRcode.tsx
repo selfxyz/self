@@ -28,6 +28,12 @@ interface SelfQRcodeProps {
   variant?: 'hybrid' | 'desktop' | 'mobile';
 }
 
+/**
+ * @deprecated The open-source Self Pass SDK is legacy. New integrations must use
+ * `@selfxyz/enterprise-sdk`: redirect the user to the hosted `verificationUrl` —
+ * you no longer render your own QR code.
+ * Migration guide: https://docs.self.xyz/docs/self-enterprise/migration/from-self-pass-sdk/
+ */
 const SelfQRcodeWrapper = (props: SelfQRcodeProps) => {
   const [isClient, setIsClient] = useState(false);
   useEffect(() => {
@@ -40,6 +46,12 @@ const SelfQRcodeWrapper = (props: SelfQRcodeProps) => {
   return <SelfQRcode {...props} />;
 };
 
+/**
+ * @deprecated The open-source Self Pass SDK is legacy. New integrations must use
+ * `@selfxyz/enterprise-sdk`: redirect the user to the hosted `verificationUrl` —
+ * you no longer render your own QR code.
+ * Migration guide: https://docs.self.xyz/docs/self-enterprise/migration/from-self-pass-sdk/
+ */
 const SelfQRcode = ({
   selfApp,
   onSuccess,
