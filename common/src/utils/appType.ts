@@ -49,6 +49,12 @@ export interface SelfAppDisclosureConfig {
   minimumAge?: number;
 }
 
+/**
+ * @deprecated The open-source Self Pass SDK is legacy. New integrations must use
+ * `@selfxyz/enterprise-sdk`: create a session with `SelfClient` and redirect the user
+ * to the hosted `verificationUrl` instead of building a Self app config.
+ * Migration guide: https://docs.self.xyz/docs/self-enterprise/migration/from-self-pass-sdk/
+ */
 export class SelfAppBuilder {
   private config: SelfApp;
 
@@ -126,6 +132,12 @@ export class SelfAppBuilder {
   }
 }
 
+/**
+ * @deprecated The open-source Self Pass SDK is legacy. New integrations must use
+ * `@selfxyz/enterprise-sdk` and redirect the user to the hosted `verificationUrl`
+ * returned by `SelfClient` instead of constructing a universal link.
+ * Migration guide: https://docs.self.xyz/docs/self-enterprise/migration/from-self-pass-sdk/
+ */
 export function getUniversalLink(selfApp: SelfApp): string {
   return `${REDIRECT_URL}?selfApp=${encodeURIComponent(JSON.stringify(selfApp))}`;
 }

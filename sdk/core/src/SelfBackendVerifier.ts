@@ -33,6 +33,11 @@ const CELO_TESTNET_RPC_URL = 'https://forno.celo-sepolia.celo-testnet.org';
 const IDENTITY_VERIFICATION_HUB_ADDRESS = '0xe57F4773bd9c9d8b6Cd70431117d353298B9f5BF';
 const IDENTITY_VERIFICATION_HUB_ADDRESS_STAGING = '0x16ECBA51e18a4a7e61fdC417f0d47AFEeDfbed74';
 
+/**
+ * @deprecated The open-source Self Pass SDK is legacy. New integrations must use
+ * `SelfClient` from `@selfxyz/enterprise-sdk` — the managed verifier replaces this class.
+ * Migration guide: https://docs.self.xyz/docs/self-enterprise/migration/from-self-pass-sdk/
+ */
 export class SelfBackendVerifier {
   protected scope: string;
   protected identityVerificationHubContract: IdentityVerificationHubImpl;
