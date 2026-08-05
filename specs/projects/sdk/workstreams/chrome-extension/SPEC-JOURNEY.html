@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SPEC: Browser Extension User Journey</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Allura&family=Lato:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,500;0,600;0,700;1,500&display=swap" />
+<style>
+  :root {
+    --p-yellow: #FCE694;
+    --p-blue:   #067BC2;
+    --p-green:  #46AA44;
+    --p-ice:    #D6EDFF;
+    --p-red:    #F24236;
+    --bg:           #FFFDF6;
+    --surface:      #FFFFFF;
+    --surface-alt:  #F5F3EC;
+    --border:       #DDD7CD;
+    --border-soft:  #ECE7DE;
+    --text:         #2A1F18;
+    --muted:        #786C60;
+    --accent:       var(--p-blue);
+    --accent-soft:  var(--p-ice);
+    --accent-chip:  var(--p-blue);
+    --done:         var(--p-green);
+    --done-soft:    #DCF3DB;
+    --high:         var(--p-red);
+    --high-soft:    #FDDDDA;
+    --med:          #8A6A1F;
+    --med-soft:     var(--p-yellow);
+    --med-chip:     var(--p-yellow);
+    --graph-bg:     #F5F3EC;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14.5px/1.6 "Lato", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; color: var(--text); background: var(--bg); font-weight: 400; }
+  h1, h2, h3, h4, h5, h6 { font-family: "Lora", Georgia, "Times New Roman", serif; font-weight: 600; letter-spacing: -0.005em; }
+  code, pre, kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.9em; }
+  code { background: var(--surface-alt); padding: 1px 5px; border-radius: 4px; border: 1px solid var(--border-soft); }
+  pre { background: var(--surface-alt); padding: 12px 14px; border-radius: 6px; border: 1px solid var(--border-soft); overflow: auto; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  header.topbar { position: sticky; top: 0; z-index: 100; background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; will-change: transform; box-shadow: 0 1px 0 rgba(0,0,0,0.02); }
+  header h1 { margin: 0; font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
+  .pill { font-size: 11px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface-alt); }
+  .pill.active { color: var(--accent); background: var(--accent-soft); border-color: var(--accent); }
+  .spacer { flex: 1; }
+  .layout { display: grid; grid-template-columns: 160px minmax(0, 1fr); gap: 24px; max-width: 1180px; margin: 0 auto; padding: 24px; }
+  nav.toc { position: sticky; top: 64px; align-self: start; max-height: calc(100vh - 80px); overflow-y: auto; font-size: 12.5px; }
+  nav.toc h4 { margin: 12px 0 4px 0; font-size: 10px; color: var(--muted); letter-spacing: 0.04em; }
+  nav.toc h4:first-child { margin-top: 0; }
+  nav.toc a { display: block; padding: 3px 6px; border-radius: 4px; color: var(--text); }
+  nav.toc a:hover { background: var(--surface-alt); text-decoration: none; }
+  main { min-width: 0; }
+  main section { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 18px 22px; margin-bottom: 16px; }
+  main h2 { margin: 0 0 12px 0; font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
+  main h3 { margin: 16px 0 6px 0; font-size: 11px; color: var(--muted); letter-spacing: 0.08em; font-family: "Lato", -apple-system, sans-serif; font-weight: 700; }
+  main p { margin: 6px 0 10px 0; }
+  main ul, main ol { margin: 6px 0 10px 18px; padding: 0; }
+  main li { margin: 3px 0; }
+  table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 13px; }
+  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--border-soft); vertical-align: top; }
+  th { background: var(--surface-alt); font-weight: 600; }
+  .callout { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 10px 14px; border-radius: 0 6px 6px 0; margin: 10px 0; }
+  .callout.warn { border-left-color: var(--high); background: var(--high-soft); }
+  .callout.note { border-left-color: var(--med); background: var(--med-soft); }
+  .callout.win  { border-left-color: var(--done); background: var(--done-soft); }
+  .diagram { margin: 14px 0; }
+  .diagram .label { font-size: 11.5px; letter-spacing: 0.04em; color: var(--muted); text-align: left; padding: 0 2px 6px; margin: 0; }
+  .diagram pre.mermaid { background: var(--graph-bg) !important; border: 1px solid var(--border-soft) !important; padding: 6px 8px !important; border-radius: 6px !important; margin: 0 !important; text-align: center; overflow-x: auto; display: block; }
+  .dia-key { font-size: 12px; color: var(--muted); margin-top: 8px; }
+  .dia-key code { background: var(--graph-bg); }
+  .mermaid { font-family: "Lato", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+  .screen-id { font-family: ui-monospace, monospace; font-size: 11px; color: var(--accent); background: var(--accent-soft); padding: 1px 6px; border-radius: 4px; white-space: nowrap; }
+  .surface-chip { font-size: 10px; letter-spacing: 0.04em; padding: 1px 6px; border-radius: 4px; white-space: nowrap; }
+  .surface-chip.phone { background: var(--done-soft); color: var(--done); }
+  .surface-chip.ext { background: var(--accent-soft); color: var(--accent); }
+  .surface-chip.web { background: var(--med-soft); color: var(--med); }
+  .oq-card { background: transparent; border: 0; padding: 0; margin: 0; }
+  .oq-card .oq-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+  .oq-card .oq-id { font-family: ui-monospace, monospace; font-size: 10px; color: var(--muted); padding: 2px 6px; background: var(--surface-alt); border-radius: 4px; }
+  .oq-card .oq-impact { font-size: 10px; letter-spacing: 0.04em; padding: 2px 6px; border-radius: 4px; background: var(--med-soft); color: var(--med); }
+  .oq-card .oq-question { font-family: "Lora", Georgia, serif; font-weight: 600; font-size: 17px; line-height: 1.35; letter-spacing: -0.005em; margin: 0; }
+  .oq-card .oq-context { font-size: 12.5px; color: var(--muted); margin: 8px 0 12px; padding: 0; }
+  .oq-card .oq-context p { margin: 0 0 6px; }
+  .oq-card .oq-status { font-size: 10px; letter-spacing: 0.06em; padding: 2px 8px; border-radius: 4px; font-weight: 600; margin-left: auto; }
+  .oq-card.status-open .oq-status { background: var(--surface-alt); color: var(--muted); border: 1px solid var(--border); }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <h1>SPEC: Browser Extension User Journey</h1>
+  <span class="pill active">Design review</span>
+  <span class="pill">2026-07-29</span>
+  <span class="spacer"></span>
+  <div>
+    <a href="./SPEC-UX.html">UX spec</a>
+    &nbsp;·&nbsp;
+    <a href="./SPEC-PRD.html">PRD</a>
+    &nbsp;·&nbsp;
+    <a href="./SPEC-PRODUCTION.html">engineering spec</a>
+  </div>
+</header>
+
+<div class="layout">
+
+  <nav class="toc">
+    <h4>Overview</h4>
+    <a href="#how-to-review">How to review</a>
+    <a href="#map">Journey map</a>
+    <h4>Journeys</h4>
+    <a href="#journey-a">A · First-time setup</a>
+    <a href="#journey-b">B · Verify on a website</a>
+    <a href="#journey-c">C · Manage &amp; unlock</a>
+    <h4>Design input</h4>
+    <a href="#dq-1">DQ-1 · Emoji set</a>
+    <a href="#dq-2">DQ-2 · Biometric affordance</a>
+    <a href="#dq-3">DQ-3 · QR expiry treatment</a>
+    <a href="#dq-4">DQ-4 · Success motion</a>
+    <a href="#dq-5">DQ-5 · Popup frame</a>
+  </nav>
+
+  <main>
+
+    <section id="how-to-review">
+      <h2>How to review this page</h2>
+      <p>Every screen a user can land on, across the three journeys, one row per screen: what is on it, every state it can be in, and which Euclid components build it. Screens marked <strong>exists</strong> shipped in the spike and need polish; screens marked <strong>new</strong> are designed here for the first time. The five <a href="#dq-1">design questions</a> at the bottom are where we explicitly need design/UX judgment, everything else is review-and-veto.</p>
+      <p>Surfaces: <span class="surface-chip phone">Phone</span> Self app screens · <span class="surface-chip ext">Extension</span> popup window (430x800) · <span class="surface-chip web">Web</span> the Enterprise hosted verification page.</p>
+      <p class="callout win"><strong>The one locked interaction:</strong> during setup, the user visually compares 4 emojis on both devices, then presses one explicit button on the phone ("Encrypt &amp; send my account"). The check is a gate on the path, not decoration beside it.</p>
+    </section>
+
+    <section id="map">
+      <h2>Journey map: three loops, one account</h2>
+      <div class="diagram">
+        <div class="label">The three journeys and where they hand off</div>
+        <pre class="mermaid">
+flowchart LR
+  subgraph A[Journey A: first-time setup]
+    direction TB
+    A1[Install extension] --> A2[Link with phone] --> A3[Choose custody]
+  end
+  subgraph B[Journey B: verify on a website]
+    direction TB
+    B1[Site asks for proof] --> B2[Approve in popup] --> B3[Site gets result]
+  end
+  subgraph C[Journey C: manage and unlock]
+    direction TB
+    C1[Unlock] --> C2[Pick active document]
+  end
+  A3 --> B1
+  C2 --> B2
+  B2 --> C1
+
+  classDef src fill:#46AA44,stroke:#DDD7CD,stroke-width:1px,color:#FFFFFF
+  classDef plain fill:#FFFFFF,stroke:#DDD7CD,stroke-width:1px,color:#2A1F18
+  class B2 src
+  class A1,A2,A3,B1,B3,C1,C2 plain
+        </pre>
+        <div class="dia-key">
+          where: <code>approve in popup</code> is the product's core repeated action; setup happens once, approval happens every verification.
+        </div>
+      </div>
+    </section>
+
+    <section id="journey-a">
+      <h2>Journey A: first-time setup (link the phone, once)</h2>
+      <p>Entry: the user installs the extension and clicks the toolbar icon, or clicks "Use the Self extension" on a hosted verification page without a linked account.</p>
+      <table>
+        <thead><tr><th>#</th><th>Surface</th><th>Screen</th><th>On screen</th><th>States</th><th>Euclid</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="screen-id">A1</span></td>
+            <td><span class="surface-chip ext">Extension</span></td>
+            <td>Link screen <em>(exists, rebuilt in webview-app per CEP-07)</em></td>
+            <td>Title, one-line explainer ("scan from the Self app"), QR code, subdued "where do I find this in the app" hint</td>
+            <td>QR <strong>generating</strong> (skeleton) → <strong>ready</strong> → <strong>phone connected</strong> (QR dims, status line swaps) → <strong>expired</strong> after 5 min (regenerate CTA) · <strong>relayer unreachable</strong> (retry)</td>
+            <td><code>QRDisplay</code> (new, CEP-06), <code>Title</code>, <code>Description</code></td>
+          </tr>
+          <tr>
+            <td><span class="screen-id">A2</span></td>
+            <td><span class="surface-chip phone">Phone</span></td>
+            <td>Scan screen <em>(exists dev-gated; production entry = Settings &gt; Linked browsers, CEP-08)</em></td>
+            <td>Camera viewfinder, explainer copy, cancel</td>
+            <td>Camera permission missing · invalid QR (inline error, keep scanning)</td>
+            <td>Existing scanner + <code>ViewFinder</code></td>
+          </tr>
+          <tr>
+            <td><span class="screen-id">A3</span></td>
+            <td><span class="surface-chip phone">Phone</span></td>
+            <td>Emoji check + consent <em>(exists, redesign)</em></td>
+            <td>4 large SAS emojis, "check that the extension shows the same emojis: matching emojis mean the connection is end-to-end encrypted with that browser and nothing in between", warning copy about what is sent, <strong>[Cancel]</strong> <strong>[Encrypt &amp; send my account]</strong></td>
+            <td>Emojis <strong>pending</strong> (slots skeleton, waiting for the extension handshake) → <strong>shown</strong> · send button idle → loading</td>
+            <td><code>EmojiSas</code> (PR #191), <code>Button</code> loading state (PR #191)</td>
+          </tr>
+          <tr>
+            <td><span class="screen-id">A3x</span></td>
+            <td><span class="surface-chip ext">Extension</span></td>
+            <td>Link screen, SAS state <em>(exists)</em></td>
+            <td>Same 4 emojis appear under the (dimmed) QR + "confirm on your phone"</td>
+            <td>Mirrors A3; if the user closes the popup here the phone shows a clean failure, not a hang</td>
+            <td><code>EmojiSas</code></td>
+          </tr>
+          <tr>
+            <td><span class="screen-id">A4</span></td>
+            <td><span class="surface-chip phone">Phone</span></td>
+            <td>Sending <em>(exists)</em></td>
+            <td>Progress with payload size ("Sending 142KB"), emojis stay visible</td>
+            <td>Sending → waiting for extension confirmation · timeout (60s) with retry</td>
+            <td><code>Spinner</code> (PR #191)</td>
+          </tr>
+          <tr>
+            <td><span class="screen-id">A5</span></td>
+            <td><span class="surface-chip ext">Extension</span></td>
+            <td>Custody choice <em>(exists, redesign)</em></td>
+            <td>"Your account arrived. Choose how to protect it on this computer." · <strong>[Secure with Touch ID]</strong> primary · "or set a password" collapsed fallback (password + repeat, min 8)</td>
+            <td>Passkey ceremony <strong>in flight</strong> (button verifying, OS prompt owns the screen) · <strong>cancelled</strong> (back to choice, nothing created) · <strong>PRF unsupported</strong> (password form only, one-line why) · password mismatch/too short inline errors</td>
+            <td><code>Button</code> loading, <code>GroupedButtons</code>, secure <code>InputField</code> (PR #191), biometric icon (DQ-2)</td>
+          </tr>
+          <tr>
+            <td><span class="screen-id">A6</span></td>
+            <td><span class="surface-chip ext">Extension</span></td>
+            <td>Setup success <em>(exists, redesign)</em></td>
+            <td>"n documents imported and encrypted" + <strong>[Open Self]</strong> · phone simultaneously shows its own success ("finish in the browser" copy drops away)</td>
+            <td>Terminal; success motion (DQ-4)</td>
+            <td><code>StatusState</code> success</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="callout warn"><strong>Failure symmetry rule:</strong> any failure after A3 (decrypt, validation, timeout) must land BOTH devices on an explicit failure screen with matching copy. One side success + one side error is a bug class, not an edge case.</p>
+    </section>
+
+    <section id="journey-b">
+      <h2>Journey B: verify on a website (the everyday loop)</h2>
+      <p>Entry: any Enterprise relying party sends the user to the hosted verification page (<code>session.verificationUrl</code>).</p>
+      <table>
+        <thead><tr><th>#</th><th>Surface</th><th>Screen</th><th>On screen</th><th>States</th><th>Euclid</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="screen-id">B1</span></td>
+            <td><span class="surface-chip web">Web</span></td>
+            <td>Hosted page, extension branch <em>(new, CEP-09, lands in self-dashboard)</em></td>
+            <td>Extension detected: <strong>[Verify with the Self extension]</strong> primary + "or scan with your phone" QR collapsed. Extension absent/stale: today's QR page unchanged</td>
+            <td>Detecting (instant) · waiting for extension response · extension locked (prompt says "unlock in the popup")</td>
+            <td>Hosted page owns styling; contract = postMessage shim</td>
+          </tr>
+          <tr>
+            <td><span class="screen-id">B2</span></td>
+            <td><span class="surface-chip ext">Extension</span></td>
+            <td>Unlock <em>(exists, rebuilt per CEP-07)</em></td>
+            <td>Passkey vault: single <strong>[Unlock with Touch ID]</strong>, auto-triggered on open · password vault: secure field + unlock + "Unlock &amp; enable Touch ID" upsell when PRF available</td>
+            <td>Verifying (button loading) · wrong password (inline message + shake, counter after 3) · forgot password → C5 reset</td>
+            <td><code>Button</code> loading, secure <code>InputField</code>, biometric icon</td>
+          </tr>
+          <tr>
+            <td><span class="screen-id">B3</span></td>
+            <td><span class="surface-chip ext">Extension</span></td>
+            <td>Consent <em>(exists: embed ProofRequestScreen + origin display added)</em></td>
+            <td>Requesting origin pinned at top (favicon + host), disclosure items list ("Age over 18"), active document card with picker if multiple, hold-to-approve <strong>ProofButton</strong>, cancel</td>
+            <td>Request loading · document switching (row pending) · hold-progress fill · cancelled (popup closes AND page resolves with typed failure)</td>
+            <td><code>ProofRequestScreen</code>, <code>ProofButton</code>, <code>IDPicker</code></td>
+          </tr>
+          <tr>
+            <td><span class="screen-id">B4</span></td>
+            <td><span class="surface-chip ext">Extension</span></td>
+            <td>Proof generation <em>(exists)</em></td>
+            <td>Staged progress card, "10-30 seconds", "closing this window cancels the proof"</td>
+            <td>TEE stages map to progress segments · stall/timeout state with retry · failure → explicit error screen</td>
+            <td><code>CircuitProgressCard</code> / <code>ProofGenerationScreen</code></td>
+          </tr>
+          <tr>
+            <td><span class="screen-id">B5</span></td>
+            <td><span class="surface-chip ext">Extension</span> + <span class="surface-chip web">Web</span></td>
+            <td>Result <em>(exists)</em></td>
+            <td>Success: brief confirmation, popup closes itself; hosted page shows verified state and the RP's webhook fires. Failure: error screen with retry in the popup, page shows typed failure</td>
+            <td>Terminal both sides; page never hangs on a closed popup</td>
+            <td><code>StatusState</code></td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="callout"><strong>Click budget, honestly:</strong> with a live session the loop is B1 (click) then B3 (hold to approve). The session policy (30 min idle) makes unlock the <strong>common</strong> path rather than the rare one, so budget three interactions plus a Touch ID prompt for a typical verification and design B2 as a first-class step, not an interstitial.</p>
+    </section>
+
+    <section id="journey-c">
+      <h2>Journey C: manage and unlock (the mini home)</h2>
+      <p>Entry: toolbar icon with a linked account. Decision locked 2026-07-29: the mini home stays in v1.</p>
+      <table>
+        <thead><tr><th>#</th><th>Surface</th><th>Screen</th><th>On screen</th><th>States</th><th>Euclid</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="screen-id">C1</span></td>
+            <td><span class="surface-chip ext">Extension</span></td>
+            <td>Home <em>(exists: webview-app self-app mode)</em></td>
+            <td>Active document ID card, settings entry; points/earn modules hidden in extension context (DQ-5)</td>
+            <td>Loading skeleton · no selection edge case (auto-selects first)</td>
+            <td><code>HomeScreen</code>, <code>IDCard</code></td>
+          </tr>
+          <tr>
+            <td><span class="screen-id">C2</span></td>
+            <td><span class="surface-chip ext">Extension</span></td>
+            <td>Manage documents <em>(exists)</em></td>
+            <td>All transferred documents; tap selects for proofs (radio + "In use for proofs") and opens dialogue with <strong>View ID details</strong></td>
+            <td>Row-scoped pending while the catalog write confirms · expired documents marked and refused for proving · empty state guarded upstream (the phone refuses to link without at least one registered document)</td>
+            <td><code>ManageDocumentsScreen</code> + selection state (CEP-06 slice 2)</td>
+          </tr>
+          <tr>
+            <td><span class="screen-id">C3</span></td>
+            <td><span class="surface-chip ext">Extension</span></td>
+            <td>ID details <em>(exists)</em></td>
+            <td>Document data fields, back to list</td>
+            <td>Static</td>
+            <td><code>IDDataScreen</code></td>
+          </tr>
+          <tr>
+            <td><span class="screen-id">C4</span></td>
+            <td><span class="surface-chip ext">Extension</span></td>
+            <td>Unlock <em>(same as B2)</em></td>
+            <td>Reached on any popup open with an ended session: 30 min idle, 12h absolute, manual or OS lock, or browser exit</td>
+            <td>See B2</td>
+            <td>See B2</td>
+          </tr>
+          <tr>
+            <td><span class="screen-id">C6</span></td>
+            <td><span class="surface-chip ext">Extension</span></td>
+            <td>Lock <em>(new)</em></td>
+            <td>Manual: "Lock" in the extension action context menu (v1), settings item post-CEP-07. Automatic: 30 min idle, 12h absolute, OS session lock, browser exit</td>
+            <td>Locking mid-use bounces any open popup to the unlock screen with the return path preserved; in-flight disclosure fails closed</td>
+            <td>No new components; unlock screen is C4</td>
+          </tr>
+          <tr>
+            <td><span class="screen-id">C5</span></td>
+            <td><span class="surface-chip ext">Extension</span></td>
+            <td>Reset (forgot password / lost passkey) <em>(exists, redesign)</em></td>
+            <td>Two-step: subdued "Forgot your password? Reset this browser's account" link → explanation ("this browser only; your phone keeps everything") + red <strong>[Delete and start over]</strong> → back to A1</td>
+            <td>Confirm step · post-wipe lands on the link screen with a fresh QR</td>
+            <td><code>Button</code> danger treatment, <code>Dialogue</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="dq-1">
+      <div class="oq-card status-open">
+        <div class="oq-head">
+          <span class="oq-id">DQ-1</span>
+          <span class="oq-impact">design input</span>
+          <span class="oq-status">open</span>
+        </div>
+        <p class="oq-question">Is the 64-emoji SAS set right, seen for one second at arm's length?</p>
+        <div class="oq-context">
+          <p>The security check lives or dies on fast visual comparison across two screens. The current set (animals, food, objects; see <code>mobile-sdk-alpha/utils/sas.ts</code>) was engineering-picked. Design should vet: distinguishability at 32-36px, cross-platform rendering differences (Apple vs Noto emoji), and colorblind-safe pairs. The order is protocol-locked once shipped: entries can only be appended, never reordered.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="dq-2">
+      <div class="oq-card status-open">
+        <div class="oq-head">
+          <span class="oq-id">DQ-2</span>
+          <span class="oq-impact">design input</span>
+          <span class="oq-status">open</span>
+        </div>
+        <p class="oq-question">What is the biometric affordance on custody and unlock buttons?</p>
+        <div class="oq-context">
+          <p>Euclid has no Touch ID / passkey icon (the old FaceIdIcon was removed in 1.4.6). Apple's guidelines restrict use of their Touch ID mark. Options: a generic fingerprint glyph, a key/shield metaphor from the existing icon set (<code>LockIcon</code>, <code>ShieldLockIcon</code>), or text-only buttons. Needed for A5, B2, C4.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="dq-3">
+      <div class="oq-card status-open">
+        <div class="oq-head">
+          <span class="oq-id">DQ-3</span>
+          <span class="oq-impact">design input</span>
+          <span class="oq-status">open</span>
+        </div>
+        <p class="oq-question">How does an expired or superseded QR look and recover?</p>
+        <div class="oq-context">
+          <p>A1's QR can expire (5 min), be superseded (user re-opens the popup), or fail (relayer down). Proposal: expired = blur + centered regenerate button; error = inline retry row under the frame. Needs a design pass with the new <code>QRDisplay</code> component states.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="dq-4">
+      <div class="oq-card status-open">
+        <div class="oq-head">
+          <span class="oq-id">DQ-4</span>
+          <span class="oq-impact">design input</span>
+          <span class="oq-status">open</span>
+        </div>
+        <p class="oq-question">Success motion: which Lottie, and where does it come from?</p>
+        <div class="oq-context">
+          <p>Euclid's <code>StatusState</code> takes a caller-supplied Lottie and the library ships none. A6, B5, and the phone's link success all want the same checkmark motion. One asset, sourced once, reused everywhere; needs design to produce or pick it.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="dq-5">
+      <div class="oq-card status-open">
+        <div class="oq-head">
+          <span class="oq-id">DQ-5</span>
+          <span class="oq-impact">design input</span>
+          <span class="oq-status">open</span>
+        </div>
+        <p class="oq-question">What does the popup frame keep and drop from the phone home?</p>
+        <div class="oq-context">
+          <p>The mini home reuses the phone's home screen inside a 430x800 popup. Points balance, earn/referral modules, and notifications likely read as noise in a browser popup; the ID card and settings clearly stay. Design call on the exact cut list, plus whether the popup gets a distinct header treatment so it reads as "Self in your browser" rather than a shrunken phone app.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: 'base',
+    securityLevel: 'loose',
+    flowchart: { curve: 'basis', padding: 18, nodeSpacing: 40, rankSpacing: 60, htmlLabels: true, useMaxWidth: true },
+    themeCSS: `
+      .cluster rect { stroke-dasharray: 3 3 !important; stroke-width: 1px !important; rx: 8px !important; ry: 8px !important; }
+      .edgePath .path { stroke-width: 1.5px !important; }
+      .arrowheadPath { fill: #2A1F18 !important; }
+      .edgeLabels { z-index: 2; }
+      .edgeLabel { background: transparent !important; padding: 0 !important; text-transform: none !important; }
+      .edgeLabel foreignObject > div {
+        background: #F5F3EC !important;
+        padding: 0 4px !important;
+        display: inline-block !important;
+        text-transform: none !important;
+      }
+      .edgeLabel rect { fill: transparent !important; stroke: none !important; }
+      .cluster-label foreignObject > div {
+        font-size: 12.5px !important;
+        color: #786C60 !important;
+        font-weight: 400 !important;
+        text-align: left !important;
+        text-transform: none !important;
+        background: #F5F3EC !important;
+        padding: 0 5px !important;
+        display: inline-block !important;
+      }
+      .nodeLabel, .edgeLabel, foreignObject > div { text-transform: none !important; }
+    `,
+    themeVariables: {
+      fontFamily: '"Lato", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      fontSize: '13px',
+      primaryColor:       '#FFFFFF',
+      primaryBorderColor: '#ECE7DE',
+      primaryTextColor:   '#2A1F18',
+      lineColor:          '#2A1F18',
+      secondaryColor:     '#F5F3EC',
+      tertiaryColor:      '#F5F3EC',
+      mainBkg:            '#FFFFFF',
+      clusterBkg:         'transparent',
+      clusterBorder:      '#DDD7CD',
+      edgeLabelBackground:'#F5F3EC'
+    }
+  });
+
+  (async () => {
+    const blocks = document.querySelectorAll('pre.mermaid');
+    for (let i = 0; i < blocks.length; i++) {
+      const el = blocks[i];
+      const { svg } = await mermaid.render('static-' + i, el.textContent.trim());
+      el.innerHTML = svg;
+      const out = el.querySelector('svg');
+      if (!out) continue;
+      const edgeLabels = out.querySelector('g.edgeLabels');
+      if (edgeLabels) out.appendChild(edgeLabels);
+      try {
+        const b = out.getBBox(), p = 8;
+        out.setAttribute('viewBox', `${b.x - p} ${b.y - p} ${b.width + p * 2} ${b.height + p * 2}`);
+      } catch (e) { /* getBBox unavailable until laid out */ }
+    }
+  })();
+</script>
+
+</body>
+</html>

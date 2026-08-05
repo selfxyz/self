@@ -1,0 +1,593 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PRD: Self Browser Extension v1</title>
+<!-- Fonts (locked): Lora for headings + decision text, Lato for body, Allura for the page signature. -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Allura&family=Lato:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,500;0,600;0,700;1,500&display=swap" />
+<style>
+  :root {
+    /* Palette (locked) — a swap is a 5-variable edit */
+    --p-yellow: #FCE694;
+    --p-blue:   #067BC2;
+    --p-green:  #46AA44;
+    --p-ice:    #D6EDFF;
+    --p-red:    #F24236;
+
+    /* Neutrals (warm / coffee-toned) */
+    --bg:           #FFFDF6;
+    --surface:      #FFFFFF;
+    --surface-alt:  #F5F3EC;
+    --border:       #DDD7CD;
+    --border-soft:  #ECE7DE;
+    --text:         #2A1F18;
+    --muted:        #786C60;
+
+    /* Accent (saturated blue, AA contrast on white) */
+    --accent:       var(--p-blue);
+    --accent-soft:  var(--p-ice);
+    --accent-chip:  var(--p-blue);
+
+    /* Done = real green */
+    --done:         var(--p-green);
+    --done-soft:    #DCF3DB;
+
+    /* Danger = real red */
+    --high:         var(--p-red);
+    --high-soft:    #FDDDDA;
+
+    /* Warning = yellow */
+    --med:          #8A6A1F;
+    --med-soft:     var(--p-yellow);
+    --med-chip:     var(--p-yellow);
+
+    /* Graph surface — distinct from the white section; labels match this so
+       they cleanly erase the arrow / cluster border behind them. */
+    --graph-bg:     #F5F3EC;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font: 14.5px/1.6 "Lato", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    font-weight: 400;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: "Lora", Georgia, "Times New Roman", serif;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+  }
+  code, pre, kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.9em; }
+  code { background: var(--surface-alt); padding: 1px 5px; border-radius: 4px; border: 1px solid var(--border-soft); }
+  pre { background: var(--surface-alt); padding: 12px 14px; border-radius: 6px; border: 1px solid var(--border-soft); overflow: auto; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* Sticky topbar: title + pills + cross-doc links. will-change keeps it composited across rerenders. */
+  header.topbar { position: sticky; top: 0; z-index: 100; background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; will-change: transform; box-shadow: 0 1px 0 rgba(0,0,0,0.02); }
+  header h1 { margin: 0; font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
+  /* Pills carry the one status vocabulary, all from the palette tokens so a workstream
+     stays consistent: active, in-progress, done, warn, blocked, pending, deferred, superseded. */
+  .pill { font-size: 11px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface-alt); }
+  .pill.active      { color: var(--accent); background: var(--accent-soft); border-color: var(--accent); }
+  .pill.in-progress { color: var(--accent); background: var(--accent-soft); border-color: var(--accent); }
+  .pill.done        { color: var(--done);   background: var(--done-soft);   border-color: var(--done); }
+  .pill.warn        { color: var(--high);   background: var(--high-soft);   border-color: var(--high); }
+  .pill.blocked     { color: var(--high);   background: var(--high-soft);   border-color: var(--high); }
+  .pill.pending     { color: var(--med);    background: var(--med-soft);    border-color: var(--med); }
+  .pill.deferred    { color: var(--muted);  background: var(--surface-alt); border-color: var(--border); }
+  .pill.superseded  { color: var(--muted);  background: var(--surface-alt); border-color: var(--border); text-decoration: line-through; }
+  .spacer { flex: 1; }
+
+  /* 2-column grid: TOC rail (160px) + main. Content first; don't oversize the rail. */
+  .layout { display: grid; grid-template-columns: 160px minmax(0, 1fr); gap: 24px; max-width: 1180px; margin: 0 auto; padding: 24px; }
+  nav.toc { position: sticky; top: 64px; align-self: start; max-height: calc(100vh - 80px); overflow-y: auto; font-size: 12.5px; }
+  nav.toc h4 { margin: 12px 0 4px 0; font-size: 10px; color: var(--muted); letter-spacing: 0.04em; }
+  nav.toc h4:first-child { margin-top: 0; }
+  nav.toc a { display: block; padding: 3px 6px; border-radius: 4px; color: var(--text); }
+  nav.toc a:hover { background: var(--surface-alt); text-decoration: none; }
+
+  main { min-width: 0; }
+  /* Each <section> IS the box. Don't nest another card inside it. */
+  main section { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 18px 22px; margin-bottom: 16px; }
+  main h2 { margin: 0 0 12px 0; font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
+  main h3 { margin: 16px 0 6px 0; font-size: 11px; color: var(--muted); letter-spacing: 0.08em; font-family: "Lato", -apple-system, sans-serif; font-weight: 700; }
+  main p { margin: 6px 0 10px 0; }
+  main ul, main ol { margin: 6px 0 10px 18px; padding: 0; }
+  main li { margin: 3px 0; }
+
+  table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 13px; }
+  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--border-soft); vertical-align: top; }
+  th { background: var(--surface-alt); font-weight: 600; }
+
+  .callout { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 10px 14px; border-radius: 0 6px 6px 0; margin: 10px 0; }
+  .callout.warn { border-left-color: var(--high); background: var(--high-soft); }
+  .callout.note { border-left-color: var(--med); background: var(--med-soft); }
+  .callout.win  { border-left-color: var(--done); background: var(--done-soft); }
+
+  /* Diagram wrapper has no chrome — caption sits on the parent surface;
+     only the rendered SVG carries the tinted graph background. */
+  .diagram { margin: 14px 0; }
+  .diagram .label {
+    font-size: 11.5px; letter-spacing: 0.04em; color: var(--muted);
+    text-align: left; padding: 0 2px 6px; margin: 0;
+  }
+  .diagram pre.mermaid,
+  .oq-option-diagram pre.mermaid {
+    background: var(--graph-bg) !important;
+    border: 1px solid var(--border-soft) !important;
+    padding: 6px 8px !important;
+    border-radius: 6px !important;
+    margin: 0 !important;
+    text-align: center;
+    overflow-x: auto;
+    display: block;
+  }
+  /* Symbol key: a "where:" list directly under a diagram that carries symbols
+     (scoped_nullifier, comm_A, MRZ, registry roots). Defines each with its real formula. */
+  .dia-key { font-size: 12px; color: var(--muted); margin-top: 8px; }
+  .dia-key code { background: var(--graph-bg); }
+  .mermaid { font-family: "Lato", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+
+  /* ===== Open-question card system (locked) =====
+     The section IS the card. .oq-card sits flat inside it: no extra background,
+     border, or padding. Rendered by plans/<ID>-open-questions.js into data-oq-slot
+     divs, or hand-written using these classes for a static (non-interactive) card. */
+  .oq-card { background: transparent; border: 0; padding: 0; margin: 0; }
+  .oq-card .oq-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+  .oq-card .oq-id { font-family: ui-monospace, monospace; font-size: 10px; color: var(--muted); padding: 2px 6px; background: var(--surface-alt); border-radius: 4px; }
+  .oq-card .oq-impact { font-size: 10px; letter-spacing: 0.04em; padding: 2px 6px; border-radius: 4px; background: var(--med-soft); color: var(--med); }
+  .oq-card .oq-question { font-family: "Lora", Georgia, serif; font-weight: 600; font-size: 17px; line-height: 1.35; letter-spacing: -0.005em; margin: 0; }
+  .oq-card .oq-context { font-size: 12.5px; color: var(--muted); margin: 8px 0 12px; padding: 0; }
+  .oq-card .oq-context p { margin: 0 0 6px; }
+  .oq-card .oq-context p:last-child { margin-bottom: 0; }
+  .oq-card .oq-context strong { color: var(--text); font-weight: 600; }
+  .oq-card .oq-status { font-size: 10px; letter-spacing: 0.06em; padding: 2px 8px; border-radius: 4px; font-weight: 600; margin-left: auto; }
+  .oq-card.status-answered .oq-status   { background: var(--done-soft); color: var(--done); }
+  .oq-card.status-open .oq-status       { background: var(--surface-alt); color: var(--muted); border: 1px solid var(--border); }
+  .oq-card.status-needs-text .oq-status { background: var(--med-soft); color: var(--med); }
+
+  .oq-options { display: grid; gap: 8px; }
+  /* An option is a radio + text — no card chrome. Selected paints a soft accent bg. */
+  .oq-option { display: flex; align-items: flex-start; gap: 10px; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border-soft); background: transparent; cursor: pointer; transition: background .12s, border-color .12s; }
+  .oq-option:hover { background: var(--accent-soft); border-color: var(--accent); }
+  .oq-option.selected { background: var(--accent-soft); border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
+  .oq-option input[type="radio"] { margin-top: 3px; cursor: pointer; flex-shrink: 0; }
+  .oq-option-body { flex: 1; min-width: 0; }
+  .oq-option .option-label { font-weight: 600; font-size: 13px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
+  .oq-option .option-note { color: var(--text); font-size: 12.5px; }
+  .oq-option.oq-option-other { color: var(--muted); }
+  /* Recommended = inline middot text, not a pill. Inherits the answer label font + accent color. */
+  .oq-rec-chip { font: inherit; color: var(--accent); background: transparent; border: 0; padding: 0; letter-spacing: normal; }
+  .oq-rec-chip::before { content: "·"; color: var(--muted); margin-right: 6px; font-weight: 400; }
+  .oq-rec-because { margin-top: 8px; padding-top: 6px; border-top: 1px dashed var(--accent); font-size: 12px; color: var(--accent); font-weight: 500; }
+  .oq-option-diagram { margin-top: 10px; }
+
+  .oq-notes { margin-top: 12px; }
+  .oq-notes-required .oq-notes-label { color: var(--accent); font-weight: 600; }
+  .oq-notes-required .oq-notes-input { border-color: var(--accent); background: var(--accent-soft); }
+  .oq-notes-label { display: block; font-size: 11px; letter-spacing: 0.04em; color: var(--muted); margin-bottom: 4px; }
+  .oq-notes-input { width: 100%; min-height: 56px; padding: 8px 10px; font: inherit; font-size: 13px; line-height: 1.45; color: var(--text); background: var(--surface); border: 1px solid var(--border-soft); border-radius: 6px; resize: vertical; box-sizing: border-box; font-family: inherit; }
+  .oq-notes-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+  .oq-notes-input::placeholder { color: var(--muted); opacity: 0.7; }
+
+  .oq-actions { margin-top: 10px; display: flex; gap: 8px; justify-content: flex-end; }
+  .oq-clear-btn { font: inherit; font-size: 11px; color: var(--muted); padding: 4px 10px; border-radius: 4px; background: transparent; border: 1px solid var(--border); cursor: pointer; }
+  .oq-clear-btn:hover { color: var(--high); border-color: var(--high); background: var(--high-soft); }
+
+  /* Sticky progress summary (filled by the registry): "N / M answered" + bar + export/reset icons. */
+  .oq-summary-wrap { position: sticky; top: 56px; z-index: 50; display: flex; justify-content: center; margin-bottom: 16px; pointer-events: none; }
+  .oq-summary { display: inline-flex; align-items: center; gap: 5px; padding: 5px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 999px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); pointer-events: auto; font-size: 12px; line-height: 1; }
+  .oq-summary-count { font-size: 12px; font-weight: 600; color: var(--text); white-space: nowrap; }
+  .oq-summary-bar { width: 100px; height: 5px; background: var(--surface-alt); border-radius: 999px; overflow: hidden; border: 1px solid var(--border-soft); }
+  .oq-summary-fill { display: block; height: 100%; background: var(--accent); transition: width .25s; }
+  .oq-icon-btn { width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; background: var(--surface-alt); color: var(--accent); border: 1px solid var(--border-soft); cursor: pointer; padding: 0; flex-shrink: 0; }
+  #oq-export-btn { margin-left: 10px; }
+  .oq-icon-btn svg { display: block; }
+  .oq-icon-btn:hover { background: var(--accent); color: white; border-color: var(--accent); }
+  .oq-icon-btn-danger { color: var(--muted); }
+  .oq-icon-btn-danger:hover { background: var(--high); border-color: var(--high); color: white; }
+
+  /* Optional page signature (Allura). Author vanity; delete if unwanted. */
+  .page-signature { max-width: 1180px; margin: 0 auto; padding: 8px 24px 24px; text-align: right; color: var(--muted); user-select: none; }
+  .page-signature .by { font-family: "Lora", Georgia, serif; font-style: italic; font-size: 14px; margin-right: 10px; vertical-align: middle; }
+  .page-signature .name { font-family: "Allura", cursive; font-size: 34px; line-height: 1; vertical-align: middle; }
+
+  .legend { font-size: 12px; color: var(--muted); background: var(--surface-alt); border: 1px solid var(--border-soft); border-radius: 6px; padding: 10px 16px; margin: 8px 0; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 28px; }
+  .legend-item { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+  .legend .swatch { display: inline-block; width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <h1>PRD: Self Browser Extension v1</h1>
+  <span class="pill active">In review</span>
+  <span class="pill">2026-07-29</span>
+  <span class="spacer"></span>
+  <div>
+    <a href="./SPEC-PRODUCTION.html">engineering spec</a>
+    &nbsp;·&nbsp;
+    <a href="./SPEC-UX.html">UX spec</a>
+    &nbsp;·&nbsp;
+    <a href="./SPEC.html">spike record</a>
+  </div>
+</header>
+
+<div class="layout">
+
+  <nav class="toc">
+    <h4>Product</h4>
+    <a href="#problem">Problem</a>
+    <a href="#product">Product</a>
+    <a href="#users">Users</a>
+    <h4>Scope</h4>
+    <a href="#requirements">Requirements</a>
+    <a href="#lifecycle">Post-link lifecycle</a>
+    <a href="#non-goals">Non-goals</a>
+    <h4>Success</h4>
+    <a href="#metrics">Metrics</a>
+    <a href="#launch-gates">Launch gates</a>
+    <a href="#release-plan">Release plan</a>
+    <h4>Risks &amp; decisions</h4>
+    <a href="#risks">Risks</a>
+    <a href="#decisions">Decisions</a>
+  </nav>
+
+  <main>
+
+    <section id="problem">
+      <h2>Problem</h2>
+      <p style="font-size: 12.5px; color: var(--muted); margin-top: 0;">Owner: Remi Colin · Status: draft for review · Companion docs: <a href="./SPEC-PRODUCTION.html">engineering spec</a> and <a href="./SPEC-UX.html">UX spec</a>. Feasibility proven by the spike (<a href="./SPEC.html">spike record</a>, real-device validated 2026-07-27, branch is reference-only).</p>
+      <p>Self verification lives on the phone. Every desktop verification forces a device switch: the user is on a website, gets a QR, must find their phone, unlock it, open Self, scan, approve, and return to the browser. On desktop, where most KYC/age-gated onboarding happens, that context switch is the biggest drop-off point in the funnel, and it repeats on every single verification. Password-manager-style browser extensions have taught users that identity actions can be two clicks in the corner of the screen.</p>
+    </section>
+
+    <section id="product">
+      <h2>Product</h2>
+      <p>A Chrome extension that holds the user's Self account (transferred once from the phone, end-to-end encrypted) and approves disclosure requests directly in the browser. Proofs are generated in the same TEE pipeline as mobile: nothing in the proving chain changes, only where the approval happens.</p>
+      <p class="callout win"><strong>One-line pitch.</strong> Link your phone once, then prove who you are from the browser in two clicks.</p>
+      <div class="diagram">
+        <div class="label">Enterprise verification flow · the extension is a new branch on the hosted page, everything upstream and downstream is unchanged</div>
+        <pre class="mermaid">
+flowchart LR
+  RP["RP backend"] -->|"sessions.create"| SE["Self Enterprise"]
+  SE -->|"verificationUrl"| HP["Hosted verification page"]
+  HP -->|"extension detected"| EXT["Extension popup"]
+  HP -->|"fallback"| QR["QR + phone"]
+  EXT --> TEE["TEE proof"]
+  QR --> TEE
+  TEE --> WH["Signed webhook to RP"]
+
+  classDef src fill:#46AA44,stroke:#DDD7CD,stroke-width:1px,color:#FFFFFF
+  classDef plain fill:#FFFFFF,stroke:#DDD7CD,stroke-width:1px,color:#2A1F18
+  class EXT src
+  class RP,SE,HP,QR,TEE,WH plain
+        </pre>
+        <div class="dia-key">
+          where: <code>verificationUrl</code> = returned by <code>sessions.create</code>, opens the hosted verification page · <code>TEE</code> = trusted execution environment generating the proof
+        </div>
+      </div>
+    </section>
+
+    <section id="users">
+      <h2>Users</h2>
+      <ol>
+        <li><strong>End users on desktop</strong> · verify without reaching for the phone. The phone remains the source of truth (registration, backup, recovery); the extension is a satellite.</li>
+        <li><strong>Enterprise relying parties</strong> · get higher desktop conversion for free. Zero integration: the Self-hosted verification page detects the extension and offers it instead of the QR. RPs keep calling <code>sessions.create()</code> exactly as documented.</li>
+        <li><strong>Self engineering</strong> · must not inherit a second product to maintain. The extension is a thin shell (~1.5k LOC) over the webview-app build, the SDK, the bridge contract, and Euclid; releases are fully automated to the Chrome Web Store.</li>
+      </ol>
+    </section>
+
+    <section id="requirements">
+      <h2>What ships: functional requirements</h2>
+      <table>
+        <thead>
+          <tr><th>#</th><th>Capability</th><th>Requirement</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>F1</td>
+            <td>Account link</td>
+            <td>QR handshake phone to extension; E2E-encrypted transfer (P-256 ECDH + AES-256-GCM); <strong>emoji safety check gates the send</strong>: both devices show the same 4 emojis derived from the shared secret, and the user explicitly presses "Encrypt &amp; send my account" on the phone after comparing</td>
+          </tr>
+          <tr>
+            <td>F2</td>
+            <td>Custody</td>
+            <td>Passkey-first (Touch ID via WebAuthn PRF; no password exists in that mode); password fallback for non-PRF machines; lost-credential path = reset this browser + relink (phone unaffected)</td>
+          </tr>
+          <tr>
+            <td>F3</td>
+            <td>Disclosure</td>
+            <td>Enterprise hosted verification page detects the extension, then popup with consent screen (requesting origin shown), then hold-to-approve, then TEE proof, then the same webhook the RP already handles; QR fallback whenever the extension is absent, locked, or stale</td>
+          </tr>
+          <tr>
+            <td>F4</td>
+            <td>Documents</td>
+            <td>All document categories transfer (passport, EU ID, Aadhaar, KYC); user selects the active proving document in the extension</td>
+          </tr>
+          <tr>
+            <td>F5</td>
+            <td>Feedback</td>
+            <td>Every wait has a state (per the UX spec loading inventory); failures are explicit and mirrored on both devices during linking</td>
+          </tr>
+          <tr>
+            <td>F6</td>
+            <td>Post-link lifecycle</td>
+            <td><strong>Re-link is the sync mechanism</strong> (linking again overwrites the browser copy). The extension detects a stale account at proof time via an account key epoch and fails closed to the QR path rather than proving from a superseded identity. Expired documents are marked in the popup and refused for proving. Linking requires at least one registered document.</td>
+          </tr>
+          <tr>
+            <td>F7</td>
+            <td>Custody lifetime</td>
+            <td>Secrets and documents are always ciphertext at rest; the unlocked session ends on 30 min idle, 12h absolute, manual lock, OS session lock, or browser exit, and a lock mid-use fails closed (see the engineering spec session and lock policy)</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="lifecycle">
+      <h2>Post-link lifecycle: the account is not frozen at link time</h2>
+      <p>Transfer is a copy, so the browser and the phone can drift. Decisions:</p>
+      <table>
+        <thead><tr><th>Event</th><th>Behavior in v1</th></tr></thead>
+        <tbody>
+          <tr><td>New document registered on the phone</td><td>Not pushed. The user re-links to sync (the link flow overwrites the browser copy). The popup shows what it holds and when it was linked, so drift is visible rather than silent.</td></tr>
+          <tr><td>Document expires</td><td>Marked expired in the document list and refused for proving, with copy pointing at the phone.</td></tr>
+          <tr><td>Account recovered or rotated on the phone</td><td><strong>Security-relevant, not polish</strong>: the browser copy must stop proving. The account carries a key epoch; the extension includes it at proof time and a mismatch fails closed to the QR path with a re-link prompt. Detection design lands in CEP-05.</td></tr>
+          <tr><td>Phone lost or stolen</td><td>The browser copy keeps working: it is an independent copy, and remote revocation is out of scope for v1. Stated honestly in user docs; the mitigation is browser-side reset plus the phone's own recovery flow.</td></tr>
+          <tr><td>Extension uninstalled</td><td>Chrome wipes extension storage. The phone cannot learn this, so the phone's "Linked browsers" surface is a <strong>log of link events, not a live device registry and not a revoke control</strong>. Copy must say so.</td></tr>
+          <tr><td>Multiple browsers, profiles, machines</td><td>Allowed and unlimited: each link is an independent encrypted copy with its own custody. Chrome profiles are separate vaults. Incognito is unsupported.</td></tr>
+          <tr><td>Linking with no usable document</td><td>The phone refuses to send until at least one document is registered, with copy explaining why (kills the "empty extension" state).</td></tr>
+        </tbody>
+      </table>
+      <p class="callout note"><strong>Open for security review (CEP-12):</strong> whether v1 ships key-epoch staleness detection (above) or defers it, given that deferring means a rotated-away identity can still prove from a linked browser until the user resets it.</p>
+    </section>
+
+    <section id="non-goals">
+      <h2>Non-goals (v1)</h2>
+      <ul>
+        <li>Document registration in the browser (NFC/KYC stays on mobile).</li>
+        <li>Firefox/Safari, enterprise force-install, multi-device sync, server-side revocation lists. Consequence stated plainly in the post-link lifecycle section: a linked browser cannot be killed remotely, and the phone's linked-browser surface is a log, not a revoke control.</li>
+        <li>Any integration surface for legacy <code>@selfxyz/qrcode</code>/<code>@selfxyz/core</code>: those packages are dead for partners; the hosted page is the only trigger origin.</li>
+        <li>Standalone identity: the extension never registers or recovers an account; no phone, no extension.</li>
+      </ul>
+    </section>
+
+    <section id="metrics">
+      <h2>Success metrics</h2>
+      <p class="callout warn"><strong>Instrumentation constraint:</strong> the headline comparison metrics are measured <strong>server-side on the hosted page</strong>, so they do not depend on client analytics consent. Consent-gated client analytics (CEP-10) covers diagnostics and the extension-side funnel only; if the headline metrics were consent-gated they would be unmeasurable whenever users decline.</p>
+      <table>
+        <thead>
+          <tr><th>Metric</th><th>Target (first 90 days public)</th><th>Instrument</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Activation</strong>: installs that reach a linked account</td>
+            <td>&gt; 60%</td>
+            <td>Extension-side funnel events (CEP-10). The number that says whether the product works at all; missing from the first draft of this table</td>
+          </tr>
+          <tr>
+            <td>Desktop verification completion, extension path vs QR path</td>
+            <td>+10 points over the QR baseline</td>
+            <td><strong>Server-side</strong> hosted-page funnel: session created, path chosen, verification completed. Lands in self-dashboard with CEP-09, NOT in the extension, and the QR baseline must be instrumented BEFORE the extension ships or there is no baseline</td>
+          </tr>
+          <tr>
+            <td>Median time-to-proof, desktop</td>
+            <td>&lt; 60s including unlock</td>
+            <td>Server-side clock: <code>sessions.create</code> to <code>verification.completed</code> webhook. Target raised from 45s because the session policy makes unlock (plus a passkey prompt) the common path, not the rare one</td>
+          </tr>
+          <tr>
+            <td>Link-flow completion once the QR is scanned</td>
+            <td>&gt; 90%</td>
+            <td>Extension + phone funnel events (CEP-08/CEP-10)</td>
+          </tr>
+          <tr>
+            <td>Repeat verification via extension for linked users</td>
+            <td>&gt; 80% choose extension over QR</td>
+            <td>Server-side path choice per session (same instrument as completion)</td>
+          </tr>
+          <tr>
+            <td>Maintenance load</td>
+            <td>zero extension-only PRs in a normal month; zero manual release steps</td>
+            <td>Repo/CI observation, reviewed per release train</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="launch-gates">
+      <h2>Launch gates</h2>
+      <ol>
+        <li>Relayer robustness deployed (self-infra PR #166) · CEP-01.</li>
+        <li>Store CI pipeline green on trusted-tester channel · CEP-02/03.</li>
+        <li>Security review sign-off (custody, transfer, origin policy, store disclosures) · CEP-12. Blocks public listing. Trusted testers may precede it under an <strong>explicit accepted risk</strong>: internal team plus test documents only until CEP-12 signs off, external partner testers after. Real identity data does not enter un-reviewed browser custody.</li>
+        <li>Enterprise-flow dogfood: one real dashboard flow verifying end-to-end through the extension (session, popup, TEE, signed webhook).</li>
+      </ol>
+    </section>
+
+    <section id="release-plan">
+      <h2>Release plan</h2>
+      <ol>
+        <li><strong>Internal</strong> (unpacked/pinned-key builds): team QA, harnesses in CI.</li>
+        <li><strong>Trusted testers</strong> (store, unlisted channel): every merge auto-publishes; partners we invite.</li>
+        <li><strong>Public listing</strong>: after CEP-12 sign-off; promotion is a manual workflow trigger, still no manual build steps.</li>
+      </ol>
+    </section>
+
+    <section id="risks">
+      <h2>Top risks</h2>
+      <table>
+        <thead>
+          <tr><th>Risk</th><th>Mitigation</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Chrome Web Store review latency/rejection</td>
+            <td>trusted-tester channel decouples publish from review; protocol changes stay one-review-window backward compatible; store-review canary alert (CEP-10)</td>
+          </tr>
+          <tr>
+            <td>Browser custody of identity secrets erodes trust</td>
+            <td>passkey-first custody, security review gate, phone stays source of truth, reset-and-relink recovery</td>
+          </tr>
+          <tr>
+            <td>Phishing via fake trigger pages</td>
+            <td>extension only accepts triggers from the hosted-page origin (single origin we control); consent popup displays requesting origin</td>
+          </tr>
+          <tr>
+            <td>WebAuthn PRF availability gaps (older macOS/Chrome, Windows variance)</td>
+            <td>password custody fallback ships at parity; PRF support detected at link time</td>
+          </tr>
+          <tr>
+            <td>Hosted-page team bandwidth (trigger lands in their repo)</td>
+            <td>trigger is a small, feature-flagged addition; contract sample maintained in extension-demo harness</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="decisions">
+      <div class="oq-card status-answered">
+        <div class="oq-head">
+          <span class="oq-id">PRD-D1</span>
+          <span class="oq-status">resolved 2026-07-29</span>
+        </div>
+        <p class="oq-question">Which repo/team owns the Enterprise hosted verification page?</p>
+        <div class="oq-context"><p>The extension trigger (CEP-09) has to land in the codebase that renders the hosted verification page, so ownership decides where the PR goes and who reviews it.</p></div>
+        <div class="oq-options">
+          <label class="oq-option selected">
+            <input type="radio" name="prd-d1" checked />
+            <span class="oq-option-body">
+              <span class="option-label"><code>self-dashboard</code> repo, <code>apps/hosted-page</code></span>
+              <span class="option-note">QR rendering lives in <code>src/client/components/features/verification/</code>. CEP-09 lands there as a feature PR, coordinated with the dashboard owner.</span>
+            </span>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <section id="prd-d2">
+      <div class="oq-card status-answered">
+        <div class="oq-head">
+          <span class="oq-id">PRD-D2</span>
+          <span class="oq-status">resolved 2026-07-29</span>
+        </div>
+        <p class="oq-question">Store identity: which account publishes the extension?</p>
+        <div class="oq-context"><p>Whoever owns the Chrome Web Store listing owns publish rights for an identity product; personal accounts are a single point of failure.</p></div>
+        <div class="oq-options">
+          <label class="oq-option selected">
+            <input type="radio" name="prd-d2" checked />
+            <span class="oq-option-body">
+              <span class="option-label">Group publisher under the same Google Workspace org as the Play Store presence</span>
+              <span class="option-note">Publish rights are group-managed, never personal; the CI OAuth project lives in the same org. Setup mechanics in CEP-03.</span>
+            </span>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <section id="prd-d3">
+      <div class="oq-card status-answered">
+        <div class="oq-head">
+          <span class="oq-id">PRD-D3</span>
+          <span class="oq-status">resolved 2026-07-29</span>
+        </div>
+        <p class="oq-question">Popup scope in v1?</p>
+        <div class="oq-context"><p>The popup could be disclosure-only or a fuller surface; F4 requires somewhere to select the active proving document.</p></div>
+        <div class="oq-options">
+          <label class="oq-option selected">
+            <input type="radio" name="prd-d3" checked />
+            <span class="oq-option-body">
+              <span class="option-label">Mini home: ID card, document list with active-document selection, settings with lock/reset/relink</span>
+              <span class="option-note">These are existing webview-app screens, and F4 document selection needs a surface.</span>
+            </span>
+          </label>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+  // Mermaid init (locked — copy as-is). startOnLoad:false: the engine (or the static driver
+  // below) drives render + post-process for static and per-option diagrams uniformly. base
+  // theme, never 'default'; no ELK adapter (it silently overrides themeVariables). Most
+  // label/patch fixes live in themeCSS.
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: 'base',
+    securityLevel: 'loose',
+    flowchart: { curve: 'basis', padding: 18, nodeSpacing: 40, rankSpacing: 60, htmlLabels: true, useMaxWidth: true },
+    themeCSS: `
+      .cluster rect { stroke-dasharray: 3 3 !important; stroke-width: 1px !important; rx: 8px !important; ry: 8px !important; }
+      .edgePath .path { stroke-width: 1.5px !important; }
+      .arrowheadPath { fill: #2A1F18 !important; }
+      /* Edge labels overlay arrows: graph-bg patch erases the line under text */
+      .edgeLabels { z-index: 2; }
+      .edgeLabel { background: transparent !important; padding: 0 !important; text-transform: none !important; }
+      .edgeLabel foreignObject > div {
+        background: #F5F3EC !important;
+        padding: 0 4px !important;
+        display: inline-block !important;
+        text-transform: none !important;
+      }
+      /* Suppress the empty edge-label rect mermaid renders for every edge
+         (a small fill patch at the SVG origin before layout). */
+      .edgeLabel rect { fill: transparent !important; stroke: none !important; }
+      .cluster-label foreignObject > div {
+        font-size: 12.5px !important;
+        color: #786C60 !important;
+        font-weight: 400 !important;
+        text-align: left !important;
+        text-transform: none !important;
+        background: #F5F3EC !important;
+        padding: 0 5px !important;
+        display: inline-block !important;
+      }
+      .nodeLabel, .edgeLabel, foreignObject > div { text-transform: none !important; }
+    `,
+    themeVariables: {
+      fontFamily: '"Lato", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      fontSize: '13px',
+      primaryColor:       '#FFFFFF',
+      primaryBorderColor: '#ECE7DE',
+      primaryTextColor:   '#2A1F18',
+      lineColor:          '#2A1F18',
+      secondaryColor:     '#F5F3EC',
+      tertiaryColor:      '#F5F3EC',
+      mainBkg:            '#FFFFFF',
+      clusterBkg:         'transparent',
+      clusterBorder:      '#DDD7CD',
+      edgeLabelBackground:'#F5F3EC'
+    }
+  });
+
+  // STATIC mode (default): render diagrams on the page, no interactive cards.
+  // For an interactive decision page, DELETE this block and use the engine below instead —
+  // OpenQuestions.render() handles all diagrams (static + per-option).
+  (async () => {
+    const blocks = document.querySelectorAll('pre.mermaid');
+    for (let i = 0; i < blocks.length; i++) {
+      const el = blocks[i];
+      const { svg } = await mermaid.render('static-' + i, el.textContent.trim());
+      el.innerHTML = svg;
+      const out = el.querySelector('svg');
+      if (!out) continue;
+      // Re-append edge labels so they paint above edges, then pad the viewBox so any
+      // repositioned cluster/edge label is not clipped by mermaid's tight bounds.
+      const edgeLabels = out.querySelector('g.edgeLabels');
+      if (edgeLabels) out.appendChild(edgeLabels);
+      try {
+        const b = out.getBBox(), p = 8;
+        out.setAttribute('viewBox', `${b.x - p} ${b.y - p} ${b.width + p * 2} ${b.height + p * 2}`);
+      } catch (e) { /* getBBox unavailable until laid out */ }
+    }
+  })();
+</script>
+
+</body>
+</html>
