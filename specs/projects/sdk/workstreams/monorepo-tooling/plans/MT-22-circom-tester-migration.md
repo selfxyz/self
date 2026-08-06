@@ -11,25 +11,26 @@
 
 ### Notes for the circuits owner (added 2026-08-06, not acted on)
 
-Two findings from a docs-only audit. Both are recorded rather than fixed,
-because circuits is outside the auditor's scope — decide and act as owner.
+One finding from a docs-only audit, recorded rather than fixed, because circuits
+is outside the auditor's scope — decide and act as owner.
 
-1. **`circuits/package.json:67` pins `circom_tester` to a floating branch:**
-   `github:remicolin/circom_tester#main`. The `pnpm-workspace.yaml` override
-   pins sha `81e963cea5fb91ca31126058c8fdc9aafc9d695d` and wins for resolution,
-   so installs are deterministic today. But the floating ref contradicts the
-   repo's `minimumReleaseAge` supply-chain posture and silently becomes live if
-   that override is ever dropped — including by this plan's own step that removes
-   it. If MT-22 is not done soon, consider pinning the workspace entry to the
-   same sha as an interim measure.
-2. **This plan's "Files Modified" table is stale.** It says the fork override
-   lives in root `package.json`. It is in `pnpm-workspace.yaml` — pnpm 11 reads
-   workspace settings from that file and ignores the root `pnpm` field entirely.
-   `blockExoticSubdeps: false` is set in **both** `pnpm-workspace.yaml` and
-   `.npmrc`; both need reverting for MT-9, not just one.
+- **`circuits/package.json:67` pins `circom_tester` to a floating branch:**
+  `github:remicolin/circom_tester#main`. The `pnpm-workspace.yaml` override
+  pins sha `81e963cea5fb91ca31126058c8fdc9aafc9d695d` and wins for resolution,
+  so installs are deterministic today. But the floating ref contradicts the
+  repo's `minimumReleaseAge` supply-chain posture and silently becomes live if
+  that override is ever dropped — including by this plan's own step that removes
+  it. If MT-22 is not done soon, consider pinning the workspace entry to the
+  same sha as an interim measure.
 
-MT-22 is the last blocker for MT-9. `strictPeerDependencies` and
-`blockExoticSubdeps` are both still `false` solely because of the `github:` ref.
+The fork override lives in `pnpm-workspace.yaml`, not root `package.json` —
+pnpm 11 reads workspace settings from that file and ignores the root `pnpm`
+field entirely. `blockExoticSubdeps: false` is set in **both**
+`pnpm-workspace.yaml` and `.npmrc`; both need reverting for MT-9, not just one.
+
+MT-22 is the last blocker for the `blockExoticSubdeps` half of MT-9 — that flag
+is `false` because of the `github:` ref. `strictPeerDependencies` is a separate
+axis with no confirmed blocker; MT-9 owns measuring it.
 
 ### Why
 
@@ -83,7 +84,7 @@ Additional checks:
 | -------------------------------------------- | ------------------------------------------ |
 | `circuits/tests/**/*.ts`                     | Migrate `getOutput` usage and assertions.  |
 | `circuits/package.json`                      | Pin/guard upstream `circom_tester@0.0.24`. |
-| `package.json`                               | Remove root pnpm override for the fork.    |
+| `pnpm-workspace.yaml`                        | Remove the `circom_tester` fork override.  |
 | `pnpm-lock.yaml`                             | Resolve to upstream `0.0.24`.              |
 | `circuits/tests/utils/circomTesterCompat.ts` | Delete if still present.                   |
 

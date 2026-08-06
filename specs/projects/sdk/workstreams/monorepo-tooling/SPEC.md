@@ -49,9 +49,11 @@ Steps 1-3 and 5 are done (see "Completed"); step 7 is a won't-do (see
 3. ~~pnpm config hardening~~ - done (MT-6).
 4. **Circuits compatibility** - migrate off the `circom_tester` fork pin
    (MT-22). This now leads, because it gates step 6.
-5. ~~CI/cache~~ - done (MT-13); MT-5 is finishing CI evidence.
-6. **Strictness and dedupe** - re-enable peer/subdependency checks (MT-9) once
-   step 4 lands, then shrink duplicate surfaces (MT-14).
+5. ~~CI/cache~~ - done (MT-13); MT-5 is finishing KMP lint coverage and CI
+   evidence.
+6. **Strictness and dedupe** - measure and enable `strictPeerDependencies`
+   (MT-9) independently of step 4; re-enable `blockExoticSubdeps` once step 4
+   lands. Then shrink duplicate surfaces (MT-14).
 7. ~~Isolated linker~~ - won't do; hoisting is required by RN autolinking.
 
 ## Scope
@@ -93,10 +95,15 @@ template, so `globalDependencies` is `pnpm-lock.yaml`, `pnpm-workspace.yaml`,
   result `pnpm test` and `pnpm lint` no longer cover the kmp packages — they are
   covered by the dedicated `kmp:test`/`kmp:lint` (and `native-shell:*`) scripts.
   **MT-5 must invoke kmp/native coverage explicitly**, not via bare `pnpm test`/
-  `pnpm lint`. Satisfied as of 2026-08-06: `kmp-ci.yml` runs
+  `pnpm lint`. Tests are satisfied as of 2026-08-06: `kmp-ci.yml` runs
   `:shared:jvmTest`, `:shared:iosSimulatorArm64Test`, and
-  `:composeApp:testDebugUnitTest` directly via Gradle, and `native-shells-ci.yml`
-  covers the native shells. There is no coverage gap from the Turbo exclusion.
+  `:composeApp:testDebugUnitTest` directly via Gradle. **Lint is not.**
+  `scripts/turbo-tasks.cjs` excludes `@selfxyz/kmp-sdk` and
+  `@selfxyz/kmp-sdk-test-app` from the root `lint` task, both packages define
+  `lint` as `./gradlew ktlintCheck` (plus SwiftLint for the test app), and
+  `kmp-ci.yml` invokes no lint step — `native-shells-ci.yml` runs `ktlintCheck`
+  only for the native-shell directories. MT-5 stays open until `kmp-ci.yml`
+  invokes `ktlintCheck` for both packages.
 - `pnpm format` stays on `scripts/format-monorepo.cjs` (bespoke gradle/swift +
   env orchestration); it is not migrated to `turbo run format`.
 
@@ -113,8 +120,9 @@ the current string-list `getOutput(witness, string[])` API. MT-22 removes that
 pin by migrating test code to upstream `circom_tester@0.0.24`.
 
 The temporary fork pin is allowed only until the upstream API migration lands.
-It is now the single blocker for MT-9, so MT-22 leads this workstream. Circuits
-is separately owned — read the notes at the top of the MT-22 plan first.
+It is the single blocker for MT-9's `blockExoticSubdeps` half, so MT-22 leads
+this workstream. Circuits is separately owned — read the notes at the top of the
+MT-22 plan first.
 
 ## Out of Scope
 
@@ -158,14 +166,14 @@ Verified against the repo on 2026-08-06. Landed and won't-do tracks moved to
 "Completed" and "Decisions Captured"; their plans are in
 `specs/archive/monorepo-tooling/`.
 
-| Track                       | IDs          | Status      | Plan                                                                      | Notes                                                                                                                                                                                                          |
-| --------------------------- | ------------ | ----------- | ------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Circuits upstream migration | MT-22        | Open        | [MT-22 Circom Tester Migration](./plans/MT-22-circom-tester-migration.md) | **Gates MT-9** — the only reason both strictness flags are still off. Circuits-owned.                                                                                                                          |
-| Peer strictness             | MT-9, MT-11  | Blocked     | [MT-9 Peer Strictness](./plans/MT-9-peer-strictness.md)                   | Blocked by MT-22. `strictPeerDependencies: false` and `blockExoticSubdeps: false` remain solely because `circom_tester` resolves to a `github:` ref. The `node-pre-gyp-github` blocker is resolved.            |
-| CI Turbo migration          | MT-5         | In progress | [MT-5 CI Turbo Migration](./plans/MT-5-ci-turbo-migration.md)             | `cache-turbo` composite and `turbo run` are live across 5 workflows. Remaining is DoD evidence: recorded wall-clock delta, cache-key audit, RN gate.                                                           |
-| Blur swap                   | MT-1, MT-2   | Partial     | [MT-1 Blur Swap](./plans/MT-1-blur-swap.md)                               | `@react-native-community/blur` is in `app/`, but `react-native-blur-effect` is still declared in 5 files plus the Jest mock. Symptom neutralized, cleanup not done — see the note below the table.             |
-| Dedupe audit                | MT-14, MT-18 | Open        | [MT-14 Dedupe Audit](./plans/MT-14-dedupe-audit.md)                       | Inventory nested duplicates, run dedupe, keep only intentional pins. Lowest priority here.                                                                                                                     |
-| Yarn residue guardrail      | MT-8, MT-15  | Partial     | [MT-8 Yarn Residue Guardrail](./plans/MT-8-yarn-residue-guardrail.md)     | Artifacts and docs removed in #2069. Remaining: a guardrail that fails if yarn artifacts return. This repo uses **husky** (`.husky/`), not lefthook — lefthook is not installed, despite earlier wording here. |
+| Track                       | IDs          | Status      | Plan                                                                      | Notes                                                                                                                                                                                                                                                                                                                                   |
+| --------------------------- | ------------ | ----------- | ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Circuits upstream migration | MT-22        | Open        | [MT-22 Circom Tester Migration](./plans/MT-22-circom-tester-migration.md) | **Gates the `blockExoticSubdeps` half of MT-9** — the `github:` ref is why that flag is off. `strictPeerDependencies` is a separate axis. Circuits-owned.                                                                                                                                                                               |
+| Peer strictness             | MT-9, MT-11  | Partial     | [MT-9 Peer Strictness](./plans/MT-9-peer-strictness.md)                   | Split blockers: `blockExoticSubdeps: false` is gated on MT-22 (`circom_tester` `github:` ref); `strictPeerDependencies: false` has no confirmed blocker and needs its failure list measured. `node-pre-gyp-github` is resolved.                                                                                                         |
+| CI Turbo migration          | MT-5         | In progress | [MT-5 CI Turbo Migration](./plans/MT-5-ci-turbo-migration.md)             | `cache-turbo` composite and `turbo run` are live across 5 workflows. Remaining: the missing KMP lint invocation (`kmp-ci.yml` runs no `ktlintCheck`) plus DoD evidence — recorded wall-clock delta, cache-key audit, RN gate.                                                                                                           |
+| Blur swap                   | MT-1, MT-2   | Partial     | [MT-1 Blur Swap](./plans/MT-1-blur-swap.md)                               | `@react-native-community/blur` is in `app/`, but `react-native-blur-effect` is still declared in 5 files plus the Jest mock. Symptom neutralized, cleanup not done — see the note below the table.                                                                                                                                      |
+| Dedupe audit                | MT-14, MT-18 | Open        | [MT-14 Dedupe Audit](./plans/MT-14-dedupe-audit.md)                       | Inventory nested duplicates, run dedupe, keep only intentional pins. Lowest priority here.                                                                                                                                                                                                                                              |
+| Yarn residue guardrail      | MT-8, MT-15  | Partial     | [MT-8 Yarn Residue Guardrail](./plans/MT-8-yarn-residue-guardrail.md)     | Lockfile/config artifacts removed in #2069. Remaining: (a) the narrative docs pass — `app/README.md` and `app/docs/MOBILE_DEPLOYMENT.md` still show `yarn` commands; (b) a guardrail that fails if yarn artifacts return. This repo uses **husky** (`.husky/`), not lefthook — lefthook is not installed, despite earlier wording here. |
 
 **MT-1/MT-2 current state (verified 2026-08-06).** `react-native-blur-effect` is
 still declared in `app/package.json`, `packages/mobile-sdk-alpha/package.json`,
@@ -226,12 +234,14 @@ re-implement these as part of a remaining track.
   `.github/actions/yarnrc-hash` deleted; every workspace `package.json`,
   `CLAUDE.md`, `AGENTS.md`, and root script migrated to pnpm; new
   `.github/actions/pnpm-install` composite replaces `yarn-install`. Remaining
-  MT-8 scope is the lefthook/CI guardrail that fails if yarn artifacts return.
+  MT-8 scope is the husky/CI guardrail that fails if yarn artifacts return
+  (lefthook is not installed; see the MT-8 row above).
 - **MT-13 foundations:** `.github/actions/cache-pnpm` (pnpm store cache)
   created and adopted across workflows; `cache-mobile-sdk-build` and
   `cache-core-sdk-build` no longer cache `node_modules` (only `dist/`), which
-  resolved the 20-minute `pnpm exec` hang on lint. Remaining MT-13 scope is
-  hit-rate tuning and cache-key audit.
+  resolved the 20-minute `pnpm exec` hang on lint. Closed 2026-08-06 — residual
+  hit-rate tuning dropped as unmeasured. The `.turbo/` layer (`cache-turbo`,
+  #2190) is MT-5 scope, not MT-13.
 
 ## Decisions Captured
 

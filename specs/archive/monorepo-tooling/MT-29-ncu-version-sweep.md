@@ -159,3 +159,11 @@ lockfile-size guard if it exceeds the upper bound.
   reject explicit; fixed `cd`-chaining in validation (root `--filter`
   invocations); relaxed the "no transitive major" gate to "reviewed / called
   out or reverted".
+- 2026-08-06: Landed as #2236 (`30021c979`). **Departure from this plan,
+  accepted retroactively:** the sweep changed 3,560 `pnpm-lock.yaml` lines
+  (1,600 insertions / 1,960 deletions), above the ~3k upper bound that required
+  splitting per the lockfile-size guard, and shipped unsplit. Reviewed as one
+  PR because the churn is lockfile-dominated peer re-threading from a single
+  coherent sweep, not independent chunks. No `ncu --version` / reproducible
+  command was recorded in the PR body — that DoD item was not met. Archived
+  as completed with these gaps noted rather than reopened.
