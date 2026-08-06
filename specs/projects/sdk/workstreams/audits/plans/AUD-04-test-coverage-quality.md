@@ -1,10 +1,10 @@
 # AUD-04 — Test coverage & test quality audit
 
-> Linear: TBD — create the tracking issue and attach this plan before investigation starts (protocol Stage 1)
+> Linear: [SELF-3184](https://linear.app/selfprotocol/issue/SELF-3184) — created 2026-06-11, unassigned
 > Workstream: [Codebase Audits](../SPEC.md)
-> Status: Draft (structural pre-draft, owner-authorized 2026-06-11; Q3.1 is a named placeholder —
+> Status: Planned (structural pre-draft, owner-authorized 2026-06-11; Q3.1 is a named placeholder —
 > this plan cannot pass activation review until the AUD-01/02/03/05 coverage maps land and the
-> recon refresh fills it)
+> recon refresh fills it) — awaiting workstream owner
 > Priority: Medium
 > Depends on: AUD-01 (Q8.1 coverage map), AUD-02 (Q9 map), AUD-03 (Q6.1 map), AUD-05 (Q7.1 map) —
 > **hard** dependency, unlike other rows: Q3 cannot be answered without these artifacts

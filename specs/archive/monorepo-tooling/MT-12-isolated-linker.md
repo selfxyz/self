@@ -1,7 +1,7 @@
 ## Replace `node-linker: hoisted` with pnpm's isolated linker
 
 > Last updated: 2026-05-13
-> Status: Draft
+> Status: Archived 2026-08-06 - WON'T DO; RN autolinking requires hoisted
 
 - Workstream: monorepo-tooling
 - Backlog IDs: MT-12

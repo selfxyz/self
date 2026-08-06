@@ -1,7 +1,17 @@
 ## Swap `react-native-blur-effect` to `@react-native-community/blur`
 
-> Last updated: 2026-05-20
-> Status: Draft
+> Last updated: 2026-08-06
+> Status: Partial - MT-1 dep added, removals outstanding (MT-2)
+
+**State as of 2026-08-06.** `@react-native-community/blur@^4.4.1` is in
+`app/package.json`, but every `react-native-blur-effect` declaration in the
+"Scope" list below is still present, as is
+`app/tests/__setup__/blurEffectMock.js`. The nested duplicate `react-native`
+this plan exists to remove is **not** currently present — the lockfile resolves
+`react-native-blur-effect@1.1.3` against the same `react-native@0.83.9` as the
+rest of the workspace, held there by the `overrides` pin. The goal is met by
+configuration; the cleanup is not done. Re-verify the nested copy is absent
+after dropping that override.
 
 - Workstream: monorepo-tooling
 - Backlog IDs: MT-1, MT-2

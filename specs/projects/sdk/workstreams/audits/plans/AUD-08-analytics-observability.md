@@ -1,9 +1,9 @@
 # AUD-08 — Analytics & observability correctness audit
 
-> Linear: TBD — create the tracking issue and attach this plan before investigation starts (protocol Stage 1)
+> Linear: [SELF-3187](https://linear.app/selfprotocol/issue/SELF-3187) — created 2026-06-11, unassigned
 > Workstream: [Codebase Audits](../SPEC.md)
-> Status: Draft (pre-drafted in sequence after AUD-07; two placeholders — AUD-01 NFC fire-site
-> map and AUD-03 launch-routing map — filled at the recon refresh)
+> Status: Planned (pre-drafted in sequence after AUD-07; two placeholders — AUD-01 NFC fire-site
+> map and AUD-03 launch-routing map — filled at the recon refresh) — awaiting workstream owner
 > Priority: Low
 > Depends on: AUD-01 (NFC scan fire-sites; its scan state machine is where NFC funnel events
 > fire), AUD-03 (launch/routing — screen-view and onboarding events fire on the nav transitions

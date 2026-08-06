@@ -1,8 +1,8 @@
 # AUD-03 — Startup & navigation routing audit
 
-> Linear: TBD — create the tracking issue and attach this plan before investigation starts (protocol Stage 1)
+> Linear: [SELF-3182](https://linear.app/selfprotocol/issue/SELF-3182) — created 2026-06-11, unassigned
 > Workstream: [Codebase Audits](../SPEC.md)
-> Status: Draft (pre-drafted ahead of AUD-02 completion; requires recon refresh + owner re-review at activation)
+> Status: Planned (pre-drafted ahead of AUD-02 completion; requires recon refresh + owner re-review at activation) — awaiting workstream owner
 > Priority: High
 > Depends on: AUD-02 (informational — `hasSecretStored`/keychain-error behavior is shared; fold AUD-02's Q3.3 finding into Q1 at refresh)
 > Time box: 3 working days of investigation + 1 day for report and review gate. Question-list items
