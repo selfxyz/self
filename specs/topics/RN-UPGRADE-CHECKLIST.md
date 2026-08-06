@@ -23,13 +23,17 @@ see the **Phase 1 decision gate** section below and
 [SDK DECISIONS.md](../projects/sdk/DECISIONS.md). Do not restart the
 version bump work.
 
-**The device flow validations and the rollout gate are also closed** —
-superseded by ten weeks of production evidence, not by a manual pass. See
-the note under _Upgrade track_.
+**The CI gate is closed** — 110 commits have merged to `main` on this
+toolchain. **The six device flow validations are not**: they were
+de-prioritized after ten weeks on the internal track without a reported
+regression, but no smoke test or funnel query was ever recorded, and
+internal-track deploys are not production evidence. See the note under
+_Upgrade track_ before citing them as passed.
 
-**What is genuinely still open** is narrow: override cleanup (which
-entries can drop now that the upgrade has settled) and the six unowned
-items in [RN-UPGRADE-FOLLOWUPS.md](./RN-UPGRADE-FOLLOWUPS.md). Tracked in
+**What is still open:** the six device flow checks (open, unowned),
+rollout stop conditions (never recorded), override cleanup (which entries
+can drop now that the upgrade has settled), and the six unowned items in
+[RN-UPGRADE-FOLLOWUPS.md](./RN-UPGRADE-FOLLOWUPS.md). Tracked in
 SELF-3786.
 
 ## How To Use This Checklist
@@ -154,43 +158,51 @@ then — treat them as historical planning, not open work.
 - [x] Resolve iOS build breaks
 - [x] Resolve Android build breaks
 - [x] ~~Resolve RN `0.85` Jest preset migration if the `SDK 56 now` path was chosen~~ — N/A, `SDK 55.0.0 fallback` was chosen. `rn-sdk-test-app` stays on `jest@^29.7.0` (MT-25).
-- [x] Validate auth flow — superseded by production evidence, see below
-- [x] Validate camera flow — superseded by production evidence, see below
-- [x] Validate permissions prompts — superseded by production evidence, see below
-- [x] Validate push initialization — superseded by production evidence, see below
-- [x] Validate webview flows — superseded by production evidence, see below
-- [x] Validate NFC/passport scan entry — superseded by production evidence, see below
+- [ ] Validate auth flow — open, de-prioritized; see below
+- [ ] Validate camera flow — open, de-prioritized; see below
+- [ ] Validate permissions prompts — open, de-prioritized; see below
+- [ ] Validate push initialization — open, de-prioritized; see below
+- [ ] Validate webview flows — open, de-prioritized; see below
+- [ ] Validate NFC/passport scan entry — open, de-prioritized; see below
 
-> **Closed 2026-08-06 — superseded by production evidence, not by a manual pass.**
+> **Reviewed 2026-08-06 — de-prioritized, not closed. No recorded pass exists.**
 >
-> These six checks were a **pre-rollout gate**. The rollout happened:
-> **20 staging releases between 2026-05-30 and 2026-08-02** on RN `0.83.9` /
-> Expo `55.0.20`, 110 commits to `main`, app at `2.9.28`. Gating a build
-> that has been shipping for ten weeks is not a meaningful test.
+> These six were a **pre-rollout gate**, and the build did roll out: RN
+> `0.83.9` / Expo `55.0.20` has been on the internal track since
+> 2026-05-30 (8 successful staging deploys through 2026-08-02, app
+> `2.9.24` → `2.9.28`, 110 commits to `main`). Ten weeks of internal use
+> without a reported regression in these flows is real signal, and it is
+> why nobody has re-run the checklist.
 >
-> Field usage exercises every one of these flows at a scale and device
-> spread a manual checklist cannot reach. The one flow where "nobody
-> complained" would be weak evidence is NFC/passport scan, because a
-> failed scan reads as user error and users silently retry — but that
-> flow is instrumented with paired `NFC_STARTED` / `NFC_SUCCEEDED` /
-> `NFC_SCAN_FAILED` events (and `SCAN_STARTED` / `SCAN_SUCCEEDED`), so a
-> regression surfaces as a success-rate drop in Mixpanel.
+> It is **not** validation. Nothing here records a smoke test or a funnel
+> query per flow, and staging deploys are internal-track uploads — they
+> are not App Store production evidence. Anyone who needs certainty on
+> one of these flows still has to run it.
 >
-> **If you want confidence in these flows, read the funnel — do not
-> re-run the checklist.** See [analytics/SPEC.md](../projects/sdk/workstreams/analytics/SPEC.md).
+> The Mixpanel funnel is not yet a substitute either. NFC/passport scan
+> is instrumented with paired `NFC_STARTED` / `NFC_SUCCEEDED` /
+> `NFC_SCAN_FAILED` (`app/src/screens/documents/scanning/DocumentNFCScanScreen.tsx`),
+> so in principle a regression reads as a success-rate drop — but the
+> correctness of those fire-sites is unaudited. `AUD-08` is still
+> **Backlog** and explicitly lists `SCAN_STARTED` terminal pairing and
+> NFC retry double-firing as open questions, so the funnel cannot
+> currently prove a flow regression-free. Cite it only after AUD-08
+> lands. See
+> [audits/SPEC.md](../projects/sdk/workstreams/audits/SPEC.md) and
+> [analytics/SPEC.md](../projects/sdk/workstreams/analytics/SPEC.md).
 
 ### Stabilization track
 
-- [x] ~~Get 3 consecutive green CI runs~~ — superseded; 110 commits merged to `main` since the upgrade
-- [x] ~~Record rollout stop conditions before production rollout~~ — moot; rollout completed across 20 releases
+- [x] ~~Get 3 consecutive green CI runs~~ — superseded; 110 commits merged to `main` since the upgrade, each gated on green CI
+- [ ] Record rollout stop conditions — never recorded, and the internal-track rollout proceeded without them. Still owed if a production rollout is gated on this checklist
 - [ ] Capture path-specific regressions and follow-ups — see [RN-UPGRADE-FOLLOWUPS.md](./RN-UPGRADE-FOLLOWUPS.md), still unowned
 
 ## Validation Log
 
-| Date         | Owner         | Command / Check              | Result    | Notes                                                                                                                                                               |
-| ------------ | ------------- | ---------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `2026-05-15` | `@unassigned` | `CI history on this branch`  | `Pending` | `No green CI runs recorded in this checklist yet; add run URLs/results as they complete.`                                                                           |
-| `2026-08-06` | `@unassigned` | `Production release history` | `Passed`  | `20 staging releases 2026-05-30 → 2026-08-02 on RN 0.83.9 / Expo 55.0.20; 110 commits to main; app 2.9.28. Supersedes the pre-rollout flow checks and the CI gate.` |
+| Date         | Owner         | Command / Check                            | Result    | Notes                                                                                                                                                                                                                                                                                   |
+| ------------ | ------------- | ------------------------------------------ | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `2026-05-15` | `@unassigned` | `CI history on this branch`                | `Pending` | `No green CI runs recorded in this checklist yet; add run URLs/results as they complete.`                                                                                                                                                                                               |
+| `2026-08-06` | `@unassigned` | `Staging release history (internal track)` | `Partial` | `8 successful staging deploys 2026-05-30 → 2026-08-02 on RN 0.83.9 / Expo 55.0.20 (9 failed, 6 skipped); app 2.9.24 → 2.9.28; 110 commits to main. Internal-track uploads — not production evidence. Closes the CI gate; de-prioritizes but does not close the six device flow checks.` |
 
 ## Open Questions
 

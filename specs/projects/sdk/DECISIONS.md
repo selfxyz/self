@@ -57,7 +57,16 @@ consumers (KMP, partner wallets) rather than the wallet itself.
 `dev`, no production RemoteConfig flag. Legacy RN screens are deleted at
 merge time.
 
-**Status as of 2026-08-06:** not merged. See
+**Departure from that model, 2026-05:** `#2098` (squash `2b907d0`)
+merged the WIA host, routes, and bridge wiring to `dev` _without_
+deleting the legacy screens, gating it instead on the build-time
+constant `IS_WIA_ENABLED` in `app/src/utils/devUtils.ts` (`false`). Not
+a RemoteConfig flag — nothing flips at runtime — but both paths now live
+in the tree, and the WebView path ships in store builds unexercised.
+
+**Status as of 2026-08-06:** host merged and gated off; the cutover
+(flipping the constant and deleting the legacy path) is unmerged on
+`feat/webview-in-app`. See
 [webview-in-app/SPEC.html](./workstreams/webview-in-app/SPEC.html) for
 current state.
 

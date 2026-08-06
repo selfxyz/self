@@ -17,16 +17,25 @@ per-ticket status on purpose.
 Two architectures exist in this repo at the same time. Neither has
 replaced the other.
 
-|                            | Legacy RN app                     | WebView-first target                                                         |
-| -------------------------- | --------------------------------- | ---------------------------------------------------------------------------- |
-| Where it lives             | `app/`, on `dev` — shipping today | `packages/webview-app` + `packages/rn-sdk`, cutover on `feat/webview-in-app` |
-| Owns screens/state/proving | `app/` directly                   | TypeScript/WebView                                                           |
-| UI library                 | tamagui `1.144.4`                 | `@selfxyz/euclid`                                                            |
-| Status                     | **This is what production runs**  | **Not merged to `dev`**                                                      |
+|                            | Legacy RN app                     | WebView-first target                                                            |
+| -------------------------- | --------------------------------- | ------------------------------------------------------------------------------- |
+| Where it lives             | `app/`, on `dev` — shipping today | `packages/webview-app` + `packages/rn-sdk`, hosted by `app/` behind a dead flag |
+| Owns screens/state/proving | `app/` directly                   | TypeScript/WebView                                                              |
+| UI library                 | tamagui `1.144.4`                 | `@selfxyz/euclid`                                                               |
+| Status                     | **This is what production runs**  | **On `dev` but gated off — no user reaches it**                                 |
 
-`feat/webview-in-app` last advanced **2026-06-08** and is **135 commits
-behind `dev`** (62 ahead). Rebasing it is a prerequisite for the cutover,
-not a formality. The cutover itself is tracked in
+The WIA host is **merged, not absent**. `#2098` (squash `2b907d0`) landed
+the in-app WebView host, routes, and bridge wiring on `dev`, but every
+entry point is gated on `IS_WIA_ENABLED` in `app/src/utils/devUtils.ts`,
+which is `false`. Every build — staging and store — takes the legacy
+native path. Note the departure from the merge-time deletion model: the
+legacy flow was **not** removed at merge, so both paths are live in the
+tree and the WebView path is not exercised by store builds.
+
+The cutover itself — flipping the flag and deleting the legacy path — is
+not merged. That work sits on `feat/webview-in-app`, which last advanced
+**2026-06-08** and is **135 commits behind `dev`** (62 ahead). Rebasing
+it is a prerequisite, not a formality. Tracked in
 [WebView-in-App Spec](./workstreams/webview-in-app/SPEC.html).
 
 If you are reading a spec that describes the WebView as the app's host
@@ -88,25 +97,25 @@ surface, it is describing the **target**, not `dev`.
 
 ## Module Table
 
-| Module               | Location                                                          | Status   | Current Role                                                                                                                       | Action Needed                                  |
-| -------------------- | ----------------------------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
-| Self Wallet app      | `app/`                                                            | Active   | **The shipping production app.** Owns screens, navigation, stores, and proving directly on `dev`. tamagui UI.                      | Becomes a thin WebView host at WIA cutover     |
-| WebView UI           | `packages/webview-app/`                                           | Active   | Primary product surface, route orchestration, mock-first screen migration                                                          | Finish remaining UI migration specs/routes     |
-| SDK Core             | `packages/mobile-sdk-alpha/`                                      | Active   | Shared engine for WebView/browser delivery                                                                                         | Keep browser entry clean and request-driven    |
-| WebView Bridge       | `packages/webview-bridge/`                                        | Active   | Host callback surface for future lifecycle wiring                                                                                  | Stable for current UI pass                     |
-| Android Shell        | `packages/native-shell-android/`                                  | Deferred | Future thin Kotlin shell: keychain/crypto + WebView host                                                                           | Not required for current UI migration          |
-| iOS Shell            | `packages/native-shell-ios/`                                      | Deferred | Future thin Swift shell: keychain/crypto + WebView host                                                                            | Not required for current UI migration          |
-| Test App             | `packages/sdk-test-app/`                                          | Deferred | Future native E2E harness                                                                                                          | Not required for current UI migration          |
-| KMP Native Shell     | `packages/kmp-sdk/`                                               | Active   | Native shell for KMP consumers — 3-domain scope (secureStorage, crypto, lifecycle)                                                 | KR-01 (Android), KR-02 (iOS), KR-03 (validate) |
-| Swift Providers      | `packages/self-sdk-swift/`                                        | Active   | iOS keychain/crypto provider implementations for KMP SDK                                                                           | Required by KR-02 (query param support)        |
-| RN SDK               | `packages/rn-sdk/`                                                | Active   | Bridge-compatible RN host shell + `SelfCrypto` native module. Consumed by `app/` (Self app) and publishable for 3rd-party RN apps. | Revived under `webview-in-app` (WIA-00).       |
-| Native Consolidation | `app/ios/`, `packages/mobile-sdk-alpha/ios/`, related native code | Paused   | Historical native cleanup and parity track                                                                                         | Keep as reference only for now                 |
-| KMP Test App         | `packages/kmp-sdk-test-app/`                                      | Active   | E2E test harness for KMP SDK                                                                                                       | Scope to 3-domain in KR-03                     |
-| MiniPay Sample       | `packages/kmp-minipay-sample/`                                    | Paused   | Historical KMP integration example                                                                                                 | May resume now that KMP path is active         |
-| MRZ Scanner          | `packages/rn-mrz-scanner/`                                        | Active   | RN native module: passport MRZ camera scan. Consumed by `app/` and the RN SDK capabilities handshake.                              | Covered by `rn-sdk-packaging`                  |
-| NFC Passport         | `packages/rn-nfc-passport/`                                       | Active   | RN native module: passport NFC chip read. Same consumer set as MRZ scanner.                                                        | Covered by `rn-sdk-packaging`                  |
-| RN SDK Test App      | `packages/rn-sdk-test-app/`                                       | Active   | E2E harness for `rn-sdk`. Held at `jest@^29` — see RN upgrade follow-ups.                                                          | Realign to `jest@30` when RN 0.85 lands        |
-| Mobile SDK Demo      | `packages/mobile-sdk-demo/`                                       | Active   | Standalone RN demo of `mobile-sdk-alpha` (RN 0.83.9, new architecture)                                                             | Keep in lockstep with SDK core                 |
+| Module               | Location                                                          | Status   | Current Role                                                                                                                                                                           | Action Needed                                           |
+| -------------------- | ----------------------------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| Self Wallet app      | `app/`                                                            | Active   | **The shipping production app.** Owns screens, navigation, stores, and proving directly on `dev`. tamagui UI. Also carries the merged WIA WebView host, gated off by `IS_WIA_ENABLED`. | Flip the flag and delete the legacy path at WIA cutover |
+| WebView UI           | `packages/webview-app/`                                           | Active   | Primary product surface, route orchestration, mock-first screen migration                                                                                                              | Finish remaining UI migration specs/routes              |
+| SDK Core             | `packages/mobile-sdk-alpha/`                                      | Active   | Shared engine for WebView/browser delivery                                                                                                                                             | Keep browser entry clean and request-driven             |
+| WebView Bridge       | `packages/webview-bridge/`                                        | Active   | Host callback surface for future lifecycle wiring                                                                                                                                      | Stable for current UI pass                              |
+| Android Shell        | `packages/native-shell-android/`                                  | Deferred | Future thin Kotlin shell: keychain/crypto + WebView host                                                                                                                               | Not required for current UI migration                   |
+| iOS Shell            | `packages/native-shell-ios/`                                      | Deferred | Future thin Swift shell: keychain/crypto + WebView host                                                                                                                                | Not required for current UI migration                   |
+| Test App             | `packages/sdk-test-app/`                                          | Deferred | Future native E2E harness                                                                                                                                                              | Not required for current UI migration                   |
+| KMP Native Shell     | `packages/kmp-sdk/`                                               | Active   | Native shell for KMP consumers — 3-domain scope (secureStorage, crypto, lifecycle)                                                                                                     | KR-01 (Android), KR-02 (iOS), KR-03 (validate)          |
+| Swift Providers      | `packages/self-sdk-swift/`                                        | Active   | iOS keychain/crypto provider implementations for KMP SDK                                                                                                                               | Required by KR-02 (query param support)                 |
+| RN SDK               | `packages/rn-sdk/`                                                | Active   | Bridge-compatible RN host shell + `SelfCrypto` native module. Consumed by `app/` (Self app) and publishable for 3rd-party RN apps.                                                     | Revived under `webview-in-app` (WIA-00).                |
+| Native Consolidation | `app/ios/`, `packages/mobile-sdk-alpha/ios/`, related native code | Paused   | Historical native cleanup and parity track                                                                                                                                             | Keep as reference only for now                          |
+| KMP Test App         | `packages/kmp-sdk-test-app/`                                      | Active   | E2E test harness for KMP SDK                                                                                                                                                           | Scope to 3-domain in KR-03                              |
+| MiniPay Sample       | `packages/kmp-minipay-sample/`                                    | Paused   | Historical KMP integration example                                                                                                                                                     | May resume now that KMP path is active                  |
+| MRZ Scanner          | `packages/rn-mrz-scanner/`                                        | Active   | RN native module: passport MRZ camera scan. Consumed by `app/` and the RN SDK capabilities handshake.                                                                                  | Covered by `rn-sdk-packaging`                           |
+| NFC Passport         | `packages/rn-nfc-passport/`                                       | Active   | RN native module: passport NFC chip read. Same consumer set as MRZ scanner.                                                                                                            | Covered by `rn-sdk-packaging`                           |
+| RN SDK Test App      | `packages/rn-sdk-test-app/`                                       | Active   | E2E harness for `rn-sdk`. Held at `jest@^29` — see RN upgrade follow-ups.                                                                                                              | Realign to `jest@30` when RN 0.85 lands                 |
+| Mobile SDK Demo      | `packages/mobile-sdk-demo/`                                       | Active   | Standalone RN demo of `mobile-sdk-alpha` (RN 0.83.9, new architecture)                                                                                                                 | Keep in lockstep with SDK core                          |
 
 ## Old vs. New — Practical Differences
 
@@ -157,12 +166,20 @@ The rule that matters in practice: **anything reachable from
 `src/browser.ts` must not pull in `react-native`.** RN imports elsewhere
 in `src/` are expected and fine.
 
-> Nothing checks this directly — there is no lint rule and no dedicated
-> test. (`validate:exports` only asserts the ESM/named-export shape; it
-> does not inspect imports.) An RN leak into the browser entry surfaces
-> as a `packages/webview-app` build failure, since that package resolves
-> the `browser` condition. Run `cd packages/webview-app && pnpm build`
-> after touching shared modules.
+> No lint rule or dedicated test enforces it — `validate:exports` only
+> asserts the ESM/named-export shape and does not inspect imports. Two
+> things catch a leak:
+>
+> ```bash
+> # Direct graph check — must print nothing
+> pnpm --filter @selfxyz/mobile-sdk-alpha exec npx --yes madge --no-spinner src/browser.ts | grep -i react-native
+>
+> # Build gate — webview-app resolves the `browser` condition
+> pnpm --filter @selfxyz/webview-app build
+> ```
+>
+> `madge` is not a repo dependency; it runs via `npx`. Run both after
+> touching shared modules.
 
 ### 3. The bridge is the only coupling point
 
@@ -196,24 +213,28 @@ OTA loading were evaluated and rejected as an attack surface.
 Run the surface you touched. All commands verified against the current
 workspace scripts.
 
+Run these from the repo root — `pnpm --filter` keeps every command
+rooted, so the block is safe to paste as a whole (a bare `cd` chain is
+not: the first `cd` persists and breaks the next command).
+
 ```bash
 # SDK core
-cd packages/mobile-sdk-alpha && pnpm test && pnpm types
+pnpm --filter @selfxyz/mobile-sdk-alpha test && pnpm --filter @selfxyz/mobile-sdk-alpha types
 
 # Bridge protocol
-cd packages/webview-bridge && pnpm build && pnpm test
+pnpm --filter @selfxyz/webview-bridge build && pnpm --filter @selfxyz/webview-bridge test
 
-# WebView app
-cd packages/webview-app && pnpm build
+# WebView app — also the gate for RN leaking into the browser entry
+pnpm --filter @selfxyz/webview-app build
 
 # RN bridge host
-cd packages/rn-sdk && pnpm test && pnpm types
+pnpm --filter @selfxyz/rn-sdk test && pnpm --filter @selfxyz/rn-sdk types
 
 # KMP shell
 pnpm kmp:test
 
-# Whole repo
-pnpm lint && pnpm types && pnpm build
+# Whole repo — tests included; lint/types/build alone is not a full pass
+pnpm lint && pnpm types && pnpm build && pnpm test
 ```
 
 The Self Wallet app has its own harness — see [app/AGENTS.md](../../../app/AGENTS.md)
