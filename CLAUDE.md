@@ -36,7 +36,7 @@ nvm use && corepack enable && pnpm install
 - **TypeScript is the primary surface.** Core logic, state machines, stores, proving flow, and UI live in TS/WebView. Before writing native code ask "Can this run in the WebView?" If yes or maybe, it belongs in TS.
 - **Native handlers stay thin.** Kotlin/Swift are for hardware, OS APIs, lifecycle, keychain, and crypto signing/key-gen only.
 - **Keychain is native-managed.** No web fallback for secure storage.
-- **No `react-native` imports in SDK core.** `packages/mobile-sdk-alpha/src/` is platform-agnostic except `src/adapters/react-native/`.
+- **Keep the browser entry RN-free.** `mobile-sdk-alpha` is dual-target, not platform-agnostic: `src/` legitimately imports `react-native` (it ships an RN component library and declares RN peer deps). Portability comes from `package.json` export conditions (`"react-native"` → `index.js`, `"browser"` → `browser.js`) plus `*.web.tsx` / `*.native.ts` files. The invariant is that **nothing reachable from `src/browser.ts` may pull in `react-native`**. Nothing checks this directly — no lint rule, no dedicated test. It surfaces as a `packages/webview-app` build failure, so run `cd packages/webview-app && pnpm build` after touching shared modules.
 - **Reuse through `mobile-sdk-alpha`.** Shared types, interfaces, constants, parsing, validation, formatting, state machines, and stores belong in the SDK.
 - **Bridge protocol is the only coupling.** Native shells and WebView share a JSON contract; no side channels, custom messaging, or platform extensions.
 - **Adapter interfaces are the coupling layer.** WebView imports SDK adapter interfaces; native shells implement bridge handlers; code does not cross the bridge boundary.

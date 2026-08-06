@@ -157,9 +157,12 @@ The rule that matters in practice: **anything reachable from
 `src/browser.ts` must not pull in `react-native`.** RN imports elsewhere
 in `src/` are expected and fine.
 
-> No lint rule enforces any of this. The browser entry's cleanliness is
-> maintained by `pnpm validate:exports` / `report:exports` and by review,
-> so verify the browser entry after touching shared modules.
+> Nothing checks this directly — there is no lint rule and no dedicated
+> test. (`validate:exports` only asserts the ESM/named-export shape; it
+> does not inspect imports.) An RN leak into the browser entry surfaces
+> as a `packages/webview-app` build failure, since that package resolves
+> the `browser` condition. Run `cd packages/webview-app && pnpm build`
+> after touching shared modules.
 
 ### 3. The bridge is the only coupling point
 
