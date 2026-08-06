@@ -1,7 +1,7 @@
 ## Add Turborepo + `turbo.json`
 
 > Last updated: 2026-05-13
-> Status: Draft
+> Status: Archived 2026-08-06 - landed in #2186
 
 - Workstream: monorepo-tooling
 - Backlog IDs: MT-3

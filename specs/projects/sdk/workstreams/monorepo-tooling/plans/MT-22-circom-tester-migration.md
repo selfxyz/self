@@ -1,13 +1,35 @@
 ## Migrate circuits tests to upstream `circom_tester@0.0.24`
 
-> Last updated: 2026-05-20
-> Status: Draft
+> Last updated: 2026-08-06
+> Status: Open - circuits-owned, gates MT-9
 
 - Workstream: monorepo-tooling
 - Backlog IDs: MT-22
-- Owner: TBD
+- Owner: circuits owner (Ayman)
 - Branch: TBD
 - PR: TBD
+
+### Notes for the circuits owner (added 2026-08-06, not acted on)
+
+Two findings from a docs-only audit. Both are recorded rather than fixed,
+because circuits is outside the auditor's scope — decide and act as owner.
+
+1. **`circuits/package.json:67` pins `circom_tester` to a floating branch:**
+   `github:remicolin/circom_tester#main`. The `pnpm-workspace.yaml` override
+   pins sha `81e963cea5fb91ca31126058c8fdc9aafc9d695d` and wins for resolution,
+   so installs are deterministic today. But the floating ref contradicts the
+   repo's `minimumReleaseAge` supply-chain posture and silently becomes live if
+   that override is ever dropped — including by this plan's own step that removes
+   it. If MT-22 is not done soon, consider pinning the workspace entry to the
+   same sha as an interim measure.
+2. **This plan's "Files Modified" table is stale.** It says the fork override
+   lives in root `package.json`. It is in `pnpm-workspace.yaml` — pnpm 11 reads
+   workspace settings from that file and ignores the root `pnpm` field entirely.
+   `blockExoticSubdeps: false` is set in **both** `pnpm-workspace.yaml` and
+   `.npmrc`; both need reverting for MT-9, not just one.
+
+MT-22 is the last blocker for MT-9. `strictPeerDependencies` and
+`blockExoticSubdeps` are both still `false` solely because of the `github:` ref.
 
 ### Why
 

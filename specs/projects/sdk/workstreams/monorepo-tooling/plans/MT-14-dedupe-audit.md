@@ -1,7 +1,7 @@
 ## Audit nested duplicates and dedupe lockfile
 
-> Last updated: 2026-05-20
-> Status: Draft
+> Last updated: 2026-08-06
+> Status: Open - lowest priority in the workstream
 
 - Workstream: monorepo-tooling
 - Backlog IDs: MT-14, MT-18

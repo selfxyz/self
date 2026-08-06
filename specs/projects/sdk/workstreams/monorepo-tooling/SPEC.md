@@ -1,9 +1,15 @@
 # Monorepo Tooling - Workstream Spec
 
-> Last updated: 2026-06-22
+> Last updated: 2026-08-06
 > Owner: Platform
 > Parent: `../../OVERVIEW.md`
-> Status: Active - Turbo foundation landed (#2186/#2188); CI migration in progress
+> Status: Active, narrow - pnpm cutover and Turbo foundation are done. Live
+> remainder is one chain (MT-22 → MT-9) plus three small tracks.
+
+The yarn→pnpm migration itself is finished and its goals were met; see
+[pnpm migration status](../../../../../docs/pnpm-migration-status.md), which is
+authoritative for that question. What remains here is hardening that the
+cutover deferred, not migration work.
 
 ## Purpose
 
@@ -34,19 +40,19 @@ folded into a lead plan.
 
 ## Track Order
 
-1. **Blur swap** - remove the duplicate React Native install symptom that
-   forced temporary pnpm peer workarounds.
-2. **Turbo foundation** - add the task graph locally before changing scripts
-   or CI.
-3. **pnpm config hardening** - migrate Yarn-era config to pnpm-native
-   mechanisms and document install-script allowlists.
-4. **Strictness and dedupe** - re-enable peer/subdependency checks and shrink
-   duplicate dependency surfaces.
-5. **CI/cache** - tune pnpm cache behavior after the local graph is stable.
-6. **Circuits compatibility** - keep tests green under pnpm, then migrate off
-   the temporary `circom_tester` fork pin.
-7. **Isolated linker** - switch away from `nodeLinker: hoisted` only after
-   patching, strictness, and RN gates are stable.
+Steps 1-3 and 5 are done (see "Completed"); step 7 is a won't-do (see
+"Decisions Captured"). The live order is:
+
+1. ~~Blur swap~~ - partially done; only the `react-native-blur-effect` removal
+   remains, and the duplicate-RN symptom it targeted is already neutralized.
+2. ~~Turbo foundation~~ - done (#2186/#2188).
+3. ~~pnpm config hardening~~ - done (MT-6).
+4. **Circuits compatibility** - migrate off the `circom_tester` fork pin
+   (MT-22). This now leads, because it gates step 6.
+5. ~~CI/cache~~ - done (MT-13); MT-5 is finishing CI evidence.
+6. **Strictness and dedupe** - re-enable peer/subdependency checks (MT-9) once
+   step 4 lands, then shrink duplicate surfaces (MT-14).
+7. ~~Isolated linker~~ - won't do; hoisting is required by RN autolinking.
 
 ## Scope
 
@@ -87,7 +93,10 @@ template, so `globalDependencies` is `pnpm-lock.yaml`, `pnpm-workspace.yaml`,
   result `pnpm test` and `pnpm lint` no longer cover the kmp packages — they are
   covered by the dedicated `kmp:test`/`kmp:lint` (and `native-shell:*`) scripts.
   **MT-5 must invoke kmp/native coverage explicitly**, not via bare `pnpm test`/
-  `pnpm lint`.
+  `pnpm lint`. Satisfied as of 2026-08-06: `kmp-ci.yml` runs
+  `:shared:jvmTest`, `:shared:iosSimulatorArm64Test`, and
+  `:composeApp:testDebugUnitTest` directly via Gradle, and `native-shells-ci.yml`
+  covers the native shells. There is no coverage gap from the Turbo exclusion.
 - `pnpm format` stays on `scripts/format-monorepo.cjs` (bespoke gradle/swift +
   env orchestration); it is not migrated to `turbo run format`.
 
@@ -99,11 +108,13 @@ known blockers are removed. Keep install-script allowlists justified in config.
 
 ### Circuits Compatibility
 
-MT-21 pins `circom_tester` to the remicolin fork commit that exposes the
-current string-list `getOutput(witness, string[])` API. MT-22 removes that pin
-by migrating test code to upstream `circom_tester@0.0.24`.
+MT-21 (landed) pins `circom_tester` to the remicolin fork commit that exposes
+the current string-list `getOutput(witness, string[])` API. MT-22 removes that
+pin by migrating test code to upstream `circom_tester@0.0.24`.
 
 The temporary fork pin is allowed only until the upstream API migration lands.
+It is now the single blocker for MT-9, so MT-22 leads this workstream. Circuits
+is separately owned — read the notes at the top of the MT-22 plan first.
 
 ## Out of Scope
 
@@ -134,46 +145,75 @@ The temporary fork pin is allowed only until the upstream API migration lands.
 
 ## Dependencies
 
-| Depends On                                        | Type     | Status  | Notes                                                                                                         |
-| ------------------------------------------------- | -------- | ------- | ------------------------------------------------------------------------------------------------------------- |
-| pnpm conversion (PR #2069)                        | Upstream | Landing | `packageManager: pnpm@11.5.3` already pinned; this work starts after merge.                                   |
-| `@selfxyz/euclid`                                 | Upstream | Active  | Owns the `BlurView` implementation used by app consumers.                                                     |
-| `@zk-email/relayer-utils` / `node-pre-gyp-github` | Override | Open    | Replaced by registry `node-pre-gyp-github@1.4.4` via `pnpm.overrides` in MT-6; no upstream wait required.     |
-| `circom_tester` (remicolin fork)                  | Override | Open    | Last remaining `blockExoticSubdeps` blocker. Resolved by MT-22 upstream migration, or interim patch in MT-21. |
+| Depends On                                        | Type     | Status   | Notes                                                                                                                                      |
+| ------------------------------------------------- | -------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| pnpm conversion (PR #2069)                        | Upstream | Landed   | Merged. Root pin has since moved to `pnpm@11.12.0`; read the current value from root `package.json`, not from this table.                  |
+| `@selfxyz/euclid`                                 | Upstream | Active   | Owns the `BlurView` implementation used by app consumers. App and `mobile-sdk-alpha` are on `^0.6.1` (the 0.x RN lineage, not 1.x web).    |
+| `@zk-email/relayer-utils` / `node-pre-gyp-github` | Override | Resolved | Replaced by registry `node-pre-gyp-github@1.4.4` via `overrides`. No longer a `blockExoticSubdeps` blocker.                                |
+| `circom_tester` (remicolin fork)                  | Override | Open     | **The only remaining `blockExoticSubdeps` blocker.** Resolved by MT-22. Circuits-owned; see the note in the MT-22 plan before touching it. |
 
 ## Backlog Tracks
 
-| Track                       | IDs                             | Status      | Plan                                                                      | Notes                                                                                                                                        |
-| --------------------------- | ------------------------------- | ----------- | ------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| Blur swap                   | MT-1, MT-2                      | Open        | [MT-1 Blur Swap](./plans/MT-1-blur-swap.md)                               | MT-1 is upstream Euclid work; MT-2 is local mock cleanup after the consumer bump.                                                            |
-| Turbo foundation            | MT-3                            | Landed      | [MT-3 Turbo Foundation](./plans/MT-3-turbo-foundation.md)                 | `turbo` + `turbo.json` landed in #2186.                                                                                                      |
-| Root script migration       | MT-4                            | Landed      | [MT-4 Root Script Migration](./plans/MT-4-root-script-migration.md)       | Root scripts route through `scripts/turbo-tasks.cjs` (#2186/#2188).                                                                          |
-| CI Turbo migration          | MT-5                            | In progress | [MT-5 CI Turbo Migration](./plans/MT-5-ci-turbo-migration.md)             | `.turbo` cache on `workspace-ci` + `common-ci` type-check; `--filter` build chains rewired to Turbo in webview-app/bridge + rn-sdk-test-app. |
-| pnpm native config          | MT-6, MT-7, MT-10, MT-16, MT-17 | Partial     | [MT-6 pnpm Config Hardening](./plans/MT-6-pnpm-config-hardening.md)       | Foundations landed in #2069 (see "Completed in PR #2069"). Remaining: consolidate `patchedDependencies`, install-script audit doc.           |
-| Peer strictness             | MT-9, MT-11                     | Open        | [MT-9 Peer Strictness](./plans/MT-9-peer-strictness.md)                   | Re-enable `blockExoticSubdeps` and `strictPeerDependencies` together.                                                                        |
-| Yarn residue/docs           | MT-8, MT-15                     | Partial     | [MT-8 Yarn Residue Guardrail](./plans/MT-8-yarn-residue-guardrail.md)     | Artifacts and docs removed in #2069 (see below). Remaining: CI/lefthook guardrail against reintroducing yarn files.                          |
-| Dedupe audit                | MT-14, MT-18                    | Open        | [MT-14 Dedupe Audit](./plans/MT-14-dedupe-audit.md)                       | Inventory nested duplicates, run dedupe, and keep only intentional pins.                                                                     |
-| Version upgrade sweep       | MT-29                           | Open        | [MT-29 ncu Version Sweep](./plans/MT-29-ncu-version-sweep.md)             | Pin-aware `ncu` patch/minor sweep across workspaces. Sequence with MT-14; excludes RN/Expo and all intentional pins.                         |
-| pnpm cache audit            | MT-13                           | Partial     | [MT-13 pnpm Cache Audit](./plans/MT-13-pnpm-cache-audit.md)               | `cache-pnpm` action and the `node_modules`-excluding build caches landed in #2069. Remaining: store-cache hit-rate tuning.                   |
-| Circuits fork pin           | MT-21                           | Open        | [MT-21 Circom Tester Pin](./plans/MT-21-circom-tester-pin.md)             | Temporary stabilization under pnpm hoisting.                                                                                                 |
-| Circuits upstream migration | MT-22                           | Open        | [MT-22 Circom Tester Migration](./plans/MT-22-circom-tester-migration.md) | Removes the MT-21 pin by moving to upstream `0.0.24`.                                                                                        |
-| Isolated linker             | MT-12                           | Open        | [MT-12 Isolated Linker](./plans/MT-12-isolated-linker.md)                 | High-risk RN tooling change; depends on patch migration and preferably peer strictness.                                                      |
+Verified against the repo on 2026-08-06. Landed and won't-do tracks moved to
+"Completed" and "Decisions Captured"; their plans are in
+`specs/archive/monorepo-tooling/`.
 
-- **MT-24:** `.github/CI_FORCE_RUN` sentinel and `scripts/ci/add-force-run-sentinel.py`
-  are retained for the duration of the pnpm conversion PR (#2069). Rationale:
-  the PR cannot necessarily be merged immediately and will be re-synced with
-  `dev` repeatedly; each re-sync must re-validate the full workflow matrix to
-  confirm the pnpm upgrade remains sound, but `check_changes` path gating
-  otherwise skips workflows whose touched paths are unchanged. Bumping the
-  sentinel forces every gated workflow to run. After #2069 merges, evaluate
-  whether to keep the sentinel as general infra or remove it; no other current
-  scenario requires it.
+| Track                       | IDs          | Status      | Plan                                                                      | Notes                                                                                                                                                                                                          |
+| --------------------------- | ------------ | ----------- | ------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Circuits upstream migration | MT-22        | Open        | [MT-22 Circom Tester Migration](./plans/MT-22-circom-tester-migration.md) | **Gates MT-9** — the only reason both strictness flags are still off. Circuits-owned.                                                                                                                          |
+| Peer strictness             | MT-9, MT-11  | Blocked     | [MT-9 Peer Strictness](./plans/MT-9-peer-strictness.md)                   | Blocked by MT-22. `strictPeerDependencies: false` and `blockExoticSubdeps: false` remain solely because `circom_tester` resolves to a `github:` ref. The `node-pre-gyp-github` blocker is resolved.            |
+| CI Turbo migration          | MT-5         | In progress | [MT-5 CI Turbo Migration](./plans/MT-5-ci-turbo-migration.md)             | `cache-turbo` composite and `turbo run` are live across 5 workflows. Remaining is DoD evidence: recorded wall-clock delta, cache-key audit, RN gate.                                                           |
+| Blur swap                   | MT-1, MT-2   | Partial     | [MT-1 Blur Swap](./plans/MT-1-blur-swap.md)                               | `@react-native-community/blur` is in `app/`, but `react-native-blur-effect` is still declared in 5 files plus the Jest mock. Symptom neutralized, cleanup not done — see the note below the table.             |
+| Dedupe audit                | MT-14, MT-18 | Open        | [MT-14 Dedupe Audit](./plans/MT-14-dedupe-audit.md)                       | Inventory nested duplicates, run dedupe, keep only intentional pins. Lowest priority here.                                                                                                                     |
+| Yarn residue guardrail      | MT-8, MT-15  | Partial     | [MT-8 Yarn Residue Guardrail](./plans/MT-8-yarn-residue-guardrail.md)     | Artifacts and docs removed in #2069. Remaining: a guardrail that fails if yarn artifacts return. This repo uses **husky** (`.husky/`), not lefthook — lefthook is not installed, despite earlier wording here. |
 
-## Completed in PR #2069
+**MT-1/MT-2 current state (verified 2026-08-06).** `react-native-blur-effect` is
+still declared in `app/package.json`, `packages/mobile-sdk-alpha/package.json`,
+`packages/mobile-sdk-demo/package.json`, `pnpm-workspace.yaml` (both the
+`overrides` pin and the `@selfxyz/euclid` peer-optional `packageExtensions`
+block), and `app/jest.config.cjs`, plus `app/tests/__setup__/blurEffectMock.js`.
+The original symptom — a nested duplicate `react-native` — is **not** present:
+the lockfile resolves `react-native-blur-effect@1.1.3` against the same
+`react-native@0.83.9` as the rest of the workspace, held there by the `1.1.3`
+override. So the goal is met by configuration while the removal in MT-1's scope
+is outstanding. Anyone dropping that override must re-check for the nested copy.
 
-The pnpm conversion PR landed more than the lockfile swap. Treat these as
-done; the items below should not be re-implemented as part of the listed
-follow-up tracks.
+- **MT-24: resolved 2026-08-06 — keep the sentinel as general infra.**
+  `.github/CI_FORCE_RUN` and `scripts/ci/add-force-run-sentinel.py` were
+  introduced so each re-sync of the pnpm conversion PR (#2069) could force the
+  full workflow matrix past `check_changes` path gating. The open question was
+  whether to keep them after that merge. Keep: the sentinel has since become
+  general infra — it documents four reuse cases beyond the migration, is listed
+  in the `paths:` filters or `check_changes` allowlists of 10+ workflows, and
+  `pnpm lint:ci-sentinel` enforces that coverage on every lint run. Removing it
+  would mean editing every one of those workflows to no benefit.
+
+## Completed
+
+Treat everything below as done. Plans are archived in
+`specs/archive/monorepo-tooling/` with rows in `specs/ARCHIVE.md`. Do not
+re-implement these as part of a remaining track.
+
+- **MT-3 / MT-4 — Turbo foundation and root script migration.** `turbo` +
+  `turbo.json` landed in #2186; root scripts route through
+  `scripts/turbo-tasks.cjs` (#2186/#2188). Per-task package exclusions live in
+  that script because `turbo.json` has no per-task package-exclude. Gradle/native
+  packages are excluded from every Turbo task, so `pnpm test` / `pnpm lint` do not
+  cover them — `kmp-ci.yml` covers kmp directly via Gradle (`:shared:jvmTest`,
+  `:shared:iosSimulatorArm64Test`, `:composeApp:testDebugUnitTest`).
+- **MT-6 — pnpm native config.** Complete. `patchedDependencies` consolidated to
+  6 pnpm-native patches, `allowBuilds` allowlist audited 2026-06-17 with per-entry
+  rationale inline, pnpm pin enforced by `scripts/check-pnpm-version.mjs`.
+- **MT-13 — pnpm cache.** `cache-pnpm` adopted across workflows;
+  `cache-mobile-sdk-build` / `cache-core-sdk-build` no longer cache
+  `node_modules`, which fixed the 20-minute `pnpm exec` hang on lint. The residual
+  "hit-rate tuning" scope is dropped as not worth tracking; reopen with a specific
+  measurement if cache misses become a real cost.
+- **MT-21 — circom_tester fork pin.** Landed. `pnpm-workspace.yaml` overrides pin
+  the fork at sha `81e963ce`. MT-22 removes it.
+- **MT-29 — version sweep.** Landed via #2236 (`chore/upgrade-pkgs-rd3`).
+
+### Foundations landed in PR #2069
 
 - **MT-6 foundations:** `packageManager: pnpm@11.5.3` pinned; pnpm-native
   `allowBuilds` install-script allowlist in `pnpm-workspace.yaml`;
@@ -194,6 +234,14 @@ follow-up tracks.
   hit-rate tuning and cache-key audit.
 
 ## Decisions Captured
+
+- **MT-12: won't do.** Do not migrate off `nodeLinker: hoisted` to pnpm's
+  isolated linker. React Native autolinking requires a flat `node_modules`, so
+  hoisting is load-bearing rather than a leftover conversion workaround, and
+  `pnpm-workspace.yaml` documents it as such. The strictness value MT-12 was
+  meant to unlock is better pursued through MT-9 (peer/exotic-subdep checks),
+  which does not require changing the linker. Reopen only if RN's autolinking
+  gains real isolated-linker support.
 
 - **MT-19:** Keep `scripts/build-webview-bundle.sh` outside Turbo in this
   workstream. Track any future integration under `build-pipeline` after owner

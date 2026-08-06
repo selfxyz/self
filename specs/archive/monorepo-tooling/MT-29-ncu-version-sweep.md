@@ -1,7 +1,7 @@
 ## Pin-aware cross-workspace dependency upgrade sweep (`ncu`)
 
 > Last updated: 2026-06-22
-> Status: Draft
+> Status: Archived 2026-08-06 - landed via #2236
 
 - Workstream: monorepo-tooling
 - Backlog IDs: MT-29

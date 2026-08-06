@@ -1,7 +1,12 @@
 ## Re-enable pnpm peer and exotic-subdependency strictness
 
-> Last updated: 2026-05-20
-> Status: Draft
+> Last updated: 2026-08-06
+> Status: Blocked by MT-22
+
+**Blocker as of 2026-08-06.** `circom_tester` resolving to a `github:` ref is
+the only remaining reason both flags are off. The `node-pre-gyp-github` blocker
+is resolved (registry `1.4.4` via `overrides`). Note both flags are set in two
+places — `pnpm-workspace.yaml` **and** `.npmrc` — so both files need reverting.
 
 - Workstream: monorepo-tooling
 - Backlog IDs: MT-9, MT-11
