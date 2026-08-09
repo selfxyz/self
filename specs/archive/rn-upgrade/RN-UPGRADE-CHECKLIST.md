@@ -1,6 +1,32 @@
 # RN Upgrade Checklist
 
-_Last updated: August 6, 2026_
+> **ARCHIVED 2026-08-09. Historical record — do not execute from this file
+> and do not update it.** The RN 0.83 / Expo 55 upgrade shipped and its
+> track is closed. Current toolchain state lives in
+> [SDK OVERVIEW.md](../../projects/sdk/OVERVIEW.md); the decisions and
+> their sunset triggers are in
+> [DECISIONS.md](../../projects/sdk/DECISIONS.md).
+>
+> **Live items were re-homed, not dropped:**
+>
+> - Override cleanup → [MT-14 Dedupe Audit](../../projects/sdk/workstreams/monorepo-tooling/plans/MT-14-dedupe-audit.md),
+>   which carries the verified finding list.
+> - React 19 / Compiler lint residue → SELF-2802 (one warning left, plus
+>   restoring five rules to `error`).
+> - Analytics follow-ups → ANA-20, ANA-21 in
+>   [analytics/SPEC.md](../../projects/sdk/workstreams/analytics/SPEC.md).
+> - Test-pattern and version-skew items → `app/AGENTS.md`.
+>
+> **Known-stale content below, left as written for the historical record:**
+> the `react-native-webview` row still shows a `13.16.1` app dep vs
+> `13.16.0` override (resolved — everything is `13.16.0` now); the
+> _Monorepo alignment checks_ table still shows root on `react-native@0.76.9`
+> / `react@^18.3.1` and SDK peers at `>=0.76.0` (root now declares neither,
+> and peers are narrowed to `>=0.83.0 <0.86.0`); the Phase 0 findings cite
+> root `resolutions` and `app/overrides` paths that no longer exist, since
+> overrides moved to `pnpm-workspace.yaml` in the pnpm migration.
+
+_Last updated: August 6, 2026 (archived 2026-08-09)_
 
 Use this file as the working state tracker for the React Native upgrade. The narrative plan lives in [React Native Upgrade Plan](./RN-UPGRADE-PLAN.md).
 
@@ -20,7 +46,7 @@ Verify against `app/package.json` rather than trusting this table.
 
 **The SDK 56 / RN 0.85 columns below are inert.** That gate is closed —
 see the **Phase 1 decision gate** section below and
-[SDK DECISIONS.md](../projects/sdk/DECISIONS.md). Do not restart the
+[SDK DECISIONS.md](../../projects/sdk/DECISIONS.md). Do not restart the
 version bump work.
 
 **The CI gate is closed** — 110 commits have merged to `main` on this
@@ -30,11 +56,23 @@ regression, but no smoke test or funnel query was ever recorded, and
 internal-track deploys are not production evidence. See the note under
 _Upgrade track_ before citing them as passed.
 
-**What is still open:** the six device flow checks (open, unowned),
-rollout stop conditions (never recorded), override cleanup (which entries
-can drop now that the upgrade has settled), and the six unowned items in
-[RN-UPGRADE-FOLLOWUPS.md](./RN-UPGRADE-FOLLOWUPS.md). Tracked in
-SELF-3786.
+**What was still open when this file was archived, and where it went**
+(2026-08-09, closing SELF-3786):
+
+- **Six device flow checks** — still de-prioritized and unowned. Not
+  validated, and not to be re-run from here. The intended evidence path is
+  the Mixpanel funnel, which is gated on AUD-08; see the stance recorded
+  in [DECISIONS.md](../../projects/sdk/DECISIONS.md).
+- **Rollout stop conditions** — never recorded, and moot. They were owed
+  before a rollout that has since happened many times over. Only relevant
+  again if a future production rollout is gated on a checklist.
+- **Override cleanup** — re-homed to
+  [MT-14](../../projects/sdk/workstreams/monorepo-tooling/plans/MT-14-dedupe-audit.md)
+  with a verified finding list. The `react-native-webview` mismatch this
+  file recorded is already resolved; the live one is `jsdom`.
+- **The six follow-up items** — re-homed. Items 1 (iOS Paper exception),
+  2/3 (ANA-20/ANA-21), 4 and 5 (`app/AGENTS.md`), 6 (SELF-2802). See the
+  archive header for the map.
 
 ## How To Use This Checklist
 
@@ -188,8 +226,8 @@ then — treat them as historical planning, not open work.
 > NFC retry double-firing as open questions, so the funnel cannot
 > currently prove a flow regression-free. Cite it only after AUD-08
 > lands. See
-> [audits/SPEC.md](../projects/sdk/workstreams/audits/SPEC.md) and
-> [analytics/SPEC.md](../projects/sdk/workstreams/analytics/SPEC.md).
+> [audits/SPEC.md](../../projects/sdk/workstreams/audits/SPEC.md) and
+> [analytics/SPEC.md](../../projects/sdk/workstreams/analytics/SPEC.md).
 
 ### Stabilization track
 

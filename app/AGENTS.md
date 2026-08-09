@@ -128,10 +128,10 @@ These files are easy to miss locally because broad personal gitignore rules (e.g
 
 `pnpm ios` now selects a simulator by UDID, shuts down stale booted simulators, explicitly boots the chosen device, waits for boot completion, then starts the React Native iOS build against that simulator.
 
-| Env var | Purpose |
-|---|---|
-| `IOS_SIMULATOR_DEVICE` | Case-insensitive iPhone name substring filter, for example `iPhone 16 Pro` |
-| `IOS_SIMULATOR_RUNTIME` | iOS runtime version filter, for example `18.4` or `18-4` |
+| Env var                 | Purpose                                                                    |
+| ----------------------- | -------------------------------------------------------------------------- |
+| `IOS_SIMULATOR_DEVICE`  | Case-insensitive iPhone name substring filter, for example `iPhone 16 Pro` |
+| `IOS_SIMULATOR_RUNTIME` | iOS runtime version filter, for example `18.4` or `18-4`                   |
 
 Default device priority when no env vars are set:
 
@@ -289,6 +289,33 @@ grep -r "require('react-native')" app/tests/
 - Avoid `require()` calls in `beforeEach`/`afterEach` hooks
 - React and React Native are already mocked in `jest.setup.js` - use imports in test files
 
+### The `isolateModules` + `doMock` pattern is not allowlisted
+
+`app/tests/src/components/PassportCamera.android.test.tsx` wraps
+`jest.doMock('react-native', ...)` in `jest.isolateModules` and then calls
+nested `require(...)` for `react-test-renderer` and the component under
+test. It passes today and CI has not OOMed on it, but it sits next to the
+nested-require pattern above and bypasses `scripts/check-test-requires.cjs`
+by design — that guard matches `require('react-native')` literals, which
+this file never writes.
+
+**Decision (2026-08-09): refactor it to the standard hoisted-mock pattern.
+Do not add an allowlist entry, and do not copy this pattern into new
+tests.** The only reason it reaches for `isolateModules` is that
+`PassportCamera.tsx` calls `requireNativeComponent` at module scope, so
+the `Platform.OS` mock has to be in place before the component is
+imported. A top-level `jest.mock('react-native', ...)` factory already
+satisfies that, because `jest.mock` is hoisted above imports — and this
+file is Android-only (`.android.test.tsx`), so it never needs two platform
+variants live in one module registry. Use hoisted mocks with `Mock*`
+aliases like the rest of `app/tests/`, keep the existing assertions
+(Android Fabric path, `extractMRZInfo` invocation, `isMounted` prop
+propagation), and drop the `isolateModules` block.
+
+Allowlisting was the alternative and was rejected: it would require a
+CI-condition memory profile to justify, and it documents an exception that
+new tests would then copy.
+
 ### Detailed Guidelines
 
 See `.cursor/rules/test-memory-optimization.mdc` for comprehensive guidelines, examples, and anti-patterns.
@@ -302,6 +329,31 @@ When working with Linear issues during development:
 - **`create_document`** for: attaching specs as Linear documents
 
 **Never overwrite an issue description.** Descriptions are the original scope set at creation time. All subsequent context goes in comments. If the description has a factual error, add a comment explaining the correction — do not silently rewrite it.
+
+## React / React Native Version Ownership
+
+**This workspace owns the RN and React majors.** Root `package.json`
+declares neither `react` nor `react-native` directly; `app/package.json`
+pins them (`react-native@0.83.9`, `react@^19.2.0`) and workspace-wide
+`overrides` in `pnpm-workspace.yaml` hold every other workspace to the
+same pair.
+
+Consequences to respect when changing versions:
+
+- `@selfxyz/mobile-sdk-alpha` peer ranges must accept this workspace's
+  pinned majors. They are currently narrowed to `react: ^19.0.0` /
+  `react-native: >=0.83.0 <0.86.0`, which is only truthful because all
+  five consumers (`app`, `mobile-sdk-demo`, `rn-sdk`, `rn-sdk-test-app`,
+  root) are aligned. **Never narrow an SDK peer floor ahead of the
+  consumers** — narrow it in the same change set that upgrades them.
+- Do not add a `react` or `react-native` dependency to the repo root. The
+  skew that used to exist there (root on an older RN than `app`) is gone
+  and should not be reintroduced.
+- The `overrides` entries that pin these are owned by the monorepo-tooling
+  workstream; the version _choice_ is this workspace's call. See
+  [SDK Overview](../specs/projects/sdk/OVERVIEW.md) for the current
+  toolchain table and [DECISIONS.md](../specs/projects/sdk/DECISIONS.md)
+  for why RN 0.85 is not on the roadmap.
 
 ## SDK Architecture
 

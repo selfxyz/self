@@ -274,6 +274,30 @@ for E2E and deployment. Workspace-specific rules live in the nearest
 - **Shared engine follow-ups:** [SDK Core Spec](./workstreams/sdk-core/SPEC.md)
 - **KMP revival (3-domain scope):** [KMP Revival Spec](./workstreams/kmp-revival/SPEC.md)
 - **App WebView cutover:** [WebView-in-App Spec](./workstreams/webview-in-app/SPEC.html), [Nav-Hygiene Spec](./workstreams/nav-hygiene/SPEC.html)
-- **RN/Expo toolchain state:** [RN-UPGRADE-CHECKLIST.md](../../topics/RN-UPGRADE-CHECKLIST.md)
+- **RN/Expo toolchain state:** see below
 - **Retained RN work:** [Paused Work Index](./paused/INDEX.md)
 - **Why any of this is the way it is:** [DECISIONS.md](./DECISIONS.md)
+
+## RN / Expo Toolchain State
+
+The app workspace owns the RN and React majors. Every workspace declares
+the same pair, and root declares neither directly:
+
+| Package        | Version   | Notes                                                   |
+| -------------- | --------- | ------------------------------------------------------- |
+| `react-native` | `0.83.9`  | Pinned exactly; also a workspace-wide `overrides` entry |
+| `react`        | `^19.2.0` | Same                                                    |
+| `expo`         | `55.0.20` | Bare workflow with Expo modules, not managed/Expo Go    |
+
+`@selfxyz/mobile-sdk-alpha` peers are narrowed to `react: ^19.0.0` and
+`react-native: >=0.83.0 <0.86.0`. That is only truthful because all five
+consumers (`app`, `mobile-sdk-demo`, `rn-sdk`, `rn-sdk-test-app`, root)
+are on the same majors — a peer range here may not be narrowed ahead of
+the consumers. Read the live values from the manifests, not this table.
+
+New arch is on (`newArchEnabled=true`). Android view managers are Fabric;
+two iOS/SDK components stay on Paper under a documented exception. Expo
+SDK 56 / RN 0.85 is deferred indefinitely. Both decisions, with their
+sunset triggers, are in [DECISIONS.md](./DECISIONS.md). Dependency pins
+and overrides are owned by
+[Monorepo Tooling](./workstreams/monorepo-tooling/SPEC.md).

@@ -1,9 +1,34 @@
 # Migrate Android Camera View Managers to Fabric
 
-_Last updated: 2026-05-20_
+> **ARCHIVED 2026-08-09 — delivered.** Every acceptance criterion below is
+> met, verified against the repo:
+> `PassportOCRViewManager.kt` is a `SimpleViewManager<PassportCameraView>`
+> implementing the generated interface with `setIsMounted`; no
+> `supportFragmentManager`, no `getCommandsMap`/`receiveCommand`; the
+> `codegenConfig` block is in `app/package.json`
+> (`SelfMobileAppComponents`, `jsSrcsDir: ./src/specs`); the spec file
+> `app/src/specs/PassportOCRViewNativeComponent.ts` exists; the app-local
+> `CameraMLKitFragment` is deleted; and `MainApplication.kt` contains no
+> `ReactNativeFeatureFlags.override` block.
+>
+> **The iOS side stayed on Paper, and that is now a formal exception with a
+> sunset trigger** rather than the implicit acknowledgement this doc left
+> behind. Recorded in
+> [DECISIONS.md](../../projects/sdk/DECISIONS.md). Two Paper sites remain:
+> `app/src/components/native/PassportCamera.tsx:41` and
+> `packages/mobile-sdk-alpha/src/components/MRZScannerView.tsx:38`.
+> `QRCodeScanner.tsx` is **not** one of them — it uses `expo-camera` and no
+> longer calls `requireNativeComponent` at all, which corrects the audit
+> pairing the follow-up doc assumed.
+>
+> The CameraX follow-up in _Change C_ is still unclaimed. Its trigger
+> criteria stand: a Camera1 failure on a real device, or `targetSdk` 36.
+> File it against the app when either fires.
+
+_Last updated: 2026-05-20 (archived 2026-08-09)_
 _Owner: Mobile App_
 _Linear: (TBD)_
-_Status: In progress — blocking RN 0.83 / Expo 55 upgrade_
+_Status: Done — Android Fabric migration delivered; iOS Paper exception recorded in DECISIONS.md_
 
 ## Context
 
