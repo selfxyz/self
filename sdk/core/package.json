@@ -34,13 +34,15 @@
     "dist"
   ],
   "scripts": {
-    "build": "typechain --target ethers-v6 --node16-modules --out-dir src/typechain-types src/abi/**.json && tsup index.ts --format cjs,esm --dts --clean --sourcemap",
+    "build": "pnpm codegen && tsup index.ts --format cjs,esm --dts --clean --sourcemap",
     "build:deps": "pnpm -r --filter @selfxyz/core... run build",
+    "codegen": "typechain --target ethers-v6 --node16-modules --out-dir src/typechain-types src/abi/**.json",
     "copy-abi": "bash scripts/copyAbi.sh",
     "format": "prettier --write .",
     "install-sdk": "pnpm install --filter @selfxyz/core...",
     "lint": "prettier --check .",
     "prepublishOnly": "pnpm build",
+    "pretest": "pnpm codegen",
     "test": "node --loader ts-node/esm --test tests/*.test.ts",
     "types": "pnpm build"
   },
