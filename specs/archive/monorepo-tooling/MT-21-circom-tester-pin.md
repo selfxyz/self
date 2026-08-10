@@ -1,7 +1,8 @@
 ## Pin `circom_tester` for circuits tests
 
 > Last updated: 2026-05-20
-> Status: Draft
+> Status: Archived 2026-08-06 - pin landed and is still active in
+> `pnpm-workspace.yaml`; MT-22 removes it
 
 - Workstream: monorepo-tooling
 - Backlog IDs: MT-21

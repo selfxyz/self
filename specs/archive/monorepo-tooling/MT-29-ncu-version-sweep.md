@@ -1,7 +1,7 @@
 ## Pin-aware cross-workspace dependency upgrade sweep (`ncu`)
 
 > Last updated: 2026-06-22
-> Status: Draft
+> Status: Archived 2026-08-06 - landed via #2236
 
 - Workstream: monorepo-tooling
 - Backlog IDs: MT-29
@@ -54,7 +54,9 @@ This is dependency-version cleanup, deliberately separated from `pnpm dedupe`
   - _Policy defers_ (no override pin, but owned by another track / too
     entangled for a routine sweep):
     - `react-native`, `react-native-*`, `expo`, `expo-*`, `react`, `react-dom`
-      — owned by the RN upgrade track (`specs/topics/RN-UPGRADE-PLAN.md`).
+      — owned by the app workspace. The RN upgrade track is closed; see
+      [OVERVIEW.md](../../projects/sdk/OVERVIEW.md) for the live toolchain
+      state and `../rn-upgrade/RN-UPGRADE-PLAN.md` for the archived plan.
       Current state: RN `0.83.9`, React `19.2.0`, Expo `55.0.20`, uniform
       across workspaces. These move only as a coordinated major on that track,
       gated on Expo SDK progression (SDK 55 → RN 0.83; SDK 56 not GA).
@@ -159,3 +161,11 @@ lockfile-size guard if it exceeds the upper bound.
   reject explicit; fixed `cd`-chaining in validation (root `--filter`
   invocations); relaxed the "no transitive major" gate to "reviewed / called
   out or reverted".
+- 2026-08-06: Landed as #2236 (`30021c979`). **Departure from this plan,
+  accepted retroactively:** the sweep changed 3,560 `pnpm-lock.yaml` lines
+  (1,600 insertions / 1,960 deletions), above the ~3k upper bound that required
+  splitting per the lockfile-size guard, and shipped unsplit. Reviewed as one
+  PR because the churn is lockfile-dominated peer re-threading from a single
+  coherent sweep, not independent chunks. No `ncu --version` / reproducible
+  command was recorded in the PR body — that DoD item was not met. Archived
+  as completed with these gaps noted rather than reopened.

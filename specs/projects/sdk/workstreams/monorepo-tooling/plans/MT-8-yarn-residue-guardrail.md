@@ -1,7 +1,12 @@
 ## Remove Yarn residue and add guardrail
 
-> Last updated: 2026-05-20
-> Status: Draft
+> Last updated: 2026-08-06
+> Status: Partial - artifacts removed, guardrail outstanding
+
+**Note as of 2026-08-06.** Wherever this plan or `SPEC.md` says "lefthook," the
+repo actually uses **husky** (`.husky/`, `husky` in root devDependencies).
+Lefthook is not installed. Implement the guardrail as a husky hook plus a CI
+check, or as a CI check alone.
 
 - Workstream: monorepo-tooling
 - Backlog IDs: MT-8, MT-15

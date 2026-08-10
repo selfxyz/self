@@ -22,10 +22,10 @@
 
 ## Native Reuse Mapping (confirmed)
 
-| Capability | Android | iOS |
-| ---------- | ------- | --- |
+| Capability   | Android                                                          | iOS                                                                                                                                                                                |
+| ------------ | ---------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | NFC passport | AAR `xyz.self.sdk:nfc` (jMRTD 0.8.1, BouncyCastle 1.78.1, SCUBA) | `SelfSdkNfc` Swift product → `selfxyz/NFCPassportReader` fork (`SelfNFCPassportReader` pod). **Same commit `b478e1f` as `app/ios/Podfile:177`** — identical to what the app ships. |
-| MRZ camera | AAR `xyz.self.sdk:ocr` (ML Kit text-recognition, CameraX) | Vision-framework engine `MrzScanEngine.swift`/`MrzOcrCorrection.swift` — the **same source already in `app/ios/`**, mirrored in `self-sdk-swift/Sources/SelfSdkOcr/`. |
+| MRZ camera   | AAR `xyz.self.sdk:ocr` (ML Kit text-recognition, CameraX)        | Vision-framework engine `MrzScanEngine.swift`/`MrzOcrCorrection.swift` — the **same source already in `app/ios/`**, mirrored in `self-sdk-swift/Sources/SelfSdkOcr/`.              |
 
 - `react-native-passport-reader` (tradle `io.tradle.nfc`) is **Android-only**; it is not the iOS NFC path.
 - AARs / Swift products expose KMP provider APIs (`NfcProvider`/`CameraMrzProvider`), **not** RN
@@ -48,18 +48,19 @@
 - Align the NFC native-module name lookup so an SDK-shipped module is preferred (RSP-02).
 - Two optional npm packages wrapping the `self-sdk-native` artifacts (RSP-03 MRZ, RSP-04 NFC).
 - Expo config plugin + documented bare-RN asset wiring (RSP-05).
+- Retirement of `mobile-sdk-alpha`'s broken Android Paper MRZ view in favor of RSP-03 (RSP-06).
 
 ## Out of Scope
 
 - KMP `useKmpBridge` routing of nfc/camera domains (separate experimental track).
 - Changes to `self-sdk-native` artifact APIs (consume as published).
-- `mobile-sdk-alpha` native-scan exports and the RN app's existing native flow (must stay working).
+- `mobile-sdk-alpha` native-scan exports and the RN app's existing native flow, except the targeted RSP-06 replacement; both must stay API-compatible.
 - Replacing the embedded bundle with hosted-URL loading (tracked in `sdk-distribution` SD-01–05).
 
 ## Invariants
 
 - No RN app regressions: `app/` continues to resolve its existing `PassportReader`/`RNPassportReader`
-  and `MRZScannerModule` modules; the module-name change (RSP-02) only *prepends* a preferred name.
+  and `MRZScannerModule` modules; the module-name change (RSP-02) only _prepends_ a preferred name.
 - Bridge protocol stays backward compatible: a WebView that predates the capabilities field treats a
   missing `capabilities` object as all-true.
 - Capture modules are truly optional peers (`peerDependenciesMeta.optional`); a KYC-only install links none of them.
@@ -67,13 +68,14 @@
 
 ## Backlog
 
-| ID     | Title                                            | Status | Priority | Depends On     | Plan | Est. LOC |
-| ------ | ------------------------------------------------ | ------ | -------- | -------------- | ---- | -------- |
-| RSP-01 | Capabilities handshake + WebView flow gating     | Done     | High     | -              | [plans/RSP-01-capabilities-handshake.md](./plans/RSP-01-capabilities-handshake.md) | ~250 |
-| RSP-02 | Unify NFC native-module name lookup              | Done     | High     | -              | [plans/RSP-02-nfc-module-name-unification.md](./plans/RSP-02-nfc-module-name-unification.md) | ~60 |
-| RSP-03 | `@selfxyz/rn-mrz-scanner` optional package        | Done*    | Medium   | RSP-01         | [plans/RSP-03-rn-mrz-scanner-package.md](./plans/RSP-03-rn-mrz-scanner-package.md) | ~400 |
-| RSP-04 | `@selfxyz/rn-nfc-passport` optional package       | Done*    | Medium   | RSP-01, RSP-02 | [plans/RSP-04-rn-nfc-passport-package.md](./plans/RSP-04-rn-nfc-passport-package.md) | ~500 |
-| RSP-05 | Expo config plugin + asset wiring                 | Deferred | Medium   | -              | [plans/RSP-05-expo-config-plugin.md](./plans/RSP-05-expo-config-plugin.md) | ~150 |
+| ID     | Title                                           | Status   | Priority | Depends On     | Plan                                                                                         | Est. LOC |
+| ------ | ----------------------------------------------- | -------- | -------- | -------------- | -------------------------------------------------------------------------------------------- | -------- |
+| RSP-01 | Capabilities handshake + WebView flow gating    | Done     | High     | -              | [plans/RSP-01-capabilities-handshake.md](./plans/RSP-01-capabilities-handshake.md)           | ~250     |
+| RSP-02 | Unify NFC native-module name lookup             | Done     | High     | -              | [plans/RSP-02-nfc-module-name-unification.md](./plans/RSP-02-nfc-module-name-unification.md) | ~60      |
+| RSP-03 | `@selfxyz/rn-mrz-scanner` optional package      | Done\*   | Medium   | RSP-01         | [plans/RSP-03-rn-mrz-scanner-package.md](./plans/RSP-03-rn-mrz-scanner-package.md)           | ~400     |
+| RSP-04 | `@selfxyz/rn-nfc-passport` optional package     | Done\*   | Medium   | RSP-01, RSP-02 | [plans/RSP-04-rn-nfc-passport-package.md](./plans/RSP-04-rn-nfc-passport-package.md)         | ~500     |
+| RSP-05 | Expo config plugin + asset wiring               | Deferred | Medium   | -              | [plans/RSP-05-expo-config-plugin.md](./plans/RSP-05-expo-config-plugin.md)                   | ~150     |
+| RSP-06 | Retire the legacy Android `MRZScannerView` path | Ready    | High     | RSP-03         | [plans/RSP-06-retire-legacy-mrz-view.md](./plans/RSP-06-retire-legacy-mrz-view.md)           | ~200-400 |
 
 Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 
@@ -97,13 +99,14 @@ Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 - [ ] Both capture packages are optional peers; KYC-only install links neither.
 - [ ] Expo config plugin wires assets automatically; bare-RN manual steps documented.
 - [ ] AAR versions pinned explicitly; kmp-sdk release pipeline unchanged.
+- [ ] `mobile-sdk-demo` completes an Android MRZ scan on New Architecture without reaching the legacy `SelfOCRViewManager`.
 
 ## Related Specs
 
-| Spec | Relationship |
-| ---- | ------------ |
-| [SDK Overview](../../OVERVIEW.md) | Parent architecture |
+| Spec                                                                    | Relationship                                                                                       |
+| ----------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| [SDK Overview](../../OVERVIEW.md)                                       | Parent architecture                                                                                |
 | [Native Hardware Handlers (spike)](../native-hardware-handlers/SPEC.md) | Inventory + risk source (binary size, iOS entitlement, ML Kit bundled-vs-unbundled, PII redaction) |
-| [KMP Revival](../kmp-revival/SPEC.md) | Sibling — the `self-sdk-native` KMP artifacts this workstream consumes |
-| [SDK Distribution](../sdk-distribution/SPEC.md) | Hosted-URL loading (SD-01–05) — eventual replacement for embedded-bundle asset wiring |
-| [WebView-in-App](../webview-in-app/SPEC.html) | Defines `self-app` vs `embed` operating modes the flow gating builds on |
+| [KMP Revival](../kmp-revival/SPEC.md)                                   | Sibling — the `self-sdk-native` KMP artifacts this workstream consumes                             |
+| [SDK Distribution](../sdk-distribution/SPEC.md)                         | Hosted-URL loading (SD-01–05) — eventual replacement for embedded-bundle asset wiring              |
+| [WebView-in-App](../webview-in-app/SPEC.html)                           | Defines `self-app` vs `embed` operating modes the flow gating builds on                            |

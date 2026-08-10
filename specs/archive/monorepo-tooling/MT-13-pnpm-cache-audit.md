@@ -1,7 +1,7 @@
 ## Audit pnpm cache hit rate in CI
 
 > Last updated: 2026-05-20
-> Status: Draft
+> Status: Archived 2026-08-06 - landed; hit-rate tuning dropped
 
 - Workstream: monorepo-tooling
 - Backlog IDs: MT-13

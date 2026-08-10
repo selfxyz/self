@@ -1,8 +1,78 @@
 # RN Upgrade Checklist
 
-_Last updated: May 15, 2026_
+> **ARCHIVED 2026-08-09. Historical record — do not execute from this file
+> and do not update it.** The RN 0.83 / Expo 55 upgrade shipped and its
+> track is closed. Current toolchain state lives in
+> [SDK OVERVIEW.md](../../projects/sdk/OVERVIEW.md); the decisions and
+> their sunset triggers are in
+> [DECISIONS.md](../../projects/sdk/DECISIONS.md).
+>
+> **Live items were re-homed, not dropped:**
+>
+> - Override cleanup → [MT-14 Dedupe Audit](../../projects/sdk/workstreams/monorepo-tooling/plans/MT-14-dedupe-audit.md),
+>   which carries the verified finding list.
+> - React 19 / Compiler lint residue → SELF-2802 (one warning left, plus
+>   restoring five rules to `error`).
+> - Analytics follow-ups → ANA-20, ANA-21 in
+>   [analytics/SPEC.md](../../projects/sdk/workstreams/analytics/SPEC.md).
+> - Test-pattern and version-skew items → `app/AGENTS.md`.
+>
+> **Known-stale content below, left as written for the historical record:**
+> the `react-native-webview` row still shows a `13.16.1` app dep vs
+> `13.16.0` override (resolved — everything is `13.16.0` now); the
+> _Monorepo alignment checks_ table still shows root on `react-native@0.76.9`
+> / `react@^18.3.1` and SDK peers at `>=0.76.0` (root now declares neither,
+> and peers are narrowed to `>=0.83.0 <0.86.0`); the Phase 0 findings cite
+> root `resolutions` and `app/overrides` paths that no longer exist, since
+> overrides moved to `pnpm-workspace.yaml` in the pnpm migration.
+
+_Last updated: August 6, 2026 (archived 2026-08-09)_
 
 Use this file as the working state tracker for the React Native upgrade. The narrative plan lives in [React Native Upgrade Plan](./RN-UPGRADE-PLAN.md).
+
+## What Landed
+
+The version upgrade is **done and shipping**. PR #2049 moved the app
+workspace to the SDK 55 fallback path:
+
+|                               | Before     | After     |
+| ----------------------------- | ---------- | --------- |
+| `react-native`                | `0.77.0`   | `0.83.9`  |
+| `react`                       | `18.x`     | `^19.2.0` |
+| `expo`                        | `~52.0.40` | `55.0.20` |
+| `@react-native-community/cli` | `^16.0.3`  | `^20.0.0` |
+
+Verify against `app/package.json` rather than trusting this table.
+
+**The SDK 56 / RN 0.85 columns below are inert.** That gate is closed —
+see the **Phase 1 decision gate** section below and
+[SDK DECISIONS.md](../../projects/sdk/DECISIONS.md). Do not restart the
+version bump work.
+
+**The CI gate is closed** — 110 commits have merged to `main` on this
+toolchain. **The six device flow validations are not**: they were
+de-prioritized after ten weeks on the internal track without a reported
+regression, but no smoke test or funnel query was ever recorded, and
+internal-track deploys are not production evidence. See the note under
+_Upgrade track_ before citing them as passed.
+
+**What was still open when this file was archived, and where it went**
+(2026-08-09, closing SELF-3786):
+
+- **Six device flow checks** — still de-prioritized and unowned. Not
+  validated, and not to be re-run from here. The intended evidence path is
+  the Mixpanel funnel, which is gated on AUD-08; see the stance recorded
+  in [DECISIONS.md](../../projects/sdk/DECISIONS.md).
+- **Rollout stop conditions** — never recorded, and moot. They were owed
+  before a rollout that has since happened many times over. Only relevant
+  again if a future production rollout is gated on a checklist.
+- **Override cleanup** — re-homed to
+  [MT-14](../../projects/sdk/workstreams/monorepo-tooling/plans/MT-14-dedupe-audit.md)
+  with a verified finding list. The `react-native-webview` mismatch this
+  file recorded is already resolved; the live one is `jsdom`.
+- **The six follow-up items** — re-homed. Items 1 (iOS Paper exception),
+  2/3 (ANA-20/ANA-21), 4 and 5 (`app/AGENTS.md`), 6 (SELF-2802). See the
+  archive header for the map.
 
 ## How To Use This Checklist
 
@@ -31,7 +101,7 @@ Use this file as the working state tracker for the React Native upgrade. The nar
 ## Global Gates
 
 - [x] Rollback boundary established: feature branch `justin/upgrade-react-native-phase1` off `dev`. Branch parent commit is the `0.77.0` baseline; CI history on `dev` is the green reference.
-- [x] Phase 1 decision gate result recorded: **SDK 55 fallback path**. Gate failed because Expo SDK 56 is not GA on npm as of 2026-05-04 (canary builds only). Re-verify immediately before each dependency bump in case SDK 56 ships mid-upgrade.
+- [x] Phase 1 decision gate result recorded: **SDK 55 fallback path**. Gate failed because Expo SDK 56 is not GA on npm as of 2026-05-04 (canary builds only). Superseded 2026-08-06: the gate is closed and SDK 56 is deferred indefinitely — do not re-verify per bump.
 
 ## Version Upgrade Checklist
 
@@ -95,12 +165,26 @@ Use this file as the working state tracker for the React Native upgrade. The nar
 - [ ] Link this checklist from the upgrade PR description.
 - [ ] Owner assignments: deferred — single owner driving the upgrade. Revisit if work parallelizes.
 
-### Phase 1 decision gate
+### Phase 1 decision gate — CLOSED (`SDK 55.0.0 fallback`)
 
-- [ ] Check whether Expo SDK `56` is published and installable from npm
-- [ ] Check whether Expo's live version docs list SDK `56` and its RN pairing
-- [ ] Check whether `expo`, `expo-application`, and `expo-camera` each have SDK `56`-compatible releases
-- [ ] Record one result only: `SDK 56 now` or `SDK 55.0.0 fallback`
+Recorded 2026-05-04, reaffirmed 2026-08-06. **This gate is closed. Do not
+re-run it as part of the RN upgrade.**
+
+- [x] Check whether Expo SDK `56` is published and installable from npm — no; canary builds only as of the gate date
+- [x] Check whether Expo's live version docs list SDK `56` and its RN pairing — no
+- [x] Check whether `expo`, `expo-application`, and `expo-camera` each have SDK `56`-compatible releases — no
+- [x] Record one result only: **`SDK 55.0.0 fallback`**
+
+**2026-08-06 decision — SDK 56 is deferred, not pending.** The SDK 55 /
+RN 0.83 line is the landing state and is shipping. Moving to SDK 56 /
+RN 0.85 would re-open the Jest preset migration, the Fabric view-manager
+question, and a fresh round of device validation, for no product gain.
+WebView-in-App is the priority; the app's UI surface is slated to move
+into the WebView, which changes what an RN major is even worth.
+
+Revisit only if a security fix or a hard dependency floor forces it. All
+`Target SDK 56 / RN 0.85.x` columns in the tables above are inert until
+then — treat them as historical planning, not open work.
 
 ### Upgrade track
 
@@ -111,29 +195,56 @@ Use this file as the working state tracker for the React Native upgrade. The nar
 - [x] Resolve Metro/Babel/Jest config drift
 - [x] Resolve iOS build breaks
 - [x] Resolve Android build breaks
-- [ ] Resolve RN `0.85` Jest preset migration if the `SDK 56 now` path was chosen
-- [ ] Validate auth flow
-- [ ] Validate camera flow
-- [ ] Validate permissions prompts
-- [ ] Validate push initialization
-- [ ] Validate webview flows
-- [ ] Validate NFC/passport scan entry
+- [x] ~~Resolve RN `0.85` Jest preset migration if the `SDK 56 now` path was chosen~~ — N/A, `SDK 55.0.0 fallback` was chosen. `rn-sdk-test-app` stays on `jest@^29.7.0` (MT-25).
+- [ ] Validate auth flow — open, de-prioritized; see below
+- [ ] Validate camera flow — open, de-prioritized; see below
+- [ ] Validate permissions prompts — open, de-prioritized; see below
+- [ ] Validate push initialization — open, de-prioritized; see below
+- [ ] Validate webview flows — open, de-prioritized; see below
+- [ ] Validate NFC/passport scan entry — open, de-prioritized; see below
+
+> **Reviewed 2026-08-06 — de-prioritized, not closed. No recorded pass exists.**
+>
+> These six were a **pre-rollout gate**, and the build did roll out: RN
+> `0.83.9` / Expo `55.0.20` has been on the internal track since
+> 2026-05-30 (8 successful staging deploys through 2026-08-02, app
+> `2.9.24` → `2.9.28`, 110 commits to `main`). Ten weeks of internal use
+> without a reported regression in these flows is real signal, and it is
+> why nobody has re-run the checklist.
+>
+> It is **not** validation. Nothing here records a smoke test or a funnel
+> query per flow, and staging deploys are internal-track uploads — they
+> are not App Store production evidence. Anyone who needs certainty on
+> one of these flows still has to run it.
+>
+> The Mixpanel funnel is not yet a substitute either. NFC/passport scan
+> is instrumented with paired `NFC_STARTED` / `NFC_SUCCEEDED` /
+> `NFC_SCAN_FAILED` (`app/src/screens/documents/scanning/DocumentNFCScanScreen.tsx`),
+> so in principle a regression reads as a success-rate drop — but the
+> correctness of those fire-sites is unaudited. `AUD-08` is still
+> **Backlog** and explicitly lists `SCAN_STARTED` terminal pairing and
+> NFC retry double-firing as open questions, so the funnel cannot
+> currently prove a flow regression-free. Cite it only after AUD-08
+> lands. See
+> [audits/SPEC.md](../../projects/sdk/workstreams/audits/SPEC.md) and
+> [analytics/SPEC.md](../../projects/sdk/workstreams/analytics/SPEC.md).
 
 ### Stabilization track
 
-- [ ] Get 3 consecutive green CI runs
-- [ ] Record rollout stop conditions before production rollout
-- [ ] Capture path-specific regressions and follow-ups
+- [x] ~~Get 3 consecutive green CI runs~~ — superseded; 110 commits merged to `main` since the upgrade, each gated on green CI
+- [ ] Record rollout stop conditions — never recorded, and the internal-track rollout proceeded without them. Still owed if a production rollout is gated on this checklist
+- [ ] Capture path-specific regressions and follow-ups — see [RN-UPGRADE-FOLLOWUPS.md](./RN-UPGRADE-FOLLOWUPS.md), still unowned
 
 ## Validation Log
 
-| Date         | Owner         | Command / Check             | Result    | Notes                                                                                     |
-| ------------ | ------------- | --------------------------- | --------- | ----------------------------------------------------------------------------------------- |
-| `2026-05-15` | `@unassigned` | `CI history on this branch` | `Pending` | `No green CI runs recorded in this checklist yet; add run URLs/results as they complete.` |
+| Date         | Owner         | Command / Check                            | Result    | Notes                                                                                                                                                                                                                                                                                   |
+| ------------ | ------------- | ------------------------------------------ | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `2026-05-15` | `@unassigned` | `CI history on this branch`                | `Pending` | `No green CI runs recorded in this checklist yet; add run URLs/results as they complete.`                                                                                                                                                                                               |
+| `2026-08-06` | `@unassigned` | `Staging release history (internal track)` | `Partial` | `8 successful staging deploys 2026-05-30 → 2026-08-02 on RN 0.83.9 / Expo 55.0.20 (9 failed, 6 skipped); app 2.9.24 → 2.9.28; 110 commits to main. Internal-track uploads — not production evidence. Closes the CI gate; de-prioritizes but does not close the six device flow checks.` |
 
 ## Open Questions
 
-- [ ] Which exact SDK `56` package versions should be pinned if the gate passes?
+- [x] Which exact SDK `56` package versions should be pinned if the gate passes? Answer: none — the gate closed on `SDK 55.0.0 fallback` and SDK 56 is deferred indefinitely (2026-08-06). Re-open only on a security fix or hard dependency floor.
 - [x] Does the root `react-native` dependency need to move, or can it remain isolated from the app upgrade? Answer: keep root on `0.76.9` for this PR; tracked in `Follow-Up: Align Remaining Workspaces` in `RN-UPGRADE-PLAN.md`.
 - [x] Which current overrides/resolutions can be removed after the upgrade instead of carried forward? Answer: removed the breaking patch tracked by commit `32b373d11`; continue cleanup in follow-up PRs as remaining entries are validated.
 

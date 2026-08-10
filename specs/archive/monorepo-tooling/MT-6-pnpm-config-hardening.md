@@ -1,7 +1,7 @@
 ## Harden pnpm-native install configuration
 
 > Last updated: 2026-05-20
-> Status: Draft
+> Status: Archived 2026-08-06 - complete
 
 - Workstream: monorepo-tooling
 - Backlog IDs: MT-6, MT-7, MT-10, MT-16, MT-17

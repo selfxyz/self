@@ -1,9 +1,9 @@
 # AUD-07 — Config & CI consolidation audit
 
-> Linear: TBD — create the tracking issue and attach this plan before investigation starts (protocol Stage 1)
+> Linear: [SELF-3186](https://linear.app/selfprotocol/issue/SELF-3186) — created 2026-06-11, unassigned
 > Workstream: [Codebase Audits](../SPEC.md)
-> Status: Draft (pre-drafted in sequence after AUD-06; one placeholder — the AUD-06 handoff —
-> filled at the recon refresh)
+> Status: Planned (pre-drafted in sequence after AUD-06; one placeholder — the AUD-06 handoff —
+> filled at the recon refresh) — awaiting workstream owner
 > Priority: Low
 > Depends on: AUD-06 (informational — its config-sprawl and CI observations append to this plan
 > at the recon refresh; see Q3.3 placeholder)

@@ -15,9 +15,15 @@
 
 ## Topics
 
-- **[React Native Upgrade Plan (Mobile App)](./topics/RN-UPGRADE-PLAN.md)** — staged migration plan from RN 0.77 to supported versions.
-- **[RN Upgrade Checklist](./topics/RN-UPGRADE-CHECKLIST.md)** — shared owner/status tracker for coordinating the upgrade across developers.
-- **[RN Upgrade Follow-Ups](./topics/RN-UPGRADE-FOLLOWUPS.md)** — deferred hygiene and ownership items surfaced during the RN 0.83 / Expo SDK 55 upgrade.
+None currently. The four RN upgrade docs that lived here were archived on
+2026-08-09 to `specs/archive/rn-upgrade/` — the upgrade shipped and its
+live items moved into owning workstreams. Current RN/Expo toolchain state
+is in [SDK OVERVIEW.md](./projects/sdk/OVERVIEW.md).
+
+`topics/` stays a valid home for a standalone doc that is genuinely not a
+project. Before adding one, check whether an existing workstream already
+owns the surface — four ownerless topic docs is what the last cleanup
+undid.
 
 ## Framework
 

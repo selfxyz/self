@@ -1,6 +1,25 @@
 # RN Upgrade Follow-Ups
 
-_Created: 2026-05-24, alongside the RN 0.77 → 0.83 / Expo SDK 52 → 55 / React 18 → 19 upgrade landing._
+> **ARCHIVED 2026-08-09. All six items are homed — this file is the
+> historical record of why they exist, not where they are tracked.** Every
+> item was `Owner: unassigned`, which is what SELF-3786 closed. Statuses in
+> the item bodies below are as-written and are superseded by this map.
+>
+> | Item                                                 | Where it lives now                                                                            | State on 2026-08-09                                                                                                                                                                                   |
+> | ---------------------------------------------------- | --------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+> | 1 — iOS `PassportOCRView` Fabric vs. Paper           | [DECISIONS.md](../../projects/sdk/DECISIONS.md)                                               | **Decided.** Formal iOS Paper exception with a sunset trigger. The second iOS callsite is `MRZScannerView.tsx`, not `QRCodeScanner.tsx`; its separate broken Android Paper path is tracked as RSP-06. |
+> | 2 — KYC Path A/B event ordering                      | [ANA-20](../../projects/sdk/workstreams/analytics/plans/ANA-20-kyc-path-ab-event-ordering.md) | **Filed**, with both mis-ordered sites verified by line number.                                                                                                                                       |
+> | 3 — Analytics constants mock drift                   | ANA-21 in [analytics/SPEC.md](../../projects/sdk/workstreams/analytics/SPEC.md)               | **Filed.** Still open; block is `app/jest.setup.js:897-1120`.                                                                                                                                         |
+> | 4 — `PassportCamera.android.test.tsx` memory pattern | [SELF-3808](https://linear.app/selfprotocol/issue/SELF-3808), decision in `app/AGENTS.md`     | **Filed.** Refactor to hoisted mocks; allowlisting rejected. SELF-3808 owns executing it.                                                                                                             |
+> | 5 — Root vs app React/RN skew                        | `app/AGENTS.md`, React / Native Version Ownership                                             | **Done.** Contract recorded; the skew itself no longer exists.                                                                                                                                        |
+> | 6 — React 19 / Compiler lint cleanup                 | SELF-2802                                                                                     | **Effectively done.** `app/src` is at 1 warning, down from 26; all Compiler-bailout families at 0. Residue: that one site plus restoring five rules to `error`.                                       |
+>
+> The four-PR breakdown below did not survive contact: PR 1 landed as
+> #2111, PR 2's scope resolved incidentally (the Compiler-bailout warnings
+> are gone), PR 3 became ANA-20, and PR 4 was gated on an RN 0.85 path that
+> is no longer planned.
+
+_Created: 2026-05-24, alongside the RN 0.77 → 0.83 / Expo SDK 52 → 55 / React 18 → 19 upgrade landing. Archived 2026-08-09._
 
 Tracks deferred work surfaced during PR review of `justin/upgrade-react-native-phase1` that did **not** block merging the upgrade but needs explicit ownership and acceptance criteria so it isn't lost.
 
