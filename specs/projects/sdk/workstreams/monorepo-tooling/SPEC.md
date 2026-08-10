@@ -127,7 +127,13 @@ MT-22 plan first.
 ## Out of Scope
 
 - React Native version alignment across `app`, `mobile-sdk-demo`, `rn-sdk`, and
-  `rn-sdk-test-app`.
+  `rn-sdk-test-app`. Moot as of 2026-08-09 — those four are on
+  `react-native@0.83.9` / `react@^19.2.0`, root declares neither package
+  directly, and the `overrides` hold every other RN-bearing workspace to the
+  same pair. This stays out of scope as a policy boundary: RN/React
+  version choice is the app workspace's call, recorded in
+  [OVERVIEW.md](../../OVERVIEW.md). This workstream owns the `overrides`
+  entries that pin them, not the choice of version.
 - Nx, Lerna, or any build orchestrator other than Turborepo.
 - Remote Turbo cache. Local cache and CI filesystem cache only.
 - Kotlin, Swift, Gradle, or SwiftPM build graph orchestration through Turbo.
@@ -273,6 +279,16 @@ re-implement these as part of a remaining track.
   must stay until the workspace lands on react-dom v19 (or jsdom v26 relaxes
   the proxy trap). MT-9 (strict peers) should not treat this as a violation;
   it is an intentional override with an external blocker.
+
+  **Updated 2026-08-09 — the removal condition is now met, and the pin has
+  started to bite.** The `react-dom` override is `^19.2.0` and no workspace
+  pins 18, so "until the workspace lands on react-dom v19" is satisfied.
+  Meanwhile `packages/webview-app` declares `jsdom@^29.0.1` and silently
+  resolves to `25.0.1`. This pin is now the workstream's only live
+  override/dependency mismatch and is a drop candidate, not a fixture.
+  Worked as finding 1 in
+  [MT-14 Dedupe Audit](./plans/MT-14-dedupe-audit.md); record the outcome
+  here.
 
 - **MT-28:** `pnpm.overrides` pins `@types/minimatch@5.1.2`. Rationale: v6 is
   a deprecated stub shipping no `.d.ts` files, which causes `TS2688: Cannot

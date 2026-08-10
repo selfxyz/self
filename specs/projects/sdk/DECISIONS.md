@@ -16,6 +16,128 @@ shape of the project.
 
 ---
 
+## 2026-08-09 · RN upgrade closed out; iOS Paper exception recorded
+
+**Decision:** The RN 0.83 / Expo 55 upgrade track is closed. The four
+`RN-UPGRADE-*.md` docs, formerly under `specs/topics/`, are archived to
+[`specs/archive/rn-upgrade/`](../../archive/rn-upgrade/), their live items
+are re-homed to owning workstreams, and the remaining iOS Paper paths
+stay under a formal exception rather than a Fabric migration.
+
+Verified against the repo on 2026-08-09, which closed most of what
+SELF-3786 tracked:
+
+- **Android Fabric migration is done — in `app/android`.** It did not
+  cover `packages/mobile-sdk-alpha/mobile-sdk-native`, whose
+  `SelfOCRViewManager` is still Paper; see the active SDK gap below. Nor
+  `app/android/.../QRCodeScannerViewManager.kt`, which is legacy but has
+  no JS callsite. In the app:
+  `PassportOCRViewManager.kt` is a
+  `SimpleViewManager<PassportCameraView>` driven by the generated
+  `setIsMounted`, with no fragment-replace, no commands, and no
+  `ReactNativeFeatureFlags.override` block. `codegenConfig` is in
+  `app/package.json` and the app-local `CameraMLKitFragment` is deleted.
+  Every acceptance criterion in the Fabric doc is met.
+- **Workspace RN/React alignment is done.** Of the five workspaces the
+  PLAN scoped, the four package workspaces (`app`, `mobile-sdk-demo`,
+  `rn-sdk`, `rn-sdk-test-app`) declare `react-native@0.83.9` /
+  `react@^19.2.0`, and root was resolved by dropping its declaration
+  rather than bumping it. Every other RN-bearing workspace is held to the
+  same pair by the `pnpm-workspace.yaml` overrides — see the inventory in
+  [OVERVIEW.md](./OVERVIEW.md). `mobile-sdk-alpha` peers narrowed to
+  `react: ^19.0.0` / `react-native: >=0.83.0 <0.86.0`. This closes the
+  PLAN's _Align Remaining Workspaces_ follow-up on its own stated
+  criteria.
+- **React 19 / Compiler lint cleanup is effectively done.** `app/src`
+  reports **1** `react-hooks` warning
+  (`DevApduCaptureScreen.tsx:54`, `set-state-in-effect`), down from 26.
+  All four Compiler-bailout families are at zero, including the site the
+  follow-up doc recorded as deferred (`ProveScreen:232`). The residue is
+  SELF-2802: fix that one site and restore the five rules from `warn` to
+  `error` in `app/.eslintrc.cjs:142-146`.
+
+**Forward path — WebView-in-App on the KMP framework, not an RN major.**
+Restating the direction so the deferral is not read as "0.85 later":
+there is no plan to take RN 0.85. The investment goes into WebView-in-App
+with KMP as the native framework, which is what makes an RN major
+low-value rather than merely inconvenient — the UI surface moves into the
+WebView, and the native shell underneath is the thing being built out.
+Treat an RN 0.85 proposal as needing a fresh justification against this
+direction, not as resumed work.
+
+Note the scope gap this opens: `workstreams/kmp-revival/SPEC.md` still
+frames KMP as an **option offered to consumers** who already use Kotlin
+Multiplatform, alongside native-shells-lite. If KMP is also the framework
+under the Self app's own WebView host, that spec's purpose section
+understates its role and needs a scope pass. Tracked as **KR-04** in
+[kmp-revival/SPEC.md](./workstreams/kmp-revival/SPEC.md), which resolves
+it in one direction or the other — either that spec's purpose widens, or
+this entry is the one that is wrong and gets corrected.
+
+**iOS Paper exception — two component callsites.**
+
+1. `app/src/components/native/PassportCamera.tsx:41` calls
+   `requireNativeComponent('PassportOCRView')` on **iOS only**; its
+   Android path is the Fabric `PassportOCRViewManager`.
+2. `packages/mobile-sdk-alpha/src/components/MRZScannerView.tsx:38` calls
+   `requireNativeComponent('SelfMRZScannerView')` on iOS. Its iOS path
+   stays on Paper for the same reason.
+
+Migrating these iOS paths buys little while RN 0.83 keeps Paper interop
+working, and WebView-in-App plus the native-hardware-handlers spike are
+both routes that would replace them rather than port them.
+
+**Active Android SDK gap — not part of the exception.** The same
+`MRZScannerView.tsx` selects `SelfOCRViewManager` on Android. Its target at
+`packages/mobile-sdk-alpha/mobile-sdk-native/src/main/java/com/selfxyz/selfSDK/SelfOCRViewManager.kt:23`
+— which lives in the `mobile-sdk-native` **submodule**
+(`selfxyz/mobile-sdk-native`), not this repo — is a legacy
+`ViewGroupManager<FrameLayout>` with `getCommandsMap`,
+`RCTEventEmitter`, and fragment replacement — the same pattern that
+returned a no-op stub under bridgeless in `app/android` and forced the
+Fabric migration there. `packages/mobile-sdk-demo` already renders this
+component through `DocumentCameraScreen` with `newArchEnabled=true`, so
+the failure trigger is present in-repo. This is a consumer-facing defect,
+not a deferred Paper exception. **RSP-06** in
+[rn-sdk-packaging/SPEC.md](./workstreams/rn-sdk-packaging/SPEC.md) owns
+removing this legacy path and proving the demo scan on New Architecture.
+
+**Sunset trigger:** an RN or Expo bump that drops Paper interop, or a
+Fabric-only requirement from `native-hardware-handlers`. Whoever hits the
+trigger owns the iOS migration and unifies the `onPassportRead` payload —
+Android's is `{ data: string }`, while iOS keeps a wider
+`string | object` union local to `PassportCamera.tsx`.
+
+**No automated guard, deliberately.** The archived follow-up asked for "a
+CI/build check that fails if Paper interop becomes unsupported in a
+future RN bump." There is no such check to write: Paper interop failing
+is a silent runtime no-op on device, not a compile or codegen error — the
+app's own regression produced a clean build and an empty camera view. A
+green CI would keep being green. The check that actually catches it is a
+device render of both components, so it is recorded as a **required item
+on any RN or Expo bump** in the version-ownership section of
+`app/AGENTS.md` rather than as CI. If a static check is later found that
+genuinely fails on dropped interop, add it — this is a "no cheap guard
+exists" call, not a "guards are unnecessary" one.
+
+Scope correction to the archived follow-up doc: it paired this decision
+with an audit of `QRCodeScanner.tsx`, which no longer uses
+`requireNativeComponent` at all (it is on `expo-camera`). The second
+Paper site is `MRZScannerView.tsx`, in the SDK.
+
+**Device-flow validation evidence.** The six flow checks (auth, camera,
+permissions, push init, webview, NFC/passport scan) stay de-prioritized
+and unowned. They were a pre-rollout gate and the rollout happened.
+Nothing records a per-flow pass, so do not cite them as validated — but
+do not re-run the checklist either. The intended evidence path is the
+Mixpanel funnel, and it is **not yet usable for this**: AUD-08
+(analytics fire-site correctness) is still Backlog and explicitly lists
+`SCAN_STARTED` terminal pairing and NFC retry double-firing as open
+questions. Cite the funnel as regression evidence only after AUD-08
+lands. Anyone needing certainty on one flow before then runs that flow.
+
+---
+
 ## 2026-08-06 · Expo SDK 56 / RN 0.85 deferred indefinitely
 
 **Decision:** Stay on Expo SDK 55 / RN 0.83.9. SDK 56 is deferred, not
@@ -34,8 +156,9 @@ major is worth in the first place.
 
 Revisit only on a security fix or a hard dependency floor. All
 `Target SDK 56 / RN 0.85.x` columns in
-[RN-UPGRADE-CHECKLIST.md](../../topics/RN-UPGRADE-CHECKLIST.md) are
-inert until then.
+[RN-UPGRADE-CHECKLIST.md](../../archive/rn-upgrade/RN-UPGRADE-CHECKLIST.md)
+are inert until then. (That checklist was archived 2026-08-09 — see the
+entry above.)
 
 ---
 
