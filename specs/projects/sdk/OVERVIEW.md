@@ -280,8 +280,10 @@ for E2E and deployment. Workspace-specific rules live in the nearest
 
 ## RN / Expo Toolchain State
 
-The app workspace owns the RN and React majors. Every workspace declares
-the same pair, and root declares neither directly:
+The app workspace owns the RN and React majors. Root declares neither
+package directly — it is the override host, not a consumer — and the
+`overrides` in `pnpm-workspace.yaml` hold every RN-bearing workspace to
+the same pair:
 
 | Package        | Version   | Notes                                                   |
 | -------------- | --------- | ------------------------------------------------------- |
@@ -289,15 +291,41 @@ the same pair, and root declares neither directly:
 | `react`        | `^19.2.0` | Same                                                    |
 | `expo`         | `55.0.20` | Bare workflow with Expo modules, not managed/Expo Go    |
 
-`@selfxyz/mobile-sdk-alpha` peers are narrowed to `react: ^19.0.0` and
-`react-native: >=0.83.0 <0.86.0`. That is only truthful because all five
-consumers (`app`, `mobile-sdk-demo`, `rn-sdk`, `rn-sdk-test-app`, root)
-are on the same majors — a peer range here may not be narrowed ahead of
-the consumers. Read the live values from the manifests, not this table.
+Declaration sites, verified 2026-08-09 — seven manifests declare both
+packages directly: `app`, `packages/mobile-sdk-alpha`,
+`packages/mobile-sdk-demo`, `packages/rn-mrz-scanner`,
+`packages/rn-nfc-passport`, `packages/rn-sdk`,
+`packages/rn-sdk-test-app`. `packages/webview-app` declares `react` only
+(no RN surface). `sdk/qrcode` declares a web-only `react` range
+(`>=18.0.0 <20.0.0`) and is not an RN consumer. Do not reintroduce a
+root-level `react` or `react-native`; the skew this section records as
+closed lived there.
 
-New arch is on (`newArchEnabled=true`). Android view managers are Fabric;
-two iOS/SDK components stay on Paper under a documented exception. Expo
-SDK 56 / RN 0.85 is deferred indefinitely. Both decisions, with their
-sunset triggers, are in [DECISIONS.md](./DECISIONS.md). Dependency pins
-and overrides are owned by
-[Monorepo Tooling](./workstreams/monorepo-tooling/SPEC.md).
+`@selfxyz/mobile-sdk-alpha` peers are narrowed to `react: ^19.0.0` and
+`react-native: >=0.83.0 <0.86.0`. The workspaces that must satisfy those
+peers are the SDK's **dependents** — `app`, `mobile-sdk-demo`,
+`webview-app`, `webview-bridge` — which is a different set from the
+RN-declaring list above. `webview-app` and `webview-bridge` consume the
+SDK without declaring `react-native`; `rn-sdk` and `rn-sdk-test-app`
+declare RN without consuming the SDK. A peer range may not be narrowed
+ahead of the dependents, and the dependent set is the one to audit. (The
+upgrade track's _Align Remaining Workspaces_ follow-up scoped five
+workspaces: `app`, root, `mobile-sdk-demo`, `rn-sdk`, `rn-sdk-test-app`.
+That is the historical alignment target, not either current set; root was
+resolved by dropping its declaration rather than bumping it.) Read the
+live values from the manifests, not this table.
+
+New arch is on (`newArchEnabled=true`). The Android `PassportOCRView`
+manager is Fabric; the two iOS native-component callsites stay on Paper
+under a documented exception. The SDK's Android `SelfOCRViewManager` is
+an active New Architecture defect tracked by
+[RSP-06](./workstreams/rn-sdk-packaging/SPEC.md), not part of that
+exception. Android is not uniformly Fabric —
+`app/android/.../ui/QRCodeScannerViewManager.kt` is still a legacy
+`ViewGroupManager` using commands and fragment replacement, registered
+through `QRCodeScannerPackage` in `MainApplication.kt`; the active QR
+screen uses `expo-camera` instead, so it is unexercised legacy rather
+than a live Paper dependency. Expo SDK 56 / RN 0.85 is deferred
+indefinitely. Both decisions, with their sunset triggers, are in
+[DECISIONS.md](./DECISIONS.md). Dependency pins and overrides are owned
+by [Monorepo Tooling](./workstreams/monorepo-tooling/SPEC.md).

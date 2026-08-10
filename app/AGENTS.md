@@ -301,7 +301,10 @@ this file never writes.
 
 **Decision (2026-08-09): refactor it to the standard hoisted-mock pattern.
 Do not add an allowlist entry, and do not copy this pattern into new
-tests.** The only reason it reaches for `isolateModules` is that
+tests.** Tracked as
+[SELF-3808](https://linear.app/selfprotocol/issue/SELF-3808) — this
+section is the decision, that issue is the owner. The only reason it
+reaches for `isolateModules` is that
 `PassportCamera.tsx` calls `requireNativeComponent` at module scope, so
 the `Platform.OS` mock has to be in place before the component is
 imported. A top-level `jest.mock('react-native', ...)` factory already
@@ -335,20 +338,48 @@ When working with Linear issues during development:
 **This workspace owns the RN and React majors.** Root `package.json`
 declares neither `react` nor `react-native` directly; `app/package.json`
 pins them (`react-native@0.83.9`, `react@^19.2.0`) and workspace-wide
-`overrides` in `pnpm-workspace.yaml` hold every other workspace to the
-same pair.
+`overrides` in `pnpm-workspace.yaml` hold installed React/RN resolutions
+to the same pair across the workspace.
 
 Consequences to respect when changing versions:
 
-- `@selfxyz/mobile-sdk-alpha` peer ranges must accept this workspace's
-  pinned majors. They are currently narrowed to `react: ^19.0.0` /
-  `react-native: >=0.83.0 <0.86.0`, which is only truthful because all
-  five consumers (`app`, `mobile-sdk-demo`, `rn-sdk`, `rn-sdk-test-app`,
-  root) are aligned. **Never narrow an SDK peer floor ahead of the
-  consumers** — narrow it in the same change set that upgrades them.
+- `@selfxyz/mobile-sdk-alpha` peer ranges must accept every workspace
+  that depends on the SDK. They are currently narrowed to
+  `react: ^19.0.0` / `react-native: >=0.83.0 <0.86.0`. **Never narrow an
+  SDK peer floor ahead of the consumers** — narrow it in the same change
+  set that upgrades them.
+
+  Derive the audit set from workspace dependencies, not from the RN
+  version list. The two are different, and conflating them is how a peer
+  floor gets narrowed past a real consumer:
+
+  | Set                               | Members                                                                                                        |
+  | --------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+  | Depends on `mobile-sdk-alpha`     | `app`, `mobile-sdk-demo`, `webview-app`, `webview-bridge`                                                      |
+  | Declares `react` + `react-native` | `app`, `mobile-sdk-alpha`, `mobile-sdk-demo`, `rn-mrz-scanner`, `rn-nfc-passport`, `rn-sdk`, `rn-sdk-test-app` |
+
+  `webview-app` is the trap: it consumes the SDK and declares `react`
+  with **no** `react-native`, so a React peer bump hits it even though it
+  never appears in an RN alignment list. `rn-sdk` and `rn-sdk-test-app`
+  are the inverse — RN-bearing, but not SDK dependents. Regenerate both
+  sets from the manifests before changing a peer range; do not trust this
+  table.
+
 - Do not add a `react` or `react-native` dependency to the repo root. The
   skew that used to exist there (root on an older RN than `app`) is gone
   and should not be reintroduced.
+- **Any RN or Expo bump must render both iOS Paper paths on a device
+  before merge:** `PassportCamera.tsx` and `MRZScannerView.tsx`. This is
+  the sunset trigger for the Paper exception
+  in [DECISIONS.md](../specs/projects/sdk/DECISIONS.md), and it is a
+  manual gate on purpose — dropped Paper interop is a silent runtime
+  no-op, not a build failure, so CI stays green while the camera renders
+  nothing. That is exactly how the Android regression reached the branch.
+  Also run the Android `MRZScannerView` device check: its known New
+  Architecture defect is tracked separately as
+  [RSP-06](../specs/projects/sdk/workstreams/rn-sdk-packaging/SPEC.md) and must not be
+  mistaken for a new bump regression. A bump PR that does not state all
+  three results is not reviewable.
 - The `overrides` entries that pin these are owned by the monorepo-tooling
   workstream; the version _choice_ is this workspace's call. See
   [SDK Overview](../specs/projects/sdk/OVERVIEW.md) for the current

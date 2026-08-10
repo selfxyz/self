@@ -63,12 +63,17 @@ and the override is `13.16.0`. The earlier `13.16.1` app dep is gone.
    must agree. Bump the override to the version root wants, or lower
    root's range. Do not leave them disagreeing. `typechain>prettier:
 2.8.8` is a separate, deliberate nested pin — keep it.
-3. **Stale override floors.** `@babel/core ^7.28.6` vs app `^7.29.0`
-   (resolves 7.29.0) and `@babel/runtime ^7.28.6` vs root `^7.29.7`
-   (resolves 7.29.2). The carets absorb these so resolution is correct
-   today, but the overrides no longer enforce the floors the manifests
-   ask for. Raise them to match or note that they are intentionally
-   loose dedupe pins with no floor semantics.
+3. **Stale override floors — one of them resolves below a declared floor.**
+   `@babel/core ^7.28.6` vs app `^7.29.0` resolves to `7.29.0`, which
+   satisfies both; that one is a loose pin, not a violation.
+   `@babel/runtime ^7.28.6` vs root `^7.29.7` resolves to **`7.29.2`**,
+   which does **not** satisfy root's declared `^7.29.7` — the override is
+   overriding a floor, not merely failing to enforce it. `7.29.7` is
+   published, so this is not a phantom range. Raise the override to
+   `^7.29.7` (preferred — it is what root asks for) or lower root's range
+   to `^7.29.2` after validating that nothing depends on 7.29.3-7.29.7
+   helpers. Do not close this as "the caret absorbs it." Leave the
+   `@babel/core` entry as a documented loose dedupe pin.
 4. **Redundant pins carried over from the Yarn `resolutions` inventory.**
    `punycode: npm:punycode.js@^2.3.1` and `react-native-passkey: ^3.3.3`
    mirror what the deps already accept. `react-native-blur-effect: 1.1.3`
@@ -123,4 +128,8 @@ Additional checks:
 - [ ] Every numbered override finding above has a recorded keep/drop
       decision with a reason. No override is left disagreeing with a
       declared dependency range in either direction.
+- [ ] `@babel/runtime` resolves to a version that satisfies root's
+      declared range (finding 3 — today `7.29.2` does not satisfy
+      `^7.29.7`). Verify with
+      `pnpm why @babel/runtime` against `package.json`.
 - [ ] MT-27 in `../SPEC.md` reflects the `jsdom` outcome.

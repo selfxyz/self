@@ -54,7 +54,9 @@ This is dependency-version cleanup, deliberately separated from `pnpm dedupe`
   - _Policy defers_ (no override pin, but owned by another track / too
     entangled for a routine sweep):
     - `react-native`, `react-native-*`, `expo`, `expo-*`, `react`, `react-dom`
-      — owned by the RN upgrade track (`specs/topics/RN-UPGRADE-PLAN.md`).
+      — owned by the app workspace. The RN upgrade track is closed; see
+      [OVERVIEW.md](../../projects/sdk/OVERVIEW.md) for the live toolchain
+      state and `../rn-upgrade/RN-UPGRADE-PLAN.md` for the archived plan.
       Current state: RN `0.83.9`, React `19.2.0`, Expo `55.0.20`, uniform
       across workspaces. These move only as a coordinated major on that track,
       gated on Expo SDK progression (SDK 55 → RN 0.83; SDK 56 not GA).

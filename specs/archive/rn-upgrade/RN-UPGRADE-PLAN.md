@@ -3,8 +3,10 @@
 > **ARCHIVED 2026-08-09. Historical record — nothing here is live.** The
 > plan executed: the SDK 55 / RN 0.83 fallback path shipped in PR #2049.
 > Its one remaining open section, _Follow-Up: Align Remaining Workspaces_,
-> is now **done on its own stated criteria** — all five workspaces declare
-> `react-native@0.83.9` / `react@^19.2.0`, root declares neither directly,
+> is now **done on its own stated criteria** — of the five workspaces it
+> scoped, the four package workspaces declare `react-native@0.83.9` /
+> `react@^19.2.0` and root was resolved by dropping its declaration
+> entirely (root declares neither package directly),
 > and `mobile-sdk-alpha` peers are narrowed to `react: ^19.0.0` /
 > `react-native: >=0.83.0 <0.86.0`. That contract is now recorded where it
 > is enforced: `app/AGENTS.md` and

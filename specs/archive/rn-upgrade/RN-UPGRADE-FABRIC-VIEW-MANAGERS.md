@@ -21,9 +21,20 @@
 > longer calls `requireNativeComponent` at all, which corrects the audit
 > pairing the follow-up doc assumed.
 >
-> The CameraX follow-up in _Change C_ is still unclaimed. Its trigger
-> criteria stand: a Camera1 failure on a real device, or `targetSdk` 36.
-> File it against the app when either fires.
+> The CameraX follow-up in _Change C_ **has fired and is filed as
+> [SELF-3809](https://linear.app/selfprotocol/issue/SELF-3809)**.
+> `app/android/build.gradle:18` already sets `targetSdkVersion = 36`, so
+> the second of its two trigger criteria was met before this doc was
+> archived. Do not read _Change C_ below as a deferred option.
+>
+> Scope correction: _Change C_ and the Android Fabric migration both cover
+> `app/android` only. The SDK's
+> `packages/mobile-sdk-alpha/mobile-sdk-native/src/main/java/com/selfxyz/selfSDK/SelfOCRViewManager.kt`
+> is still a legacy `ViewGroupManager` and is reached from
+> `MRZScannerView.tsx` on Android. That active New Architecture defect is
+> tracked as RSP-06 in
+> [RN SDK Packaging](../../projects/sdk/workstreams/rn-sdk-packaging/SPEC.md),
+> not included in the iOS Paper exception.
 
 _Last updated: 2026-05-20 (archived 2026-08-09)_
 _Owner: Mobile App_

@@ -127,9 +127,10 @@ MT-22 plan first.
 ## Out of Scope
 
 - React Native version alignment across `app`, `mobile-sdk-demo`, `rn-sdk`, and
-  `rn-sdk-test-app`. Moot as of 2026-08-09 — all five workspaces (plus root,
-  which declares neither package directly) are on `react-native@0.83.9` /
-  `react@^19.2.0`. This stays out of scope as a policy boundary: RN/React
+  `rn-sdk-test-app`. Moot as of 2026-08-09 — those four are on
+  `react-native@0.83.9` / `react@^19.2.0`, root declares neither package
+  directly, and the `overrides` hold every other RN-bearing workspace to the
+  same pair. This stays out of scope as a policy boundary: RN/React
   version choice is the app workspace's call, recorded in
   [OVERVIEW.md](../../OVERVIEW.md). This workstream owns the `overrides`
   entries that pin them, not the choice of version.
