@@ -1,8 +1,8 @@
 # AUD-02 — Key material & keychain lifecycle audit
 
-> Linear: TBD — create the tracking issue and attach this plan before investigation starts (protocol Stage 1)
+> Linear: [SELF-3180](https://linear.app/selfprotocol/issue/SELF-3180) — created 2026-06-11, unassigned
 > Workstream: [Codebase Audits](../SPEC.md)
-> Status: Draft
+> Status: Planned — awaiting workstream owner
 > Priority: High
 > Time box: 4 working days of investigation + 1 day for report and review gate. Question-list items
 > still open at expiry split into a new `AUD-NN` backlog row; the audit does not extend.

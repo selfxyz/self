@@ -1,6 +1,29 @@
 # React Native Upgrade Plan (Mobile App)
 
-_Last updated: May 15, 2026_
+> **ARCHIVED 2026-08-09. Historical record — nothing here is live.** The
+> plan executed: the SDK 55 / RN 0.83 fallback path shipped in PR #2049.
+> Its one remaining open section, _Follow-Up: Align Remaining Workspaces_,
+> is now **done on its own stated criteria** — of the five workspaces it
+> scoped, the four package workspaces declare `react-native@0.83.9` /
+> `react@^19.2.0` and root was resolved by dropping its declaration
+> entirely (root declares neither package directly),
+> and `mobile-sdk-alpha` peers are narrowed to `react: ^19.0.0` /
+> `react-native: >=0.83.0 <0.86.0`. That contract is now recorded where it
+> is enforced: `app/AGENTS.md` and
+> [SDK OVERVIEW.md](../../projects/sdk/OVERVIEW.md).
+>
+> **The Phase 1 decision gate and the SDK 56 primary path are closed.** The
+> gate fired once, recorded `SDK 55.0.0 fallback`, and SDK 56 / RN 0.85 is
+> deferred indefinitely — the forward path is WebView-in-App on the KMP
+> framework, not an RN major. Do not read the "preferred target if gate
+> passes" language below as pending work. See
+> [DECISIONS.md](../../projects/sdk/DECISIONS.md).
+>
+> External version findings, the `yarn`-era validation commands, and the
+> ownership/handoff model below are all as-written from May 2026 and are
+> stale. The repo is on pnpm.
+
+_Last updated: May 15, 2026 (archived 2026-08-09)_
 
 ## Purpose
 

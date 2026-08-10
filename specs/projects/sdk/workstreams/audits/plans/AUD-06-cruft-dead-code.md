@@ -1,8 +1,8 @@
 # AUD-06 — Cruft & dead code audit
 
-> Linear: TBD — create the tracking issue and attach this plan before investigation starts (protocol Stage 1)
+> Linear: [SELF-3185](https://linear.app/selfprotocol/issue/SELF-3185) — created 2026-06-11, unassigned
 > Workstream: [Codebase Audits](../SPEC.md)
-> Status: Draft (pre-drafted in sequence after AUD-04; requires recon refresh + owner re-review at activation)
+> Status: Planned (pre-drafted in sequence after AUD-04; requires recon refresh + owner re-review at activation) — awaiting workstream owner
 > Priority: Medium
 > Depends on: — (informational inputs: AUD-03 Q3.5 and AUD-05 Q6.2 recorded leads for this audit;
 > fold their accepted-report dispositions in at the recon refresh)

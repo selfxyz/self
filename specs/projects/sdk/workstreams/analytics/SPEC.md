@@ -133,6 +133,8 @@ The biometric data-confirmation screen (`DataConfirmationScreen`, where the user
 | ANA-17 | Onboarding exit classification (single Onboarding: Ended + outcome)           | In Review   | High     | ANA-01, ANA-13         | [plan](./plans/ANA-17-classify-nullified-onboarding-exits.html) — PR #2117 |
 | ANA-18 | Remove non-funnel onboarding events                                           | In Review   | High     | ANA-13                 | [plan](./plans/ANA-18-onboarding-event-allowlist.md)                       |
 | ANA-19 | Instrument biometric data-confirmation (MRZ detail) screen                    | In Review   | Medium   | ANA-12                 | — PR #2119                                                                 |
+| ANA-20 | KYC Path A / Path B event-ordering audit + emission-site consolidation        | Ready       | Medium   | ANA-12                 | [plan](./plans/ANA-20-kyc-path-ab-event-ordering.md)                       |
+| ANA-21 | Stop analytics-constant mock drift in `app/jest.setup.js`                     | Ready       | Low      | —                      | —                                                                          |
 | ANA-05 | Fallback decision events and fallback-offer mini-funnel                       | Ready       | Medium   | ANA-01, ANA-12         | —                                                                          |
 | ANA-08 | Explicit abandonment events on app background                                 | Ready       | Low      | ANA-01                 | —                                                                          |
 | ANA-02 | Investigation: internal/TestFlight traffic filtering                          | Ready       | Medium   | —                      | —                                                                          |
@@ -141,6 +143,12 @@ The biometric data-confirmation screen (`DataConfirmationScreen`, where the user
 Allowed statuses: `Ready`, `In Progress`, `In Review`, `Blocked`, `Done`.
 
 **Investigation items** (ANA-02, ANA-04) are loose-scope: they produce a doc + recommendation, possibly followed by a small implementation spec. Not PR-shaped on creation.
+
+**ANA-20 and ANA-21** were re-homed here on 2026-08-09 from the archived RN upgrade follow-up doc (`specs/archive/rn-upgrade/RN-UPGRADE-FOLLOWUPS.md`, items 2 and 3). Both are analytics-owned; neither is RN work.
+
+**ANA-21 scope** (no plan file; it is one decision plus a small change). `app/jest.setup.js:897-1120` inlines ~224 lines of analytics constants that mirror `@selfxyz/mobile-sdk-alpha/constants/analytics`. The mock rots silently when the SDK adds, removes, or renames an event — a stale constant surfaces as a confusing assertion failure far from the cause, not as a setup failure. Preferred fix is importing from the canonical module; that requires first confirming the constants module pulls in no transitive `react-native` imports, which would reintroduce the OOM hazard in the **Test Memory Optimization** section of `app/AGENTS.md`. If it does, fall back to a CI check that diffs the inlined list against the SDK source.
+
+Canonical importing alone does **not** satisfy "fails fast" — a renamed or removed key leaves the import succeeding and the consumer reading `undefined`, which surfaces as a distant assertion failure, the exact rot this item exists to stop. Whichever fix is taken, pair it with an explicit shape assertion in setup: assert the expected key set of each analytics constant object (`KycEvents`, `OnboardingEvents`, `BiometricEvents`, `AadhaarEvents`) and throw on divergence. Done when adding, removing, or renaming an event in the SDK fails `app` test setup on the first run, with an error naming the diverging key — not when a downstream assertion happens to trip.
 
 ## Future Concerns (not tracked specs)
 

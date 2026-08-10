@@ -67,6 +67,7 @@ Both options are valid. KMP has more infrastructure already built; native-shells
 | KR-01 | Scope KMP Android to 3-domain parity with provider delegation | Ready  | High     | -            | [plans/KR-01-android-parity.md](./plans/KR-01-android-parity.md)             | ~600-900 |
 | KR-02 | Scope KMP iOS to 3-domain native shell parity                 | Ready  | High     | -            | [plans/KR-02-ios-parity.md](./plans/KR-02-ios-parity.md)                     | ~200-300 |
 | KR-03 | Validate build artifacts and test app                         | Ready  | Medium   | KR-01, KR-02 | [plans/KR-03-validate-and-publish.md](./plans/KR-03-validate-and-publish.md) | ~200     |
+| KR-04 | Scope pass — KMP as the app's own WebView host framework      | Ready  | Medium   | -            | [plans/KR-04-app-host-scope-pass.md](./plans/KR-04-app-host-scope-pass.md)   | ~50 doc  |
 
 Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 

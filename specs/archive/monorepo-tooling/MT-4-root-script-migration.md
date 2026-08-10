@@ -1,7 +1,7 @@
 ## Migrate root scripts to `turbo run`
 
 > Last updated: 2026-05-13
-> Status: Draft
+> Status: Archived 2026-08-06 - landed in #2186/#2188
 
 - Workstream: monorepo-tooling
 - Backlog IDs: MT-4

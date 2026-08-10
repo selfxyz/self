@@ -128,10 +128,10 @@ These files are easy to miss locally because broad personal gitignore rules (e.g
 
 `pnpm ios` now selects a simulator by UDID, shuts down stale booted simulators, explicitly boots the chosen device, waits for boot completion, then starts the React Native iOS build against that simulator.
 
-| Env var | Purpose |
-|---|---|
-| `IOS_SIMULATOR_DEVICE` | Case-insensitive iPhone name substring filter, for example `iPhone 16 Pro` |
-| `IOS_SIMULATOR_RUNTIME` | iOS runtime version filter, for example `18.4` or `18-4` |
+| Env var                 | Purpose                                                                    |
+| ----------------------- | -------------------------------------------------------------------------- |
+| `IOS_SIMULATOR_DEVICE`  | Case-insensitive iPhone name substring filter, for example `iPhone 16 Pro` |
+| `IOS_SIMULATOR_RUNTIME` | iOS runtime version filter, for example `18.4` or `18-4`                   |
 
 Default device priority when no env vars are set:
 
@@ -289,6 +289,36 @@ grep -r "require('react-native')" app/tests/
 - Avoid `require()` calls in `beforeEach`/`afterEach` hooks
 - React and React Native are already mocked in `jest.setup.js` - use imports in test files
 
+### The `isolateModules` + `doMock` pattern is not allowlisted
+
+`app/tests/src/components/PassportCamera.android.test.tsx` wraps
+`jest.doMock('react-native', ...)` in `jest.isolateModules` and then calls
+nested `require(...)` for `react-test-renderer` and the component under
+test. It passes today and CI has not OOMed on it, but it sits next to the
+nested-require pattern above and bypasses `scripts/check-test-requires.cjs`
+by design — that guard matches `require('react-native')` literals, which
+this file never writes.
+
+**Decision (2026-08-09): refactor it to the standard hoisted-mock pattern.
+Do not add an allowlist entry, and do not copy this pattern into new
+tests.** Tracked as
+[SELF-3808](https://linear.app/selfprotocol/issue/SELF-3808) — this
+section is the decision, that issue is the owner. The only reason it
+reaches for `isolateModules` is that
+`PassportCamera.tsx` calls `requireNativeComponent` at module scope, so
+the `Platform.OS` mock has to be in place before the component is
+imported. A top-level `jest.mock('react-native', ...)` factory already
+satisfies that, because `jest.mock` is hoisted above imports — and this
+file is Android-only (`.android.test.tsx`), so it never needs two platform
+variants live in one module registry. Use hoisted mocks with `Mock*`
+aliases like the rest of `app/tests/`, keep the existing assertions
+(Android Fabric path, `extractMRZInfo` invocation, `isMounted` prop
+propagation), and drop the `isolateModules` block.
+
+Allowlisting was the alternative and was rejected: it would require a
+CI-condition memory profile to justify, and it documents an exception that
+new tests would then copy.
+
 ### Detailed Guidelines
 
 See `.cursor/rules/test-memory-optimization.mdc` for comprehensive guidelines, examples, and anti-patterns.
@@ -302,6 +332,59 @@ When working with Linear issues during development:
 - **`create_document`** for: attaching specs as Linear documents
 
 **Never overwrite an issue description.** Descriptions are the original scope set at creation time. All subsequent context goes in comments. If the description has a factual error, add a comment explaining the correction — do not silently rewrite it.
+
+## React / React Native Version Ownership
+
+**This workspace owns the RN and React majors.** Root `package.json`
+declares neither `react` nor `react-native` directly; `app/package.json`
+pins them (`react-native@0.83.9`, `react@^19.2.0`) and workspace-wide
+`overrides` in `pnpm-workspace.yaml` hold installed React/RN resolutions
+to the same pair across the workspace.
+
+Consequences to respect when changing versions:
+
+- `@selfxyz/mobile-sdk-alpha` peer ranges must accept every workspace
+  that depends on the SDK. They are currently narrowed to
+  `react: ^19.0.0` / `react-native: >=0.83.0 <0.86.0`. **Never narrow an
+  SDK peer floor ahead of the consumers** — narrow it in the same change
+  set that upgrades them.
+
+  Derive the audit set from workspace dependencies, not from the RN
+  version list. The two are different, and conflating them is how a peer
+  floor gets narrowed past a real consumer:
+
+  | Set                               | Members                                                                                                        |
+  | --------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+  | Depends on `mobile-sdk-alpha`     | `app`, `mobile-sdk-demo`, `webview-app`, `webview-bridge`                                                      |
+  | Declares `react` + `react-native` | `app`, `mobile-sdk-alpha`, `mobile-sdk-demo`, `rn-mrz-scanner`, `rn-nfc-passport`, `rn-sdk`, `rn-sdk-test-app` |
+
+  `webview-app` is the trap: it consumes the SDK and declares `react`
+  with **no** `react-native`, so a React peer bump hits it even though it
+  never appears in an RN alignment list. `rn-sdk` and `rn-sdk-test-app`
+  are the inverse — RN-bearing, but not SDK dependents. Regenerate both
+  sets from the manifests before changing a peer range; do not trust this
+  table.
+
+- Do not add a `react` or `react-native` dependency to the repo root. The
+  skew that used to exist there (root on an older RN than `app`) is gone
+  and should not be reintroduced.
+- **Any RN or Expo bump must render both iOS Paper paths on a device
+  before merge:** `PassportCamera.tsx` and `MRZScannerView.tsx`. This is
+  the sunset trigger for the Paper exception
+  in [DECISIONS.md](../specs/projects/sdk/DECISIONS.md), and it is a
+  manual gate on purpose — dropped Paper interop is a silent runtime
+  no-op, not a build failure, so CI stays green while the camera renders
+  nothing. That is exactly how the Android regression reached the branch.
+  Also run the Android `MRZScannerView` device check: its known New
+  Architecture defect is tracked separately as
+  [RSP-06](../specs/projects/sdk/workstreams/rn-sdk-packaging/SPEC.md) and must not be
+  mistaken for a new bump regression. A bump PR that does not state all
+  three results is not reviewable.
+- The `overrides` entries that pin these are owned by the monorepo-tooling
+  workstream; the version _choice_ is this workspace's call. See
+  [SDK Overview](../specs/projects/sdk/OVERVIEW.md) for the current
+  toolchain table and [DECISIONS.md](../specs/projects/sdk/DECISIONS.md)
+  for why RN 0.85 is not on the roadmap.
 
 ## SDK Architecture
 

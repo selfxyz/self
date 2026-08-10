@@ -1,8 +1,8 @@
 # AUD-09 — WebView app surface audit
 
-> Linear: TBD — create the tracking issue and attach this plan before investigation starts (protocol Stage 1)
+> Linear: [SELF-3188](https://linear.app/selfprotocol/issue/SELF-3188) — created 2026-06-11, unassigned
 > Workstream: [Codebase Audits](../SPEC.md)
-> Status: Draft (structural pre-draft; carries named placeholders for AUD-05 outputs; requires recon refresh + owner re-review at activation)
+> Status: Planned (structural pre-draft; carries named placeholders for AUD-05 outputs; requires recon refresh + owner re-review at activation) — awaiting workstream owner
 > Priority: High
 > Depends on: AUD-05 (adapter coupling-seam map, origin-trust findings, hosting-posture decision — see Placeholders)
 > Time box: 4 working days of investigation + 1 day for report and review gate. Question-list items

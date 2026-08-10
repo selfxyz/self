@@ -1,9 +1,49 @@
 # Codebase Audits — Workstream Spec
 
-> Last updated: 2026-06-11
-> Owner: Mobile / Justin Hernandez
+> Last updated: 2026-08-06
+> Owner: **UNASSIGNED** — needs a named owner before AUD-02 can start
 > Project: [SDK Overview](../../OVERVIEW.md)
-> Status: Active
+> Status: Dormant — protocol and all nine plans merged; zero audits executed
+
+## Current State (2026-08-06)
+
+Read this before picking the workstream up.
+
+The protocol below and all nine `AUD-NN` plans landed in a single PR (#2167,
+2026-06-11) and **nothing has run since** — no commits to this directory in
+about two months, and no `AUD-NN` findings document in `docs/reviews/`. (The
+`2026-03-23-euclid-settings-tunnel-audit.md` there predates this workstream and
+is the format reference cited in Stage 3, not an output of it.)
+
+Linear tracking is complete but unowned. Every audit has an issue, created
+2026-06-11, and **all nine are unassigned**:
+
+| ID     | Linear    | Status  |
+| ------ | --------- | ------- |
+| AUD-01 | SELF-3181 | Backlog |
+| AUD-02 | SELF-3180 | Todo    |
+| AUD-03 | SELF-3182 | Backlog |
+| AUD-04 | SELF-3184 | Backlog |
+| AUD-05 | SELF-3183 | Backlog |
+| AUD-06 | SELF-3185 | Backlog |
+| AUD-07 | SELF-3186 | Backlog |
+| AUD-08 | SELF-3187 | Backlog |
+| AUD-09 | SELF-3188 | Backlog |
+
+This workstream was authored in one pass by a single contributor and has had no
+review or execution since. Two consequences for whoever takes it:
+
+1. **Nothing here has been battle-tested.** The five-stage protocol, the
+   severity rubric, and the one-active-audit rule are all untried; AUD-02 is
+   explicitly the pilot that is supposed to revise the protocol from its own
+   lessons. Expect to change this file, not just follow it.
+2. **Every plan needs its recon refresh before activation**, per the protocol
+   below. The plans cite `path:line` locations captured in June 2026; the RN/Expo
+   upgrade and pnpm work have moved code since. Treat every citation as stale
+   until re-verified.
+
+If no owner is named, archive the workstream rather than leaving nine unowned
+Backlog issues pointing at unexecuted plans.
 
 ## Why
 
