@@ -70,7 +70,7 @@
 
 Allowed statuses: `Ready`, `In Progress`, `Blocked`, `Deferred`, `Done`
 
-> **SD-06 / SD-07 are mutually exclusive directions.** SD-06 publishes the monorepo's vendored `packages/kmp-sdk` as the source-of-truth. SD-07 deletes it and consumes the externally published artifact from `selfxyz/self-webview-sdk`. The canonical-home decision (this repo vs `self-webview-sdk`) is still open — see [WIA-17 open questions](../webview-in-app/plans/SPIKE-rn-wraps-kmp.md). SD-06 is held Blocked until that resolves; if `self-webview-sdk` is confirmed canonical, SD-06 moves to Cancelled and SD-07 becomes the path.
+> **SD-06 / SD-07 are mutually exclusive directions.** SD-06 publishes the monorepo's vendored `packages/kmp-sdk` as the source-of-truth. SD-07 deletes it and consumes the externally published artifact from `selfxyz/self-webview-sdk`. The canonical-home decision (this repo vs `self-webview-sdk`) is **explicitly unresolved as of 2026-08-09; owner: Seshanth Saravanakumar** ([SELF-3708](https://linear.app/selfprotocol/issue/SELF-3708)) — see [WIA-17 open questions](../webview-in-app/plans/SPIKE-rn-wraps-kmp.md) and [SD-07 Open Decision 1](./plans/SD-07-decommission-vendored-kmp-sdk.md). Both stay Blocked until it resolves; if `self-webview-sdk` is confirmed canonical, SD-06 moves to Cancelled and SD-07 becomes the path. Regardless of the outcome, `packages/kmp-sdk` is a stale mirror — **no functional/source changes since 2026-04-30** (`1ba722fe0`); its only later commit is `04b3bb86f` (2026-06-12, pnpm migration), a one-line `gradle/libs.versions.toml` edit. Do not edit it.
 
 ### Execution Order
 

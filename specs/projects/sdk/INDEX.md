@@ -36,6 +36,19 @@ Status: Active (WebView-first target; the Self app on `dev` is still the legacy 
 | Native Shells                 | [Native Shells Spec](./paused/native-shells/SPEC.md)               |
 | Native Consolidation          | [Native Consolidation Spec](./paused/native-consolidation/SPEC.md) |
 | Integrations / MiniPay Sample | [MiniPay Sample Spec](./paused/integrations/SPEC.md)               |
+| Embed Mode (WIA)              | [Embed Mode Spec](./paused/embed-mode/SPEC.md)                     |
+
+> **Embed Mode** halted 2026-08 with code written and unmerged on
+> `justin/wia-demo-rd1` (selfxyz/self#2194) and `chore/run-android-locally`
+> (selfxyz/self-webview-sdk#26). Specs are here; code is not. Land-or-archive is
+> undecided and owned by Seshanth Saravanakumar (SELF-3395 / SELF-3396) — see
+> [SELF-3708](https://linear.app/selfprotocol/issue/SELF-3708).
+>
+> Related but **separate and unowned**:
+> [MRZ Preview diagnosis](./workstreams/webview-in-app/SPEC-MRZ-PREVIEW.md) — a
+> debugging record for the WIA MRZ scan path, kept with the live workstream. Its
+> web-side fix is written but unmerged; the native side is **incomplete** and
+> end-to-end verification never ran. No Linear issue, no owner.
 
 ## Related
 
