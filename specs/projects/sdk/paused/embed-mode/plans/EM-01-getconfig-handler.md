@@ -38,7 +38,7 @@
 
 - **Mirror `packages/rn-sdk/src/handlers/LifecycleHandler.ts` field-for-field**
   (the live RN reference: `{ mode, verificationRequest: config.request, debug,
-platform, referenceId }`). Do NOT re-derive the shape from KMP's
+platform, referenceId, capabilities }`). Do NOT re-derive the shape from KMP's
   `VerificationRequest`/`SelfSdkConfig` types — the WebView must not be able to
   tell which shell it runs in. Verify field names against the RN object,
   especially RN's flat `config.request` vs KMP's separated config/request.
@@ -46,14 +46,20 @@ platform, referenceId }`). Do NOT re-derive the shape from KMP's
   it). The earlier "drop referenceId" guidance below is **wrong** — omitting the
   field diverges from the settled contract. Re-pin the contract section to the RN
   shape before coding.
+- **Advertise real `capabilities`.** The RN handler always returns the field;
+  omission is only a backward-compatibility path and the web interprets it as
+  all capabilities available. Build the KMP/Swift value from the native domains
+  the shell actually registers so boot routing cannot select an unavailable NFC,
+  MRZ, biometrics, or secure-storage flow.
 
 ### Scope
 
 - Add a `getConfig` method to the lifecycle bridge handler on **both** platforms
   (`androidMain` + `iosMain` — there is no commonMain lifecycle handler).
-- Return `{ mode: "embed", verificationRequest: {…}, debug, platform }` per the
-  contract in `../SPEC.md`. When launched via the SDK, mode is **always `embed`**
-  (the verification Activity/host only exists for SDK-driven verification).
+- Return `{ mode: "embed", verificationRequest: {…}, debug, platform,
+referenceId?, capabilities }` per the contract in `../SPEC.md`. When launched
+  via the SDK, mode is **always `embed`** (the verification Activity/host only
+  exists for SDK-driven verification).
 - Define the response payload as a **commonMain serializable model + builder** so
   both platforms share one encoding and field set, and add a commonTest for it.
 
@@ -79,8 +85,9 @@ platform, referenceId }`). Do NOT re-derive the shape from KMP's
 ### Implementation Steps
 
 1. **commonMain payload model + builder.** Define `HostConfigResponse`
-   (`mode`, `verificationRequest`, `referenceId?`, `debug?`, `platform?` — match
-   RN's `LifecycleHandler.ts` shape, see "Before implementing") and a
+   (`mode`, `verificationRequest`, `referenceId?`, `debug?`, `platform?`,
+   `capabilities` — match RN's `LifecycleHandler.ts` shape, see "Before
+   implementing") and a
    `VerificationRequestPayload` carrying **raw** `VerificationRequest` fields + the
    `QueryParamsBuilder`-encoded `SelfSdkConfig` fields (endpoint, appEndpoint
    [RAW — do NOT normalize; the web does], environment=`environment.queryValue`,
@@ -88,7 +95,9 @@ platform, referenceId }`). Do NOT re-derive the shape from KMP's
    chainID, `version = config.version` [NOT hardcoded]). Provide
    `buildGetConfigResponse(config, request, platform): JsonElement`.
    **Keep `referenceId?`** as an optional pass-through (RN parity — see "Before
-   implementing"). Do **not** include `targetOrigin`/`proofItems`/`timestamp` —
+   implementing"). Require the caller to provide the complete capabilities map
+   from the native domains registered by that shell; do not default a new host
+   to all-true. Do **not** include `targetOrigin`/`proofItems`/`timestamp` —
    see the "Deliberately NOT in the contract" list in `../SPEC.md`.
 2. **Android handler.** Add `config`/`request` ctor params; route
    `"getConfig"` to the builder (`platform = "android"`).
@@ -113,7 +122,8 @@ make test-kotlin
 ### Definition of Done
 
 - [ ] `getConfig` implemented on android + ios; shared commonMain builder.
-- [ ] Returns mode=embed + full SPEC field set; defaults correct.
+- [ ] Returns mode=embed + full SPEC field set, including `referenceId?` and an
+      accurate `capabilities` map; defaults correct.
 - [ ] commonTest + Android handler test pass; existing lifecycle tests green.
 - [ ] No change to `ready`/`dismiss`/`setResult` or to self-app fallback (a host
       without `getConfig` still rejects → web stays self-app).

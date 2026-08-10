@@ -209,7 +209,7 @@ The app WebView loads from the **embedded bundle only** — hosted-URL and
 OTA loading were evaluated and rejected as an attack surface. This binds
 **the Self app WebView surface only.** Hosted-URL loading for the
 external native shells is a separate, live track (SD-01/SD-02/SD-03 in
-[sdk-distribution](./workstreams/sdk-distribution/SPEC.md), Ready/High) and
+[sdk-distribution](./workstreams/sdk-distribution/SPEC.md)) and
 is not covered by this rejection. **Security is the canonical rationale**
 for the app surface; the operational objections in
 [SPEC-HOSTED-LOADING](./workstreams/webview-in-app/SPEC-HOSTED-LOADING.html)

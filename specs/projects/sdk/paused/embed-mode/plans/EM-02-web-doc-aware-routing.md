@@ -43,11 +43,21 @@ SDK's launch URL actually hits.
 2. **Sticky request capture.** BrowserRouter wipes the URL query during onboarding
    navigation (prod `TourScreen`/capture routes navigate without `search`), so the
    request would be lost before the user reaches `/disclose/request`. Capture the
-   request once at entry and hold it in memory so the post-registration resume
-   still carries `disclosures`/`userId`/`scope`. In-memory is sufficient for the
-   demo: the host re-supplies the URL on every WebView launch, so only _in-session_
-   navigation loses it. (Durable host-driven sourcing is Part B / EM-01, not here.)
-3. **Tests.** Unit-test the doc-aware decision. Keep `decideBootRoute` **pure** —
+   complete parsed `ParsedVerificationRequestContext` once at entry and retain the
+   last valid value while `location.search` is empty. Do not reconstruct a subset
+   of query fields: this must preserve `proofItems`-derived display labels and
+   every request/config field parsed by `parseVerificationRequestContext`.
+   In-memory is sufficient for the demo: the host re-supplies the URL on every
+   WebView launch, so only _in-session_ navigation loses it. (Durable host-driven
+   sourcing is Part B / EM-01, not here.)
+3. **Request-aware registration completion.** `getConfig` is absent in the demo,
+   so onboarding runs in self-app mode and `RegisteringScreen.goHomeRegistered`
+   currently navigates to `/`. After registration, use the retained parsed
+   request to navigate to `/disclose/request` when it contains disclose context;
+   preserve the existing `/` redirect when no request was captured. Without this
+   terminal redirect, sticky capture alone does not resume the demo flow.
+4. **Tests.** Unit-test the doc-aware decision and the post-registration resume.
+   Keep `decideBootRoute` **pure** —
    if the decision needs document state, pass it in as a `BootInputs` field rather
    than awaiting inside the pure function. The mock `getConfig` handler already
    exists (`tests/utils/renderWithBridge.tsx:65`, defaults self-app); the task is
@@ -64,7 +74,7 @@ the shared `resolveEmbedEntry` helper so `BootDecision` can call the _same_ help
 later for a real `getConfig` host (rn-sdk) — but for the demo, the catch-all is
 where it fires.
 
-### ~~Part B — contract consumption~~ — CANCELLED 2026-08-09, DO NOT EXECUTE
+### ~~Part B — contract consumption~~ — CANCELLED 2026-07-29, DO NOT EXECUTE
 
 > Part B was tracked as **EM-02b** ([SELF-3397](https://linear.app/selfprotocol/issue/SELF-3397)),
 > **cancelled** with the EM track tail. It is retained below as historical design
@@ -80,8 +90,11 @@ disclose/proving screens to read the request from the `OperatingMode` /
 a **structured object** (the raw `getConfig` payload) instead of
 `URLSearchParams`, **preserving every derivation** (`normalizeEndpoint`,
 `formatEndpointForDisplay`, `normalizeRequestType`, environment/chainID mapping,
-`appName` default). Add `getConfig` to the `webview-bridge` mock for tests.
-See `../SPEC.md` invariants — `targetOrigin`/`referenceId` stay URL-borne.
+`appName` default). Extend the existing `getConfig` mock
+(`webview-app/tests/utils/renderWithBridge.tsx:65`) with embed-mode fixtures
+rather than adding a handler.
+See `../SPEC.md` invariants — `targetOrigin` stays URL-borne; `referenceId` is a
+`getConfig` pass-through with a URL fallback.
 
 ### Out of Scope
 
@@ -98,9 +111,10 @@ See `../SPEC.md` invariants — `targetOrigin`/`referenceId` stay URL-borne.
 | `src/components/InitialRouteRedirect.tsx`       | Make doc-aware + async with a loading state; defer to the shared embed-entry decision instead of the unconditional jump.                                                              |
 | `src/utils/resolveEmbedEntry.ts` (new)          | Extract `loadSelectedDocument → isRegistered ? '/disclose/request' : '/tour/1'`; reused by `InitialRouteRedirect` and `embed/TourScreen`.                                             |
 | `src/screens/embed/TourScreen.tsx`              | Replace the inline branch (`:29-39`) with the shared helper.                                                                                                                          |
-| `src/providers/VerificationRequestProvider.tsx` | Sticky-capture the parsed request so it survives in-session navigation.                                                                                                               |
+| `src/providers/VerificationRequestProvider.tsx` | Sticky-capture the complete parsed request so it survives in-session navigation; never replace it with an empty-query parse.                                                          |
+| `src/screens/onboarding/RegisteringScreen.tsx`  | After successful registration, resume to `/disclose/request` when retained disclose context exists; otherwise preserve the current home redirect.                                     |
 | `src/components/decideBootRoute.ts`             | Only if the decision routes through here — add a doc-state input field; keep the function pure. (Default: keep routing in `InitialRouteRedirect`, leave `decideBootRoute` untouched.) |
-| tests                                           | Unit tests for `resolveEmbedEntry` / the doc-aware branch; `decideBootRoute` stays pure and its existing tests pass.                                                                  |
+| tests                                           | Cover both entry branches, complete `proofItems`/request retention, post-registration resume, and unchanged no-request home navigation.                                               |
 
 ### Validation
 
@@ -125,7 +139,7 @@ cd packages/webview-app && pnpm test && pnpm build
 ### Definition of Done (Part A = demo)
 
 - [ ] No registered document + verification request → onboarding, then proof
-      request after registration, with the request intact.
+      request after registration, with the complete parsed request intact.
 - [ ] Registered document + verification request → `/disclose/request` (unchanged).
 - [ ] Normal self-app/browser navigation (catch-all entries **without** a
       `disclosures`/`proofItems` param) is unchanged — still redirects to `/`. The
@@ -134,8 +148,10 @@ cd packages/webview-app && pnpm test && pnpm build
       behavior (no-doc → onboarding) is an **intentional** change: today they
       wrongly force-jump to `/disclose/request` regardless of document state.
 - [ ] `decideBootRoute` stays pure/sync; existing tests pass; new doc-aware tests added.
+- [ ] Registration completion resumes `/disclose/request` only when a retained
+      disclose request exists; ordinary onboarding still returns home.
 
-Part B is **not** in this Definition of Done — EM-02b was cancelled 2026-08-09
+Part B is **not** in this Definition of Done — EM-02b was cancelled 2026-07-29
 ([SELF-3397](https://linear.app/selfprotocol/issue/SELF-3397)). This plan is Part A only.
 
 ### Status Log

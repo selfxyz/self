@@ -12,7 +12,7 @@
 > record survives branch deletion — see
 > [SELF-3708](https://linear.app/selfprotocol/issue/SELF-3708). Until that lands,
 > `justin/wia-demo-rd1` is still the only other copy.
-> EM-03 (SELF-3398) and EM-02b (SELF-3397) were cancelled outright.
+> EM-03 (SELF-3398) and EM-02b (SELF-3397) were cancelled 2026-07-29.
 
 ### Context
 
@@ -117,6 +117,12 @@
   },
   "debug": false, // optional
   "platform": "android", // optional: "android" | "ios"
+  "capabilities": {
+    "nfc": true,
+    "mrzCamera": true,
+    "biometrics": false,
+    "secureStorage": true,
+  },
 }
 ```
 
@@ -124,6 +130,11 @@ The field set is the raw union of `VerificationRequest` + the
 `QueryParamsBuilder`-encoded `SelfSdkConfig` fields — **delivered raw, not
 pre-derived**. EM-02 feeds this object through the (refactored)
 `parseVerificationRequestContext` so all normalization/derivation is preserved.
+
+New hosts MUST return the complete `capabilities` map for the handlers they
+actually register. The web preserves backward compatibility by treating the
+field as optional for older hosts, but omission defaults to all capabilities and
+is therefore unsafe for a new shell with missing native domains.
 
 **Optional pass-through (RN parity):**
 
@@ -151,7 +162,7 @@ Spec home is this repo (`self`). EM-01's code lands in `self-webview-sdk`.
 | `LifecycleBridgeHandler` (android+ios)                                  | `self-webview-sdk` (EM-01 code) | Exists                    | add `getConfig` method               |
 | `SelfVerificationActivity` holds the request/config                     | `self-webview-sdk` (EM-01 code) | Exists                    | source of the payload                |
 | `webview-app` `OperatingModeProvider`                                   | This repo (EM-02)               | Calls `getConfig` already | consume payload; stop URL-parsing    |
-| `webview-bridge` mock                                                   | This repo (EM-02)               | Missing `getConfig`       | add for tests                        |
+| `renderWithBridge` mock (`webview-app/tests/utils/`)                    | This repo (EM-02)               | Exists                    | add embed-mode fixtures/overrides    |
 | [SPEC-MODES](../../workstreams/webview-in-app/SPEC-MODES.html) contract | This repo                       | Settled (WIA-16 Done)     | canonical contract; do not re-derive |
 
 ### Backlog
@@ -173,8 +184,8 @@ IDs are never reused.
 
 | ID     | Title                                                         | Cancelled  | Why                                                                                                                        |
 | ------ | ------------------------------------------------------------- | ---------- | -------------------------------------------------------------------------------------------------------------------------- |
-| EM-02b | Web: consume `getConfig` (switch screens off URL parser)      | 2026-08-09 | EM track tail; cancelled with the track ([SELF-3397](https://linear.app/selfprotocol/issue/SELF-3397)). Depended on EM-01. |
-| EM-03  | Integration: embed e2e on device (scan → register → disclose) | 2026-08-09 | EM track tail; cancelled with the track ([SELF-3398](https://linear.app/selfprotocol/issue/SELF-3398)).                    |
+| EM-02b | Web: consume `getConfig` (switch screens off URL parser)      | 2026-07-29 | EM track tail; cancelled with the track ([SELF-3397](https://linear.app/selfprotocol/issue/SELF-3397)). Depended on EM-01. |
+| EM-03  | Integration: embed e2e on device (scan → register → disclose) | 2026-07-29 | EM track tail; cancelled with the track ([SELF-3398](https://linear.app/selfprotocol/issue/SELF-3398)).                    |
 
 ### Plans
 

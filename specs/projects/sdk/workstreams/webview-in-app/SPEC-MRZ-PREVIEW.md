@@ -7,8 +7,11 @@
 > Status: **PARKED 2026-08 — the diagnosis is durable; the fix is incomplete.**
 > Read this as a debugging record, not an execution plan.
 >
-> - **Web side (monorepo): written and validated**, but unmerged — lives only on
->   `justin/wia-demo-rd1` ([selfxyz/self#2194](https://github.com/selfxyz/self/pull/2194), draft).
+> - **Web resilience work (monorepo): written and validated**, but unmerged —
+>   lives only on `justin/wia-demo-rd1`
+>   ([selfxyz/self#2194](https://github.com/selfxyz/self/pull/2194), draft).
+>   Rectangle delivery remains incomplete: the historical WIP used a standalone
+>   method that is not part of the current monorepo camera contract.
 > - **Native side (`self-webview-sdk`): genuinely incomplete.** P0 (preview-overlay
 >   visibility) was still under active diagnosis when work stopped; P1 (the
 >   `scan` → `scanPassport` rename) is done in the monorepo's inert `packages/kmp-sdk`
@@ -31,10 +34,11 @@ hang.
 
 ## What is actually happening (verified via logcat, 2026-07-02 07:08–07:09)
 
-The scan pipeline is NOT hung. Full sequence observed:
+The scan pipeline is NOT hung. Full sequence observed in the external KMP demo
+with the dirty July 2 web checkout:
 
 ```
-07:08:17.170  web → camera setPreviewRect            (sent ×6, incl. before scanMRZ)
+07:08:17.170  web → camera setPreviewRect            (experimental WIP, sent ×6)
 07:08:17.170  web → camera scanMRZ
 07:08:17.179  native: scanMRZ requested; releasing WebView video before native scan
 07:08:17.186  native: startScan preview=true          (AndroidCameraMrzProvider)
@@ -52,20 +56,22 @@ Conclusions:
 - 91 straight seconds of `no_text` + user sees black ⇒ **the user has no
   visible camera preview to aim with**. The web `<video>` is dead by design
   (native owns the camera; `releaseWebVideoCapture()` stops web tracks), and the
-  native `PreviewView` overlay — despite `setPreviewRect` being sent and the
-  overlay path running (`startScan preview=true`) — is not visibly rendering the
-  feed where the scan window is.
+  native `PreviewView` overlay is not visibly rendering a usable feed. The
+  experimental `setPreviewRect` messages in this trace do **not** prove that a
+  supported handler accepted or applied the rectangle: the current monorepo
+  contract passes `scanRect` inside `camera.scanMRZ(params)`, and the RN camera
+  handler has no standalone `setPreviewRect` method.
 - So the defect is in the **native preview overlay** added in self-webview-sdk
   commit `45799fa` ("save lifecycle fixes", Jun 30 18:36) — the exact commit
   after which "it was just working" stopped being true.
 
 ## Environment (matters — three checkouts are in play)
 
-| Piece                      | Location                                                                                     | State                                                                                          |
-| -------------------------- | -------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| Native SDK the demo builds | `self-webview-sdk` repo, branch `chore/run-android-locally` @ `45799fa`                      | has preview-overlay code, camera+NFC handlers                                                  |
-| Web app actually served    | `…/selfxyz/self` checkout @ `68ad0260` + **uncommitted WIP** (vite on :5173, `make web-app`) | WIP = `setPreviewRect` reporting in `MrzScanStatusOverlay.tsx` + `index.html` process polyfill |
-| PR 2194 branch head        | `…/selfxyz/selfapp` checkout, 4 commits ahead (`8e98e4d`…`fbaaaea`)                          | **lacks** the `setPreviewRect` WIP and the polyfill                                            |
+| Piece                      | Location                                                                                     | State                                                                             |
+| -------------------------- | -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Native SDK the demo builds | `self-webview-sdk` repo, branch `chore/run-android-locally` @ `45799fa`                      | has preview-overlay code, camera+NFC handlers                                     |
+| Web app actually served    | `…/selfxyz/self` checkout @ `68ad0260` + **uncommitted WIP** (vite on :5173, `make web-app`) | WIP used a standalone `setPreviewRect` experiment + `index.html` process polyfill |
+| PR 2194 branch head        | `…/selfxyz/selfapp` checkout, 4 commits ahead (`8e98e4d`…`fbaaaea`)                          | **lacks** that rectangle WIP and the polyfill                                     |
 
 The demo only positions the native preview because the _dirty_ `self` checkout
 is being served. `make web-app` auto-updates the checkout when it has **no**
@@ -73,13 +79,16 @@ local changes — one clean checkout and the rect reporting silently disappears.
 
 ## Actions
 
-### P0 — find why the overlay isn't visible (self-webview-sdk) — IN PROGRESS (separate session)
+### P0 — find why the overlay isn't visible (self-webview-sdk) — PARKED / INCOMPLETE
 
 File: `kmp-sdk/ocr/src/main/kotlin/xyz/self/sdk/ocr/AndroidCameraMrzProvider.kt`
 
-1. Log the applied rect and view state in `applyPreviewRect()` (left/top/w/h,
+1. First align the bridge contract: pass the rectangle as
+   `camera.scanMRZ({ scanRect })`, matching `webview-bridge` and the RN camera
+   handler, or explicitly add and test a standalone `setPreviewRect` method on
+   both sides. Then log the applied rect and view state in `applyPreviewRect()` (left/top/w/h,
    `overlay.isAttachedToWindow`, container class) and log when
-   `setPreviewRect` is dropped (`width<=0` early-return is currently silent).
+   `scanRect` is dropped (`width<=0` early-return is currently silent).
 2. Re-run the scan and capture:
    - `adb logcat -s AndroidCameraMrzProvider CameraMrzBridge AndroidWebViewHost`
    - mid-scan: `adb shell uiautomator dump` (or Layout Inspector) — confirm the
@@ -99,12 +108,15 @@ File: `kmp-sdk/ocr/src/main/kotlin/xyz/self/sdk/ocr/AndroidCameraMrzProvider.kt`
    if no valid rect within ~1s of scan start, size the overlay full-screen
    (or at least make the failure loud).
 
-### P0 — stop depending on uncommitted WIP (webview-app, PR 2194 branch) — DONE (2026-07-02, uncommitted on this branch)
+### P0 — stop depending on uncommitted WIP (webview-app, PR 2194 branch) — PARKED / INCOMPLETE
 
-1. ~~Commit/port the `self` checkout's uncommitted changes onto the branch~~ Ported:
-   - `MrzScanStatusOverlay.tsx` — `setPreviewRect` reporting effect, improved
-     over the WIP: reports `visualViewport.scale` (rect-scaling suspect above)
-     and falls back to a full-viewport rect if no measurable box within ~1s.
+1. Replace the abandoned standalone `setPreviewRect` experiment with the current
+   `camera.scanMRZ({ scanRect })` contract and verify the external KMP handler
+   consumes it. The current monorepo route computes the scan-frame rectangle and
+   supplies it with `scanMRZ`; port that behavior if PR 2194 is revived.
+   - Preserve the useful WIP behavior: account for `visualViewport.scale` where
+     required and fall back to a full-viewport rect if no measurable box appears
+     within ~1s.
    - `index.html` — `process` polyfill (app blank-screens without it under the
      crypto-browserify alias).
    - NOT ported (intentional): the `self` checkout's `InitialRouteRedirect.tsx`
@@ -113,7 +125,12 @@ File: `kmp-sdk/ocr/src/main/kotlin/xyz/self/sdk/ocr/AndroidCameraMrzProvider.kt`
    already caused a fix (StrictMode cancel, `53bfd63`) and the WIP to live in
    different working trees of the same branch. (Still open — operational.)
 
-### P1 — web-side resilience (webview-app / webview-bridge) — DONE (2026-07-02, uncommitted on this branch)
+### P1 — web-side resilience (webview-app / webview-bridge) — WRITTEN 2026-07-02, UNMERGED
+
+> Written and validated on `justin/wia-demo-rd1` only; none of it is on `dev`
+> (`webview-bridge/src/adapters/camera.ts` on `dev` has no scan timeout and no
+> unmount `stopCamera`). Reviving this means porting the items below, not
+> re-deriving them.
 
 1. ~~`camera.scanMRZ` bridge request has no timeout~~ 120s timeout added
    (`webview-bridge/src/adapters/camera.ts`). On timeout the viewfinder catch
@@ -150,7 +167,7 @@ to `self` (or repoint serving), then rebuild `self`'s `webview-bridge` dist:
 `components/nfcErrorCopy.ts` (new), `passport/CodeScanViewfinderRoute.tsx`,
 `eu-id/ViewfinderRoute.tsx`, `passport/NfcErrorRoute.tsx`, `eu-id/NfcErrorRoute.tsx`.
 
-### P1 — NFC method mismatch (will hit immediately after MRZ works) — monorepo half DONE; self-webview-sdk half IN PROGRESS (separate session)
+### P1 — NFC method mismatch (will hit immediately after MRZ works) — PARKED / INCOMPLETE
 
 - Web sends `nfc`/`scanPassport` (`webview-bridge/src/adapters/nfc-scanner.ts:21`).
 - `self-webview-sdk` `NfcBridgeHandler` (android + ios) only handles `"scan"`
