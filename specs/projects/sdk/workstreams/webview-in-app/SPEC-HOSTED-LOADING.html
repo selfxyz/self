@@ -97,16 +97,16 @@
     <code>rn-sdk-test-app</code> integration.
   </p>
   <p>
-    Hosted HTTPS URL loading from <code>verify.self.xyz</code> is a future evolution under the
-    <code>sdk-distribution/</code> workstream; it is not the v1 mechanism for Self app because
-    (a) embedded bundles avoid offline-first-launch friction, (b) HTTPS introduces a single point of
-    failure if the CDN goes down, and (c) WebView caches across hosted deploys are out of our control.
+    Hosted HTTPS URL loading from <code>verify.self.xyz</code> is a separate
+    <code>sdk-distribution/</code> track for external Kotlin/Swift shells. It is rejected for the Self app
+    WebView because production code must remain pinned to the reviewed app release; the offline-first-launch,
+    CDN-availability, and cache-control concerns are additional operational reasons.
   </p>
   <p>This spec covers <code>WIA-09</code>.</p>
 
   <h3>In scope</h3>
   <ul>
-    <li>The production URL contract.</li>
+    <li>The production embedded-bundle source contract.</li>
     <li>The coupling between the RN binary version and the WebView protocol version it supports.</li>
     <li>The dev-server override pattern.</li>
     <li>Offline / first-launch behavior.</li>
@@ -116,13 +116,13 @@
 
   <h3>Out of scope</h3>
   <ul>
-    <li>Hosting infrastructure for <code>verify.self.xyz</code> — owned by <code>sdk-distribution/</code>.
-      This spec consumes the URL; it does not specify the CDN, TLS, or caching policy.</li>
-    <li>The bundle build pipeline that produces the artifact behind that URL — owned by
+    <li>Hosting infrastructure for <code>verify.self.xyz</code> — owned by <code>sdk-distribution/</code>
+      for external Kotlin/Swift shells and not consumed by the Self app.</li>
+    <li>The bundle build pipeline that produces the embedded artifact — owned by
       <code>build-pipeline/</code> (BP-01, done).</li>
     <li>The bridge protocol itself — owned by <code>packages/webview-bridge/</code>. Version handshake
       belongs to it; this spec defers to it.</li>
-    <li>Embedded-bundle fallback. Considered as a follow-up under "Known Gaps"; not part of v1.</li>
+    <li>Production hosted-URL or OTA fallback. Rejected for this surface.</li>
   </ul>
 </section>
 
@@ -201,11 +201,10 @@
       Either way the message is rejected and a Sentry exception is captured; the host never attempts a
       best-effort downgrade. The WebView side enforces the same constant independently on the messages it
       receives.</li>
-    <li><strong>Hosted URL loading is a future evolution, not v1.</strong> When and if we want OTA-style
-      updates without app store cycles, the <code>sdk-distribution/</code> workstream wires
-      <code>verify.self.xyz/v1/</code> as an alternative source. The bridge protocol and the host shell
-      stay identical; only the <code>source</code> prop on the WebView changes. This spec does not block
-      on that evolution.</li>
+    <li><strong>Hosted URL loading is rejected for the Self app WebView.</strong> The app keeps the
+      embedded bundle so production code cannot change outside an app-store release. The
+      <code>sdk-distribution/</code> workstream's <code>verify.self.xyz/v1/</code> loading applies to
+      external Kotlin/Swift shells only; it is not an alternative source for WIA-09.</li>
   </ol>
 </section>
 
@@ -267,14 +266,14 @@ Shell → WebView: load index.html from app bundle
   <h2>Known gaps</h2>
   <ul>
     <li><strong>WebView updates require app-store cycles.</strong> With the embedded bundle model, a
-      UI-only WebView change ships only when a new RN binary is released. If iteration speed becomes a
-      constraint, the hosted-URL evolution (Decision 6) is the answer.</li>
+      UI-only WebView change ships only when a new RN binary is released. This is an accepted security
+      tradeoff for the Self app surface, not a pending hosted-loading migration.</li>
     <li><strong>Cohort-targeted WebView builds.</strong> A/B testing the WebView in v1 requires shipping
-      multiple RN binaries (per-cohort builds), which is impractical. Defer to the hosted-URL evolution
-      when this becomes a real need.</li>
+      multiple RN binaries (per-cohort builds), which is impractical. Any future alternative must reopen
+      the security decision and update the SDK overview and decisions log first.</li>
     <li><strong>Bundle size.</strong> The embedded WebView bundle adds to the app's install size. If
-      install-size pressure becomes a concern, the hosted-URL evolution shrinks the binary at the cost
-      of a network dependency on first launch.</li>
+      install-size pressure becomes a concern, reduce or split the bundled artifact without introducing
+      a production remote-code source.</li>
   </ul>
 </section>
 
@@ -305,8 +304,8 @@ Shell → WebView: load index.html from app bundle
     <li><strong><code>build-pipeline/</code></strong> owns the bundle artifact under
       <code>packages/rn-sdk/assets/self-wallet/</code> (BP-01, done). Any change to the bundle layout
       requires coordinated updates in this spec.</li>
-    <li><strong><code>sdk-distribution/</code></strong> owns the future hosted-URL evolution
-      (Decision 6). Not active in v1.</li>
+    <li><strong><code>sdk-distribution/</code></strong> owns hosted-URL loading for external Kotlin/Swift
+      shells. That workstream does not change the Self app's embedded-bundle invariant.</li>
     <li><strong><code>webview-bridge/</code></strong> owns the <code>BRIDGE_PROTOCOL_VERSION</code> constant
       and enforces exact equality on the WebView side in its schema. The host imports the same constant and
       enforces it independently on the messages it receives. Any bump is a coordinated breaking change: the

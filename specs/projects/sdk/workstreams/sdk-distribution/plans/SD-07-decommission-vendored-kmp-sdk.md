@@ -5,20 +5,22 @@
 
 - Workstream: sdk-distribution
 - Backlog IDs: SD-07
-- Owner: TBD
+- Owner: TBD (canonical-home decision owner: Seshanth Saravanakumar — Open Decision 1)
 - Branch: `chore/deprecate-kmp-sdk` (currently 0 commits ahead of `main`)
 - PR: TBD
 - Linear: not yet created (do not create until Open Decisions are resolved)
 
 ### Why
 
-The KMP SDK source has moved to a standalone repo, `selfxyz/self-webview-sdk`, intended to own publishing. The monorepo's vendored `packages/kmp-sdk` (+ `packages/kmp-sdk-test-app`) is a stale duplicate (last touched 2026-04-30). Goal: delete the vendored copy and make the one real in-monorepo consumer depend on the **externally published** artifact instead. This is a dependency/wiring change — no SDK behavior change.
+The KMP SDK source has moved to a standalone repo, `selfxyz/self-webview-sdk`, intended to own publishing. The monorepo's vendored `packages/kmp-sdk` (+ `packages/kmp-sdk-test-app`) is a stale duplicate (no functional/source changes since 2026-04-30; see Open Decision 1). Goal: delete the vendored copy and make the one real in-monorepo consumer depend on the **externally published** artifact instead. This is a dependency/wiring change — no SDK behavior change.
 
 ### ⚠️ Open Decisions (block "Ready" — owner must resolve before execution)
 
 These are not implementation choices; they are facts/decisions an agent cannot resolve alone.
 
-1. **CANONICAL HOME is still undecided (WIA-17).** The split between this repo's `packages/kmp-sdk/` and `selfxyz/self-webview-sdk`'s `kmp-sdk/` has no written convergence plan. See [WIA-17 open questions](../../webview-in-app/plans/SPIKE-rn-wraps-kmp.md): one live option is the **opposite** of this spec — keep kmp-sdk in _this_ repo behind `self.sdk.optional.*` build flags and **retire `self-webview-sdk`** ([WIA-17-open-questions.js](../../webview-in-app/plans/WIA-17-open-questions.js)). SD-07 is only valid if `self-webview-sdk` is confirmed canonical. **Resolve this first; it gates everything below.**
+1. **CANONICAL HOME — EXPLICITLY UNRESOLVED as of 2026-08-09. Owner: Seshanth Saravanakumar.** The split between this repo's `packages/kmp-sdk/` and `selfxyz/self-webview-sdk`'s `kmp-sdk/` has no written convergence plan. See [WIA-17 open questions](../../webview-in-app/plans/SPIKE-rn-wraps-kmp.md): one live option is the **opposite** of this spec — keep kmp-sdk in _this_ repo behind `self.sdk.optional.*` build flags and **retire `self-webview-sdk`** ([WIA-17-open-questions.js](../../webview-in-app/plans/WIA-17-open-questions.js)). SD-07 is only valid if `self-webview-sdk` is confirmed canonical. **Resolve this first; it gates everything below.**
+
+   This was carried as a silent blocker until [SELF-3708](https://linear.app/selfprotocol/issue/SELF-3708) named an owner; it is now an open decision with one, not an unowned gap. What it gates: SD-06 vs SD-07 (mutually exclusive — see the parent [SPEC.md](../SPEC.md)) and cutover item B3 ([WIA-APP-CUTOVER.md](../../webview-in-app/plans/WIA-APP-CUTOVER.md)). What is _not_ in dispute: the vendored `packages/kmp-sdk` is a **stale mirror** — **no functional/source changes since 2026-04-30** (`1ba722fe0`); its only later commit is `04b3bb86f` (2026-06-12, pnpm migration), a one-line `gradle/libs.versions.toml` edit. Do not edit it — active KMP work happens in `self-webview-sdk`. De-facto practice therefore already favors external-canonical; this decision is the formal ratification of that plus the cost of a tagged release, not a coin flip.
 
 2. **PREREQUISITE — no external release exists yet.** As of 2026-06-14, `selfxyz/self-webview-sdk` is **private**, default branch `dev`, last push 2026-06-10, **zero releases, zero git tags**. Its `kmp-sdk/shared/build.gradle.kts` _does_ configure publishing (`group = xyz.self.sdk`, `version = 0.1.0`, `publishLibraryVariants("release")`, repo `https://maven.pkg.github.com/selfxyz/self-webview-sdk`, **no artifactId override**), but its `kmp-sdk/Package.swift` still uses a **local binary path** (`./shared/build/xcframework/SelfSdk.xcframework`), so iOS SPM consumption is not release-ready. **This spec cannot execute until self-webview-sdk cuts a tagged Maven release AND a remote-URL+checksum SPM release.**
 
@@ -112,6 +114,7 @@ cd app/android && ./gradlew :app:assembleDebug
 
 ### Status Log
 
+- 2026-08-09: SELF-3708 handover. Open Decision 1 (canonical KMP home) converted from a silent blocker to an **explicitly unresolved decision owned by Seshanth Saravanakumar**. No technical change to the plan; the gate is unchanged.
 - 2026-06-14: Draft created for review from external prompt. Flagged unmet prerequisite (no external release) and SD-06 conflict. Audit corrected: real consumer is `@selfxyz/rn-sdk`, not the app.
 - 2026-07-12: Addressed PR #2176 review. Corrected `publish-kmp-local.cjs` caller inventory (added missed `app/package.json:56`; split `mobile-e2e.yml` out as a direct Gradle publish, not a `.cjs` caller), fixed off-by-one sibling-workstream links (`../` → `../../`), and dropped the stale "not yet added to SPEC.md" backlog note.
 - 2026-06-14: Review pass. Wired SD-07 + SD-06 reconciliation into parent SPEC.md. Added WIA-17 canonical-home decision as the gating item. Fixed iOS scope (rn-sdk has no SelfSdkSwift dep; real iOS consumers are rn-sdk-test-app + sample apps), added rn-sdk-test-app Android composite-build rewiring, the third local-publish caller (`mobile-ci-build-android.sh`), corrected the workspace-glob claim, tightened the validation grep, and sharpened external-release acceptance criteria (coordinate unchanged, SPM not yet remote, private-repo auth).
