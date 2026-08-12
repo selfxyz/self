@@ -166,8 +166,10 @@ export interface SelfVerificationProps {
   /**
    * Bridge handler injection points. Each is optional; omitting leaves the
    * handler with default behavior (analytics is silent, navigation reports
-   * not-handled, documents uses an in-memory store, crypto requires the
-   * native SelfCrypto module).
+   * not-handled, documents persists via react-native-keychain — in-memory
+   * only when that module is absent — and crypto requires the native
+   * SelfCrypto module). Note: `useKmpBridge` reroutes only `secureStorage`;
+   * documents-domain traffic always hits the TS handler.
    */
   analytics?: AnalyticsSink;
   navigation?: NavigationCallbacks;
