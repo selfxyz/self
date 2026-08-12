@@ -34,7 +34,11 @@ type CallbackState =
   | { status: 'Failure'; code: string; message: string }
   | { status: 'Cancelled' };
 
-type LaunchFlow = 'onboarding' | 'disclose';
+type LaunchFlow = 'onboarding' | 'disclose' | 'enterprise';
+
+// edge-api's magic test session: returns a canned pending session
+// (minimumAge 18, never expires) from the real API without any setup.
+const ENTERPRISE_TEST_SESSION_ID = 'acedaced-aced-4ace-aced-acedacedaced';
 
 function App(): React.JSX.Element {
   const [isVerifying, setIsVerifying] = useState(false);
@@ -42,6 +46,7 @@ function App(): React.JSX.Element {
   const [showDirectCapture, setShowDirectCapture] = useState(false);
   const [userId, setUserId] = useState('example-user');
   const [scope, setScope] = useState('identity');
+  const [enterpriseRef, setEnterpriseRef] = useState(ENTERPRISE_TEST_SESSION_ID);
   const [callback, setCallback] = useState<CallbackState>({ status: 'Idle' });
 
   const captureCaps = useMemo(
@@ -55,16 +60,22 @@ function App(): React.JSX.Element {
   // The WebView's InitialRouteRedirect sends any request carrying `disclosures`
   // (or `proofItems`) straight to the disclose flow. Omitting them lands on the
   // Self-app home, from which the passport MRZ + NFC onboarding starts.
-  const request = useMemo(
-    () => ({
+  // Enterprise: only the session reference is passed — the SDK resolves the
+  // verification config from edge-api's public session endpoint.
+  const request = useMemo(() => {
+    if (flow === 'enterprise') {
+      return {
+        enterpriseSession: { url: enterpriseRef.trim() },
+      };
+    }
+    return {
       userId: userId || undefined,
       scope: scope || undefined,
       ...(flow === 'disclose'
         ? { disclosures: ['name', 'nationality', 'date_of_birth'] }
         : {}),
-    }),
-    [userId, scope, flow],
-  );
+    };
+  }, [userId, scope, flow, enterpriseRef]);
 
   const launch = (nextFlow: LaunchFlow) => {
     setFlow(nextFlow);
@@ -104,7 +115,7 @@ function App(): React.JSX.Element {
         <StatusBar barStyle="dark-content" />
         <SelfVerification
           request={request}
-          mode="self-app"
+          mode={flow === 'enterprise' ? 'embed' : 'self-app'}
           onSuccess={handleSuccess}
           onFailure={handleFailure}
           onCancelled={handleCancelled}
@@ -162,6 +173,26 @@ function App(): React.JSX.Element {
         >
           <Text style={styles.primaryButtonText}>
             Start Disclosure (prove name / nationality / DOB)
+          </Text>
+        </TouchableOpacity>
+
+        <Text style={styles.label}>
+          Enterprise verificationUrl or session id
+        </Text>
+        <TextInput
+          style={styles.input}
+          value={enterpriseRef}
+          onChangeText={setEnterpriseRef}
+          placeholder={`https://verify.self.xyz/s/${ENTERPRISE_TEST_SESSION_ID}`}
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+        <TouchableOpacity
+          style={styles.primaryButton}
+          onPress={() => launch('enterprise')}
+        >
+          <Text style={styles.primaryButtonText}>
+            Start Enterprise Session (config from backend)
           </Text>
         </TouchableOpacity>
 

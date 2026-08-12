@@ -13,6 +13,13 @@ export {
   type LoadErrorInfo,
 } from './SelfVerification';
 
+export {
+  resolveEnterpriseSession,
+  parseSessionReference,
+  type EnterpriseSession,
+  type EnterpriseSessionError,
+} from './enterpriseSession';
+
 export { WebViewLoadEvents } from './analytics-events';
 
 export { MessageRouter } from './bridge/MessageRouter';
