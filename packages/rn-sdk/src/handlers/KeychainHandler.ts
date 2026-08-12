@@ -12,7 +12,7 @@ export interface KeychainModule {
   resetGenericPassword(opts: { service: string }): Promise<boolean>;
 }
 
-function loadKeychain(): KeychainModule | undefined {
+export function loadKeychainModule(): KeychainModule | undefined {
   try {
     return require('react-native-keychain') as KeychainModule;
   } catch {
@@ -27,7 +27,7 @@ export class KeychainHandler implements BridgeHandler {
   private readonly keychain: KeychainModule | undefined;
 
   constructor(keychain?: KeychainModule) {
-    this.keychain = keychain ?? loadKeychain();
+    this.keychain = keychain ?? loadKeychainModule();
   }
 
   isAvailable(): boolean {

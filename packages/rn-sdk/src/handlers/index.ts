@@ -74,6 +74,7 @@ export { NavigationHandler } from './NavigationHandler';
 export type { NavigationCallbacks } from './NavigationHandler';
 export { DocumentsHandler } from './DocumentsHandler';
 export type { DocumentsStore } from './DocumentsHandler';
+export { createKeychainDocumentsStore } from './KeychainDocumentsStore';
 export { CryptoHandler } from './CryptoHandler';
 export type { SelfCryptoModule } from './CryptoHandler';
 export { LifecycleHandler } from './LifecycleHandler';

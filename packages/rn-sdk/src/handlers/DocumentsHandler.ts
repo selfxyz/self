@@ -5,6 +5,7 @@
 import type { BridgeDomain } from '../bridge/types';
 import type { BridgeHandler } from '../bridge/types';
 import { BridgeHandlerError } from '../bridge/types';
+import { createKeychainDocumentsStore } from './KeychainDocumentsStore';
 
 export interface DocumentsStore {
   loadCatalog(): Promise<unknown>;
@@ -36,12 +37,26 @@ const inMemoryDefault = (): DocumentsStore => {
   };
 };
 
+let warnedInMemory = false;
+
+function fallbackInMemory(): DocumentsStore {
+  if (!warnedInMemory) {
+    warnedInMemory = true;
+    console.warn(
+      '[SelfSDK] react-native-keychain is not installed; documents will be held ' +
+        'in memory and lost on restart. Install react-native-keychain or pass a ' +
+        'documents store to SelfVerification.',
+    );
+  }
+  return inMemoryDefault();
+}
+
 export class DocumentsHandler implements BridgeHandler {
   readonly domain: BridgeDomain = 'documents';
   private readonly store: DocumentsStore;
 
   constructor(store?: DocumentsStore) {
-    this.store = store ?? inMemoryDefault();
+    this.store = store ?? createKeychainDocumentsStore() ?? fallbackInMemory();
   }
 
   async handle(method: string, params: Record<string, unknown>): Promise<unknown> {
