@@ -39,7 +39,7 @@ export { bridgeBiometricsAdapter } from './biometrics';
 export { bridgeCameraAdapter } from './camera';
 
 export { bridgeCryptoAdapter } from './crypto';
-export { bridgeDocumentsAdapter } from './documents';
+export { bridgeDocumentsAdapter, createBridgeDocumentsSdkAdapter } from './documents';
 
 export { bridgeHapticAdapter } from './haptic';
 export { bridgeLifecycleAdapter } from './lifecycle';
@@ -50,7 +50,6 @@ export { bridgeStorageAdapter } from './storage';
 export function consoleAnalyticsAdapter(options?: ConsoleAnalyticsOptions): BridgeAnalyticsAdapter {
   return createWebAnalyticsAdapter(options) as BridgeAnalyticsAdapter;
 }
-export { createKeychainDocumentsAdapter } from './keychain-documents';
 export { createSdkAdapters } from './sdk-adapter-map';
 
 export function indexedDBDocumentsAdapter(): BridgeDocumentsAdapter {

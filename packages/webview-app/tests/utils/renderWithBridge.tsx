@@ -30,15 +30,23 @@ export interface RenderWithBridgeOptions {
   config?: HostConfig;
   // Seed values for the in-memory secure storage map (key -> string value).
   storage?: Record<string, string>;
+  // Seed for the documents-domain store (catalog object + documents by id).
+  documents?: { catalog?: unknown; byId?: Record<string, unknown> };
   // Caller hook to register flow-specific handlers (camera/scanMRZ, nfc/scanPassport,
   // etc.) or to override any baseline handler. Runs after defaults are registered.
   setupHandlers?: (mock: MockNativeBridge) => void;
+}
+
+export interface HarnessDocumentsStore {
+  catalog: { value: unknown };
+  byId: Map<string, unknown>;
 }
 
 export interface RenderWithBridgeResult extends RenderResult {
   mock: MockNativeBridge;
   bridge: WebViewBridge;
   storage: Map<string, string>;
+  documents: HarnessDocumentsStore;
 }
 
 const LocationProbe: React.FC = () => {
@@ -56,10 +64,14 @@ export function currentPath(result: RenderWithBridgeResult): string {
  * real routing and real bridge round-trips; only the native side is mocked.
  */
 export function renderWithBridge(options: RenderWithBridgeOptions): RenderWithBridgeResult {
-  const { initialEntries, config, storage: seed, setupHandlers } = options;
+  const { initialEntries, config, storage: seed, documents: documentsSeed, setupHandlers } = options;
 
   const mock = new MockNativeBridge();
   const storage = new Map<string, string>(Object.entries(seed ?? {}));
+  const documents: HarnessDocumentsStore = {
+    catalog: { value: documentsSeed?.catalog ?? null },
+    byId: new Map(Object.entries(documentsSeed?.byId ?? {})),
+  };
 
   // Awaited boot request: operating mode + reference id.
   mock.handle('lifecycle', 'getConfig', () => ({ mode: 'self-app', ...config }));
@@ -70,8 +82,8 @@ export function renderWithBridge(options: RenderWithBridgeOptions): RenderWithBr
   mock.handleWith('lifecycle', 'dismiss', {});
   mock.handleWith('haptic', 'trigger', {});
 
-  // Secure storage backed by an in-memory map. Covers the secret manager,
-  // document catalog (self_document_catalog) and document bodies (self_doc_*).
+  // Secure storage backed by an in-memory map. Covers the secret manager
+  // (mnemonic/private key); documents live on the documents domain below.
   mock.handle('secureStorage', 'get', params => {
     const key = params.key as string;
     return storage.has(key) ? storage.get(key) : null;
@@ -82,6 +94,23 @@ export function renderWithBridge(options: RenderWithBridgeOptions): RenderWithBr
   });
   mock.handle('secureStorage', 'remove', params => {
     storage.delete(params.key as string);
+    return {};
+  });
+
+  // Documents domain, mirroring rn-sdk DocumentsHandler semantics (an unset
+  // catalog loads as null; the web-side typed adapter normalizes it).
+  mock.handle('documents', 'loadCatalog', () => documents.catalog.value);
+  mock.handle('documents', 'saveCatalog', params => {
+    documents.catalog.value = params.catalog;
+    return {};
+  });
+  mock.handle('documents', 'loadById', params => documents.byId.get(params.id as string) ?? null);
+  mock.handle('documents', 'save', params => {
+    documents.byId.set(params.id as string, params.data);
+    return {};
+  });
+  mock.handle('documents', 'delete', params => {
+    documents.byId.delete(params.id as string);
     return {};
   });
 
@@ -103,7 +132,7 @@ export function renderWithBridge(options: RenderWithBridgeOptions): RenderWithBr
     </BridgeProvider>,
   );
 
-  return Object.assign(result, { mock, bridge, storage });
+  return Object.assign(result, { mock, bridge, storage, documents });
 }
 
 export type { BridgeDomain };

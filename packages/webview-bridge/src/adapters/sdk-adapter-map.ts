@@ -19,7 +19,7 @@ import {
 import type { WebViewBridge } from '../bridge';
 import { bridgeAuthAdapter } from './auth';
 import { bridgeCryptoAdapter } from './crypto';
-import { createKeychainDocumentsAdapter } from './keychain-documents';
+import { createBridgeDocumentsSdkAdapter } from './documents';
 
 export interface CreateSdkAdaptersOpts {
   bridge: WebViewBridge;
@@ -61,7 +61,7 @@ export function createSdkAdapters(opts: CreateSdkAdaptersOpts): Adapters {
     crypto,
     network: createWebNetworkAdapter(),
     auth,
-    documents: createKeychainDocumentsAdapter(bridge),
+    documents: createBridgeDocumentsSdkAdapter(bridge),
     navigation,
     analytics: analytics ?? createWebAnalyticsAdapter(),
   };

@@ -40,6 +40,13 @@ describe('passport onboarding flow', () => {
     });
 
     await waitFor(() => expect(currentPath(result)).toBe('/capture/passport/nfc-success'));
+
+    // The captured document must be persisted over the documents bridge
+    // domain (host store), not tunneled through secureStorage.
+    expect(result.documents.byId.size).toBe(1);
+    const catalog = result.documents.catalog.value as { documents: Array<{ isRegistered: boolean }> };
+    expect(catalog.documents).toHaveLength(1);
+    expect(catalog.documents[0].isRegistered).toBe(false);
   });
 
   it('NFC failure routes to the error screen and shows the support reference', async () => {

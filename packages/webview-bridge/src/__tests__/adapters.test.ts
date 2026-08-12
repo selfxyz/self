@@ -11,6 +11,7 @@ import {
   bridgeCameraAdapter,
   bridgeCryptoAdapter,
   bridgeDocumentsAdapter,
+  createBridgeDocumentsSdkAdapter,
   bridgeHapticAdapter,
   bridgeLifecycleAdapter,
   bridgeNFCScannerAdapter,
@@ -275,6 +276,56 @@ describe('Adapter integration tests', () => {
       await docs.deleteDocument('doc-1');
 
       expect(mock.messagesFor('documents')[0].method).toBe('delete');
+    });
+  });
+
+  describe('SDK Documents Adapter (typed)', () => {
+    it('normalizes a null catalog (unset host store) to an empty catalog', async () => {
+      mock.handleWith('documents', 'loadCatalog', null);
+
+      const docs = createBridgeDocumentsSdkAdapter(bridge);
+      expect(await docs.loadDocumentCatalog()).toEqual({ documents: [] });
+    });
+
+    it('normalizes a malformed catalog to an empty catalog', async () => {
+      mock.handleWith('documents', 'loadCatalog', { documents: 'not-an-array' });
+
+      const docs = createBridgeDocumentsSdkAdapter(bridge);
+      expect(await docs.loadDocumentCatalog()).toEqual({ documents: [] });
+    });
+
+    it('passes a valid catalog through unchanged (app schema pin)', async () => {
+      // Shape of the Self app's real DocumentCatalog (common DocumentMetadata):
+      // this fixture surviving normalization unchanged is the B2 compatibility pin.
+      const catalog = {
+        documents: [
+          {
+            id: 'a1b2c3',
+            documentType: 'passport',
+            documentCategory: 'passport',
+            data: 'P<UTO...',
+            mock: false,
+            isRegistered: true,
+          },
+        ],
+        selectedDocumentId: 'a1b2c3',
+      };
+      mock.handleWith('documents', 'loadCatalog', catalog);
+
+      const docs = createBridgeDocumentsSdkAdapter(bridge);
+      expect(await docs.loadDocumentCatalog()).toEqual(catalog);
+    });
+
+    it('returns null for a missing document and routes writes to the documents domain', async () => {
+      mock.handleWith('documents', 'loadById', null);
+      mock.handleWith('documents', 'saveCatalog', {});
+
+      const docs = createBridgeDocumentsSdkAdapter(bridge);
+      expect(await docs.loadDocumentById('missing')).toBeNull();
+
+      await docs.saveDocumentCatalog({ documents: [] });
+      const saveMessage = mock.messagesFor('documents').find(m => m.method === 'saveCatalog');
+      expect(saveMessage?.params).toEqual({ catalog: { documents: [] } });
     });
   });
 
