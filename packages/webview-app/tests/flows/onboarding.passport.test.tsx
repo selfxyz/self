@@ -40,6 +40,23 @@ describe('passport onboarding flow', () => {
     });
 
     await waitFor(() => expect(currentPath(result)).toBe('/capture/passport/nfc-success'));
+
+    // The captured document must be persisted over the documents bridge
+    // domain (host store), not tunneled through secureStorage.
+    expect(result.documents.byId.size).toBe(1);
+    const catalog = result.documents.catalog.value as {
+      documents: Array<{ id: string; isRegistered: boolean }>;
+      selectedDocumentId?: string;
+    };
+    expect(catalog.documents).toHaveLength(1);
+    expect(catalog.documents[0].isRegistered).toBe(false);
+    // Document ids are content hashes, never document numbers — keychain
+    // service names derived from the id leak into native logs.
+    const [docId] = result.documents.byId.keys();
+    expect(catalog.documents[0].id).toBe(docId);
+    expect(catalog.selectedDocumentId).toBe(docId);
+    expect(docId).not.toContain('L898902C3'); // chip MRZ document number
+    expect(docId).not.toContain(MRZ_FIXTURE.documentNumber);
   });
 
   it('NFC failure routes to the error screen and shows the support reference', async () => {

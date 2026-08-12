@@ -7,7 +7,7 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { EuIdNfcInstructionsScreen } from '@selfxyz/euclid';
-import { normalizeNfcPassport } from '@selfxyz/mobile-sdk-alpha/browser';
+import { normalizeNfcPassport, storePassportData } from '@selfxyz/mobile-sdk-alpha/browser';
 import { bridgeNFCScannerAdapter } from '@selfxyz/webview-bridge/adapters';
 
 import { useBridge } from '../../../providers/BridgeProvider';
@@ -30,7 +30,7 @@ export const EuIdNfcInstructionsRoute: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const bridge = useBridge();
-  const { analytics, haptic, documents } = useSelfClient();
+  const { analytics, haptic, client } = useSelfClient();
   const state = (location.state as RouteState | null) ?? {};
   const nfcScanner = useMemo(() => bridgeNFCScannerAdapter(bridge), [bridge]);
   const startedRef = useRef(false);
@@ -78,27 +78,11 @@ export const EuIdNfcInstructionsRoute: React.FC = () => {
       try {
         const result = await nfcScanner.scan(scanParams);
         const documentData = normalizeNfcPassport(result);
-        const documentNumber = state.mrz?.passportNumber ?? state.canValue ?? 'unknown';
-        const docId = `id_card-${documentNumber}`;
-        await documents.saveDocument(docId, documentData as never);
 
-        const catalog = await documents.loadDocumentCatalog();
-        const entry = {
-          id: docId,
-          documentType: state.documentType ?? 'id_card',
-          documentCategory: 'id_card' as const,
-          data: '',
-          mock: false,
-          isRegistered: false,
-        };
-        const existingIndex = catalog.documents.findIndex((d: { id: string }) => d.id === docId);
-        if (existingIndex >= 0) {
-          catalog.documents[existingIndex] = entry;
-        } else {
-          catalog.documents.push(entry);
-        }
-        catalog.selectedDocumentId = docId;
-        await documents.saveDocumentCatalog(catalog);
+        // Content-hash id + dedup + catalog upsert via the SDK store. Never
+        // key documents by document number / CAN: keychain service names leak
+        // into native logs (RNKeychainManager logs missing services verbatim).
+        await storePassportData(client, documentData);
 
         analytics.trackEvent('eu_id_nfc_scan_succeeded');
         haptic.trigger('success');
@@ -126,7 +110,7 @@ export const EuIdNfcInstructionsRoute: React.FC = () => {
   }, [
     analytics,
     busy,
-    documents,
+    client,
     haptic,
     navigate,
     nfcScanner,

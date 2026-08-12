@@ -20,7 +20,6 @@ import {
   bridgeLifecycleAdapter,
   bridgeStorageAdapter,
   consoleAnalyticsAdapter,
-  createKeychainDocumentsAdapter,
   createSdkAdapters,
 } from '@selfxyz/webview-bridge/adapters';
 
@@ -74,15 +73,13 @@ export const SelfClientProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       listeners,
     });
 
-    const documents = createKeychainDocumentsAdapter(bridge);
-
     return {
       client,
       lifecycle: bridgeLifecycleAdapter(bridge),
       haptic: bridgeHapticAdapter(bridge),
       biometrics: bridgeBiometricsAdapter(bridge),
       analytics: withCohortTags(consoleAnalyticsAdapter()),
-      documents,
+      documents: sdkAdapters.documents,
     };
   }, [bridge, stableNavigate, stableGoBack]);
 

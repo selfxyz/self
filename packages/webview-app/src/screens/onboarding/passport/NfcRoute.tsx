@@ -7,7 +7,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { PassportNfcInstructionsScreen } from '@selfxyz/euclid';
-import { normalizeNfcPassport } from '@selfxyz/mobile-sdk-alpha/browser';
+import { normalizeNfcPassport, storePassportData } from '@selfxyz/mobile-sdk-alpha/browser';
 import { bridgeNFCScannerAdapter, onNfcProgress } from '@selfxyz/webview-bridge/adapters';
 
 import { useBridge } from '../../../providers/BridgeProvider';
@@ -58,7 +58,7 @@ export const PassportNfcRoute: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const bridge = useBridge();
-  const { analytics, haptic, documents } = useSelfClient();
+  const { analytics, haptic, client } = useSelfClient();
   const state = (location.state as RouteState | null) ?? {};
   const mrz = state.mrz;
   const nfcScanner = useMemo(() => bridgeNFCScannerAdapter(bridge), [bridge]);
@@ -101,25 +101,10 @@ export const PassportNfcRoute: React.FC = () => {
 
         const passportData = normalizeNfcPassport(result);
 
-        const docId = `passport-${mrz.passportNumber}`;
-        await documents.saveDocument(docId, passportData as never);
-        const catalog = await documents.loadDocumentCatalog();
-        const entry = {
-          id: docId,
-          documentType: state.documentType ?? 'passport',
-          documentCategory: 'passport' as const,
-          data: '',
-          mock: false,
-          isRegistered: false,
-        };
-        const existingIndex = catalog.documents.findIndex((d: { id: string }) => d.id === docId);
-        if (existingIndex >= 0) {
-          catalog.documents[existingIndex] = entry;
-        } else {
-          catalog.documents.push(entry);
-        }
-        catalog.selectedDocumentId = docId;
-        await documents.saveDocumentCatalog(catalog);
+        // Content-hash id + dedup + catalog upsert via the SDK store. Never
+        // key documents by passport number: keychain service names leak into
+        // native logs (RNKeychainManager logs missing services verbatim).
+        await storePassportData(client, passportData);
 
         analytics.trackEvent('passport_nfc_scan_succeeded');
         haptic.trigger('success');
@@ -158,7 +143,7 @@ export const PassportNfcRoute: React.FC = () => {
         }
       }, 0);
     };
-  }, [analytics, bridge, documents, haptic, mrz, navigate, nfcScanner, state.countryCode, state.documentType]);
+  }, [analytics, bridge, client, haptic, mrz, navigate, nfcScanner, state.countryCode, state.documentType]);
 
   const handleBack = useCallback(() => {
     haptic.trigger('selection');

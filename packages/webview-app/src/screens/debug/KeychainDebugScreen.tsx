@@ -144,7 +144,8 @@ export const KeychainDebugScreen: React.FC = () => {
   }, [documents, addLog]);
 
   const handleClearAll = useCallback(async () => {
-    const ALL_KEYS = ['self_document_catalog', 'self_mnemonic', 'self_private_key'];
+    // Documents no longer live in secureStorage — clear them via "Delete catalog".
+    const ALL_KEYS = ['self_mnemonic', 'self_private_key'];
     try {
       for (const k of ALL_KEYS) {
         const existing = await storage.get(k);
@@ -162,23 +163,17 @@ export const KeychainDebugScreen: React.FC = () => {
   }, [storage, addLog]);
 
   const handleDumpAll = useCallback(async () => {
-    const ALL_KEYS = ['self_document_catalog', 'self_mnemonic', 'self_private_key'];
+    const ALL_KEYS = ['self_mnemonic', 'self_private_key'];
     try {
+      const catalog = await documents.loadDocumentCatalog();
+      addLog(`documents catalog -> ${catalog.documents.length} doc(s), selected: ${catalog.selectedDocumentId ?? 'none'}`);
+      for (const doc of catalog.documents) {
+        addLog(`  [${doc.id}] type=${doc.documentType} mock=${doc.mock} registered=${doc.isRegistered}`);
+      }
       for (const k of ALL_KEYS) {
         const val = await storage.get(k);
         if (val === null) {
           addLog(`${k} -> null`);
-        } else if (k === 'self_document_catalog') {
-          try {
-            const catalog = JSON.parse(val);
-            const docs = catalog.documents ?? [];
-            addLog(`${k} -> ${docs.length} doc(s), selected: ${catalog.selectedDocumentId ?? 'none'}`);
-            for (const doc of docs) {
-              addLog(`  [${doc.id}] type=${doc.documentType} mock=${doc.mock} registered=${doc.isRegistered}`);
-            }
-          } catch {
-            addLog(`${k} -> ${val.length} chars (parse error)`, true);
-          }
         } else if (k === 'self_mnemonic') {
           addLog(`${k} -> ${val.split(' ').length} words`);
         } else {
@@ -188,7 +183,7 @@ export const KeychainDebugScreen: React.FC = () => {
     } catch (e) {
       addLog(`DUMP FAILED: ${e}`, true);
     }
-  }, [storage, addLog]);
+  }, [storage, documents, addLog]);
 
   const handleDeleteDoc = useCallback(async () => {
     try {
