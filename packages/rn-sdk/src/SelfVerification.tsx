@@ -30,6 +30,11 @@ import type { SelfCryptoModule } from './handlers/CryptoHandler';
 import type { OperatingMode } from './handlers/LifecycleHandler';
 import { WebViewLoadEvents } from './analytics-events';
 import { resolveBundlePath } from './bundlePath';
+import {
+  resolveEnterpriseSession,
+  type EnterpriseSession,
+  type EnterpriseSessionError,
+} from './enterpriseSession';
 import { COLORS } from './theme';
 
 // iOS main-bundle path provider for native hosts (KMP, partner wallets) that
@@ -74,6 +79,16 @@ export interface VerificationRequest {
   // Host-minted WebView reference session id. When omitted, SelfVerification
   // mints one per load so it is always present for RN-hosted WebViews.
   referenceId?: string;
+  /**
+   * Self Enterprise session reference. When set, the verification config
+   * (scope, endpoint, disclosures, …) is resolved from edge-api's public
+   * session endpoint before the WebView boots — the partner backend creates
+   * the session with its secret API key and passes only the session
+   * reference here. Resolved fields override any inline request fields.
+   * Not named `sessionId`: that name is already used by the relayer, NFC,
+   * and KYC surfaces (see WIA-14).
+   */
+  enterpriseSession?: EnterpriseSession;
 }
 
 export interface VerificationResult {
@@ -96,11 +111,15 @@ export interface SelfSdkError {
  * whether retry is offered. Shared, snake_case taxonomy across the diagnostic
  * `kind` and the `renderError` literal.
  */
-export type LoadDiagnosticKind = 'timeout' | 'load_error' | 'version_mismatch';
+export type LoadDiagnosticKind =
+  | 'timeout'
+  | 'load_error'
+  | 'version_mismatch'
+  | 'session_resolve';
 
 export interface LoadDiagnosticEvent {
   kind: LoadDiagnosticKind;
-  source: 'bundle' | 'dev-server';
+  source: 'bundle' | 'dev-server' | 'enterprise-api';
   detail?: Record<string, unknown>;
 }
 
@@ -183,7 +202,7 @@ export interface SelfVerificationProps {
    * Consumer-supplied loading UI. When omitted, a built-in default backed by
    * the local palette renders.
    */
-  renderLoading?: (stage: 'loading' | 'slow') => React.ReactNode;
+  renderLoading?: (stage: 'loading' | 'slow' | 'resolving') => React.ReactNode;
   /**
    * Consumer-supplied error UI. `canRetry` is false for a terminal version
    * mismatch (the frozen bundle would mismatch identically on reload), true
@@ -255,7 +274,107 @@ function buildRequestSearch(request: VerificationRequest, referenceId: string): 
   return params.toString();
 }
 
-export const SelfVerification: React.FC<SelfVerificationProps> = ({
+/**
+ * Pre-WebView gate for enterprise sessions: resolves the session reference
+ * into a full VerificationRequest, then mounts the regular verification
+ * WebView with it. The WebView (and the bridge) never see the enterprise
+ * session machinery — by boot time this is an ordinary inline request, so
+ * embed mode's fail-closed request validation passes unchanged.
+ */
+export const SelfVerification: React.FC<SelfVerificationProps> = props => {
+  if (props.request.enterpriseSession) {
+    return <EnterpriseSessionGate {...props} />;
+  }
+  return <SelfVerificationInner {...props} />;
+};
+
+type ResolveState =
+  | { status: 'resolving' }
+  | { status: 'resolved'; request: VerificationRequest }
+  | { status: 'error'; error: EnterpriseSessionError };
+
+const EnterpriseSessionGate: React.FC<SelfVerificationProps> = props => {
+  const { request, onFailure, onLoadDiagnostic, renderLoading, renderError, style } = props;
+  const [state, setState] = useState<ResolveState>({ status: 'resolving' });
+  const [attempt, setAttempt] = useState(0);
+
+  // Callback refs so a re-render mid-resolve never re-triggers the fetch.
+  const onFailureRef = useRef(onFailure);
+  const onLoadDiagnosticRef = useRef(onLoadDiagnostic);
+  useEffect(() => {
+    onFailureRef.current = onFailure;
+    onLoadDiagnosticRef.current = onLoadDiagnostic;
+  });
+
+  const session = request.enterpriseSession;
+  const sessionIdentity = JSON.stringify(session ?? null);
+
+  useEffect(() => {
+    if (!session) return undefined;
+    let cancelled = false;
+    setState({ status: 'resolving' });
+    resolveEnterpriseSession(session)
+      .then(resolved => {
+        if (cancelled) return;
+        // Resolved fields win; inline extras (documentTypes, referenceId, …)
+        // pass through. enterpriseSession itself is stripped so the inner
+        // component serializes a plain request.
+        const { enterpriseSession: _omitted, ...inline } = request;
+        setState({ status: 'resolved', request: { ...inline, ...resolved } });
+      })
+      .catch((error: EnterpriseSessionError) => {
+        if (cancelled) return;
+        const code = typeof error?.code === 'string' ? error.code : 'SESSION_RESOLVE_FAILED';
+        const message =
+          typeof error?.message === 'string' ? error.message : 'Session resolve failed';
+        setState({ status: 'error', error: { code, message } as EnterpriseSessionError });
+        try {
+          // No session id in the detail — it is a bearer secret.
+          onLoadDiagnosticRef.current?.({
+            kind: 'session_resolve',
+            source: 'enterprise-api',
+            detail: { code },
+          });
+        } catch {
+          /* diagnostics must not affect the UI */
+        }
+        onFailureRef.current({ code, message });
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionIdentity, attempt]);
+
+  if (state.status === 'resolved') {
+    return <SelfVerificationInner {...props} request={state.request} />;
+  }
+
+  if (state.status === 'error') {
+    const info: LoadErrorInfo = {
+      kind: 'session_resolve',
+      canRetry: true,
+      onRetry: () => setAttempt(a => a + 1),
+    };
+    return (
+      <View style={[{ flex: 1, backgroundColor: COLORS.bg }, style]}>
+        {renderError ? renderError(info) : <DefaultErrorOverlay info={info} />}
+      </View>
+    );
+  }
+
+  return (
+    <View style={[{ flex: 1, backgroundColor: COLORS.bg }, style]}>
+      {renderLoading ? (
+        renderLoading('resolving')
+      ) : (
+        <DefaultLoadingOverlay stage="loading" />
+      )}
+    </View>
+  );
+};
+
+const SelfVerificationInner: React.FC<SelfVerificationProps> = ({
   request,
   onSuccess,
   onFailure,
@@ -649,6 +768,7 @@ export const SelfVerification: React.FC<SelfVerificationProps> = ({
         allowUniversalAccessFromFileURLs
         mediaPlaybackRequiresUserAction={false}
         originWhitelist={['*']}
+        webviewDebuggingEnabled={debug}
         style={{ flex: 1, opacity: loadStage === 'ready' ? 1 : 0 }}
       />
       {overlay}
