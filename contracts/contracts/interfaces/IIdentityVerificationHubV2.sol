@@ -25,7 +25,8 @@ interface IIdentityVerificationHubV2 {
     function registerCommitment(
         bytes32 attestationId,
         uint256 registerCircuitVerifierId,
-        IRegisterCircuitVerifier.RegisterCircuitProof memory registerCircuitProof
+        IRegisterCircuitVerifier.RegisterCircuitProof memory registerCircuitProof,
+        bytes calldata signature
     ) external;
 
     /**
@@ -38,7 +39,8 @@ interface IIdentityVerificationHubV2 {
     function registerDscKeyCommitment(
         bytes32 attestationId,
         uint256 dscCircuitVerifierId,
-        IDscCircuitVerifier.DscCircuitProof memory dscCircuitProof
+        IDscCircuitVerifier.DscCircuitProof memory dscCircuitProof,
+        bytes calldata signature
     ) external;
 
     /**

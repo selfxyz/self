@@ -1,3 +1,4 @@
+import { PLACEHOLDER_SIGNATURE } from "../utils/constants";
 import { ethers } from "hardhat";
 import { deploySystemFixturesV2 } from "../utils/deploymentV2";
 import { DeployedActorsV2 } from "../utils/types";
@@ -148,10 +149,9 @@ describe("KYC Registration test", function () {
     it("should successfully register an identity commitment", async () => {
       await deployedActors.registryKyc.registerPubkeyCommitment(mockProof.a, mockProof.b, mockProof.c, mockPubSignals);
 
-      await expect(deployedActors.hub.registerCommitment(attestationIdBytes32, 0n, registerProof)).to.emit(
-        deployedActors.registryKyc,
-        "CommitmentRegistered",
-      );
+      await expect(
+        deployedActors.hub.registerCommitment(attestationIdBytes32, 0n, registerProof, PLACEHOLDER_SIGNATURE),
+      ).to.emit(deployedActors.registryKyc, "CommitmentRegistered");
 
       const isRegistered = await deployedActors.registryKyc.nullifiers(registerProof.pubSignals[0]);
       expect(isRegistered).to.be.true;
@@ -159,7 +159,7 @@ describe("KYC Registration test", function () {
 
     it("should throw an error if the pubkey commitment is not registered", async () => {
       await expect(
-        deployedActors.hub.registerCommitment(attestationIdBytes32, 0n, registerProof),
+        deployedActors.hub.registerCommitment(attestationIdBytes32, 0n, registerProof, PLACEHOLDER_SIGNATURE),
       ).to.be.revertedWithCustomError(deployedActors.hub, "InvalidPubkeyCommitment");
     });
 
@@ -169,20 +169,20 @@ describe("KYC Registration test", function () {
       const invalidRegisterProof = structuredClone(registerProof);
       invalidRegisterProof.pubSignals[1] = 0n;
       await expect(
-        deployedActors.hub.registerCommitment(attestationIdBytes32, 0n, invalidRegisterProof),
+        deployedActors.hub.registerCommitment(attestationIdBytes32, 0n, invalidRegisterProof, PLACEHOLDER_SIGNATURE),
       ).to.be.revertedWithCustomError(deployedActors.hub, "InvalidRegisterProof");
     });
 
     it("should fail with NoVerifierSet when using non-existent register verifier ID", async () => {
       await expect(
-        deployedActors.hub.registerCommitment(attestationIdBytes32, 999999n, registerProof),
+        deployedActors.hub.registerCommitment(attestationIdBytes32, 999999n, registerProof, PLACEHOLDER_SIGNATURE),
       ).to.be.revertedWithCustomError(deployedActors.hub, "NoVerifierSet");
     });
 
     it("should fail with NoVerifierSet when attestation ID is invalid", async () => {
       const invalidAttestationId = ethers.zeroPadValue(ethers.toBeHex(999), 32);
       await expect(
-        deployedActors.hub.registerCommitment(invalidAttestationId, 0n, registerProof),
+        deployedActors.hub.registerCommitment(invalidAttestationId, 0n, registerProof, PLACEHOLDER_SIGNATURE),
       ).to.be.revertedWithCustomError(deployedActors.hub, "NoVerifierSet");
     });
 
@@ -195,7 +195,7 @@ describe("KYC Registration test", function () {
       );
 
       await expect(
-        deployedActors.hub.registerCommitment(invalidAttestationId, 1n, registerProof),
+        deployedActors.hub.registerCommitment(invalidAttestationId, 1n, registerProof, PLACEHOLDER_SIGNATURE),
       ).to.be.revertedWithCustomError(deployedActors.hub, "InvalidAttestationId");
     });
 
@@ -204,7 +204,7 @@ describe("KYC Registration test", function () {
       newRegisterProof.pubSignals[2] = 0n;
 
       await expect(
-        deployedActors.hub.registerCommitment(attestationIdBytes32, 0n, newRegisterProof),
+        deployedActors.hub.registerCommitment(attestationIdBytes32, 0n, newRegisterProof, PLACEHOLDER_SIGNATURE),
       ).to.be.revertedWithCustomError(deployedActors.hub, "InvalidPubkeyCommitment");
     });
   });

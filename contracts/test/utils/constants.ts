@@ -5,3 +5,6 @@ export const ATTESTATION_ID = {
 };
 
 export const FIELD_PRIME = BigInt("21888242871839275222246405745257275088548364400416034343698204186575808495617");
+
+// 65-byte placeholder for the relayer signature slot
+export const PLACEHOLDER_SIGNATURE = "0x" + "00".repeat(65);

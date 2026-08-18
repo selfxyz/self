@@ -250,6 +250,9 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     /// @dev The input data must be at least 97 bytes (1 + 31 + 32 + 32 + 1 minimum).
     error InputTooShort();
 
+    /// @notice Thrown when the provided signature is not exactly 65 bytes.
+    error InvalidSignatureLength();
+
     /// @notice Thrown when the user context data is too short for decoding.
     /// @dev The user context data must be at least 96 bytes (32 + 32 + 32 minimum).
     error UserContextDataTooShort();
@@ -389,12 +392,17 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
      * @param attestationId The attestation ID.
      * @param registerCircuitVerifierId The identifier for the register circuit verifier to use.
      * @param registerCircuitProof The register circuit proof data.
+     * @param signature The 65-byte relayer signature; length-checked only, verification lands in a follow-up upgrade.
      */
     function registerCommitment(
         bytes32 attestationId,
         uint256 registerCircuitVerifierId,
-        GenericProofStruct memory registerCircuitProof
+        GenericProofStruct memory registerCircuitProof,
+        bytes calldata signature
     ) external virtual onlyProxy {
+        if (signature.length != 65) {
+            revert InvalidSignatureLength();
+        }
         _verifyRegisterProof(attestationId, registerCircuitVerifierId, registerCircuitProof);
         IdentityVerificationHubStorage storage $ = _getIdentityVerificationHubStorage();
         if (attestationId == AttestationId.E_PASSPORT) {
@@ -429,12 +437,17 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
      * @dev Verifies the DSC proof and then calls the Identity Registry to register the dsc key commitment.
      * @param dscCircuitVerifierId The identifier for the DSC circuit verifier to use.
      * @param dscCircuitProof The DSC circuit proof data.
+     * @param signature The 65-byte relayer signature; length-checked only, verification lands in a follow-up upgrade.
      */
     function registerDscKeyCommitment(
         bytes32 attestationId,
         uint256 dscCircuitVerifierId,
-        IDscCircuitVerifier.DscCircuitProof memory dscCircuitProof
+        IDscCircuitVerifier.DscCircuitProof memory dscCircuitProof,
+        bytes calldata signature
     ) external virtual onlyProxy {
+        if (signature.length != 65) {
+            revert InvalidSignatureLength();
+        }
         _verifyDscProof(attestationId, dscCircuitVerifierId, dscCircuitProof);
         IdentityVerificationHubStorage storage $ = _getIdentityVerificationHubStorage();
         if (attestationId == AttestationId.E_PASSPORT) {

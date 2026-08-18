@@ -1,3 +1,4 @@
+import { PLACEHOLDER_SIGNATURE } from "../utils/constants";
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { generateRandomFieldElement } from "../utils/utils";
@@ -66,7 +67,12 @@ describe("ID Registration test", function () {
 
       // Register the DSC key commitment
       await expect(
-        deployedActors.hub.registerDscKeyCommitment(attestationIdBytes32, dscCircuitVerifierId, dscProof),
+        deployedActors.hub.registerDscKeyCommitment(
+          attestationIdBytes32,
+          dscCircuitVerifierId,
+          dscProof,
+          PLACEHOLDER_SIGNATURE,
+        ),
       ).to.emit(deployedActors.registryId, "DscKeyCommitmentRegistered");
 
       // Verify DSC was added to tree
@@ -87,7 +93,12 @@ describe("ID Registration test", function () {
       const nonExistentVerifierId = 999999; // Non-existent verifier ID
 
       await expect(
-        deployedActors.hub.registerDscKeyCommitment(attestationIdBytes32, nonExistentVerifierId, dscProof),
+        deployedActors.hub.registerDscKeyCommitment(
+          attestationIdBytes32,
+          nonExistentVerifierId,
+          dscProof,
+          PLACEHOLDER_SIGNATURE,
+        ),
       ).to.be.revertedWithCustomError(deployedActors.hub, "NoVerifierSet");
     });
 
@@ -96,7 +107,12 @@ describe("ID Registration test", function () {
       const dscCircuitVerifierId = DscVerifierId.dsc_sha256_rsa_65537_4096;
 
       await expect(
-        deployedActors.hub.registerDscKeyCommitment(invalidAttestationId, dscCircuitVerifierId, dscProof),
+        deployedActors.hub.registerDscKeyCommitment(
+          invalidAttestationId,
+          dscCircuitVerifierId,
+          dscProof,
+          PLACEHOLDER_SIGNATURE,
+        ),
       ).to.be.revertedWithCustomError(deployedActors.hub, "NoVerifierSet");
     });
 
@@ -113,7 +129,12 @@ describe("ID Registration test", function () {
 
       // Now the call should fail with InvalidAttestationId since verifier exists but attestation ID is not valid
       await expect(
-        deployedActors.hub.registerDscKeyCommitment(invalidAttestationId, dscCircuitVerifierId, dscProof),
+        deployedActors.hub.registerDscKeyCommitment(
+          invalidAttestationId,
+          dscCircuitVerifierId,
+          dscProof,
+          PLACEHOLDER_SIGNATURE,
+        ),
       ).to.be.revertedWithCustomError(deployedActors.hub, "InvalidAttestationId");
     });
 
@@ -132,7 +153,12 @@ describe("ID Registration test", function () {
       };
 
       await expect(
-        deployedActors.hub.registerDscKeyCommitment(attestationIdBytes32, dscCircuitVerifierId, invalidDscProof),
+        deployedActors.hub.registerDscKeyCommitment(
+          attestationIdBytes32,
+          dscCircuitVerifierId,
+          invalidDscProof,
+          PLACEHOLDER_SIGNATURE,
+        ),
       ).to.be.revertedWithCustomError(deployedActors.hub, "InvalidDscProof");
     });
 
@@ -143,7 +169,12 @@ describe("ID Registration test", function () {
       await deployedActors.registryId.updateCscaRoot(12345); // Invalid CSCA root
 
       await expect(
-        deployedActors.hub.registerDscKeyCommitment(attestationIdBytes32, dscCircuitVerifierId, dscProof),
+        deployedActors.hub.registerDscKeyCommitment(
+          attestationIdBytes32,
+          dscCircuitVerifierId,
+          dscProof,
+          PLACEHOLDER_SIGNATURE,
+        ),
       ).to.be.revertedWithCustomError(deployedActors.hub, "InvalidCscaRoot");
     });
   });
@@ -180,7 +211,12 @@ describe("ID Registration test", function () {
 
       // Register the identity commitment
       await expect(
-        deployedActors.hub.registerCommitment(attestationIdBytes32, registerCircuitVerifierId, registerProof),
+        deployedActors.hub.registerCommitment(
+          attestationIdBytes32,
+          registerCircuitVerifierId,
+          registerProof,
+          PLACEHOLDER_SIGNATURE,
+        ),
       ).to.emit(deployedActors.registryId, "CommitmentRegistered");
 
       // Verify the commitment is registered by checking the nullifier
@@ -195,7 +231,12 @@ describe("ID Registration test", function () {
       const nonExistentVerifierId = 999999; // Non-existent verifier ID
 
       await expect(
-        deployedActors.hub.registerCommitment(attestationIdBytes32, nonExistentVerifierId, registerProof),
+        deployedActors.hub.registerCommitment(
+          attestationIdBytes32,
+          nonExistentVerifierId,
+          registerProof,
+          PLACEHOLDER_SIGNATURE,
+        ),
       ).to.be.revertedWithCustomError(deployedActors.hub, "NoVerifierSet");
     });
 
@@ -204,7 +245,12 @@ describe("ID Registration test", function () {
       const registerCircuitVerifierId = RegisterVerifierId.register_sha256_sha256_sha256_rsa_65537_4096;
 
       await expect(
-        deployedActors.hub.registerCommitment(invalidAttestationId, registerCircuitVerifierId, registerProof),
+        deployedActors.hub.registerCommitment(
+          invalidAttestationId,
+          registerCircuitVerifierId,
+          registerProof,
+          PLACEHOLDER_SIGNATURE,
+        ),
       ).to.be.revertedWithCustomError(deployedActors.hub, "NoVerifierSet");
     });
 
@@ -221,7 +267,12 @@ describe("ID Registration test", function () {
 
       // Now the call should fail with InvalidAttestationId since verifier exists but attestation ID is not valid
       await expect(
-        deployedActors.hub.registerCommitment(invalidAttestationId, registerCircuitVerifierId, registerProof),
+        deployedActors.hub.registerCommitment(
+          invalidAttestationId,
+          registerCircuitVerifierId,
+          registerProof,
+          PLACEHOLDER_SIGNATURE,
+        ),
       ).to.be.revertedWithCustomError(deployedActors.hub, "InvalidAttestationId");
     });
 
@@ -240,7 +291,12 @@ describe("ID Registration test", function () {
       };
 
       await expect(
-        deployedActors.hub.registerCommitment(attestationIdBytes32, registerCircuitVerifierId, invalidRegisterProof),
+        deployedActors.hub.registerCommitment(
+          attestationIdBytes32,
+          registerCircuitVerifierId,
+          invalidRegisterProof,
+          PLACEHOLDER_SIGNATURE,
+        ),
       ).to.be.revertedWithCustomError(deployedActors.hub, "InvalidRegisterProof");
     });
 
@@ -255,7 +311,12 @@ describe("ID Registration test", function () {
 
       // The proof was generated with the original root, so it should fail
       await expect(
-        deployedActors.hub.registerCommitment(attestationIdBytes32, registerCircuitVerifierId, registerProof),
+        deployedActors.hub.registerCommitment(
+          attestationIdBytes32,
+          registerCircuitVerifierId,
+          registerProof,
+          PLACEHOLDER_SIGNATURE,
+        ),
       ).to.be.revertedWithCustomError(deployedActors.hub, "InvalidDscCommitmentRoot");
 
       // Restore the snapshot

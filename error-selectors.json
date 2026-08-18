@@ -324,6 +324,12 @@
     "file": "contracts/contracts/libraries/CustomVerifier.sol"
   },
   {
+    "name": "InvalidSignatureLength",
+    "signature": "InvalidSignatureLength()",
+    "selector": "0x4be6321b",
+    "file": "contracts/contracts/IdentityVerificationHubImplV2.sol"
+  },
+  {
     "name": "InvalidDscCommitmentRoot",
     "signature": "InvalidDscCommitmentRoot()",
     "selector": "0x4cb305bb",
