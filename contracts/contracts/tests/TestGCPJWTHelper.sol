@@ -43,4 +43,14 @@ contract TestGCPJWTHelper {
         require(index < result.length, "Index out of bounds");
         return uint8(result[index]);
     }
+
+    /**
+     * @notice Exposes unpackAndDecodeAddress for testing
+     * @param p0 First packed field element (up to 31 bytes of hex chars)
+     * @param p1 Second packed field element (remaining hex chars)
+     * @return The decoded address
+     */
+    function testUnpackAndDecodeAddress(uint256 p0, uint256 p1) external pure returns (address) {
+        return GCPJWTHelper.unpackAndDecodeAddress(p0, p1);
+    }
 }
