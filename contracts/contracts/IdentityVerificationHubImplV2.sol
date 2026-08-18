@@ -48,6 +48,15 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     // We should consider to add bridge address
     // address bridgeAddress;
 
+    /// @custom:storage-location erc7201:self.storage.IdentityVerificationHubProver
+    struct IdentityVerificationHubProverStorage {
+        address _gcpJwtVerifier;
+        address _pcr0Manager;
+        uint256 _gcpRootCAPubkeyHash;
+        address _proverTee;
+        mapping(address proverKey => bool) _isRegisteredProverKey;
+    }
+
     /// @dev keccak256(abi.encode(uint256(keccak256("self.storage.IdentityVerificationHub")) - 1)) & ~bytes32(uint256(0xff))
     bytes32 private constant IDENTITYVERIFICATIONHUB_STORAGE_LOCATION =
         0x2ade7eace21710c689ddef374add52ace9783e33bac626e58e73a9d190173d00;
@@ -55,6 +64,10 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     /// @dev keccak256(abi.encode(uint256(keccak256("self.storage.IdentityVerificationHubV2")) - 1)) & ~bytes32(uint256(0xff))
     bytes32 private constant IDENTITYVERIFICATIONHUBV2_STORAGE_LOCATION =
         0xf9b5980dcec1a8b0609576a1f453bb2cad4732a0ea02bb89154d44b14a306c00;
+
+    /// @dev keccak256(abi.encode(uint256(keccak256("self.storage.IdentityVerificationHubProver")) - 1)) & ~bytes32(uint256(0xff))
+    bytes32 private constant IDENTITYVERIFICATIONHUBPROVER_STORAGE_LOCATION =
+        0x76afff5e6fcbd388aa8aee87a47ca8d919948df285010f5bede324c9e7235300;
 
     /// @notice The AADHAAR registration window around the current block timestamp.
     uint256 public AADHAAR_REGISTRATION_WINDOW;
@@ -78,6 +91,17 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     function _getIdentityVerificationHubV2Storage() private pure returns (IdentityVerificationHubV2Storage storage $) {
         assembly {
             $.slot := IDENTITYVERIFICATIONHUBV2_STORAGE_LOCATION
+        }
+    }
+
+    /**
+     * @notice Returns the storage struct for the Hub's prover key configuration.
+     * @dev Uses ERC-7201 storage pattern for upgradeable contracts.
+     * @return $ The prover storage struct reference.
+     */
+    function _getProverStorage() private pure returns (IdentityVerificationHubProverStorage storage $) {
+        assembly {
+            $.slot := IDENTITYVERIFICATIONHUBPROVER_STORAGE_LOCATION
         }
     }
 
@@ -115,6 +139,26 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
      * @param verifier The new verifier address for the DSC circuit.
      */
     event DscCircuitVerifierUpdated(uint256 typeId, address verifier);
+    /**
+     * @notice Emitted when the prover GCP JWT verifier address is updated.
+     * @param verifier The new GCP JWT verifier address.
+     */
+    event ProverGCPJWTVerifierUpdated(address indexed verifier);
+    /**
+     * @notice Emitted when the prover PCR0 manager address is updated.
+     * @param pcr0Manager The new PCR0 manager address.
+     */
+    event ProverPCR0ManagerUpdated(address indexed pcr0Manager);
+    /**
+     * @notice Emitted when the prover GCP root CA pubkey hash is updated.
+     * @param rootCAPubkeyHash The new GCP root CA pubkey hash.
+     */
+    event ProverGCPRootCAPubkeyHashUpdated(uint256 rootCAPubkeyHash);
+    /**
+     * @notice Emitted when the prover TEE address is updated.
+     * @param proverTee The new prover TEE address.
+     */
+    event ProverTEEUpdated(address indexed proverTee);
 
     /**
      * @notice Emitted when a verification is performed.
@@ -506,6 +550,44 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         }
     }
 
+    /**
+     * @notice Updates the prover GCP JWT verifier address.
+     * @param verifier The new GCP JWT verifier address.
+     */
+    function updateProverGCPJWTVerifier(address verifier) external virtual onlyProxy onlyRole(SECURITY_ROLE) {
+        _getProverStorage()._gcpJwtVerifier = verifier;
+        emit ProverGCPJWTVerifierUpdated(verifier);
+    }
+
+    /**
+     * @notice Updates the prover PCR0 manager address.
+     * @param pcr0Manager The new PCR0 manager address.
+     */
+    function updateProverPCR0Manager(address pcr0Manager) external virtual onlyProxy onlyRole(SECURITY_ROLE) {
+        _getProverStorage()._pcr0Manager = pcr0Manager;
+        emit ProverPCR0ManagerUpdated(pcr0Manager);
+    }
+
+    /**
+     * @notice Updates the prover GCP root CA pubkey hash.
+     * @param rootCAPubkeyHash The new GCP root CA pubkey hash.
+     */
+    function updateProverGCPRootCAPubkeyHash(
+        uint256 rootCAPubkeyHash
+    ) external virtual onlyProxy onlyRole(SECURITY_ROLE) {
+        _getProverStorage()._gcpRootCAPubkeyHash = rootCAPubkeyHash;
+        emit ProverGCPRootCAPubkeyHashUpdated(rootCAPubkeyHash);
+    }
+
+    /**
+     * @notice Updates the prover TEE address.
+     * @param proverTee The new prover TEE address.
+     */
+    function updateProverTEE(address proverTee) external virtual onlyProxy onlyRole(SECURITY_ROLE) {
+        _getProverStorage()._proverTee = proverTee;
+        emit ProverTEEUpdated(proverTee);
+    }
+
     // ====================================================
     // External View Functions
     // ====================================================
@@ -606,6 +688,38 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     function verificationConfigV2Exists(bytes32 configId) external view virtual onlyProxy returns (bool exists) {
         SelfStructs.VerificationConfigV2 memory config = getVerificationConfigV2(configId);
         return generateConfigId(config) == configId;
+    }
+
+    /**
+     * @notice Returns the prover GCP JWT verifier address.
+     * @return The GCP JWT verifier address.
+     */
+    function proverGCPJWTVerifier() external view virtual onlyProxy returns (address) {
+        return _getProverStorage()._gcpJwtVerifier;
+    }
+
+    /**
+     * @notice Returns the prover PCR0 manager address.
+     * @return The PCR0 manager address.
+     */
+    function proverPCR0Manager() external view virtual onlyProxy returns (address) {
+        return _getProverStorage()._pcr0Manager;
+    }
+
+    /**
+     * @notice Returns the prover GCP root CA pubkey hash.
+     * @return The GCP root CA pubkey hash.
+     */
+    function proverGCPRootCAPubkeyHash() external view virtual onlyProxy returns (uint256) {
+        return _getProverStorage()._gcpRootCAPubkeyHash;
+    }
+
+    /**
+     * @notice Returns the prover TEE address.
+     * @return The prover TEE address.
+     */
+    function proverTEE() external view virtual onlyProxy returns (address) {
+        return _getProverStorage()._proverTee;
     }
 
     // ====================================================
