@@ -44,7 +44,9 @@ describe("GCPJWTHelper.unpackAndDecodeAddress", () => {
 
   it("reverts when fewer than 40 characters are packed", async () => {
     const [p0, p1 = 0n] = packAscii("ab12cd34ef"); // 10 chars
-    await expect(helper.testUnpackAndDecodeAddress(p0, p1)).to.be.reverted;
+    await expect(helper.testUnpackAndDecodeAddress(p0, p1)).to.be.revertedWith(
+      "Nonce is not 40 hex characters",
+    );
   });
 
   it("reverts when the second chunk carries more than 9 characters", async () => {
@@ -60,7 +62,9 @@ describe("GCPJWTHelper.unpackAndDecodeAddress", () => {
 
   it("reverts on exactly 31 characters (chunk 0 exhausts, chunk 1 absent)", async () => {
     const [p0, p1 = 0n] = packAscii("a".repeat(31));
-    await expect(helper.testUnpackAndDecodeAddress(p0, p1)).to.be.reverted;
+    await expect(helper.testUnpackAndDecodeAddress(p0, p1)).to.be.revertedWith(
+      "Nonce is not 40 hex characters",
+    );
   });
 
   it("reverts when chunk 0 itself holds more than 31 meaningful bytes", async () => {

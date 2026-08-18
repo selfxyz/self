@@ -84,7 +84,7 @@ describe("Hub prover key registration", () => {
       const { hub, user1 } = deployedActors;
       await expect(
         hub.connect(user1).updateProverTEE(ethers.Wallet.createRandom().address),
-      ).to.be.reverted;
+      ).to.be.revertedWithCustomError(hub, "AccessControlUnauthorizedAccount");
     });
 
     it("emits an event for each config change", async () => {
