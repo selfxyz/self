@@ -57,4 +57,37 @@ describe("GCPJWTHelper.unpackAndDecodeAddress", () => {
     const [p0, p1] = packAscii("z".repeat(40));
     await expect(helper.testUnpackAndDecodeAddress(p0, p1)).to.be.reverted;
   });
+
+  it("reverts on exactly 31 characters (chunk 0 exhausts, chunk 1 absent)", async () => {
+    const [p0, p1 = 0n] = packAscii("a".repeat(31));
+    await expect(helper.testUnpackAndDecodeAddress(p0, p1)).to.be.reverted;
+  });
+
+  it("reverts when chunk 0 itself holds more than 31 meaningful bytes", async () => {
+    // packAscii can't produce this (it caps each chunk at 31 bytes), so build p0 directly:
+    // 32 bytes of 'a' (0x61), little-endian. The unpack loop only reads 31 of them (idx < 31
+    // cap), so after shifting p0 still holds 1 leftover nonzero byte. Pair it with a p1 that
+    // supplies exactly 9 more chars so idx reaches 40 via the normal path, and only the
+    // residual-check on p0 catches the overflow.
+    let p0 = 0n;
+    for (let i = 0; i < 32; i++) {
+      p0 += 0x61n * 256n ** BigInt(i);
+    }
+    let p1 = 0n;
+    for (let i = 0; i < 9; i++) {
+      p1 += 0x62n * 256n ** BigInt(i);
+    }
+    await expect(helper.testUnpackAndDecodeAddress(p0, p1)).to.be.reverted;
+  });
+
+  it("decodes uppercase and mixed-case hex identically to lowercase", async () => {
+    // Case is not meaningful in the packed hex itself (unlike EIP-55 checksums), so compare
+    // against the address derived from the plain lowercase hex rather than routing this
+    // arbitrary-case string through ethers.getAddress (which enforces EIP-55 checksums).
+    const lowercaseHex = "ab12cd34ef56ab78cd90ef12ab34cd56ef78ab90";
+    const mixedCaseHex = "AB12cd34EF56ab78CD90ef12AB34cd56EF78ab90";
+    const expected = ethers.getAddress(`0x${lowercaseHex}`);
+    const [p0, p1] = packAscii(mixedCaseHex);
+    expect(await helper.testUnpackAndDecodeAddress(p0, p1)).to.equal(expected);
+  });
 });

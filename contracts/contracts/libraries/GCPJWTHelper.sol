@@ -34,6 +34,16 @@ library GCPJWTHelper {
         return 0;
     }
 
+    /// @dev Same branch ranges/offsets as `_hexToNibble`, but reverts on invalid input instead of
+    ///      silently returning 0. `_hexToNibble` must keep its silent-zero behavior for the
+    ///      image-hash path, so this is a distinct helper rather than a shared one.
+    function _hexCharToValue(uint8 c) private pure returns (uint8) {
+        if (c >= 48 && c <= 57) return c - 48; // '0'-'9'
+        if (c >= 65 && c <= 70) return c - 55; // 'A'-'F'
+        if (c >= 97 && c <= 102) return c - 87; // 'a'-'f'
+        revert("Invalid hex character");
+    }
+
     function unpackAndDecodeHexPubkey(uint256 p0, uint256 p1, uint256 p2) internal pure returns (uint256) {
         bytes memory hex64 = new bytes(64);
         uint256 idx;
@@ -92,16 +102,7 @@ library GCPJWTHelper {
 
         uint256 result;
         for (uint256 i = 0; i < 40; i++) {
-            uint8 c = uint8(hex40[i]);
-            if (c >= 48 && c <= 57) {
-                result = result * 16 + (c - 48);
-            } else if (c >= 65 && c <= 70) {
-                result = result * 16 + (c - 55);
-            } else if (c >= 97 && c <= 102) {
-                result = result * 16 + (c - 87);
-            } else {
-                revert("Invalid hex character");
-            }
+            result = result * 16 + _hexCharToValue(uint8(hex40[i]));
         }
         return address(uint160(result));
     }
