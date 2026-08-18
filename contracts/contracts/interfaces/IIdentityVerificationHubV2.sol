@@ -112,6 +112,28 @@ interface IIdentityVerificationHubV2 {
         address[] calldata verifierAddresses
     ) external;
 
+    /**
+     * @notice Registers a prover key via GCP JWT attestation proof.
+     * @dev Verifies the proof, checks the root CA hash matches the configured value, validates the
+     * image hash against the PCR0Manager, and decodes the attested address from the eat_nonce chunks.
+     * @param pA Groth16 proof element A.
+     * @param pB Groth16 proof element B.
+     * @param pC Groth16 proof element C.
+     * @param pubSignals Circuit public signals: [rootCAHash, eatNonce[0-3], imageHash[0-2], currentDate[0-11]].
+     */
+    function registerProverKey(
+        uint256[2] calldata pA,
+        uint256[2][2] calldata pB,
+        uint256[2] calldata pC,
+        uint256[20] calldata pubSignals
+    ) external;
+
+    /**
+     * @notice Revokes a registered prover key.
+     * @param proverKey The prover address to revoke.
+     */
+    function revokeProverKey(address proverKey) external;
+
     // ====================================================
     // External View Functions
     // ====================================================
@@ -167,6 +189,13 @@ interface IIdentityVerificationHubV2 {
      * @return exists Whether the config exists
      */
     function verificationConfigV2Exists(bytes32 configId) external view returns (bool exists);
+
+    /**
+     * @notice Returns whether a given address is a registered prover key.
+     * @param proverKey The address to query.
+     * @return True if the address is a registered prover key, false otherwise.
+     */
+    function isRegisteredProverKey(address proverKey) external view returns (bool);
 
     // ====================================================
     // Public Functions
