@@ -1,6 +1,7 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { generateVcAndDiscloseIdProof, getSMTs } from "../utils/generateProof";
+import { PLACEHOLDER_SIGNATURE } from "../utils/constants";
 import { poseidon2 } from "poseidon-lite";
 import { generateCommitment } from "@selfxyz/new-common/src/documents/passport/commitment";
 import { BigNumberish } from "ethers";
@@ -174,7 +175,10 @@ describe("Self Verification Flow V2 - ID Card", () => {
         [[vcAndDiscloseProof.a, vcAndDiscloseProof.b, vcAndDiscloseProof.c, vcAndDiscloseProof.pubSignals]],
       );
 
-      const proofData = ethers.solidityPacked(["bytes32", "bytes"], [attestationId, encodedProof]);
+      const proofData = ethers.solidityPacked(
+        ["bytes32", "bytes", "bytes"],
+        [attestationId, PLACEHOLDER_SIGNATURE, encodedProof],
+      );
 
       await deployedActors.testSelfVerificationRoot.resetTestState();
 
@@ -211,7 +215,10 @@ describe("Self Verification Flow V2 - ID Card", () => {
         [[vcAndDiscloseProof.a, vcAndDiscloseProof.b, vcAndDiscloseProof.c, vcAndDiscloseProof.pubSignals]],
       );
 
-      const proofData = ethers.solidityPacked(["bytes32", "bytes"], [attestationId, encodedProof]);
+      const proofData = ethers.solidityPacked(
+        ["bytes32", "bytes", "bytes"],
+        [attestationId, PLACEHOLDER_SIGNATURE, encodedProof],
+      );
 
       await deployedActors.testSelfVerificationRoot.resetTestState();
 
@@ -247,7 +254,10 @@ describe("Self Verification Flow V2 - ID Card", () => {
         [[vcAndDiscloseProof.a, vcAndDiscloseProof.b, vcAndDiscloseProof.c, vcAndDiscloseProof.pubSignals]],
       );
 
-      const proofData = ethers.solidityPacked(["bytes32", "bytes"], [attestationId, encodedProof]);
+      const proofData = ethers.solidityPacked(
+        ["bytes32", "bytes", "bytes"],
+        [attestationId, PLACEHOLDER_SIGNATURE, encodedProof],
+      );
 
       await deployedActors.testSelfVerificationRoot.setVerificationConfig(verificationConfigV2);
 
@@ -330,7 +340,10 @@ describe("Self Verification Flow V2 - ID Card", () => {
         [[differentScopeProof.a, differentScopeProof.b, differentScopeProof.c, differentScopeProof.pubSignals]],
       );
 
-      const proofData = ethers.solidityPacked(["bytes32", "bytes"], [attestationId, encodedProof]);
+      const proofData = ethers.solidityPacked(
+        ["bytes32", "bytes", "bytes"],
+        [attestationId, PLACEHOLDER_SIGNATURE, encodedProof],
+      );
 
       // This should fail with ScopeMismatch because the proof has a different scope
       await expect(
@@ -367,7 +380,10 @@ describe("Self Verification Flow V2 - ID Card", () => {
         [[vcAndDiscloseProof.a, vcAndDiscloseProof.b, vcAndDiscloseProof.c, vcAndDiscloseProof.pubSignals]],
       );
 
-      const proofData = ethers.solidityPacked(["bytes32", "bytes"], [attestationId, encodedProof]);
+      const proofData = ethers.solidityPacked(
+        ["bytes32", "bytes", "bytes"],
+        [attestationId, PLACEHOLDER_SIGNATURE, encodedProof],
+      );
 
       // This should fail with InvalidUserIdentifierInProof because the userContextData doesn't match the proof
       await expect(
@@ -418,7 +434,10 @@ describe("Self Verification Flow V2 - ID Card", () => {
         ],
       );
 
-      const proofData = ethers.solidityPacked(["bytes32", "bytes"], [attestationId, encodedProof]);
+      const proofData = ethers.solidityPacked(
+        ["bytes32", "bytes", "bytes"],
+        [attestationId, PLACEHOLDER_SIGNATURE, encodedProof],
+      );
 
       await expect(
         deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData),
@@ -476,7 +495,10 @@ describe("Self Verification Flow V2 - ID Card", () => {
         [[vcAndDiscloseProof.a, vcAndDiscloseProof.b, vcAndDiscloseProof.c, vcAndDiscloseProof.pubSignals]],
       );
 
-      const proofData = ethers.solidityPacked(["bytes32", "bytes"], [attestationId, encodedProof]);
+      const proofData = ethers.solidityPacked(
+        ["bytes32", "bytes", "bytes"],
+        [attestationId, PLACEHOLDER_SIGNATURE, encodedProof],
+      );
 
       // This should fail with CurrentDateNotInValidRange because the date is in the future
       await expect(
@@ -535,7 +557,10 @@ describe("Self Verification Flow V2 - ID Card", () => {
         [[vcAndDiscloseProof.a, vcAndDiscloseProof.b, vcAndDiscloseProof.c, vcAndDiscloseProof.pubSignals]],
       );
 
-      const proofData = ethers.solidityPacked(["bytes32", "bytes"], [attestationId, encodedProof]);
+      const proofData = ethers.solidityPacked(
+        ["bytes32", "bytes", "bytes"],
+        [attestationId, PLACEHOLDER_SIGNATURE, encodedProof],
+      );
 
       // This should fail with CurrentDateNotInValidRange because the date is in the past
       await expect(
@@ -586,7 +611,10 @@ describe("Self Verification Flow V2 - ID Card", () => {
         [[invalidGrothProof.a, invalidGrothProof.b, invalidGrothProof.c, invalidGrothProof.pubSignals]],
       );
 
-      const proofData = ethers.solidityPacked(["bytes32", "bytes"], [attestationId, encodedProof]);
+      const proofData = ethers.solidityPacked(
+        ["bytes32", "bytes", "bytes"],
+        [attestationId, PLACEHOLDER_SIGNATURE, encodedProof],
+      );
 
       // This should fail with InvalidVcAndDiscloseProof because the groth16 proof is invalid
       await expect(
@@ -627,7 +655,10 @@ describe("Self Verification Flow V2 - ID Card", () => {
         [[vcAndDiscloseProof.a, vcAndDiscloseProof.b, vcAndDiscloseProof.c, vcAndDiscloseProof.pubSignals]],
       );
 
-      const proofData = ethers.solidityPacked(["bytes32", "bytes"], [invalidAttestationId, encodedProof]);
+      const proofData = ethers.solidityPacked(
+        ["bytes32", "bytes", "bytes"],
+        [invalidAttestationId, PLACEHOLDER_SIGNATURE, encodedProof],
+      );
 
       await expect(
         deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData),
@@ -687,7 +718,10 @@ describe("Self Verification Flow V2 - ID Card", () => {
         [[ofacFailingProof.a, ofacFailingProof.b, ofacFailingProof.c, ofacFailingProof.pubSignals]],
       );
 
-      const proofData = ethers.solidityPacked(["bytes32", "bytes"], [attestationId, encodedProof]);
+      const proofData = ethers.solidityPacked(
+        ["bytes32", "bytes", "bytes"],
+        [attestationId, PLACEHOLDER_SIGNATURE, encodedProof],
+      );
 
       await expect(
         deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData),
@@ -747,7 +781,10 @@ describe("Self Verification Flow V2 - ID Card", () => {
         [[forbiddenCountryProof.a, forbiddenCountryProof.b, forbiddenCountryProof.c, forbiddenCountryProof.pubSignals]],
       );
 
-      const proofData = ethers.solidityPacked(["bytes32", "bytes"], [attestationId, encodedProof]);
+      const proofData = ethers.solidityPacked(
+        ["bytes32", "bytes", "bytes"],
+        [attestationId, PLACEHOLDER_SIGNATURE, encodedProof],
+      );
 
       // This should fail because the forbidden countries list in the proof doesn't match the config
       await expect(
@@ -808,7 +845,10 @@ describe("Self Verification Flow V2 - ID Card", () => {
         [[youngerAgeProof.a, youngerAgeProof.b, youngerAgeProof.c, youngerAgeProof.pubSignals]],
       );
 
-      const proofData = ethers.solidityPacked(["bytes32", "bytes"], [attestationId, encodedProof]);
+      const proofData = ethers.solidityPacked(
+        ["bytes32", "bytes", "bytes"],
+        [attestationId, PLACEHOLDER_SIGNATURE, encodedProof],
+      );
 
       // This should fail because age 20 is less than required 25
       await expect(
@@ -869,7 +909,10 @@ describe("Self Verification Flow V2 - ID Card", () => {
         [[validProof.a, validProof.b, validProof.c, validProof.pubSignals]],
       );
 
-      const proofData = ethers.solidityPacked(["bytes32", "bytes"], [attestationId, encodedProof]);
+      const proofData = ethers.solidityPacked(
+        ["bytes32", "bytes", "bytes"],
+        [attestationId, PLACEHOLDER_SIGNATURE, encodedProof],
+      );
 
       // This should fail with CrossChainIsNotSupportedYet because destChainId (999999) != block.chainid (31337)
       await expect(

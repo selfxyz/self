@@ -9,6 +9,7 @@ import { ethers } from "hardhat";
 import { expect } from "chai";
 import { generateKycDiscloseInputFromDummy } from "@selfxyz/new-common/src/circuits/inputs/disclose-kyc";
 import { getSMTs } from "../utils/generateProof";
+import { PLACEHOLDER_SIGNATURE } from "../utils/constants";
 import { getPackedForbiddenCountries } from "@selfxyz/new-common/src/blockchain/forbiddenCountries";
 import { BigNumberish } from "ethers";
 import { generateVcAndDiscloseKycProof } from "../utils/generateProof";
@@ -148,7 +149,10 @@ describe("Self Verification Flow V2 - KYC", () => {
         ],
       );
 
-      const proofData = ethers.solidityPacked(["bytes32", "bytes"], [attestationId, encodedProof]);
+      const proofData = ethers.solidityPacked(
+        ["bytes32", "bytes", "bytes"],
+        [attestationId, PLACEHOLDER_SIGNATURE, encodedProof],
+      );
 
       await deployedActors.testSelfVerificationRoot.resetTestState();
 
@@ -213,7 +217,10 @@ describe("Self Verification Flow V2 - KYC", () => {
         ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[] pubSignals)"],
         [[fcProof.a, fcProof.b, fcProof.c, fcProof.pubSignals]],
       );
-      const proofData = ethers.solidityPacked(["bytes32", "bytes"], [attestationId, encodedProof]);
+      const proofData = ethers.solidityPacked(
+        ["bytes32", "bytes", "bytes"],
+        [attestationId, PLACEHOLDER_SIGNATURE, encodedProof],
+      );
 
       await deployedActors.testSelfVerificationRoot.resetTestState();
 
@@ -262,7 +269,10 @@ describe("Self Verification Flow V2 - KYC", () => {
         ],
       );
 
-      const proofData = ethers.solidityPacked(["bytes32", "bytes"], [attestationId, encodedProof]);
+      const proofData = ethers.solidityPacked(
+        ["bytes32", "bytes", "bytes"],
+        [attestationId, PLACEHOLDER_SIGNATURE, encodedProof],
+      );
 
       await deployedActors.testSelfVerificationRoot.resetTestState();
 
@@ -320,7 +330,10 @@ describe("Self Verification Flow V2 - KYC", () => {
         ],
       );
 
-      const proofData = ethers.solidityPacked(["bytes32", "bytes"], [attestationId, encodedProof]);
+      const proofData = ethers.solidityPacked(
+        ["bytes32", "bytes", "bytes"],
+        [attestationId, PLACEHOLDER_SIGNATURE, encodedProof],
+      );
 
       await expect(
         deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, invalidUserContextData),
@@ -364,7 +377,10 @@ describe("Self Verification Flow V2 - KYC", () => {
         [[baseVcAndDiscloseProof.a, baseVcAndDiscloseProof.b, baseVcAndDiscloseProof.c, clonedPubSignal]],
       );
 
-      const proofData = ethers.solidityPacked(["bytes32", "bytes"], [attestationId, encodedProof]);
+      const proofData = ethers.solidityPacked(
+        ["bytes32", "bytes", "bytes"],
+        [attestationId, PLACEHOLDER_SIGNATURE, encodedProof],
+      );
 
       await deployedActors.testSelfVerificationRoot.resetTestState();
 
@@ -410,7 +426,10 @@ describe("Self Verification Flow V2 - KYC", () => {
         [[baseVcAndDiscloseProof.a, baseVcAndDiscloseProof.b, baseVcAndDiscloseProof.c, clonedPubSignal]],
       );
 
-      const proofData = ethers.solidityPacked(["bytes32", "bytes"], [attestationId, encodedProof]);
+      const proofData = ethers.solidityPacked(
+        ["bytes32", "bytes", "bytes"],
+        [attestationId, PLACEHOLDER_SIGNATURE, encodedProof],
+      );
 
       await deployedActors.testSelfVerificationRoot.resetTestState();
 
@@ -457,7 +476,10 @@ describe("Self Verification Flow V2 - KYC", () => {
         [[baseVcAndDiscloseProof.a, baseVcAndDiscloseProof.b, baseVcAndDiscloseProof.c, clonedPubSignal]],
       );
 
-      const proofData = ethers.solidityPacked(["bytes32", "bytes"], [attestationId, encodedProof]);
+      const proofData = ethers.solidityPacked(
+        ["bytes32", "bytes", "bytes"],
+        [attestationId, PLACEHOLDER_SIGNATURE, encodedProof],
+      );
 
       await deployedActors.testSelfVerificationRoot.resetTestState();
 
@@ -505,7 +527,10 @@ describe("Self Verification Flow V2 - KYC", () => {
         [[baseVcAndDiscloseProof.a, baseVcAndDiscloseProof.b, baseVcAndDiscloseProof.c, clonedPubSignal]],
       );
 
-      const proofData = ethers.solidityPacked(["bytes32", "bytes"], [attestationId, encodedProof]);
+      const proofData = ethers.solidityPacked(
+        ["bytes32", "bytes", "bytes"],
+        [attestationId, PLACEHOLDER_SIGNATURE, encodedProof],
+      );
 
       await deployedActors.testSelfVerificationRoot.resetTestState();
 
@@ -556,7 +581,10 @@ describe("Self Verification Flow V2 - KYC", () => {
         [[clonedGrothProof.a, clonedGrothProof.b, clonedGrothProof.c, clonedGrothProof.pubSignals]],
       );
 
-      const proofData = ethers.solidityPacked(["bytes32", "bytes"], [attestationId, encodedProof]);
+      const proofData = ethers.solidityPacked(
+        ["bytes32", "bytes", "bytes"],
+        [attestationId, PLACEHOLDER_SIGNATURE, encodedProof],
+      );
 
       await deployedActors.testSelfVerificationRoot.resetTestState();
 
@@ -602,7 +630,10 @@ describe("Self Verification Flow V2 - KYC", () => {
         ],
       );
 
-      const proofData = ethers.solidityPacked(["bytes32", "bytes"], [invalidAttestationId, encodedProof]);
+      const proofData = ethers.solidityPacked(
+        ["bytes32", "bytes", "bytes"],
+        [invalidAttestationId, PLACEHOLDER_SIGNATURE, encodedProof],
+      );
 
       await expect(
         deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData),
@@ -648,7 +679,10 @@ describe("Self Verification Flow V2 - KYC", () => {
         ],
       );
 
-      const proofData = ethers.solidityPacked(["bytes32", "bytes"], [attestationId, encodedProof]);
+      const proofData = ethers.solidityPacked(
+        ["bytes32", "bytes", "bytes"],
+        [attestationId, PLACEHOLDER_SIGNATURE, encodedProof],
+      );
 
       // The proof validation fails before reaching custom verifier checks
       await expect(deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData)).to.be.reverted;
@@ -688,7 +722,10 @@ describe("Self Verification Flow V2 - KYC", () => {
         ],
       );
 
-      const proofData = ethers.solidityPacked(["bytes32", "bytes"], [attestationId, encodedProof]);
+      const proofData = ethers.solidityPacked(
+        ["bytes32", "bytes", "bytes"],
+        [attestationId, PLACEHOLDER_SIGNATURE, encodedProof],
+      );
 
       // The proof validation fails before reaching custom verifier checks
       await expect(deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData)).to.be.reverted;
@@ -733,7 +770,10 @@ describe("Self Verification Flow V2 - KYC", () => {
         ],
       );
 
-      const proofData = ethers.solidityPacked(["bytes32", "bytes"], [attestationId, encodedProof]);
+      const proofData = ethers.solidityPacked(
+        ["bytes32", "bytes", "bytes"],
+        [attestationId, PLACEHOLDER_SIGNATURE, encodedProof],
+      );
 
       // The proof validation fails before reaching custom verifier checks
       await expect(deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData)).to.be.reverted;
@@ -793,7 +833,10 @@ describe("Self Verification Flow V2 - KYC", () => {
         ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[] pubSignals)"],
         [[newProof.a, newProof.b, newProof.c, newProof.pubSignals]],
       );
-      const proofData = ethers.solidityPacked(["bytes32", "bytes"], [attestationId, encodedProof]);
+      const proofData = ethers.solidityPacked(
+        ["bytes32", "bytes", "bytes"],
+        [attestationId, PLACEHOLDER_SIGNATURE, encodedProof],
+      );
 
       // The proof validation fails before reaching cross-chain checks
       await expect(deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData)).to.be.reverted;

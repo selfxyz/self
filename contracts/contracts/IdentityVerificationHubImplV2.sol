@@ -1267,13 +1267,14 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     function _decodeInput(
         bytes calldata baseVerificationInput
     ) internal pure returns (SelfStructs.HubInputHeader memory header, bytes calldata proofData) {
-        if (baseVerificationInput.length < 97) {
+        if (baseVerificationInput.length < 162) {
             revert InputTooShort();
         }
         header.contractVersion = uint8(baseVerificationInput[0]);
         header.scope = uint256(bytes32(baseVerificationInput[32:64]));
         header.attestationId = bytes32(baseVerificationInput[64:96]);
-        proofData = baseVerificationInput[96:];
+        header.signature = bytes(baseVerificationInput[96:161]);
+        proofData = baseVerificationInput[161:];
     }
 
     /**
