@@ -306,6 +306,14 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     ///         from the block timestamp, in either direction.
     error INVALID_PROVER_TIMESTAMP();
 
+    /// @notice Thrown when the decoded prover address is the zero address.
+    /// @dev 40 ASCII '0' characters decode to address(0). Not reachable without a genuine
+    ///      attestation over an all-zeros eat_nonce, but the registered-key mapping is consumed
+    ///      as an authorization oracle, and address(0) is also what a malformed ecrecover
+    ///      returns — so a consumer checking isRegisteredProverKey(ecrecover(...)) would have
+    ///      an auth bypass if address(0) were ever registered here.
+    error INVALID_PROVER_ADDRESS();
+
     // ====================================================
     // Modifiers
     // ====================================================
@@ -694,6 +702,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
 
         // Unpack the address and register it
         address proverKey = GCPJWTHelper.unpackAndDecodeAddress(pubSignals[1], pubSignals[2]);
+        if (proverKey == address(0)) revert INVALID_PROVER_ADDRESS();
         $._isRegisteredProverKey[proverKey] = true;
 
         emit ProverKeyRegistered(proverKey);

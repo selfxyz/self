@@ -19,9 +19,7 @@ function packAscii(s: string): bigint[] {
   return chunks;
 }
 
-// Copied from registerKyc.test.ts:9 — hoursOffset lets us build stale/future dates.
-function getCurrentDateDigitsYYMMDDHHMMSS(hoursOffset: number = 0): bigint[] {
-  const d = new Date(Date.now() + hoursOffset * 3600 * 1000);
+function digitsFromDate(d: Date): bigint[] {
   const two = (n: number) => [BigInt(Math.floor(n / 10)), BigInt(n % 10)];
   return [
     ...two(d.getUTCFullYear() % 100),
@@ -31,6 +29,21 @@ function getCurrentDateDigitsYYMMDDHHMMSS(hoursOffset: number = 0): bigint[] {
     ...two(d.getUTCMinutes()),
     ...two(d.getUTCSeconds()),
   ];
+}
+
+// Copied from registerKyc.test.ts:9 — hoursOffset lets us build stale/future dates.
+// Anchored to JS wall-clock time; fine for the coarse +/-2h cases, which have minutes of margin.
+function getCurrentDateDigitsYYMMDDHHMMSS(hoursOffset: number = 0): bigint[] {
+  return digitsFromDate(new Date(Date.now() + hoursOffset * 3600 * 1000));
+}
+
+// Anchored to the chain's own latest block timestamp rather than JS wall-clock time. Hardhat's
+// mined block timestamps can drift ahead of Date.now() over the course of a test run, so a
+// boundary case with only ~1 minute of margin needs to measure the offset the contract will
+// actually see (block.timestamp), not the offset from whenever this helper happens to run.
+async function digitsAtChainOffsetSeconds(offsetSeconds: number): Promise<bigint[]> {
+  const block = await ethers.provider.getBlock("latest");
+  return digitsFromDate(new Date((Number(block!.timestamp) + offsetSeconds) * 1000));
 }
 
 describe("Hub prover key registration", () => {
@@ -130,6 +143,7 @@ describe("Hub prover key registration", () => {
         pad3?: bigint;
         pad4?: bigint;
         hoursOffset?: number;
+        dateDigits?: bigint[];
       } = {},
     ): bigint[] {
       const [n0, n1] = packAscii((o.nonce ?? PROVER).slice(2));
@@ -142,7 +156,7 @@ describe("Hub prover key registration", () => {
         IMAGE.p0,
         IMAGE.p1,
         IMAGE.p2,
-        ...getCurrentDateDigitsYYMMDDHHMMSS(o.hoursOffset ?? 0),
+        ...(o.dateDigits ?? getCurrentDateDigitsYYMMDDHHMMSS(o.hoursOffset ?? 0)),
       ];
     }
 
@@ -241,6 +255,34 @@ describe("Hub prover key registration", () => {
       ).to.be.revertedWithCustomError(hub, "INVALID_PROVER_NONCE_PADDING");
     });
 
+    it("reverts INVALID_PROVER_ADDRESS when the decoded address is the zero address", async () => {
+      const { hub } = deployedActors;
+      const zeroNonce = "0x" + "0".repeat(40);
+      await expect(
+        hub.registerProverKey(PROOF.a, PROOF.b, PROOF.c, signals({ nonce: zeroNonce })),
+      ).to.be.revertedWithCustomError(hub, "INVALID_PROVER_ADDRESS");
+    });
+
+    it("reverts with the decoder's own message when the nonce decodes to fewer than 40 hex characters", async () => {
+      const { hub } = deployedActors;
+      // 38 valid hex ASCII characters — one 31-byte chunk plus a short 7-byte remainder,
+      // so the decoder's own idx-tracking loop stops two characters short of 40.
+      const shortNonce = "0x" + PROVER.slice(2, -2);
+      await expect(
+        hub.registerProverKey(PROOF.a, PROOF.b, PROOF.c, signals({ nonce: shortNonce })),
+      ).to.be.revertedWith("Nonce is not 40 hex characters");
+    });
+
+    it("reverts with the decoder's own message when the nonce carries more than 40 hex characters", async () => {
+      const { hub } = deployedActors;
+      // 42 valid hex ASCII characters — the second chunk still has 2 bytes left over after the
+      // decoder fills all 40 slots, so it reads the leftover as nonce content, not padding.
+      const longNonce = "0x" + PROVER.slice(2) + "ab";
+      await expect(
+        hub.registerProverKey(PROOF.a, PROOF.b, PROOF.c, signals({ nonce: longNonce })),
+      ).to.be.revertedWith("Nonce exceeds 40 hex characters");
+    });
+
     it("reverts INVALID_PROVER_TIMESTAMP for a date over 1h in the past", async () => {
       const { hub } = deployedActors;
       await expect(
@@ -252,6 +294,38 @@ describe("Hub prover key registration", () => {
       const { hub } = deployedActors;
       await expect(
         hub.registerProverKey(PROOF.a, PROOF.b, PROOF.c, signals({ hoursOffset: 2 })),
+      ).to.be.revertedWithCustomError(hub, "INVALID_PROVER_TIMESTAMP");
+    });
+
+    it("accepts a date 59 minutes in the past (inside the 1h window)", async () => {
+      const { hub } = deployedActors;
+      const dateDigits = await digitsAtChainOffsetSeconds(-59 * 60);
+      await expect(hub.registerProverKey(PROOF.a, PROOF.b, PROOF.c, signals({ dateDigits })))
+        .to.emit(hub, "ProverKeyRegistered")
+        .withArgs(ethers.getAddress(PROVER));
+    });
+
+    it("accepts a date 59 minutes in the future (inside the 1h window)", async () => {
+      const { hub } = deployedActors;
+      const dateDigits = await digitsAtChainOffsetSeconds(59 * 60);
+      await expect(hub.registerProverKey(PROOF.a, PROOF.b, PROOF.c, signals({ dateDigits })))
+        .to.emit(hub, "ProverKeyRegistered")
+        .withArgs(ethers.getAddress(PROVER));
+    });
+
+    it("reverts INVALID_PROVER_TIMESTAMP for a date 61 minutes in the past (just outside the 1h window)", async () => {
+      const { hub } = deployedActors;
+      const dateDigits = await digitsAtChainOffsetSeconds(-61 * 60);
+      await expect(
+        hub.registerProverKey(PROOF.a, PROOF.b, PROOF.c, signals({ dateDigits })),
+      ).to.be.revertedWithCustomError(hub, "INVALID_PROVER_TIMESTAMP");
+    });
+
+    it("reverts INVALID_PROVER_TIMESTAMP for a date 61 minutes in the future (just outside the 1h window)", async () => {
+      const { hub } = deployedActors;
+      const dateDigits = await digitsAtChainOffsetSeconds(61 * 60);
+      await expect(
+        hub.registerProverKey(PROOF.a, PROOF.b, PROOF.c, signals({ dateDigits })),
       ).to.be.revertedWithCustomError(hub, "INVALID_PROVER_TIMESTAMP");
     });
 
@@ -281,7 +355,9 @@ describe("Hub prover key registration", () => {
 
     it("revokeProverKey rejects a non-SECURITY_ROLE caller", async () => {
       const { hub, user1 } = deployedActors;
-      await expect(hub.connect(user1).revokeProverKey(ethers.getAddress(PROVER))).to.be.reverted;
+      await expect(
+        hub.connect(user1).revokeProverKey(ethers.getAddress(PROVER)),
+      ).to.be.revertedWithCustomError(hub, "AccessControlUnauthorizedAccount");
     });
   });
 });
