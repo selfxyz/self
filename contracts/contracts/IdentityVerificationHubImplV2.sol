@@ -284,27 +284,27 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
 
     /// @notice Thrown when a required prover config value (verifier, PCR0Manager, or root CA hash) is unset.
     /// @dev An unset config value must never be silently treated as "skip verification".
-    error PROVER_CONFIG_NOT_SET();
+    error ProverConfigNotSet();
 
     /// @notice Thrown when a function restricted to the prover TEE is called by any other address.
-    error ONLY_PROVER_TEE_CAN_ACCESS();
+    error OnlyProverTEECanAccess();
 
     /// @notice Thrown when the GCP JWT proof verification fails for a prover key registration.
-    error INVALID_PROVER_PROOF();
+    error InvalidProverProof();
 
     /// @notice Thrown when the GCP root CA public key hash does not match the expected value.
-    error INVALID_PROVER_ROOT_CA();
+    error InvalidProverRootCA();
 
     /// @notice Thrown when the TEE image hash is not registered in the PCR0Manager.
-    error INVALID_PROVER_IMAGE();
+    error InvalidProverImage();
 
     /// @notice Thrown when the attested nonce carries content beyond the 40 hex characters
     ///         that encode the prover address, i.e. pubSignals[3] or pubSignals[4] is non-zero.
-    error INVALID_PROVER_NONCE_PADDING();
+    error InvalidProverNoncePadding();
 
     /// @notice Thrown when the attestation's current-date signal is more than 1 hour away
     ///         from the block timestamp, in either direction.
-    error INVALID_PROVER_TIMESTAMP();
+    error InvalidProverTimestamp();
 
     /// @notice Thrown when the decoded prover address is the zero address.
     /// @dev 40 ASCII '0' characters decode to address(0). Not reachable without a genuine
@@ -312,7 +312,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     ///      as an authorization oracle, and address(0) is also what a malformed ecrecover
     ///      returns — so a consumer checking isRegisteredProverKey(ecrecover(...)) would have
     ///      an auth bypass if address(0) were ever registered here.
-    error INVALID_PROVER_ADDRESS();
+    error InvalidProverAddress();
 
     // ====================================================
     // Modifiers
@@ -324,8 +324,8 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
      */
     modifier onlyProverTEE() {
         address tee = _getProverStorage()._proverTee;
-        if (tee == address(0)) revert PROVER_CONFIG_NOT_SET();
-        if (msg.sender != tee) revert ONLY_PROVER_TEE_CAN_ACCESS();
+        if (tee == address(0)) revert ProverConfigNotSet();
+        if (msg.sender != tee) revert OnlyProverTEECanAccess();
         _;
     }
 
@@ -664,23 +664,23 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
 
         // An unset verifier must never be read as "skip verification".
         if ($._gcpJwtVerifier == address(0) || $._pcr0Manager == address(0) || $._gcpRootCAPubkeyHash == 0) {
-            revert PROVER_CONFIG_NOT_SET();
+            revert ProverConfigNotSet();
         }
 
         // Check if the proof is valid
-        if (!IGCPJWTVerifier($._gcpJwtVerifier).verifyProof(pA, pB, pC, pubSignals)) revert INVALID_PROVER_PROOF();
+        if (!IGCPJWTVerifier($._gcpJwtVerifier).verifyProof(pA, pB, pC, pubSignals)) revert InvalidProverProof();
 
         // Check if the root CA pubkey hash is valid
-        if (pubSignals[0] != $._gcpRootCAPubkeyHash) revert INVALID_PROVER_ROOT_CA();
+        if (pubSignals[0] != $._gcpRootCAPubkeyHash) revert InvalidProverRootCA();
 
         // Check if the TEE image hash is valid
         bytes memory imageHash = GCPJWTHelper.unpackAndConvertImageHash(pubSignals[5], pubSignals[6], pubSignals[7]);
-        if (!IPCR0Manager($._pcr0Manager).isPCR0Set(imageHash)) revert INVALID_PROVER_IMAGE();
+        if (!IPCR0Manager($._pcr0Manager).isPCR0Set(imageHash)) revert InvalidProverImage();
 
         // The circuit always emits 4 nonce chunks; a 40-char address fills only 2. The nonce's
         // declared length is a circuit input, not a public signal, so asserting the trailing
         // chunks are empty is the only on-chain bound on what else the nonce carried.
-        if (pubSignals[3] != 0 || pubSignals[4] != 0) revert INVALID_PROVER_NONCE_PADDING();
+        if (pubSignals[3] != 0 || pubSignals[4] != 0) revert InvalidProverNoncePadding();
 
         uint256 currentYear = 2000 + pubSignals[8] * 10 + pubSignals[9];
         uint256 currentMonth = pubSignals[10] * 10 + pubSignals[11];
@@ -697,12 +697,12 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
             currentSecond
         );
 
-        if (currentTimestamp + 1 hours < block.timestamp) revert INVALID_PROVER_TIMESTAMP(); //1 hour in the past
-        if (currentTimestamp > block.timestamp + 1 hours) revert INVALID_PROVER_TIMESTAMP(); //1 hour in the future
+        if (currentTimestamp + 1 hours < block.timestamp) revert InvalidProverTimestamp(); //1 hour in the past
+        if (currentTimestamp > block.timestamp + 1 hours) revert InvalidProverTimestamp(); //1 hour in the future
 
         // Unpack the address and register it
         address proverKey = GCPJWTHelper.unpackAndDecodeAddress(pubSignals[1], pubSignals[2]);
-        if (proverKey == address(0)) revert INVALID_PROVER_ADDRESS();
+        if (proverKey == address(0)) revert InvalidProverAddress();
         $._isRegisteredProverKey[proverKey] = true;
 
         emit ProverKeyRegistered(proverKey);

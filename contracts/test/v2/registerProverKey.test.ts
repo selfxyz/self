@@ -187,80 +187,80 @@ describe("Hub prover key registration", () => {
       expect(await hub.isRegisteredProverKey(ethers.getAddress(PROVER))).to.equal(true);
     });
 
-    it("reverts PROVER_CONFIG_NOT_SET when the verifier is unset", async () => {
+    it("reverts ProverConfigNotSet when the verifier is unset", async () => {
       const { hub } = deployedActors;
       await hub.updateProverGCPJWTVerifier(ethers.ZeroAddress);
       await expect(hub.registerProverKey(PROOF.a, PROOF.b, PROOF.c, signals())).to.be.revertedWithCustomError(
         hub,
-        "PROVER_CONFIG_NOT_SET",
+        "ProverConfigNotSet",
       );
     });
 
-    it("reverts PROVER_CONFIG_NOT_SET when the root CA hash is unset", async () => {
+    it("reverts ProverConfigNotSet when the root CA hash is unset", async () => {
       const { hub } = deployedActors;
       await hub.updateProverGCPRootCAPubkeyHash(0n);
       await expect(hub.registerProverKey(PROOF.a, PROOF.b, PROOF.c, signals())).to.be.revertedWithCustomError(
         hub,
-        "PROVER_CONFIG_NOT_SET",
+        "ProverConfigNotSet",
       );
     });
 
-    it("reverts PROVER_CONFIG_NOT_SET when the PCR0Manager is unset", async () => {
+    it("reverts ProverConfigNotSet when the PCR0Manager is unset", async () => {
       const { hub } = deployedActors;
       await hub.updateProverPCR0Manager(ethers.ZeroAddress);
       await expect(hub.registerProverKey(PROOF.a, PROOF.b, PROOF.c, signals())).to.be.revertedWithCustomError(
         hub,
-        "PROVER_CONFIG_NOT_SET",
+        "ProverConfigNotSet",
       );
     });
 
-    it("reverts INVALID_PROVER_PROOF when the verifier returns false", async () => {
+    it("reverts InvalidProverProof when the verifier returns false", async () => {
       const { hub } = deployedActors;
       await mockVerifier.setShouldVerify(false);
       await expect(hub.registerProverKey(PROOF.a, PROOF.b, PROOF.c, signals())).to.be.revertedWithCustomError(
         hub,
-        "INVALID_PROVER_PROOF",
+        "InvalidProverProof",
       );
     });
 
-    it("reverts INVALID_PROVER_ROOT_CA on a pubSignals[0] mismatch", async () => {
+    it("reverts InvalidProverRootCA on a pubSignals[0] mismatch", async () => {
       const { hub } = deployedActors;
       await expect(
         hub.registerProverKey(PROOF.a, PROOF.b, PROOF.c, signals({ rootCa: 1n })),
-      ).to.be.revertedWithCustomError(hub, "INVALID_PROVER_ROOT_CA");
+      ).to.be.revertedWithCustomError(hub, "InvalidProverRootCA");
     });
 
-    it("reverts INVALID_PROVER_IMAGE when the digest is not in PCR0Manager", async () => {
+    it("reverts InvalidProverImage when the digest is not in PCR0Manager", async () => {
       const { hub } = deployedActors;
       const freshPcr0Manager = await (await ethers.getContractFactory("PCR0Manager")).deploy();
       await freshPcr0Manager.waitForDeployment();
       await hub.updateProverPCR0Manager(await freshPcr0Manager.getAddress());
       await expect(hub.registerProverKey(PROOF.a, PROOF.b, PROOF.c, signals())).to.be.revertedWithCustomError(
         hub,
-        "INVALID_PROVER_IMAGE",
+        "InvalidProverImage",
       );
     });
 
-    it("reverts INVALID_PROVER_NONCE_PADDING when pubSignals[3] is non-zero", async () => {
+    it("reverts InvalidProverNoncePadding when pubSignals[3] is non-zero", async () => {
       const { hub } = deployedActors;
       await expect(
         hub.registerProverKey(PROOF.a, PROOF.b, PROOF.c, signals({ pad3: 42n })),
-      ).to.be.revertedWithCustomError(hub, "INVALID_PROVER_NONCE_PADDING");
+      ).to.be.revertedWithCustomError(hub, "InvalidProverNoncePadding");
     });
 
-    it("reverts INVALID_PROVER_NONCE_PADDING when pubSignals[4] is non-zero", async () => {
+    it("reverts InvalidProverNoncePadding when pubSignals[4] is non-zero", async () => {
       const { hub } = deployedActors;
       await expect(
         hub.registerProverKey(PROOF.a, PROOF.b, PROOF.c, signals({ pad4: 42n })),
-      ).to.be.revertedWithCustomError(hub, "INVALID_PROVER_NONCE_PADDING");
+      ).to.be.revertedWithCustomError(hub, "InvalidProverNoncePadding");
     });
 
-    it("reverts INVALID_PROVER_ADDRESS when the decoded address is the zero address", async () => {
+    it("reverts InvalidProverAddress when the decoded address is the zero address", async () => {
       const { hub } = deployedActors;
       const zeroNonce = "0x" + "0".repeat(40);
       await expect(
         hub.registerProverKey(PROOF.a, PROOF.b, PROOF.c, signals({ nonce: zeroNonce })),
-      ).to.be.revertedWithCustomError(hub, "INVALID_PROVER_ADDRESS");
+      ).to.be.revertedWithCustomError(hub, "InvalidProverAddress");
     });
 
     it("reverts with the decoder's own message when the nonce decodes to fewer than 40 hex characters", async () => {
@@ -283,18 +283,18 @@ describe("Hub prover key registration", () => {
       ).to.be.revertedWith("Nonce exceeds 40 hex characters");
     });
 
-    it("reverts INVALID_PROVER_TIMESTAMP for a date over 1h in the past", async () => {
+    it("reverts InvalidProverTimestamp for a date over 1h in the past", async () => {
       const { hub } = deployedActors;
       await expect(
         hub.registerProverKey(PROOF.a, PROOF.b, PROOF.c, signals({ hoursOffset: -2 })),
-      ).to.be.revertedWithCustomError(hub, "INVALID_PROVER_TIMESTAMP");
+      ).to.be.revertedWithCustomError(hub, "InvalidProverTimestamp");
     });
 
-    it("reverts INVALID_PROVER_TIMESTAMP for a date over 1h in the future", async () => {
+    it("reverts InvalidProverTimestamp for a date over 1h in the future", async () => {
       const { hub } = deployedActors;
       await expect(
         hub.registerProverKey(PROOF.a, PROOF.b, PROOF.c, signals({ hoursOffset: 2 })),
-      ).to.be.revertedWithCustomError(hub, "INVALID_PROVER_TIMESTAMP");
+      ).to.be.revertedWithCustomError(hub, "InvalidProverTimestamp");
     });
 
     it("accepts a date 59 minutes in the past (inside the 1h window)", async () => {
@@ -313,35 +313,35 @@ describe("Hub prover key registration", () => {
         .withArgs(ethers.getAddress(PROVER));
     });
 
-    it("reverts INVALID_PROVER_TIMESTAMP for a date 61 minutes in the past (just outside the 1h window)", async () => {
+    it("reverts InvalidProverTimestamp for a date 61 minutes in the past (just outside the 1h window)", async () => {
       const { hub } = deployedActors;
       const dateDigits = await digitsAtChainOffsetSeconds(-61 * 60);
       await expect(
         hub.registerProverKey(PROOF.a, PROOF.b, PROOF.c, signals({ dateDigits })),
-      ).to.be.revertedWithCustomError(hub, "INVALID_PROVER_TIMESTAMP");
+      ).to.be.revertedWithCustomError(hub, "InvalidProverTimestamp");
     });
 
-    it("reverts INVALID_PROVER_TIMESTAMP for a date 61 minutes in the future (just outside the 1h window)", async () => {
+    it("reverts InvalidProverTimestamp for a date 61 minutes in the future (just outside the 1h window)", async () => {
       const { hub } = deployedActors;
       const dateDigits = await digitsAtChainOffsetSeconds(61 * 60);
       await expect(
         hub.registerProverKey(PROOF.a, PROOF.b, PROOF.c, signals({ dateDigits })),
-      ).to.be.revertedWithCustomError(hub, "INVALID_PROVER_TIMESTAMP");
+      ).to.be.revertedWithCustomError(hub, "InvalidProverTimestamp");
     });
 
-    it("reverts ONLY_PROVER_TEE_CAN_ACCESS when the caller is not the prover TEE", async () => {
+    it("reverts OnlyProverTEECanAccess when the caller is not the prover TEE", async () => {
       const { hub, user1 } = deployedActors;
       await expect(
         hub.connect(user1).registerProverKey(PROOF.a, PROOF.b, PROOF.c, signals()),
-      ).to.be.revertedWithCustomError(hub, "ONLY_PROVER_TEE_CAN_ACCESS");
+      ).to.be.revertedWithCustomError(hub, "OnlyProverTEECanAccess");
     });
 
-    it("reverts PROVER_CONFIG_NOT_SET when the prover TEE is unset, even for the former TEE caller", async () => {
+    it("reverts ProverConfigNotSet when the prover TEE is unset, even for the former TEE caller", async () => {
       const { hub, owner } = deployedActors;
       await hub.updateProverTEE(ethers.ZeroAddress);
       await expect(
         hub.connect(owner).registerProverKey(PROOF.a, PROOF.b, PROOF.c, signals()),
-      ).to.be.revertedWithCustomError(hub, "PROVER_CONFIG_NOT_SET");
+      ).to.be.revertedWithCustomError(hub, "ProverConfigNotSet");
     });
 
     it("revokeProverKey clears registration and emits", async () => {
