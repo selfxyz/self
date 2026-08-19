@@ -177,70 +177,78 @@ npx hardhat upgrade:history --contract IdentityVerificationHub
 
 ## Prover Key Config (Hub + KYC Registry)
 
-`IdentityVerificationHubImplV2.registerProverKey` and `IdentityRegistryKycImplV1.registerPubkeyCommitment`
-both verify a GCP Confidential Space attestation, and each contract holds its **own** copy of
-the config that verification depends on: a GCP root CA pubkey hash and a `PCR0Manager`
-pointer. This duplication was an accepted design cost (see
-`docs/superpowers/specs/2026-08-18-hub-register-prover-key-design.md`) in exchange for the hub
-not depending on the KYC registry at runtime. It means every rotation below must touch both
-contracts, and the two `PCR0Manager` instances must never be the same one.
+`IdentityVerificationHubImplV2.registerProverKey` and `IdentityRegistryKycImplV1.registerPubkeyCommitment` both verify a
+GCP Confidential Space attestation, and each contract holds its **own** copy of the config that verification depends on:
+a GCP root CA pubkey hash and a `PCR0Manager` pointer. This duplication was an accepted design cost (see
+`docs/superpowers/specs/2026-08-18-hub-register-prover-key-design.md`) in exchange for the hub not depending on the KYC
+registry at runtime. It means every rotation below must touch both contracts, and the two `PCR0Manager` instances must
+never be the same one.
 
 ### (a) Rotating the root CA hash or PCR0Manager pointer
 
-Both values live independently on each contract. Rotating one and forgetting the other leaves
-them inconsistent — one contract keeps verifying against stale config while the other
-verifies against the new one.
+Both values live independently on each contract. Rotating one and forgetting the other leaves them inconsistent — one
+contract keeps verifying against stale config while the other verifies against the new one.
 
-| Config value          | Hub setter                            | KYC registry setter      |
-| ---------------------- | -------------------------------------- | ------------------------- |
+| Config value            | Hub setter                                 | KYC registry setter                  |
+| ----------------------- | ------------------------------------------ | ------------------------------------ |
 | GCP root CA pubkey hash | `updateProverGCPRootCAPubkeyHash(uint256)` | `updateGCPRootCAPubkeyHash(uint256)` |
 | PCR0Manager pointer     | `updateProverPCR0Manager(address)`         | `updatePCR0Manager(address)`         |
 | GCP JWT verifier        | `updateProverGCPJWTVerifier(address)`      | `updateGCPJWTVerifier(address)`      |
 | Attested TEE address    | `updateProverTEE(address)`                 | `updateTEE(address)`                 |
 
-Every setter above is `onlyRole(SECURITY_ROLE)` and emits an event, so drift between the two
-contracts is observable off-chain by diffing the latest event per config value on each
-contract. When rotating, call the matching pair together and verify both events landed before
-considering the rotation done.
+Every setter above is `onlyRole(SECURITY_ROLE)` and emits an event, so drift between the two contracts is observable
+off-chain by diffing the latest event per config value on each contract. When rotating, call the matching pair together
+and verify both events landed before considering the rotation done.
 
 ### (b) Keep prover and KYC PCR0Manager instances separate
 
-**This is the security-relevant rule, not just tidiness.** `PCR0Manager` is a flat set of
-approved image digests — it has no notion of enclave *role*. If the hub's
-`_pcr0Manager` pointer is ever set to the **same instance** the KYC registry points at (or
-prover image digests are added to that shared instance for convenience), then a prover
-attestation replayed into `IdentityRegistryKycImplV1.registerPubkeyCommitment` passes the
-image check. That path has no length assertion on the decoded value (unlike
-`GCPJWTHelper.unpackAndDecodeAddress`, which enforces exactly 40 hex characters), so it would
-register the prover's address value as a KYC pubkey commitment. Exploiting this still requires
-the KYC registry's `_tee` signing key and a commitment preimage, so it's a garbage-write, not
-an auth bypass — but it re-introduces exactly the cross-role hazard that keeping
-`registerProverKey` off the KYC registry was meant to remove (see the design doc's "Why the
-hub and not the KYC registry" section).
+**This is the security-relevant rule, not just tidiness.** `PCR0Manager` is a flat set of approved image digests — it
+has no notion of enclave _role_. If the hub's `_pcr0Manager` pointer is ever set to the **same instance** the KYC
+registry points at (or prover image digests are added to that shared instance for convenience), then a prover
+attestation replayed into `IdentityRegistryKycImplV1.registerPubkeyCommitment` passes the image check. That path has no
+length assertion on the decoded value (unlike `GCPJWTHelper.unpackAndDecodeAddress`, which enforces exactly 40 hex
+characters), so it would register the prover's address value as a KYC pubkey commitment. Exploiting this still requires
+the KYC registry's `_tee` signing key and a commitment preimage, so it's a garbage-write, not an auth bypass — but it
+re-introduces exactly the cross-role hazard that keeping `registerProverKey` off the KYC registry was meant to remove
+(see the design doc's "Why the hub and not the KYC registry" section).
 
-**Rule:** the hub's `PCR0Manager` instance must contain only prover image digests. The KYC
-registry's `PCR0Manager` instance must contain only KYC-attestor image digests. Never point
-both contracts at the same instance, and never add prover digests to the KYC registry's
-instance. Both pointers are independently configurable, so keeping them separate costs
-nothing — it just has to be recorded so nobody reaches for the existing instance out of
-convenience during a future rotation.
+**Rule:** the hub's `PCR0Manager` instance must contain only prover image digests. The KYC registry's `PCR0Manager`
+instance must contain only KYC-attestor image digests. Never point both contracts at the same instance, and never add
+prover digests to the KYC registry's instance. Both pointers are independently configurable, so keeping them separate
+costs nothing — it just has to be recorded so nobody reaches for the existing instance out of convenience during a
+future rotation.
 
 ### (c) Post-upgrade config sequence for `registerProverKey`
 
-After deploying the `IdentityVerificationHubImplV2` upgrade that introduces
-`registerProverKey`, the following four `SECURITY_ROLE` setters must all be called before the
-function will succeed:
+After deploying the `IdentityVerificationHubImplV2` upgrade that introduces `registerProverKey`, the following four
+`SECURITY_ROLE` setters must all be called before the function will succeed:
 
 1. `updateProverGCPJWTVerifier(address)`
 2. `updateProverPCR0Manager(address)` — pointing at a **prover-only** `PCR0Manager` instance, per (b)
 3. `updateProverGCPRootCAPubkeyHash(uint256)`
 4. `updateProverTEE(address)`
 
-This is fail-closed by design: the config guard checked at the top of `registerProverKey`
-reverts `ProverConfigNotSet` if any of the four is still at its zero default. A fresh proxy
-upgrade (no `reinitializer` bump — the ERC-7201 namespace's all-zero defaults are exactly what
-the guard treats as "not configured yet") will revert on every call until all four are set, by
-construction rather than by convention.
+This is fail-closed by design: the config guard checked at the top of `registerProverKey` reverts `ProverConfigNotSet`
+if any of the four is still at its zero default. A fresh proxy upgrade (no `reinitializer` bump — the ERC-7201
+namespace's all-zero defaults are exactly what the guard treats as "not configured yet") will revert on every call until
+all four are set, by construction rather than by convention.
+
+### Prerequisite: the prover must already emit a bare 40-character nonce
+
+`unpackAndDecodeAddress` decodes exactly 40 ASCII hex characters and reverts on anything longer, so a prover that puts a
+`0x`-prefixed 42-character address in its attestation nonce fails every registration — after the four setters have
+succeeded, which makes it look like a contract problem rather than a version-skew one.
+
+So before enabling registration:
+
+1. Deploy the `tee-prover-server` build whose attestation nonce carries the **bare** 40 hex characters, with no `0x`
+   prefix.
+2. Validate one real attestation end to end against the deployed hub on a testnet, and confirm `ProverKeyRegistered`
+   fires with the address you expect.
+3. Only then treat `registerProverKey` as enabled in production.
+
+The ordering is one-way: the contract cannot accept the prefixed form without also accepting a 42-character nonce, which
+would widen what it decodes. Fixing the producer is the correct side.
 
 ---
 

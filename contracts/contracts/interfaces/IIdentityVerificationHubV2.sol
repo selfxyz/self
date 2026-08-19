@@ -134,6 +134,34 @@ interface IIdentityVerificationHubV2 {
      */
     function revokeProverKey(address proverKey) external;
 
+    /**
+     * @notice Sets the GCP JWT verifier used by prover key registration.
+     * @dev Registration reverts while this is unset -- an unset verifier must never read as
+     * "skip verification".
+     * @param verifier The GCP JWT verifier address.
+     */
+    function updateProverGCPJWTVerifier(address verifier) external;
+
+    /**
+     * @notice Sets the PCR0 manager used to validate the prover's TEE image hash.
+     * @dev Must be a PCR0Manager instance distinct from any other consumer's, so revoking an
+     * image for one does not silently revoke it for another.
+     * @param pcr0Manager The PCR0 manager address.
+     */
+    function updateProverPCR0Manager(address pcr0Manager) external;
+
+    /**
+     * @notice Sets the expected GCP root CA public key hash.
+     * @param rootCAPubkeyHash The root CA pubkey hash the attestation must carry.
+     */
+    function updateProverGCPRootCAPubkeyHash(uint256 rootCAPubkeyHash) external;
+
+    /**
+     * @notice Sets the address permitted to call registerProverKey.
+     * @param proverTee The prover TEE address.
+     */
+    function updateProverTEE(address proverTee) external;
+
     // ====================================================
     // External View Functions
     // ====================================================
@@ -196,6 +224,30 @@ interface IIdentityVerificationHubV2 {
      * @return True if the address is a registered prover key, false otherwise.
      */
     function isRegisteredProverKey(address proverKey) external view returns (bool);
+
+    /**
+     * @notice Returns the GCP JWT verifier used by prover key registration.
+     * @return The verifier address, or address(0) if unset.
+     */
+    function proverGCPJWTVerifier() external view returns (address);
+
+    /**
+     * @notice Returns the PCR0 manager used to validate the prover's TEE image hash.
+     * @return The PCR0 manager address, or address(0) if unset.
+     */
+    function proverPCR0Manager() external view returns (address);
+
+    /**
+     * @notice Returns the expected GCP root CA public key hash.
+     * @return The root CA pubkey hash, or 0 if unset.
+     */
+    function proverGCPRootCAPubkeyHash() external view returns (uint256);
+
+    /**
+     * @notice Returns the address permitted to call registerProverKey.
+     * @return The prover TEE address, or address(0) if unset.
+     */
+    function proverTEE() external view returns (address);
 
     // ====================================================
     // Public Functions

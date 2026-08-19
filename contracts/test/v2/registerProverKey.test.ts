@@ -268,9 +268,9 @@ describe("Hub prover key registration", () => {
       // 38 valid hex ASCII characters — one 31-byte chunk plus a short 7-byte remainder,
       // so the decoder's own idx-tracking loop stops two characters short of 40.
       const shortNonce = "0x" + PROVER.slice(2, -2);
-      await expect(
-        hub.registerProverKey(PROOF.a, PROOF.b, PROOF.c, signals({ nonce: shortNonce })),
-      ).to.be.revertedWith("Nonce is not 40 hex characters");
+      await expect(hub.registerProverKey(PROOF.a, PROOF.b, PROOF.c, signals({ nonce: shortNonce }))).to.be.revertedWith(
+        "Nonce is not 40 hex characters",
+      );
     });
 
     it("reverts with the decoder's own message when the nonce carries more than 40 hex characters", async () => {
@@ -278,9 +278,9 @@ describe("Hub prover key registration", () => {
       // 42 valid hex ASCII characters — the second chunk still has 2 bytes left over after the
       // decoder fills all 40 slots, so it reads the leftover as nonce content, not padding.
       const longNonce = "0x" + PROVER.slice(2) + "ab";
-      await expect(
-        hub.registerProverKey(PROOF.a, PROOF.b, PROOF.c, signals({ nonce: longNonce })),
-      ).to.be.revertedWith("Nonce exceeds 40 hex characters");
+      await expect(hub.registerProverKey(PROOF.a, PROOF.b, PROOF.c, signals({ nonce: longNonce }))).to.be.revertedWith(
+        "Nonce exceeds 40 hex characters",
+      );
     });
 
     it("reverts InvalidProverTimestamp for a date over 1h in the past", async () => {
@@ -355,9 +355,10 @@ describe("Hub prover key registration", () => {
 
     it("revokeProverKey rejects a non-SECURITY_ROLE caller", async () => {
       const { hub, user1 } = deployedActors;
-      await expect(
-        hub.connect(user1).revokeProverKey(ethers.getAddress(PROVER)),
-      ).to.be.revertedWithCustomError(hub, "AccessControlUnauthorizedAccount");
+      await expect(hub.connect(user1).revokeProverKey(ethers.getAddress(PROVER))).to.be.revertedWithCustomError(
+        hub,
+        "AccessControlUnauthorizedAccount",
+      );
     });
   });
 });
