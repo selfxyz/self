@@ -21,6 +21,8 @@ import {RegisterProofVerifierLib} from "./libraries/RegisterProofVerifierLib.sol
 import {DscProofVerifierLib} from "./libraries/DscProofVerifierLib.sol";
 import {RootCheckLib} from "./libraries/RootCheckLib.sol";
 import {OfacCheckLib} from "./libraries/OfacCheckLib.sol";
+import {GCPJWTHelper} from "./libraries/GCPJWTHelper.sol";
+import {IGCPJWTVerifier, IPCR0Manager} from "./registry/IdentityRegistryKycImplV1.sol";
 import {console} from "hardhat/console.sol";
 
 /**
@@ -29,7 +31,7 @@ import {console} from "hardhat/console.sol";
  * @dev This contract orchestrates multi-step verification processes including document attestation,
  * zero-knowledge proofs, OFAC compliance, and attribute disclosure control.
  *
- * @custom:version 2.13.0
+ * @custom:version 2.14.0
  */
 contract IdentityVerificationHubImplV2 is ImplRoot {
     /// @custom:storage-location erc7201:self.storage.IdentityVerificationHub
@@ -48,6 +50,15 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     // We should consider to add bridge address
     // address bridgeAddress;
 
+    /// @custom:storage-location erc7201:self.storage.IdentityVerificationHubProver
+    struct IdentityVerificationHubProverStorage {
+        address _gcpJwtVerifier;
+        address _pcr0Manager;
+        uint256 _gcpRootCAPubkeyHash;
+        address _proverTee;
+        mapping(address proverKey => bool) _isRegisteredProverKey;
+    }
+
     /// @dev keccak256(abi.encode(uint256(keccak256("self.storage.IdentityVerificationHub")) - 1)) & ~bytes32(uint256(0xff))
     bytes32 private constant IDENTITYVERIFICATIONHUB_STORAGE_LOCATION =
         0x2ade7eace21710c689ddef374add52ace9783e33bac626e58e73a9d190173d00;
@@ -55,6 +66,10 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     /// @dev keccak256(abi.encode(uint256(keccak256("self.storage.IdentityVerificationHubV2")) - 1)) & ~bytes32(uint256(0xff))
     bytes32 private constant IDENTITYVERIFICATIONHUBV2_STORAGE_LOCATION =
         0xf9b5980dcec1a8b0609576a1f453bb2cad4732a0ea02bb89154d44b14a306c00;
+
+    /// @dev keccak256(abi.encode(uint256(keccak256("self.storage.IdentityVerificationHubProver")) - 1)) & ~bytes32(uint256(0xff))
+    bytes32 private constant IDENTITYVERIFICATIONHUBPROVER_STORAGE_LOCATION =
+        0x76afff5e6fcbd388aa8aee87a47ca8d919948df285010f5bede324c9e7235300;
 
     /// @notice The AADHAAR registration window around the current block timestamp.
     uint256 public AADHAAR_REGISTRATION_WINDOW;
@@ -78,6 +93,17 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     function _getIdentityVerificationHubV2Storage() private pure returns (IdentityVerificationHubV2Storage storage $) {
         assembly {
             $.slot := IDENTITYVERIFICATIONHUBV2_STORAGE_LOCATION
+        }
+    }
+
+    /**
+     * @notice Returns the storage struct for the Hub's prover key configuration.
+     * @dev Uses ERC-7201 storage pattern for upgradeable contracts.
+     * @return $ The prover storage struct reference.
+     */
+    function _getProverStorage() private pure returns (IdentityVerificationHubProverStorage storage $) {
+        assembly {
+            $.slot := IDENTITYVERIFICATIONHUBPROVER_STORAGE_LOCATION
         }
     }
 
@@ -115,6 +141,36 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
      * @param verifier The new verifier address for the DSC circuit.
      */
     event DscCircuitVerifierUpdated(uint256 typeId, address verifier);
+    /**
+     * @notice Emitted when the prover GCP JWT verifier address is updated.
+     * @param verifier The new GCP JWT verifier address.
+     */
+    event ProverGCPJWTVerifierUpdated(address indexed verifier);
+    /**
+     * @notice Emitted when the prover PCR0 manager address is updated.
+     * @param pcr0Manager The new PCR0 manager address.
+     */
+    event ProverPCR0ManagerUpdated(address indexed pcr0Manager);
+    /**
+     * @notice Emitted when the prover GCP root CA pubkey hash is updated.
+     * @param rootCAPubkeyHash The new GCP root CA pubkey hash.
+     */
+    event ProverGCPRootCAPubkeyHashUpdated(uint256 rootCAPubkeyHash);
+    /**
+     * @notice Emitted when the prover TEE address is updated.
+     * @param proverTee The new prover TEE address.
+     */
+    event ProverTEEUpdated(address indexed proverTee);
+    /**
+     * @notice Emitted when a prover key is registered via GCP JWT proof.
+     * @param proverKey The decoded prover address that was registered.
+     */
+    event ProverKeyRegistered(address indexed proverKey);
+    /**
+     * @notice Emitted when a prover key is revoked.
+     * @param proverKey The prover address that was revoked.
+     */
+    event ProverKeyRevoked(address indexed proverKey);
 
     /**
      * @notice Emitted when a verification is performed.
@@ -225,6 +281,53 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     /// @notice Thrown when the pubkey commitment is invalid.
     /// @dev Ensures that the pubkey commitment is valid.
     error InvalidPubkeyCommitment();
+
+    /// @notice Thrown when a required prover config value (verifier, PCR0Manager, or root CA hash) is unset.
+    /// @dev An unset config value must never be silently treated as "skip verification".
+    error ProverConfigNotSet();
+
+    /// @notice Thrown when a function restricted to the prover TEE is called by any other address.
+    error OnlyProverTEECanAccess();
+
+    /// @notice Thrown when the GCP JWT proof verification fails for a prover key registration.
+    error InvalidProverProof();
+
+    /// @notice Thrown when the GCP root CA public key hash does not match the expected value.
+    error InvalidProverRootCA();
+
+    /// @notice Thrown when the TEE image hash is not registered in the PCR0Manager.
+    error InvalidProverImage();
+
+    /// @notice Thrown when the attested nonce carries content beyond the 40 hex characters
+    ///         that encode the prover address, i.e. pubSignals[3] or pubSignals[4] is non-zero.
+    error InvalidProverNoncePadding();
+
+    /// @notice Thrown when the attestation's current-date signal is more than 1 hour away
+    ///         from the block timestamp, in either direction.
+    error InvalidProverTimestamp();
+
+    /// @notice Thrown when the decoded prover address is the zero address.
+    /// @dev 40 ASCII '0' characters decode to address(0). Not reachable without a genuine
+    ///      attestation over an all-zeros eat_nonce, but the registered-key mapping is consumed
+    ///      as an authorization oracle, and address(0) is also what a malformed ecrecover
+    ///      returns — so a consumer checking isRegisteredProverKey(ecrecover(...)) would have
+    ///      an auth bypass if address(0) were ever registered here.
+    error InvalidProverAddress();
+
+    // ====================================================
+    // Modifiers
+    // ====================================================
+
+    /**
+     * @notice Modifier to restrict access to functions to only the prover TEE.
+     * @dev Reverts if the prover TEE is not set or if the caller is not the prover TEE.
+     */
+    modifier onlyProverTEE() {
+        address tee = _getProverStorage()._proverTee;
+        if (tee == address(0)) revert ProverConfigNotSet();
+        if (msg.sender != tee) revert OnlyProverTEECanAccess();
+        _;
+    }
 
     // ====================================================
     // Constructor
@@ -506,6 +609,114 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         }
     }
 
+    /**
+     * @notice Updates the prover GCP JWT verifier address.
+     * @param verifier The new GCP JWT verifier address.
+     */
+    function updateProverGCPJWTVerifier(address verifier) external virtual onlyProxy onlyRole(SECURITY_ROLE) {
+        _getProverStorage()._gcpJwtVerifier = verifier;
+        emit ProverGCPJWTVerifierUpdated(verifier);
+    }
+
+    /**
+     * @notice Updates the prover PCR0 manager address.
+     * @param pcr0Manager The new PCR0 manager address.
+     */
+    function updateProverPCR0Manager(address pcr0Manager) external virtual onlyProxy onlyRole(SECURITY_ROLE) {
+        _getProverStorage()._pcr0Manager = pcr0Manager;
+        emit ProverPCR0ManagerUpdated(pcr0Manager);
+    }
+
+    /**
+     * @notice Updates the prover GCP root CA pubkey hash.
+     * @param rootCAPubkeyHash The new GCP root CA pubkey hash.
+     */
+    function updateProverGCPRootCAPubkeyHash(
+        uint256 rootCAPubkeyHash
+    ) external virtual onlyProxy onlyRole(SECURITY_ROLE) {
+        _getProverStorage()._gcpRootCAPubkeyHash = rootCAPubkeyHash;
+        emit ProverGCPRootCAPubkeyHashUpdated(rootCAPubkeyHash);
+    }
+
+    /**
+     * @notice Updates the prover TEE address.
+     * @param proverTee The new prover TEE address.
+     */
+    function updateProverTEE(address proverTee) external virtual onlyProxy onlyRole(SECURITY_ROLE) {
+        _getProverStorage()._proverTee = proverTee;
+        emit ProverTEEUpdated(proverTee);
+    }
+
+    /// @notice Registers a prover key via GCP JWT attestation proof.
+    /// @dev Verifies the proof, checks the root CA hash matches the configured value, validates the
+    /// image hash against the PCR0Manager, and decodes the attested address from the eat_nonce chunks.
+    /// @param pA Groth16 proof element A.
+    /// @param pB Groth16 proof element B.
+    /// @param pC Groth16 proof element C.
+    /// @param pubSignals Circuit public signals: [rootCAHash, eatNonce[0-3], imageHash[0-2], currentDate[0-11]].
+    function registerProverKey(
+        uint256[2] calldata pA,
+        uint256[2][2] calldata pB,
+        uint256[2] calldata pC,
+        uint256[20] calldata pubSignals
+    ) external virtual onlyProxy onlyProverTEE {
+        IdentityVerificationHubProverStorage storage $ = _getProverStorage();
+
+        // An unset verifier must never be read as "skip verification".
+        if ($._gcpJwtVerifier == address(0) || $._pcr0Manager == address(0) || $._gcpRootCAPubkeyHash == 0) {
+            revert ProverConfigNotSet();
+        }
+
+        // Check if the proof is valid
+        if (!IGCPJWTVerifier($._gcpJwtVerifier).verifyProof(pA, pB, pC, pubSignals)) revert InvalidProverProof();
+
+        // Check if the root CA pubkey hash is valid
+        if (pubSignals[0] != $._gcpRootCAPubkeyHash) revert InvalidProverRootCA();
+
+        // Check if the TEE image hash is valid
+        bytes memory imageHash = GCPJWTHelper.unpackAndConvertImageHash(pubSignals[5], pubSignals[6], pubSignals[7]);
+        if (!IPCR0Manager($._pcr0Manager).isPCR0Set(imageHash)) revert InvalidProverImage();
+
+        // The circuit always emits 4 nonce chunks; a 40-char address fills only 2. The nonce's
+        // declared length is a circuit input, not a public signal, so asserting the trailing
+        // chunks are empty is the only on-chain bound on what else the nonce carried.
+        if (pubSignals[3] != 0 || pubSignals[4] != 0) revert InvalidProverNoncePadding();
+
+        uint256 currentYear = 2000 + pubSignals[8] * 10 + pubSignals[9];
+        uint256 currentMonth = pubSignals[10] * 10 + pubSignals[11];
+        uint256 currentDay = pubSignals[12] * 10 + pubSignals[13];
+        uint256 currentHour = pubSignals[14] * 10 + pubSignals[15];
+        uint256 currentMinute = pubSignals[16] * 10 + pubSignals[17];
+        uint256 currentSecond = pubSignals[18] * 10 + pubSignals[19];
+        uint256 currentTimestamp = Formatter.toTimeStampWithSeconds(
+            currentYear,
+            currentMonth,
+            currentDay,
+            currentHour,
+            currentMinute,
+            currentSecond
+        );
+
+        if (currentTimestamp + 1 hours < block.timestamp) revert InvalidProverTimestamp(); //1 hour in the past
+        if (currentTimestamp > block.timestamp + 1 hours) revert InvalidProverTimestamp(); //1 hour in the future
+
+        // Unpack the address and register it
+        address proverKey = GCPJWTHelper.unpackAndDecodeAddress(pubSignals[1], pubSignals[2]);
+        if (proverKey == address(0)) revert InvalidProverAddress();
+        $._isRegisteredProverKey[proverKey] = true;
+
+        emit ProverKeyRegistered(proverKey);
+    }
+
+    /// @notice Revokes a registered prover key.
+    /// @dev Not a permanent blacklist — re-registration would require a fresh valid attestation
+    /// binding the same address, i.e. that key inside a measured enclave.
+    /// @param proverKey The prover address to revoke.
+    function revokeProverKey(address proverKey) external virtual onlyProxy onlyRole(SECURITY_ROLE) {
+        _getProverStorage()._isRegisteredProverKey[proverKey] = false;
+        emit ProverKeyRevoked(proverKey);
+    }
+
     // ====================================================
     // External View Functions
     // ====================================================
@@ -606,6 +817,47 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     function verificationConfigV2Exists(bytes32 configId) external view virtual onlyProxy returns (bool exists) {
         SelfStructs.VerificationConfigV2 memory config = getVerificationConfigV2(configId);
         return generateConfigId(config) == configId;
+    }
+
+    /**
+     * @notice Returns the prover GCP JWT verifier address.
+     * @return The GCP JWT verifier address.
+     */
+    function proverGCPJWTVerifier() external view virtual onlyProxy returns (address) {
+        return _getProverStorage()._gcpJwtVerifier;
+    }
+
+    /**
+     * @notice Returns the prover PCR0 manager address.
+     * @return The PCR0 manager address.
+     */
+    function proverPCR0Manager() external view virtual onlyProxy returns (address) {
+        return _getProverStorage()._pcr0Manager;
+    }
+
+    /**
+     * @notice Returns the prover GCP root CA pubkey hash.
+     * @return The GCP root CA pubkey hash.
+     */
+    function proverGCPRootCAPubkeyHash() external view virtual onlyProxy returns (uint256) {
+        return _getProverStorage()._gcpRootCAPubkeyHash;
+    }
+
+    /**
+     * @notice Returns the prover TEE address.
+     * @return The prover TEE address.
+     */
+    function proverTEE() external view virtual onlyProxy returns (address) {
+        return _getProverStorage()._proverTee;
+    }
+
+    /**
+     * @notice Returns whether a given address is a registered prover key.
+     * @param proverKey The address to query.
+     * @return True if the address is a registered prover key, false otherwise.
+     */
+    function isRegisteredProverKey(address proverKey) external view virtual onlyProxy returns (bool) {
+        return _getProverStorage()._isRegisteredProverKey[proverKey];
     }
 
     // ====================================================
