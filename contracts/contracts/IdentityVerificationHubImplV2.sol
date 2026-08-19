@@ -248,7 +248,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     error CrossChainIsNotSupportedYet();
 
     /// @notice Thrown when the input data is too short for decoding.
-    /// @dev The input data must be at least 97 bytes (1 + 31 + 32 + 32 + 1 minimum).
+    /// @dev The input data must be at least 162 bytes (1 + 31 + 32 + 32 + 65 + 1 minimum).
     error InputTooShort();
 
     /// @notice Thrown when the provided signature is not exactly 65 bytes.
@@ -994,6 +994,9 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         bytes calldata userContextData,
         uint256 userIdentifier
     ) internal returns (bytes memory output) {
+        // Scope 0: The proof must carry a signature from a registered TEE prover key
+        _verifyProverSignature(vcAndDiscloseProof, header.signature);
+
         // Scope 1: Basic checks (scope and user identifier)
         CircuitConstantsV2.DiscloseIndices memory indices = CircuitConstantsV2.getDiscloseIndices(header.attestationId);
         {
@@ -1245,13 +1248,20 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         uint256[2][2] memory b,
         uint256[2] memory c,
         uint256[] memory pubSignals,
-        bytes calldata signature
+        bytes memory signature
     ) internal view {
         bytes32 digest = keccak256(abi.encode(a, b, c, pubSignals));
         (address signer, ECDSA.RecoverError err, ) = ECDSA.tryRecover(digest, signature);
         if (err != ECDSA.RecoverError.NoError || !_getProverStorage()._isRegisteredProverKey[signer]) {
             revert UnauthorizedProverSigner();
         }
+    }
+
+    /**
+     * @notice Struct-taking convenience overload of _verifyProverSignature.
+     */
+    function _verifyProverSignature(GenericProofStruct memory proof, bytes memory signature) internal view {
+        _verifyProverSignature(proof.a, proof.b, proof.c, proof.pubSignals, signature);
     }
 
     // ====================================================

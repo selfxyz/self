@@ -10,6 +10,7 @@ import { expect } from "chai";
 import { generateKycDiscloseInputFromDummy } from "@selfxyz/new-common/src/circuits/inputs/disclose-kyc";
 import { getSMTs } from "../utils/generateProof";
 import { PLACEHOLDER_SIGNATURE } from "../utils/constants";
+import { registerProverWallet, signEncodedProof } from "../utils/proverSignature";
 import { getPackedForbiddenCountries } from "@selfxyz/new-common/src/blockchain/forbiddenCountries";
 import { BigNumberish } from "ethers";
 import { generateVcAndDiscloseKycProof } from "../utils/generateProof";
@@ -22,6 +23,7 @@ const KYC_CURRENT_DATE_INDEX = 21;
 
 describe("Self Verification Flow V2 - KYC", () => {
   let deployedActors: DeployedActorsV2;
+  let proverWallet: ReturnType<typeof ethers.Wallet.createRandom>;
   let snapshotId: string;
   let nullifier: any;
   let tree: any;
@@ -37,6 +39,8 @@ describe("Self Verification Flow V2 - KYC", () => {
 
   before(async () => {
     deployedActors = await deploySystemFixturesV2();
+    proverWallet = ethers.Wallet.createRandom();
+    await registerProverWallet(deployedActors, proverWallet);
 
     const expectedScopeFromHash = hashEndpointWithScope(
       deployedActors.testSelfVerificationRoot.target.toString().toLowerCase(),
@@ -151,7 +155,7 @@ describe("Self Verification Flow V2 - KYC", () => {
 
       const proofData = ethers.solidityPacked(
         ["bytes32", "bytes", "bytes"],
-        [attestationId, PLACEHOLDER_SIGNATURE, encodedProof],
+        [attestationId, signEncodedProof(proverWallet, encodedProof), encodedProof],
       );
 
       await deployedActors.testSelfVerificationRoot.resetTestState();
@@ -219,7 +223,7 @@ describe("Self Verification Flow V2 - KYC", () => {
       );
       const proofData = ethers.solidityPacked(
         ["bytes32", "bytes", "bytes"],
-        [attestationId, PLACEHOLDER_SIGNATURE, encodedProof],
+        [attestationId, signEncodedProof(proverWallet, encodedProof), encodedProof],
       );
 
       await deployedActors.testSelfVerificationRoot.resetTestState();
@@ -271,7 +275,7 @@ describe("Self Verification Flow V2 - KYC", () => {
 
       const proofData = ethers.solidityPacked(
         ["bytes32", "bytes", "bytes"],
-        [attestationId, PLACEHOLDER_SIGNATURE, encodedProof],
+        [attestationId, signEncodedProof(proverWallet, encodedProof), encodedProof],
       );
 
       await deployedActors.testSelfVerificationRoot.resetTestState();
@@ -332,7 +336,7 @@ describe("Self Verification Flow V2 - KYC", () => {
 
       const proofData = ethers.solidityPacked(
         ["bytes32", "bytes", "bytes"],
-        [attestationId, PLACEHOLDER_SIGNATURE, encodedProof],
+        [attestationId, signEncodedProof(proverWallet, encodedProof), encodedProof],
       );
 
       await expect(
@@ -379,7 +383,7 @@ describe("Self Verification Flow V2 - KYC", () => {
 
       const proofData = ethers.solidityPacked(
         ["bytes32", "bytes", "bytes"],
-        [attestationId, PLACEHOLDER_SIGNATURE, encodedProof],
+        [attestationId, signEncodedProof(proverWallet, encodedProof), encodedProof],
       );
 
       await deployedActors.testSelfVerificationRoot.resetTestState();
@@ -387,6 +391,74 @@ describe("Self Verification Flow V2 - KYC", () => {
       await expect(
         deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData),
       ).to.be.revertedWithCustomError(deployedActors.hubImplV2, "ScopeMismatch");
+    });
+
+    function encodeBaseProof(pubSignals?: unknown): string {
+      return ethers.AbiCoder.defaultAbiCoder().encode(
+        ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[] pubSignals)"],
+        [
+          [
+            baseVcAndDiscloseProof.a,
+            baseVcAndDiscloseProof.b,
+            baseVcAndDiscloseProof.c,
+            pubSignals ?? baseVcAndDiscloseProof.pubSignals,
+          ],
+        ],
+      );
+    }
+
+    async function buildProofPayload(signature: string): Promise<{ proofData: string; userContextData: string }> {
+      const destChainId = ethers.zeroPadValue(ethers.toBeHex(31337), 32);
+      const user1Address = await deployedActors.user1.getAddress();
+      const userData = ethers.toUtf8Bytes("test-user-data-for-verification");
+      const userContextData = ethers.solidityPacked(
+        ["bytes32", "bytes32", "bytes"],
+        [destChainId, ethers.zeroPadValue(user1Address, 32), userData],
+      );
+      const attestationId = ethers.zeroPadValue(ethers.toBeHex(BigInt(KYC_ATTESTATION_ID)), 32);
+      const proofData = ethers.solidityPacked(
+        ["bytes32", "bytes", "bytes"],
+        [attestationId, signature, encodeBaseProof()],
+      );
+      return { proofData, userContextData };
+    }
+
+    it("should fail with UnauthorizedProverSigner for an all-zero signature", async () => {
+      const { proofData, userContextData } = await buildProofPayload(PLACEHOLDER_SIGNATURE);
+      await deployedActors.testSelfVerificationRoot.resetTestState();
+      await expect(
+        deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData),
+      ).to.be.revertedWithCustomError(deployedActors.hubImplV2, "UnauthorizedProverSigner");
+    });
+
+    it("should fail with UnauthorizedProverSigner when the signer is not a registered prover key", async () => {
+      const stranger = ethers.Wallet.createRandom();
+      const { proofData, userContextData } = await buildProofPayload(signEncodedProof(stranger, encodeBaseProof()));
+      await deployedActors.testSelfVerificationRoot.resetTestState();
+      await expect(
+        deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData),
+      ).to.be.revertedWithCustomError(deployedActors.hubImplV2, "UnauthorizedProverSigner");
+    });
+
+    it("should fail with UnauthorizedProverSigner when the signature covers a different proof", async () => {
+      const tamperedPubSignals = structuredClone(baseVcAndDiscloseProof.pubSignals);
+      tamperedPubSignals[0] = 12345n;
+      const { proofData, userContextData } = await buildProofPayload(
+        signEncodedProof(proverWallet, encodeBaseProof(tamperedPubSignals)),
+      );
+      await deployedActors.testSelfVerificationRoot.resetTestState();
+      await expect(
+        deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData),
+      ).to.be.revertedWithCustomError(deployedActors.hubImplV2, "UnauthorizedProverSigner");
+    });
+
+    it("should fail with UnauthorizedProverSigner after the prover key is revoked", async () => {
+      await deployedActors.hub.revokeProverKey(proverWallet.address);
+      const { proofData, userContextData } = await buildProofPayload(signEncodedProof(proverWallet, encodeBaseProof()));
+      await deployedActors.testSelfVerificationRoot.resetTestState();
+      await expect(
+        deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData),
+      ).to.be.revertedWithCustomError(deployedActors.hubImplV2, "UnauthorizedProverSigner");
     });
 
     it("should fail with invalid user identifier", async () => {
@@ -428,7 +500,7 @@ describe("Self Verification Flow V2 - KYC", () => {
 
       const proofData = ethers.solidityPacked(
         ["bytes32", "bytes", "bytes"],
-        [attestationId, PLACEHOLDER_SIGNATURE, encodedProof],
+        [attestationId, signEncodedProof(proverWallet, encodedProof), encodedProof],
       );
 
       await deployedActors.testSelfVerificationRoot.resetTestState();
@@ -478,7 +550,7 @@ describe("Self Verification Flow V2 - KYC", () => {
 
       const proofData = ethers.solidityPacked(
         ["bytes32", "bytes", "bytes"],
-        [attestationId, PLACEHOLDER_SIGNATURE, encodedProof],
+        [attestationId, signEncodedProof(proverWallet, encodedProof), encodedProof],
       );
 
       await deployedActors.testSelfVerificationRoot.resetTestState();
@@ -529,7 +601,7 @@ describe("Self Verification Flow V2 - KYC", () => {
 
       const proofData = ethers.solidityPacked(
         ["bytes32", "bytes", "bytes"],
-        [attestationId, PLACEHOLDER_SIGNATURE, encodedProof],
+        [attestationId, signEncodedProof(proverWallet, encodedProof), encodedProof],
       );
 
       await deployedActors.testSelfVerificationRoot.resetTestState();
@@ -583,7 +655,7 @@ describe("Self Verification Flow V2 - KYC", () => {
 
       const proofData = ethers.solidityPacked(
         ["bytes32", "bytes", "bytes"],
-        [attestationId, PLACEHOLDER_SIGNATURE, encodedProof],
+        [attestationId, signEncodedProof(proverWallet, encodedProof), encodedProof],
       );
 
       await deployedActors.testSelfVerificationRoot.resetTestState();
@@ -632,7 +704,7 @@ describe("Self Verification Flow V2 - KYC", () => {
 
       const proofData = ethers.solidityPacked(
         ["bytes32", "bytes", "bytes"],
-        [invalidAttestationId, PLACEHOLDER_SIGNATURE, encodedProof],
+        [invalidAttestationId, signEncodedProof(proverWallet, encodedProof), encodedProof],
       );
 
       await expect(
@@ -681,7 +753,7 @@ describe("Self Verification Flow V2 - KYC", () => {
 
       const proofData = ethers.solidityPacked(
         ["bytes32", "bytes", "bytes"],
-        [attestationId, PLACEHOLDER_SIGNATURE, encodedProof],
+        [attestationId, signEncodedProof(proverWallet, encodedProof), encodedProof],
       );
 
       // The proof validation fails before reaching custom verifier checks
@@ -724,7 +796,7 @@ describe("Self Verification Flow V2 - KYC", () => {
 
       const proofData = ethers.solidityPacked(
         ["bytes32", "bytes", "bytes"],
-        [attestationId, PLACEHOLDER_SIGNATURE, encodedProof],
+        [attestationId, signEncodedProof(proverWallet, encodedProof), encodedProof],
       );
 
       // The proof validation fails before reaching custom verifier checks
@@ -772,7 +844,7 @@ describe("Self Verification Flow V2 - KYC", () => {
 
       const proofData = ethers.solidityPacked(
         ["bytes32", "bytes", "bytes"],
-        [attestationId, PLACEHOLDER_SIGNATURE, encodedProof],
+        [attestationId, signEncodedProof(proverWallet, encodedProof), encodedProof],
       );
 
       // The proof validation fails before reaching custom verifier checks
@@ -835,7 +907,7 @@ describe("Self Verification Flow V2 - KYC", () => {
       );
       const proofData = ethers.solidityPacked(
         ["bytes32", "bytes", "bytes"],
-        [attestationId, PLACEHOLDER_SIGNATURE, encodedProof],
+        [attestationId, signEncodedProof(proverWallet, encodedProof), encodedProof],
       );
 
       // The proof validation fails before reaching cross-chain checks

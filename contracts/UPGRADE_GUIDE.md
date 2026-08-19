@@ -252,10 +252,11 @@ would widen what it decodes. Fixing the producer is the correct side.
 
 ### (d) Deploy ordering for prover signature enforcement (v2.15.0)
 
-From v2.15.0, `registerCommitment` and `registerDscKeyCommitment` **unconditionally** require their 65-byte `signature`
-to recover (via `keccak256(abi.encode(a, b, c, pubSignals))`, raw prehash, no EIP-191 prefix) to a registered prover
-key. There is no toggle and no storage change — enforcement is live from the upgrade block, and a relayer still sending
-placeholder zeros bricks the entire register flow with `UnauthorizedProverSigner`.
+From v2.15.0, `registerCommitment`, `registerDscKeyCommitment`, and the disclose flow (`verify`, via the signature
+embedded in `proofPayload`) **unconditionally** require their 65-byte signature to recover (via
+`keccak256(abi.encode(a, b, c, pubSignals))`, raw prehash, no EIP-191 prefix) to a registered prover key. There is no
+toggle and no storage change — enforcement is live from the upgrade block, and a relayer still sending placeholder zeros
+bricks both the register and disclose flows with `UnauthorizedProverSigner`.
 
 Hard ordering, each step verified before the next:
 
@@ -263,13 +264,13 @@ Hard ordering, each step verified before the next:
 2. Prover image digests registered in the prover-only `PCR0Manager`, per (b).
 3. `tee-prover-server` deployed with the `chain` feature enabled and its bare-nonce build, per the prerequisite above.
 4. `registerProverKey` succeeded on-chain — confirm `ProverKeyRegistered` fired for the live enclave's address.
-5. Relayer + db-relayer deployed with the signature pipeline, and real (non-zero) signatures observed reaching
-   `verifySelfProof`/register calldata.
+5. Relayer + db-relayer deployed with the signature pipeline for **both flows** (register calldata and the disclose
+   `proofPayload`), and real (non-zero) signatures observed reaching the chain.
 6. **Only then** upgrade the hub implementation to v2.15.0.
 
 Keys are ephemeral per enclave boot: every reboot mints a new key that must be registered before its proofs are
 accepted, and `revokeProverKey` (SECURITY_ROLE) retires a compromised one immediately — revoking the only registered key
-halts the register flow until a fresh attestation registers a replacement.
+halts the register and disclose flows until a fresh attestation registers a replacement.
 
 ---
 
