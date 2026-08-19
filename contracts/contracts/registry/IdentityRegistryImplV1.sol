@@ -447,15 +447,13 @@ contract IdentityRegistryImplV1 is IdentityRegistryStorageV1, IIdentityRegistryV
         uint256 nameAndDobRoot,
         uint256 nameAndYobRoot
     ) external view onlyProxy returns (bool) {
-        bool currentMatch =
-            (_passportNoOfacRoot == passportNoRoot) &&
-                (_nameAndDobOfacRoot == nameAndDobRoot) &&
-                (_nameAndYobOfacRoot == nameAndYobRoot);
-        bool prevMatch =
-            (_prevPassportNoOfacRoot != 0) &&
-                (_prevPassportNoOfacRoot == passportNoRoot) &&
-                (_prevNameAndDobOfacRoot == nameAndDobRoot) &&
-                (_prevNameAndYobOfacRoot == nameAndYobRoot);
+        bool currentMatch = (_passportNoOfacRoot == passportNoRoot) &&
+            (_nameAndDobOfacRoot == nameAndDobRoot) &&
+            (_nameAndYobOfacRoot == nameAndYobRoot);
+        bool prevMatch = (_prevPassportNoOfacRoot != 0) &&
+            (_prevPassportNoOfacRoot == passportNoRoot) &&
+            (_prevNameAndDobOfacRoot == nameAndDobRoot) &&
+            (_prevNameAndYobOfacRoot == nameAndYobRoot);
         return currentMatch || prevMatch;
     }
 

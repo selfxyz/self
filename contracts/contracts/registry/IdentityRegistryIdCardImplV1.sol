@@ -417,10 +417,9 @@ contract IdentityRegistryIdCardImplV1 is IdentityRegistryIdCardStorageV1, IIdent
      */
     function checkOfacRoots(uint256 nameAndDobRoot, uint256 nameAndYobRoot) external view onlyProxy returns (bool) {
         bool currentMatch = (_nameAndDobOfacRoot == nameAndDobRoot) && (_nameAndYobOfacRoot == nameAndYobRoot);
-        bool prevMatch =
-            (_prevNameAndDobOfacRoot != 0) &&
-                (_prevNameAndDobOfacRoot == nameAndDobRoot) &&
-                (_prevNameAndYobOfacRoot == nameAndYobRoot);
+        bool prevMatch = (_prevNameAndDobOfacRoot != 0) &&
+            (_prevNameAndDobOfacRoot == nameAndDobRoot) &&
+            (_prevNameAndYobOfacRoot == nameAndYobRoot);
         return currentMatch || prevMatch;
     }
 
