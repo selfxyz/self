@@ -63,6 +63,7 @@
   "0xcb0d7cda": "InvalidProverAddress",
   "0xcf46551c": "CurrentDateNotInValidRange",
   "0xd095b6cb": "InvalidProverImage",
+  "0xd2849f30": "UnauthorizedProverSigner",
   "0xd4d37a7a": "INVALID_VC_AND_DISCLOSE_PROOF",
   "0xd7ca437d": "AttestationIdMismatch",
   "0xda7bd3a6": "InvalidVcAndDiscloseProof",

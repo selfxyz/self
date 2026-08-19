@@ -23,6 +23,7 @@ import {RootCheckLib} from "./libraries/RootCheckLib.sol";
 import {OfacCheckLib} from "./libraries/OfacCheckLib.sol";
 import {GCPJWTHelper} from "./libraries/GCPJWTHelper.sol";
 import {IGCPJWTVerifier, IPCR0Manager} from "./registry/IdentityRegistryKycImplV1.sol";
+import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {console} from "hardhat/console.sol";
 
 /**
@@ -31,7 +32,7 @@ import {console} from "hardhat/console.sol";
  * @dev This contract orchestrates multi-step verification processes including document attestation,
  * zero-knowledge proofs, OFAC compliance, and attribute disclosure control.
  *
- * @custom:version 2.14.0
+ * @custom:version 2.15.0
  */
 contract IdentityVerificationHubImplV2 is ImplRoot {
     /// @custom:storage-location erc7201:self.storage.IdentityVerificationHub
@@ -317,6 +318,11 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     ///      an auth bypass if address(0) were ever registered here.
     error InvalidProverAddress();
 
+    /// @notice Thrown when the proof's signature does not recover to a registered prover key.
+    /// @dev The digest is keccak256(abi.encode(a, b, c, pubSignals)) — the exact bytes the TEE
+    ///      prover signs (raw prehash secp256k1, no EIP-191 prefix, v in {27, 28}).
+    error UnauthorizedProverSigner();
+
     // ====================================================
     // Modifiers
     // ====================================================
@@ -392,7 +398,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
      * @param attestationId The attestation ID.
      * @param registerCircuitVerifierId The identifier for the register circuit verifier to use.
      * @param registerCircuitProof The register circuit proof data.
-     * @param signature The 65-byte relayer signature; length-checked only, verification lands in a follow-up upgrade.
+     * @param signature The 65-byte TEE prover signature over keccak256(abi.encode(a, b, c, pubSignals)).
      */
     function registerCommitment(
         bytes32 attestationId,
@@ -403,6 +409,13 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         if (signature.length != 65) {
             revert InvalidSignatureLength();
         }
+        _verifyProverSignature(
+            registerCircuitProof.a,
+            registerCircuitProof.b,
+            registerCircuitProof.c,
+            registerCircuitProof.pubSignals,
+            signature
+        );
         _verifyRegisterProof(attestationId, registerCircuitVerifierId, registerCircuitProof);
         IdentityVerificationHubStorage storage $ = _getIdentityVerificationHubStorage();
         if (attestationId == AttestationId.E_PASSPORT) {
@@ -437,7 +450,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
      * @dev Verifies the DSC proof and then calls the Identity Registry to register the dsc key commitment.
      * @param dscCircuitVerifierId The identifier for the DSC circuit verifier to use.
      * @param dscCircuitProof The DSC circuit proof data.
-     * @param signature The 65-byte relayer signature; length-checked only, verification lands in a follow-up upgrade.
+     * @param signature The 65-byte TEE prover signature over keccak256(abi.encode(a, b, c, pubSignals)).
      */
     function registerDscKeyCommitment(
         bytes32 attestationId,
@@ -448,6 +461,12 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         if (signature.length != 65) {
             revert InvalidSignatureLength();
         }
+        // The TEE signs pubSignals as a dynamic array; the fixed uint256[2] must be widened
+        // before hashing or the digest will not match.
+        uint256[] memory dscPubSignals = new uint256[](2);
+        dscPubSignals[0] = dscCircuitProof.pubSignals[0];
+        dscPubSignals[1] = dscCircuitProof.pubSignals[1];
+        _verifyProverSignature(dscCircuitProof.a, dscCircuitProof.b, dscCircuitProof.c, dscPubSignals, signature);
         _verifyDscProof(attestationId, dscCircuitVerifierId, dscCircuitProof);
         IdentityVerificationHubStorage storage $ = _getIdentityVerificationHubStorage();
         if (attestationId == AttestationId.E_PASSPORT) {
@@ -1214,6 +1233,25 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     ) internal view {
         IdentityVerificationHubStorage storage $ = _getIdentityVerificationHubStorage();
         ProofVerifierLib.verifyGroth16Proof(attestationId, $._discloseVerifiers[attestationId], vcAndDiscloseProof);
+    }
+
+    /**
+     * @notice Requires the signature to recover to a registered prover key.
+     * @dev The digest mirrors the TEE prover byte-for-byte: keccak256(abi.encode(a, b, c, pubSignals))
+     *      with pubSignals as a dynamic array, signed raw-prehash (no EIP-191 prefix, v in {27, 28}).
+     */
+    function _verifyProverSignature(
+        uint256[2] memory a,
+        uint256[2][2] memory b,
+        uint256[2] memory c,
+        uint256[] memory pubSignals,
+        bytes calldata signature
+    ) internal view {
+        bytes32 digest = keccak256(abi.encode(a, b, c, pubSignals));
+        (address signer, ECDSA.RecoverError err, ) = ECDSA.tryRecover(digest, signature);
+        if (err != ECDSA.RecoverError.NoError || !_getProverStorage()._isRegisteredProverKey[signer]) {
+            revert UnauthorizedProverSigner();
+        }
     }
 
     // ====================================================

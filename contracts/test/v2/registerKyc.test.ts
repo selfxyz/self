@@ -1,4 +1,5 @@
 import { PLACEHOLDER_SIGNATURE } from "../utils/constants";
+import { registerProverWallet, signProofDigest } from "../utils/proverSignature";
 import { ethers } from "hardhat";
 import { deploySystemFixturesV2 } from "../utils/deploymentV2";
 import { DeployedActorsV2 } from "../utils/types";
@@ -53,12 +54,16 @@ describe("KYC Registration test", function () {
   let deployedActors: DeployedActorsV2;
   let snapshotId: string;
   let attestationIdBytes32: string;
+  let proverWallet: ReturnType<typeof ethers.Wallet.createRandom>;
 
   const GCP_ROOT_CA_PUBKEY_HASH = 21107503781769611051785921462832133421817512022858926231578334326320168810501n;
 
   before(async () => {
     deployedActors = await deploySystemFixturesV2();
     attestationIdBytes32 = ethers.zeroPadValue(ethers.toBeHex(BigInt(KYC_ATTESTATION_ID)), 32);
+
+    proverWallet = ethers.Wallet.createRandom();
+    await registerProverWallet(deployedActors, proverWallet);
 
     // Set the owner as the TEE for all tests
     await deployedActors.registryKyc.updateTEE(await deployedActors.owner.getAddress());
@@ -108,11 +113,12 @@ describe("KYC Registration test", function () {
         p2: 13360n,
       };
 
-      // Add the corresponding PCR0 (16 zero bytes + 32 hash bytes)
-      const pcr0Bytes = ethers.getBytes(
-        "0x" + "d2221a0ee83901980c607ceff2edbedf3f6ce5f437eafa5d89be39e9e7487c04".padStart(32, "0"),
-      );
-      await deployedActors.pcr0Manager.addPCR0(pcr0Bytes);
+      // Add the corresponding PCR0 (16 zero bytes + 32 hash bytes); registerProverWallet may
+      // have added the same digest already
+      const pcr0Hex = "d2221a0ee83901980c607ceff2edbedf3f6ce5f437eafa5d89be39e9e7487c04";
+      if (!(await deployedActors.pcr0Manager.isPCR0Set(ethers.getBytes("0x" + "00".repeat(16) + pcr0Hex)))) {
+        await deployedActors.pcr0Manager.addPCR0(ethers.getBytes("0x" + pcr0Hex));
+      }
 
       // Register the pubkey commitment via GCP JWT proof
       mockProof = {
@@ -150,7 +156,12 @@ describe("KYC Registration test", function () {
       await deployedActors.registryKyc.registerPubkeyCommitment(mockProof.a, mockProof.b, mockProof.c, mockPubSignals);
 
       await expect(
-        deployedActors.hub.registerCommitment(attestationIdBytes32, 0n, registerProof, PLACEHOLDER_SIGNATURE),
+        deployedActors.hub.registerCommitment(
+          attestationIdBytes32,
+          0n,
+          registerProof,
+          signProofDigest(proverWallet, registerProof),
+        ),
       ).to.emit(deployedActors.registryKyc, "CommitmentRegistered");
 
       const isRegistered = await deployedActors.registryKyc.nullifiers(registerProof.pubSignals[0]);
@@ -159,7 +170,12 @@ describe("KYC Registration test", function () {
 
     it("should throw an error if the pubkey commitment is not registered", async () => {
       await expect(
-        deployedActors.hub.registerCommitment(attestationIdBytes32, 0n, registerProof, PLACEHOLDER_SIGNATURE),
+        deployedActors.hub.registerCommitment(
+          attestationIdBytes32,
+          0n,
+          registerProof,
+          signProofDigest(proverWallet, registerProof),
+        ),
       ).to.be.revertedWithCustomError(deployedActors.hub, "InvalidPubkeyCommitment");
     });
 
@@ -169,20 +185,35 @@ describe("KYC Registration test", function () {
       const invalidRegisterProof = structuredClone(registerProof);
       invalidRegisterProof.pubSignals[1] = 0n;
       await expect(
-        deployedActors.hub.registerCommitment(attestationIdBytes32, 0n, invalidRegisterProof, PLACEHOLDER_SIGNATURE),
+        deployedActors.hub.registerCommitment(
+          attestationIdBytes32,
+          0n,
+          invalidRegisterProof,
+          signProofDigest(proverWallet, invalidRegisterProof),
+        ),
       ).to.be.revertedWithCustomError(deployedActors.hub, "InvalidRegisterProof");
     });
 
     it("should fail with NoVerifierSet when using non-existent register verifier ID", async () => {
       await expect(
-        deployedActors.hub.registerCommitment(attestationIdBytes32, 999999n, registerProof, PLACEHOLDER_SIGNATURE),
+        deployedActors.hub.registerCommitment(
+          attestationIdBytes32,
+          999999n,
+          registerProof,
+          signProofDigest(proverWallet, registerProof),
+        ),
       ).to.be.revertedWithCustomError(deployedActors.hub, "NoVerifierSet");
     });
 
     it("should fail with NoVerifierSet when attestation ID is invalid", async () => {
       const invalidAttestationId = ethers.zeroPadValue(ethers.toBeHex(999), 32);
       await expect(
-        deployedActors.hub.registerCommitment(invalidAttestationId, 0n, registerProof, PLACEHOLDER_SIGNATURE),
+        deployedActors.hub.registerCommitment(
+          invalidAttestationId,
+          0n,
+          registerProof,
+          signProofDigest(proverWallet, registerProof),
+        ),
       ).to.be.revertedWithCustomError(deployedActors.hub, "NoVerifierSet");
     });
 
@@ -195,7 +226,12 @@ describe("KYC Registration test", function () {
       );
 
       await expect(
-        deployedActors.hub.registerCommitment(invalidAttestationId, 1n, registerProof, PLACEHOLDER_SIGNATURE),
+        deployedActors.hub.registerCommitment(
+          invalidAttestationId,
+          1n,
+          registerProof,
+          signProofDigest(proverWallet, registerProof),
+        ),
       ).to.be.revertedWithCustomError(deployedActors.hub, "InvalidAttestationId");
     });
 
@@ -204,8 +240,56 @@ describe("KYC Registration test", function () {
       newRegisterProof.pubSignals[2] = 0n;
 
       await expect(
-        deployedActors.hub.registerCommitment(attestationIdBytes32, 0n, newRegisterProof, PLACEHOLDER_SIGNATURE),
+        deployedActors.hub.registerCommitment(
+          attestationIdBytes32,
+          0n,
+          newRegisterProof,
+          signProofDigest(proverWallet, newRegisterProof),
+        ),
       ).to.be.revertedWithCustomError(deployedActors.hub, "InvalidPubkeyCommitment");
+    });
+
+    it("should fail with UnauthorizedProverSigner for an all-zero signature", async () => {
+      await expect(
+        deployedActors.hub.registerCommitment(attestationIdBytes32, 0n, registerProof, PLACEHOLDER_SIGNATURE),
+      ).to.be.revertedWithCustomError(deployedActors.hub, "UnauthorizedProverSigner");
+    });
+
+    it("should fail with UnauthorizedProverSigner when the signer is not a registered prover key", async () => {
+      const stranger = ethers.Wallet.createRandom();
+      await expect(
+        deployedActors.hub.registerCommitment(
+          attestationIdBytes32,
+          0n,
+          registerProof,
+          signProofDigest(stranger, registerProof),
+        ),
+      ).to.be.revertedWithCustomError(deployedActors.hub, "UnauthorizedProverSigner");
+    });
+
+    it("should fail with UnauthorizedProverSigner when the signature covers a different proof", async () => {
+      const tampered = structuredClone(registerProof);
+      tampered.pubSignals[0] = 12345n;
+      await expect(
+        deployedActors.hub.registerCommitment(
+          attestationIdBytes32,
+          0n,
+          registerProof,
+          signProofDigest(proverWallet, tampered),
+        ),
+      ).to.be.revertedWithCustomError(deployedActors.hub, "UnauthorizedProverSigner");
+    });
+
+    it("should fail with UnauthorizedProverSigner after the prover key is revoked", async () => {
+      await deployedActors.hub.revokeProverKey(proverWallet.address);
+      await expect(
+        deployedActors.hub.registerCommitment(
+          attestationIdBytes32,
+          0n,
+          registerProof,
+          signProofDigest(proverWallet, registerProof),
+        ),
+      ).to.be.revertedWithCustomError(deployedActors.hub, "UnauthorizedProverSigner");
     });
   });
 

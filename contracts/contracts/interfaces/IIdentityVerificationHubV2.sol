@@ -21,6 +21,7 @@ interface IIdentityVerificationHubV2 {
      * @param attestationId The attestation ID.
      * @param registerCircuitVerifierId The identifier for the register circuit verifier to use.
      * @param registerCircuitProof The register circuit proof data.
+     * @param signature The 65-byte TEE prover signature over keccak256(abi.encode(a, b, c, pubSignals)).
      */
     function registerCommitment(
         bytes32 attestationId,
@@ -35,6 +36,7 @@ interface IIdentityVerificationHubV2 {
      * @param attestationId The attestation ID.
      * @param dscCircuitVerifierId The identifier for the DSC circuit verifier to use.
      * @param dscCircuitProof The DSC circuit proof data.
+     * @param signature The 65-byte TEE prover signature over keccak256(abi.encode(a, b, c, pubSignals)).
      */
     function registerDscKeyCommitment(
         bytes32 attestationId,

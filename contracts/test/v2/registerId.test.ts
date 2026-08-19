@@ -1,4 +1,4 @@
-import { PLACEHOLDER_SIGNATURE } from "../utils/constants";
+import { registerProverWallet, signProofDigest } from "../utils/proverSignature";
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { generateRandomFieldElement } from "../utils/utils";
@@ -19,12 +19,15 @@ describe("ID Registration test", function () {
   this.timeout(0);
 
   let deployedActors: DeployedActorsV2;
+  let proverWallet: ReturnType<typeof ethers.Wallet.createRandom>;
   let snapshotId: string;
   let attestationIdBytes32: string;
 
   before(async () => {
     // Deploy contracts and setup initial state
     deployedActors = await deploySystemFixturesV2();
+    proverWallet = ethers.Wallet.createRandom();
+    await registerProverWallet(deployedActors, proverWallet);
     attestationIdBytes32 = ethers.zeroPadValue(ethers.toBeHex(BigInt(ID_CARD_ATTESTATION_ID)), 32);
 
     console.log("🎉 System deployment and initial setup completed!");
@@ -71,7 +74,7 @@ describe("ID Registration test", function () {
           attestationIdBytes32,
           dscCircuitVerifierId,
           dscProof,
-          PLACEHOLDER_SIGNATURE,
+          signProofDigest(proverWallet, dscProof),
         ),
       ).to.emit(deployedActors.registryId, "DscKeyCommitmentRegistered");
 
@@ -97,7 +100,7 @@ describe("ID Registration test", function () {
           attestationIdBytes32,
           nonExistentVerifierId,
           dscProof,
-          PLACEHOLDER_SIGNATURE,
+          signProofDigest(proverWallet, dscProof),
         ),
       ).to.be.revertedWithCustomError(deployedActors.hub, "NoVerifierSet");
     });
@@ -111,7 +114,7 @@ describe("ID Registration test", function () {
           invalidAttestationId,
           dscCircuitVerifierId,
           dscProof,
-          PLACEHOLDER_SIGNATURE,
+          signProofDigest(proverWallet, dscProof),
         ),
       ).to.be.revertedWithCustomError(deployedActors.hub, "NoVerifierSet");
     });
@@ -133,7 +136,7 @@ describe("ID Registration test", function () {
           invalidAttestationId,
           dscCircuitVerifierId,
           dscProof,
-          PLACEHOLDER_SIGNATURE,
+          signProofDigest(proverWallet, dscProof),
         ),
       ).to.be.revertedWithCustomError(deployedActors.hub, "InvalidAttestationId");
     });
@@ -157,7 +160,7 @@ describe("ID Registration test", function () {
           attestationIdBytes32,
           dscCircuitVerifierId,
           invalidDscProof,
-          PLACEHOLDER_SIGNATURE,
+          signProofDigest(proverWallet, invalidDscProof),
         ),
       ).to.be.revertedWithCustomError(deployedActors.hub, "InvalidDscProof");
     });
@@ -173,7 +176,7 @@ describe("ID Registration test", function () {
           attestationIdBytes32,
           dscCircuitVerifierId,
           dscProof,
-          PLACEHOLDER_SIGNATURE,
+          signProofDigest(proverWallet, dscProof),
         ),
       ).to.be.revertedWithCustomError(deployedActors.hub, "InvalidCscaRoot");
     });
@@ -215,7 +218,7 @@ describe("ID Registration test", function () {
           attestationIdBytes32,
           registerCircuitVerifierId,
           registerProof,
-          PLACEHOLDER_SIGNATURE,
+          signProofDigest(proverWallet, registerProof),
         ),
       ).to.emit(deployedActors.registryId, "CommitmentRegistered");
 
@@ -235,7 +238,7 @@ describe("ID Registration test", function () {
           attestationIdBytes32,
           nonExistentVerifierId,
           registerProof,
-          PLACEHOLDER_SIGNATURE,
+          signProofDigest(proverWallet, registerProof),
         ),
       ).to.be.revertedWithCustomError(deployedActors.hub, "NoVerifierSet");
     });
@@ -249,7 +252,7 @@ describe("ID Registration test", function () {
           invalidAttestationId,
           registerCircuitVerifierId,
           registerProof,
-          PLACEHOLDER_SIGNATURE,
+          signProofDigest(proverWallet, registerProof),
         ),
       ).to.be.revertedWithCustomError(deployedActors.hub, "NoVerifierSet");
     });
@@ -271,7 +274,7 @@ describe("ID Registration test", function () {
           invalidAttestationId,
           registerCircuitVerifierId,
           registerProof,
-          PLACEHOLDER_SIGNATURE,
+          signProofDigest(proverWallet, registerProof),
         ),
       ).to.be.revertedWithCustomError(deployedActors.hub, "InvalidAttestationId");
     });
@@ -295,7 +298,7 @@ describe("ID Registration test", function () {
           attestationIdBytes32,
           registerCircuitVerifierId,
           invalidRegisterProof,
-          PLACEHOLDER_SIGNATURE,
+          signProofDigest(proverWallet, invalidRegisterProof),
         ),
       ).to.be.revertedWithCustomError(deployedActors.hub, "InvalidRegisterProof");
     });
@@ -315,7 +318,7 @@ describe("ID Registration test", function () {
           attestationIdBytes32,
           registerCircuitVerifierId,
           registerProof,
-          PLACEHOLDER_SIGNATURE,
+          signProofDigest(proverWallet, registerProof),
         ),
       ).to.be.revertedWithCustomError(deployedActors.hub, "InvalidDscCommitmentRoot");
 

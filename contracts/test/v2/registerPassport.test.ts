@@ -1,4 +1,4 @@
-import { PLACEHOLDER_SIGNATURE } from "../utils/constants";
+import { registerProverWallet, signProofDigest } from "../utils/proverSignature";
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { generateRandomFieldElement } from "../utils/utils";
@@ -18,12 +18,15 @@ describe("Passport Registration test", function () {
   this.timeout(0);
 
   let deployedActors: DeployedActorsV2;
+  let proverWallet: ReturnType<typeof ethers.Wallet.createRandom>;
   let snapshotId: string;
   let ePassportAttestationIdBytes32: string;
 
   before(async () => {
     // Deploy contracts and setup initial state
     deployedActors = await deploySystemFixturesV2();
+    proverWallet = ethers.Wallet.createRandom();
+    await registerProverWallet(deployedActors, proverWallet);
     ePassportAttestationIdBytes32 = ethers.zeroPadValue(ethers.toBeHex(BigInt(PASSPORT_ATTESTATION_ID)), 32);
 
     console.log("🎉 System deployment and initial setup completed!");
@@ -70,7 +73,7 @@ describe("Passport Registration test", function () {
           ePassportAttestationIdBytes32,
           dscCircuitVerifierId,
           dscProof,
-          PLACEHOLDER_SIGNATURE,
+          signProofDigest(proverWallet, dscProof),
         ),
       ).to.emit(deployedActors.registry, "DscKeyCommitmentRegistered");
 
@@ -96,7 +99,7 @@ describe("Passport Registration test", function () {
           ePassportAttestationIdBytes32,
           nonExistentVerifierId,
           dscProof,
-          PLACEHOLDER_SIGNATURE,
+          signProofDigest(proverWallet, dscProof),
         ),
       ).to.be.revertedWithCustomError(deployedActors.hub, "NoVerifierSet");
     });
@@ -123,7 +126,7 @@ describe("Passport Registration test", function () {
           invalidAttestationId,
           dscCircuitVerifierId,
           dscProof,
-          PLACEHOLDER_SIGNATURE,
+          signProofDigest(proverWallet, dscProof),
         ),
       ).to.be.revertedWithCustomError(deployedActors.hub, "NoVerifierSet");
     });
@@ -145,7 +148,7 @@ describe("Passport Registration test", function () {
           invalidAttestationId,
           dscCircuitVerifierId,
           dscProof,
-          PLACEHOLDER_SIGNATURE,
+          signProofDigest(proverWallet, dscProof),
         ),
       ).to.be.revertedWithCustomError(deployedActors.hub, "InvalidAttestationId");
     });
@@ -169,7 +172,7 @@ describe("Passport Registration test", function () {
           ePassportAttestationIdBytes32,
           dscCircuitVerifierId,
           invalidDscProof,
-          PLACEHOLDER_SIGNATURE,
+          signProofDigest(proverWallet, invalidDscProof),
         ),
       ).to.be.revertedWithCustomError(deployedActors.hub, "InvalidDscProof");
     });
@@ -185,7 +188,7 @@ describe("Passport Registration test", function () {
           ePassportAttestationIdBytes32,
           dscCircuitVerifierId,
           dscProof,
-          PLACEHOLDER_SIGNATURE,
+          signProofDigest(proverWallet, dscProof),
         ),
       ).to.be.revertedWithCustomError(deployedActors.hub, "InvalidCscaRoot");
     });
@@ -227,7 +230,7 @@ describe("Passport Registration test", function () {
           ePassportAttestationIdBytes32,
           registerCircuitVerifierId,
           registerProof,
-          PLACEHOLDER_SIGNATURE,
+          signProofDigest(proverWallet, registerProof),
         ),
       ).to.emit(deployedActors.registry, "CommitmentRegistered");
 
@@ -247,7 +250,7 @@ describe("Passport Registration test", function () {
           ePassportAttestationIdBytes32,
           nonExistentVerifierId,
           registerProof,
-          PLACEHOLDER_SIGNATURE,
+          signProofDigest(proverWallet, registerProof),
         ),
       ).to.be.revertedWithCustomError(deployedActors.hub, "NoVerifierSet");
     });
@@ -274,7 +277,7 @@ describe("Passport Registration test", function () {
           invalidAttestationId,
           registerCircuitVerifierId,
           registerProof,
-          PLACEHOLDER_SIGNATURE,
+          signProofDigest(proverWallet, registerProof),
         ),
       ).to.be.revertedWithCustomError(deployedActors.hub, "NoVerifierSet");
     });
@@ -296,7 +299,7 @@ describe("Passport Registration test", function () {
           invalidAttestationId,
           registerCircuitVerifierId,
           registerProof,
-          PLACEHOLDER_SIGNATURE,
+          signProofDigest(proverWallet, registerProof),
         ),
       ).to.be.revertedWithCustomError(deployedActors.hub, "InvalidAttestationId");
     });
@@ -320,7 +323,7 @@ describe("Passport Registration test", function () {
           ePassportAttestationIdBytes32,
           registerCircuitVerifierId,
           invalidRegisterProof,
-          PLACEHOLDER_SIGNATURE,
+          signProofDigest(proverWallet, invalidRegisterProof),
         ),
       ).to.be.revertedWithCustomError(deployedActors.hub, "InvalidRegisterProof");
     });
@@ -340,7 +343,7 @@ describe("Passport Registration test", function () {
           ePassportAttestationIdBytes32,
           registerCircuitVerifierId,
           registerProof,
-          PLACEHOLDER_SIGNATURE,
+          signProofDigest(proverWallet, registerProof),
         ),
       ).to.be.revertedWithCustomError(deployedActors.hub, "InvalidDscCommitmentRoot");
 

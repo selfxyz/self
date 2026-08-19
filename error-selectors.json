@@ -726,6 +726,12 @@
     "file": "contracts/contracts/IdentityVerificationHubImplV2.sol"
   },
   {
+    "name": "UnauthorizedProverSigner",
+    "signature": "UnauthorizedProverSigner()",
+    "selector": "0xd2849f30",
+    "file": "contracts/contracts/IdentityVerificationHubImplV2.sol"
+  },
+  {
     "name": "INVALID_VC_AND_DISCLOSE_PROOF",
     "signature": "INVALID_VC_AND_DISCLOSE_PROOF()",
     "selector": "0xd4d37a7a",
