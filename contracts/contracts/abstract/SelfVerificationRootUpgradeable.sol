@@ -131,11 +131,11 @@ abstract contract SelfVerificationRootUpgradeable is Initializable, ContextUpgra
     /**
      * @notice Verifies a self-proof using the bytes-based interface
      * @dev Parses relayer data format and validates against contract settings before calling hub V2
-     * @param proofPayload Packed data from relayer in format: | 32 bytes attestationId | proof data |
+     * @param proofPayload Packed data from relayer in format: | 32 bytes attestationId | 65 bytes signature | proofData |
      * @param userContextData User-defined data in format: | 32 bytes destChainId | 32 bytes userIdentifier | data |
-     * @custom:data-format proofPayload = | 32 bytes attestationId | proofData |
+     * @custom:data-format proofPayload = | 32 bytes attestationId | 65 bytes signature | proofData |
      * @custom:data-format userContextData = | 32 bytes destChainId | 32 bytes userIdentifier | data |
-     * @custom:data-format hubData = | 1 bytes contract version | 31 bytes buffer | 32 bytes scope | 32 bytes attestationId | proofData |
+     * @custom:data-format hubData = | 1 bytes contract version | 31 bytes buffer | 32 bytes scope | 32 bytes attestationId | 65 bytes signature | proofData |
      */
     function verifySelfProof(bytes calldata proofPayload, bytes calldata userContextData) public {
         SelfVerificationRootStorage storage $ = _getSelfVerificationRootStorage();
@@ -162,7 +162,7 @@ abstract contract SelfVerificationRootUpgradeable is Initializable, ContextUpgra
 
         bytes32 configId = getConfigId(destinationChainId, userIdentifier, userDefinedData);
 
-        // Hub data should be | 1 byte contractVersion | 31 bytes buffer | 32 bytes scope | 32 bytes attestationId | proof data
+        // Hub data should be | 1 byte contractVersion | 31 bytes buffer | 32 bytes scope | 32 bytes attestationId | 65 bytes signature | proofData
         bytes memory baseVerificationInput = abi.encodePacked(
             // 1 byte contractVersion
             CONTRACT_VERSION,
