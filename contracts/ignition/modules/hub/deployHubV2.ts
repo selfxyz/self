@@ -16,7 +16,7 @@ function getHubImplV2InitializeData() {
  * Hardhat Ignition deployment module for Identity Verification Hub V2
  *
  * This module deploys:
- * 1. All required libraries (7 total):
+ * 1. All required libraries (9 total):
  *    - CustomVerifier
  *    - OutputFormatterLib
  *    - ProofVerifierLib
@@ -24,6 +24,8 @@ function getHubImplV2InitializeData() {
  *    - DscProofVerifierLib
  *    - RootCheckLib
  *    - OfacCheckLib
+ *    - ProverSignatureLib
+ *    - ProverAttestationLib
  * 2. IdentityVerificationHubImplV2 - The implementation contract with library linkage
  * 3. IdentityVerificationHub - The proxy contract pointing to the implementation
  *
@@ -59,7 +61,9 @@ function getHubImplV2InitializeData() {
  *      "contracts/libraries/RegisterProofVerifierLib.sol:RegisterProofVerifierLib": "<REGISTER_PROOF_VERIFIER_ADDRESS>",
  *      "contracts/libraries/DscProofVerifierLib.sol:DscProofVerifierLib": "<DSC_PROOF_VERIFIER_ADDRESS>",
  *      "contracts/libraries/RootCheckLib.sol:RootCheckLib": "<ROOT_CHECK_ADDRESS>",
- *      "contracts/libraries/OfacCheckLib.sol:OfacCheckLib": "<OFAC_CHECK_ADDRESS>"
+ *      "contracts/libraries/OfacCheckLib.sol:OfacCheckLib": "<OFAC_CHECK_ADDRESS>",
+ *      "contracts/libraries/ProverSignatureLib.sol:ProverSignatureLib": "<PROVER_SIGNATURE_ADDRESS>",
+ *      "contracts/libraries/ProverAttestationLib.sol:ProverAttestationLib": "<PROVER_ATTESTATION_ADDRESS>"
  *    };
  *    ```
  *    Then verify: `npx hardhat verify --network <network-name> --libraries verify-libs.js <IMPL_V2_ADDRESS>`
@@ -87,6 +91,8 @@ export default buildModule("DeployHubV2", (m) => {
   const dscProofVerifierLib = m.library("DscProofVerifierLib");
   const rootCheckLib = m.library("RootCheckLib");
   const ofacCheckLib = m.library("OfacCheckLib");
+  const proverSignatureLib = m.library("ProverSignatureLib");
+  const proverAttestationLib = m.library("ProverAttestationLib");
 
   // Deploy the implementation contract with all library linkages
   const identityVerificationHubImplV2 = m.contract("IdentityVerificationHubImplV2", [], {
@@ -98,6 +104,8 @@ export default buildModule("DeployHubV2", (m) => {
       DscProofVerifierLib: dscProofVerifierLib,
       RootCheckLib: rootCheckLib,
       OfacCheckLib: ofacCheckLib,
+      ProverSignatureLib: proverSignatureLib,
+      ProverAttestationLib: proverAttestationLib,
     },
   });
 

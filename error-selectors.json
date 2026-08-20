@@ -264,10 +264,22 @@
     "file": "contracts/contracts/IdentityVerificationHubImplV2.sol"
   },
   {
+    "name": "InvalidProverProof",
+    "signature": "InvalidProverProof()",
+    "selector": "0x29a48461",
+    "file": "contracts/contracts/libraries/ProverAttestationLib.sol"
+  },
+  {
     "name": "InvalidProverTimestamp",
     "signature": "InvalidProverTimestamp()",
     "selector": "0x341da467",
     "file": "contracts/contracts/IdentityVerificationHubImplV2.sol"
+  },
+  {
+    "name": "InvalidProverTimestamp",
+    "signature": "InvalidProverTimestamp()",
+    "selector": "0x341da467",
+    "file": "contracts/contracts/libraries/ProverAttestationLib.sol"
   },
   {
     "name": "InvalidRootsHash",
@@ -306,6 +318,12 @@
     "file": "contracts/contracts/IdentityVerificationHubImplV2.sol"
   },
   {
+    "name": "InvalidProverRootCA",
+    "signature": "InvalidProverRootCA()",
+    "selector": "0x3ee21b16",
+    "file": "contracts/contracts/libraries/ProverAttestationLib.sol"
+  },
+  {
     "name": "InvalidPubkey",
     "signature": "InvalidPubkey()",
     "selector": "0x422cc3b7",
@@ -322,6 +340,12 @@
     "signature": "InvalidOlderThan()",
     "selector": "0x49aecbc2",
     "file": "contracts/contracts/libraries/CustomVerifier.sol"
+  },
+  {
+    "name": "InvalidSignatureLength",
+    "signature": "InvalidSignatureLength()",
+    "selector": "0x4be6321b",
+    "file": "contracts/contracts/IdentityVerificationHubImplV2.sol"
   },
   {
     "name": "InvalidDscCommitmentRoot",
@@ -364,6 +388,12 @@
     "signature": "InvalidProverNoncePadding()",
     "selector": "0x50cbea7b",
     "file": "contracts/contracts/IdentityVerificationHubImplV2.sol"
+  },
+  {
+    "name": "InvalidProverNoncePadding",
+    "signature": "InvalidProverNoncePadding()",
+    "selector": "0x50cbea7b",
+    "file": "contracts/contracts/libraries/ProverAttestationLib.sol"
   },
   {
     "name": "INVALID_COMMITMENT_ROOT",
@@ -708,6 +738,12 @@
     "file": "contracts/contracts/IdentityVerificationHubImplV2.sol"
   },
   {
+    "name": "InvalidProverAddress",
+    "signature": "InvalidProverAddress()",
+    "selector": "0xcb0d7cda",
+    "file": "contracts/contracts/libraries/ProverAttestationLib.sol"
+  },
+  {
     "name": "CurrentDateNotInValidRange",
     "signature": "CurrentDateNotInValidRange()",
     "selector": "0xcf46551c",
@@ -717,6 +753,18 @@
     "name": "InvalidProverImage",
     "signature": "InvalidProverImage()",
     "selector": "0xd095b6cb",
+    "file": "contracts/contracts/IdentityVerificationHubImplV2.sol"
+  },
+  {
+    "name": "InvalidProverImage",
+    "signature": "InvalidProverImage()",
+    "selector": "0xd095b6cb",
+    "file": "contracts/contracts/libraries/ProverAttestationLib.sol"
+  },
+  {
+    "name": "UnauthorizedProverSigner",
+    "signature": "UnauthorizedProverSigner()",
+    "selector": "0xd2849f30",
     "file": "contracts/contracts/IdentityVerificationHubImplV2.sol"
   },
   {
@@ -760,6 +808,12 @@
     "signature": "ProverConfigNotSet()",
     "selector": "0xe2ffd388",
     "file": "contracts/contracts/IdentityVerificationHubImplV2.sol"
+  },
+  {
+    "name": "ProverConfigNotSet",
+    "signature": "ProverConfigNotSet()",
+    "selector": "0xe2ffd388",
+    "file": "contracts/contracts/libraries/ProverAttestationLib.sol"
   },
   {
     "name": "ScopeMismatch",

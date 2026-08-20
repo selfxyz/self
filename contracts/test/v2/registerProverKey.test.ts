@@ -2,6 +2,7 @@ import { ethers } from "hardhat";
 import { expect } from "chai";
 import { deploySystemFixturesV2 } from "../utils/deploymentV2";
 import { DeployedActorsV2 } from "../utils/types";
+import { registerProverWallet, signProofDigest } from "../utils/proverSignature";
 
 // <=31 ASCII bytes per field element, little-endian within each chunk.
 function packAscii(s: string): bigint[] {
@@ -359,6 +360,105 @@ describe("Hub prover key registration", () => {
         hub,
         "AccessControlUnauthorizedAccount",
       );
+    });
+  });
+
+  describe("prover signature enforcement", () => {
+    const attestationId = ethers.zeroPadValue(ethers.toBeHex(1), 32);
+    const genericProof = {
+      a: [1n, 2n] as [bigint, bigint],
+      b: [
+        [1n, 2n],
+        [3n, 4n],
+      ] as [[bigint, bigint], [bigint, bigint]],
+      c: [1n, 2n] as [bigint, bigint],
+      pubSignals: [7n, 8n, 9n],
+    };
+    const dscProof = {
+      a: [1n, 2n] as [bigint, bigint],
+      b: [
+        [1n, 2n],
+        [3n, 4n],
+      ] as [[bigint, bigint], [bigint, bigint]],
+      c: [1n, 2n] as [bigint, bigint],
+      pubSignals: [7n, 8n] as [bigint, bigint],
+    };
+    let proverWallet: ReturnType<typeof ethers.Wallet.createRandom>;
+
+    before(async () => {
+      proverWallet = ethers.Wallet.createRandom();
+      await registerProverWallet(deployedActors, proverWallet);
+    });
+
+    it("rejects 65 garbage bytes with UnauthorizedProverSigner", async () => {
+      const { hub } = deployedActors;
+      await expect(
+        hub.registerCommitment(attestationId, 0n, genericProof, "0x" + "ff".repeat(65)),
+      ).to.be.revertedWithCustomError(hub, "UnauthorizedProverSigner");
+    });
+
+    it("rejects a valid signature from an unregistered signer", async () => {
+      const { hub } = deployedActors;
+      const stranger = ethers.Wallet.createRandom();
+      await expect(
+        hub.registerCommitment(attestationId, 0n, genericProof, signProofDigest(stranger, genericProof)),
+      ).to.be.revertedWithCustomError(hub, "UnauthorizedProverSigner");
+    });
+
+    it("accepts a registered signer's signature and proceeds to proof verification", async () => {
+      const { hub } = deployedActors;
+      // Passing the signature check surfaces the next check's error (no verifier for id 999999)
+      await expect(
+        hub.registerCommitment(attestationId, 999999n, genericProof, signProofDigest(proverWallet, genericProof)),
+      ).to.be.revertedWithCustomError(hub, "NoVerifierSet");
+    });
+
+    it("hashes DSC fixed pubSignals as a dynamic array", async () => {
+      const { hub } = deployedActors;
+      // The contract widens uint256[2] to uint256[] before hashing; signing the dynamic form
+      // must pass the signature check and surface the downstream NoVerifierSet
+      await expect(
+        hub.registerDscKeyCommitment(attestationId, 999999n, dscProof, signProofDigest(proverWallet, dscProof)),
+      ).to.be.revertedWithCustomError(hub, "NoVerifierSet");
+    });
+
+    it("matches the digest vector pinned in tee-prover-server", async () => {
+      const { hub } = deployedActors;
+      // Same vector and digest as tee-prover-server src/attestation/digest.rs pins against
+      // `cast abi-encode`/`cast keccak` ground truth. Each repo's CI guards its own side of the
+      // digest agreement. If this fails, the hub no longer hashes what the enclave signs —
+      // changing the constant must be coordinated with tee-prover-server and invalidates every
+      // previously stored signature.
+      const pinned = {
+        a: [1n, 2n] as [bigint, bigint],
+        b: [
+          [3n, 4n],
+          [5n, 6n],
+        ] as [[bigint, bigint], [bigint, bigint]],
+        c: [7n, 8n] as [bigint, bigint],
+        pubSignals: [9n, 10n],
+      };
+      const digest = ethers.keccak256(
+        ethers.AbiCoder.defaultAbiCoder().encode(
+          ["uint256[2]", "uint256[2][2]", "uint256[2]", "uint256[]"],
+          [pinned.a, pinned.b, pinned.c, pinned.pubSignals],
+        ),
+      );
+      expect(digest).to.equal("0x5696f3225b77a4372d8d3d26e9c8beda1239a2be61d8e50c15f00494c73aa745");
+
+      // The hub reconstructs the same digest on-chain: a registered signer over the pinned
+      // vector passes the signature check and surfaces the downstream NoVerifierSet
+      await expect(
+        hub.registerCommitment(attestationId, 999999n, pinned, signProofDigest(proverWallet, pinned)),
+      ).to.be.revertedWithCustomError(hub, "NoVerifierSet");
+    });
+
+    it("rejects a revoked prover key's signature", async () => {
+      const { hub } = deployedActors;
+      await hub.revokeProverKey(proverWallet.address);
+      await expect(
+        hub.registerCommitment(attestationId, 999999n, genericProof, signProofDigest(proverWallet, genericProof)),
+      ).to.be.revertedWithCustomError(hub, "UnauthorizedProverSigner");
     });
   });
 });

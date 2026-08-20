@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.28;
 
-import {IRegisterCircuitVerifier} from "./IRegisterCircuitVerifier.sol";
+import {GenericProofStruct} from "./IRegisterCircuitVerifier.sol";
 import {IDscCircuitVerifier} from "./IDscCircuitVerifier.sol";
 import {SelfStructs} from "../libraries/SelfStructs.sol";
 
@@ -21,11 +21,13 @@ interface IIdentityVerificationHubV2 {
      * @param attestationId The attestation ID.
      * @param registerCircuitVerifierId The identifier for the register circuit verifier to use.
      * @param registerCircuitProof The register circuit proof data.
+     * @param signature The 65-byte TEE prover signature over keccak256(abi.encode(a, b, c, pubSignals)).
      */
     function registerCommitment(
         bytes32 attestationId,
         uint256 registerCircuitVerifierId,
-        IRegisterCircuitVerifier.RegisterCircuitProof memory registerCircuitProof
+        GenericProofStruct memory registerCircuitProof,
+        bytes calldata signature
     ) external;
 
     /**
@@ -34,11 +36,13 @@ interface IIdentityVerificationHubV2 {
      * @param attestationId The attestation ID.
      * @param dscCircuitVerifierId The identifier for the DSC circuit verifier to use.
      * @param dscCircuitProof The DSC circuit proof data.
+     * @param signature The 65-byte TEE prover signature over keccak256(abi.encode(a, b, c, pubSignals)).
      */
     function registerDscKeyCommitment(
         bytes32 attestationId,
         uint256 dscCircuitVerifierId,
-        IDscCircuitVerifier.DscCircuitProof memory dscCircuitProof
+        IDscCircuitVerifier.DscCircuitProof memory dscCircuitProof,
+        bytes calldata signature
     ) external;
 
     /**

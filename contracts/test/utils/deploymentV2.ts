@@ -168,7 +168,9 @@ export async function deploySystemFixturesV2(): Promise<DeployedActorsV2> {
     outputFormatterLib: any,
     proofVerifierLib: any,
     registerProofVerifierLib: any,
-    rootCheckLib: any;
+    rootCheckLib: any,
+    proverSignatureLib: any,
+    proverAttestationLib: any;
   {
     // Deploy PoseidonT3
     poseidonT3Factory = await ethers.getContractFactory("PoseidonT3");
@@ -219,6 +221,14 @@ export async function deploySystemFixturesV2(): Promise<DeployedActorsV2> {
     const RootCheckLibFactory = await ethers.getContractFactory("RootCheckLib");
     rootCheckLib = await RootCheckLibFactory.connect(owner).deploy();
     await rootCheckLib.waitForDeployment();
+
+    const ProverSignatureLibFactory = await ethers.getContractFactory("ProverSignatureLib");
+    proverSignatureLib = await ProverSignatureLibFactory.connect(owner).deploy();
+    await proverSignatureLib.waitForDeployment();
+
+    const ProverAttestationLibFactory = await ethers.getContractFactory("ProverAttestationLib");
+    proverAttestationLib = await ProverAttestationLibFactory.connect(owner).deploy();
+    await proverAttestationLib.waitForDeployment();
   }
 
   // Deploy IdentityRegistryImplV1 (same registry as V1)
@@ -280,6 +290,8 @@ export async function deploySystemFixturesV2(): Promise<DeployedActorsV2> {
         ProofVerifierLib: proofVerifierLib.target,
         RegisterProofVerifierLib: registerProofVerifierLib.target,
         RootCheckLib: rootCheckLib.target,
+        ProverSignatureLib: proverSignatureLib.target,
+        ProverAttestationLib: proverAttestationLib.target,
       },
     });
     identityVerificationHubImplV2 = await IdentityVerificationHubImplV2Factory.connect(owner).deploy();
