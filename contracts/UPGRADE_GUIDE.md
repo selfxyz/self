@@ -256,7 +256,7 @@ From v2.15.0, `registerCommitment`, `registerDscKeyCommitment`, and the disclose
 embedded in `proofPayload`) **unconditionally** require their 65-byte signature to recover (via
 `keccak256(abi.encode(a, b, c, pubSignals))`, raw prehash, no EIP-191 prefix) to a registered prover key. There is no
 toggle and no storage change — enforcement is live from the upgrade block, and a relayer still sending placeholder zeros
-bricks both the register and disclose flows with `UnauthorizedProverSigner`.
+bricks both the register and disclose flows.
 
 **Adding the `signature` parameter changes both function selectors.** There is no overload: the 3-argument functions
 cease to exist at the upgrade block.
@@ -269,10 +269,24 @@ cease to exist at the upgrade block.
 **The disclose flow breaks the same way for a different reason.** `verifySelfProof(bytes,bytes)` keeps its selector —
 the signature rides inside `proofPayload`, whose layout changes from `| 32 bytes attestationId | proofData |` to
 `| 32 bytes attestationId | 65 bytes signature | proofData |`. Nothing about the call shape changes, so a version-skewed
-call is accepted and then misread: an old-format payload sent to a v2.15.0 hub has the first 65 bytes of its proof data
-interpreted as a signature and the remainder shifted by 65 bytes, which surfaces as `UnauthorizedProverSigner` rather
-than as a format error. Do not read that error as a prover-key problem during a rollout — check the relayer's payload
-layout first.
+call is accepted and only then found to be wrong.
+
+**What it looks like when it happens.** An old-format payload reaching a v2.15.0 hub has the first 65 bytes of its proof
+data consumed as a signature, leaving the remainder shifted by 65 bytes. `_decodeInput` strips those bytes, and
+`_executeVerificationFlow` hands the shifted remainder to `_decodeVcAndDiscloseProof`, which is a plain
+`abi.decode(data, (GenericProofStruct))`. That is evaluated as an argument to `_basicVerification`, so it runs _before_
+the body reaches `_verifyProverSignature`. A shifted ABI blob has broken offsets, so the call reverts inside
+`abi.decode` — **with no reason string and no custom error at all**, not with `UnauthorizedProverSigner`.
+
+So during a rollout, read the two symptoms in opposite directions:
+
+| Symptom                      | Most likely cause                                                    |
+| ---------------------------- | -------------------------------------------------------------------- |
+| revert with no reason string | version skew — the relayer is sending the old `proofPayload` layout  |
+| `InvalidDataFormat`          | payload shorter than 98 bytes, i.e. no room for the signature at all |
+| `UnauthorizedProverSigner`   | a genuine prover-key problem: unregistered, revoked, or wrong signer |
+
+Only the third is about prover keys. Reaching it requires a payload that decoded cleanly, which a shifted one will not.
 
 That makes the relayer and the hub a **mutually exclusive pair** for both flows, and it is why the ordering below is a
 cutover rather than a sequence. A relayer sending 4-argument register calldata to the v2.14.0 hub matches no function
