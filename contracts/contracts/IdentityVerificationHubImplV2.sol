@@ -23,7 +23,8 @@ import {RootCheckLib} from "./libraries/RootCheckLib.sol";
 import {OfacCheckLib} from "./libraries/OfacCheckLib.sol";
 import {GCPJWTHelper} from "./libraries/GCPJWTHelper.sol";
 import {IGCPJWTVerifier, IPCR0Manager} from "./registry/IdentityRegistryKycImplV1.sol";
-import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import {ProverSignatureLib} from "./libraries/ProverSignatureLib.sol";
+import {ProverAttestationLib} from "./libraries/ProverAttestationLib.sol";
 import {console} from "hardhat/console.sol";
 
 /**
@@ -694,47 +695,16 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     ) external virtual onlyProxy onlyProverTEE {
         IdentityVerificationHubProverStorage storage $ = _getProverStorage();
 
-        // An unset verifier must never be read as "skip verification".
-        if ($._gcpJwtVerifier == address(0) || $._pcr0Manager == address(0) || $._gcpRootCAPubkeyHash == 0) {
-            revert ProverConfigNotSet();
-        }
-
-        // Check if the proof is valid
-        if (!IGCPJWTVerifier($._gcpJwtVerifier).verifyProof(pA, pB, pC, pubSignals)) revert InvalidProverProof();
-
-        // Check if the root CA pubkey hash is valid
-        if (pubSignals[0] != $._gcpRootCAPubkeyHash) revert InvalidProverRootCA();
-
-        // Check if the TEE image hash is valid
-        bytes memory imageHash = GCPJWTHelper.unpackAndConvertImageHash(pubSignals[5], pubSignals[6], pubSignals[7]);
-        if (!IPCR0Manager($._pcr0Manager).isPCR0Set(imageHash)) revert InvalidProverImage();
-
-        // The circuit always emits 4 nonce chunks; a 40-char address fills only 2. The nonce's
-        // declared length is a circuit input, not a public signal, so asserting the trailing
-        // chunks are empty is the only on-chain bound on what else the nonce carried.
-        if (pubSignals[3] != 0 || pubSignals[4] != 0) revert InvalidProverNoncePadding();
-
-        uint256 currentYear = 2000 + pubSignals[8] * 10 + pubSignals[9];
-        uint256 currentMonth = pubSignals[10] * 10 + pubSignals[11];
-        uint256 currentDay = pubSignals[12] * 10 + pubSignals[13];
-        uint256 currentHour = pubSignals[14] * 10 + pubSignals[15];
-        uint256 currentMinute = pubSignals[16] * 10 + pubSignals[17];
-        uint256 currentSecond = pubSignals[18] * 10 + pubSignals[19];
-        uint256 currentTimestamp = Formatter.toTimeStampWithSeconds(
-            currentYear,
-            currentMonth,
-            currentDay,
-            currentHour,
-            currentMinute,
-            currentSecond
+        address proverKey = ProverAttestationLib.validateAndDecode(
+            $._gcpJwtVerifier,
+            $._pcr0Manager,
+            $._gcpRootCAPubkeyHash,
+            pA,
+            pB,
+            pC,
+            pubSignals
         );
 
-        if (currentTimestamp + 1 hours < block.timestamp) revert InvalidProverTimestamp(); //1 hour in the past
-        if (currentTimestamp > block.timestamp + 1 hours) revert InvalidProverTimestamp(); //1 hour in the future
-
-        // Unpack the address and register it
-        address proverKey = GCPJWTHelper.unpackAndDecodeAddress(pubSignals[1], pubSignals[2]);
-        if (proverKey == address(0)) revert InvalidProverAddress();
         $._isRegisteredProverKey[proverKey] = true;
 
         emit ProverKeyRegistered(proverKey);
@@ -1250,9 +1220,8 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         uint256[] memory pubSignals,
         bytes memory signature
     ) internal view {
-        bytes32 digest = keccak256(abi.encode(a, b, c, pubSignals));
-        (address signer, ECDSA.RecoverError err, ) = ECDSA.tryRecover(digest, signature);
-        if (err != ECDSA.RecoverError.NoError || !_getProverStorage()._isRegisteredProverKey[signer]) {
+        (address signer, bool ok) = ProverSignatureLib.recoverProverSigner(a, b, c, pubSignals, signature);
+        if (!ok || !_getProverStorage()._isRegisteredProverKey[signer]) {
             revert UnauthorizedProverSigner();
         }
     }
@@ -1261,7 +1230,10 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
      * @notice Struct-taking convenience overload of _verifyProverSignature.
      */
     function _verifyProverSignature(GenericProofStruct memory proof, bytes memory signature) internal view {
-        _verifyProverSignature(proof.a, proof.b, proof.c, proof.pubSignals, signature);
+        (address signer, bool ok) = ProverSignatureLib.recoverProverSignerFromProof(proof, signature);
+        if (!ok || !_getProverStorage()._isRegisteredProverKey[signer]) {
+            revert UnauthorizedProverSigner();
+        }
     }
 
     // ====================================================
