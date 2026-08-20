@@ -375,8 +375,8 @@ describe("Self Verification Flow V2 - Aadhaar", () => {
       );
 
       const differentScopeProofData = ethers.solidityPacked(
-        ["bytes32", "bytes"],
-        [attestationId, differentScopeEncodedProof],
+        ["bytes32", "bytes", "bytes"],
+        [attestationId, signEncodedProof(proverWallet, differentScopeEncodedProof), differentScopeEncodedProof],
       );
 
       await expect(
@@ -477,8 +477,12 @@ describe("Self Verification Flow V2 - Aadhaar", () => {
       );
 
       const modifiedVcAndDiscloseProofData = ethers.solidityPacked(
-        ["bytes32", "bytes"],
-        [attestationId, modifiedVcAndDiscloseEncodedProof],
+        ["bytes32", "bytes", "bytes"],
+        [
+          attestationId,
+          signEncodedProof(proverWallet, modifiedVcAndDiscloseEncodedProof),
+          modifiedVcAndDiscloseEncodedProof,
+        ],
       );
 
       await expect(
@@ -555,8 +559,8 @@ describe("Self Verification Flow V2 - Aadhaar", () => {
       );
 
       const differentScopeProofData = ethers.solidityPacked(
-        ["bytes32", "bytes"],
-        [attestationId, differentScopeEncodedProof],
+        ["bytes32", "bytes", "bytes"],
+        [attestationId, signEncodedProof(proverWallet, differentScopeEncodedProof), differentScopeEncodedProof],
       );
 
       await expect(
@@ -633,8 +637,8 @@ describe("Self Verification Flow V2 - Aadhaar", () => {
       );
 
       const differentScopeProofData = ethers.solidityPacked(
-        ["bytes32", "bytes"],
-        [attestationId, differentScopeEncodedProof],
+        ["bytes32", "bytes", "bytes"],
+        [attestationId, signEncodedProof(proverWallet, differentScopeEncodedProof), differentScopeEncodedProof],
       );
 
       // Note: When currentDay - 1 results in 0, the Formatter library throws InvalidDayRange
@@ -688,8 +692,8 @@ describe("Self Verification Flow V2 - Aadhaar", () => {
       );
 
       const invalidGrothProofData = ethers.solidityPacked(
-        ["bytes32", "bytes"],
-        [attestationId, invalidGrothProofEncodedProof],
+        ["bytes32", "bytes", "bytes"],
+        [attestationId, signEncodedProof(proverWallet, invalidGrothProofEncodedProof), invalidGrothProofEncodedProof],
       );
 
       await expect(

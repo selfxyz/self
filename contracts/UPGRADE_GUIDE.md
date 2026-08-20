@@ -258,15 +258,55 @@ embedded in `proofPayload`) **unconditionally** require their 65-byte signature 
 toggle and no storage change — enforcement is live from the upgrade block, and a relayer still sending placeholder zeros
 bricks both the register and disclose flows with `UnauthorizedProverSigner`.
 
-Hard ordering, each step verified before the next:
+**Adding the `signature` parameter changes both function selectors.** There is no overload: the 3-argument functions
+cease to exist at the upgrade block.
+
+| Function                   | v2.14.0 (3-arg) | v2.15.0 (4-arg) |
+| -------------------------- | --------------- | --------------- |
+| `registerCommitment`       | `0xf2ea431c`    | `0x848cd73b`    |
+| `registerDscKeyCommitment` | `0x8322963f`    | `0xed9b4fd7`    |
+
+**The disclose flow breaks the same way for a different reason.** `verifySelfProof(bytes,bytes)` keeps its selector —
+the signature rides inside `proofPayload`, whose layout changes from `| 32 bytes attestationId | proofData |` to
+`| 32 bytes attestationId | 65 bytes signature | proofData |`. Nothing about the call shape changes, so a version-skewed
+call is accepted and then misread: an old-format payload sent to a v2.15.0 hub has the first 65 bytes of its proof data
+interpreted as a signature and the remainder shifted by 65 bytes, which surfaces as `UnauthorizedProverSigner` rather
+than as a format error. Do not read that error as a prover-key problem during a rollout — check the relayer's payload
+layout first.
+
+That makes the relayer and the hub a **mutually exclusive pair** for both flows, and it is why the ordering below is a
+cutover rather than a sequence. A relayer sending 4-argument register calldata to the v2.14.0 hub matches no function
+and the proxy reverts; a relayer still sending 3-argument calldata after the upgrade reverts the same way; and the
+disclose payloads fail in whichever direction the skew runs. There is no ordering of "upgrade the hub" and "deploy the
+relayer" in which both are briefly true, so register and disclose are unavailable for the window between the two
+transactions. Plan for that window rather than trying to order it away.
+
+Steps 1–4 are ordinary prerequisites and each must be verified before the next. Steps 5 and 6 are the cutover and should
+be executed back to back by the same operator, in a scheduled window, with rollback ready.
 
 1. Prover config set on the currently-deployed hub, per (c).
 2. Prover image digests registered in the prover-only `PCR0Manager`, per (b).
 3. `tee-prover-server` deployed with the `chain` feature enabled and its bare-nonce build, per the prerequisite above.
-4. `registerProverKey` succeeded on-chain — confirm `ProverKeyRegistered` fired for the live enclave's address.
-5. Relayer + db-relayer deployed with the signature pipeline for **both flows** (register calldata and the disclose
-   `proofPayload`), and real (non-zero) signatures observed reaching the chain.
-6. **Only then** upgrade the hub implementation to v2.15.0.
+4. `registerProverKey` succeeded on-chain — confirm `ProverKeyRegistered` fired for the live enclave's address. Verify
+   this **before** the cutover: a hub that enforces signatures with no registered key rejects every register and
+   disclose call, and step 4 is the only step that can be validated while the old formats are still live.
+5. **Cutover begins.** Upgrade the hub implementation to v2.15.0. Register and disclose are both unavailable from this
+   transaction.
+6. **Cutover ends.** Deploy relayer + db-relayer with the signature pipeline for **both flows** — the 4-argument
+   register calldata and the disclose `proofPayload` carrying its 65-byte signature. Confirm real (non-zero) signatures
+   reaching the chain on each, and one successful registration and one successful disclosure. Both flows are restored.
+
+Rolling back mid-cutover means reverting the hub to the previous implementation (see Rollback below), which restores the
+3-argument selectors and the old `proofPayload` layout, and therefore the old relayer. Do not roll back the hub after
+the new relayer is live without also reverting the relayer.
+
+An earlier revision of this guide placed the relayer deploy at step 5 and the hub upgrade at step 6, on the reasoning
+that real signatures should be observed flowing before enforcement went live. That ordering cannot execute. For
+register, those signatures can only reach the hub through the 4-argument selector, which does not exist until step 6.
+For disclose, an old hub reads the 65 signature bytes as the first bytes of proof data and fails proof verification.
+Observing signatures pre-upgrade would require an intermediate hub release that accepts them and ignores them — that
+release does not exist, since both the parameter and its enforcement ship together in v2.15.0. If a zero-downtime
+rollout is required, that intermediate release is the way to get it, and it must be built and deployed first.
 
 Keys are ephemeral per enclave boot: every reboot mints a new key that must be registered before its proofs are
 accepted, and `revokeProverKey` (SECURITY_ROLE) retires a compromised one immediately — revoking the only registered key

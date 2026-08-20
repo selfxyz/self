@@ -75,24 +75,40 @@ const DUMMY_PROOF = {
 
 // Registers wallet.address as a prover key on the hub via the mocked GCP attestation path.
 // Overwrites the hub's prover config with the mock verifier and this fixture's constants.
+//
+// Deploys a PCR0Manager dedicated to the prover rather than reusing
+// deployedActors.pcr0Manager, which deploymentV2.ts also wires into
+// IdentityRegistryKycImplV1. UPGRADE_GUIDE section (b) forbids pointing both
+// contracts at one instance and forbids adding prover digests to the KYC
+// registry's instance -- and since this helper is the shared fixture for the
+// passport, ID, Aadhaar and KYC register suites, reusing it would bake that
+// configuration into every one of them.
+//
+// Separate instances are also what gives the fixture its teeth: if the hub
+// ever consulted the KYC registry's PCR0Manager for a prover image, the
+// digest would not be found there and registerProverKey would revert, which
+// is exactly the regression a shared instance cannot detect.
 export async function registerProverWallet(
   deployedActors: DeployedActorsV2,
   wallet: Wallet | HDNodeWallet,
 ): Promise<void> {
-  const { hub, pcr0Manager, owner } = deployedActors;
+  const { hub, owner } = deployedActors;
 
   const mockVerifier = await (await ethers.getContractFactory("MockGCPJWTVerifier")).deploy();
   await mockVerifier.waitForDeployment();
 
+  const proverPCR0Manager = await (await ethers.getContractFactory("PCR0Manager")).connect(owner).deploy();
+  await proverPCR0Manager.waitForDeployment();
+
   await hub.updateProverGCPJWTVerifier(await mockVerifier.getAddress());
-  await hub.updateProverPCR0Manager(await pcr0Manager.getAddress());
+  await hub.updateProverPCR0Manager(await proverPCR0Manager.getAddress());
   await hub.updateProverGCPRootCAPubkeyHash(ROOT_CA_HASH);
   await hub.updateProverTEE(await owner.getAddress());
 
   // addPCR0 takes the 32-byte digest; isPCR0Set requires the internally padded 48-byte form.
   const padded48 = ethers.getBytes("0x" + "00".repeat(16) + IMAGE.digestHex);
-  if (!(await pcr0Manager.isPCR0Set(padded48))) {
-    await pcr0Manager.addPCR0(ethers.getBytes("0x" + IMAGE.digestHex));
+  if (!(await proverPCR0Manager.isPCR0Set(padded48))) {
+    await proverPCR0Manager.addPCR0(ethers.getBytes("0x" + IMAGE.digestHex));
   }
 
   const [n0, n1] = packAscii(wallet.address.slice(2).toLowerCase());

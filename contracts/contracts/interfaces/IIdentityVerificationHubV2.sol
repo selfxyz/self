@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.28;
 
-import {IRegisterCircuitVerifier} from "./IRegisterCircuitVerifier.sol";
+import {GenericProofStruct} from "./IRegisterCircuitVerifier.sol";
 import {IDscCircuitVerifier} from "./IDscCircuitVerifier.sol";
 import {SelfStructs} from "../libraries/SelfStructs.sol";
 
@@ -26,7 +26,7 @@ interface IIdentityVerificationHubV2 {
     function registerCommitment(
         bytes32 attestationId,
         uint256 registerCircuitVerifierId,
-        IRegisterCircuitVerifier.RegisterCircuitProof memory registerCircuitProof,
+        GenericProofStruct memory registerCircuitProof,
         bytes calldata signature
     ) external;
 
