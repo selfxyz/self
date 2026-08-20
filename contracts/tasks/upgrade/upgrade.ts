@@ -412,6 +412,8 @@ task("upgrade", "Deploy new implementation and create Safe proposal for upgrade"
           "DscProofVerifierLib",
           "RootCheckLib",
           "OfacCheckLib",
+          "ProverSignatureLib",
+          "ProverAttestationLib",
         ];
         const libraries: Record<string, string> = {};
         for (const libName of libraryNames) {
