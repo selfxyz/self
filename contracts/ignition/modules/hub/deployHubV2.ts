@@ -87,6 +87,8 @@ export default buildModule("DeployHubV2", (m) => {
   const dscProofVerifierLib = m.library("DscProofVerifierLib");
   const rootCheckLib = m.library("RootCheckLib");
   const ofacCheckLib = m.library("OfacCheckLib");
+  const proverSignatureLib = m.library("ProverSignatureLib");
+  const proverAttestationLib = m.library("ProverAttestationLib");
 
   // Deploy the implementation contract with all library linkages
   const identityVerificationHubImplV2 = m.contract("IdentityVerificationHubImplV2", [], {
@@ -98,6 +100,8 @@ export default buildModule("DeployHubV2", (m) => {
       DscProofVerifierLib: dscProofVerifierLib,
       RootCheckLib: rootCheckLib,
       OfacCheckLib: ofacCheckLib,
+      ProverSignatureLib: proverSignatureLib,
+      ProverAttestationLib: proverAttestationLib,
     },
   });
 

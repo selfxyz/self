@@ -1,6 +1,7 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { generateVcAndDiscloseAadhaarProof, getSMTs } from "../utils/generateProof";
+import { registerProverWallet, signEncodedProof } from "../utils/proverSignature";
 import { poseidon2 } from "poseidon-lite";
 import { BigNumberish } from "ethers";
 import { getPackedForbiddenCountries } from "@selfxyz/new-common/src/blockchain/forbiddenCountries";
@@ -27,6 +28,7 @@ const privateKeyPem = fs.readFileSync(
 
 describe("Self Verification Flow V2 - Aadhaar", () => {
   let deployedActors: DeployedActorsV2;
+  let proverWallet: ReturnType<typeof ethers.Wallet.createRandom>;
   let snapshotId: string;
   let baseVcAndDiscloseProof: any;
   let registerSecret: any;
@@ -50,6 +52,8 @@ describe("Self Verification Flow V2 - Aadhaar", () => {
 
   before(async () => {
     deployedActors = await deploySystemFixturesV2();
+    proverWallet = ethers.Wallet.createRandom();
+    await registerProverWallet(deployedActors, proverWallet);
     snapshotId = await ethers.provider.send("evm_snapshot", []);
 
     const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
@@ -172,7 +176,10 @@ describe("Self Verification Flow V2 - Aadhaar", () => {
         ],
       );
 
-      const proofData = ethers.solidityPacked(["bytes32", "bytes"], [attestationId, encodedProof]);
+      const proofData = ethers.solidityPacked(
+        ["bytes32", "bytes", "bytes"],
+        [attestationId, signEncodedProof(proverWallet, encodedProof), encodedProof],
+      );
 
       await deployedActors.testSelfVerificationRoot.resetTestState();
 
@@ -229,7 +236,10 @@ describe("Self Verification Flow V2 - Aadhaar", () => {
         ],
       );
 
-      const proofData = ethers.solidityPacked(["bytes32", "bytes"], [attestationId, encodedProof]);
+      const proofData = ethers.solidityPacked(
+        ["bytes32", "bytes", "bytes"],
+        [attestationId, signEncodedProof(proverWallet, encodedProof), encodedProof],
+      );
 
       await deployedActors.testSelfVerificationRoot.resetTestState();
 
@@ -287,7 +297,10 @@ describe("Self Verification Flow V2 - Aadhaar", () => {
         ],
       );
 
-      const proofData = ethers.solidityPacked(["bytes32", "bytes"], [attestationId, encodedProof]);
+      const proofData = ethers.solidityPacked(
+        ["bytes32", "bytes", "bytes"],
+        [attestationId, signEncodedProof(proverWallet, encodedProof), encodedProof],
+      );
 
       await expect(
         deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, invalidUserContextData),
@@ -362,8 +375,8 @@ describe("Self Verification Flow V2 - Aadhaar", () => {
       );
 
       const differentScopeProofData = ethers.solidityPacked(
-        ["bytes32", "bytes"],
-        [attestationId, differentScopeEncodedProof],
+        ["bytes32", "bytes", "bytes"],
+        [attestationId, signEncodedProof(proverWallet, differentScopeEncodedProof), differentScopeEncodedProof],
       );
 
       await expect(
@@ -411,7 +424,10 @@ describe("Self Verification Flow V2 - Aadhaar", () => {
         ],
       );
 
-      const proofData = ethers.solidityPacked(["bytes32", "bytes"], [attestationId, encodedProof]);
+      const proofData = ethers.solidityPacked(
+        ["bytes32", "bytes", "bytes"],
+        [attestationId, signEncodedProof(proverWallet, encodedProof), encodedProof],
+      );
 
       await expect(
         deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, invalidUserContextData),
@@ -461,8 +477,12 @@ describe("Self Verification Flow V2 - Aadhaar", () => {
       );
 
       const modifiedVcAndDiscloseProofData = ethers.solidityPacked(
-        ["bytes32", "bytes"],
-        [attestationId, modifiedVcAndDiscloseEncodedProof],
+        ["bytes32", "bytes", "bytes"],
+        [
+          attestationId,
+          signEncodedProof(proverWallet, modifiedVcAndDiscloseEncodedProof),
+          modifiedVcAndDiscloseEncodedProof,
+        ],
       );
 
       await expect(
@@ -539,8 +559,8 @@ describe("Self Verification Flow V2 - Aadhaar", () => {
       );
 
       const differentScopeProofData = ethers.solidityPacked(
-        ["bytes32", "bytes"],
-        [attestationId, differentScopeEncodedProof],
+        ["bytes32", "bytes", "bytes"],
+        [attestationId, signEncodedProof(proverWallet, differentScopeEncodedProof), differentScopeEncodedProof],
       );
 
       await expect(
@@ -617,8 +637,8 @@ describe("Self Verification Flow V2 - Aadhaar", () => {
       );
 
       const differentScopeProofData = ethers.solidityPacked(
-        ["bytes32", "bytes"],
-        [attestationId, differentScopeEncodedProof],
+        ["bytes32", "bytes", "bytes"],
+        [attestationId, signEncodedProof(proverWallet, differentScopeEncodedProof), differentScopeEncodedProof],
       );
 
       // Note: When currentDay - 1 results in 0, the Formatter library throws InvalidDayRange
@@ -672,8 +692,8 @@ describe("Self Verification Flow V2 - Aadhaar", () => {
       );
 
       const invalidGrothProofData = ethers.solidityPacked(
-        ["bytes32", "bytes"],
-        [attestationId, invalidGrothProofEncodedProof],
+        ["bytes32", "bytes", "bytes"],
+        [attestationId, signEncodedProof(proverWallet, invalidGrothProofEncodedProof), invalidGrothProofEncodedProof],
       );
 
       await expect(
@@ -719,7 +739,10 @@ describe("Self Verification Flow V2 - Aadhaar", () => {
         ],
       );
 
-      const proofData = ethers.solidityPacked(["bytes32", "bytes"], [invalidAttestationId, encodedProof]);
+      const proofData = ethers.solidityPacked(
+        ["bytes32", "bytes", "bytes"],
+        [invalidAttestationId, signEncodedProof(proverWallet, encodedProof), encodedProof],
+      );
 
       await expect(
         deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData),
@@ -769,7 +792,10 @@ describe("Self Verification Flow V2 - Aadhaar", () => {
         ],
       );
 
-      const proofData = ethers.solidityPacked(["bytes32", "bytes"], [attestationId, encodedProof]);
+      const proofData = ethers.solidityPacked(
+        ["bytes32", "bytes", "bytes"],
+        [attestationId, signEncodedProof(proverWallet, encodedProof), encodedProof],
+      );
 
       await expect(
         deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData),
@@ -814,7 +840,10 @@ describe("Self Verification Flow V2 - Aadhaar", () => {
         ],
       );
 
-      const proofData = ethers.solidityPacked(["bytes32", "bytes"], [attestationId, encodedProof]);
+      const proofData = ethers.solidityPacked(
+        ["bytes32", "bytes", "bytes"],
+        [attestationId, signEncodedProof(proverWallet, encodedProof), encodedProof],
+      );
 
       await expect(
         deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData),
@@ -864,7 +893,10 @@ describe("Self Verification Flow V2 - Aadhaar", () => {
         ],
       );
 
-      const proofData = ethers.solidityPacked(["bytes32", "bytes"], [attestationId, encodedProof]);
+      const proofData = ethers.solidityPacked(
+        ["bytes32", "bytes", "bytes"],
+        [attestationId, signEncodedProof(proverWallet, encodedProof), encodedProof],
+      );
 
       await expect(
         deployedActors.testSelfVerificationRoot.verifySelfProof(proofData, userContextData),
@@ -941,7 +973,10 @@ describe("Self Verification Flow V2 - Aadhaar", () => {
         [[newProof.a, newProof.b, newProof.c, newProof.pubSignals]],
       );
 
-      const proofData = ethers.solidityPacked(["bytes32", "bytes"], [attestationId, encodedProof]);
+      const proofData = ethers.solidityPacked(
+        ["bytes32", "bytes", "bytes"],
+        [attestationId, signEncodedProof(proverWallet, encodedProof), encodedProof],
+      );
 
       // Note: The proof is generated with a different merkle root (for chain 31338),
       // so InvalidIdentityCommitmentRoot is thrown before CrossChainIsNotSupportedYet

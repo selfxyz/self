@@ -23,7 +23,8 @@ import {RootCheckLib} from "./libraries/RootCheckLib.sol";
 import {OfacCheckLib} from "./libraries/OfacCheckLib.sol";
 import {GCPJWTHelper} from "./libraries/GCPJWTHelper.sol";
 import {IGCPJWTVerifier, IPCR0Manager} from "./registry/IdentityRegistryKycImplV1.sol";
-import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import {ProverSignatureLib} from "./libraries/ProverSignatureLib.sol";
+import {ProverAttestationLib} from "./libraries/ProverAttestationLib.sol";
 import {console} from "hardhat/console.sol";
 
 /**
@@ -248,7 +249,7 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     error CrossChainIsNotSupportedYet();
 
     /// @notice Thrown when the input data is too short for decoding.
-    /// @dev The input data must be at least 97 bytes (1 + 31 + 32 + 32 + 1 minimum).
+    /// @dev The input data must be at least 162 bytes (1 + 31 + 32 + 32 + 65 + 1 minimum).
     error InputTooShort();
 
     /// @notice Thrown when the provided signature is not exactly 65 bytes.
@@ -694,47 +695,16 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     ) external virtual onlyProxy onlyProverTEE {
         IdentityVerificationHubProverStorage storage $ = _getProverStorage();
 
-        // An unset verifier must never be read as "skip verification".
-        if ($._gcpJwtVerifier == address(0) || $._pcr0Manager == address(0) || $._gcpRootCAPubkeyHash == 0) {
-            revert ProverConfigNotSet();
-        }
-
-        // Check if the proof is valid
-        if (!IGCPJWTVerifier($._gcpJwtVerifier).verifyProof(pA, pB, pC, pubSignals)) revert InvalidProverProof();
-
-        // Check if the root CA pubkey hash is valid
-        if (pubSignals[0] != $._gcpRootCAPubkeyHash) revert InvalidProverRootCA();
-
-        // Check if the TEE image hash is valid
-        bytes memory imageHash = GCPJWTHelper.unpackAndConvertImageHash(pubSignals[5], pubSignals[6], pubSignals[7]);
-        if (!IPCR0Manager($._pcr0Manager).isPCR0Set(imageHash)) revert InvalidProverImage();
-
-        // The circuit always emits 4 nonce chunks; a 40-char address fills only 2. The nonce's
-        // declared length is a circuit input, not a public signal, so asserting the trailing
-        // chunks are empty is the only on-chain bound on what else the nonce carried.
-        if (pubSignals[3] != 0 || pubSignals[4] != 0) revert InvalidProverNoncePadding();
-
-        uint256 currentYear = 2000 + pubSignals[8] * 10 + pubSignals[9];
-        uint256 currentMonth = pubSignals[10] * 10 + pubSignals[11];
-        uint256 currentDay = pubSignals[12] * 10 + pubSignals[13];
-        uint256 currentHour = pubSignals[14] * 10 + pubSignals[15];
-        uint256 currentMinute = pubSignals[16] * 10 + pubSignals[17];
-        uint256 currentSecond = pubSignals[18] * 10 + pubSignals[19];
-        uint256 currentTimestamp = Formatter.toTimeStampWithSeconds(
-            currentYear,
-            currentMonth,
-            currentDay,
-            currentHour,
-            currentMinute,
-            currentSecond
+        address proverKey = ProverAttestationLib.validateAndDecode(
+            $._gcpJwtVerifier,
+            $._pcr0Manager,
+            $._gcpRootCAPubkeyHash,
+            pA,
+            pB,
+            pC,
+            pubSignals
         );
 
-        if (currentTimestamp + 1 hours < block.timestamp) revert InvalidProverTimestamp(); //1 hour in the past
-        if (currentTimestamp > block.timestamp + 1 hours) revert InvalidProverTimestamp(); //1 hour in the future
-
-        // Unpack the address and register it
-        address proverKey = GCPJWTHelper.unpackAndDecodeAddress(pubSignals[1], pubSignals[2]);
-        if (proverKey == address(0)) revert InvalidProverAddress();
         $._isRegisteredProverKey[proverKey] = true;
 
         emit ProverKeyRegistered(proverKey);
@@ -994,6 +964,9 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         bytes calldata userContextData,
         uint256 userIdentifier
     ) internal returns (bytes memory output) {
+        // Scope 0: The proof must carry a signature from a registered TEE prover key
+        _verifyProverSignature(vcAndDiscloseProof, header.signature);
+
         // Scope 1: Basic checks (scope and user identifier)
         CircuitConstantsV2.DiscloseIndices memory indices = CircuitConstantsV2.getDiscloseIndices(header.attestationId);
         {
@@ -1245,11 +1218,20 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         uint256[2][2] memory b,
         uint256[2] memory c,
         uint256[] memory pubSignals,
-        bytes calldata signature
+        bytes memory signature
     ) internal view {
-        bytes32 digest = keccak256(abi.encode(a, b, c, pubSignals));
-        (address signer, ECDSA.RecoverError err, ) = ECDSA.tryRecover(digest, signature);
-        if (err != ECDSA.RecoverError.NoError || !_getProverStorage()._isRegisteredProverKey[signer]) {
+        (address signer, bool ok) = ProverSignatureLib.recoverProverSigner(a, b, c, pubSignals, signature);
+        if (!ok || !_getProverStorage()._isRegisteredProverKey[signer]) {
+            revert UnauthorizedProverSigner();
+        }
+    }
+
+    /**
+     * @notice Struct-taking convenience overload of _verifyProverSignature.
+     */
+    function _verifyProverSignature(GenericProofStruct memory proof, bytes memory signature) internal view {
+        (address signer, bool ok) = ProverSignatureLib.recoverProverSignerFromProof(proof, signature);
+        if (!ok || !_getProverStorage()._isRegisteredProverKey[signer]) {
             revert UnauthorizedProverSigner();
         }
     }
@@ -1267,13 +1249,14 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     function _decodeInput(
         bytes calldata baseVerificationInput
     ) internal pure returns (SelfStructs.HubInputHeader memory header, bytes calldata proofData) {
-        if (baseVerificationInput.length < 97) {
+        if (baseVerificationInput.length < 162) {
             revert InputTooShort();
         }
         header.contractVersion = uint8(baseVerificationInput[0]);
         header.scope = uint256(bytes32(baseVerificationInput[32:64]));
         header.attestationId = bytes32(baseVerificationInput[64:96]);
-        proofData = baseVerificationInput[96:];
+        header.signature = bytes(baseVerificationInput[96:161]);
+        proofData = baseVerificationInput[161:];
     }
 
     /**

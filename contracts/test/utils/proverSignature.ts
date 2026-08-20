@@ -17,6 +17,16 @@ export function signProofDigest(
   return wallet.signingKey.sign(digest).serialized;
 }
 
+// Signs the exact proof a test submits: decodes the abi-encoded GenericProofStruct tuple the
+// disclose tests pack into proofPayload, so tampered proofs get signatures over the tampered bytes.
+export function signEncodedProof(wallet: Wallet | HDNodeWallet, encodedProof: string): string {
+  const [[a, b, c, pubSignals]] = ethers.AbiCoder.defaultAbiCoder().decode(
+    ["tuple(uint256[2] a, uint256[2][2] b, uint256[2] c, uint256[] pubSignals)"],
+    encodedProof,
+  );
+  return signProofDigest(wallet, { a, b, c, pubSignals });
+}
+
 // <=31 ASCII bytes per field element, little-endian within each chunk (PackBytes layout).
 function packAscii(s: string): bigint[] {
   const bytes = Buffer.from(s, "ascii");
