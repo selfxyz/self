@@ -140,8 +140,18 @@ abstract contract SelfVerificationRootUpgradeable is Initializable, ContextUpgra
     function verifySelfProof(bytes calldata proofPayload, bytes calldata userContextData) public {
         SelfVerificationRootStorage storage $ = _getSelfVerificationRootStorage();
 
-        // Minimum expected length for proofData: 32 bytes attestationId + proof data
-        if (proofPayload.length < 32) {
+        // 32 bytes attestationId + 65 bytes signature + at least 1 byte of
+        // proof data. Derived from the hub's own floor rather than chosen
+        // here: the hub requires baseVerificationInput >= 162
+        // (1 + 31 + 32 + 32 + 65 + 1), and this function prepends 64 bytes
+        // (contractVersion + buffer + scope) to proofPayload, so 162 - 64 = 98.
+        //
+        // Kept in step with that floor deliberately. This check previously read
+        // `< 32`, the minimum for the pre-signature layout, so every payload
+        // between 32 and 97 bytes was forwarded and rejected by the hub instead
+        // -- an opaque error from a contract the caller never named, rather than
+        // InvalidDataFormat from the one whose documented format was violated.
+        if (proofPayload.length < 98) {
             revert InvalidDataFormat();
         }
 
