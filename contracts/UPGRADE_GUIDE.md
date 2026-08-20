@@ -257,15 +257,43 @@ to recover (via `keccak256(abi.encode(a, b, c, pubSignals))`, raw prehash, no EI
 key. There is no toggle and no storage change — enforcement is live from the upgrade block, and a relayer still sending
 placeholder zeros bricks the entire register flow with `UnauthorizedProverSigner`.
 
-Hard ordering, each step verified before the next:
+**Adding the `signature` parameter changes both function selectors.** There is no overload: the 3-argument functions
+cease to exist at the upgrade block.
+
+| Function                   | v2.14.0 (3-arg) | v2.15.0 (4-arg) |
+| -------------------------- | --------------- | --------------- |
+| `registerCommitment`       | `0xf2ea431c`    | `0x848cd73b`    |
+| `registerDscKeyCommitment` | `0x8322963f`    | `0xed9b4fd7`    |
+
+That makes the relayer and the hub a **mutually exclusive pair**, and it is why the ordering below is a cutover rather
+than a sequence. A relayer sending 4-argument calldata to the v2.14.0 hub matches no function and the proxy reverts; a
+relayer still sending 3-argument calldata after the upgrade reverts the same way. There is no ordering of "upgrade the
+hub" and "deploy the relayer" in which both are briefly true, so register is unavailable for the window between the two
+transactions. Plan for that window rather than trying to order it away.
+
+Steps 1–4 are ordinary prerequisites and each must be verified before the next. Steps 5 and 6 are the cutover and should
+be executed back to back by the same operator, in a scheduled window, with rollback ready.
 
 1. Prover config set on the currently-deployed hub, per (c).
 2. Prover image digests registered in the prover-only `PCR0Manager`, per (b).
 3. `tee-prover-server` deployed with the `chain` feature enabled and its bare-nonce build, per the prerequisite above.
-4. `registerProverKey` succeeded on-chain — confirm `ProverKeyRegistered` fired for the live enclave's address.
-5. Relayer + db-relayer deployed with the signature pipeline, and real (non-zero) signatures observed reaching
-   `verifySelfProof`/register calldata.
-6. **Only then** upgrade the hub implementation to v2.15.0.
+4. `registerProverKey` succeeded on-chain — confirm `ProverKeyRegistered` fired for the live enclave's address. Verify
+   this **before** the cutover: a hub that enforces signatures with no registered key rejects every register call, and
+   step 4 is the only step that can be validated while the old selector is still live.
+5. **Cutover begins.** Upgrade the hub implementation to v2.15.0. Register is unavailable from this transaction.
+6. **Cutover ends.** Deploy relayer + db-relayer with the signature pipeline. Confirm real (non-zero) signatures in
+   register calldata and a successful registration. Register is restored.
+
+Rolling back mid-cutover means reverting the hub to the previous implementation (see Rollback below), which restores the
+3-argument selectors and therefore the old relayer. Do not roll back the hub after the new relayer is live without also
+reverting the relayer.
+
+An earlier revision of this guide placed the relayer deploy at step 5 and the hub upgrade at step 6, on the reasoning
+that real signatures should be observed flowing before enforcement went live. That ordering cannot execute: those
+signatures can only reach the hub through the 4-argument selector, which does not exist until step 6. Observing
+signatures pre-upgrade would require an intermediate hub release that accepts the `signature` parameter and ignores it —
+that release does not exist, since the parameter and its enforcement ship together in v2.15.0. If a zero-downtime
+rollout is required, that intermediate release is the way to get it, and it must be built and deployed first.
 
 Keys are ephemeral per enclave boot: every reboot mints a new key that must be registered before its proofs are
 accepted, and `revokeProverKey` (SECURITY_ROLE) retires a compromised one immediately — revoking the only registered key
