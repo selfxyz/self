@@ -8,6 +8,7 @@ import {
   APP_DATA_FOLDER_ID,
   MIME_TYPES,
 } from '@robinbobin/react-native-google-drive-api-wrapper';
+import type { GDrive } from '@robinbobin/react-native-google-drive-api-wrapper';
 
 import { createGDrive } from '@/services/cloud-backup/google';
 import { FILE_NAME } from '@/services/cloud-backup/helpers';
@@ -16,6 +17,7 @@ import {
   download as iosDownload,
   upload as iosUpload,
 } from '@/services/cloud-backup/ios';
+import { useSettingStore } from '@/stores/settingStore';
 import type { Mnemonic } from '@/types/mnemonic';
 import { parseMnemonic } from '@/utils/crypto/mnemonic';
 import { withRetries } from '@/utils/retry';
@@ -30,6 +32,29 @@ function isDriveFile(file: unknown): file is { id: string } {
   );
 }
 
+/**
+ * Resolve the single canonical Drive backup file, deleting any duplicate
+ * name-matches it finds. Self-heals installs that accumulated duplicates before
+ * single-file backup (F-08). Returns the surviving file id, or null if none.
+ */
+async function resolveCanonicalDriveFileId(
+  gdrive: GDrive,
+): Promise<string | null> {
+  const { files } = await gdrive.files.list({
+    spaces: APP_DATA_FOLDER_ID,
+    q: `name = '${FILE_NAME}'`,
+  });
+  const ids = (files as unknown[]).filter(isDriveFile).map(file => file.id);
+  if (ids.length === 0) {
+    return null;
+  }
+  const [canonicalId, ...duplicates] = ids;
+  if (duplicates.length > 0) {
+    await Promise.all(duplicates.map(id => gdrive.files.delete(id)));
+  }
+  return canonicalId;
+}
+
 export async function disableBackup() {
   if (Platform.OS === 'ios') {
     await disableIosBackup();
@@ -40,6 +65,8 @@ export async function disableBackup() {
     // User canceled Google sign-in; skip disabling backup gracefully.
     return;
   }
+  // Delete the canonical file plus any duplicate name-matches (self-healing),
+  // then forget the stored id.
   const { files } = await gdrive.files.list({
     spaces: APP_DATA_FOLDER_ID,
     q: `name = '${FILE_NAME}'`,
@@ -54,6 +81,7 @@ export async function disableBackup() {
         : Promise.resolve();
     }),
   );
+  useSettingStore.getState().setBackupFileId(null);
 }
 
 export async function download() {
@@ -65,21 +93,23 @@ export async function download() {
   if (!gdrive) {
     throw new Error('User canceled Google sign-in');
   }
-  const { files } = await gdrive.files.list({
-    spaces: APP_DATA_FOLDER_ID,
-    q: `name = '${FILE_NAME}'`,
-  });
+  const { backupFileId, setBackupFileId } = useSettingStore.getState();
+  let fileId = backupFileId;
+  if (!fileId) {
+    fileId = await resolveCanonicalDriveFileId(gdrive);
+    if (fileId) {
+      setBackupFileId(fileId);
+    }
+  }
 
-  const driveFiles: unknown[] = files;
-  const firstFile = driveFiles[0];
-
-  if (!isDriveFile(firstFile)) {
+  if (!fileId) {
     throw new Error(
       'Couldnt find the encrypted backup, did you back it up previously?',
     );
   }
+  const resolvedFileId = fileId;
   const mnemonicString = await withRetries(() =>
-    gdrive.files.getText(firstFile.id),
+    gdrive.files.getText(resolvedFileId),
   );
   try {
     const mnemonic = parseMnemonic(mnemonicString);
@@ -96,20 +126,52 @@ export async function upload(mnemonic: Mnemonic) {
     );
   }
   if (Platform.OS === 'ios') {
+    // iOS overwrites a single fixed path, so it is already single-file.
     await iosUpload(mnemonic);
-  } else {
-    const gdrive = await createGDrive();
-    if (!gdrive) {
-      throw new Error('User canceled Google sign-in');
+    return;
+  }
+  const gdrive = await createGDrive();
+  if (!gdrive) {
+    throw new Error('User canceled Google sign-in');
+  }
+  const { backupFileId, setBackupFileId } = useSettingStore.getState();
+  const data = JSON.stringify(mnemonic);
+
+  // Prefer updating the known canonical file in place; otherwise adopt/dedupe
+  // any existing file before creating one — so exactly one backup file exists
+  // per account (F-08).
+  const existingId =
+    backupFileId ?? (await resolveCanonicalDriveFileId(gdrive));
+  if (existingId) {
+    try {
+      await withRetries(() =>
+        gdrive.files
+          .newMultipartUploader()
+          .setIdOfFileToUpdate(existingId)
+          .setData(data)
+          .setDataMimeType(MIME_TYPES.application.json)
+          .setRequestBody({ name: FILE_NAME })
+          .execute(),
+      );
+      setBackupFileId(existingId);
+      return;
+    } catch (e) {
+      // Stored id may be stale (file deleted server-side); fall back to create.
+      console.warn('Cloud backup update failed; creating a new file', e);
+      setBackupFileId(null);
     }
-    await withRetries(() =>
-      gdrive.files
-        .newMultipartUploader()
-        .setData(JSON.stringify(mnemonic))
-        .setDataMimeType(MIME_TYPES.application.json)
-        .setRequestBody({ name: FILE_NAME, parents: [APP_DATA_FOLDER_ID] })
-        .execute(),
-    );
+  }
+
+  const created = await withRetries(() =>
+    gdrive.files
+      .newMultipartUploader()
+      .setData(data)
+      .setDataMimeType(MIME_TYPES.application.json)
+      .setRequestBody({ name: FILE_NAME, parents: [APP_DATA_FOLDER_ID] })
+      .execute(),
+  );
+  if (isDriveFile(created)) {
+    setBackupFileId(created.id);
   }
 }
 

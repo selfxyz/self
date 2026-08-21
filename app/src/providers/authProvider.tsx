@@ -206,6 +206,11 @@ async function loadOrCreateMnemonic(
         });
         return storedMnemonic.password;
       } catch (e: unknown) {
+        // F-02: a stored secret exists but is unparseable (corrupted, or a
+        // pre-#201 legacy format). Fail closed — never overwrite an existing
+        // secret with a freshly generated one (that would be unrecoverable key
+        // loss). Surface the failure so the app routes the user to recovery
+        // (recovery phrase / cloud backup) instead of silently replacing it.
         console.error(
           'Error parsing stored mnemonic, old secret format was used',
           e,
@@ -216,6 +221,10 @@ async function loadOrCreateMnemonic(
           { ...authBaseContext, stage: 'load_or_create' },
           { reason: 'legacy_format' },
         );
+        if (keychainCryptoFailureCallback) {
+          keychainCryptoFailureCallback('crypto_failed');
+        }
+        return false;
       }
     }
   } catch (error: unknown) {
@@ -470,13 +479,25 @@ export function getPrivateKeyFromMnemonic(mnemonic: string) {
   return wallet.privateKey;
 }
 
-export async function hasSecretStored() {
+/**
+ * Tri-state result of a stored-secret presence check.
+ * - `present`: a secret entry exists.
+ * - `absent`: the keychain confirmed no entry exists (genuine fresh install).
+ * - `unknown`: the check could not complete (transient keychain error, locked
+ *   keystore, interrupted biometric). NOT the same as `absent` — callers must
+ *   not treat this as a fresh install.
+ */
+export type SecretPresence = 'present' | 'absent' | 'unknown';
+
+export async function hasSecretStored(): Promise<SecretPresence> {
   try {
     const seed = await Keychain.getGenericPassword({ service: SERVICE_NAME });
-    return !!seed;
+    return seed ? 'present' : 'absent';
   } catch (error) {
+    // F-07: a read failure must not be collapsed into "no secret" — that would
+    // route an existing user through fresh-install/recovery. Report `unknown`.
     console.warn('Error checking for stored secret:', error);
-    return false;
+    return 'unknown';
   }
 }
 

@@ -188,7 +188,7 @@ to `Done` only when issues exist for every accepted Critical/Major finding and e
 
 | ID     | Title                                                                                 | Status  | Priority | Depends on                     | Plan                                                      |
 | ------ | ------------------------------------------------------------------------------------- | ------- | -------- | ------------------------------ | --------------------------------------------------------- |
-| AUD-02 | Key material & keychain lifecycle (mnemonic, migration, backup, biometrics)           | Planned | High     | —                              | [plan](./plans/AUD-02-key-material-keychain-lifecycle.md) |
+| AUD-02 | Key material & keychain lifecycle (mnemonic, migration, backup, biometrics)           | In Review | High   | —                              | [plan](./plans/AUD-02-key-material-keychain-lifecycle.md) · [report](../../../../../docs/reviews/2026-06-17-key-material-keychain-audit.md) |
 | AUD-01 | NFC chip-reading flow (native auth fallbacks, parser duplication, timeouts)           | Planned | High     | AUD-02                         | [plan](./plans/AUD-01-nfc-chip-reading-flow.md)           |
 | AUD-03 | Startup & navigation routing (state matrix, recovery, deep links, KYC resume)         | Planned | High     | AUD-02                         | [plan](./plans/AUD-03-startup-nav-routing.md)             |
 | AUD-05 | Bridge protocol surface (adapter fail-closed review, session lifecycle)               | Planned | High     | —                              | [plan](./plans/AUD-05-bridge-protocol-surface.md)         |

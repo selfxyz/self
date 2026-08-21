@@ -12,6 +12,9 @@ type LoggingSeverity = 'debug' | 'info' | 'warn' | 'error';
 
 interface PersistedSettingsState {
   addSubscribedTopic: (topic: string) => void;
+  /** Drive file id of the single canonical cloud backup (Android). Null until
+   * the first upload, or after the backup is disabled. */
+  backupFileId: string | null;
   biometricsAvailable: boolean;
   cloudBackupEnabled: boolean;
   dismissPrivacyNote: () => void;
@@ -31,6 +34,7 @@ interface PersistedSettingsState {
   supportUuid: string | null;
   removeSubscribedTopic: (topic: string) => void;
   resetBackupForPoints: () => void;
+  setBackupFileId: (id: string | null) => void;
   setBackupForPointsCompleted: () => void;
   setBiometricsAvailable: (biometricsAvailable: boolean) => void;
   setDevModeOff: () => void;
@@ -107,6 +111,8 @@ export const useSettingStore = create<SettingsState>()(
         }),
 
       cloudBackupEnabled: false,
+      backupFileId: null,
+      setBackupFileId: (id: string | null) => set({ backupFileId: id }),
       toggleCloudBackupEnabled: () =>
         set(oldState => ({
           cloudBackupEnabled: !oldState.cloudBackupEnabled,
