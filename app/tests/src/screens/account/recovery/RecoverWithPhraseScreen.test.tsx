@@ -140,6 +140,13 @@ jest.mock('@/screens/account/recovery/recoveryCopy', () => ({
       paste: 'PASTE',
       submit: 'Continue',
     },
+    errors: {
+      invalid_mnemonic: 'Error: invalid recovery phrase',
+      restore_failed: 'Error: could not restore with this phrase',
+      not_registered: 'Error: phrase does not match a registered ID',
+      network_error: 'Error: could not reach the Self network',
+      unexpected_error: 'Error: something went wrong',
+    },
   },
 }));
 
@@ -165,6 +172,9 @@ const {
   checkRestoredDocumentRegistration: jest.Mock;
   ProtocolDataUnavailableError: new (message?: string) => Error;
 };
+const { recoveryCopy } = jest.requireMock(
+  '@/screens/account/recovery/recoveryCopy',
+) as { recoveryCopy: { errors: Record<string, string> } };
 
 describe('RecoverWithPhraseScreen', () => {
   const mockNavigate = jest.fn();
@@ -260,9 +270,7 @@ describe('RecoverWithPhraseScreen', () => {
     const renderedText = UNSAFE_getAllByType('mock-text').map(
       node => node.props.children,
     );
-    expect(renderedText).toContain(
-      'We couldn’t reach the Self network to verify your ID. Check your connection and try again.',
-    );
+    expect(renderedText).toContain(recoveryCopy.errors.network_error);
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 

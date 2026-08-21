@@ -49,18 +49,6 @@ type RecoveryError =
   | 'network_error'
   | 'unexpected_error';
 
-const ERROR_MESSAGES: Record<RecoveryError, string> = {
-  invalid_mnemonic:
-    'That doesn’t look like a valid recovery phrase. Make sure all 24 words are correct and in the right order.',
-  restore_failed:
-    'We couldn’t restore your account with this phrase. Please double-check and try again.',
-  not_registered:
-    'This recovery phrase doesn’t match a registered ID. If you registered with a different phrase, try that one instead.',
-  network_error:
-    'We couldn’t reach the Self network to verify your ID. Check your connection and try again.',
-  unexpected_error: 'Something went wrong. Please try again.',
-};
-
 const RecoverWithPhraseScreen: React.FC = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -209,7 +197,9 @@ const RecoverWithPhraseScreen: React.FC = () => {
         </Pressable>
       </View>
 
-      {error && <Text style={styles.errorText}>{ERROR_MESSAGES[error]}</Text>}
+      {error && (
+        <Text style={styles.errorText}>{recoveryCopy.errors[error]}</Text>
+      )}
 
       <SecondaryButton
         disabled={!mnemonic || restoring}

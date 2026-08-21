@@ -20,8 +20,7 @@ export const recoveryCopy = {
   choice: {
     title: 'Recover your Self account',
     description: 'Choose how you want to recover your account.',
-    noBiometrics:
-      'Cloud recovery requires biometrics, which are unavailable on this device. You can still recover using your recovery phrase.',
+    noBiometrics: `Recovering from ${STORAGE_NAME} needs biometric unlock. Turn on Face ID, fingerprint or device unlock in your device settings and come back, or recover with your recovery phrase below.`,
     actions: {
       cloud: (restoring: boolean) =>
         `${restoring ? 'Recovering' : 'Recover'} from ${STORAGE_NAME}${restoring ? '\u2026' : ''}`,
@@ -37,5 +36,27 @@ export const recoveryCopy = {
     placeholder: 'Enter or paste your recovery phrase',
     paste: 'PASTE',
     submit: 'Continue',
+  },
+
+  /**
+   * Failure messages for both recovery screens, keyed by the reason each screen
+   * tracks. A superset of either screen's cases, so indexing it only compiles
+   * while a screen's error union stays a subset of these keys.
+   */
+  errors: {
+    no_backup_found: `We couldn’t find a backup in ${STORAGE_NAME}. Backups don’t move between platforms — one made on Android can’t be restored on iPhone, and one made on iPhone can’t be restored on Android. Use your recovery phrase instead.`,
+    cloud_unavailable: `Sign in to ${STORAGE_NAME} in your device settings, then try again. You can also recover with your recovery phrase.`,
+    sign_in_cancelled: `The ${STORAGE_NAME} sign-in was dismissed before it finished. Try again, or use your recovery phrase.`,
+    backup_corrupt: `We found a backup in ${STORAGE_NAME} but couldn’t read it. Recover with your recovery phrase instead.`,
+    backup_read_failed: `We couldn’t reach ${STORAGE_NAME}. Check your connection and try again.`,
+    invalid_mnemonic:
+      'That doesn’t look like a valid recovery phrase. Make sure all 24 words are correct and in the right order.',
+    restore_failed:
+      'We couldn’t restore your account with this phrase. Please double-check and try again.',
+    not_registered:
+      'This recovery phrase doesn’t match a registered ID. If you registered with a different phrase, try that one instead.',
+    network_error:
+      'We couldn’t reach the Self network to verify your ID. Check your connection and try again.',
+    unexpected_error: 'Something went wrong. Please try again.',
   },
 } as const;

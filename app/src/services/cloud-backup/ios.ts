@@ -4,6 +4,7 @@
 
 import { CloudStorage } from 'react-native-cloud-storage';
 
+import { CloudBackupError } from '@/services/cloud-backup/errors';
 import { ENCRYPTED_FILE_PATH, FOLDER } from '@/services/cloud-backup/helpers';
 import type { Mnemonic } from '@/types/mnemonic';
 import { parseMnemonic } from '@/utils/crypto/mnemonic';
@@ -14,6 +15,16 @@ export async function disableBackup() {
 }
 
 export async function download() {
+  // When the device is signed out of iCloud, `exists` resolves false rather than
+  // throwing, so without this guard a signed-out user is told they have no
+  // backup. Check availability first so the two stay distinguishable.
+  if (!(await CloudStorage.isCloudAvailable())) {
+    throw new CloudBackupError(
+      'cloud_unavailable',
+      'iCloud is unavailable, is the device signed in to iCloud?',
+    );
+  }
+
   if (await CloudStorage.exists(ENCRYPTED_FILE_PATH)) {
     const mnemonicString = await withRetries(() =>
       CloudStorage.readFile(ENCRYPTED_FILE_PATH),
@@ -21,13 +32,16 @@ export async function download() {
     try {
       return parseMnemonic(mnemonicString);
     } catch (e) {
-      throw new Error(
+      throw new CloudBackupError(
+        'backup_corrupt',
         `Failed to parse mnemonic backup: ${(e as Error).message}`,
+        { cause: e },
       );
     }
   }
 
-  throw new Error(
+  throw new CloudBackupError(
+    'no_backup_found',
     'Couldnt find the encrypted backup, did you back it up previously?',
   );
 }
