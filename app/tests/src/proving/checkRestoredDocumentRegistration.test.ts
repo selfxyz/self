@@ -327,7 +327,47 @@ describe('checkRestoredDocumentRegistration', () => {
     expect(protocolState.aadhaar.fetch_all).toHaveBeenCalledTimes(1);
     expect(mockFetchAllTreesAndCircuits).not.toHaveBeenCalled();
     expect(mockIsUserRegisteredWithAlternativeCSCA).toHaveBeenCalled();
-    expect(result).toEqual({ isRegistered: true, csca: 'matched-csca' });
+    // csca must stay null for aadhaar: the validator returns the matched public
+    // key there, and callers feed this field to reStorePassportDataWithRightCSCA,
+    // which parses it as an X.509 certificate.
+    expect(result).toEqual({ isRegistered: true, csca: null });
+  });
+
+  it('proceeds when an unrelated aadhaar fetch fails but the tree arrived', async () => {
+    // fetch_all batches deployed circuits, DNS mapping and OFAC alongside the
+    // identity tree and rejects for the whole batch. Recovery must not be
+    // blocked by an endpoint this check does not use.
+    protocolState.aadhaar.fetch_all = jest.fn(async () => {
+      protocolState.aadhaar.commitment_tree = TREE;
+      throw new Error('ofac endpoint down');
+    });
+
+    const result = await checkRestoredDocumentRegistration(
+      selfClient,
+      documentFixture({ documentCategory: 'aadhaar', dsc_parsed: undefined }),
+      'secret',
+    );
+
+    expect(result).toEqual({ isRegistered: true, csca: null });
+  });
+
+  it('falls back to the document commitment when aadhaar public keys are empty', async () => {
+    // validate.ts returns early for an empty public key map, before it can seed
+    // the document's own key, so the single-commitment path has to cover it.
+    protocolState.aadhaar.fetch_all = populates('aadhaar');
+    mockIsUserRegisteredWithAlternativeCSCA.mockResolvedValue({
+      isRegistered: false,
+      csca: null,
+    });
+
+    const result = await checkRestoredDocumentRegistration(
+      selfClient,
+      documentFixture({ documentCategory: 'aadhaar', dsc_parsed: undefined }),
+      'secret',
+    );
+
+    expect(mockIsUserRegistered).toHaveBeenCalled();
+    expect(result).toEqual({ isRegistered: true, csca: null });
   });
 
   it('checks kyc documents even though public keys are always null', async () => {
@@ -340,7 +380,25 @@ describe('checkRestoredDocumentRegistration', () => {
     );
 
     expect(mockIsUserRegisteredWithAlternativeCSCA).toHaveBeenCalled();
-    expect(result).toEqual({ isRegistered: true, csca: 'matched-csca' });
+    expect(result).toEqual({ isRegistered: true, csca: null });
+  });
+
+  it('does not run a redundant fallback for kyc documents', async () => {
+    // The validator already routes kyc through isUserRegistered.
+    protocolState.kyc.fetch_all = populates('kyc');
+    mockIsUserRegisteredWithAlternativeCSCA.mockResolvedValue({
+      isRegistered: false,
+      csca: null,
+    });
+
+    const result = await checkRestoredDocumentRegistration(
+      selfClient,
+      documentFixture({ documentCategory: 'kyc', dsc_parsed: undefined }),
+      'secret',
+    );
+
+    expect(mockIsUserRegistered).not.toHaveBeenCalled();
+    expect(result).toEqual({ isRegistered: false, csca: null });
   });
 
   it('wraps an aadhaar fetch rejection in ProtocolDataUnavailableError', async () => {

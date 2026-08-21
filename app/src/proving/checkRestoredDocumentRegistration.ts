@@ -67,13 +67,16 @@ function serializeCommitmentTree(tree: unknown): string | null {
  * `fetch_alternative_csca` consumes the authority key identifier. Without one
  * there is nothing to look up at `/ski-pems/`, so fetch just the commitment tree
  * and let the caller fall back to the document's own stored keys.
+ *
+ * @returns the failure that was swallowed, if any, so a later missing-tree error
+ * can attribute its cause.
  */
 async function fetchProtocolData(
   selfClient: SelfClient,
   document: IDDocument,
   documentCategory: DocumentCategory,
   environment: Environment,
-): Promise<void> {
+): Promise<unknown> {
   const protocolState = selfClient.getProtocolState();
 
   if (documentCategory === 'passport' || documentCategory === 'id_card') {
@@ -85,18 +88,26 @@ async function fetchProtocolData(
         environment,
         authorityKeyIdentifier,
       );
-      return;
+      return undefined;
     }
     await protocolState[documentCategory].fetch_identity_tree(environment);
-    return;
+    return undefined;
   }
 
-  // Unlike passport/id_card, these reject instead of resolving with null fields.
+  // Unlike passport/id_card these reject, and they reject for the whole batch —
+  // including deployed circuits, DNS mapping and OFAC, none of which this check
+  // needs. Let the commitment tree decide rather than blocking recovery on an
+  // unrelated endpoint.
   try {
     await protocolState[documentCategory].fetch_all(environment);
   } catch (error) {
-    throw new ProtocolDataUnavailableError(documentCategory, { cause: error });
+    console.warn(
+      `Protocol fetch for ${documentCategory} did not complete in full:`,
+      error,
+    );
+    return error;
   }
+  return undefined;
 }
 
 /**
@@ -122,14 +133,19 @@ export async function checkRestoredDocumentRegistration(
   const environment: Environment = document.mock ? 'stg' : 'prod';
   const { useProtocolStore } = selfClient;
 
-  await fetchProtocolData(selfClient, document, documentCategory, environment);
+  const fetchError = await fetchProtocolData(
+    selfClient,
+    document,
+    documentCategory,
+    environment,
+  );
 
   const readCommitmentTree = (category: DocumentCategory) => {
     const serialized = serializeCommitmentTree(
       getCommitmentTree(selfClient, category),
     );
     if (!serialized) {
-      throw new ProtocolDataUnavailableError(category);
+      throw new ProtocolDataUnavailableError(category, { cause: fetchError });
     }
     return serialized;
   };
@@ -144,10 +160,10 @@ export async function checkRestoredDocumentRegistration(
   const isMrzDocument =
     documentCategory === 'passport' || documentCategory === 'id_card';
 
-  // Aadhaar and KYC seed their own key material inside the validator, so they
-  // run the check even when the store holds no public keys. For passport and
-  // id_card an empty map yields an empty commitment list, which would report a
-  // registered document as unregistered.
+  // Aadhaar and KYC always attempt the check — the validator handles their key
+  // material itself, and the fallback below covers the cases where it bails out.
+  // For passport and id_card an empty map yields an empty commitment list, which
+  // would report a registered document as unregistered.
   const hasAlternativeCSCA =
     Object.keys(readAlternativeCSCA(documentCategory)).length > 0;
 
@@ -161,13 +177,23 @@ export async function checkRestoredDocumentRegistration(
       },
     );
     if (isRegistered) {
-      return { isRegistered: true, csca: csca ?? null };
+      // For aadhaar the matched value is a public key, not a CSCA certificate.
+      // Callers re-store the document from this field, so it must stay null for
+      // anything that is not an MRZ document.
+      return {
+        isRegistered: true,
+        csca: isMrzDocument ? (csca ?? null) : null,
+      };
     }
   }
 
-  // Falls back to the commitment built from the document's own DSC and CSCA,
-  // which covers a stale or incomplete `/ski-pems/` response.
-  if (isMrzDocument) {
+  // Falls back to the commitment built from the document's own keys. For MRZ
+  // documents that covers a stale or incomplete `/ski-pems/` response; for
+  // aadhaar it covers an empty public key list, which makes the validator bail
+  // out before it can seed the document's own key.
+  //
+  // kyc needs no fallback: the validator already routes it to isUserRegistered.
+  if (documentCategory !== 'kyc') {
     const isRegistered = await isUserRegistered(
       document,
       secret,
