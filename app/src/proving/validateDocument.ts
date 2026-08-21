@@ -2,11 +2,8 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import type { DocumentCategory, PassportData } from '@selfxyz/common/types';
-import {
-  type AlternativeCSCA,
-  isUserRegisteredWithAlternativeCSCA,
-} from '@selfxyz/common/utils/passports/validate';
+import type { PassportData } from '@selfxyz/common/types';
+import { isUserRegisteredWithAlternativeCSCA } from '@selfxyz/common/utils/passports/validate';
 import type {
   PassportValidationCallbacks,
   SelfClient,
@@ -27,6 +24,7 @@ import {
   storePassportData,
   updateDocumentRegistrationState,
 } from '@/providers/passportDataProvider';
+import { getAlternativeCSCA } from '@/proving/alternativeCSCA';
 import { trackEvent } from '@/services/analytics';
 
 /**
@@ -194,25 +192,7 @@ export async function checkAndUpdateRegistrationStates(
   if (__DEV__) console.log('Registration state check and update completed');
 }
 
-/**
- * Helper function to get alternative CSCA or public keys for a document category.
- * For Aadhaar documents, returns public keys. For passports/ID cards, returns alternative CSCAs.
- */
-export function getAlternativeCSCA(
-  useProtocolStore: SelfClient['useProtocolStore'],
-  docCategory: DocumentCategory,
-): AlternativeCSCA {
-  if (docCategory === 'aadhaar' || docCategory === 'kyc') {
-    const publicKeys = useProtocolStore.getState()[docCategory].public_keys;
-    // Convert string[] to Record<string, string> format expected by AlternativeCSCA
-    return publicKeys
-      ? Object.fromEntries(
-          publicKeys.map((key, index) => [`public_key_${index}`, key]),
-        )
-      : {};
-  }
-  return useProtocolStore.getState()[docCategory].alternative_csca;
-}
+export { getAlternativeCSCA };
 
 // UNUSED?
 

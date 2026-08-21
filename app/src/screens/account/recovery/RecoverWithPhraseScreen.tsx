@@ -10,7 +10,6 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { isUserRegisteredWithAlternativeCSCA } from '@selfxyz/common/utils/passports/validate';
 import {
   markCurrentDocumentAsRegistered,
   useSelfClient,
@@ -37,12 +36,17 @@ import {
   loadPassportData,
   reStorePassportDataWithRightCSCA,
 } from '@/providers/passportDataProvider';
+import {
+  checkRestoredDocumentRegistration,
+  ProtocolDataUnavailableError,
+} from '@/proving/checkRestoredDocumentRegistration';
 import { recoveryCopy } from '@/screens/account/recovery/recoveryCopy';
 
 type RecoveryError =
   | 'invalid_mnemonic'
   | 'restore_failed'
   | 'not_registered'
+  | 'network_error'
   | 'unexpected_error';
 
 const ERROR_MESSAGES: Record<RecoveryError, string> = {
@@ -52,6 +56,8 @@ const ERROR_MESSAGES: Record<RecoveryError, string> = {
     'We couldn’t restore your account with this phrase. Please double-check and try again.',
   not_registered:
     'This recovery phrase doesn’t match a registered ID. If you registered with a different phrase, try that one instead.',
+  network_error:
+    'We couldn’t reach the Self network to verify your ID. Check your connection and try again.',
   unexpected_error: 'Something went wrong. Please try again.',
 };
 
@@ -59,7 +65,6 @@ const RecoverWithPhraseScreen: React.FC = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const selfClient = useSelfClient();
-  const { useProtocolStore } = selfClient;
   const { restoreAccountFromMnemonic } = useAuth();
   const { trackEvent } = useSelfClient();
   const [mnemonic, setMnemonic] = useState<string>();
@@ -117,30 +122,10 @@ const RecoverWithPhraseScreen: React.FC = () => {
       const passportDataParsed = JSON.parse(passportData);
       const secret = getPrivateKeyFromMnemonic(slimMnemonic);
 
-      const { isRegistered, csca } = await isUserRegisteredWithAlternativeCSCA(
+      const { isRegistered, csca } = await checkRestoredDocumentRegistration(
+        selfClient,
         passportDataParsed,
         secret as string,
-        {
-          getCommitmentTree(docCategory) {
-            return useProtocolStore.getState()[docCategory].commitment_tree;
-          },
-          getAltCSCA(docCategory) {
-            if (docCategory === 'kyc') {
-              //TODO
-              throw new Error('KYC is not supported yet');
-            }
-            if (docCategory === 'aadhaar') {
-              const publicKeys =
-                useProtocolStore.getState().aadhaar.public_keys;
-              // Convert string[] to Record<string, string> format expected by AlternativeCSCA
-              return publicKeys
-                ? Object.fromEntries(publicKeys.map(key => [key, key]))
-                : {};
-            }
-
-            return useProtocolStore.getState()[docCategory].alternative_csca;
-          },
-        },
       );
       if (!isRegistered) {
         console.warn(
@@ -164,11 +149,17 @@ const RecoverWithPhraseScreen: React.FC = () => {
       trackEvent(BackupEvents.ACCOUNT_RECOVERY_COMPLETED);
       navigation.navigate('AccountVerifiedSuccess');
     } catch (restoreError) {
+      const isProtocolDataUnavailable =
+        restoreError instanceof ProtocolDataUnavailableError;
       trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_UNKNOWN, {
-        reason: 'unexpected_error',
+        reason: isProtocolDataUnavailable
+          ? 'protocol_data_unavailable'
+          : 'unexpected_error',
         error: restoreError instanceof Error ? restoreError.name : 'unknown',
       });
-      setError('unexpected_error');
+      setError(
+        isProtocolDataUnavailable ? 'network_error' : 'unexpected_error',
+      );
       setRestoring(false);
     }
   }, [
@@ -177,7 +168,6 @@ const RecoverWithPhraseScreen: React.FC = () => {
     restoreAccountFromMnemonic,
     selfClient,
     trackEvent,
-    useProtocolStore,
   ]);
 
   return (

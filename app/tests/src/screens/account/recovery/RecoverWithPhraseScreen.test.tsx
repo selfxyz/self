@@ -73,14 +73,18 @@ jest.mock('ethers', () => ({
   },
 }));
 
-jest.mock('@selfxyz/common/utils/passports/validate', () => ({
-  isUserRegisteredWithAlternativeCSCA: jest.fn(),
-}));
-
 jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
   markCurrentDocumentAsRegistered: jest.fn(),
   useSelfClient: jest.fn(),
 }));
+
+jest.mock('@/proving/checkRestoredDocumentRegistration', () => {
+  class ProtocolDataUnavailableError extends Error {}
+  return {
+    checkRestoredDocumentRegistration: jest.fn(),
+    ProtocolDataUnavailableError,
+  };
+});
 
 jest.mock('@selfxyz/mobile-sdk-alpha/components', () => ({
   Description: ({ children, ...props }: any) => (
@@ -145,8 +149,21 @@ const { useNavigation } = jest.requireMock('@react-navigation/native') as {
 const { useSelfClient } = jest.requireMock('@selfxyz/mobile-sdk-alpha') as {
   useSelfClient: jest.Mock;
 };
-const { useAuth } = jest.requireMock('@/providers/authProvider') as {
-  useAuth: jest.Mock;
+const { useAuth, getPrivateKeyFromMnemonic } = jest.requireMock(
+  '@/providers/authProvider',
+) as { useAuth: jest.Mock; getPrivateKeyFromMnemonic: jest.Mock };
+const { loadPassportData, reStorePassportDataWithRightCSCA } = jest.requireMock(
+  '@/providers/passportDataProvider',
+) as {
+  loadPassportData: jest.Mock;
+  reStorePassportDataWithRightCSCA: jest.Mock;
+};
+const {
+  checkRestoredDocumentRegistration: mockCheckRegistration,
+  ProtocolDataUnavailableError: MockProtocolDataUnavailableError,
+} = jest.requireMock('@/proving/checkRestoredDocumentRegistration') as {
+  checkRestoredDocumentRegistration: jest.Mock;
+  ProtocolDataUnavailableError: new (message?: string) => Error;
 };
 
 describe('RecoverWithPhraseScreen', () => {
@@ -212,5 +229,64 @@ describe('RecoverWithPhraseScreen', () => {
         error: 'mnemonic payload leaked into raw error message',
       }),
     );
+  });
+
+  it('surfaces a retryable message when protocol data is unavailable', async () => {
+    mockRestoreAccountFromMnemonic.mockResolvedValue(true);
+    loadPassportData.mockResolvedValue('{"documentCategory":"passport"}');
+    getPrivateKeyFromMnemonic.mockReturnValue('secret');
+    mockCheckRegistration.mockRejectedValue(
+      new MockProtocolDataUnavailableError('unavailable'),
+    );
+
+    const { UNSAFE_getByType, UNSAFE_getAllByType } = render(
+      <RecoverWithPhraseScreen />,
+    );
+
+    fireEvent.changeText(
+      UNSAFE_getByType('mock-textarea'),
+      'valid seed phrase',
+    );
+    fireEvent.press(UNSAFE_getByType('mock-button'));
+
+    await waitFor(() => {
+      expect(mockTrackEvent).toHaveBeenCalledWith(
+        'CLOUD_RESTORE_FAILED_UNKNOWN',
+        { reason: 'protocol_data_unavailable', error: 'Error' },
+      );
+    });
+
+    // Must not read as "your phrase is wrong" — the phrase was never checked.
+    const renderedText = UNSAFE_getAllByType('mock-text').map(
+      node => node.props.children,
+    );
+    expect(renderedText).toContain(
+      'We couldn’t reach the Self network to verify your ID. Check your connection and try again.',
+    );
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
+  it('completes recovery without re-storing the document when no alternative CSCA matched', async () => {
+    mockRestoreAccountFromMnemonic.mockResolvedValue(true);
+    loadPassportData.mockResolvedValue('{"documentCategory":"passport"}');
+    getPrivateKeyFromMnemonic.mockReturnValue('secret');
+    mockCheckRegistration.mockResolvedValue({
+      isRegistered: true,
+      csca: null,
+    });
+
+    const { UNSAFE_getByType } = render(<RecoverWithPhraseScreen />);
+
+    fireEvent.changeText(
+      UNSAFE_getByType('mock-textarea'),
+      'valid seed phrase',
+    );
+    fireEvent.press(UNSAFE_getByType('mock-button'));
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('AccountVerifiedSuccess');
+    });
+    expect(reStorePassportDataWithRightCSCA).not.toHaveBeenCalled();
+    expect(mockTrackEvent).toHaveBeenCalledWith('ACCOUNT_RECOVERY_COMPLETED');
   });
 });
