@@ -171,7 +171,7 @@ jest.mock('@/screens/account/recovery/recoveryCopy', () => ({
       backup_not_synced: 'Error: still downloading from the cloud provider',
       restore_failed: 'Error: could not restore with this phrase',
       secret_storage_failed: 'Error: could not save securely on this device',
-      not_registered: 'Error: phrase does not match a registered ID',
+      backup_not_registered: 'Error: backup not used with this document',
       network_error: 'Error: could not reach the Self network',
       unexpected_error: 'Error: something went wrong',
     },
@@ -367,7 +367,9 @@ describe('AccountRecoveryChoiceScreen', () => {
     // Must read as retryable, never as "your document isn't registered" — the
     // registry was never reached, so registration was never actually checked.
     expect(renderedText()).toContain(recoveryCopy.errors.network_error);
-    expect(renderedText()).not.toContain(recoveryCopy.errors.not_registered);
+    expect(renderedText()).not.toContain(
+      recoveryCopy.errors.backup_not_registered,
+    );
     expect(mockToggleCloudBackupEnabled()).not.toHaveBeenCalled();
     expect(mockRestoreSuccessNavigation).not.toHaveBeenCalled();
     expect(markCurrentDocumentAsRegistered).not.toHaveBeenCalled();
@@ -455,7 +457,7 @@ describe('AccountRecoveryChoiceScreen', () => {
     expect(renderedText()).not.toContain(recoveryCopy.errors.restore_failed);
   });
 
-  it('explains an unregistered document without blaming the network', async () => {
+  it('explains a mismatched backup without blaming the network or a phrase', async () => {
     mockCheckRegistration.mockResolvedValue({
       isRegistered: false,
       csca: null,
@@ -469,7 +471,9 @@ describe('AccountRecoveryChoiceScreen', () => {
         { reason: 'document_not_registered', hasCSCA: false },
       );
     });
-    expect(renderedText()).toContain(recoveryCopy.errors.not_registered);
+    // The user typed nothing on this path — the copy must speak about the
+    // backup, not about a recovery phrase they never entered.
+    expect(renderedText()).toContain(recoveryCopy.errors.backup_not_registered);
     expect(renderedText()).not.toContain(recoveryCopy.errors.network_error);
   });
 

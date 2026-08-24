@@ -59,7 +59,7 @@ import type { Mnemonic } from '@/types/mnemonic';
 type CloudRecoveryError =
   | CloudBackupErrorReason
   | 'secret_storage_failed'
-  | 'not_registered'
+  | 'backup_not_registered'
   | 'network_error'
   | 'unexpected_error';
 
@@ -149,7 +149,7 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
               hasCSCA: !!csca,
             },
           );
-          setError('not_registered');
+          setError('backup_not_registered');
           setRestoring(false);
           return false;
         }

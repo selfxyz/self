@@ -62,6 +62,10 @@ export const recoveryCopy = {
       'We found your backup but couldn’t save it securely on this device. Make sure your device lock is set up, then try again.',
     not_registered:
       'This recovery phrase doesn’t match a registered ID. If you registered with a different phrase, try that one instead.',
+    // The cloud path: a backup exists on the account, so Self was used
+    // before — just not with the document on this device. The app holds one
+    // secret per install, so the only usable exit is this document's phrase.
+    backup_not_registered: `We found a Self backup in ${STORAGE_NAME}, but it’s not the one used with this document. Enter the recovery phrase you used with this document instead.`,
     network_error:
       'We couldn’t reach the Self network to verify your ID. Check your connection and try again.',
     unexpected_error: 'Something went wrong. Please try again.',

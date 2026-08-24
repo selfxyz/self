@@ -204,6 +204,27 @@ describe('CloudBackupScreen', () => {
     );
   });
 
+  it('reports a dismissed biometric prompt without nagging the user', async () => {
+    // getOrCreateMnemonic rethrows the raw keychain cancellation — it is not
+    // a CloudBackupError, but it must not read as a failure either.
+    mockGetOrCreateMnemonic.mockRejectedValue(
+      Object.assign(new Error('User canceled the operation'), {
+        code: 'USER_CANCELED',
+      }),
+    );
+
+    pressEnableBackup();
+
+    await waitFor(() => {
+      expect(mockTrackEvent).toHaveBeenCalledWith(
+        'CLOUD_BACKUP_ENABLE_FAILED',
+        { reason: 'authentication_cancelled', error: 'Error' },
+      );
+    });
+    expect(mockAlert).not.toHaveBeenCalled();
+    expect(toggle()).not.toHaveBeenCalled();
+  });
+
   it('reports a cancelled sign-in without nagging the user', async () => {
     mockUpload.mockRejectedValue(
       new CloudBackupError('sign_in_cancelled', 'User canceled Google sign-in'),
