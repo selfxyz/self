@@ -40,10 +40,13 @@ export async function disableBackup() {
  * up here first as a `.name.icloud` placeholder that `exists` reports false
  * for. A failed folder listing is ambiguous — `contentsOfDirectory` throws the
  * same ERR_READ_ERROR for "folder never created" (no backup) and for a genuine
- * read failure — so a rejection gets a few re-probes before it counts as
- * absent, giving a fresh device's metadata a window to arrive. The residual
- * gap (metadata lag beyond the probe budget) is not closable with this
- * library's API surface; it exposes no NSMetadataQuery.
+ * read failure. Nor is a successful listing that lacks the file conclusive:
+ * the folder can materialise before its file placeholders do during the first
+ * metadata sync. Only a sighting of the file ends the probe early — every
+ * negative outcome is retried until the budget runs out, so "no backup" is
+ * only ever concluded after the metadata has had a window to arrive. The
+ * residual gap (metadata lag beyond the probe budget) is not closable with
+ * this library's API surface; it exposes no NSMetadataQuery.
  */
 async function hasRemoteBackup(
   probeAttempts: number,
@@ -58,12 +61,12 @@ async function hasRemoteBackup(
     }
     try {
       const entries = await CloudStorage.readdir(FOLDER);
-      // A successful listing is authoritative: the folder is materialised, so
-      // the file is either visible (possibly under a placeholder name this
-      // check tolerates) or genuinely absent.
-      return entries.some(entry => entry.includes(FILE_NAME));
+      if (entries.some(entry => entry.includes(FILE_NAME))) {
+        return true;
+      }
     } catch {
-      // Ambiguous — retry the whole probe.
+      // Missing folder or read failure — inconclusive, same as a listing
+      // without the file. Retry the whole probe.
     }
   }
   return false;

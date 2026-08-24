@@ -305,7 +305,9 @@ describe('cloudBackup', () => {
 
       const { result } = renderHook(() => useBackupMnemonic());
 
-      await expect(result.current.download()).rejects.toThrow(
+      await expect(
+        result.current.download({ remoteProbeAttempts: 1, pollIntervalMs: 10 }),
+      ).rejects.toThrow(
         'Couldnt find the encrypted backup, did you back it up previously?',
       );
     });
@@ -490,7 +492,14 @@ describe('cloudBackup', () => {
 
         const { result } = renderHook(() => useBackupMnemonic());
 
-        expect(await rejectionReason(result.current.download)).toEqual({
+        expect(
+          await rejectionReason(() =>
+            result.current.download({
+              remoteProbeAttempts: 1,
+              pollIntervalMs: 10,
+            }),
+          ),
+        ).toEqual({
           name: 'CloudBackupError',
           reason: 'no_backup_found',
         });
@@ -579,11 +588,21 @@ describe('cloudBackup', () => {
 
         const { result } = renderHook(() => useBackupMnemonic());
 
-        expect(await rejectionReason(result.current.download)).toEqual({
+        expect(
+          await rejectionReason(() =>
+            result.current.download({
+              remoteProbeAttempts: 2,
+              pollIntervalMs: 10,
+            }),
+          ),
+        ).toEqual({
           name: 'CloudBackupError',
           reason: 'no_backup_found',
         });
         expect(CloudStorage.triggerSync).not.toHaveBeenCalled();
+        // A listing without the file is inconclusive during first metadata
+        // sync, so the whole probe budget must be spent before concluding.
+        expect(CloudStorage.readdir).toHaveBeenCalledTimes(2);
       });
 
       it('reports no backup when the folder listing keeps failing', async () => {
@@ -769,6 +788,41 @@ describe('cloudBackup', () => {
       await expect(
         result.current.download({ syncTimeoutMs: 500, pollIntervalMs: 10 }),
       ).resolves.toEqual(mockMnemonic);
+    });
+
+    it('keeps probing after an empty folder listing until the placeholder appears', async () => {
+      // Fresh-device window: the iCloud folder can materialise before its
+      // file placeholders do, so an empty listing must not conclude
+      // "no backup" while probe budget remains.
+      let materialized = false;
+      let placeholderProbes = 0;
+      (CloudStorage.exists as jest.Mock).mockImplementation(
+        async (path: string) => {
+          if (path === PLACEHOLDER_FILE_PATH) {
+            placeholderProbes += 1;
+            return placeholderProbes >= 2;
+          }
+          return materialized;
+        },
+      );
+      (CloudStorage.readdir as jest.Mock).mockResolvedValue([]);
+      (CloudStorage.triggerSync as jest.Mock).mockImplementation(async () => {
+        materialized = true;
+      });
+      (CloudStorage.readFile as jest.Mock).mockResolvedValue(
+        JSON.stringify(mockMnemonic),
+      );
+
+      const { result } = renderHook(() => useBackupMnemonic());
+
+      await expect(
+        result.current.download({
+          syncTimeoutMs: 200,
+          pollIntervalMs: 10,
+          remoteProbeAttempts: 3,
+        }),
+      ).resolves.toEqual(mockMnemonic);
+      expect(CloudStorage.readdir).toHaveBeenCalled();
     });
 
     it('skips the sync machinery entirely when the file is already local', async () => {
