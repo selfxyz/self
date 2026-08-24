@@ -33,16 +33,13 @@ export function useBiometricsAvailability(): boolean {
       let active = true;
 
       const refresh = () => {
-        checkBiometricsAvailable()
-          .then(available => {
-            if (active) {
-              setBiometricsAvailable(available);
-            }
-          })
-          .catch(() => {
-            // Keep the last known value; a failed capability query is not
-            // evidence that biometrics are unavailable.
-          });
+        checkBiometricsAvailable().then(available => {
+          // `null` means the query failed. Keep the last known value — treating
+          // it as `false` would disable cloud recovery on a transient error.
+          if (active && available !== null) {
+            setBiometricsAvailable(available);
+          }
+        });
       };
 
       refresh();

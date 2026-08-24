@@ -66,7 +66,13 @@ const SplashScreen: React.FC = ({}) => {
       dataLoadInitiatedRef.current = true;
 
       checkBiometricsAvailable()
-        .then(setBiometricsAvailable)
+        .then(available => {
+          // `null` means the capability could not be determined; leave the
+          // store at its default rather than asserting biometrics are absent.
+          if (available !== null) {
+            setBiometricsAvailable(available);
+          }
+        })
         .catch(err => {
           console.warn('Error checking biometrics availability', err);
         });

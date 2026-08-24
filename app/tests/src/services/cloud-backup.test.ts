@@ -497,6 +497,33 @@ describe('cloudBackup', () => {
           reason: 'backup_corrupt',
         });
       });
+
+      it('reports a rejected read as retryable, not as a missing backup', async () => {
+        (CloudStorage.exists as jest.Mock).mockResolvedValue(true);
+        (CloudStorage.readFile as jest.Mock).mockRejectedValue(
+          new Error('network offline'),
+        );
+
+        const { result } = renderHook(() => useBackupMnemonic());
+
+        expect(await rejectionReason(result.current.download)).toEqual({
+          name: 'CloudBackupError',
+          reason: 'backup_read_failed',
+        });
+      }, 30000);
+
+      it('reports a rejected availability check as a read failure', async () => {
+        (CloudStorage.isCloudAvailable as jest.Mock).mockRejectedValue(
+          new Error('provider unreachable'),
+        );
+
+        const { result } = renderHook(() => useBackupMnemonic());
+
+        expect(await rejectionReason(result.current.download)).toEqual({
+          name: 'CloudBackupError',
+          reason: 'backup_read_failed',
+        });
+      });
     });
 
     describe('Android', () => {
@@ -539,6 +566,20 @@ describe('cloudBackup', () => {
         expect(await rejectionReason(result.current.download)).toEqual({
           name: 'CloudBackupError',
           reason: 'backup_corrupt',
+        });
+      });
+
+      it('reports a rejected file listing as retryable, not as a missing backup', async () => {
+        (createGDrive as jest.Mock).mockResolvedValue(mockGDriveInstance);
+        mockGDriveInstance.files.list.mockRejectedValue(
+          new Error('network offline'),
+        );
+
+        const { result } = renderHook(() => useBackupMnemonic());
+
+        expect(await rejectionReason(result.current.download)).toEqual({
+          name: 'CloudBackupError',
+          reason: 'backup_read_failed',
         });
       });
     });

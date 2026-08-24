@@ -53,6 +53,11 @@ export const recoveryCopy = {
       'That doesn’t look like a valid recovery phrase. Make sure all 24 words are correct and in the right order.',
     restore_failed:
       'We couldn’t restore your account with this phrase. Please double-check and try again.',
+    // The cloud path validates the phrase before restoring it, so a failure
+    // here is this device refusing to store the secret — telling the user to
+    // check a phrase they never typed would send them nowhere.
+    secret_storage_failed:
+      'We found your backup but couldn’t save it securely on this device. Make sure your device lock is set up, then try again.',
     not_registered:
       'This recovery phrase doesn’t match a registered ID. If you registered with a different phrase, try that one instead.',
     network_error:

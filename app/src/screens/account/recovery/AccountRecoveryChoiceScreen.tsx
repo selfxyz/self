@@ -57,7 +57,7 @@ import type { Mnemonic } from '@/types/mnemonic';
  */
 type CloudRecoveryError =
   | CloudBackupErrorReason
-  | 'restore_failed'
+  | 'secret_storage_failed'
   | 'not_registered'
   | 'network_error'
   | 'unexpected_error';
@@ -101,11 +101,13 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
         const result = await restoreAccountFromMnemonic(mnemonic.phrase);
 
         if (!result) {
-          console.warn('Failed to restore account');
+          // `download` already validated the phrase, so this is the keychain
+          // write failing rather than a bad phrase.
+          console.warn('Failed to store the restored secret');
           trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_UNKNOWN, {
-            reason: 'restore_failed',
+            reason: 'secret_storage_failed',
           });
-          setError('restore_failed');
+          setError('secret_storage_failed');
           setRestoring(false);
           return false;
         }

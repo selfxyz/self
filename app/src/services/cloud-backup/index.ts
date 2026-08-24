@@ -9,7 +9,10 @@ import {
   MIME_TYPES,
 } from '@robinbobin/react-native-google-drive-api-wrapper';
 
-import { CloudBackupError } from '@/services/cloud-backup/errors';
+import {
+  CloudBackupError,
+  isCloudBackupError,
+} from '@/services/cloud-backup/errors';
 import { createGDrive } from '@/services/cloud-backup/google';
 import { FILE_NAME } from '@/services/cloud-backup/helpers';
 import {
@@ -62,39 +65,52 @@ export async function download() {
     return iosDownload();
   }
 
-  const gdrive = await createGDrive();
-  if (!gdrive) {
-    // `googleSignIn` swallows every `authorize` failure, so a genuine auth or
-    // network error is indistinguishable from a cancel here.
-    throw new CloudBackupError(
-      'sign_in_cancelled',
-      'User canceled Google sign-in',
-    );
-  }
-  const { files } = await gdrive.files.list({
-    spaces: APP_DATA_FOLDER_ID,
-    q: `name = '${FILE_NAME}'`,
-  });
-
-  const driveFiles: unknown[] = files;
-  const firstFile = driveFiles[0];
-
-  if (!isDriveFile(firstFile)) {
-    throw new CloudBackupError(
-      'no_backup_found',
-      'Couldnt find the encrypted backup, did you back it up previously?',
-    );
-  }
-  const mnemonicString = await withRetries(() =>
-    gdrive.files.getText(firstFile.id),
-  );
   try {
-    const mnemonic = parseMnemonic(mnemonicString);
-    return mnemonic;
+    const gdrive = await createGDrive();
+    if (!gdrive) {
+      // `googleSignIn` swallows every `authorize` failure, so a genuine auth or
+      // network error is indistinguishable from a cancel here.
+      throw new CloudBackupError(
+        'sign_in_cancelled',
+        'User canceled Google sign-in',
+      );
+    }
+    const { files } = await gdrive.files.list({
+      spaces: APP_DATA_FOLDER_ID,
+      q: `name = '${FILE_NAME}'`,
+    });
+
+    const driveFiles: unknown[] = files;
+    const firstFile = driveFiles[0];
+
+    if (!isDriveFile(firstFile)) {
+      throw new CloudBackupError(
+        'no_backup_found',
+        'Couldnt find the encrypted backup, did you back it up previously?',
+      );
+    }
+    const mnemonicString = await withRetries(() =>
+      gdrive.files.getText(firstFile.id),
+    );
+    try {
+      const mnemonic = parseMnemonic(mnemonicString);
+      return mnemonic;
+    } catch (e) {
+      throw new CloudBackupError(
+        'backup_corrupt',
+        `Failed to parse mnemonic backup: ${(e as Error).message}`,
+        { cause: e },
+      );
+    }
   } catch (e) {
+    if (isCloudBackupError(e)) {
+      throw e;
+    }
+    // Drive rejected the list or read. `withRetries` replaces the original
+    // error, so report a retryable read failure rather than a missing backup.
     throw new CloudBackupError(
-      'backup_corrupt',
-      `Failed to parse mnemonic backup: ${(e as Error).message}`,
+      'backup_read_failed',
+      `Failed to read the backup from Google Drive: ${(e as Error).message}`,
       { cause: e },
     );
   }

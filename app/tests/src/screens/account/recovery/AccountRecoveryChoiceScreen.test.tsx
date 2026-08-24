@@ -165,6 +165,7 @@ jest.mock('@/screens/account/recovery/recoveryCopy', () => ({
       backup_corrupt: 'Error: backup could not be read',
       backup_read_failed: 'Error: could not reach the cloud provider',
       restore_failed: 'Error: could not restore with this phrase',
+      secret_storage_failed: 'Error: could not save securely on this device',
       not_registered: 'Error: phrase does not match a registered ID',
       network_error: 'Error: could not reach the Self network',
       unexpected_error: 'Error: something went wrong',
@@ -430,6 +431,23 @@ describe('AccountRecoveryChoiceScreen', () => {
     });
   });
 
+  it('blames secure storage, not the phrase, when the restore itself fails', async () => {
+    mockRestoreAccountFromMnemonic.mockResolvedValue(false);
+
+    const { renderedText } = pressRestoreFromCloud();
+
+    await waitFor(() => {
+      expect(mockTrackEvent).toHaveBeenCalledWith(
+        'CLOUD_RESTORE_FAILED_UNKNOWN',
+        { reason: 'secret_storage_failed' },
+      );
+    });
+    // The user never typed a phrase on this path, and download() already
+    // validated the one it fetched.
+    expect(renderedText()).toContain(recoveryCopy.errors.secret_storage_failed);
+    expect(renderedText()).not.toContain(recoveryCopy.errors.restore_failed);
+  });
+
   it('explains an unregistered document without blaming the network', async () => {
     mockCheckRegistration.mockResolvedValue({
       isRegistered: false,
@@ -518,8 +536,9 @@ describe('AccountRecoveryChoiceScreen', () => {
     });
   });
 
-  it('keeps the last known availability when the capability query fails', async () => {
-    mockCheckBiometricsAvailable.mockRejectedValue(new Error('sensor error'));
+  it('keeps the last known availability when the capability is indeterminate', async () => {
+    // The provider resolves null (never rejects) when isSensorAvailable throws.
+    mockCheckBiometricsAvailable.mockResolvedValue(null);
     useSettingStore.setState({ biometricsAvailable: true });
 
     const { cloudButton } = renderScreen();
@@ -527,7 +546,8 @@ describe('AccountRecoveryChoiceScreen', () => {
     await waitFor(() => {
       expect(mockCheckBiometricsAvailable).toHaveBeenCalled();
     });
-    // A failed query is not evidence that biometrics are unavailable.
+    // A failed query is not evidence that biometrics are unavailable, so a
+    // transient native error must not disable cloud recovery.
     expect(cloudButton().props.disabled).toBe(false);
   });
 
