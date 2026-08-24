@@ -15,6 +15,7 @@ import {
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
 import {
+  BodyText,
   Description,
   SecondaryButton,
 } from '@selfxyz/mobile-sdk-alpha/components';
@@ -198,7 +199,9 @@ const RecoverWithPhraseScreen: React.FC = () => {
       </View>
 
       {error && (
-        <Text style={styles.errorText}>{recoveryCopy.errors[error]}</Text>
+        <BodyText style={styles.errorText}>
+          {recoveryCopy.errors[error]}
+        </BodyText>
       )}
 
       <SecondaryButton

@@ -63,6 +63,9 @@ jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
 }));
 
 jest.mock('@selfxyz/mobile-sdk-alpha/components', () => ({
+  BodyText: ({ children, ...props }: any) => (
+    <mock-text {...props}>{children}</mock-text>
+  ),
   Caption: ({ children, ...props }: any) => (
     <mock-text {...props}>{children}</mock-text>
   ),
