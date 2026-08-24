@@ -33,6 +33,7 @@ import { buttonTap, confirmTap } from '@/integrations/haptics';
 import type { RootStackParamList } from '@/navigation';
 import { useAuth } from '@/providers/authProvider';
 import { STORAGE_NAME, useBackupMnemonic } from '@/services/cloud-backup';
+import { isCloudBackupError } from '@/services/cloud-backup/errors';
 import { useSettingStore } from '@/stores/settingStore';
 
 type NextScreen = keyof Pick<RootStackParamList, 'SaveRecoveryPhrase'>;
@@ -180,7 +181,21 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
         navigation.navigate(params.returnToScreen);
       }
     } catch (error) {
-      console.error('iCloud backup error', error);
+      console.error('Cloud backup enable error', error);
+      const reason = isCloudBackupError(error)
+        ? error.reason
+        : 'unexpected_error';
+      trackEvent(BackupEvents.CLOUD_BACKUP_ENABLE_FAILED, {
+        reason,
+        error: error instanceof Error ? error.name : 'unknown',
+      });
+      // A dismissed sign-in sheet is the user's own doing — no alert for it.
+      if (reason !== 'sign_in_cancelled') {
+        Alert.alert(
+          'Error',
+          'Failed to enable cloud backups. Please try again.',
+        );
+      }
     } finally {
       setICloudPending(false);
     }

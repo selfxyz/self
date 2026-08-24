@@ -71,8 +71,8 @@ export async function download(options?: IosDownloadOptions) {
   try {
     const gdrive = await createGDrive();
     if (!gdrive) {
-      // `googleSignIn` swallows every `authorize` failure, so a genuine auth or
-      // network error is indistinguishable from a cancel here.
+      // `googleSignIn` only returns null for an actual user cancellation;
+      // every other failure throws a typed `sign_in_failed` before this.
       throw new CloudBackupError(
         'sign_in_cancelled',
         'User canceled Google sign-in',

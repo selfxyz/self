@@ -5,14 +5,14 @@
 import { Platform } from 'react-native';
 import { CloudStorage, CloudStorageScope } from 'react-native-cloud-storage';
 
-import { name } from '../../../package.json';
-
-const packageName = name?.startsWith('@') ? name : '@selfxyz/mobile-app';
-const folder = `/${packageName}`;
+// Frozen literal: backups live at this path in users' cloud accounts, so it
+// must never follow the package name (which has already changed once, from
+// `openpassport`). Renaming the app must not move or orphan existing backups.
+const folder = '/@selfxyz/mobile-app';
 export const FILE_NAME = 'encrypted-private-key';
-export const ENCRYPTED_FILE_PATH = `/${folder}/${FILE_NAME}`;
+export const ENCRYPTED_FILE_PATH = `${folder}/${FILE_NAME}`;
 // The name iOS gives a not-yet-downloaded iCloud item in directory listings.
-export const PLACEHOLDER_FILE_PATH = `/${folder}/.${FILE_NAME}.icloud`;
+export const PLACEHOLDER_FILE_PATH = `${folder}/.${FILE_NAME}.icloud`;
 export const FOLDER = folder;
 
 if (Platform.OS === 'ios') {

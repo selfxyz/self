@@ -47,6 +47,7 @@ export const recoveryCopy = {
     no_backup_found: `We couldn’t find a backup in ${STORAGE_NAME}. Backups don’t move between platforms — one made on Android can’t be restored on iPhone, and one made on iPhone can’t be restored on Android. Use your recovery phrase instead.`,
     cloud_unavailable: `Sign in to ${STORAGE_NAME} in your device settings, then try again. You can also recover with your recovery phrase.`,
     sign_in_cancelled: `The ${STORAGE_NAME} sign-in was dismissed before it finished. Try again, or use your recovery phrase.`,
+    sign_in_failed: `Something went wrong signing in to ${STORAGE_NAME}. Try again, or recover with your recovery phrase.`,
     backup_corrupt: `We found a backup in ${STORAGE_NAME} but couldn’t read it. Recover with your recovery phrase instead.`,
     backup_read_failed: `We couldn’t reach ${STORAGE_NAME}. Check your connection and try again.`,
     backup_not_synced: `Your backup is still syncing from ${STORAGE_NAME}. Keep the app open and try again in a moment.`,

@@ -162,6 +162,7 @@ jest.mock('@/screens/account/recovery/recoveryCopy', () => ({
       no_backup_found: 'Error: no backup found',
       cloud_unavailable: 'Error: sign in to the cloud provider',
       sign_in_cancelled: 'Error: sign-in was dismissed',
+      sign_in_failed: 'Error: sign-in ended in an error',
       backup_corrupt: 'Error: backup could not be read',
       backup_read_failed: 'Error: could not reach the cloud provider',
       backup_not_synced: 'Error: still downloading from the cloud provider',
@@ -409,6 +410,7 @@ describe('AccountRecoveryChoiceScreen', () => {
 
   describe.each([
     ['sign_in_cancelled'],
+    ['sign_in_failed'],
     ['cloud_unavailable'],
     ['no_backup_found'],
     ['backup_not_synced'],
