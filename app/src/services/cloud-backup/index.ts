@@ -15,6 +15,7 @@ import {
 } from '@/services/cloud-backup/errors';
 import { createGDrive } from '@/services/cloud-backup/google';
 import { FILE_NAME } from '@/services/cloud-backup/helpers';
+import type { IosDownloadOptions } from '@/services/cloud-backup/ios';
 import {
   disableBackup as disableIosBackup,
   download as iosDownload,
@@ -60,10 +61,12 @@ export async function disableBackup() {
   );
 }
 
-export async function download() {
+export async function download(options?: IosDownloadOptions) {
   if (Platform.OS === 'ios') {
-    return iosDownload();
+    return iosDownload(options);
   }
+  // Android has no placeholder concept — Drive's file listing is authoritative,
+  // so the sync options only apply to iOS.
 
   try {
     const gdrive = await createGDrive();

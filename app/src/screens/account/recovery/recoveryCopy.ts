@@ -49,6 +49,7 @@ export const recoveryCopy = {
     sign_in_cancelled: `The ${STORAGE_NAME} sign-in was dismissed before it finished. Try again, or use your recovery phrase.`,
     backup_corrupt: `We found a backup in ${STORAGE_NAME} but couldn’t read it. Recover with your recovery phrase instead.`,
     backup_read_failed: `We couldn’t reach ${STORAGE_NAME}. Check your connection and try again.`,
+    backup_not_synced: `Your backup is still syncing from ${STORAGE_NAME}. Keep the app open and try again in a moment.`,
     invalid_mnemonic:
       'That doesn’t look like a valid recovery phrase. Make sure all 24 words are correct and in the right order.',
     restore_failed:

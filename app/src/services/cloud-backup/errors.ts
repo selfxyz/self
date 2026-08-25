@@ -14,6 +14,11 @@ export type CloudBackupErrorReason =
   | 'cloud_unavailable'
   /** Reached the provider, but this account holds no backup file. */
   | 'no_backup_found'
+  /**
+   * iOS only: the backup exists in iCloud but hasn't finished downloading to
+   * this device. Retryable — the download continues in the background.
+   */
+  | 'backup_not_synced'
   /** Found a backup file whose contents are not a usable mnemonic. */
   | 'backup_corrupt'
   /**

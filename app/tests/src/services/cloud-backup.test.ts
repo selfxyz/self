@@ -11,6 +11,12 @@ import { renderHook } from '@testing-library/react-native';
 import { useBackupMnemonic } from '@/services/cloud-backup';
 import type { CloudBackupError } from '@/services/cloud-backup/errors';
 import { createGDrive } from '@/services/cloud-backup/google';
+import {
+  ENCRYPTED_FILE_PATH,
+  FILE_NAME,
+  FOLDER,
+  PLACEHOLDER_FILE_PATH,
+} from '@/services/cloud-backup/helpers';
 
 type SupportedPlatforms = 'ios' | 'android';
 
@@ -66,7 +72,9 @@ jest.mock('react-native-cloud-storage', () => ({
     writeFile: jest.fn(),
     exists: jest.fn(),
     readFile: jest.fn(),
+    readdir: jest.fn(),
     rmdir: jest.fn(),
+    triggerSync: jest.fn(),
     isCloudAvailable: jest.fn(),
   },
   CloudStorageScope: {
@@ -132,6 +140,8 @@ describe('cloudBackup', () => {
     (GDrive as jest.Mock).mockImplementation(() => mockGDriveInstance);
     (ethers.Mnemonic.isValidMnemonic as jest.Mock).mockReturnValue(true);
     (CloudStorage.isCloudAvailable as jest.Mock).mockResolvedValue(true);
+    (CloudStorage.readdir as jest.Mock).mockResolvedValue([]);
+    (CloudStorage.triggerSync as jest.Mock).mockResolvedValue(undefined);
   });
 
   afterEach(() => {
@@ -295,7 +305,9 @@ describe('cloudBackup', () => {
 
       const { result } = renderHook(() => useBackupMnemonic());
 
-      await expect(result.current.download()).rejects.toThrow(
+      await expect(
+        result.current.download({ remoteProbeAttempts: 1, pollIntervalMs: 10 }),
+      ).rejects.toThrow(
         'Couldnt find the encrypted backup, did you back it up previously?',
       );
     });
@@ -480,7 +492,14 @@ describe('cloudBackup', () => {
 
         const { result } = renderHook(() => useBackupMnemonic());
 
-        expect(await rejectionReason(result.current.download)).toEqual({
+        expect(
+          await rejectionReason(() =>
+            result.current.download({
+              remoteProbeAttempts: 1,
+              pollIntervalMs: 10,
+            }),
+          ),
+        ).toEqual({
           name: 'CloudBackupError',
           reason: 'no_backup_found',
         });
@@ -520,6 +539,124 @@ describe('cloudBackup', () => {
         const { result } = renderHook(() => useBackupMnemonic());
 
         expect(await rejectionReason(result.current.download)).toEqual({
+          name: 'CloudBackupError',
+          reason: 'backup_read_failed',
+        });
+      });
+
+      it('reports a backup that never finishes syncing as not synced', async () => {
+        // Placeholder visible, plain file never materialises.
+        (CloudStorage.exists as jest.Mock).mockImplementation(
+          async (path: string) => path === PLACEHOLDER_FILE_PATH,
+        );
+
+        const { result } = renderHook(() => useBackupMnemonic());
+
+        expect(
+          await rejectionReason(() =>
+            result.current.download({ syncTimeoutMs: 50, pollIntervalMs: 10 }),
+          ),
+        ).toEqual({
+          name: 'CloudBackupError',
+          reason: 'backup_not_synced',
+        });
+      });
+
+      it('treats a placeholder found via the folder listing as not synced, not absent', async () => {
+        (CloudStorage.exists as jest.Mock).mockResolvedValue(false);
+        (CloudStorage.readdir as jest.Mock).mockResolvedValue([
+          `.${FILE_NAME}.icloud`,
+        ]);
+
+        const { result } = renderHook(() => useBackupMnemonic());
+
+        expect(
+          await rejectionReason(() =>
+            result.current.download({ syncTimeoutMs: 50, pollIntervalMs: 10 }),
+          ),
+        ).toEqual({
+          name: 'CloudBackupError',
+          reason: 'backup_not_synced',
+        });
+      });
+
+      it('reports no backup when the folder lists only unrelated files', async () => {
+        (CloudStorage.exists as jest.Mock).mockResolvedValue(false);
+        (CloudStorage.readdir as jest.Mock).mockResolvedValue([
+          'unrelated-file',
+        ]);
+
+        const { result } = renderHook(() => useBackupMnemonic());
+
+        expect(
+          await rejectionReason(() =>
+            result.current.download({
+              remoteProbeAttempts: 2,
+              pollIntervalMs: 10,
+            }),
+          ),
+        ).toEqual({
+          name: 'CloudBackupError',
+          reason: 'no_backup_found',
+        });
+        expect(CloudStorage.triggerSync).not.toHaveBeenCalled();
+        // A listing without the file is inconclusive during first metadata
+        // sync, so the whole probe budget must be spent before concluding.
+        expect(CloudStorage.readdir).toHaveBeenCalledTimes(2);
+      });
+
+      it('reports no backup when the folder listing keeps failing', async () => {
+        // ERR_READ_ERROR is what a never-created folder throws; after the
+        // probe budget it must read as "no backup", not as a read failure.
+        (CloudStorage.exists as jest.Mock).mockResolvedValue(false);
+        (CloudStorage.readdir as jest.Mock).mockRejectedValue(
+          Object.assign(new Error('read failed'), { code: 'ERR_READ_ERROR' }),
+        );
+
+        const { result } = renderHook(() => useBackupMnemonic());
+
+        expect(
+          await rejectionReason(() =>
+            result.current.download({
+              remoteProbeAttempts: 1,
+              pollIntervalMs: 10,
+            }),
+          ),
+        ).toEqual({
+          name: 'CloudBackupError',
+          reason: 'no_backup_found',
+        });
+      });
+
+      it('aborts the sync wait when the exists check itself rejects', async () => {
+        // The container going nil mid-poll (signed out) is structural, not
+        // transient — the user must not wait out the full budget for it.
+        let plainExistsCalls = 0;
+        (CloudStorage.exists as jest.Mock).mockImplementation(
+          async (path: string) => {
+            if (path === PLACEHOLDER_FILE_PATH) {
+              return true;
+            }
+            plainExistsCalls += 1;
+            if (plainExistsCalls === 1) {
+              return false;
+            }
+            throw Object.assign(new Error('container gone'), {
+              code: 'ERR_DIRECTORY_NOT_FOUND',
+            });
+          },
+        );
+
+        const { result } = renderHook(() => useBackupMnemonic());
+
+        expect(
+          await rejectionReason(() =>
+            result.current.download({
+              syncTimeoutMs: 500,
+              pollIntervalMs: 10,
+            }),
+          ),
+        ).toEqual({
           name: 'CloudBackupError',
           reason: 'backup_read_failed',
         });
@@ -582,6 +719,132 @@ describe('cloudBackup', () => {
           reason: 'backup_read_failed',
         });
       });
+    });
+  });
+
+  describe('iOS sync wait', () => {
+    beforeEach(() => {
+      mockPlatform.OS = 'ios';
+    });
+
+    it('triggers the iCloud download for a placeholder and reads the file once it lands', async () => {
+      let materialized = false;
+      (CloudStorage.exists as jest.Mock).mockImplementation(
+        async (path: string) =>
+          path === PLACEHOLDER_FILE_PATH ? !materialized : materialized,
+      );
+      let syncCalls = 0;
+      (CloudStorage.triggerSync as jest.Mock).mockImplementation(async () => {
+        syncCalls += 1;
+        // Two paths are synced per tick; land the file on the second tick.
+        if (syncCalls >= 4) {
+          materialized = true;
+        }
+      });
+      (CloudStorage.readFile as jest.Mock).mockResolvedValue(
+        JSON.stringify(mockMnemonic),
+      );
+
+      const { result } = renderHook(() => useBackupMnemonic());
+
+      const downloaded = await result.current.download({
+        syncTimeoutMs: 500,
+        pollIntervalMs: 10,
+      });
+
+      expect(downloaded).toEqual(mockMnemonic);
+      // Apple doesn't document which of the two paths isUbiquitousItem
+      // accepts for a non-materialised item, so both must be requested.
+      expect(CloudStorage.triggerSync).toHaveBeenCalledWith(
+        ENCRYPTED_FILE_PATH,
+      );
+      expect(CloudStorage.triggerSync).toHaveBeenCalledWith(
+        PLACEHOLDER_FILE_PATH,
+      );
+    });
+
+    it('still restores when the sync request is rejected but the file lands anyway', async () => {
+      let plainExistsCalls = 0;
+      (CloudStorage.exists as jest.Mock).mockImplementation(
+        async (path: string) => {
+          if (path === PLACEHOLDER_FILE_PATH) {
+            return true;
+          }
+          plainExistsCalls += 1;
+          return plainExistsCalls >= 2;
+        },
+      );
+      (CloudStorage.triggerSync as jest.Mock).mockRejectedValue(
+        Object.assign(new Error('not downloadable'), {
+          code: 'ERR_FILE_NOT_DOWNLOADABLE',
+        }),
+      );
+      (CloudStorage.readFile as jest.Mock).mockResolvedValue(
+        JSON.stringify(mockMnemonic),
+      );
+
+      const { result } = renderHook(() => useBackupMnemonic());
+
+      await expect(
+        result.current.download({ syncTimeoutMs: 500, pollIntervalMs: 10 }),
+      ).resolves.toEqual(mockMnemonic);
+    });
+
+    it('keeps probing after an empty folder listing until the placeholder appears', async () => {
+      // Fresh-device window: the iCloud folder can materialise before its
+      // file placeholders do, so an empty listing must not conclude
+      // "no backup" while probe budget remains.
+      let materialized = false;
+      let placeholderProbes = 0;
+      (CloudStorage.exists as jest.Mock).mockImplementation(
+        async (path: string) => {
+          if (path === PLACEHOLDER_FILE_PATH) {
+            placeholderProbes += 1;
+            return placeholderProbes >= 2;
+          }
+          return materialized;
+        },
+      );
+      (CloudStorage.readdir as jest.Mock).mockResolvedValue([]);
+      (CloudStorage.triggerSync as jest.Mock).mockImplementation(async () => {
+        materialized = true;
+      });
+      (CloudStorage.readFile as jest.Mock).mockResolvedValue(
+        JSON.stringify(mockMnemonic),
+      );
+
+      const { result } = renderHook(() => useBackupMnemonic());
+
+      await expect(
+        result.current.download({
+          syncTimeoutMs: 200,
+          pollIntervalMs: 10,
+          remoteProbeAttempts: 3,
+        }),
+      ).resolves.toEqual(mockMnemonic);
+      expect(CloudStorage.readdir).toHaveBeenCalled();
+    });
+
+    it('skips the sync machinery entirely when the file is already local', async () => {
+      (CloudStorage.exists as jest.Mock).mockResolvedValue(true);
+      (CloudStorage.readFile as jest.Mock).mockResolvedValue(
+        JSON.stringify(mockMnemonic),
+      );
+
+      const { result } = renderHook(() => useBackupMnemonic());
+
+      await expect(result.current.download()).resolves.toEqual(mockMnemonic);
+      expect(CloudStorage.readdir).not.toHaveBeenCalled();
+      expect(CloudStorage.triggerSync).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('backup path constants', () => {
+    it('keeps the placeholder, file and folder paths on the same file', () => {
+      // disableBackup rmdirs FOLDER; upload writes ENCRYPTED_FILE_PATH; the
+      // placeholder probe reads PLACEHOLDER_FILE_PATH. All three must agree.
+      expect(ENCRYPTED_FILE_PATH).toBe(`/${FOLDER}/${FILE_NAME}`);
+      expect(PLACEHOLDER_FILE_PATH).toBe(`/${FOLDER}/.${FILE_NAME}.icloud`);
     });
   });
 
