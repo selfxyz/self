@@ -33,7 +33,9 @@ import { buttonTap, confirmTap } from '@/integrations/haptics';
 import type { RootStackParamList } from '@/navigation';
 import { useAuth } from '@/providers/authProvider';
 import { STORAGE_NAME, useBackupMnemonic } from '@/services/cloud-backup';
+import { isCloudBackupError } from '@/services/cloud-backup/errors';
 import { useSettingStore } from '@/stores/settingStore';
+import { isUserCancellation } from '@/utils/keychainErrors';
 
 type NextScreen = keyof Pick<RootStackParamList, 'SaveRecoveryPhrase'>;
 
@@ -180,7 +182,29 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
         navigation.navigate(params.returnToScreen);
       }
     } catch (error) {
-      console.error('iCloud backup error', error);
+      console.error('Cloud backup enable error', error);
+      // getOrCreateMnemonic rethrows raw keychain errors, so a dismissed
+      // biometric prompt arrives here untyped rather than as a CloudBackupError.
+      const reason = isCloudBackupError(error)
+        ? error.reason
+        : isUserCancellation(error)
+          ? 'authentication_cancelled'
+          : 'unexpected_error';
+      trackEvent(BackupEvents.CLOUD_BACKUP_ENABLE_FAILED, {
+        reason,
+        error: error instanceof Error ? error.name : 'unknown',
+      });
+      // A dismissed sign-in sheet or biometric prompt is the user's own
+      // doing — no alert for those.
+      if (
+        reason !== 'sign_in_cancelled' &&
+        reason !== 'authentication_cancelled'
+      ) {
+        Alert.alert(
+          'Error',
+          'Failed to enable cloud backups. Please try again.',
+        );
+      }
     } finally {
       setICloudPending(false);
     }

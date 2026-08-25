@@ -179,7 +179,7 @@ describe('cloudBackup', () => {
 
       expect(CloudStorage.mkdir).toHaveBeenCalledWith('/@selfxyz/mobile-app');
       expect(CloudStorage.writeFile).toHaveBeenCalledWith(
-        '//@selfxyz/mobile-app/encrypted-private-key',
+        '/@selfxyz/mobile-app/encrypted-private-key',
         JSON.stringify(mockMnemonic),
       );
     });
@@ -196,7 +196,7 @@ describe('cloudBackup', () => {
       ).resolves.toBeUndefined();
 
       expect(CloudStorage.writeFile).toHaveBeenCalledWith(
-        '//@selfxyz/mobile-app/encrypted-private-key',
+        '/@selfxyz/mobile-app/encrypted-private-key',
         JSON.stringify(mockMnemonic),
       );
     });
@@ -289,10 +289,10 @@ describe('cloudBackup', () => {
       const downloaded = await result.current.download();
 
       expect(CloudStorage.exists).toHaveBeenCalledWith(
-        '//@selfxyz/mobile-app/encrypted-private-key',
+        '/@selfxyz/mobile-app/encrypted-private-key',
       );
       expect(CloudStorage.readFile).toHaveBeenCalledWith(
-        '//@selfxyz/mobile-app/encrypted-private-key',
+        '/@selfxyz/mobile-app/encrypted-private-key',
       );
       expect(downloaded).toEqual(mockMnemonic);
       expect(ethers.Mnemonic.isValidMnemonic).toHaveBeenCalledWith(
@@ -843,8 +843,18 @@ describe('cloudBackup', () => {
     it('keeps the placeholder, file and folder paths on the same file', () => {
       // disableBackup rmdirs FOLDER; upload writes ENCRYPTED_FILE_PATH; the
       // placeholder probe reads PLACEHOLDER_FILE_PATH. All three must agree.
-      expect(ENCRYPTED_FILE_PATH).toBe(`/${FOLDER}/${FILE_NAME}`);
-      expect(PLACEHOLDER_FILE_PATH).toBe(`/${FOLDER}/.${FILE_NAME}.icloud`);
+      expect(ENCRYPTED_FILE_PATH).toBe(`${FOLDER}/${FILE_NAME}`);
+      expect(PLACEHOLDER_FILE_PATH).toBe(`${FOLDER}/.${FILE_NAME}.icloud`);
+    });
+
+    it('resolves to the exact path production backups already live at', () => {
+      // The native layer strips leading slashes before resolving, so THIS is
+      // the effective path in users' cloud accounts. It is frozen: neither a
+      // package rename nor slash-count cleanup may ever change it, or every
+      // existing backup is orphaned.
+      expect(ENCRYPTED_FILE_PATH.replace(/^\/+/, '')).toBe(
+        '@selfxyz/mobile-app/encrypted-private-key',
+      );
     });
   });
 

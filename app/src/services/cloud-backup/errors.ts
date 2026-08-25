@@ -10,6 +10,12 @@
 export type CloudBackupErrorReason =
   /** Android only: the Google sign-in sheet returned no account. */
   | 'sign_in_cancelled'
+  /**
+   * Android only: the Google sign-in ended in an error — misconfiguration,
+   * revoked consent or a network failure — rather than a completed sign-in
+   * or a user cancel.
+   */
+  | 'sign_in_failed'
   /** iOS only: iCloud Drive is off or the device is signed out of iCloud. */
   | 'cloud_unavailable'
   /** Reached the provider, but this account holds no backup file. */

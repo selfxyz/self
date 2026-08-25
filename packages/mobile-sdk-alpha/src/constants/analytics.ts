@@ -42,6 +42,7 @@ export const BackupEvents = {
   CLOUD_BACKUP_DISABLED_DONE: 'Backup: Cloud Backup Disabled Done',
   CLOUD_BACKUP_DISABLE_STARTED: 'Backup: Cloud Backup Disable Started',
   CLOUD_BACKUP_ENABLED_DONE: 'Backup: Cloud Backup Enabled Done',
+  CLOUD_BACKUP_ENABLE_FAILED: 'Backup: Cloud Backup Enable Failed',
   CLOUD_BACKUP_ENABLE_STARTED: 'Backup: Cloud Backup Enable Started',
   CLOUD_BACKUP_STARTED: 'Backup: Cloud Backup Started',
   CLOUD_RESTORE_FAILED_AUTH: 'Backup: Cloud Restore Failed: Authentication Failed',

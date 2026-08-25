@@ -87,6 +87,9 @@ jest.mock('@/proving/checkRestoredDocumentRegistration', () => {
 });
 
 jest.mock('@selfxyz/mobile-sdk-alpha/components', () => ({
+  BodyText: ({ children, ...props }: any) => (
+    <mock-text {...props}>{children}</mock-text>
+  ),
   Description: ({ children, ...props }: any) => (
     <mock-text {...props}>{children}</mock-text>
   ),

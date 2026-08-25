@@ -4,7 +4,7 @@
 
 import React, { useCallback, useState } from 'react';
 import { StyleSheet } from 'react-native';
-import { Separator, Text, View, XStack, YStack } from 'tamagui';
+import { Separator, View, XStack, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
@@ -13,6 +13,7 @@ import {
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
 import {
+  BodyText,
   Caption,
   Description,
   PrimaryButton,
@@ -58,7 +59,7 @@ import type { Mnemonic } from '@/types/mnemonic';
 type CloudRecoveryError =
   | CloudBackupErrorReason
   | 'secret_storage_failed'
-  | 'not_registered'
+  | 'backup_not_registered'
   | 'network_error'
   | 'unexpected_error';
 
@@ -148,7 +149,7 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
               hasCSCA: !!csca,
             },
           );
-          setError('not_registered');
+          setError('backup_not_registered');
           setRestoring(false);
           return false;
         }
@@ -275,7 +276,9 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
           <Description>{recoveryCopy.choice.description}</Description>
 
           {error && (
-            <Text style={styles.errorText}>{recoveryCopy.errors[error]}</Text>
+            <BodyText style={styles.errorText}>
+              {recoveryCopy.errors[error]}
+            </BodyText>
           )}
 
           <YStack gap="$2.5" width="100%" paddingTop="$6">
@@ -302,9 +305,9 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
               {recoveryCopy.choice.actions.cloud(restoringFromCloud)}
             </PrimaryButton>
             {!biometricsAvailable && (
-              <Text style={styles.noticeText}>
+              <BodyText style={styles.noticeText}>
                 {recoveryCopy.choice.noBiometrics}
-              </Text>
+              </BodyText>
             )}
             <XStack gap={64} alignItems="center" justifyContent="space-between">
               <Separator flexGrow={1} />
