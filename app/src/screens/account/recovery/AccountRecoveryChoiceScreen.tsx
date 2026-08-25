@@ -7,7 +7,6 @@ import { Separator, View, XStack, YStack } from 'tamagui';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { isUserRegisteredWithAlternativeCSCA } from '@selfxyz/common/utils/passports/validate';
 import {
   markCurrentDocumentAsRegistered,
   useSelfClient,
@@ -37,6 +36,10 @@ import {
   loadPassportData,
   reStorePassportDataWithRightCSCA,
 } from '@/providers/passportDataProvider';
+import {
+  checkRestoredDocumentRegistration,
+  ProtocolDataUnavailableError,
+} from '@/proving/checkRestoredDocumentRegistration';
 import { recoveryCopy } from '@/screens/account/recovery/recoveryCopy';
 import { useBackupMnemonic } from '@/services/cloud-backup';
 import { useSettingStore } from '@/stores/settingStore';
@@ -44,7 +47,6 @@ import type { Mnemonic } from '@/types/mnemonic';
 
 const AccountRecoveryChoiceScreen: React.FC = () => {
   const selfClient = useSelfClient();
-  const { useProtocolStore } = selfClient;
   const { trackEvent } = useSelfClient();
   const { restoreAccountFromMnemonic } = useAuth();
   // DISABLED FOR NOW: Turnkey functionality
@@ -82,7 +84,9 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
 
         if (!result) {
           console.warn('Failed to restore account');
-          trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_UNKNOWN);
+          trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_UNKNOWN, {
+            reason: 'restore_failed',
+          });
           setRestoring(false);
           return false;
         }
@@ -107,33 +111,11 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
         const passportDataParsed = JSON.parse(passportData);
         const secret = getPrivateKeyFromMnemonic(mnemonic.phrase);
 
-        const { isRegistered, csca } =
-          await isUserRegisteredWithAlternativeCSCA(
-            passportDataParsed,
-            secret as string,
-            {
-              getCommitmentTree(docCategory) {
-                return useProtocolStore.getState()[docCategory].commitment_tree;
-              },
-              getAltCSCA(docCategory) {
-                if (docCategory === 'kyc') {
-                  //TODO
-                  throw new Error('KYC is not supported yet');
-                }
-                if (docCategory === 'aadhaar') {
-                  const publicKeys =
-                    useProtocolStore.getState().aadhaar.public_keys;
-                  // Convert string[] to Record<string, string> format expected by AlternativeCSCA
-                  return publicKeys
-                    ? Object.fromEntries(publicKeys.map(key => [key, key]))
-                    : {};
-                }
-
-                return useProtocolStore.getState()[docCategory]
-                  .alternative_csca;
-              },
-            },
-          );
+        const { isRegistered, csca } = await checkRestoredDocumentRegistration(
+          selfClient,
+          passportDataParsed,
+          secret as string,
+        );
         if (!isRegistered) {
           console.warn(
             'Secret provided did not match a registered ID. Please try again.',
@@ -151,10 +133,9 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
         if (isCloudRestore && !cloudBackupEnabled) {
           toggleCloudBackupEnabled();
         }
-        await reStorePassportDataWithRightCSCA(
-          passportDataParsed,
-          csca as string,
-        );
+        if (csca) {
+          await reStorePassportDataWithRightCSCA(passportDataParsed, csca);
+        }
         await markCurrentDocumentAsRegistered(selfClient);
         trackEvent(BackupEvents.CLOUD_RESTORE_SUCCESS);
         trackEvent(BackupEvents.ACCOUNT_RECOVERY_COMPLETED);
@@ -166,7 +147,13 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
           'Restore account error:',
           e instanceof Error ? e.message : 'Unknown error',
         );
-        trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_UNKNOWN);
+        trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_UNKNOWN, {
+          reason:
+            e instanceof ProtocolDataUnavailableError
+              ? 'protocol_data_unavailable'
+              : 'unexpected_error',
+          error: e instanceof Error ? e.name : 'unknown',
+        });
         setRestoring(false);
         return false;
       }
@@ -178,7 +165,6 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
       onRestoreFromCloudNext,
       navigation,
       toggleCloudBackupEnabled,
-      useProtocolStore,
       selfClient,
     ],
   );
@@ -222,7 +208,10 @@ const AccountRecoveryChoiceScreen: React.FC = () => {
         'Cloud restore error:',
         error instanceof Error ? error.message : 'Unknown error',
       );
-      trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_UNKNOWN);
+      trackEvent(BackupEvents.CLOUD_RESTORE_FAILED_UNKNOWN, {
+        reason: 'backup_download_failed',
+        error: error instanceof Error ? error.name : 'unknown',
+      });
       setRestoringFromCloud(false);
     }
   }, [download, restoreAccountFlow, trackEvent]);
