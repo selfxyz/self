@@ -52,14 +52,17 @@ export async function disableBackup() {
  * residual gap (metadata lag beyond the probe budget) is not closable with
  * this library's API surface; it exposes no NSMetadataQuery.
  *
- * `'absent'` requires at least one successful listing; a budget spent purely
- * on rejected listings is `'unknown'` — the folder may simply not exist, or
- * reads may genuinely be failing, and the two throw the same error code.
+ * `'absent'` requires either a successful listing or the folder itself being
+ * absent locally. A budget spent purely on rejected listings for a folder that
+ * IS present is `'unreadable'` — the contents may hold a backup that simply
+ * could not be checked, so callers must treat it as a read failure rather
+ * than as absence. (mkdir cannot make this distinction: the native
+ * createDirectory succeeds silently for an existing directory.)
  */
 async function probeRemoteBackup(
   probeAttempts: number,
   probeIntervalMs: number,
-): Promise<'found' | 'absent' | 'unknown'> {
+): Promise<'found' | 'absent' | 'unreadable'> {
   let sawSuccessfulListing = false;
   for (let attempt = 0; attempt < probeAttempts; attempt++) {
     if (attempt > 0) {
@@ -79,7 +82,10 @@ async function probeRemoteBackup(
       // without the file. Retry the whole probe.
     }
   }
-  return sawSuccessfulListing ? 'absent' : 'unknown';
+  if (sawSuccessfulListing) {
+    return 'absent';
+  }
+  return (await CloudStorage.exists(FOLDER)) ? 'unreadable' : 'absent';
 }
 
 /**
@@ -134,9 +140,15 @@ export async function download(options?: IosDownloadOptions) {
         remoteProbeAttempts,
         pollIntervalMs,
       );
-      // For restore, 'absent' and 'unknown' both mean "nothing to restore" —
-      // the accepted residual risk documented on the probe.
-      if (evidence !== 'found') {
+      if (evidence === 'unreadable') {
+        // The folder is there but could not be listed — telling the user they
+        // have no backup would be a lie; this is a retryable read failure.
+        throw new CloudBackupError(
+          'backup_read_failed',
+          'The iCloud backup folder exists but its contents could not be checked',
+        );
+      }
+      if (evidence === 'absent') {
         throw new CloudBackupError(
           'no_backup_found',
           'Couldnt find the encrypted backup, did you back it up previously?',
@@ -235,27 +247,16 @@ export async function upload(
           );
         }
         backupIsLocal = true;
-      } else if (evidence === 'absent') {
-        // Same evidence bar on which download reports "no backup found". The
-        // probe-then-write race (metadata arriving right after) is the
-        // documented metadata-lag gap — not closable with this library.
-        verdict = 'write';
-      } else {
-        // 'unknown': every listing was rejected — either the folder was never
-        // created (no backup can exist) or reads are genuinely failing. The
-        // error code cannot tell them apart. Neither can mkdir: the native
-        // createDirectory uses withIntermediateDirectories, which succeeds
-        // silently for an existing directory. A throw-free existence check on
-        // the folder itself can: present but unlistable fails closed; absent
-        // locally is the same evidence class as 'absent' — the documented
-        // metadata-lag residual.
-        if (await CloudStorage.exists(FOLDER)) {
-          throw new CloudBackupError(
-            'backup_read_failed',
-            'The iCloud backup folder exists but its contents could not be checked',
-          );
-        }
+      } else if (evidence === 'unreadable') {
+        // Present but unlistable — fail closed, never write blind.
+        throw new CloudBackupError(
+          'backup_read_failed',
+          'The iCloud backup folder exists but its contents could not be checked',
+        );
       }
+      // 'absent': same evidence bar on which download reports "no backup
+      // found". The probe-then-write race (metadata arriving right after) is
+      // the documented metadata-lag gap — not closable with this library.
     }
 
     if (backupIsLocal) {

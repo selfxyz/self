@@ -897,6 +897,31 @@ describe('cloudBackup', () => {
         expect(CloudStorage.readdir).toHaveBeenCalledTimes(2);
       });
 
+      it('reports an unlistable-but-present folder as a read failure, not absence', async () => {
+        // The folder exists, so a backup may exist inside it — "no backup
+        // found" would be a lie; the user must be told to retry instead.
+        (CloudStorage.exists as jest.Mock).mockImplementation(
+          async (path: string) => path === FOLDER,
+        );
+        (CloudStorage.readdir as jest.Mock).mockRejectedValue(
+          Object.assign(new Error('read failed'), { code: 'ERR_READ_ERROR' }),
+        );
+
+        const { result } = renderHook(() => useBackupMnemonic());
+
+        expect(
+          await rejectionReason(() =>
+            result.current.download({
+              remoteProbeAttempts: 1,
+              pollIntervalMs: 10,
+            }),
+          ),
+        ).toEqual({
+          name: 'CloudBackupError',
+          reason: 'backup_read_failed',
+        });
+      });
+
       it('reports no backup when the folder listing keeps failing', async () => {
         // ERR_READ_ERROR is what a never-created folder throws; after the
         // probe budget it must read as "no backup", not as a read failure.

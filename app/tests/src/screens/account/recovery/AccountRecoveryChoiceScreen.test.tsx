@@ -3,6 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
+import * as MockReact from 'react';
 import { AppState } from 'react-native';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
@@ -41,15 +42,14 @@ jest.mock('tamagui', () => ({
 }));
 
 // Focus maps onto mount/unmount here: the screen under test is focused for as
-// long as it is rendered, and the cleanup still runs on unmount.
-jest.mock('@react-navigation/native', () => {
-  const react = jest.requireActual('react');
-  return {
-    useNavigation: jest.fn(),
-    useFocusEffect: (callback: () => void | (() => void)) =>
-      react.useEffect(callback, [callback]),
-  };
-});
+// long as it is rendered, and the cleanup still runs on unmount. React comes
+// from the top-level import (the app test rules ban requiring it in mocks);
+// the Mock prefix satisfies jest's out-of-scope factory check.
+jest.mock('@react-navigation/native', () => ({
+  useNavigation: jest.fn(),
+  useFocusEffect: (callback: () => void | (() => void)) =>
+    MockReact.useEffect(callback, [callback]),
+}));
 
 const appStateListeners: Array<(state: string) => void> = [];
 
