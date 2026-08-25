@@ -28,6 +28,12 @@ export type CloudBackupErrorReason =
   /** Found a backup file whose contents are not a usable mnemonic. */
   | 'backup_corrupt'
   /**
+   * Enable only: an existing cloud backup does not match this device's phrase,
+   * or could not be read. Enable refuses to write — nothing is ever deleted or
+   * overwritten.
+   */
+  | 'backup_conflict'
+  /**
    * Anything else from the storage layer. `withRetries` replaces the original
    * error with a fresh one, so every classifiable branch must throw outside it —
    * whatever escapes the retry wrapper is unclassifiable by construction.

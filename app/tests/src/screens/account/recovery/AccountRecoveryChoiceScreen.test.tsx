@@ -167,6 +167,7 @@ jest.mock('@/screens/account/recovery/recoveryCopy', () => ({
       sign_in_cancelled: 'Error: sign-in was dismissed',
       sign_in_failed: 'Error: sign-in ended in an error',
       backup_corrupt: 'Error: backup could not be read',
+      backup_conflict: 'Error: existing backup does not match this device',
       backup_read_failed: 'Error: could not reach the cloud provider',
       backup_not_synced: 'Error: still downloading from the cloud provider',
       restore_failed: 'Error: could not restore with this phrase',

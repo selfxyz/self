@@ -66,3 +66,11 @@ export function parseMnemonic(mnemonicString: string): Mnemonic {
 
   return parsed;
 }
+
+/**
+ * Whether two mnemonics derive the same key. The password participates in key
+ * derivation, so a matching phrase with a different password is NOT a match.
+ */
+export function mnemonicsMatch(a: Mnemonic, b: Mnemonic): boolean {
+  return a.phrase === b.phrase && a.password === b.password;
+}

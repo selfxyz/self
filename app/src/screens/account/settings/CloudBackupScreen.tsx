@@ -174,9 +174,15 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
         setICloudPending(false);
         return;
       }
-      await upload(storedMnemonic.data);
+      const outcome = await upload(storedMnemonic.data);
       toggleCloudBackupEnabled();
-      trackEvent(BackupEvents.CLOUD_BACKUP_ENABLED_DONE);
+      if (outcome === 'already_backed_up') {
+        // A matching backup already existed in the cloud — reconnected to it
+        // without writing anything.
+        trackEvent(BackupEvents.CLOUD_BACKUP_ENABLED_DONE, { existing: true });
+      } else {
+        trackEvent(BackupEvents.CLOUD_BACKUP_ENABLED_DONE);
+      }
 
       if (params?.returnToScreen) {
         navigation.navigate(params.returnToScreen);
@@ -194,9 +200,16 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
         reason,
         error: error instanceof Error ? error.name : 'unknown',
       });
-      // A dismissed sign-in sheet or biometric prompt is the user's own
-      // doing — no alert for those.
-      if (
+      if (reason === 'backup_conflict') {
+        // Covers both flavours: a backup for a different phrase, and a backup
+        // we could not read. Either way it was left untouched.
+        Alert.alert(
+          'Existing backup found',
+          `Your ${STORAGE_NAME} account already contains a Self backup that doesn't match this device's recovery phrase or couldn't be read. It was left untouched — restore it first, or use a different account.`,
+        );
+      } else if (
+        // A dismissed sign-in sheet or biometric prompt is the user's own
+        // doing — no alert for those.
         reason !== 'sign_in_cancelled' &&
         reason !== 'authentication_cancelled'
       ) {
