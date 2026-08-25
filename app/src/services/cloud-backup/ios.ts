@@ -180,6 +180,8 @@ export async function download(options?: IosDownloadOptions) {
 
 async function createBackupFolder() {
   try {
+    // The native createDirectory is mkdir -p (succeeds for an existing dir);
+    // the 'already' tolerance below is belt-and-braces against that changing.
     await CloudStorage.mkdir(FOLDER);
   } catch (e) {
     console.error(e);
@@ -208,7 +210,7 @@ export async function upload(
     remoteProbeAttempts = 3,
   } = options ?? {};
 
-  let verdict: 'write' | 'reconnect' | 'write_new_folder' = 'write';
+  let verdict: 'write' | 'reconnect' = 'write';
   try {
     if (!(await CloudStorage.isCloudAvailable())) {
       throw new CloudBackupError(
@@ -241,20 +243,17 @@ export async function upload(
       } else {
         // 'unknown': every listing was rejected — either the folder was never
         // created (no backup can exist) or reads are genuinely failing. The
-        // error code cannot tell them apart, but mkdir can: creating the
-        // folder succeeds only if it did not exist.
-        try {
-          await CloudStorage.mkdir(FOLDER);
-          verdict = 'write_new_folder';
-        } catch (e) {
-          if ((e as Error).message.includes('already')) {
-            throw new CloudBackupError(
-              'backup_read_failed',
-              'The iCloud backup folder exists but its contents could not be checked',
-              { cause: e },
-            );
-          }
-          throw e;
+        // error code cannot tell them apart. Neither can mkdir: the native
+        // createDirectory uses withIntermediateDirectories, which succeeds
+        // silently for an existing directory. A throw-free existence check on
+        // the folder itself can: present but unlistable fails closed; absent
+        // locally is the same evidence class as 'absent' — the documented
+        // metadata-lag residual.
+        if (await CloudStorage.exists(FOLDER)) {
+          throw new CloudBackupError(
+            'backup_read_failed',
+            'The iCloud backup folder exists but its contents could not be checked',
+          );
         }
       }
     }
@@ -295,9 +294,7 @@ export async function upload(
   if (verdict === 'reconnect') {
     return 'already_backed_up';
   }
-  if (verdict === 'write') {
-    await createBackupFolder();
-  }
+  await createBackupFolder();
   await withRetries(() =>
     CloudStorage.writeFile(ENCRYPTED_FILE_PATH, JSON.stringify(mnemonic)),
   );

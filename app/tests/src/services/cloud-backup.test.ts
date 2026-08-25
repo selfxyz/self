@@ -378,8 +378,8 @@ describe('cloudBackup', () => {
 
     it('creates the backup when the folder itself did not exist', async () => {
       // Fresh device: the folder was never created, so every listing rejects
-      // with the same code as a genuine read failure. mkdir succeeding is the
-      // proof that no backup can exist.
+      // with the same code as a genuine read failure. The folder being absent
+      // locally is the proof that no backup can exist here.
       (CloudStorage.exists as jest.Mock).mockResolvedValue(false);
       (CloudStorage.readdir as jest.Mock).mockRejectedValue(
         Object.assign(new Error('read failed'), { code: 'ERR_READ_ERROR' }),
@@ -390,16 +390,18 @@ describe('cloudBackup', () => {
       await expect(
         result.current.upload(mockMnemonic, FAST_SYNC_OPTIONS),
       ).resolves.toBe('created');
+      // The decision must come from checking the folder, not from mkdir —
+      // the native createDirectory succeeds silently for an existing dir.
+      expect(CloudStorage.exists).toHaveBeenCalledWith(FOLDER);
       expect(CloudStorage.writeFile).toHaveBeenCalled();
     });
 
     it('refuses to write when the folder exists but cannot be checked', async () => {
-      (CloudStorage.exists as jest.Mock).mockResolvedValue(false);
+      (CloudStorage.exists as jest.Mock).mockImplementation(
+        async (path: string) => path === FOLDER,
+      );
       (CloudStorage.readdir as jest.Mock).mockRejectedValue(
         Object.assign(new Error('read failed'), { code: 'ERR_READ_ERROR' }),
-      );
-      (CloudStorage.mkdir as jest.Mock).mockRejectedValue(
-        new Error('folder already exists'),
       );
 
       const { result } = renderHook(() => useBackupMnemonic());
@@ -411,6 +413,7 @@ describe('cloudBackup', () => {
         reason: 'backup_read_failed',
       });
       expect(CloudStorage.writeFile).not.toHaveBeenCalled();
+      expect(CloudStorage.mkdir).not.toHaveBeenCalled();
     });
 
     it('reports iCloud being unavailable before any check', async () => {

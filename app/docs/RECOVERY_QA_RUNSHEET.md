@@ -8,9 +8,11 @@ Covers the four stacked PRs (build once, test all four):
 | [#2273](https://github.com/selfxyz/self/pull/2273) | SELF-3932 | Surface cloud restore failures to the user and telemetry |
 | [#2277](https://github.com/selfxyz/self/pull/2277) | SELF-3933 | Trigger iCloud sync before concluding a backup is missing |
 | [#2278](https://github.com/selfxyz/self/pull/2278) | SELF-3934 / SELF-3935 | Truthful Drive OAuth errors, visible backup-enable failures, frozen backup path |
+| [#2280](https://github.com/selfxyz/self/pull/2280) | SELF-3964 | Backup enable checks for an existing backup first, never overwrites |
 
-**Build from `self-3934-3935-backup-error-hygiene`** — the stack is linear
-(#2272 → #2273 → #2277 → #2278), so this one build exercises everything.
+**Build from `self-3964-backup-enable-conflict-check`** — #2272–#2278 are
+merged into `dev`, which that branch includes, so this one build exercises
+everything (tests 23–27 need it; a `dev` build predates them).
 
 ## Setup
 
