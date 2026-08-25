@@ -28,6 +28,7 @@ import {
 import { advercase, dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import Cloud from '@/assets/icons/logo_cloud_backup.svg';
+import { useBiometricsAvailability } from '@/hooks/useBiometricsAvailability';
 import { useModal } from '@/hooks/useModal';
 import { buttonTap, confirmTap } from '@/integrations/haptics';
 import type { RootStackParamList } from '@/navigation';
@@ -59,10 +60,13 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
   const {
     cloudBackupEnabled,
     toggleCloudBackupEnabled,
-    biometricsAvailable,
     // DISABLED FOR NOW: Turnkey functionality
     // turnkeyBackupEnabled,
   } = useSettingStore();
+  // Re-checked on focus and foreground: the value is no longer persisted, so a
+  // transient failure of the splash-screen capability query must not leave the
+  // backup controls dead for the whole session.
+  const biometricsAvailable = useBiometricsAvailability();
   const { upload, disableBackup } = useBackupMnemonic();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();

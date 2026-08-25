@@ -72,7 +72,8 @@ function keySlice() {
   return {
     commitment_tree: null as string | null,
     public_keys: null as string[] | null,
-    fetch_all: jest.fn(),
+    fetch_identity_tree: jest.fn(async () => undefined),
+    fetch_public_keys: jest.fn(async () => undefined),
   };
 }
 
@@ -315,7 +316,7 @@ describe('checkRestoredDocumentRegistration', () => {
   it('checks aadhaar documents without an AKI and without stored public keys', async () => {
     // The validator seeds the document own public key, so a null public_keys
     // list must not block the check.
-    protocolState.aadhaar.fetch_all = populates('aadhaar');
+    protocolState.aadhaar.fetch_identity_tree = populates('aadhaar');
 
     const result = await checkRestoredDocumentRegistration(
       selfClient,
@@ -323,8 +324,13 @@ describe('checkRestoredDocumentRegistration', () => {
       'secret',
     );
 
-    expect(protocolState.aadhaar.fetch_all).toHaveBeenCalledWith('prod');
-    expect(protocolState.aadhaar.fetch_all).toHaveBeenCalledTimes(1);
+    expect(protocolState.aadhaar.fetch_identity_tree).toHaveBeenCalledWith(
+      'prod',
+    );
+    expect(protocolState.aadhaar.fetch_identity_tree).toHaveBeenCalledTimes(1);
+    expect(protocolState.aadhaar.fetch_public_keys).toHaveBeenCalledWith(
+      'prod',
+    );
     expect(mockFetchAllTreesAndCircuits).not.toHaveBeenCalled();
     expect(mockIsUserRegisteredWithAlternativeCSCA).toHaveBeenCalled();
     // csca must stay null for aadhaar: the validator returns the matched public
@@ -333,14 +339,14 @@ describe('checkRestoredDocumentRegistration', () => {
     expect(result).toEqual({ isRegistered: true, csca: null });
   });
 
-  it('proceeds when an unrelated aadhaar fetch fails but the tree arrived', async () => {
-    // fetch_all batches deployed circuits, DNS mapping and OFAC alongside the
-    // identity tree and rejects for the whole batch. Recovery must not be
-    // blocked by an endpoint this check does not use.
-    protocolState.aadhaar.fetch_all = jest.fn(async () => {
-      protocolState.aadhaar.commitment_tree = TREE;
-      throw new Error('ofac endpoint down');
-    });
+  it('proceeds when the public-key fetch fails but the tree arrived', async () => {
+    // Only the identity tree is required. A fast failure from the public-key
+    // endpoint must not reject before the tree lands — the fetch_all batch
+    // used to fast-fail exactly that way and spuriously blocked recovery.
+    protocolState.aadhaar.fetch_identity_tree = populates('aadhaar');
+    protocolState.aadhaar.fetch_public_keys = jest
+      .fn()
+      .mockRejectedValue(new Error('public keys endpoint down'));
 
     const result = await checkRestoredDocumentRegistration(
       selfClient,
@@ -354,7 +360,7 @@ describe('checkRestoredDocumentRegistration', () => {
   it('falls back to the document commitment when aadhaar public keys are empty', async () => {
     // validate.ts returns early for an empty public key map, before it can seed
     // the document's own key, so the single-commitment path has to cover it.
-    protocolState.aadhaar.fetch_all = populates('aadhaar');
+    protocolState.aadhaar.fetch_identity_tree = populates('aadhaar');
     mockIsUserRegisteredWithAlternativeCSCA.mockResolvedValue({
       isRegistered: false,
       csca: null,
@@ -371,7 +377,7 @@ describe('checkRestoredDocumentRegistration', () => {
   });
 
   it('checks kyc documents even though public keys are always null', async () => {
-    protocolState.kyc.fetch_all = populates('kyc');
+    protocolState.kyc.fetch_identity_tree = populates('kyc');
 
     const result = await checkRestoredDocumentRegistration(
       selfClient,
@@ -385,7 +391,7 @@ describe('checkRestoredDocumentRegistration', () => {
 
   it('does not run a redundant fallback for kyc documents', async () => {
     // The validator already routes kyc through isUserRegistered.
-    protocolState.kyc.fetch_all = populates('kyc');
+    protocolState.kyc.fetch_identity_tree = populates('kyc');
     mockIsUserRegisteredWithAlternativeCSCA.mockResolvedValue({
       isRegistered: false,
       csca: null,
@@ -401,9 +407,11 @@ describe('checkRestoredDocumentRegistration', () => {
     expect(result).toEqual({ isRegistered: false, csca: null });
   });
 
-  it('wraps an aadhaar fetch rejection in ProtocolDataUnavailableError', async () => {
+  it('wraps an aadhaar tree-fetch rejection in ProtocolDataUnavailableError', async () => {
     const cause = new Error('network down');
-    protocolState.aadhaar.fetch_all = jest.fn().mockRejectedValue(cause);
+    protocolState.aadhaar.fetch_identity_tree = jest
+      .fn()
+      .mockRejectedValue(cause);
 
     const error = await checkRestoredDocumentRegistration(
       selfClient,

@@ -3,6 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import React from 'react';
+import * as MockReact from 'react';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 
 import CloudBackupScreen from '@/screens/account/settings/CloudBackupScreen';
@@ -35,8 +36,12 @@ jest.mock('tamagui', () => ({
   ),
 }));
 
+// Focus maps onto mount/unmount; React comes from the top-level import (the
+// app test rules ban requiring it in mocks).
 jest.mock('@react-navigation/native', () => ({
   useNavigation: jest.fn(() => ({ navigate: jest.fn() })),
+  useFocusEffect: (callback: () => void | (() => void)) =>
+    MockReact.useEffect(callback, [callback]),
 }));
 
 jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
@@ -137,6 +142,7 @@ describe('CloudBackupScreen', () => {
   const mockTrackEvent = jest.fn();
   const mockUpload = jest.fn();
   const mockGetOrCreateMnemonic = jest.fn();
+  const mockCheckBiometricsAvailable = jest.fn();
   const toggle = () => useSettingStore.getState().toggleCloudBackupEnabled;
 
   function pressEnableBackup() {
@@ -157,6 +163,7 @@ describe('CloudBackupScreen', () => {
     useAuth.mockReturnValue({
       getOrCreateMnemonic: mockGetOrCreateMnemonic,
       loginWithBiometrics: jest.fn(),
+      checkBiometricsAvailable: mockCheckBiometricsAvailable,
     });
     useBackupMnemonic.mockReturnValue({
       upload: mockUpload,
@@ -167,6 +174,7 @@ describe('CloudBackupScreen', () => {
       toggleCloudBackupEnabled: jest.fn(),
       biometricsAvailable: true,
     });
+    mockCheckBiometricsAvailable.mockResolvedValue(true);
     mockGetOrCreateMnemonic.mockResolvedValue({ data: { phrase: 'words' } });
   });
 
@@ -180,6 +188,25 @@ describe('CloudBackupScreen', () => {
     });
     expect(toggle()).toHaveBeenCalled();
     expect(mockAlert).not.toHaveBeenCalled();
+  });
+
+  it('repairs a stale unavailable flag by re-checking on focus', async () => {
+    // The value is no longer persisted: if the splash-screen capability query
+    // failed transiently, the store says false for the whole session. Opening
+    // this screen must re-check and unlock the controls.
+    useSettingStore.setState({ biometricsAvailable: false });
+    mockCheckBiometricsAvailable.mockResolvedValue(true);
+
+    const { UNSAFE_getAllByType } = render(
+      <CloudBackupScreen route={{ params: undefined }} {...({} as any)} />,
+    );
+
+    await waitFor(() => {
+      expect(
+        (UNSAFE_getAllByType('Pressable' as any)[0] as any).props.disabled,
+      ).toBe(false);
+    });
+    expect(mockCheckBiometricsAvailable).toHaveBeenCalled();
   });
 
   it('reconnects to an existing matching backup and reports it', async () => {

@@ -94,20 +94,27 @@ async function fetchProtocolData(
     return undefined;
   }
 
-  // Unlike passport/id_card these reject, and they reject for the whole batch —
-  // including deployed circuits, DNS mapping and OFAC, none of which this check
-  // needs. Let the commitment tree decide rather than blocking recovery on an
-  // unrelated endpoint.
+  // Fetch exactly what the check needs: the identity tree (required) and the
+  // public keys (key material, tolerated to fail — the tree decides). fetch_all
+  // batches five endpoints with Promise.all, so a fast failure from deployed
+  // circuits, DNS mapping or OFAC — none of which this check needs — would
+  // reject while the identity tree is still in flight, spuriously blocking
+  // recovery even though the tree lands moments later.
+  const publicKeysFailure = protocolState[documentCategory]
+    .fetch_public_keys(environment)
+    .catch((error: unknown) => error);
   try {
-    await protocolState[documentCategory].fetch_all(environment);
+    await protocolState[documentCategory].fetch_identity_tree(environment);
   } catch (error) {
     console.warn(
       `Protocol fetch for ${documentCategory} did not complete in full:`,
       error,
     );
+    // Settle before returning — the catch above means it can never reject.
+    await publicKeysFailure;
     return error;
   }
-  return undefined;
+  return await publicKeysFailure;
 }
 
 /**
