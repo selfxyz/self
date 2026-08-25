@@ -17,6 +17,7 @@ library SelfStructs {
         uint8 contractVersion;
         uint256 scope;
         bytes32 attestationId;
+        bytes signature;
     }
 
     /**

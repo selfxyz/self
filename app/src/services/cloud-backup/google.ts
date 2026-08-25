@@ -12,6 +12,7 @@ import {
   googleOAuthAuthorizationEndpoint,
   googleOAuthTokenEndpoint,
 } from '@/consts/links';
+import { CloudBackupError } from '@/services/cloud-backup/errors';
 
 // Ensure the client ID is available at runtime (skip in test environment)
 const isTestEnvironment =
@@ -47,11 +48,38 @@ export async function createGDrive() {
   return gdrive;
 }
 
+/**
+ * A user cancel is only recognisable by its message on Android ("User
+ * cancelled flow"), except tapping Deny on Google's consent page, which
+ * arrives as the OAuth code `access_denied`. iOS dismissals produce a generic
+ * "error -3" message this cannot match — acceptable, since backup routes iOS
+ * to iCloud and never reaches this flow.
+ */
+function isSignInCancellation(error: unknown): boolean {
+  if ((error as { code?: unknown })?.code === 'access_denied') {
+    return true;
+  }
+  return error instanceof Error && /cancel/i.test(error.message);
+}
+
+/**
+ * @returns the authorization result, or null when the user cancelled. Any
+ * other failure — misconfiguration, revoked consent, no network — throws,
+ * so it is never mistaken for a cancel.
+ */
 export async function googleSignIn(): Promise<AuthorizeResult | null> {
   try {
     return await authorize(config);
   } catch (error) {
+    if (isSignInCancellation(error)) {
+      return null;
+    }
     console.error(error);
-    return null;
+    const code = (error as { code?: unknown })?.code;
+    throw new CloudBackupError(
+      'sign_in_failed',
+      `Google sign-in failed${typeof code === 'string' ? ` (${code})` : ''}`,
+      { cause: error },
+    );
   }
 }

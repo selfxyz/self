@@ -54,6 +54,60 @@ describe('migrateSettingStore', () => {
     expect(migrated.supportUuidEnabled).toBe(false);
     expect(migrated.supportUuid).toBeNull();
   });
+
+  it('drops a stale persisted biometricsAvailable when upgrading from v1', () => {
+    const migrated = migrateSettingStore(
+      { biometricsAvailable: false, cloudBackupEnabled: true },
+      1,
+    );
+
+    // Left in place it would rehydrate over the fresh capability check and keep
+    // cloud recovery disabled on a device that does support biometrics.
+    expect(migrated).not.toHaveProperty('biometricsAvailable');
+    expect(migrated.cloudBackupEnabled).toBe(true);
+  });
+
+  it('applies both migrations when upgrading from v0', () => {
+    const migrated = migrateSettingStore(
+      {
+        supportUuidEnabled: true,
+        supportUuid: '33333333-3333-3333-3333-333333333333',
+        biometricsAvailable: false,
+      },
+      0,
+    );
+
+    expect(migrated.supportUuidEnabled).toBe(false);
+    expect(migrated.supportUuid).toBeNull();
+    expect(migrated).not.toHaveProperty('biometricsAvailable');
+  });
+
+  it('keeps biometricsAvailable when already at the current version', () => {
+    const migrated = migrateSettingStore(
+      { biometricsAvailable: true },
+      SETTING_STORE_VERSION,
+    );
+
+    expect(migrated.biometricsAvailable).toBe(true);
+  });
+});
+
+describe('useSettingStore biometrics availability', () => {
+  afterEach(() => {
+    useSettingStore.setState(useSettingStore.getInitialState(), true);
+  });
+
+  it('excludes the device capability from persisted state', () => {
+    useSettingStore.getState().setBiometricsAvailable(true);
+
+    const partialize = useSettingStore.persist.getOptions().partialize;
+    const persistedState = partialize?.(useSettingStore.getState());
+
+    expect(useSettingStore.getState().biometricsAvailable).toBe(true);
+    expect(persistedState).toBeDefined();
+    expect(persistedState).not.toHaveProperty('biometricsAvailable');
+    expect(persistedState).not.toHaveProperty('setBiometricsAvailable');
+  });
 });
 
 describe('useSettingStore test registration circuit flag', () => {

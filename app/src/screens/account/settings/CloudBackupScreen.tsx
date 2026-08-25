@@ -28,12 +28,15 @@ import {
 import { advercase, dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import Cloud from '@/assets/icons/logo_cloud_backup.svg';
+import { useBiometricsAvailability } from '@/hooks/useBiometricsAvailability';
 import { useModal } from '@/hooks/useModal';
 import { buttonTap, confirmTap } from '@/integrations/haptics';
 import type { RootStackParamList } from '@/navigation';
 import { useAuth } from '@/providers/authProvider';
 import { STORAGE_NAME, useBackupMnemonic } from '@/services/cloud-backup';
+import { isCloudBackupError } from '@/services/cloud-backup/errors';
 import { useSettingStore } from '@/stores/settingStore';
+import { isUserCancellation } from '@/utils/keychainErrors';
 
 type NextScreen = keyof Pick<RootStackParamList, 'SaveRecoveryPhrase'>;
 
@@ -57,10 +60,13 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
   const {
     cloudBackupEnabled,
     toggleCloudBackupEnabled,
-    biometricsAvailable,
     // DISABLED FOR NOW: Turnkey functionality
     // turnkeyBackupEnabled,
   } = useSettingStore();
+  // Re-checked on focus and foreground: the value is no longer persisted, so a
+  // transient failure of the splash-screen capability query must not leave the
+  // backup controls dead for the whole session.
+  const biometricsAvailable = useBiometricsAvailability();
   const { upload, disableBackup } = useBackupMnemonic();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -172,15 +178,50 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
         setICloudPending(false);
         return;
       }
-      await upload(storedMnemonic.data);
+      const outcome = await upload(storedMnemonic.data);
       toggleCloudBackupEnabled();
-      trackEvent(BackupEvents.CLOUD_BACKUP_ENABLED_DONE);
+      if (outcome === 'already_backed_up') {
+        // A matching backup already existed in the cloud — reconnected to it
+        // without writing anything.
+        trackEvent(BackupEvents.CLOUD_BACKUP_ENABLED_DONE, { existing: true });
+      } else {
+        trackEvent(BackupEvents.CLOUD_BACKUP_ENABLED_DONE);
+      }
 
       if (params?.returnToScreen) {
         navigation.navigate(params.returnToScreen);
       }
     } catch (error) {
-      console.error('iCloud backup error', error);
+      console.error('Cloud backup enable error', error);
+      // getOrCreateMnemonic rethrows raw keychain errors, so a dismissed
+      // biometric prompt arrives here untyped rather than as a CloudBackupError.
+      const reason = isCloudBackupError(error)
+        ? error.reason
+        : isUserCancellation(error)
+          ? 'authentication_cancelled'
+          : 'unexpected_error';
+      trackEvent(BackupEvents.CLOUD_BACKUP_ENABLE_FAILED, {
+        reason,
+        error: error instanceof Error ? error.name : 'unknown',
+      });
+      if (reason === 'backup_conflict') {
+        // Covers both flavours: a backup for a different phrase, and a backup
+        // we could not read. Either way it was left untouched.
+        Alert.alert(
+          'Existing backup found',
+          `Your ${STORAGE_NAME} account already contains a Self backup that doesn't match this device's recovery phrase or couldn't be read. It was left untouched — restore it first, or use a different account.`,
+        );
+      } else if (
+        // A dismissed sign-in sheet or biometric prompt is the user's own
+        // doing — no alert for those.
+        reason !== 'sign_in_cancelled' &&
+        reason !== 'authentication_cancelled'
+      ) {
+        Alert.alert(
+          'Error',
+          'Failed to enable cloud backups. Please try again.',
+        );
+      }
     } finally {
       setICloudPending(false);
     }

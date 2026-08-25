@@ -34,6 +34,16 @@ library GCPJWTHelper {
         return 0;
     }
 
+    /// @dev Same branch ranges/offsets as `_hexToNibble`, but reverts on invalid input instead of
+    ///      silently returning 0. `_hexToNibble` must keep its silent-zero behavior for the
+    ///      image-hash path, so this is a distinct helper rather than a shared one.
+    function _hexCharToValue(uint8 c) private pure returns (uint8) {
+        if (c >= 48 && c <= 57) return c - 48; // '0'-'9'
+        if (c >= 65 && c <= 70) return c - 55; // 'A'-'F'
+        if (c >= 97 && c <= 102) return c - 87; // 'a'-'f'
+        revert("Invalid hex character");
+    }
+
     function unpackAndDecodeHexPubkey(uint256 p0, uint256 p1, uint256 p2) internal pure returns (uint256) {
         bytes memory hex64 = new bytes(64);
         uint256 idx;
@@ -68,5 +78,32 @@ library GCPJWTHelper {
             }
         }
         return result;
+    }
+
+    /// @notice Unpacks two PackBytes chunks holding 40 ASCII hex characters into an address.
+    /// @dev The prover's attestation nonce carries the bare 40 hex characters of its address
+    ///      with no `0x` prefix, so this is a pure hex decode. Unlike the two decoders above,
+    ///      this one asserts it recovered exactly 40 characters and that neither chunk holds
+    ///      more: a shorter or longer nonce would otherwise decode silently to a different
+    ///      address.
+    function unpackAndDecodeAddress(uint256 p0, uint256 p1) internal pure returns (address) {
+        bytes memory hex40 = new bytes(40);
+        uint256 idx;
+        for (; p0 > 0 && idx < 31; idx++) {
+            hex40[idx] = bytes1(uint8(p0 & 0xff));
+            p0 >>= 8;
+        }
+        for (; p1 > 0 && idx < 40; idx++) {
+            hex40[idx] = bytes1(uint8(p1 & 0xff));
+            p1 >>= 8;
+        }
+        if (idx != 40) revert("Nonce is not 40 hex characters");
+        if (p0 != 0 || p1 != 0) revert("Nonce exceeds 40 hex characters");
+
+        uint256 result;
+        for (uint256 i = 0; i < 40; i++) {
+            result = result * 16 + _hexCharToValue(uint8(hex40[i]));
+        }
+        return address(uint160(result));
     }
 }

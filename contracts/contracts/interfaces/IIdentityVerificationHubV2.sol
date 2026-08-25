@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.28;
 
-import {IRegisterCircuitVerifier} from "./IRegisterCircuitVerifier.sol";
+import {GenericProofStruct} from "./IRegisterCircuitVerifier.sol";
 import {IDscCircuitVerifier} from "./IDscCircuitVerifier.sol";
 import {SelfStructs} from "../libraries/SelfStructs.sol";
 
@@ -21,11 +21,13 @@ interface IIdentityVerificationHubV2 {
      * @param attestationId The attestation ID.
      * @param registerCircuitVerifierId The identifier for the register circuit verifier to use.
      * @param registerCircuitProof The register circuit proof data.
+     * @param signature The 65-byte TEE prover signature over keccak256(abi.encode(a, b, c, pubSignals)).
      */
     function registerCommitment(
         bytes32 attestationId,
         uint256 registerCircuitVerifierId,
-        IRegisterCircuitVerifier.RegisterCircuitProof memory registerCircuitProof
+        GenericProofStruct memory registerCircuitProof,
+        bytes calldata signature
     ) external;
 
     /**
@@ -34,11 +36,13 @@ interface IIdentityVerificationHubV2 {
      * @param attestationId The attestation ID.
      * @param dscCircuitVerifierId The identifier for the DSC circuit verifier to use.
      * @param dscCircuitProof The DSC circuit proof data.
+     * @param signature The 65-byte TEE prover signature over keccak256(abi.encode(a, b, c, pubSignals)).
      */
     function registerDscKeyCommitment(
         bytes32 attestationId,
         uint256 dscCircuitVerifierId,
-        IDscCircuitVerifier.DscCircuitProof memory dscCircuitProof
+        IDscCircuitVerifier.DscCircuitProof memory dscCircuitProof,
+        bytes calldata signature
     ) external;
 
     /**
@@ -112,6 +116,56 @@ interface IIdentityVerificationHubV2 {
         address[] calldata verifierAddresses
     ) external;
 
+    /**
+     * @notice Registers a prover key via GCP JWT attestation proof.
+     * @dev Verifies the proof, checks the root CA hash matches the configured value, validates the
+     * image hash against the PCR0Manager, and decodes the attested address from the eat_nonce chunks.
+     * @param pA Groth16 proof element A.
+     * @param pB Groth16 proof element B.
+     * @param pC Groth16 proof element C.
+     * @param pubSignals Circuit public signals: [rootCAHash, eatNonce[0-3], imageHash[0-2], currentDate[0-11]].
+     */
+    function registerProverKey(
+        uint256[2] calldata pA,
+        uint256[2][2] calldata pB,
+        uint256[2] calldata pC,
+        uint256[20] calldata pubSignals
+    ) external;
+
+    /**
+     * @notice Revokes a registered prover key.
+     * @param proverKey The prover address to revoke.
+     */
+    function revokeProverKey(address proverKey) external;
+
+    /**
+     * @notice Sets the GCP JWT verifier used by prover key registration.
+     * @dev Registration reverts while this is unset -- an unset verifier must never read as
+     * "skip verification".
+     * @param verifier The GCP JWT verifier address.
+     */
+    function updateProverGCPJWTVerifier(address verifier) external;
+
+    /**
+     * @notice Sets the PCR0 manager used to validate the prover's TEE image hash.
+     * @dev Must be a PCR0Manager instance distinct from any other consumer's, so revoking an
+     * image for one does not silently revoke it for another.
+     * @param pcr0Manager The PCR0 manager address.
+     */
+    function updateProverPCR0Manager(address pcr0Manager) external;
+
+    /**
+     * @notice Sets the expected GCP root CA public key hash.
+     * @param rootCAPubkeyHash The root CA pubkey hash the attestation must carry.
+     */
+    function updateProverGCPRootCAPubkeyHash(uint256 rootCAPubkeyHash) external;
+
+    /**
+     * @notice Sets the address permitted to call registerProverKey.
+     * @param proverTee The prover TEE address.
+     */
+    function updateProverTEE(address proverTee) external;
+
     // ====================================================
     // External View Functions
     // ====================================================
@@ -167,6 +221,37 @@ interface IIdentityVerificationHubV2 {
      * @return exists Whether the config exists
      */
     function verificationConfigV2Exists(bytes32 configId) external view returns (bool exists);
+
+    /**
+     * @notice Returns whether a given address is a registered prover key.
+     * @param proverKey The address to query.
+     * @return True if the address is a registered prover key, false otherwise.
+     */
+    function isRegisteredProverKey(address proverKey) external view returns (bool);
+
+    /**
+     * @notice Returns the GCP JWT verifier used by prover key registration.
+     * @return The verifier address, or address(0) if unset.
+     */
+    function proverGCPJWTVerifier() external view returns (address);
+
+    /**
+     * @notice Returns the PCR0 manager used to validate the prover's TEE image hash.
+     * @return The PCR0 manager address, or address(0) if unset.
+     */
+    function proverPCR0Manager() external view returns (address);
+
+    /**
+     * @notice Returns the expected GCP root CA public key hash.
+     * @return The root CA pubkey hash, or 0 if unset.
+     */
+    function proverGCPRootCAPubkeyHash() external view returns (uint256);
+
+    /**
+     * @notice Returns the address permitted to call registerProverKey.
+     * @return The prover TEE address, or address(0) if unset.
+     */
+    function proverTEE() external view returns (address);
 
     // ====================================================
     // Public Functions
