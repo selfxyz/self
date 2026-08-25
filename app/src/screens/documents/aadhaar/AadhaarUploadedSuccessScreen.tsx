@@ -51,7 +51,7 @@ const AadhaarUploadedSuccessScreen: React.FC = () => {
         borderBlockColor={slate200}
       >
         <BodyText style={{ fontSize: 19, textAlign: 'center', color: black }}>
-          QR code upload successful
+          Aadhaar processed successfully
         </BodyText>
         <BodyText
           style={{

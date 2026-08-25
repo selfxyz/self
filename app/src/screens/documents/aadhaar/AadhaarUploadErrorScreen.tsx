@@ -56,8 +56,8 @@ const getErrorMessages = (
     case 'general':
     default:
       return {
-        title: 'There was a problem reading the code',
-        description: 'Make sure the QR code is valid and try again',
+        title: 'There was a problem reading the document',
+        description: 'Make sure the document is valid and try again',
       };
   }
 };
