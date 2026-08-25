@@ -49,6 +49,10 @@ export const recoveryCopy = {
     sign_in_cancelled: `The ${STORAGE_NAME} sign-in was dismissed before it finished. Try again, or use your recovery phrase.`,
     sign_in_failed: `Something went wrong signing in to ${STORAGE_NAME}. Try again, or recover with your recovery phrase.`,
     backup_corrupt: `We found a backup in ${STORAGE_NAME} but couldn’t read it. Recover with your recovery phrase instead.`,
+    // Unreachable from the restore flow (backup_conflict is enable-only), but
+    // the key must exist: the choice screen indexes this map with the full
+    // CloudBackupErrorReason union.
+    backup_conflict: `Your ${STORAGE_NAME} account already has a Self backup that doesn’t match this device. It was left untouched.`,
     backup_read_failed: `We couldn’t reach ${STORAGE_NAME}. Check your connection and try again.`,
     backup_not_synced: `Your backup is still syncing from ${STORAGE_NAME}. Keep the app open and try again in a moment.`,
     invalid_mnemonic:

@@ -182,6 +182,43 @@ describe('CloudBackupScreen', () => {
     expect(mockAlert).not.toHaveBeenCalled();
   });
 
+  it('reconnects to an existing matching backup and reports it', async () => {
+    mockUpload.mockResolvedValue('already_backed_up');
+
+    pressEnableBackup();
+
+    await waitFor(() => {
+      expect(mockTrackEvent).toHaveBeenCalledWith('CLOUD_BACKUP_ENABLED_DONE', {
+        existing: true,
+      });
+    });
+    expect(toggle()).toHaveBeenCalled();
+    expect(mockAlert).not.toHaveBeenCalled();
+  });
+
+  it('blocks on a conflicting backup, informs the user, and leaves the toggle off', async () => {
+    mockUpload.mockRejectedValue(
+      new CloudBackupError(
+        'backup_conflict',
+        'The existing iCloud backup does not match this device',
+      ),
+    );
+
+    pressEnableBackup();
+
+    await waitFor(() => {
+      expect(mockTrackEvent).toHaveBeenCalledWith(
+        'CLOUD_BACKUP_ENABLE_FAILED',
+        { reason: 'backup_conflict', error: 'CloudBackupError' },
+      );
+    });
+    expect(mockAlert).toHaveBeenCalledWith(
+      'Existing backup found',
+      expect.stringContaining('It was left untouched'),
+    );
+    expect(toggle()).not.toHaveBeenCalled();
+  });
+
   it('alerts and reports a reason when the upload fails', async () => {
     mockUpload.mockRejectedValue(new Error('write failed'));
 

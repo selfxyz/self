@@ -128,6 +128,13 @@ const mockMnemonic = {
   entropy: '0x00000000000000000000000000000000',
 };
 
+// Keeps the iOS remote-backup probe from sleeping through real intervals.
+const FAST_SYNC_OPTIONS = {
+  syncTimeoutMs: 100,
+  pollIntervalMs: 10,
+  remoteProbeAttempts: 1,
+};
+
 describe('cloudBackup', () => {
   let originalPlatform: SupportedPlatforms;
   let consoleSpy: jest.SpyInstance;
@@ -174,8 +181,8 @@ describe('cloudBackup', () => {
       const { result } = renderHook(() => useBackupMnemonic());
 
       await expect(
-        result.current.upload(mockMnemonic),
-      ).resolves.toBeUndefined();
+        result.current.upload(mockMnemonic, FAST_SYNC_OPTIONS),
+      ).resolves.toBe('created');
 
       expect(CloudStorage.mkdir).toHaveBeenCalledWith('/@selfxyz/mobile-app');
       expect(CloudStorage.writeFile).toHaveBeenCalledWith(
@@ -192,8 +199,8 @@ describe('cloudBackup', () => {
       const { result } = renderHook(() => useBackupMnemonic());
 
       await expect(
-        result.current.upload(mockMnemonic),
-      ).resolves.toBeUndefined();
+        result.current.upload(mockMnemonic, FAST_SYNC_OPTIONS),
+      ).resolves.toBe('created');
 
       expect(CloudStorage.writeFile).toHaveBeenCalledWith(
         '/@selfxyz/mobile-app/encrypted-private-key',
@@ -230,9 +237,10 @@ describe('cloudBackup', () => {
 
       const { result } = renderHook(() => useBackupMnemonic());
 
-      await expect(result.current.upload(mockMnemonic)).rejects.toThrow(
-        'permission denied',
-      );
+      // Write-phase failures stay raw — deliberately not classified.
+      await expect(
+        result.current.upload(mockMnemonic, FAST_SYNC_OPTIONS),
+      ).rejects.toThrow('permission denied');
     });
   });
 
@@ -243,17 +251,20 @@ describe('cloudBackup', () => {
 
     it('should upload mnemonic to Google Drive successfully', async () => {
       (createGDrive as jest.Mock).mockResolvedValue(mockGDriveInstance);
+      mockGDriveInstance.files.list.mockResolvedValue({ files: [] });
       mockGDriveInstance.files
         .newMultipartUploader()
         .execute.mockResolvedValue({});
 
       const { result } = renderHook(() => useBackupMnemonic());
 
-      await expect(
-        result.current.upload(mockMnemonic),
-      ).resolves.toBeUndefined();
+      await expect(result.current.upload(mockMnemonic)).resolves.toBe(
+        'created',
+      );
 
-      expect(createGDrive).toHaveBeenCalled();
+      // The existing-backup check and the write share one sign-in — a second
+      // createGDrive call would show the user a second Google sheet.
+      expect(createGDrive).toHaveBeenCalledTimes(1);
       expect(
         mockGDriveInstance.files.newMultipartUploader().setData,
       ).toHaveBeenCalledWith(JSON.stringify(mockMnemonic));
@@ -270,6 +281,284 @@ describe('cloudBackup', () => {
       await expect(result.current.upload(mockMnemonic)).rejects.toThrow(
         'User canceled Google sign-in',
       );
+    });
+  });
+
+  describe('upload conflict checks - iOS', () => {
+    beforeEach(() => {
+      mockPlatform.OS = 'ios';
+      (CloudStorage.mkdir as jest.Mock).mockResolvedValue(undefined);
+      (CloudStorage.writeFile as jest.Mock).mockResolvedValue(undefined);
+    });
+
+    it('reconnects to an existing matching backup without writing', async () => {
+      (CloudStorage.exists as jest.Mock).mockImplementation(
+        async (path: string) => path === ENCRYPTED_FILE_PATH,
+      );
+      (CloudStorage.readFile as jest.Mock).mockResolvedValue(
+        JSON.stringify(mockMnemonic),
+      );
+
+      const { result } = renderHook(() => useBackupMnemonic());
+
+      await expect(
+        result.current.upload(mockMnemonic, FAST_SYNC_OPTIONS),
+      ).resolves.toBe('already_backed_up');
+      expect(CloudStorage.writeFile).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      [
+        'a different phrase',
+        JSON.stringify({ ...mockMnemonic, phrase: 'legal winner thank' }),
+      ],
+      [
+        'a different password',
+        JSON.stringify({ ...mockMnemonic, password: 'hunter2' }),
+      ],
+      ['unreadable contents', 'not json at all'],
+    ])(
+      'blocks with a conflict when the existing backup has %s',
+      async (_label, existingBlob) => {
+        (CloudStorage.exists as jest.Mock).mockImplementation(
+          async (path: string) => path === ENCRYPTED_FILE_PATH,
+        );
+        (CloudStorage.readFile as jest.Mock).mockResolvedValue(existingBlob);
+
+        const { result } = renderHook(() => useBackupMnemonic());
+
+        await expect(
+          result.current.upload(mockMnemonic, FAST_SYNC_OPTIONS),
+        ).rejects.toMatchObject({
+          name: 'CloudBackupError',
+          reason: 'backup_conflict',
+        });
+        // The whole point: nothing is ever deleted or overwritten.
+        expect(CloudStorage.writeFile).not.toHaveBeenCalled();
+        expect(CloudStorage.rmdir).not.toHaveBeenCalled();
+      },
+    );
+
+    it('waits for a not-yet-synced backup and reconnects when it matches', async () => {
+      let materialized = false;
+      (CloudStorage.exists as jest.Mock).mockImplementation(
+        async (path: string) =>
+          path === PLACEHOLDER_FILE_PATH ? !materialized : materialized,
+      );
+      (CloudStorage.triggerSync as jest.Mock).mockImplementation(async () => {
+        materialized = true;
+      });
+      (CloudStorage.readFile as jest.Mock).mockResolvedValue(
+        JSON.stringify(mockMnemonic),
+      );
+
+      const { result } = renderHook(() => useBackupMnemonic());
+
+      await expect(
+        result.current.upload(mockMnemonic, FAST_SYNC_OPTIONS),
+      ).resolves.toBe('already_backed_up');
+      expect(CloudStorage.writeFile).not.toHaveBeenCalled();
+    });
+
+    it('reports a backup that never finishes syncing without writing', async () => {
+      (CloudStorage.exists as jest.Mock).mockImplementation(
+        async (path: string) => path === PLACEHOLDER_FILE_PATH,
+      );
+
+      const { result } = renderHook(() => useBackupMnemonic());
+
+      await expect(
+        result.current.upload(mockMnemonic, FAST_SYNC_OPTIONS),
+      ).rejects.toMatchObject({
+        name: 'CloudBackupError',
+        reason: 'backup_not_synced',
+      });
+      expect(CloudStorage.writeFile).not.toHaveBeenCalled();
+    });
+
+    it('creates the backup when the folder itself did not exist', async () => {
+      // Fresh device: the folder was never created, so every listing rejects
+      // with the same code as a genuine read failure. mkdir succeeding is the
+      // proof that no backup can exist.
+      (CloudStorage.exists as jest.Mock).mockResolvedValue(false);
+      (CloudStorage.readdir as jest.Mock).mockRejectedValue(
+        Object.assign(new Error('read failed'), { code: 'ERR_READ_ERROR' }),
+      );
+
+      const { result } = renderHook(() => useBackupMnemonic());
+
+      await expect(
+        result.current.upload(mockMnemonic, FAST_SYNC_OPTIONS),
+      ).resolves.toBe('created');
+      expect(CloudStorage.writeFile).toHaveBeenCalled();
+    });
+
+    it('refuses to write when the folder exists but cannot be checked', async () => {
+      (CloudStorage.exists as jest.Mock).mockResolvedValue(false);
+      (CloudStorage.readdir as jest.Mock).mockRejectedValue(
+        Object.assign(new Error('read failed'), { code: 'ERR_READ_ERROR' }),
+      );
+      (CloudStorage.mkdir as jest.Mock).mockRejectedValue(
+        new Error('folder already exists'),
+      );
+
+      const { result } = renderHook(() => useBackupMnemonic());
+
+      await expect(
+        result.current.upload(mockMnemonic, FAST_SYNC_OPTIONS),
+      ).rejects.toMatchObject({
+        name: 'CloudBackupError',
+        reason: 'backup_read_failed',
+      });
+      expect(CloudStorage.writeFile).not.toHaveBeenCalled();
+    });
+
+    it('reports iCloud being unavailable before any check', async () => {
+      (CloudStorage.isCloudAvailable as jest.Mock).mockResolvedValue(false);
+
+      const { result } = renderHook(() => useBackupMnemonic());
+
+      await expect(
+        result.current.upload(mockMnemonic, FAST_SYNC_OPTIONS),
+      ).rejects.toMatchObject({
+        name: 'CloudBackupError',
+        reason: 'cloud_unavailable',
+      });
+      expect(CloudStorage.writeFile).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('upload conflict checks - Android', () => {
+    beforeEach(() => {
+      mockPlatform.OS = 'android';
+      (createGDrive as jest.Mock).mockResolvedValue(mockGDriveInstance);
+      mockGDriveInstance.files
+        .newMultipartUploader()
+        .execute.mockResolvedValue({});
+    });
+
+    it('reconnects to an existing matching backup without uploading', async () => {
+      mockGDriveInstance.files.list.mockResolvedValue({
+        files: [{ id: 'file-1', name: 'encrypted-private-key' }],
+      });
+      mockGDriveInstance.files.getText.mockResolvedValue(
+        JSON.stringify(mockMnemonic),
+      );
+
+      const { result } = renderHook(() => useBackupMnemonic());
+
+      await expect(result.current.upload(mockMnemonic)).resolves.toBe(
+        'already_backed_up',
+      );
+      expect(
+        mockGDriveInstance.files.newMultipartUploader().execute,
+      ).not.toHaveBeenCalled();
+      expect(createGDrive).toHaveBeenCalledTimes(1);
+    });
+
+    it('reconnects across legacy duplicates when every copy matches', async () => {
+      mockGDriveInstance.files.list.mockResolvedValue({
+        files: [
+          { id: 'file-1', name: 'encrypted-private-key' },
+          { id: 'file-2', name: 'encrypted-private-key' },
+        ],
+      });
+      mockGDriveInstance.files.getText.mockResolvedValue(
+        JSON.stringify(mockMnemonic),
+      );
+
+      const { result } = renderHook(() => useBackupMnemonic());
+
+      await expect(result.current.upload(mockMnemonic)).resolves.toBe(
+        'already_backed_up',
+      );
+      expect(mockGDriveInstance.files.getText).toHaveBeenCalledTimes(2);
+      expect(
+        mockGDriveInstance.files.newMultipartUploader().execute,
+      ).not.toHaveBeenCalled();
+    });
+
+    it('blocks with a conflict on the first mismatched duplicate', async () => {
+      mockGDriveInstance.files.list.mockResolvedValue({
+        files: [
+          { id: 'file-1', name: 'encrypted-private-key' },
+          { id: 'file-2', name: 'encrypted-private-key' },
+        ],
+      });
+      mockGDriveInstance.files.getText.mockResolvedValue(
+        JSON.stringify({ ...mockMnemonic, phrase: 'legal winner thank' }),
+      );
+
+      const { result } = renderHook(() => useBackupMnemonic());
+
+      await expect(result.current.upload(mockMnemonic)).rejects.toMatchObject({
+        name: 'CloudBackupError',
+        reason: 'backup_conflict',
+      });
+      // One mismatch decides the outcome — the rest are not read.
+      expect(mockGDriveInstance.files.getText).toHaveBeenCalledTimes(1);
+      expect(
+        mockGDriveInstance.files.newMultipartUploader().execute,
+      ).not.toHaveBeenCalled();
+      expect(mockGDriveInstance.files.delete).not.toHaveBeenCalled();
+    });
+
+    it('blocks with a conflict when an existing backup is unreadable', async () => {
+      mockGDriveInstance.files.list.mockResolvedValue({
+        files: [{ id: 'file-1', name: 'encrypted-private-key' }],
+      });
+      mockGDriveInstance.files.getText.mockResolvedValue('not json');
+
+      const { result } = renderHook(() => useBackupMnemonic());
+
+      await expect(result.current.upload(mockMnemonic)).rejects.toMatchObject({
+        name: 'CloudBackupError',
+        reason: 'backup_conflict',
+      });
+      expect(
+        mockGDriveInstance.files.newMultipartUploader().execute,
+      ).not.toHaveBeenCalled();
+    });
+
+    it('walks every listing page before deciding', async () => {
+      mockGDriveInstance.files.list
+        .mockResolvedValueOnce({
+          files: [{ id: 'file-1', name: 'encrypted-private-key' }],
+          nextPageToken: 'page-2',
+        })
+        .mockResolvedValueOnce({
+          files: [{ id: 'file-2', name: 'encrypted-private-key' }],
+        });
+      mockGDriveInstance.files.getText.mockResolvedValue(
+        JSON.stringify(mockMnemonic),
+      );
+
+      const { result } = renderHook(() => useBackupMnemonic());
+
+      await expect(result.current.upload(mockMnemonic)).resolves.toBe(
+        'already_backed_up',
+      );
+      expect(mockGDriveInstance.files.list).toHaveBeenCalledTimes(2);
+      expect(mockGDriveInstance.files.list).toHaveBeenLastCalledWith(
+        expect.objectContaining({ pageToken: 'page-2' }),
+      );
+      expect(mockGDriveInstance.files.getText).toHaveBeenCalledTimes(2);
+    });
+
+    it('reports a failed existence check as retryable, never writing', async () => {
+      mockGDriveInstance.files.list.mockRejectedValue(
+        new Error('network offline'),
+      );
+
+      const { result } = renderHook(() => useBackupMnemonic());
+
+      await expect(result.current.upload(mockMnemonic)).rejects.toMatchObject({
+        name: 'CloudBackupError',
+        reason: 'backup_read_failed',
+      });
+      expect(
+        mockGDriveInstance.files.newMultipartUploader().execute,
+      ).not.toHaveBeenCalled();
     });
   });
 

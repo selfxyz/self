@@ -15,14 +15,17 @@ import {
 } from '@/services/cloud-backup/errors';
 import { createGDrive } from '@/services/cloud-backup/google';
 import { FILE_NAME } from '@/services/cloud-backup/helpers';
-import type { IosDownloadOptions } from '@/services/cloud-backup/ios';
+import type {
+  IosSyncOptions,
+  UploadOutcome,
+} from '@/services/cloud-backup/ios';
 import {
   disableBackup as disableIosBackup,
   download as iosDownload,
   upload as iosUpload,
 } from '@/services/cloud-backup/ios';
 import type { Mnemonic } from '@/types/mnemonic';
-import { parseMnemonic } from '@/utils/crypto/mnemonic';
+import { mnemonicsMatch, parseMnemonic } from '@/utils/crypto/mnemonic';
 import { withRetries } from '@/utils/retry';
 
 export const STORAGE_NAME = Platform.OS === 'ios' ? 'iCloud' : 'Google Drive';
@@ -61,7 +64,7 @@ export async function disableBackup() {
   );
 }
 
-export async function download(options?: IosDownloadOptions) {
+export async function download(options?: IosSyncOptions) {
   if (Platform.OS === 'ios') {
     return iosDownload(options);
   }
@@ -119,31 +122,107 @@ export async function download(options?: IosDownloadOptions) {
   }
 }
 
-export async function upload(mnemonic: Mnemonic) {
+type GDriveClient = NonNullable<Awaited<ReturnType<typeof createGDrive>>>;
+
+/**
+ * Enumerates every backup file in the app-data folder — Drive identifies files
+ * by ID, not name, so historical blind uploads left some accounts with several
+ * files under the same name, and Drive pages listings at 100.
+ */
+async function listBackupFiles(gdrive: GDriveClient) {
+  const collected: { id: string }[] = [];
+  let pageToken: string | undefined;
+  do {
+    const response = await gdrive.files.list({
+      spaces: APP_DATA_FOLDER_ID,
+      q: `name = '${FILE_NAME}'`,
+      ...(pageToken ? { pageToken } : {}),
+    });
+    const files: unknown[] = response.files;
+    collected.push(...files.filter(isDriveFile));
+    pageToken = (response as { nextPageToken?: string }).nextPageToken;
+  } while (pageToken);
+  return collected;
+}
+
+/**
+ * Backs up the mnemonic, refusing to touch any backup that already exists.
+ * See the iOS counterpart for the outcome semantics; the whole Android
+ * check+write runs under the single sign-in from one `createGDrive()` call.
+ */
+export async function upload(
+  mnemonic: Mnemonic,
+  options?: IosSyncOptions,
+): Promise<UploadOutcome> {
   if (!mnemonic || !mnemonic.phrase) {
     throw new Error(
       'Mnemonic not set yet. Did the user see the recovery phrase?',
     );
   }
   if (Platform.OS === 'ios') {
-    await iosUpload(mnemonic);
-  } else {
-    const gdrive = await createGDrive();
-    if (!gdrive) {
-      throw new CloudBackupError(
-        'sign_in_cancelled',
-        'User canceled Google sign-in',
-      );
-    }
-    await withRetries(() =>
-      gdrive.files
-        .newMultipartUploader()
-        .setData(JSON.stringify(mnemonic))
-        .setDataMimeType(MIME_TYPES.application.json)
-        .setRequestBody({ name: FILE_NAME, parents: [APP_DATA_FOLDER_ID] })
-        .execute(),
+    return iosUpload(mnemonic, options);
+  }
+
+  const gdrive = await createGDrive();
+  if (!gdrive) {
+    throw new CloudBackupError(
+      'sign_in_cancelled',
+      'User canceled Google sign-in',
     );
   }
+
+  // Check phase, classified. One mismatched or unreadable file decides the
+  // outcome, so the loop short-circuits. Write failures below stay raw.
+  let existingCount = 0;
+  try {
+    const candidates = await listBackupFiles(gdrive);
+    existingCount = candidates.length;
+    for (const candidate of candidates) {
+      const text = await withRetries(
+        () => gdrive.files.getText(candidate.id),
+        3,
+      );
+      let existing: Mnemonic;
+      try {
+        existing = parseMnemonic(text);
+      } catch (e) {
+        throw new CloudBackupError(
+          'backup_conflict',
+          `An existing Google Drive backup could not be read: ${(e as Error).message}`,
+          { cause: e },
+        );
+      }
+      if (!mnemonicsMatch(existing, mnemonic)) {
+        throw new CloudBackupError(
+          'backup_conflict',
+          'An existing Google Drive backup does not match this device',
+        );
+      }
+    }
+  } catch (e) {
+    if (isCloudBackupError(e)) {
+      throw e;
+    }
+    throw new CloudBackupError(
+      'backup_read_failed',
+      `Failed to check for an existing Google Drive backup: ${(e as Error).message}`,
+      { cause: e },
+    );
+  }
+
+  if (existingCount > 0) {
+    return 'already_backed_up';
+  }
+
+  await withRetries(() =>
+    gdrive.files
+      .newMultipartUploader()
+      .setData(JSON.stringify(mnemonic))
+      .setDataMimeType(MIME_TYPES.application.json)
+      .setRequestBody({ name: FILE_NAME, parents: [APP_DATA_FOLDER_ID] })
+      .execute(),
+  );
+  return 'created';
 }
 
 export function useBackupMnemonic() {
