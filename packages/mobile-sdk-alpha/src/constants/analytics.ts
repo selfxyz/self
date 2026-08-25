@@ -47,6 +47,7 @@ export const BackupEvents = {
   CLOUD_RESTORE_FAILED_AUTH: 'Backup: Cloud Restore Failed: Authentication Failed',
   CLOUD_RESTORE_FAILED_PASSPORT_NOT_REGISTERED: 'Backup: Cloud Restore Failed: Passport Not Registered',
   CLOUD_RESTORE_FAILED_UNKNOWN: 'Backup: Cloud Restore Failed: Unknown Error',
+  CLOUD_RESTORE_STARTED: 'Backup: Cloud Restore Started',
   CLOUD_RESTORE_SUCCESS: 'Backup: Cloud Restore Success',
   TURNKEY_RESTORE_FAILED: 'Backup: Turnkey Restore Failed',
   CREATE_NEW_ACCOUNT: 'Backup: Create New Account',

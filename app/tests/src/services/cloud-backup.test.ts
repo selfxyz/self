@@ -9,6 +9,7 @@ import { GDrive } from '@robinbobin/react-native-google-drive-api-wrapper';
 import { renderHook } from '@testing-library/react-native';
 
 import { useBackupMnemonic } from '@/services/cloud-backup';
+import type { CloudBackupError } from '@/services/cloud-backup/errors';
 import { createGDrive } from '@/services/cloud-backup/google';
 
 type SupportedPlatforms = 'ios' | 'android';
@@ -66,6 +67,7 @@ jest.mock('react-native-cloud-storage', () => ({
     exists: jest.fn(),
     readFile: jest.fn(),
     rmdir: jest.fn(),
+    isCloudAvailable: jest.fn(),
   },
   CloudStorageScope: {
     AppData: 'AppData',
@@ -129,6 +131,7 @@ describe('cloudBackup', () => {
     consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
     (GDrive as jest.Mock).mockImplementation(() => mockGDriveInstance);
     (ethers.Mnemonic.isValidMnemonic as jest.Mock).mockReturnValue(true);
+    (CloudStorage.isCloudAvailable as jest.Mock).mockResolvedValue(true);
   });
 
   afterEach(() => {
@@ -437,6 +440,148 @@ describe('cloudBackup', () => {
       await expect(result.current.download()).rejects.toThrow(
         'Failed to parse mnemonic backup: Invalid mnemonic structure: missing required properties (phrase, password, wordlist, entropy)',
       );
+    });
+  });
+
+  describe('download failure classification', () => {
+    async function rejectionReason(run: () => Promise<unknown>) {
+      try {
+        await run();
+      } catch (error) {
+        return {
+          name: (error as Error).name,
+          reason: (error as CloudBackupError).reason,
+        };
+      }
+      throw new Error('expected the download to reject');
+    }
+
+    describe('iOS', () => {
+      beforeEach(() => {
+        mockPlatform.OS = 'ios';
+      });
+
+      it('reports iCloud being unavailable without looking for the file', async () => {
+        (CloudStorage.isCloudAvailable as jest.Mock).mockResolvedValue(false);
+
+        const { result } = renderHook(() => useBackupMnemonic());
+
+        expect(await rejectionReason(result.current.download)).toEqual({
+          name: 'CloudBackupError',
+          reason: 'cloud_unavailable',
+        });
+        // A signed-out device resolves `exists` as false, so classifying it as
+        // "no backup" is exactly the misclassification this guard prevents.
+        expect(CloudStorage.exists).not.toHaveBeenCalled();
+      });
+
+      it('distinguishes a missing backup from an unavailable cloud', async () => {
+        (CloudStorage.exists as jest.Mock).mockResolvedValue(false);
+
+        const { result } = renderHook(() => useBackupMnemonic());
+
+        expect(await rejectionReason(result.current.download)).toEqual({
+          name: 'CloudBackupError',
+          reason: 'no_backup_found',
+        });
+      });
+
+      it('reports an unreadable backup as corrupt', async () => {
+        (CloudStorage.exists as jest.Mock).mockResolvedValue(true);
+        (CloudStorage.readFile as jest.Mock).mockResolvedValue('invalid json');
+
+        const { result } = renderHook(() => useBackupMnemonic());
+
+        expect(await rejectionReason(result.current.download)).toEqual({
+          name: 'CloudBackupError',
+          reason: 'backup_corrupt',
+        });
+      });
+
+      it('reports a rejected read as retryable, not as a missing backup', async () => {
+        (CloudStorage.exists as jest.Mock).mockResolvedValue(true);
+        (CloudStorage.readFile as jest.Mock).mockRejectedValue(
+          new Error('network offline'),
+        );
+
+        const { result } = renderHook(() => useBackupMnemonic());
+
+        expect(await rejectionReason(result.current.download)).toEqual({
+          name: 'CloudBackupError',
+          reason: 'backup_read_failed',
+        });
+      }, 30000);
+
+      it('reports a rejected availability check as a read failure', async () => {
+        (CloudStorage.isCloudAvailable as jest.Mock).mockRejectedValue(
+          new Error('provider unreachable'),
+        );
+
+        const { result } = renderHook(() => useBackupMnemonic());
+
+        expect(await rejectionReason(result.current.download)).toEqual({
+          name: 'CloudBackupError',
+          reason: 'backup_read_failed',
+        });
+      });
+    });
+
+    describe('Android', () => {
+      beforeEach(() => {
+        mockPlatform.OS = 'android';
+      });
+
+      it('reports a cancelled sign-in', async () => {
+        (createGDrive as jest.Mock).mockResolvedValue(null);
+
+        const { result } = renderHook(() => useBackupMnemonic());
+
+        expect(await rejectionReason(result.current.download)).toEqual({
+          name: 'CloudBackupError',
+          reason: 'sign_in_cancelled',
+        });
+      });
+
+      it('reports a missing backup', async () => {
+        (createGDrive as jest.Mock).mockResolvedValue(mockGDriveInstance);
+        mockGDriveInstance.files.list.mockResolvedValue({ files: [] });
+
+        const { result } = renderHook(() => useBackupMnemonic());
+
+        expect(await rejectionReason(result.current.download)).toEqual({
+          name: 'CloudBackupError',
+          reason: 'no_backup_found',
+        });
+      });
+
+      it('reports an unreadable backup as corrupt', async () => {
+        (createGDrive as jest.Mock).mockResolvedValue(mockGDriveInstance);
+        mockGDriveInstance.files.list.mockResolvedValue({
+          files: [{ id: 'file-id', name: 'encrypted-private-key' }],
+        });
+        mockGDriveInstance.files.getText.mockResolvedValue('invalid json');
+
+        const { result } = renderHook(() => useBackupMnemonic());
+
+        expect(await rejectionReason(result.current.download)).toEqual({
+          name: 'CloudBackupError',
+          reason: 'backup_corrupt',
+        });
+      });
+
+      it('reports a rejected file listing as retryable, not as a missing backup', async () => {
+        (createGDrive as jest.Mock).mockResolvedValue(mockGDriveInstance);
+        mockGDriveInstance.files.list.mockRejectedValue(
+          new Error('network offline'),
+        );
+
+        const { result } = renderHook(() => useBackupMnemonic());
+
+        expect(await rejectionReason(result.current.download)).toEqual({
+          name: 'CloudBackupError',
+          reason: 'backup_read_failed',
+        });
+      });
     });
   });
 

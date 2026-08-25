@@ -4,6 +4,10 @@
 
 import { CloudStorage } from 'react-native-cloud-storage';
 
+import {
+  CloudBackupError,
+  isCloudBackupError,
+} from '@/services/cloud-backup/errors';
 import { ENCRYPTED_FILE_PATH, FOLDER } from '@/services/cloud-backup/helpers';
 import type { Mnemonic } from '@/types/mnemonic';
 import { parseMnemonic } from '@/utils/crypto/mnemonic';
@@ -14,22 +18,50 @@ export async function disableBackup() {
 }
 
 export async function download() {
-  if (await CloudStorage.exists(ENCRYPTED_FILE_PATH)) {
-    const mnemonicString = await withRetries(() =>
-      CloudStorage.readFile(ENCRYPTED_FILE_PATH),
-    );
-    try {
-      return parseMnemonic(mnemonicString);
-    } catch (e) {
-      throw new Error(
-        `Failed to parse mnemonic backup: ${(e as Error).message}`,
+  try {
+    // When the device is signed out of iCloud, `exists` resolves false rather
+    // than throwing, so without this guard a signed-out user is told they have
+    // no backup. Check availability first so the two stay distinguishable.
+    if (!(await CloudStorage.isCloudAvailable())) {
+      throw new CloudBackupError(
+        'cloud_unavailable',
+        'iCloud is unavailable, is the device signed in to iCloud?',
       );
     }
-  }
 
-  throw new Error(
-    'Couldnt find the encrypted backup, did you back it up previously?',
-  );
+    if (await CloudStorage.exists(ENCRYPTED_FILE_PATH)) {
+      const mnemonicString = await withRetries(() =>
+        CloudStorage.readFile(ENCRYPTED_FILE_PATH),
+      );
+      try {
+        return parseMnemonic(mnemonicString);
+      } catch (e) {
+        throw new CloudBackupError(
+          'backup_corrupt',
+          `Failed to parse mnemonic backup: ${(e as Error).message}`,
+          { cause: e },
+        );
+      }
+    }
+
+    throw new CloudBackupError(
+      'no_backup_found',
+      'Couldnt find the encrypted backup, did you back it up previously?',
+    );
+  } catch (e) {
+    if (isCloudBackupError(e)) {
+      throw e;
+    }
+    // Whatever the provider rejected with is unclassifiable — `withRetries`
+    // replaces the original error, so there is nothing left to inspect. Report
+    // it as a read failure so the user is told to retry rather than that their
+    // backup is missing.
+    throw new CloudBackupError(
+      'backup_read_failed',
+      `Failed to read the backup from iCloud: ${(e as Error).message}`,
+      { cause: e },
+    );
+  }
 }
 
 export async function upload(mnemonic: Mnemonic) {
