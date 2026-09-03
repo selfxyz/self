@@ -123,7 +123,13 @@ const _getWithBiometrics = async function <T>(
   }
 };
 
-async function checkBiometricsAvailable(): Promise<boolean> {
+/**
+ * @returns whether biometric unlock is available, or `null` when the capability
+ * could not be determined. A failed query is not evidence of unavailability, so
+ * callers must not treat `null` as `false` — overwriting a known-good value with
+ * `false` disables biometric-gated features until the next successful check.
+ */
+async function checkBiometricsAvailable(): Promise<boolean | null> {
   try {
     const { available } = await biometrics.isSensorAvailable();
     logAuthEvent('info', 'biometric_sensor_checked', {
@@ -140,7 +146,7 @@ async function checkBiometricsAvailable(): Promise<boolean> {
       { ...authBaseContext, stage: 'sensor_check' },
       { reason: 'unknown_error' },
     );
-    return false;
+    return null;
   }
 }
 
@@ -303,7 +309,7 @@ interface IAuthContext {
   restoreAccountFromMnemonic: (
     mnemonic: string,
   ) => Promise<SignedPayload<boolean> | null>;
-  checkBiometricsAvailable: () => Promise<boolean>;
+  checkBiometricsAvailable: () => Promise<boolean | null>;
 }
 export const AuthContext = createContext<IAuthContext>({
   isAuthenticated: false,
@@ -313,7 +319,8 @@ export const AuthContext = createContext<IAuthContext>({
   _getWithBiometrics,
   getOrCreateMnemonic: () => Promise.resolve(null),
   restoreAccountFromMnemonic: () => Promise.resolve(null),
-  checkBiometricsAvailable: () => Promise.resolve(false),
+  // No provider mounted, so the capability is unknown rather than absent.
+  checkBiometricsAvailable: () => Promise.resolve(null),
 });
 
 export const AuthProvider = ({

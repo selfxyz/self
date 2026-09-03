@@ -266,7 +266,7 @@
       <tr><td>WIA-06</td><td>NFC handler (normalize RNPassportReader contract)</td><td>Native adapters</td><td><span class="status superseded">Done (TS); superseded by WIA-17</span></td></tr>
       <tr><td>WIA-07</td><td>Camera / MRZ handler</td><td>Native adapters</td><td><span class="status superseded">Done (TS); superseded by WIA-17</span></td></tr>
       <tr><td>WIA-08</td><td>Biometrics handler</td><td>Native adapters</td><td><span class="status pending">Pending — implement directly under WIA-17</span></td></tr>
-      <tr><td>WIA-09</td><td>Bundle loading + version pinning</td><td>Hosted loading</td><td><span class="status progress">In progress — embedded load/devServer/state-machine shipped; handshake + diagnostics + error UI remain</span></td></tr>
+      <tr><td>WIA-09</td><td>Bundle loading + version pinning</td><td>Bundle loading</td><td><span class="status progress">In progress — embedded load/devServer/state-machine shipped; handshake + diagnostics + error UI remain</span></td></tr>
       <tr><td>WIA-10</td><td>Retire RN-native Didit integration</td><td>Umbrella</td><td><span class="status pending">Pending</span></td></tr>
       <tr><td>WIA-11</td><td>Cutover PR — delete legacy RN screens</td><td>Umbrella</td><td><span class="status pending">Pending</span></td></tr>
       <tr><td>WIA-12</td><td><a href="./plans/WIA-12-webview-sentry-cohort-tags.html">WebView Sentry integration (cohort tags, masking)</a></td><td>Observability</td><td><span class="status done">Done — PR #2148</span></td></tr>
@@ -349,12 +349,12 @@
       users can register, disclose, and manage settings without falling back to RN. The umbrella tracks
       readiness via the existing <code>webview/</code> backlog; blocking items are WV-05 (Didit web SDK to
       production), WV-13–WV-16 (remaining screens), and settings parity.</li>
-    <li><strong><code>build-pipeline/</code> workstream</strong> (BP-01, done) produces the artifact served
-      at the hosted URL. <code>WIA-09</code> does not depend on a new build artifact — it consumes the
-      existing one.</li>
-    <li><strong><code>sdk-distribution/</code> workstream</strong> owns <code>verify.self.xyz</code>
-      hosting. <code>WIA-09</code> pins to that URL contract; coordinate URL or major-version changes with
-      that workstream's owner.</li>
+    <li><strong><code>build-pipeline/</code> workstream</strong> (BP-01, done) produces the embedded artifact
+      consumed by <code>WIA-09</code>. WIA-09 hardens loading and protocol-version checks around that
+      existing bundled artifact.</li>
+    <li><strong><code>sdk-distribution/</code> workstream</strong> owns <code>verify.self.xyz</code> hosted
+      loading for external Kotlin/Swift shells only. The Self app does not consume that URL; its WebView
+      remains embedded per the SDK overview and decisions log.</li>
     <li><strong><code>native-shells-lite/</code> workstream</strong> keeps Kotlin/Swift shells in parity
       with the bridge protocol changes introduced here. Owner of that workstream must mirror any new
       handler shape added by <code>WIA-02</code>/<code>WIA-03</code>.</li>

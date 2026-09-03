@@ -36,7 +36,9 @@ Status: Active (WebView-first target; the Self app on `dev` is still the legacy 
 | Native Shells                 | [Native Shells Spec](./paused/native-shells/SPEC.md)               |
 | Native Consolidation          | [Native Consolidation Spec](./paused/native-consolidation/SPEC.md) |
 | Integrations / MiniPay Sample | [MiniPay Sample Spec](./paused/integrations/SPEC.md)               |
+| Embed Mode (WIA)              | [Embed Mode Spec](./paused/embed-mode/SPEC.md)                     |
 
 ## Related
 
 - [Paused Work Index](./paused/INDEX.md) — retained native/KMP/RN tracks for future reuse
+- [MRZ preview diagnosis](./workstreams/webview-in-app/SPEC-MRZ-PREVIEW.md) — parked debugging record

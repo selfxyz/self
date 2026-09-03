@@ -20,8 +20,7 @@ export const recoveryCopy = {
   choice: {
     title: 'Recover your Self account',
     description: 'Choose how you want to recover your account.',
-    noBiometrics:
-      'Cloud recovery requires biometrics, which are unavailable on this device. You can still recover using your recovery phrase.',
+    noBiometrics: `Recovering from ${STORAGE_NAME} needs biometric unlock. Turn on Face ID, fingerprint or device unlock in your device settings and come back, or recover with your recovery phrase below.`,
     actions: {
       cloud: (restoring: boolean) =>
         `${restoring ? 'Recovering' : 'Recover'} from ${STORAGE_NAME}${restoring ? '\u2026' : ''}`,
@@ -37,5 +36,42 @@ export const recoveryCopy = {
     placeholder: 'Enter or paste your recovery phrase',
     paste: 'PASTE',
     submit: 'Continue',
+  },
+
+  /**
+   * Failure messages for both recovery screens, keyed by the reason each screen
+   * tracks. A superset of either screen's cases, so indexing it only compiles
+   * while a screen's error union stays a subset of these keys.
+   */
+  errors: {
+    no_backup_found: `We couldn’t find a backup in ${STORAGE_NAME}. Backups don’t move between platforms — one made on Android can’t be restored on iPhone, and one made on iPhone can’t be restored on Android. Use your recovery phrase instead.`,
+    cloud_unavailable: `Sign in to ${STORAGE_NAME} in your device settings, then try again. You can also recover with your recovery phrase.`,
+    sign_in_cancelled: `The ${STORAGE_NAME} sign-in was dismissed before it finished. Try again, or use your recovery phrase.`,
+    sign_in_failed: `Something went wrong signing in to ${STORAGE_NAME}. Try again, or recover with your recovery phrase.`,
+    backup_corrupt: `We found a backup in ${STORAGE_NAME} but couldn’t read it. Recover with your recovery phrase instead.`,
+    // Unreachable from the restore flow (backup_conflict is enable-only), but
+    // the key must exist: the choice screen indexes this map with the full
+    // CloudBackupErrorReason union.
+    backup_conflict: `Your ${STORAGE_NAME} account already has a Self backup that doesn’t match this device. It was left untouched.`,
+    backup_read_failed: `We couldn’t reach ${STORAGE_NAME}. Check your connection and try again.`,
+    backup_not_synced: `Your backup is still syncing from ${STORAGE_NAME}. Keep the app open and try again in a moment.`,
+    invalid_mnemonic:
+      'That doesn’t look like a valid recovery phrase. Make sure all 24 words are correct and in the right order.',
+    restore_failed:
+      'We couldn’t restore your account with this phrase. Please double-check and try again.',
+    // The cloud path validates the phrase before restoring it, so a failure
+    // here is this device refusing to store the secret — telling the user to
+    // check a phrase they never typed would send them nowhere.
+    secret_storage_failed:
+      'We found your backup but couldn’t save it securely on this device. Make sure your device lock is set up, then try again.',
+    not_registered:
+      'This recovery phrase doesn’t match a registered ID. If you registered with a different phrase, try that one instead.',
+    // The cloud path: a backup exists on the account, so Self was used
+    // before — just not with the document on this device. The app holds one
+    // secret per install, so the only usable exit is this document's phrase.
+    backup_not_registered: `We found a Self backup in ${STORAGE_NAME}, but it’s not the one used with this document. Enter the recovery phrase you used with this document instead.`,
+    network_error:
+      'We couldn’t reach the Self network to verify your ID. Check your connection and try again.',
+    unexpected_error: 'Something went wrong. Please try again.',
   },
 } as const;

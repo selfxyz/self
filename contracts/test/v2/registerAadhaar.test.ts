@@ -1,3 +1,4 @@
+import { registerProverWallet, signProofDigest } from "../utils/proverSignature";
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { deploySystemFixturesV2 } from "../utils/deploymentV2";
@@ -24,11 +25,14 @@ describe("Aadhaar Registration test", function () {
   this.timeout(0);
 
   let deployedActors: DeployedActorsV2;
+  let proverWallet: ReturnType<typeof ethers.Wallet.createRandom>;
   let snapshotId: string;
   let attestationIdBytes32: string;
 
   before(async () => {
     deployedActors = await deploySystemFixturesV2();
+    proverWallet = ethers.Wallet.createRandom();
+    await registerProverWallet(deployedActors, proverWallet);
     attestationIdBytes32 = ethers.zeroPadValue(ethers.toBeHex(BigInt(AADHAAR_ATTESTATION_ID)), 32);
 
     console.log("🎉 System deployment and initial setup completed!");
@@ -93,10 +97,14 @@ describe("Aadhaar Registration test", function () {
       // Fix the AADHAAR_REGISTRATION_WINDOW that was incorrectly set to 0
       await deployedActors.hub.setAadhaarRegistrationWindow(20);
 
-      await expect(deployedActors.hub.registerCommitment(attestationIdBytes32, 0n, registerProof)).to.emit(
-        deployedActors.registryAadhaar,
-        "CommitmentRegistered",
-      );
+      await expect(
+        deployedActors.hub.registerCommitment(
+          attestationIdBytes32,
+          0n,
+          registerProof,
+          signProofDigest(proverWallet, registerProof),
+        ),
+      ).to.emit(deployedActors.registryAadhaar, "CommitmentRegistered");
 
       const isRegistered = await deployedActors.registryAadhaar.nullifiers(registerProof.pubSignals[1]);
       expect(isRegistered).to.be.true;
@@ -108,10 +116,12 @@ describe("Aadhaar Registration test", function () {
       const newRegisterProof = structuredClone(registerProof);
       newRegisterProof.a[0] = 0n;
       await expect(
-        deployedActors.hub.registerCommitment(attestationIdBytes32, 0n, {
-          ...newRegisterProof,
-          pubSignals: [...newRegisterProof.pubSignals],
-        }),
+        deployedActors.hub.registerCommitment(
+          attestationIdBytes32,
+          0n,
+          { ...newRegisterProof, pubSignals: [...newRegisterProof.pubSignals] },
+          signProofDigest(proverWallet, newRegisterProof),
+        ),
       ).to.be.revertedWithCustomError(deployedActors.hub, "InvalidRegisterProof");
     });
 
@@ -121,7 +131,12 @@ describe("Aadhaar Registration test", function () {
       const nonExistentVerifierId = 999999; // Non-existent verifier ID
 
       await expect(
-        deployedActors.hub.registerCommitment(attestationIdBytes32, nonExistentVerifierId, registerProof),
+        deployedActors.hub.registerCommitment(
+          attestationIdBytes32,
+          nonExistentVerifierId,
+          registerProof,
+          signProofDigest(proverWallet, registerProof),
+        ),
       ).to.be.revertedWithCustomError(deployedActors.hub, "NoVerifierSet");
     });
 
@@ -131,7 +146,12 @@ describe("Aadhaar Registration test", function () {
       const invalidAttestationId = ethers.zeroPadValue(ethers.toBeHex(999), 32);
 
       await expect(
-        deployedActors.hub.registerCommitment(invalidAttestationId, 0n, registerProof),
+        deployedActors.hub.registerCommitment(
+          invalidAttestationId,
+          0n,
+          registerProof,
+          signProofDigest(proverWallet, registerProof),
+        ),
       ).to.be.revertedWithCustomError(deployedActors.hub, "NoVerifierSet");
     });
 
@@ -147,7 +167,12 @@ describe("Aadhaar Registration test", function () {
       );
 
       await expect(
-        deployedActors.hub.registerCommitment(invalidAttestationId, 1n, registerProof),
+        deployedActors.hub.registerCommitment(
+          invalidAttestationId,
+          1n,
+          registerProof,
+          signProofDigest(proverWallet, registerProof),
+        ),
       ).to.be.revertedWithCustomError(deployedActors.hub, "InvalidAttestationId");
     });
 
@@ -158,7 +183,12 @@ describe("Aadhaar Registration test", function () {
       newRegisterProof.pubSignals[0] = 0n;
 
       await expect(
-        deployedActors.hub.registerCommitment(attestationIdBytes32, 0n, newRegisterProof),
+        deployedActors.hub.registerCommitment(
+          attestationIdBytes32,
+          0n,
+          newRegisterProof,
+          signProofDigest(proverWallet, newRegisterProof),
+        ),
       ).to.be.revertedWithCustomError(deployedActors.hub, "InvalidPubkey");
     });
 
@@ -196,8 +226,14 @@ describe("Aadhaar Registration test", function () {
       });
       const newRegisterProof = await generateRegisterAadhaarProof(registerSecret, newAadhaarData.inputs);
 
-      await expect(deployedActors.hub.registerCommitment(attestationIdBytes32, 0n, newRegisterProof)).to.not.be
-        .reverted;
+      await expect(
+        deployedActors.hub.registerCommitment(
+          attestationIdBytes32,
+          0n,
+          newRegisterProof,
+          signProofDigest(proverWallet, newRegisterProof),
+        ),
+      ).to.not.be.reverted;
     });
 
     it("should fail with InvalidUidaiTimestamp when UIDAI timestamp is not within 20 minutes of current time", async () => {
@@ -235,7 +271,12 @@ describe("Aadhaar Registration test", function () {
       const newRegisterProof = await generateRegisterAadhaarProof(registerSecret, newAadhaarData.inputs);
 
       await expect(
-        deployedActors.hub.registerCommitment(attestationIdBytes32, 0n, newRegisterProof),
+        deployedActors.hub.registerCommitment(
+          attestationIdBytes32,
+          0n,
+          newRegisterProof,
+          signProofDigest(proverWallet, newRegisterProof),
+        ),
       ).to.be.revertedWithCustomError(deployedActors.hub, "InvalidUidaiTimestamp");
     });
   });

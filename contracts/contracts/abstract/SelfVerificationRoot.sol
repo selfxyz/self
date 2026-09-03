@@ -83,15 +83,25 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
     /**
      * @notice Verifies a self-proof using the bytes-based interface
      * @dev Parses relayer data format and validates against contract settings before calling hub V2
-     * @param proofPayload Packed data from relayer in format: | 32 bytes attestationId | proof data |
+     * @param proofPayload Packed data from relayer in format: | 32 bytes attestationId | 65 bytes signature | proofData |
      * @param userContextData User-defined data in format: | 32 bytes destChainId | 32 bytes userIdentifier | data |
-     * @custom:data-format proofPayload = | 32 bytes attestationId | proofData |
+     * @custom:data-format proofPayload = | 32 bytes attestationId | 65 bytes signature | proofData |
      * @custom:data-format userContextData = | 32 bytes destChainId | 32 bytes userIdentifier | data |
-     * @custom:data-format hubData = | 1 bytes contract version | 31 bytes buffer | 32 bytes scope | 32 bytes attestationId | proofData |
+     * @custom:data-format hubData = | 1 bytes contract version | 31 bytes buffer | 32 bytes scope | 32 bytes attestationId | 65 bytes signature | proofData |
      */
     function verifySelfProof(bytes calldata proofPayload, bytes calldata userContextData) public {
-        // Minimum expected length for proofData: 32 bytes attestationId + proof data
-        if (proofPayload.length < 32) {
+        // 32 bytes attestationId + 65 bytes signature + at least 1 byte of
+        // proof data. Derived from the hub's own floor rather than chosen
+        // here: the hub requires baseVerificationInput >= 162
+        // (1 + 31 + 32 + 32 + 65 + 1), and this function prepends 64 bytes
+        // (contractVersion + buffer + scope) to proofPayload, so 162 - 64 = 98.
+        //
+        // Kept in step with that floor deliberately. This check previously read
+        // `< 32`, the minimum for the pre-signature layout, so every payload
+        // between 32 and 97 bytes was forwarded and rejected by the hub instead
+        // -- an opaque error from a contract the caller never named, rather than
+        // InvalidDataFormat from the one whose documented format was violated.
+        if (proofPayload.length < 98) {
             revert InvalidDataFormat();
         }
 
@@ -112,7 +122,7 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
 
         bytes32 configId = getConfigId(destinationChainId, userIdentifier, userDefinedData);
 
-        // Hub data should be | 1 byte contractVersion | 31 bytes buffer | 32 bytes scope | 32 bytes attestationId | proof data
+        // Hub data should be | 1 byte contractVersion | 31 bytes buffer | 32 bytes scope | 32 bytes attestationId | 65 bytes signature | proofData
         bytes memory baseVerificationInput = abi.encodePacked(
             // 1 byte contractVersion
             CONTRACT_VERSION,

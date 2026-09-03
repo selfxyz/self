@@ -4,36 +4,196 @@
 
 import { CloudStorage } from 'react-native-cloud-storage';
 
-import { ENCRYPTED_FILE_PATH, FOLDER } from '@/services/cloud-backup/helpers';
+import {
+  CloudBackupError,
+  isCloudBackupError,
+} from '@/services/cloud-backup/errors';
+import {
+  ENCRYPTED_FILE_PATH,
+  FILE_NAME,
+  FOLDER,
+  PLACEHOLDER_FILE_PATH,
+} from '@/services/cloud-backup/helpers';
 import type { Mnemonic } from '@/types/mnemonic';
-import { parseMnemonic } from '@/utils/crypto/mnemonic';
+import { mnemonicsMatch, parseMnemonic } from '@/utils/crypto/mnemonic';
 import { withRetries } from '@/utils/retry';
+
+export interface IosSyncOptions {
+  /** Total budget for waiting on iCloud to materialise the backup file. */
+  syncTimeoutMs?: number;
+  /** Delay between `exists` checks while waiting, and between remote probes. */
+  pollIntervalMs?: number;
+  /** How often to re-probe when the folder listing itself fails. */
+  remoteProbeAttempts?: number;
+}
+
+export type IosDownloadOptions = IosSyncOptions;
+
+export type UploadOutcome = 'created' | 'already_backed_up';
+
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export async function disableBackup() {
   await withRetries(() => CloudStorage.rmdir(FOLDER, { recursive: true }));
 }
 
-export async function download() {
-  if (await CloudStorage.exists(ENCRYPTED_FILE_PATH)) {
+/**
+ * Whether iCloud holds a backup for this account, downloaded or not.
+ *
+ * iCloud syncs metadata before content: a backup made on another device shows
+ * up here first as a `.name.icloud` placeholder that `exists` reports false
+ * for. A failed folder listing is ambiguous — `contentsOfDirectory` throws the
+ * same ERR_READ_ERROR for "folder never created" (no backup) and for a genuine
+ * read failure. Nor is a successful listing that lacks the file conclusive:
+ * the folder can materialise before its file placeholders do during the first
+ * metadata sync. Only a sighting of the file ends the probe early — every
+ * negative outcome is retried until the budget runs out, so "no backup" is
+ * only ever concluded after the metadata has had a window to arrive. The
+ * residual gap (metadata lag beyond the probe budget) is not closable with
+ * this library's API surface; it exposes no NSMetadataQuery.
+ *
+ * `'absent'` requires either a successful listing or the folder itself being
+ * absent locally. A budget spent purely on rejected listings for a folder that
+ * IS present is `'unreadable'` — the contents may hold a backup that simply
+ * could not be checked, so callers must treat it as a read failure rather
+ * than as absence. (mkdir cannot make this distinction: the native
+ * createDirectory succeeds silently for an existing directory.)
+ */
+async function probeRemoteBackup(
+  probeAttempts: number,
+  probeIntervalMs: number,
+): Promise<'found' | 'absent' | 'unreadable'> {
+  let sawSuccessfulListing = false;
+  for (let attempt = 0; attempt < probeAttempts; attempt++) {
+    if (attempt > 0) {
+      await sleep(probeIntervalMs);
+    }
+    if (await CloudStorage.exists(PLACEHOLDER_FILE_PATH)) {
+      return 'found';
+    }
+    try {
+      const entries = await CloudStorage.readdir(FOLDER);
+      sawSuccessfulListing = true;
+      if (entries.some(entry => entry.includes(FILE_NAME))) {
+        return 'found';
+      }
+    } catch {
+      // Missing folder or read failure — inconclusive, same as a listing
+      // without the file. Retry the whole probe.
+    }
+  }
+  if (sawSuccessfulListing) {
+    return 'absent';
+  }
+  return (await CloudStorage.exists(FOLDER)) ? 'unreadable' : 'absent';
+}
+
+/**
+ * Asks iOS to download the backup and waits for it to appear locally.
+ *
+ * `triggerSync` is fired at both the plain path and the placeholder path:
+ * Apple does not document which of the two `isUbiquitousItem` accepts for a
+ * not-yet-downloaded item, and the wrong one throws instead of enqueueing. It
+ * is re-fired on every poll tick — the enqueue is idempotent, and a single
+ * dropped request must not strand the user in a retry loop that can never
+ * succeed. The poll is the arbiter either way.
+ */
+async function waitForBackupFile(
+  syncTimeoutMs: number,
+  pollIntervalMs: number,
+): Promise<boolean> {
+  const deadline = Date.now() + syncTimeoutMs;
+  for (;;) {
+    await Promise.allSettled([
+      CloudStorage.triggerSync(ENCRYPTED_FILE_PATH),
+      CloudStorage.triggerSync(PLACEHOLDER_FILE_PATH),
+    ]);
+    if (await CloudStorage.exists(ENCRYPTED_FILE_PATH)) {
+      return true;
+    }
+    if (Date.now() >= deadline) {
+      return false;
+    }
+    await sleep(Math.min(pollIntervalMs, Math.max(deadline - Date.now(), 1)));
+  }
+}
+
+export async function download(options?: IosDownloadOptions) {
+  const {
+    syncTimeoutMs = 30_000,
+    pollIntervalMs = 1_000,
+    remoteProbeAttempts = 3,
+  } = options ?? {};
+  try {
+    // When the device is signed out of iCloud, `exists` resolves false rather
+    // than throwing, so without this guard a signed-out user is told they have
+    // no backup. Check availability first so the two stay distinguishable.
+    if (!(await CloudStorage.isCloudAvailable())) {
+      throw new CloudBackupError(
+        'cloud_unavailable',
+        'iCloud is unavailable, is the device signed in to iCloud?',
+      );
+    }
+
+    if (!(await CloudStorage.exists(ENCRYPTED_FILE_PATH))) {
+      const evidence = await probeRemoteBackup(
+        remoteProbeAttempts,
+        pollIntervalMs,
+      );
+      if (evidence === 'unreadable') {
+        // The folder is there but could not be listed — telling the user they
+        // have no backup would be a lie; this is a retryable read failure.
+        throw new CloudBackupError(
+          'backup_read_failed',
+          'The iCloud backup folder exists but its contents could not be checked',
+        );
+      }
+      if (evidence === 'absent') {
+        throw new CloudBackupError(
+          'no_backup_found',
+          'Couldnt find the encrypted backup, did you back it up previously?',
+        );
+      }
+      if (!(await waitForBackupFile(syncTimeoutMs, pollIntervalMs))) {
+        throw new CloudBackupError(
+          'backup_not_synced',
+          'The iCloud backup has not finished downloading to this device yet',
+        );
+      }
+    }
+
     const mnemonicString = await withRetries(() =>
       CloudStorage.readFile(ENCRYPTED_FILE_PATH),
     );
     try {
       return parseMnemonic(mnemonicString);
     } catch (e) {
-      throw new Error(
+      throw new CloudBackupError(
+        'backup_corrupt',
         `Failed to parse mnemonic backup: ${(e as Error).message}`,
+        { cause: e },
       );
     }
+  } catch (e) {
+    if (isCloudBackupError(e)) {
+      throw e;
+    }
+    // Whatever the provider rejected with is unclassifiable — `withRetries`
+    // replaces the original error, so there is nothing left to inspect. Report
+    // it as a read failure so the user is told to retry rather than that their
+    // backup is missing.
+    throw new CloudBackupError(
+      'backup_read_failed',
+      `Failed to read the backup from iCloud: ${(e as Error).message}`,
+      { cause: e },
+    );
   }
-
-  throw new Error(
-    'Couldnt find the encrypted backup, did you back it up previously?',
-  );
 }
 
-export async function upload(mnemonic: Mnemonic) {
+async function createBackupFolder() {
   try {
+    // The native createDirectory is mkdir -p (succeeds for an existing dir);
+    // the 'already' tolerance below is belt-and-braces against that changing.
     await CloudStorage.mkdir(FOLDER);
   } catch (e) {
     console.error(e);
@@ -41,7 +201,103 @@ export async function upload(mnemonic: Mnemonic) {
       throw e;
     }
   }
+}
+
+/**
+ * Backs up the mnemonic, refusing to touch any backup that already exists.
+ *
+ * An existing backup with the same phrase reconnects without a write; anything
+ * else — a different phrase or an unreadable file — is a `backup_conflict` and
+ * nothing is deleted or overwritten. Only the check phase is wrapped in the
+ * error classifier; write failures escape raw, as before, so they keep
+ * reading as unexpected rather than as read failures.
+ */
+export async function upload(
+  mnemonic: Mnemonic,
+  options?: IosSyncOptions,
+): Promise<UploadOutcome> {
+  const {
+    syncTimeoutMs = 30_000,
+    pollIntervalMs = 1_000,
+    remoteProbeAttempts = 3,
+  } = options ?? {};
+
+  let verdict: 'write' | 'reconnect' = 'write';
+  try {
+    if (!(await CloudStorage.isCloudAvailable())) {
+      throw new CloudBackupError(
+        'cloud_unavailable',
+        'iCloud is unavailable, is the device signed in to iCloud?',
+      );
+    }
+
+    let backupIsLocal = await CloudStorage.exists(ENCRYPTED_FILE_PATH);
+    if (!backupIsLocal) {
+      const evidence = await probeRemoteBackup(
+        remoteProbeAttempts,
+        pollIntervalMs,
+      );
+      if (evidence === 'found') {
+        // A backup genuinely exists remotely — wait for it so it can be
+        // compared. Writing blind here could destroy it.
+        if (!(await waitForBackupFile(syncTimeoutMs, pollIntervalMs))) {
+          throw new CloudBackupError(
+            'backup_not_synced',
+            'The iCloud backup has not finished downloading to this device yet',
+          );
+        }
+        backupIsLocal = true;
+      } else if (evidence === 'unreadable') {
+        // Present but unlistable — fail closed, never write blind.
+        throw new CloudBackupError(
+          'backup_read_failed',
+          'The iCloud backup folder exists but its contents could not be checked',
+        );
+      }
+      // 'absent': same evidence bar on which download reports "no backup
+      // found". The probe-then-write race (metadata arriving right after) is
+      // the documented metadata-lag gap — not closable with this library.
+    }
+
+    if (backupIsLocal) {
+      const existingString = await withRetries(() =>
+        CloudStorage.readFile(ENCRYPTED_FILE_PATH),
+      );
+      let existing: Mnemonic;
+      try {
+        existing = parseMnemonic(existingString);
+      } catch (e) {
+        throw new CloudBackupError(
+          'backup_conflict',
+          `The existing iCloud backup could not be read: ${(e as Error).message}`,
+          { cause: e },
+        );
+      }
+      if (!mnemonicsMatch(existing, mnemonic)) {
+        throw new CloudBackupError(
+          'backup_conflict',
+          'The existing iCloud backup does not match this device',
+        );
+      }
+      verdict = 'reconnect';
+    }
+  } catch (e) {
+    if (isCloudBackupError(e)) {
+      throw e;
+    }
+    throw new CloudBackupError(
+      'backup_read_failed',
+      `Failed to check for an existing iCloud backup: ${(e as Error).message}`,
+      { cause: e },
+    );
+  }
+
+  if (verdict === 'reconnect') {
+    return 'already_backed_up';
+  }
+  await createBackupFolder();
   await withRetries(() =>
     CloudStorage.writeFile(ENCRYPTED_FILE_PATH, JSON.stringify(mnemonic)),
   );
+  return 'created';
 }

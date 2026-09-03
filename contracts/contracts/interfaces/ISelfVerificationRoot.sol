@@ -58,7 +58,7 @@ interface ISelfVerificationRoot {
     /**
      * @notice Verifies a self-proof using the bytes-based interface
      * @dev Parses relayer data format and validates against contract settings before calling hub V2
-     * @param proofPayload Packed data from relayer in format: | 32 bytes attestationId | proof data |
+     * @param proofPayload Packed data from relayer in format: | 32 bytes attestationId | 65 bytes signature | proofData |
      * @param userContextData User-defined data in format: | 32 bytes configId | 32 bytes destChainId | 32 bytes userIdentifier | data |
      */
     function verifySelfProof(bytes calldata proofPayload, bytes calldata userContextData) external;
