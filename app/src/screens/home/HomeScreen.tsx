@@ -51,6 +51,7 @@ import { useAppUpdates } from '@/hooks/useAppUpdates';
 import { useEarnPointsFlow } from '@/hooks/useEarnPointsFlow';
 import { usePoints } from '@/hooks/usePoints';
 import { useReferralConfirmation } from '@/hooks/useReferralConfirmation';
+import { useStoreReviewPrompt } from '@/hooks/useStoreReviewPrompt';
 import { useTestReferralFlow } from '@/hooks/useTestReferralFlow';
 import type { RootStackParamList } from '@/navigation';
 import { usePassport } from '@/providers/passportDataProvider';
@@ -193,6 +194,8 @@ const HomeScreen: React.FC = () => {
       showAppUpdateModal();
     }
   });
+
+  useStoreReviewPrompt();
 
   // Prevents back navigation
   usePreventRemove(true, () => {});

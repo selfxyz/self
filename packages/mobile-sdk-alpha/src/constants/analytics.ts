@@ -21,6 +21,7 @@ export const AppEvents = {
   GET_STARTED: 'App: Get Started',
   GET_STARTED_AADHAAR: 'App: Get Started - Aadhaar',
   GET_STARTED_BIOMETRIC: 'App: Get Started - Biometric ID',
+  STORE_REVIEW_REQUESTED: 'App: Store Review Requested',
   SUPPORTED_BIOMETRIC_IDS: 'App: Supported Biometric IDs',
   UPDATE_MODAL_CLOSED: 'App: Update Modal Closed',
   UPDATE_MODAL_OPENED: 'App: Update Modal Opened',
@@ -84,6 +85,9 @@ export const DocumentEvents = {
 } as const;
 
 export const KycEvents = {
+  FAUCET_NOTICE_CONTINUED: 'KYC: Faucet Notice Continued',
+  FAUCET_NOTICE_DECLINED: 'KYC: Faucet Notice Declined',
+  FAUCET_NOTICE_SHOWN: 'KYC: Faucet Notice Shown',
   PROVIDER_CLOSED: 'KYC: Provider Closed',
   PROVIDER_OPENED: 'KYC: Provider Opened',
   RETRY_TRIGGERED: 'KYC: Retry Triggered',

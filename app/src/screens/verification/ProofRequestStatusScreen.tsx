@@ -51,6 +51,7 @@ import {
 import { getWhiteListedDisclosureAddresses } from '@/services/points/utils';
 import { useProofHistoryStore } from '@/stores/proofHistoryStore';
 import { ProofStatus } from '@/stores/proofTypes';
+import { useStoreReviewStore } from '@/stores/storeReviewStore';
 
 const PREREQ_CHECK_TIMEOUT_MS = 3000;
 // Give each active proving state a generous 90s window before exposing an
@@ -111,6 +112,9 @@ const SuccessScreen: React.FC = () => {
     // failure/error it is never populated, and blocking would trap the user.
     if (currentState === 'completed' && whitelistedPoints === undefined) return;
     buttonTap();
+    if (currentState === 'completed') {
+      useStoreReviewStore.getState().armPrompt();
+    }
     const completedSessionId = sessionId;
 
     const cleanupLater = () => {
@@ -270,12 +274,14 @@ const SuccessScreen: React.FC = () => {
             PROOF_TIMEOUT_REASON,
           );
         }
+        useStoreReviewStore.getState().recordProofFailure();
       }
     } else if (currentState === 'completed') {
       timedOutAnalyticsTrackedRef.current = false;
       notificationSuccess();
       if (sessionId) {
         updateProofStatus(sessionId, ProofStatus.SUCCESS);
+        useStoreReviewStore.getState().recordProofSuccess(sessionId);
       }
     } else if (currentState === 'failure' || currentState === 'error') {
       timedOutAnalyticsTrackedRef.current = false;
@@ -288,6 +294,7 @@ const SuccessScreen: React.FC = () => {
           reason ?? undefined,
         );
       }
+      useStoreReviewStore.getState().recordProofFailure();
     } else {
       timedOutAnalyticsTrackedRef.current = false;
     }
