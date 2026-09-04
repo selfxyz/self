@@ -42,6 +42,7 @@ import {
   KYC_PROVIDER,
   launchKycVerification,
 } from '@/integrations/kyc';
+import { confirmKycFaucetNotice } from '@/integrations/kyc/faucetNotice';
 import { ExpandableBottomLayout } from '@/layouts/ExpandableBottomLayout';
 import type { RootStackParamList } from '@/navigation';
 import { useFeedback } from '@/providers/feedbackProvider';
@@ -65,6 +66,108 @@ const LogoConfirmationScreen: React.FC = () => {
     navigateToOnboarding();
   }, [navigateToOnboarding]);
 
+  const runKycFlow = useCallback(async () => {
+    let scanStarted = false;
+    const sessionRequestedAt = Date.now();
+    let providerOpenedAt: number | null = null;
+    try {
+      trackBranchEvent(selfClient, KycEvents.SESSION_REQUESTED, {
+        provider: KYC_PROVIDER,
+      });
+      const session = await createKycSession({
+        country: countryCode,
+        nationality: countryCode,
+      });
+      trackBranchEvent(selfClient, KycEvents.SESSION_CREATED, {
+        provider: KYC_PROVIDER,
+        duration_seconds: parseFloat(
+          ((Date.now() - sessionRequestedAt) / 1000).toFixed(2),
+        ),
+      });
+      trackOnboardingStep(selfClient, OnboardingEvents.SCAN_STARTED, {
+        branch: 'kyc',
+      });
+      scanStarted = true;
+      providerOpenedAt = Date.now();
+      trackBranchEvent(selfClient, KycEvents.PROVIDER_OPENED, {
+        provider: KYC_PROVIDER,
+      });
+      const result = await launchKycVerification(session.sessionToken);
+      const providerDurationSeconds = parseFloat(
+        ((Date.now() - providerOpenedAt) / 1000).toFixed(2),
+      );
+
+      // User cancelled/dismissed without completing verification
+      if (result.type === 'cancelled') {
+        trackBranchEvent(selfClient, KycEvents.PROVIDER_CLOSED, {
+          provider: KYC_PROVIDER,
+          outcome: 'cancelled',
+          duration_seconds: providerDurationSeconds,
+        });
+        failOnboardingAttempt(selfClient, 'scan_started', 'kyc_cancelled');
+        return;
+      }
+
+      // Verification failed (provider error/rejection)
+      if (result.type === 'failed') {
+        console.error(
+          'KYC verification failed:',
+          result.error?.type ?? 'unknown',
+        );
+        trackBranchEvent(selfClient, KycEvents.PROVIDER_CLOSED, {
+          provider: KYC_PROVIDER,
+          outcome: 'failed',
+          error_code: result.error?.type,
+          duration_seconds: providerDurationSeconds,
+        });
+        failOnboardingAttempt(
+          selfClient,
+          'scan_started',
+          `kyc_failed:${result.error?.type ?? 'unknown'}`,
+        );
+        navigation.navigate('KycFailure', {
+          countryCode,
+          canRetry: true,
+        });
+        return;
+      }
+
+      // Verification succeeded - navigate to KycSuccessScreen
+      trackBranchEvent(selfClient, KycEvents.PROVIDER_CLOSED, {
+        provider: KYC_PROVIDER,
+        outcome: 'completed',
+        duration_seconds: providerDurationSeconds,
+      });
+      trackOnboardingStep(selfClient, OnboardingEvents.SCAN_SUCCEEDED, {
+        branch: 'kyc',
+      });
+      navigation.navigate('KycSuccess', { sessionId: session.sessionId });
+    } catch {
+      if (providerOpenedAt !== null) {
+        trackBranchEvent(selfClient, KycEvents.PROVIDER_CLOSED, {
+          provider: KYC_PROVIDER,
+          outcome: 'failed',
+          error_code: 'launch_error',
+          duration_seconds: parseFloat(
+            ((Date.now() - providerOpenedAt) / 1000).toFixed(2),
+          ),
+        });
+      }
+      console.error('Error launching KYC verification');
+      failOnboardingAttempt(
+        selfClient,
+        scanStarted ? 'scan_started' : 'pre_start',
+        scanStarted ? 'kyc_launch_error' : 'kyc_session_error',
+      );
+      showModal({
+        titleText: 'Error',
+        bodyText: 'Unable to start verification. Please try again.',
+        buttonText: 'OK',
+        onButtonPress: () => {},
+      });
+    }
+  }, [countryCode, navigation, selfClient, showModal]);
+
   const handleNotFound = useCallback(() => {
     buttonTap();
     // "No" on the chip-symbol check routes through the KYC provider —
@@ -75,109 +178,14 @@ const LogoConfirmationScreen: React.FC = () => {
       bodyText:
         "To complete registration of a document without a biometric chip, you'll be redirected to our third party verification partner.",
       buttonText: 'Proceed with an external verifier',
-      onButtonPress: async () => {
-        let scanStarted = false;
-        const sessionRequestedAt = Date.now();
-        let providerOpenedAt: number | null = null;
-        try {
-          trackBranchEvent(selfClient, KycEvents.SESSION_REQUESTED, {
-            provider: KYC_PROVIDER,
-          });
-          const session = await createKycSession({
-            country: countryCode,
-            nationality: countryCode,
-          });
-          trackBranchEvent(selfClient, KycEvents.SESSION_CREATED, {
-            provider: KYC_PROVIDER,
-            duration_seconds: parseFloat(
-              ((Date.now() - sessionRequestedAt) / 1000).toFixed(2),
-            ),
-          });
-          trackOnboardingStep(selfClient, OnboardingEvents.SCAN_STARTED, {
-            branch: 'kyc',
-          });
-          scanStarted = true;
-          providerOpenedAt = Date.now();
-          trackBranchEvent(selfClient, KycEvents.PROVIDER_OPENED, {
-            provider: KYC_PROVIDER,
-          });
-          const result = await launchKycVerification(session.sessionToken);
-          const providerDurationSeconds = parseFloat(
-            ((Date.now() - providerOpenedAt) / 1000).toFixed(2),
-          );
-
-          // User cancelled/dismissed without completing verification
-          if (result.type === 'cancelled') {
-            trackBranchEvent(selfClient, KycEvents.PROVIDER_CLOSED, {
-              provider: KYC_PROVIDER,
-              outcome: 'cancelled',
-              duration_seconds: providerDurationSeconds,
-            });
-            failOnboardingAttempt(selfClient, 'scan_started', 'kyc_cancelled');
-            return;
-          }
-
-          // Verification failed (provider error/rejection)
-          if (result.type === 'failed') {
-            console.error(
-              'KYC verification failed:',
-              result.error?.type ?? 'unknown',
-            );
-            trackBranchEvent(selfClient, KycEvents.PROVIDER_CLOSED, {
-              provider: KYC_PROVIDER,
-              outcome: 'failed',
-              error_code: result.error?.type,
-              duration_seconds: providerDurationSeconds,
-            });
-            failOnboardingAttempt(
-              selfClient,
-              'scan_started',
-              `kyc_failed:${result.error?.type ?? 'unknown'}`,
-            );
-            navigation.navigate('KycFailure', {
-              countryCode,
-              canRetry: true,
-            });
-            return;
-          }
-
-          // Verification succeeded - navigate to KycSuccessScreen
-          trackBranchEvent(selfClient, KycEvents.PROVIDER_CLOSED, {
-            provider: KYC_PROVIDER,
-            outcome: 'completed',
-            duration_seconds: providerDurationSeconds,
-          });
-          trackOnboardingStep(selfClient, OnboardingEvents.SCAN_SUCCEEDED, {
-            branch: 'kyc',
-          });
-          navigation.navigate('KycSuccess', { sessionId: session.sessionId });
-        } catch {
-          if (providerOpenedAt !== null) {
-            trackBranchEvent(selfClient, KycEvents.PROVIDER_CLOSED, {
-              provider: KYC_PROVIDER,
-              outcome: 'failed',
-              error_code: 'launch_error',
-              duration_seconds: parseFloat(
-                ((Date.now() - providerOpenedAt) / 1000).toFixed(2),
-              ),
-            });
-          }
-          console.error('Error launching KYC verification');
-          failOnboardingAttempt(
-            selfClient,
-            scanStarted ? 'scan_started' : 'pre_start',
-            scanStarted ? 'kyc_launch_error' : 'kyc_session_error',
-          );
-          showModal({
-            titleText: 'Error',
-            bodyText: 'Unable to start verification. Please try again.',
-            buttonText: 'OK',
-            onButtonPress: () => {},
-          });
-        }
-      },
+      onButtonPress: () =>
+        confirmKycFaucetNotice(
+          showModal,
+          { onContinue: runKycFlow },
+          selfClient,
+        ),
     });
-  }, [countryCode, navigation, selfClient, showModal]);
+  }, [runKycFlow, selfClient, showModal]);
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={slate100}>
