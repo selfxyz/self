@@ -8,7 +8,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 // applies an undocumented quota; both silently swallow anything beyond that,
 // so the local cap keeps every request we make count.
 export const STORE_REVIEW_POLICY = {
-  minSuccessfulProofsForFirstPrompt: 2,
+  minSuccessfulProofsForFirstPrompt: 1,
   minSuccessfulProofsBetweenPrompts: 5,
   minMsBetweenPrompts: 90 * DAY_MS,
   maxPromptsPerRollingYear: 3,
