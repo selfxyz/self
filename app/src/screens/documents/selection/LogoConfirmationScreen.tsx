@@ -39,6 +39,7 @@ import useHapticNavigation from '@/hooks/useHapticNavigation';
 import { buttonTap } from '@/integrations/haptics';
 import {
   createKycSession,
+  isKycFlowEnabled,
   KYC_PROVIDER,
   launchKycVerification,
 } from '@/integrations/kyc';
@@ -170,6 +171,16 @@ const LogoConfirmationScreen: React.FC = () => {
 
   const handleNotFound = useCallback(() => {
     buttonTap();
+    if (!isKycFlowEnabled()) {
+      showModal({
+        titleText: 'Document Not Supported',
+        bodyText:
+          'Registration currently requires a document with a biometric chip. Please use a passport or an ID card that carries this symbol.',
+        buttonText: 'OK',
+        onButtonPress: () => {},
+      });
+      return;
+    }
     // "No" on the chip-symbol check routes through the KYC provider —
     // update the canonical funnel branch accordingly.
     setOnboardingBranch('kyc');

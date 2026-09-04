@@ -18,6 +18,7 @@ import type { AlertModalParams } from '@/components/AlertModal';
 import { useKycLauncher } from '@/hooks/useKycLauncher';
 import {
   createKycSession,
+  isKycFlowEnabled,
   launchKycVerification as startKycVerification,
 } from '@/integrations/kyc';
 import { KYC_FAUCET_NOTICE_COPY } from '@/integrations/kyc/faucetNotice';
@@ -54,6 +55,7 @@ jest.mock('@selfxyz/mobile-sdk-alpha/constants/analytics', () => ({
 
 jest.mock('@/integrations/kyc', () => ({
   createKycSession: jest.fn(),
+  isKycFlowEnabled: jest.fn(() => true),
   launchKycVerification: jest.fn(),
 }));
 
@@ -74,6 +76,9 @@ jest.mock('@/stores/pendingKycStore', () => ({
 
 const mockCreateKycSession = createKycSession as jest.MockedFunction<
   typeof createKycSession
+>;
+const mockIsKycFlowEnabled = isKycFlowEnabled as jest.MockedFunction<
+  typeof isKycFlowEnabled
 >;
 const mockStartKycVerification = startKycVerification as jest.MockedFunction<
   typeof startKycVerification
@@ -102,6 +107,7 @@ describe('useKycLauncher', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockIsKycFlowEnabled.mockReturnValue(true);
     // Default: the user accepts the faucet notice so the provider flow runs.
     mockShowModal.mockImplementation(params => {
       if (params.buttonText === KYC_FAUCET_NOTICE_COPY.continueText) {
@@ -466,6 +472,46 @@ describe('useKycLauncher', () => {
       KycEvents.FAUCET_NOTICE_DECLINED,
     );
     expect(result.current.isLoading).toBe(false);
+  });
+
+  describe('when the KYC flow is disabled', () => {
+    beforeEach(() => {
+      mockIsKycFlowEnabled.mockReturnValue(false);
+    });
+
+    it('reports the flow as unavailable and ignores launch requests', async () => {
+      const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+      const { result } = renderHook(() =>
+        useKycLauncher({ countryCode: 'US' }),
+      );
+
+      expect(result.current.isKycAvailable).toBe(false);
+
+      await act(async () => {
+        await result.current.launchKycVerification();
+      });
+
+      expect(mockShowModal).not.toHaveBeenCalled();
+      expect(mockGetKycDocumentCount).not.toHaveBeenCalled();
+      expect(mockCreateKycSession).not.toHaveBeenCalled();
+      expect(mockStartKycVerification).not.toHaveBeenCalled();
+      expect(result.current.isLoading).toBe(false);
+      warn.mockRestore();
+    });
+
+    it('runs the dismiss handler directly instead of offering the fallback modal', () => {
+      const onDismiss = jest.fn();
+      const { result } = renderHook(() =>
+        useKycLauncher({ countryCode: 'US' }),
+      );
+
+      act(() => {
+        result.current.showKycFallbackModal(onDismiss);
+      });
+
+      expect(onDismiss).toHaveBeenCalledTimes(1);
+      expect(mockShowModal).not.toHaveBeenCalled();
+    });
   });
 
   it('does not show the faucet notice when a pre-check blocks the launch', async () => {

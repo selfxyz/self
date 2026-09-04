@@ -113,6 +113,7 @@ jest.mock('@/hooks/useKycLauncher', () => ({
   useKycLauncher: () => ({
     launchKycVerification: jest.fn(),
     showKycFallbackModal: jest.fn(),
+    isKycAvailable: true,
     isLoading: false,
   }),
 }));

@@ -19,6 +19,7 @@ import {
 
 import {
   createKycSession,
+  isKycFlowEnabled,
   KYC_PROVIDER,
   launchKycVerification as startKycVerification,
 } from '@/integrations/kyc';
@@ -198,7 +199,14 @@ export const useKycLauncher = (options: UseKycLauncherOptions) => {
     }
   }, [navigation, selfClient, countryCode, onSuccess, onCancel, onError]);
 
+  const isKycAvailable = isKycFlowEnabled();
+
   const launchKycVerification = useCallback(async () => {
+    if (!isKycAvailable) {
+      console.warn('KYC flow is disabled; ignoring launch request');
+      return;
+    }
+
     const hasPendingOrProcessingKyc = () =>
       usePendingKycStore
         .getState()
@@ -258,10 +266,14 @@ export const useKycLauncher = (options: UseKycLauncherOptions) => {
     } finally {
       setIsLoading(false);
     }
-  }, [runKycProviderFlow, selfClient, showModal]);
+  }, [isKycAvailable, runKycProviderFlow, selfClient, showModal]);
 
   const showKycFallbackModal = useCallback(
     (onDismiss: () => void) => {
+      if (!isKycAvailable) {
+        onDismiss();
+        return;
+      }
       const titleText = 'Having trouble scanning your document?';
       const bodyText =
         "You'll be redirected to our third party verification partner.";
@@ -284,12 +296,13 @@ export const useKycLauncher = (options: UseKycLauncherOptions) => {
         onSecondaryButtonPress: onDismiss,
       });
     },
-    [cancelLabel, showModal, launchKycVerification],
+    [cancelLabel, isKycAvailable, showModal, launchKycVerification],
   );
 
   return {
     launchKycVerification,
     showKycFallbackModal,
+    isKycAvailable,
     isLoading,
   };
 };

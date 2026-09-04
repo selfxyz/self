@@ -72,7 +72,11 @@ const RegistrationFallbackMRZScreen: React.FC = () => {
 
   const headerTitle = getHeaderTitle(documentType);
 
-  const { launchKycVerification, isLoading: isRetrying } = useKycLauncher({
+  const {
+    launchKycVerification,
+    isKycAvailable,
+    isLoading: isRetrying,
+  } = useKycLauncher({
     countryCode,
     onCancel: () => {
       navigation.goBack();
@@ -219,27 +223,29 @@ const RegistrationFallbackMRZScreen: React.FC = () => {
         gap={10}
       >
         {/* Secondary Button - White fill, black text, rounded */}
-        <Button
-          backgroundColor={white}
-          borderWidth={1}
-          borderColor={slate200}
-          borderRadius={100}
-          height={52}
-          pressStyle={{ opacity: 0.8 }}
-          onPress={handleTryAlternative}
-          disabled={isRetrying}
-        >
-          <BodyText
-            style={{
-              fontSize: 17,
-              fontWeight: '500',
-              fontFamily: dinot,
-              color: black,
-            }}
+        {isKycAvailable && (
+          <Button
+            backgroundColor={white}
+            borderWidth={1}
+            borderColor={slate200}
+            borderRadius={100}
+            height={52}
+            pressStyle={{ opacity: 0.8 }}
+            onPress={handleTryAlternative}
+            disabled={isRetrying}
           >
-            {isRetrying ? 'Loading...' : 'Try a different method'}
-          </BodyText>
-        </Button>
+            <BodyText
+              style={{
+                fontSize: 17,
+                fontWeight: '500',
+                fontFamily: dinot,
+                color: black,
+              }}
+            >
+              {isRetrying ? 'Loading...' : 'Try a different method'}
+            </BodyText>
+          </Button>
+        )}
 
         {/* Footer Text - Not italic */}
         <BodyText

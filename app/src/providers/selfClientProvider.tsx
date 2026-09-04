@@ -32,6 +32,7 @@ import {
 import { logNFCEvent, logProofEvent } from '@/config/sentry';
 import {
   createKycSession,
+  isKycFlowEnabled,
   KYC_PROVIDER,
   launchKycVerification,
 } from '@/integrations/kyc';
@@ -337,7 +338,17 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
         currentCountryCode = countryCode;
         // Store country code early so it's available for KYC fallback flows
         useMRZStore.getState().update({ countryCode });
-        navigateIfReady('IDPicker', { countryCode, documentTypes });
+        const availableDocumentTypes = isKycFlowEnabled()
+          ? documentTypes
+          : documentTypes.filter(type => type !== 'kyc');
+        if (availableDocumentTypes.length === 0) {
+          navigateIfReady('ComingSoon', { countryCode });
+          return;
+        }
+        navigateIfReady('IDPicker', {
+          countryCode,
+          documentTypes: availableDocumentTypes,
+        });
       },
     );
     addListener(
@@ -359,6 +370,10 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
               }
               break;
             case 'kyc':
+              if (!isKycFlowEnabled()) {
+                navigationRef.navigate('ComingSoon', { countryCode });
+                break;
+              }
               showKycFaucetNotice({
                 onContinue: async () => {
                   const sessionRequestedAt = Date.now();
