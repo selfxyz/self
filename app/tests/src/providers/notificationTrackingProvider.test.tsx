@@ -6,6 +6,7 @@ import React from 'react';
 import type { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
 import { render, waitFor } from '@testing-library/react-native';
 
+import { isKycFlowEnabled } from '@/integrations/kyc';
 import { navigationRef } from '@/navigation';
 import { NotificationTrackingProvider } from '@/providers/notificationTrackingProvider';
 import * as analytics from '@/services/analytics';
@@ -22,6 +23,10 @@ jest.mock('@react-native-firebase/messaging', () => {
 });
 
 // Mock navigation
+jest.mock('@/integrations/kyc', () => ({
+  isKycFlowEnabled: jest.fn(() => true),
+}));
+
 jest.mock('@/navigation', () => ({
   navigationRef: {
     isReady: jest.fn(),
@@ -152,6 +157,44 @@ describe('NotificationTrackingProvider', () => {
       });
 
       expect(mockNavigationRef.navigate).toHaveBeenCalledWith('CountryPicker');
+    });
+
+    it('routes a retry notification to the terminal failure state when the KYC flow is disabled', async () => {
+      (isKycFlowEnabled as jest.Mock).mockReturnValueOnce(false);
+      let notificationHandler:
+        | ((message: FirebaseMessagingTypes.RemoteMessage) => void)
+        | null = null;
+
+      mockOnNotificationOpenedApp.mockImplementation(handler => {
+        notificationHandler = handler;
+        return jest.fn();
+      });
+
+      mockGetInitialNotification.mockResolvedValue(null);
+
+      render(
+        <NotificationTrackingProvider>
+          <mock-text testID="child">Test</mock-text>
+        </NotificationTrackingProvider>,
+      );
+
+      if (notificationHandler) {
+        notificationHandler({
+          messageId: 'test-message-id',
+          data: { type: 'kyc_result', status: 'retry', user_id: mockUserId },
+        } as FirebaseMessagingTypes.RemoteMessage);
+      }
+
+      await waitFor(() => {
+        expect(analytics.trackEvent).toHaveBeenCalled();
+      });
+
+      expect(mockNavigationRef.navigate).toHaveBeenCalledWith('KycFailure', {
+        canRetry: false,
+      });
+      expect(mockNavigationRef.navigate).not.toHaveBeenCalledWith(
+        'CountryPicker',
+      );
     });
 
     it('should navigate to KycFailure when status is rejected', async () => {

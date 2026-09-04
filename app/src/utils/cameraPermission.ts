@@ -61,7 +61,9 @@ function showBlockedAlert(onFallback?: () => void): void {
 function showUnavailableAlert(onFallback?: () => void): void {
   Alert.alert(
     'Camera not available',
-    "This device doesn't have a camera available. You can still verify your ID with an alternative method.",
+    onFallback
+      ? "This device doesn't have a camera available. You can still verify your ID with an alternative method."
+      : "This device doesn't have a camera available. A camera is required to scan your ID.",
     onFallback
       ? [
           { text: 'Cancel', style: 'cancel' },
