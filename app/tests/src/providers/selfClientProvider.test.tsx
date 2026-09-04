@@ -6,6 +6,7 @@
 import type { ReactNode } from 'react';
 import { act, renderHook } from '@testing-library/react-native';
 
+import { useKycFaucetNoticeStore } from '@/stores/kycFaucetNoticeStore';
 import { useSettingStore } from '@/stores/settingStore';
 
 let mockSdkProviderProps: Record<string, unknown> | undefined;
@@ -301,6 +302,15 @@ describe('SelfClientProvider', () => {
         documentType: 'kyc',
         countryCode: 'US',
       });
+    });
+
+    // The faucet-incompatibility notice gates the provider launch; nothing
+    // runs until the user continues.
+    expect(useKycFaucetNoticeStore.getState().isOpen).toBe(true);
+    expect(callOrder).toEqual([]);
+
+    await act(async () => {
+      await useKycFaucetNoticeStore.getState().onContinue?.();
     });
 
     expect(callOrder).toEqual([

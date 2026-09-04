@@ -9,13 +9,18 @@ import {
   trackOnboardingStep,
   useSelfClient,
 } from '@selfxyz/mobile-sdk-alpha';
-import { OnboardingEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
+import {
+  KycEvents,
+  OnboardingEvents,
+} from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
+import type { AlertModalParams } from '@/components/AlertModal';
 import { useKycLauncher } from '@/hooks/useKycLauncher';
 import {
   createKycSession,
   launchKycVerification as startKycVerification,
 } from '@/integrations/kyc';
+import { KYC_FAUCET_NOTICE_COPY } from '@/integrations/kyc/faucetNotice';
 import { useFeedback } from '@/providers/feedbackProvider';
 import { getKycDocumentCount } from '@/providers/passportDataProvider';
 
@@ -36,6 +41,9 @@ jest.mock('@selfxyz/mobile-sdk-alpha', () => ({
 jest.mock('@selfxyz/mobile-sdk-alpha/constants/analytics', () => ({
   OnboardingEvents: { SCAN_STARTED: 'Onboarding: Document Scan Started' },
   KycEvents: {
+    FAUCET_NOTICE_CONTINUED: 'KYC: Faucet Notice Continued',
+    FAUCET_NOTICE_DECLINED: 'KYC: Faucet Notice Declined',
+    FAUCET_NOTICE_SHOWN: 'KYC: Faucet Notice Shown',
     SESSION_REQUESTED: 'KYC: Session Requested',
     SESSION_CREATED: 'KYC: Session Created',
     PROVIDER_OPENED: 'KYC: Provider Opened',
@@ -86,10 +94,20 @@ const mockGetKycDocumentCount = getKycDocumentCount as jest.MockedFunction<
 
 describe('useKycLauncher', () => {
   const selfClientStub = { trackEvent: jest.fn() };
-  const mockShowModal = jest.fn();
+  const mockShowModal = jest.fn<void, [AlertModalParams]>();
+  const noticeModals = () =>
+    mockShowModal.mock.calls
+      .map(([params]) => params)
+      .filter(params => params.titleText === KYC_FAUCET_NOTICE_COPY.titleText);
 
   beforeEach(() => {
     jest.clearAllMocks();
+    // Default: the user accepts the faucet notice so the provider flow runs.
+    mockShowModal.mockImplementation(params => {
+      if (params.buttonText === KYC_FAUCET_NOTICE_COPY.continueText) {
+        Promise.resolve(params.onButtonPress()).catch(() => undefined);
+      }
+    });
     mockUseSelfClient.mockReturnValue(
       selfClientStub as unknown as ReturnType<typeof useSelfClient>,
     );
@@ -391,5 +409,73 @@ describe('useKycLauncher', () => {
           "We couldn't confirm how many verified IDs are stored. Please try again.",
       }),
     );
+  });
+
+  it('shows the faucet notice after the pre-checks and before creating a session', async () => {
+    const callOrder: string[] = [];
+    mockShowModal.mockImplementation(params => {
+      if (params.buttonText === KYC_FAUCET_NOTICE_COPY.continueText) {
+        callOrder.push('notice');
+        Promise.resolve(params.onButtonPress()).catch(() => undefined);
+      }
+    });
+    mockCreateKycSession.mockImplementation(async () => {
+      callOrder.push('createKycSession');
+      return { sessionId: 'sess-1', sessionToken: 'tok-1' } as Awaited<
+        ReturnType<typeof createKycSession>
+      >;
+    });
+
+    const { result } = renderHook(() => useKycLauncher({ countryCode: 'US' }));
+    await act(async () => {
+      await result.current.launchKycVerification();
+    });
+
+    expect(callOrder).toEqual(['notice', 'createKycSession']);
+    expect(noticeModals()[0]).toMatchObject({
+      bodyText: expect.stringContaining('Google USAT mainnet faucet'),
+      secondaryButtonText: KYC_FAUCET_NOTICE_COPY.goBackText,
+    });
+    expect(selfClientStub.trackEvent).toHaveBeenCalledWith(
+      KycEvents.FAUCET_NOTICE_SHOWN,
+    );
+    expect(selfClientStub.trackEvent).toHaveBeenCalledWith(
+      KycEvents.FAUCET_NOTICE_CONTINUED,
+    );
+  });
+
+  it('does not create a session when the user backs out of the faucet notice', async () => {
+    mockShowModal.mockImplementation(params => {
+      if (params.buttonText === KYC_FAUCET_NOTICE_COPY.continueText) {
+        Promise.resolve(params.onSecondaryButtonPress?.()).catch(
+          () => undefined,
+        );
+      }
+    });
+
+    const { result } = renderHook(() => useKycLauncher({ countryCode: 'US' }));
+    await act(async () => {
+      await result.current.launchKycVerification();
+    });
+
+    expect(noticeModals()).toHaveLength(1);
+    expect(mockCreateKycSession).not.toHaveBeenCalled();
+    expect(mockStartKycVerification).not.toHaveBeenCalled();
+    expect(mockTrackBranchEvent).not.toHaveBeenCalled();
+    expect(selfClientStub.trackEvent).toHaveBeenCalledWith(
+      KycEvents.FAUCET_NOTICE_DECLINED,
+    );
+    expect(result.current.isLoading).toBe(false);
+  });
+
+  it('does not show the faucet notice when a pre-check blocks the launch', async () => {
+    mockGetKycDocumentCount.mockResolvedValue(3);
+
+    const { result } = renderHook(() => useKycLauncher({ countryCode: 'US' }));
+    await act(async () => {
+      await result.current.launchKycVerification();
+    });
+
+    expect(noticeModals()).toHaveLength(0);
   });
 });

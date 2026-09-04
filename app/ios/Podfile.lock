@@ -109,6 +109,8 @@ PODS:
     - React-Core
     - React-runtimescheduler
     - ReactCommon
+  - ExpoStoreReview (55.0.17):
+    - ExpoModulesCore
   - fast_float (8.0.0)
   - FBLazyVector (0.83.9)
   - Firebase/Analytics (11.11.0):
@@ -3726,6 +3728,7 @@ DEPENDENCIES:
   - "ExpoLogBox (from `../../node_modules/@expo/log-box`)"
   - ExpoModulesCore (from `../../node_modules/expo-modules-core`)
   - ExpoModulesJSI (from `../../node_modules/expo-modules-core`)
+  - ExpoStoreReview (from `../../node_modules/expo-store-review/ios`)
   - fast_float (from `../../node_modules/react-native/third-party-podspecs/fast_float.podspec`)
   - FBLazyVector (from `../../node_modules/react-native/Libraries/FBLazyVector`)
   - fmt (from `../../node_modules/react-native/third-party-podspecs/fmt.podspec`)
@@ -3921,6 +3924,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/expo-modules-core"
   ExpoModulesJSI:
     :path: "../../node_modules/expo-modules-core"
+  ExpoStoreReview:
+    :path: "../../node_modules/expo-store-review/ios"
   fast_float:
     :podspec: "../../node_modules/react-native/third-party-podspecs/fast_float.podspec"
   FBLazyVector:
@@ -4186,6 +4191,7 @@ SPEC CHECKSUMS:
   ExpoLogBox: 617da77cbc083627692b2ea050a3666808aef2cd
   ExpoModulesCore: dfa76e2009e1b6b602bd7b4c2a5ed0a59ce33a6c
   ExpoModulesJSI: bbd6d912b19ba7455d95b2c2fd3bc73459f8cba9
+  ExpoStoreReview: 895668d2c4f503286ef2100b431d9561d7039d1a
   fast_float: b32c788ed9c6a8c584d114d0047beda9664e7cc6
   FBLazyVector: 3bcb3055086e5d90a12f0fe1668e79f6eceabc17
   Firebase: 6a8f201c61eda24e98f1ce2b44b1b9c2caf525cc

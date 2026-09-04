@@ -15,6 +15,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 
+import KycFaucetNoticeModal from '@/components/KycFaucetNoticeModal';
 import { DefaultNavBar } from '@/components/navbar';
 import VerificationGateModal from '@/components/VerificationGateModal';
 import { usePendingKycRecovery } from '@/hooks/usePendingKycRecovery';
@@ -109,6 +110,7 @@ const NavigationWithTracking = () => {
     <GestureHandlerRootView>
       <Navigation ref={navigationRef} onStateChange={trackScreen} />
       <VerificationGateModal />
+      <KycFaucetNoticeModal />
     </GestureHandlerRootView>
   );
 };
