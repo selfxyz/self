@@ -5,6 +5,7 @@
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
 
+import { useKycLauncher } from '@/hooks/useKycLauncher';
 import DocumentNFCTroubleScreen from '@/screens/documents/scanning/DocumentNFCTroubleScreen';
 import { useNfcTroubleStore } from '@/stores/nfcTroubleStore';
 
@@ -73,6 +74,7 @@ jest.mock('@/hooks/useHapticNavigation', () => ({
 jest.mock('@/hooks/useKycLauncher', () => ({
   useKycLauncher: jest.fn(() => ({
     launchKycVerification: mockLaunchKycVerification,
+    isKycAvailable: true,
     isLoading: false,
   })),
 }));
@@ -119,10 +121,19 @@ describe('DocumentNFCTroubleScreen', () => {
     expect(mockGoToNfcMethodSelection).toHaveBeenCalledTimes(1);
   });
 
-  it('always renders alternative verification button and triggers launcher', () => {
+  it('renders the alternative verification button and triggers the launcher', () => {
     const { UNSAFE_getByType } = render(<DocumentNFCTroubleScreen />);
     fireEvent.press(UNSAFE_getByType('mock-secondary-button'));
-
     expect(mockLaunchKycVerification).toHaveBeenCalledTimes(1);
+  });
+
+  it('hides the alternative verification button when the KYC flow is disabled', () => {
+    (useKycLauncher as jest.Mock).mockReturnValueOnce({
+      launchKycVerification: mockLaunchKycVerification,
+      isKycAvailable: false,
+      isLoading: false,
+    });
+    const { UNSAFE_queryByType } = render(<DocumentNFCTroubleScreen />);
+    expect(UNSAFE_queryByType('mock-secondary-button')).toBeNull();
   });
 });

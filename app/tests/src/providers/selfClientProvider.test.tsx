@@ -82,6 +82,7 @@ jest.mock('@selfxyz/mobile-sdk-alpha', () => {
     PROVING_ACCOUNT_VERIFIED_PENDING: 'PROVING_ACCOUNT_VERIFIED_PENDING',
     PROVING_ACCOUNT_VERIFIED_FAILURE: 'PROVING_ACCOUNT_VERIFIED_FAILURE',
     DOCUMENT_TYPE_SELECTED: 'DOCUMENT_TYPE_SELECTED',
+    DOCUMENT_COUNTRY_SELECTED: 'DOCUMENT_COUNTRY_SELECTED',
   };
 
   return {
@@ -95,12 +96,14 @@ jest.mock('@selfxyz/mobile-sdk-alpha', () => {
     impactLight: jest.fn(),
     reactNativeScannerAdapter: {},
     SdkEvents,
+    useMRZStore: { getState: () => ({ update: jest.fn() }) },
     webNFCScannerShim: {},
   };
 });
 
 jest.mock('@/integrations/kyc', () => ({
   createKycSession: jest.fn(),
+  isKycFlowEnabled: jest.fn(() => true),
   launchKycVerification: jest.fn(),
   KYC_PROVIDER: 'didit',
 }));
@@ -111,6 +114,7 @@ let SdkEvents: Record<string, string>;
 let trackBranchEvent: jest.Mock;
 let trackOnboardingStep: jest.Mock;
 let createKycSession: jest.Mock;
+let isKycFlowEnabled: jest.Mock;
 let launchKycVerification: jest.Mock;
 let navigationRef: { isReady: jest.Mock; navigate: jest.Mock };
 
@@ -122,7 +126,11 @@ beforeAll(() => {
     trackOnboardingStep,
   } = require('@selfxyz/mobile-sdk-alpha'));
   ({ SelfClientProvider } = require('@/providers/selfClientProvider'));
-  ({ createKycSession, launchKycVerification } = require('@/integrations/kyc'));
+  ({
+    createKycSession,
+    isKycFlowEnabled,
+    launchKycVerification,
+  } = require('@/integrations/kyc'));
   ({ navigationRef } = require('@/navigation'));
 });
 
@@ -131,6 +139,8 @@ describe('SelfClientProvider', () => {
     mockSdkProviderProps = undefined;
     useSettingStore.setState(useSettingStore.getInitialState(), true);
     navigationRef.isReady.mockReturnValue(false);
+    isKycFlowEnabled.mockReturnValue(true);
+    useKycFaucetNoticeStore.getState().close();
   });
 
   it('memoises the client instance', () => {
@@ -332,5 +342,73 @@ describe('SelfClientProvider', () => {
     expect(scanStartedIdx).toBeLessThan(firstBranchIdx);
 
     navigationRef.isReady.mockReturnValue(false);
+  });
+  describe('when the KYC flow is disabled', () => {
+    const renderProvider = () => {
+      const wrapper = ({ children }: { children: ReactNode }) => (
+        <SelfClientProvider>{children}</SelfClientProvider>
+      );
+      renderHook(() => useSelfClient(), { wrapper });
+      return mockSdkProviderProps?.listeners as Map<
+        string,
+        (payload: Record<string, unknown>) => void | Promise<void>
+      >;
+    };
+
+    beforeEach(() => {
+      isKycFlowEnabled.mockReturnValue(false);
+      navigationRef.isReady.mockReturnValue(true);
+      navigationRef.navigate.mockClear();
+      createKycSession.mockClear();
+    });
+
+    afterEach(() => {
+      navigationRef.isReady.mockReturnValue(false);
+    });
+
+    it('drops kyc from the ID picker document types', () => {
+      const listeners = renderProvider();
+      listeners.get(SdkEvents.DOCUMENT_COUNTRY_SELECTED)?.({
+        countryCode: 'US',
+        documentTypes: ['p', 'kyc'],
+      });
+
+      expect(navigationRef.navigate).toHaveBeenCalledWith('IDPicker', {
+        countryCode: 'US',
+        documentTypes: ['p'],
+      });
+    });
+
+    it('sends the user to ComingSoon when kyc was the only option', () => {
+      const listeners = renderProvider();
+      listeners.get(SdkEvents.DOCUMENT_COUNTRY_SELECTED)?.({
+        countryCode: 'XX',
+        documentTypes: ['kyc'],
+      });
+
+      expect(navigationRef.navigate).toHaveBeenCalledWith('ComingSoon', {
+        countryCode: 'XX',
+      });
+      expect(navigationRef.navigate).not.toHaveBeenCalledWith(
+        'IDPicker',
+        expect.anything(),
+      );
+    });
+
+    it('routes a stray kyc selection to ComingSoon without opening the notice', async () => {
+      const listeners = renderProvider();
+      await act(async () => {
+        await listeners.get(SdkEvents.DOCUMENT_TYPE_SELECTED)?.({
+          documentType: 'kyc',
+          countryCode: 'US',
+        });
+      });
+
+      expect(navigationRef.navigate).toHaveBeenCalledWith('ComingSoon', {
+        countryCode: 'US',
+      });
+      expect(useKycFaucetNoticeStore.getState().isOpen).toBe(false);
+      expect(createKycSession).not.toHaveBeenCalled();
+    });
   });
 });

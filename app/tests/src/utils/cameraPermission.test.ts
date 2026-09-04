@@ -72,6 +72,25 @@ describe('ensureCameraForPassportScan', () => {
     expect(alertMock.mock.calls[0][0]).toBe('Camera not available');
   });
 
+  it('does not promise an alternative method when no fallback is offered', async () => {
+    mockedCheck.mockResolvedValueOnce('unavailable' as never);
+    await ensureCameraForPassportScan();
+    const [, message, buttons] = alertMock.mock.calls[0];
+    expect(message).not.toMatch(/alternative/i);
+    expect(buttons?.map(button => button.text)).toEqual(['OK']);
+  });
+
+  it('promises the alternative method only when a fallback is offered', async () => {
+    mockedCheck.mockResolvedValueOnce('unavailable' as never);
+    await ensureCameraForPassportScan({ onFallback: jest.fn() });
+    const [, message, buttons] = alertMock.mock.calls[0];
+    expect(message).toMatch(/alternative method/i);
+    expect(buttons?.map(button => button.text)).toEqual([
+      'Cancel',
+      'Try Alternative Verification',
+    ]);
+  });
+
   it('treats thrown check errors as unavailable', async () => {
     mockedCheck.mockRejectedValueOnce(new Error('native crash'));
     await expect(ensureCameraForPassportScan()).resolves.toBe(false);

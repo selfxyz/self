@@ -92,11 +92,13 @@ jest.mock('react-native-safe-area-context', () => ({
 }));
 
 const mockLaunchKycVerification = jest.fn();
+let mockIsKycAvailable = true;
 
 jest.mock('@/hooks/useKycLauncher', () => ({
   useKycLauncher: () => ({
     launchKycVerification: mockLaunchKycVerification,
     showKycFallbackModal: jest.fn(),
+    isKycAvailable: mockIsKycAvailable,
     isLoading: false,
   }),
 }));
@@ -105,6 +107,7 @@ describe('DataConfirmationScreen - NFC failure fallback', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockRouteParams = undefined;
+    mockIsKycAvailable = true;
   });
 
   it('does not show fallback button on happy path', () => {
@@ -126,6 +129,15 @@ describe('DataConfirmationScreen - NFC failure fallback', () => {
     render(<DataConfirmationScreen />);
 
     expect(screen.getByText('Try Alternative Verification')).toBeTruthy();
+  });
+
+  it('hides the fallback button when the KYC flow is disabled', () => {
+    mockIsKycAvailable = false;
+    mockRouteParams = { fromNfcFailure: true };
+    render(<DataConfirmationScreen />);
+
+    expect(screen.queryByText('Try Alternative Verification')).toBeNull();
+    expect(screen.getByText('Continue')).toBeTruthy();
   });
 
   it('launches KYC verification when fallback button is pressed', () => {
