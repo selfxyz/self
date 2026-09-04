@@ -49,7 +49,7 @@ describe('requestStoreReviewIfEligible', () => {
   });
 
   it('skips without touching the OS when the policy says no', async () => {
-    useStoreReviewStore.setState({ successfulProofCount: 1 });
+    useStoreReviewStore.setState({ successfulProofCount: 0 });
 
     const outcome = await requestStoreReviewIfEligible({ trackEvent }, NOW);
 
