@@ -9,6 +9,7 @@ import messaging from '@react-native-firebase/messaging';
 
 import { NotificationEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
+import { isKycFlowEnabled } from '@/integrations/kyc';
 import { navigationRef } from '@/navigation';
 import { trackEvent } from '@/services/analytics';
 
@@ -45,6 +46,13 @@ const executeNotificationNavigation = (
       });
       return true;
     } else if (status === 'retry') {
+      if (!isKycFlowEnabled()) {
+        // The picker no longer offers KYC, so a retry cannot be honoured;
+        // show the terminal failure state instead of stranding the user in
+        // onboarding.
+        navigationRef.navigate('KycFailure', { canRetry: false });
+        return true;
+      }
       // Take user directly to verification flow to retry
       navigationRef.navigate('CountryPicker');
       return true;

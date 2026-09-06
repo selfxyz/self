@@ -155,6 +155,10 @@ jest.mock('@/stores/proofHistoryStore', () => ({
   useProofHistoryStore: jest.fn(),
 }));
 
+jest.mock('@/stores/storeReviewStore', () => ({
+  useStoreReviewStore: { getState: jest.fn() },
+}));
+
 const { Linking } = jest.requireMock('react-native') as {
   Linking: {
     openURL: jest.Mock;
@@ -190,6 +194,11 @@ const { useProofHistoryStore } = jest.requireMock(
 ) as {
   useProofHistoryStore: jest.Mock;
 };
+const { useStoreReviewStore } = jest.requireMock(
+  '@/stores/storeReviewStore',
+) as {
+  useStoreReviewStore: { getState: jest.Mock };
+};
 
 describe('ProofRequestStatusScreen', () => {
   const mockGoHome = jest.fn();
@@ -198,6 +207,9 @@ describe('ProofRequestStatusScreen', () => {
   const mockCleanSelfApp = jest.fn();
   const mockUpdateProofStatus = jest.fn();
   const mockCancelProof = jest.fn();
+  const mockRecordProofSuccess = jest.fn();
+  const mockRecordProofFailure = jest.fn();
+  const mockArmPrompt = jest.fn();
 
   let provingState: {
     currentState: string;
@@ -242,6 +254,11 @@ describe('ProofRequestStatusScreen', () => {
     useHapticNavigation.mockReturnValue(mockGoHome);
     useProofHistoryStore.mockReturnValue({
       updateProofStatus: mockUpdateProofStatus,
+    });
+    useStoreReviewStore.getState.mockReturnValue({
+      recordProofSuccess: mockRecordProofSuccess,
+      recordProofFailure: mockRecordProofFailure,
+      armPrompt: mockArmPrompt,
     });
     getWhiteListedDisclosureAddresses.mockResolvedValue([]);
     hasUserAnIdentityDocumentRegistered.mockResolvedValue(true);
@@ -294,6 +311,37 @@ describe('ProofRequestStatusScreen', () => {
 
     expect(mockCleanSelfApp).toHaveBeenCalledTimes(1);
     expect(notificationSuccess).toHaveBeenCalledTimes(1);
+  });
+
+  it('counts the verified proof and arms the store review prompt on acknowledgement', async () => {
+    render(<ProofRequestStatusScreen />);
+
+    await waitFor(() => {
+      expect(mockRecordProofSuccess).toHaveBeenCalledWith('session-1');
+    });
+    expect(mockArmPrompt).not.toHaveBeenCalled();
+
+    fireEvent.press(screen.getByTestId('primary-button'));
+
+    expect(mockArmPrompt).toHaveBeenCalledTimes(1);
+    expect(mockRecordProofFailure).not.toHaveBeenCalled();
+  });
+
+  it('records a failed proof and never arms the store review prompt', async () => {
+    provingState.currentState = 'failure';
+    provingState.reason = 'InvalidRoot';
+
+    render(<ProofRequestStatusScreen />);
+
+    await waitFor(() => {
+      expect(mockRecordProofFailure).toHaveBeenCalledTimes(1);
+    });
+
+    fireEvent.press(screen.getByTestId('primary-button'));
+
+    expect(mockArmPrompt).not.toHaveBeenCalled();
+    expect(mockRecordProofSuccess).not.toHaveBeenCalled();
+    expect(mockGoHome).toHaveBeenCalledTimes(1);
   });
 
   it('keeps the button disabled on completed while whitelist fetch is pending', async () => {

@@ -19,9 +19,11 @@ import {
 
 import {
   createKycSession,
+  isKycFlowEnabled,
   KYC_PROVIDER,
   launchKycVerification as startKycVerification,
 } from '@/integrations/kyc';
+import { confirmKycFaucetNotice } from '@/integrations/kyc/faucetNotice';
 import type { KycVerificationResult } from '@/integrations/kyc/types';
 import type { RootStackParamList } from '@/navigation';
 import { useFeedback } from '@/providers/feedbackProvider';
@@ -63,10 +65,11 @@ export interface UseKycLauncherOptions {
  * Custom hook for launching KYC verification with consistent error handling.
  *
  * Abstracts the common pattern of:
- * 1. Creating a session
- * 2. Launching the provider SDK
- * 3. Handling errors by navigating to fallback screen
- * 4. Managing loading state
+ * 1. Running the pre-launch checks and the faucet-incompatibility notice
+ * 2. Creating a session
+ * 3. Launching the provider SDK
+ * 4. Handling errors by navigating to fallback screen
+ * 5. Managing loading state
  *
  * @example
  * ```tsx
@@ -93,60 +96,10 @@ export const useKycLauncher = (options: UseKycLauncherOptions) => {
   const selfClient = useSelfClient();
   const [isLoading, setIsLoading] = useState(false);
 
-  const launchKycVerification = useCallback(async () => {
-    const hasPendingOrProcessingKyc = () =>
-      usePendingKycStore
-        .getState()
-        .pendingVerifications.some(
-          verification =>
-            verification.status === 'pending' ||
-            verification.status === 'processing',
-        );
-
-    setIsLoading(true);
+  const runKycProviderFlow = useCallback(async () => {
     const sessionRequestedAt = Date.now();
     let providerOpenedAt: number | null = null;
     try {
-      if (hasPendingOrProcessingKyc()) {
-        showModal({
-          titleText: 'Verification in progress',
-          bodyText:
-            "You already have a KYC verification being processed. We'll notify you when it's ready.",
-          buttonText: 'Dismiss',
-          onButtonPress: () => {},
-        });
-        return;
-      }
-
-      let kycDocumentCount: number;
-      try {
-        kycDocumentCount = await getKycDocumentCount();
-      } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : String(error);
-        const safeError = sanitizeErrorMessage(errorMessage);
-        console.error('Unable to verify KYC document count:', safeError);
-        showModal({
-          titleText: 'Unable to verify verification limit',
-          bodyText:
-            "We couldn't confirm how many verified IDs are stored. Please try again.",
-          buttonText: 'Dismiss',
-          onButtonPress: () => {},
-        });
-        return;
-      }
-
-      if (kycDocumentCount >= 3) {
-        showModal({
-          titleText: 'Maximum verifications reached',
-          bodyText:
-            'You can have up to 3 verified IDs. Remove one before starting a new verification.',
-          buttonText: 'Dismiss',
-          onButtonPress: () => {},
-        });
-        return;
-      }
-
       trackBranchEvent(selfClient, KycEvents.SESSION_REQUESTED, {
         provider: KYC_PROVIDER,
       });
@@ -243,21 +196,84 @@ export const useKycLauncher = (options: UseKycLauncherOptions) => {
       } else {
         navigation.navigate('KycConnectionError', { countryCode });
       }
+    }
+  }, [navigation, selfClient, countryCode, onSuccess, onCancel, onError]);
+
+  const isKycAvailable = isKycFlowEnabled();
+
+  const launchKycVerification = useCallback(async () => {
+    if (!isKycAvailable) {
+      console.warn('KYC flow is disabled; ignoring launch request');
+      return;
+    }
+
+    const hasPendingOrProcessingKyc = () =>
+      usePendingKycStore
+        .getState()
+        .pendingVerifications.some(
+          verification =>
+            verification.status === 'pending' ||
+            verification.status === 'processing',
+        );
+
+    setIsLoading(true);
+    try {
+      if (hasPendingOrProcessingKyc()) {
+        showModal({
+          titleText: 'Verification in progress',
+          bodyText:
+            "You already have a KYC verification being processed. We'll notify you when it's ready.",
+          buttonText: 'Dismiss',
+          onButtonPress: () => {},
+        });
+        return;
+      }
+
+      let kycDocumentCount: number;
+      try {
+        kycDocumentCount = await getKycDocumentCount();
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+        const safeError = sanitizeErrorMessage(errorMessage);
+        console.error('Unable to verify KYC document count:', safeError);
+        showModal({
+          titleText: 'Unable to verify verification limit',
+          bodyText:
+            "We couldn't confirm how many verified IDs are stored. Please try again.",
+          buttonText: 'Dismiss',
+          onButtonPress: () => {},
+        });
+        return;
+      }
+
+      if (kycDocumentCount >= 3) {
+        showModal({
+          titleText: 'Maximum verifications reached',
+          bodyText:
+            'You can have up to 3 verified IDs. Remove one before starting a new verification.',
+          buttonText: 'Dismiss',
+          onButtonPress: () => {},
+        });
+        return;
+      }
+
+      await confirmKycFaucetNotice(
+        showModal,
+        { onContinue: runKycProviderFlow },
+        selfClient,
+      );
     } finally {
       setIsLoading(false);
     }
-  }, [
-    navigation,
-    selfClient,
-    countryCode,
-    onSuccess,
-    onCancel,
-    onError,
-    showModal,
-  ]);
+  }, [isKycAvailable, runKycProviderFlow, selfClient, showModal]);
 
   const showKycFallbackModal = useCallback(
     (onDismiss: () => void) => {
+      if (!isKycAvailable) {
+        onDismiss();
+        return;
+      }
       const titleText = 'Having trouble scanning your document?';
       const bodyText =
         "You'll be redirected to our third party verification partner.";
@@ -280,12 +296,13 @@ export const useKycLauncher = (options: UseKycLauncherOptions) => {
         onSecondaryButtonPress: onDismiss,
       });
     },
-    [cancelLabel, showModal, launchKycVerification],
+    [cancelLabel, isKycAvailable, showModal, launchKycVerification],
   );
 
   return {
     launchKycVerification,
     showKycFallbackModal,
+    isKycAvailable,
     isLoading,
   };
 };

@@ -74,7 +74,11 @@ const RegistrationFallbackNFCScreen: React.FC = () => {
 
   const headerTitle = getHeaderTitle(documentType);
 
-  const { launchKycVerification, isLoading: isRetrying } = useKycLauncher({
+  const {
+    launchKycVerification,
+    isKycAvailable,
+    isLoading: isRetrying,
+  } = useKycLauncher({
     countryCode,
     onCancel: () => {
       navigation.goBack();
@@ -232,20 +236,22 @@ const RegistrationFallbackNFCScreen: React.FC = () => {
           <BodyText style={styles.buttonText}>Check scanned data</BodyText>
         </Button>
 
-        <Button
-          backgroundColor={white}
-          borderWidth={1}
-          borderColor={slate200}
-          borderRadius={100}
-          height={52}
-          pressStyle={{ opacity: 0.8 }}
-          onPress={handleTryAlternative}
-          disabled={isRetrying}
-        >
-          <BodyText style={styles.buttonText}>
-            {isRetrying ? 'Loading...' : 'Try a different method'}
-          </BodyText>
-        </Button>
+        {isKycAvailable && (
+          <Button
+            backgroundColor={white}
+            borderWidth={1}
+            borderColor={slate200}
+            borderRadius={100}
+            height={52}
+            pressStyle={{ opacity: 0.8 }}
+            onPress={handleTryAlternative}
+            disabled={isRetrying}
+          >
+            <BodyText style={styles.buttonText}>
+              {isRetrying ? 'Loading...' : 'Try a different method'}
+            </BodyText>
+          </Button>
+        )}
 
         {/* Footer Text - Not italic */}
         <BodyText style={styles.footerText}>

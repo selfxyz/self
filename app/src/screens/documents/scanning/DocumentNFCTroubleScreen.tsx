@@ -62,7 +62,7 @@ const DocumentNFCTroubleScreen: React.FC = () => {
   const selfClient = useSelfClient();
   const { useMRZStore } = selfClient;
   const { countryCode } = useMRZStore();
-  const { launchKycVerification, isLoading } = useKycLauncher({
+  const { launchKycVerification, isKycAvailable, isLoading } = useKycLauncher({
     countryCode,
   });
   const nfcOptionsRevealed = useNfcTroubleStore(state => state.optionsRevealed);
@@ -90,14 +90,16 @@ const DocumentNFCTroubleScreen: React.FC = () => {
         <YStack gap="$3">
           <SupportUuidRow />
 
-          <SecondaryButton
-            onPress={launchKycVerification}
-            disabled={isLoading}
-            textColor={slate700}
-            style={{ marginBottom: 0 }}
-          >
-            {isLoading ? 'Loading...' : 'Try Alternative Verification'}
-          </SecondaryButton>
+          {isKycAvailable && (
+            <SecondaryButton
+              onPress={launchKycVerification}
+              disabled={isLoading}
+              textColor={slate700}
+              style={{ marginBottom: 0 }}
+            >
+              {isLoading ? 'Loading...' : 'Try Alternative Verification'}
+            </SecondaryButton>
+          )}
         </YStack>
       }
     >

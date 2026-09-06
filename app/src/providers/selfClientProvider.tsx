@@ -32,6 +32,7 @@ import {
 import { logNFCEvent, logProofEvent } from '@/config/sentry';
 import {
   createKycSession,
+  isKycFlowEnabled,
   KYC_PROVIDER,
   launchKycVerification,
 } from '@/integrations/kyc';
@@ -50,6 +51,7 @@ import {
   type InjectedErrorType,
   useErrorInjectionStore,
 } from '@/stores/errorInjectionStore';
+import { showKycFaucetNotice } from '@/stores/kycFaucetNoticeStore';
 import { useSettingStore } from '@/stores/settingStore';
 import { IS_DEV_MODE } from '@/utils/devUtils';
 import {
@@ -336,7 +338,17 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
         currentCountryCode = countryCode;
         // Store country code early so it's available for KYC fallback flows
         useMRZStore.getState().update({ countryCode });
-        navigateIfReady('IDPicker', { countryCode, documentTypes });
+        const availableDocumentTypes = isKycFlowEnabled()
+          ? documentTypes
+          : documentTypes.filter(type => type !== 'kyc');
+        if (availableDocumentTypes.length === 0) {
+          navigateIfReady('ComingSoon', { countryCode });
+          return;
+        }
+        navigateIfReady('IDPicker', {
+          countryCode,
+          documentTypes: availableDocumentTypes,
+        });
       },
     );
     addListener(
@@ -358,163 +370,169 @@ export const SelfClientProvider = ({ children }: PropsWithChildren) => {
               }
               break;
             case 'kyc':
-              (async () => {
-                const sessionRequestedAt = Date.now();
-                let providerOpenedAt = 0;
-                const trackEventClient = { trackEvent };
-                try {
-                  if (
-                    useErrorInjectionStore
-                      .getState()
-                      .shouldTrigger('kyc_initialization')
-                  ) {
-                    console.log('[DEV] Injecting KYC initialization error');
-                    throw new Error(
-                      'Injected KYC initialization error for testing',
+              if (!isKycFlowEnabled()) {
+                navigationRef.navigate('ComingSoon', { countryCode });
+                break;
+              }
+              showKycFaucetNotice({
+                onContinue: async () => {
+                  const sessionRequestedAt = Date.now();
+                  let providerOpenedAt = 0;
+                  const trackEventClient = { trackEvent };
+                  try {
+                    if (
+                      useErrorInjectionStore
+                        .getState()
+                        .shouldTrigger('kyc_initialization')
+                    ) {
+                      console.log('[DEV] Injecting KYC initialization error');
+                      throw new Error(
+                        'Injected KYC initialization error for testing',
+                      );
+                    }
+
+                    // SCAN_STARTED must fire before any KYC branch event so the
+                    // funnel attempt is bootstrapped — trackBranchEvent no-ops
+                    // when currentAttempt is null. See ANA-12 Path C invariant
+                    // (specs/projects/sdk/workstreams/analytics/plans/
+                    // ANA-12-branch-specific-funnel-events.md).
+                    trackOnboardingStep(
+                      trackEventClient,
+                      OnboardingEvents.SCAN_STARTED,
+                      { branch: 'kyc' },
                     );
-                  }
+                    trackBranchEvent(
+                      trackEventClient,
+                      KycEvents.SESSION_REQUESTED,
+                      { provider: KYC_PROVIDER },
+                    );
+                    const session = await createKycSession({
+                      country: countryCode,
+                      nationality: countryCode,
+                    });
+                    trackBranchEvent(
+                      trackEventClient,
+                      KycEvents.SESSION_CREATED,
+                      {
+                        provider: KYC_PROVIDER,
+                        duration_seconds: parseFloat(
+                          ((Date.now() - sessionRequestedAt) / 1000).toFixed(2),
+                        ),
+                      },
+                    );
+                    providerOpenedAt = Date.now();
+                    trackBranchEvent(
+                      trackEventClient,
+                      KycEvents.PROVIDER_OPENED,
+                      { provider: KYC_PROVIDER },
+                    );
+                    const result = await launchKycVerification(
+                      session.sessionToken,
+                    );
+                    const providerDurationSeconds = parseFloat(
+                      ((Date.now() - providerOpenedAt) / 1000).toFixed(2),
+                    );
 
-                  // SCAN_STARTED must fire before any KYC branch event so the
-                  // funnel attempt is bootstrapped — trackBranchEvent no-ops
-                  // when currentAttempt is null. See ANA-12 Path C invariant
-                  // (specs/projects/sdk/workstreams/analytics/plans/
-                  // ANA-12-branch-specific-funnel-events.md).
-                  trackOnboardingStep(
-                    trackEventClient,
-                    OnboardingEvents.SCAN_STARTED,
-                    { branch: 'kyc' },
-                  );
-                  trackBranchEvent(
-                    trackEventClient,
-                    KycEvents.SESSION_REQUESTED,
-                    { provider: KYC_PROVIDER },
-                  );
-                  const session = await createKycSession({
-                    country: countryCode,
-                    nationality: countryCode,
-                  });
-                  trackBranchEvent(
-                    trackEventClient,
-                    KycEvents.SESSION_CREATED,
-                    {
-                      provider: KYC_PROVIDER,
-                      duration_seconds: parseFloat(
-                        ((Date.now() - sessionRequestedAt) / 1000).toFixed(2),
-                      ),
-                    },
-                  );
-                  providerOpenedAt = Date.now();
-                  trackBranchEvent(
-                    trackEventClient,
-                    KycEvents.PROVIDER_OPENED,
-                    { provider: KYC_PROVIDER },
-                  );
-                  const result = await launchKycVerification(
-                    session.sessionToken,
-                  );
-                  const providerDurationSeconds = parseFloat(
-                    ((Date.now() - providerOpenedAt) / 1000).toFixed(2),
-                  );
+                    console.log('[KYC] Result type:', result.type);
 
-                  console.log('[KYC] Result type:', result.type);
+                    if (result.type === 'cancelled') {
+                      trackBranchEvent(
+                        trackEventClient,
+                        KycEvents.PROVIDER_CLOSED,
+                        {
+                          provider: KYC_PROVIDER,
+                          outcome: 'cancelled',
+                          duration_seconds: providerDurationSeconds,
+                        },
+                      );
+                      console.log(
+                        '[KYC] User cancelled or closed without completing',
+                      );
+                      return;
+                    }
 
-                  if (result.type === 'cancelled') {
+                    const shouldInjectVerificationError = useErrorInjectionStore
+                      .getState()
+                      .shouldTrigger('kyc_verification');
+
+                    if (
+                      result.type === 'failed' ||
+                      shouldInjectVerificationError
+                    ) {
+                      if (shouldInjectVerificationError) {
+                        console.log('[DEV] Injecting KYC verification error');
+                      } else {
+                        const safeError = sanitizeErrorMessage(
+                          result.error?.message ||
+                            result.error?.type ||
+                            'unknown_error',
+                        );
+                        console.error('KYC provider failed:', safeError);
+                      }
+                      trackBranchEvent(
+                        trackEventClient,
+                        KycEvents.PROVIDER_CLOSED,
+                        {
+                          provider: KYC_PROVIDER,
+                          outcome: 'failed',
+                          error_code: result.error?.type,
+                          duration_seconds: providerDurationSeconds,
+                        },
+                      );
+                      if (navigationRef.isReady()) {
+                        navigationRef.navigate('KycFailure', {
+                          countryCode,
+                          canRetry: true,
+                        });
+                      }
+                      return;
+                    }
+
                     trackBranchEvent(
                       trackEventClient,
                       KycEvents.PROVIDER_CLOSED,
                       {
                         provider: KYC_PROVIDER,
-                        outcome: 'cancelled',
+                        outcome: 'completed',
                         duration_seconds: providerDurationSeconds,
                       },
                     );
                     console.log(
-                      '[KYC] User cancelled or closed without completing',
-                    );
-                    return;
-                  }
-
-                  const shouldInjectVerificationError = useErrorInjectionStore
-                    .getState()
-                    .shouldTrigger('kyc_verification');
-
-                  if (
-                    result.type === 'failed' ||
-                    shouldInjectVerificationError
-                  ) {
-                    if (shouldInjectVerificationError) {
-                      console.log('[DEV] Injecting KYC verification error');
-                    } else {
-                      const safeError = sanitizeErrorMessage(
-                        result.error?.message ||
-                          result.error?.type ||
-                          'unknown_error',
-                      );
-                      console.error('KYC provider failed:', safeError);
-                    }
-                    trackBranchEvent(
-                      trackEventClient,
-                      KycEvents.PROVIDER_CLOSED,
-                      {
-                        provider: KYC_PROVIDER,
-                        outcome: 'failed',
-                        error_code: result.error?.type,
-                        duration_seconds: providerDurationSeconds,
-                      },
+                      '[KYC] Verification submitted, status:',
+                      result.session?.status,
                     );
                     if (navigationRef.isReady()) {
-                      navigationRef.navigate('KycFailure', {
-                        countryCode,
-                        canRetry: true,
+                      navigationRef.navigate('KycSuccess', {
+                        sessionId: session.sessionId,
                       });
                     }
-                    return;
-                  }
-
-                  trackBranchEvent(
-                    trackEventClient,
-                    KycEvents.PROVIDER_CLOSED,
-                    {
-                      provider: KYC_PROVIDER,
-                      outcome: 'completed',
-                      duration_seconds: providerDurationSeconds,
-                    },
-                  );
-                  console.log(
-                    '[KYC] Verification submitted, status:',
-                    result.session?.status,
-                  );
-                  if (navigationRef.isReady()) {
-                    navigationRef.navigate('KycSuccess', {
-                      sessionId: session.sessionId,
-                    });
-                  }
-                } catch (error) {
-                  if (providerOpenedAt > 0) {
-                    trackBranchEvent(
-                      trackEventClient,
-                      KycEvents.PROVIDER_CLOSED,
-                      {
-                        provider: KYC_PROVIDER,
-                        outcome: 'failed',
-                        error_code: 'exception',
-                        duration_seconds: parseFloat(
-                          ((Date.now() - providerOpenedAt) / 1000).toFixed(2),
-                        ),
-                      },
+                  } catch (error) {
+                    if (providerOpenedAt > 0) {
+                      trackBranchEvent(
+                        trackEventClient,
+                        KycEvents.PROVIDER_CLOSED,
+                        {
+                          provider: KYC_PROVIDER,
+                          outcome: 'failed',
+                          error_code: 'exception',
+                          duration_seconds: parseFloat(
+                            ((Date.now() - providerOpenedAt) / 1000).toFixed(2),
+                          ),
+                        },
+                      );
+                    }
+                    const safeInitError = sanitizeErrorMessage(
+                      error instanceof Error ? error.message : String(error),
                     );
+                    console.error('Error in KYC flow:', safeInitError);
+                    if (navigationRef.isReady()) {
+                      navigationRef.navigate('KycConnectionError', {
+                        countryCode,
+                      });
+                    }
                   }
-                  const safeInitError = sanitizeErrorMessage(
-                    error instanceof Error ? error.message : String(error),
-                  );
-                  console.error('Error in KYC flow:', safeInitError);
-                  if (navigationRef.isReady()) {
-                    navigationRef.navigate('KycConnectionError', {
-                      countryCode,
-                    });
-                  }
-                }
-              })();
+                },
+              });
               break;
             default:
               if (countryCode) {
