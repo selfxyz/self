@@ -75,7 +75,7 @@ function getIneligibleReasonLabel(
 ): string | undefined {
   switch (reason) {
     case 'needs_nfc':
-      return 'Needs an NFC-enabled passport.';
+      return 'Needs a passport or NFC-enabled ID.';
     case 'unsupported_id_type':
       return "This ID type isn't supported for this perk.";
     default:

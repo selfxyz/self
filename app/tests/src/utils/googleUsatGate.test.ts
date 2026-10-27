@@ -8,6 +8,7 @@ import {
 } from '@selfxyz/mobile-sdk-alpha';
 
 import {
+  evaluateGoogleUsatEligibilityForDocument,
   evaluateGoogleUsatEntryGate,
   evaluateGoogleUsatGate,
   evaluateGoogleUsatGateForDocument,
@@ -23,7 +24,7 @@ jest.mock('@selfxyz/mobile-sdk-alpha', () => {
       appName: 'Google Cloud Web3 Portal',
     },
     // Mirror GOOGLE_USAT_FAUCET_POLICY defaults to avoid drift.
-    allowedCategories: ['passport', 'id_card', 'aadhaar'],
+    allowedCategories: ['passport', 'id_card'],
     allowMock: false,
   };
   return {
@@ -101,7 +102,7 @@ describe('evaluateGoogleUsatGate', () => {
     );
   });
 
-  it('allows Google USAT when selected document is real and non-kyc', async () => {
+  it('allows Google USAT when selected document is a real passport', async () => {
     mockIsGoogleUsatProofRequest.mockReturnValue(true);
     selfClient.loadDocumentCatalog.mockResolvedValue({
       selectedDocumentId: 'b',
@@ -115,7 +116,7 @@ describe('evaluateGoogleUsatGate', () => {
     );
   });
 
-  it('blocks Google USAT when selected document is kyc even if another real non-kyc exists', async () => {
+  it('blocks Google USAT when selected document is kyc even if a real passport exists', async () => {
     mockIsGoogleUsatProofRequest.mockReturnValue(true);
     selfClient.loadDocumentCatalog.mockResolvedValue({
       selectedDocumentId: 'a',
@@ -129,7 +130,7 @@ describe('evaluateGoogleUsatGate', () => {
     );
   });
 
-  it('blocks Google USAT when selected non-kyc document is a mock', async () => {
+  it('blocks Google USAT when selected id_card document is a mock', async () => {
     mockIsGoogleUsatProofRequest.mockReturnValue(true);
     selfClient.loadDocumentCatalog.mockResolvedValue({
       selectedDocumentId: 'b',
@@ -167,7 +168,7 @@ describe('evaluateGoogleUsatGate', () => {
     );
   });
 
-  it('allows Google USAT when selected real document is aadhaar', async () => {
+  it('blocks Google USAT when selected real document is aadhaar', async () => {
     mockIsGoogleUsatProofRequest.mockReturnValue(true);
     selfClient.loadDocumentCatalog.mockResolvedValue({
       selectedDocumentId: 'a',
@@ -177,7 +178,7 @@ describe('evaluateGoogleUsatGate', () => {
       b: { data: { documentCategory: 'passport', mock: false } } as any,
     });
     await expect(evaluateGoogleUsatGate(selfClient, app)).resolves.toBe(
-      'allow',
+      'block',
     );
   });
 
@@ -261,10 +262,51 @@ describe('evaluateGoogleUsatEntryGate', () => {
     });
     mockGetAllDocuments.mockResolvedValue({
       a: { data: { documentCategory: 'kyc', mock: false } } as any,
-      b: { data: { documentCategory: 'aadhaar', mock: false } } as any,
+      b: { data: { documentCategory: 'passport', mock: false } } as any,
     });
     await expect(evaluateGoogleUsatEntryGate(selfClient, app)).resolves.toBe(
       'allow',
+    );
+  });
+
+  it('blocks when selected is kyc and the only alternative is aadhaar', async () => {
+    mockIsGoogleUsatProofRequest.mockReturnValue(true);
+    selfClient.loadDocumentCatalog.mockResolvedValue({
+      selectedDocumentId: 'a',
+    });
+    mockGetAllDocuments.mockResolvedValue({
+      a: { data: { documentCategory: 'kyc', mock: false } } as any,
+      b: { data: { documentCategory: 'aadhaar', mock: false } } as any,
+    });
+    await expect(evaluateGoogleUsatEntryGate(selfClient, app)).resolves.toBe(
+      'block',
+    );
+  });
+
+  it('allows (defers to selector) when selected is aadhaar and a passport exists', async () => {
+    mockIsGoogleUsatProofRequest.mockReturnValue(true);
+    selfClient.loadDocumentCatalog.mockResolvedValue({
+      selectedDocumentId: 'a',
+    });
+    mockGetAllDocuments.mockResolvedValue({
+      a: { data: { documentCategory: 'aadhaar', mock: false } } as any,
+      b: { data: { documentCategory: 'passport', mock: false } } as any,
+    });
+    await expect(evaluateGoogleUsatEntryGate(selfClient, app)).resolves.toBe(
+      'allow',
+    );
+  });
+
+  it('blocks when aadhaar is the only document', async () => {
+    mockIsGoogleUsatProofRequest.mockReturnValue(true);
+    selfClient.loadDocumentCatalog.mockResolvedValue({
+      selectedDocumentId: 'a',
+    });
+    mockGetAllDocuments.mockResolvedValue({
+      a: { data: { documentCategory: 'aadhaar', mock: false } } as any,
+    });
+    await expect(evaluateGoogleUsatEntryGate(selfClient, app)).resolves.toBe(
+      'block',
     );
   });
 
@@ -317,5 +359,45 @@ describe('evaluateGoogleUsatEntryGate', () => {
     await expect(evaluateGoogleUsatEntryGate(selfClient, app)).resolves.toBe(
       'allow',
     );
+  });
+});
+
+describe('evaluateGoogleUsatEligibilityForDocument', () => {
+  const app = {} as any;
+  const doc = (documentCategory: string, mock = false) =>
+    ({ data: { documentCategory, mock } }) as any;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockIsGoogleUsatProofRequest.mockReturnValue(true);
+  });
+
+  it('marks passport and id_card as eligible', () => {
+    expect(
+      evaluateGoogleUsatEligibilityForDocument(app, doc('passport')),
+    ).toEqual({ eligible: true });
+    expect(
+      evaluateGoogleUsatEligibilityForDocument(app, doc('id_card')),
+    ).toEqual({ eligible: true });
+  });
+
+  it('marks aadhaar as ineligible with needs_nfc', () => {
+    expect(
+      evaluateGoogleUsatEligibilityForDocument(app, doc('aadhaar')),
+    ).toEqual({ eligible: false, reason: 'needs_nfc' });
+  });
+
+  it('marks kyc as ineligible with unsupported_id_type', () => {
+    expect(evaluateGoogleUsatEligibilityForDocument(app, doc('kyc'))).toEqual({
+      eligible: false,
+      reason: 'unsupported_id_type',
+    });
+  });
+
+  it('treats every document as eligible for non Google USAT requests', () => {
+    mockIsGoogleUsatProofRequest.mockReturnValue(false);
+    expect(
+      evaluateGoogleUsatEligibilityForDocument(app, doc('aadhaar')),
+    ).toEqual({ eligible: true });
   });
 });
