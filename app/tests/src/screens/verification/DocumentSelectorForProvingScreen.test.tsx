@@ -880,7 +880,7 @@ describe('DocumentSelectorForProvingScreen', () => {
         ).toBeTruthy();
       });
       expect(JSON.stringify(tree.toJSON())).toContain(
-        'Needs an NFC-enabled passport.',
+        'Needs a passport or NFC-enabled ID.',
       );
     });
 

@@ -11,6 +11,10 @@ describe('shared perks catalog', () => {
     expect(getPerkRecordsForIdType('p').map(perk => perk.id)).toEqual(['google_cloud_faucet']);
   });
 
+  it('returns no perks for aadhaar id type', () => {
+    expect(getPerkRecordsForIdType('a')).toEqual([]);
+  });
+
   it('returns empty array for unknown id type', () => {
     expect(getPerkRecordsForIdType('unknown')).toEqual([]);
   });

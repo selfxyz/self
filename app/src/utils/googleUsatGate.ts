@@ -109,7 +109,7 @@ export async function evaluateGoogleUsatGate(
  * ProvingScreenRouter.tsx alternative-document handling). Unlike
  * evaluateGoogleUsatGate — a selected-doc-only contract ProvingScreenRouter
  * relies on — this is the guard the pre-navigation entry points should use so a
- * user with e.g. a KYC doc selected but an eligible Aadhaar registered is routed
+ * user with e.g. a KYC doc selected but an eligible passport registered is routed
  * to the selector instead of hard-blocked.
  */
 export async function evaluateGoogleUsatEntryGate(
