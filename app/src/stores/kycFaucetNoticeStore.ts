@@ -7,7 +7,12 @@ import { create } from 'zustand';
 import type { KycFaucetNoticeHandlers } from '@/integrations/kyc/faucetNotice';
 
 interface KycFaucetNoticeState {
+  /** The modal is on screen. */
   isOpen: boolean;
+  /**
+   * The user continued; the modal is hiding and `onContinue` runs once it has
+   * fully left the screen. The handlers stay set until then.
+   */
   isContinuing: boolean;
   onContinue: KycFaucetNoticeHandlers['onContinue'] | null;
   onDecline: (() => void) | null;
@@ -28,7 +33,7 @@ export const useKycFaucetNoticeStore = create<KycFaucetNoticeState>(set => ({
       onContinue,
       onDecline: onDecline ?? null,
     }),
-  markContinuing: () => set({ isContinuing: true }),
+  markContinuing: () => set({ isOpen: false, isContinuing: true }),
   close: () =>
     set({
       isOpen: false,

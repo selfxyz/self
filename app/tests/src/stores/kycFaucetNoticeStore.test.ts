@@ -25,10 +25,15 @@ describe('useKycFaucetNoticeStore', () => {
     });
   });
 
-  it('tracks the continuing state and clears everything on close', () => {
-    showKycFaucetNotice({ onContinue: jest.fn() });
+  it('hides but keeps the handlers while continuing, then clears everything on close', () => {
+    const onContinue = jest.fn();
+    showKycFaucetNotice({ onContinue });
     useKycFaucetNoticeStore.getState().markContinuing();
-    expect(useKycFaucetNoticeStore.getState().isContinuing).toBe(true);
+    expect(useKycFaucetNoticeStore.getState()).toMatchObject({
+      isOpen: false,
+      isContinuing: true,
+      onContinue,
+    });
 
     useKycFaucetNoticeStore.getState().close();
     expect(useKycFaucetNoticeStore.getState()).toMatchObject({

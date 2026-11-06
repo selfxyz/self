@@ -73,6 +73,10 @@ export const createKycSession = async (
   }
 };
 
+// Invariant: no RN <Modal> may be presented when this runs. On iOS the Didit
+// SDK presents on top of the topmost controller, and hiding an RN Modal
+// underneath it later dismisses Didit's controller instead of the modal,
+// leaving a transparent controller that swallows every touch.
 export const launchKycVerification = async (
   sessionToken: string,
   config?: KycLaunchConfig,
