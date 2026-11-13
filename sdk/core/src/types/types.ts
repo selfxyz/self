@@ -34,6 +34,10 @@ export type GenericDiscloseOutput = {
   forbiddenCountriesListPacked: string[];
   issuingState: string;
   name: string;
+  /** MRZ documents only: the part before `<<` */
+  surname?: string;
+  /** MRZ documents only: the part after `<<`, words space-separated */
+  givenNames?: string;
   idNumber: string;
   nationality: string;
   dateOfBirth: string;
