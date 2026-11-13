@@ -46,3 +46,24 @@ test('returns undefined for an empty string', () => {
 test('formatMrzNameForDisplay keeps the existing display name', () => {
   assert.strictEqual(formatMrzNameForDisplay('DOE<<JANE<MARIE<<<'), 'DOE JANE MARIE');
 });
+
+test('formatMrzNameForDisplay still glues one-letter words', () => {
+  // `name` is hashed by consumers, so this quirk must not change. The split
+  // parts below deliberately differ from it.
+  assert.strictEqual(formatMrzNameForDisplay('DOE<<J<MARIE<<<'), 'DOE JMARIE');
+});
+
+test('keeps initials as separate given-name words', () => {
+  assert.deepStrictEqual(splitMrzName('DOE<<J<MARIE<<<'), {
+    surname: 'DOE',
+    givenNames: 'J MARIE',
+  });
+});
+
+test('returns undefined when the surname is empty', () => {
+  assert.strictEqual(splitMrzName('<<JANE'), undefined);
+});
+
+test('returns undefined when a surname fills the field with no <<', () => {
+  assert.strictEqual(splitMrzName('ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLM'), undefined);
+});
