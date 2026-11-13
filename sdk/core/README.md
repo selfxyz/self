@@ -111,6 +111,8 @@ export type GenericDiscloseOutput = {
   forbiddenCountriesListPacked: string[]; // Packed forbidden countries list
   issuingState: string; // Passport issuing country
   name: string; // User's name
+  surname?: string; // Part of the name before `<<` (passport / EU ID card only)
+  givenNames?: string; // Part of the name after `<<` (passport / EU ID card only)
   idNumber: string; // Passport number
   nationality: string; // User's nationality
   dateOfBirth: string; // Date of birth

@@ -34,6 +34,16 @@ export type GenericDiscloseOutput = {
   forbiddenCountriesListPacked: string[];
   issuingState: string;
   name: string;
+  /**
+   * Passport / EU ID card only: the part before `<<`. Read from the raw MRZ, so
+   * it may not join back into `name` exactly (e.g. one-letter initials).
+   */
+  surname?: string;
+  /**
+   * Passport / EU ID card only: the part after `<<`, words space-separated. Read
+   * from the raw MRZ, so it may not join back into `name` exactly (e.g. initials).
+   */
+  givenNames?: string;
   idNumber: string;
   nationality: string;
   dateOfBirth: string;
