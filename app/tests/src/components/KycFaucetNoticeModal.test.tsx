@@ -52,47 +52,65 @@ describe('KycFaucetNoticeModal', () => {
       titleText: KYC_FAUCET_NOTICE_COPY.titleText,
       buttonText: KYC_FAUCET_NOTICE_COPY.continueText,
       secondaryButtonText: KYC_FAUCET_NOTICE_COPY.goBackText,
-      preventDismiss: false,
     });
     expect(mockTrackEvent).toHaveBeenCalledWith(KycEvents.FAUCET_NOTICE_SHOWN);
   });
 
-  it('locks into loading while onContinue runs, then closes', async () => {
-    let finish: () => void = () => {};
-    const onContinue = jest.fn(
-      () =>
-        new Promise<void>(resolve => {
-          finish = resolve;
-        }),
-    );
+  it('hides on continue and runs onContinue only once the modal is hidden', async () => {
+    const onContinue = jest.fn().mockResolvedValue(undefined);
     render(<KycFaucetNoticeModal />);
     act(() => {
       showKycFaucetNotice({ onContinue });
     });
 
-    let pressed: Promise<void> | void;
     act(() => {
-      pressed = lastProps()?.modalParams?.onButtonPress();
+      lastProps()?.modalParams?.onButtonPress();
     });
 
-    expect(onContinue).toHaveBeenCalledTimes(1);
     expect(mockTrackEvent).toHaveBeenCalledWith(
       KycEvents.FAUCET_NOTICE_CONTINUED,
     );
-    expect(lastProps()?.modalParams).toMatchObject({
-      buttonText: KYC_FAUCET_NOTICE_COPY.loadingText,
-      disablePrimaryButton: true,
-      preventDismiss: true,
-    });
+    expect(lastProps()?.visible).toBe(false);
+    expect(onContinue).not.toHaveBeenCalled();
 
-    await act(async () => {
-      finish();
-      await pressed;
-    });
+    // AlertModal hides after the press; the notice stays mounted until hidden.
     act(() => {
       lastProps()?.onHideModal?.();
     });
-    expect(useKycFaucetNoticeStore.getState().isOpen).toBe(false);
+    expect(useKycFaucetNoticeStore.getState().isContinuing).toBe(true);
+    expect(useKycFaucetNoticeStore.getState().onContinue).toBe(onContinue);
+    expect(onContinue).not.toHaveBeenCalled();
+
+    await act(async () => {
+      lastProps()?.onHidden?.();
+    });
+
+    expect(onContinue).toHaveBeenCalledTimes(1);
+    expect(useKycFaucetNoticeStore.getState()).toMatchObject({
+      isOpen: false,
+      isContinuing: false,
+      onContinue: null,
+    });
+  });
+
+  it('closes without running onContinue when the user goes back', () => {
+    const onContinue = jest.fn();
+    render(<KycFaucetNoticeModal />);
+    act(() => {
+      showKycFaucetNotice({ onContinue });
+    });
+
+    act(() => {
+      lastProps()?.modalParams?.onSecondaryButtonPress?.();
+      lastProps()?.onHideModal?.();
+    });
+
+    expect(onContinue).not.toHaveBeenCalled();
+    expect(useKycFaucetNoticeStore.getState()).toMatchObject({
+      isOpen: false,
+      isContinuing: false,
+      onContinue: null,
+    });
   });
 
   it('runs onDecline and tracks it when the user goes back', () => {

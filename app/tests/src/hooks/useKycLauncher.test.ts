@@ -109,6 +109,11 @@ describe('useKycLauncher', () => {
     mockShowModal.mock.calls
       .map(([params]) => params)
       .filter(params => params.titleText === KYC_FAUCET_NOTICE_COPY.titleText);
+  // Mirrors AlertModal: the press hides the modal, onHidden fires once it is gone.
+  const acceptNotice = (params: AlertModalParams) => {
+    params.onButtonPress();
+    params.onHidden?.();
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -116,7 +121,7 @@ describe('useKycLauncher', () => {
     // Default: the user accepts the faucet notice so the provider flow runs.
     mockShowModal.mockImplementation(params => {
       if (params.buttonText === KYC_FAUCET_NOTICE_COPY.continueText) {
-        Promise.resolve(params.onButtonPress()).catch(() => undefined);
+        acceptNotice(params);
       }
     });
     mockUseSelfClient.mockReturnValue(
@@ -427,7 +432,7 @@ describe('useKycLauncher', () => {
     mockShowModal.mockImplementation(params => {
       if (params.buttonText === KYC_FAUCET_NOTICE_COPY.continueText) {
         callOrder.push('notice');
-        Promise.resolve(params.onButtonPress()).catch(() => undefined);
+        acceptNotice(params);
       }
     });
     mockCreateKycSession.mockImplementation(async () => {
@@ -511,7 +516,7 @@ describe('useKycLauncher', () => {
     mockShowModal.mockImplementation(params => {
       if (params.buttonText === KYC_FAUCET_NOTICE_COPY.continueText) {
         mockIsKycFlowEnabled.mockReturnValue(false);
-        Promise.resolve(params.onButtonPress()).catch(() => undefined);
+        acceptNotice(params);
       }
     });
 
@@ -563,6 +568,46 @@ describe('useKycLauncher', () => {
       expect(onDismiss).toHaveBeenCalledTimes(1);
       expect(mockShowModal).not.toHaveBeenCalled();
     });
+  });
+
+  it('starts the provider flow only after the notice is hidden and keeps loading until it ends', async () => {
+    let notice: AlertModalParams | undefined;
+    mockShowModal.mockImplementation(params => {
+      if (params.buttonText === KYC_FAUCET_NOTICE_COPY.continueText) {
+        notice = params;
+        params.onButtonPress();
+      }
+    });
+    let finishProvider: () => void = () => {};
+    mockStartKycVerification.mockImplementation(
+      () =>
+        new Promise(resolve => {
+          finishProvider = () =>
+            resolve({ type: 'cancelled' } as Awaited<
+              ReturnType<typeof startKycVerification>
+            >);
+        }),
+    );
+
+    const { result } = renderHook(() => useKycLauncher({ countryCode: 'US' }));
+    await act(async () => {
+      await result.current.launchKycVerification();
+    });
+
+    expect(mockCreateKycSession).not.toHaveBeenCalled();
+    expect(result.current.isLoading).toBe(true);
+
+    await act(async () => {
+      notice?.onHidden?.();
+    });
+    expect(mockCreateKycSession).toHaveBeenCalledTimes(1);
+    expect(result.current.isLoading).toBe(true);
+
+    await act(async () => {
+      finishProvider();
+    });
+    expect(mockStartKycVerification).toHaveBeenCalledTimes(1);
+    expect(result.current.isLoading).toBe(false);
   });
 
   it('does not show the faucet notice when a pre-check blocks the launch', async () => {

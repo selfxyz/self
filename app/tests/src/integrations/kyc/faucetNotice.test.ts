@@ -35,39 +35,50 @@ describe('confirmKycFaucetNotice', () => {
     );
   });
 
-  it('locks the modal into a loading state and resolves true after onContinue settles', async () => {
-    let finish: () => void = () => {};
-    const onContinue = jest.fn(
-      () =>
-        new Promise<void>(resolve => {
-          finish = resolve;
-        }),
-    );
+  it('resolves true on continue and runs onContinue only once the modal is hidden', async () => {
+    const onContinue = jest.fn().mockResolvedValue(undefined);
     const result = confirmKycFaucetNotice(showModal, { onContinue }, tracker);
 
-    const pressed = lastModal().onButtonPress();
+    lastModal().onButtonPress();
 
-    expect(onContinue).toHaveBeenCalledTimes(1);
-    expect(lastModal()).toMatchObject({
-      buttonText: KYC_FAUCET_NOTICE_COPY.loadingText,
-      disablePrimaryButton: true,
-      preventDismiss: true,
-    });
     expect(tracker.trackEvent).toHaveBeenCalledWith(
       KycEvents.FAUCET_NOTICE_CONTINUED,
     );
-
-    finish();
-    await pressed;
     await expect(result).resolves.toBe(true);
+    expect(showModal).toHaveBeenCalledTimes(1);
+    expect(onContinue).not.toHaveBeenCalled();
+
+    lastModal().onHidden?.();
+
+    expect(onContinue).toHaveBeenCalledTimes(1);
   });
 
-  it('resolves true even when onContinue rejects', async () => {
+  it('does not run onContinue when the modal hides after a decline', async () => {
+    const onContinue = jest.fn();
+    const result = confirmKycFaucetNotice(showModal, { onContinue }, tracker);
+
+    await lastModal().onSecondaryButtonPress?.();
+    lastModal().onHidden?.();
+
+    await expect(result).resolves.toBe(false);
+    expect(onContinue).not.toHaveBeenCalled();
+  });
+
+  it('logs instead of throwing when onContinue rejects', async () => {
+    const error = jest.spyOn(console, 'error').mockImplementation(() => {});
     const onContinue = jest.fn().mockRejectedValue(new Error('boom'));
     const result = confirmKycFaucetNotice(showModal, { onContinue });
 
-    await expect(lastModal().onButtonPress()).rejects.toThrow('boom');
+    lastModal().onButtonPress();
+    lastModal().onHidden?.();
     await expect(result).resolves.toBe(true);
+    await new Promise(resolve => setImmediate(resolve));
+
+    expect(error).toHaveBeenCalledWith(
+      '[KycFaucetNotice] onContinue failed:',
+      expect.any(Error),
+    );
+    error.mockRestore();
   });
 
   it('resolves false and never runs onContinue when the user goes back', async () => {

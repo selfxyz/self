@@ -38,6 +38,7 @@ export const FeedbackProvider: React.FC<FeedbackProviderProps> = ({
     modalParams,
     showModal,
     hideModal,
+    onModalHidden,
   } = useFeedbackModal();
 
   return (
@@ -56,6 +57,7 @@ export const FeedbackProvider: React.FC<FeedbackProviderProps> = ({
         visible={isModalVisible}
         modalParams={modalParams}
         onHideModal={hideModal}
+        onHidden={onModalHidden}
       />
     </FeedbackContext.Provider>
   );
