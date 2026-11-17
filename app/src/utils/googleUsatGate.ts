@@ -25,6 +25,24 @@ export interface GoogleUsatEligibility {
 }
 
 /**
+ * The staging faucet reuses the production scope and appName, so it matches the
+ * same policy. Mock documents are the expected input there, so they are allowed
+ * for staging endpoint types only. Any other or missing endpointType keeps the
+ * production policy.
+ */
+export function getGoogleUsatPolicyForApp(
+  app: Pick<SelfApp, 'endpointType'>,
+): typeof GOOGLE_USAT_FAUCET_POLICY {
+  if (
+    app.endpointType === 'staging_https' ||
+    app.endpointType === 'staging_celo'
+  ) {
+    return { ...GOOGLE_USAT_FAUCET_POLICY, allowMock: true };
+  }
+  return GOOGLE_USAT_FAUCET_POLICY;
+}
+
+/**
  * Sync, pure variant of the gate used to build the picker eligibility map.
  * Does not touch SelfClient or storage — the caller already holds the
  * decrypted document in memory.
@@ -42,7 +60,7 @@ export function evaluateGoogleUsatEligibilityForDocument(
   }
 
   const eligible = isDocumentEligibleForPolicy(
-    GOOGLE_USAT_FAUCET_POLICY,
+    getGoogleUsatPolicyForApp(app),
     doc.data.documentCategory,
     doc.data.mock,
   );
@@ -143,7 +161,7 @@ export async function evaluateGoogleUsatEntryGate(
 
     // Selected doc is ineligible; only block if there is no eligible alternative.
     return hasEligibleAlternativeDocumentForPolicy(
-      GOOGLE_USAT_FAUCET_POLICY,
+      getGoogleUsatPolicyForApp(app),
       docs,
       selectedDocumentId,
     )
@@ -185,7 +203,7 @@ export async function evaluateGoogleUsatGateForDocument(
   }
 
   const isEligibleSelectedDoc = isDocumentEligibleForPolicy(
-    GOOGLE_USAT_FAUCET_POLICY,
+    getGoogleUsatPolicyForApp(app),
     documentToEvaluate.data.documentCategory,
     documentToEvaluate.data.mock,
   );
