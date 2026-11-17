@@ -626,7 +626,7 @@
 					"-lc++",
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
-				PRODUCT_BUNDLE_IDENTIFIER = com.warroom.proofofpassport;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(SELF_BUNDLE_ID:default=com.warroom.proofofpassport)";
 				PRODUCT_NAME = Self;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -771,7 +771,7 @@
 					"-lc++",
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
-				PRODUCT_BUNDLE_IDENTIFIER = com.warroom.proofofpassport;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(SELF_BUNDLE_ID:default=com.warroom.proofofpassport)";
 				PRODUCT_NAME = Self;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
