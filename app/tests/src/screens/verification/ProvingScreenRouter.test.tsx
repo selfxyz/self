@@ -23,6 +23,7 @@ import { useSettingStore } from '@/stores/settingStore';
 import {
   evaluateGoogleUsatGate,
   evaluateGoogleUsatGateForDocument,
+  getGoogleUsatPolicyForApp,
 } from '@/utils/googleUsatGate';
 
 // `@react-navigation/native` is globally mocked in tests/__setup__/mocks/navigation.js
@@ -48,6 +49,7 @@ jest.mock('@/stores/settingStore', () => ({
 jest.mock('@/utils/googleUsatGate', () => ({
   evaluateGoogleUsatGate: jest.fn(),
   evaluateGoogleUsatGateForDocument: jest.fn(),
+  getGoogleUsatPolicyForApp: jest.fn(() => ({ id: 'resolved-policy' })),
 }));
 
 const mockUseNavigation = useNavigation as jest.MockedFunction<
@@ -74,6 +76,10 @@ const mockEvaluateGoogleUsatGate =
 const mockEvaluateGoogleUsatGateForDocument =
   evaluateGoogleUsatGateForDocument as jest.MockedFunction<
     typeof evaluateGoogleUsatGateForDocument
+  >;
+const mockGetGoogleUsatPolicyForApp =
+  getGoogleUsatPolicyForApp as jest.MockedFunction<
+    typeof getGoogleUsatPolicyForApp
   >;
 const mockHasEligibleGoogleUsatAlternativeDocument =
   hasEligibleAlternativeDocumentForPolicy as jest.MockedFunction<
@@ -365,6 +371,12 @@ describe('ProvingScreenRouter', () => {
       );
     });
 
+    expect(mockGetGoogleUsatPolicyForApp).toHaveBeenCalledWith(mockSelfApp);
+    expect(mockHasEligibleGoogleUsatAlternativeDocument).toHaveBeenCalledWith(
+      { id: 'resolved-policy' },
+      allDocs,
+      'doc-kyc',
+    );
     expect(mockCleanSelfApp).not.toHaveBeenCalled();
     expect(mockTrackEvent).not.toHaveBeenCalledWith(
       'Proof: Google USAT Disclosure Blocked',

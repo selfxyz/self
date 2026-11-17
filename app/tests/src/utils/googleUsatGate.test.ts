@@ -13,6 +13,7 @@ import {
   evaluateGoogleUsatGate,
   evaluateGoogleUsatGateForDocument,
   FORCE_GOOGLE_USAT_FOR_TESTING,
+  getGoogleUsatPolicyForApp,
 } from '@/utils/googleUsatGate';
 
 jest.mock('@selfxyz/mobile-sdk-alpha', () => {
@@ -399,5 +400,114 @@ describe('evaluateGoogleUsatEligibilityForDocument', () => {
     expect(
       evaluateGoogleUsatEligibilityForDocument(app, doc('aadhaar')),
     ).toEqual({ eligible: true });
+  });
+});
+
+describe('staging endpoint types', () => {
+  const selfClient = {
+    loadDocumentCatalog: jest.fn(),
+  } as any;
+  const appWith = (endpointType?: string) =>
+    ({ sessionId: 'session-id', endpointType }) as any;
+  const doc = (documentCategory: string, mock = false) =>
+    ({ data: { documentCategory, mock } }) as any;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockIsGoogleUsatProofRequest.mockReturnValue(true);
+  });
+
+  it.each(['staging_https', 'staging_celo'])(
+    'allows a mock passport and mock id_card on %s',
+    async endpointType => {
+      const docs = { p: doc('passport', true), i: doc('id_card', true) };
+      await expect(
+        evaluateGoogleUsatGateForDocument(
+          selfClient,
+          appWith(endpointType),
+          'p',
+          docs,
+        ),
+      ).resolves.toBe('allow');
+      await expect(
+        evaluateGoogleUsatGateForDocument(
+          selfClient,
+          appWith(endpointType),
+          'i',
+          docs,
+        ),
+      ).resolves.toBe('allow');
+    },
+  );
+
+  it.each(['https', 'celo', undefined, 'staging'])(
+    'still blocks a mock passport when endpointType is %s',
+    async endpointType => {
+      await expect(
+        evaluateGoogleUsatGateForDocument(
+          selfClient,
+          appWith(endpointType),
+          'p',
+          { p: doc('passport', true) },
+        ),
+      ).resolves.toBe('block');
+    },
+  );
+
+  it('keeps the category rule on staging for mock and real documents', async () => {
+    const docs = {
+      k: doc('kyc', true),
+      a: doc('aadhaar', true),
+      r: doc('aadhaar', false),
+    };
+    for (const id of Object.keys(docs)) {
+      await expect(
+        evaluateGoogleUsatGateForDocument(
+          selfClient,
+          appWith('staging_https'),
+          id,
+          docs,
+        ),
+      ).resolves.toBe('block');
+    }
+  });
+
+  it('entry gate defers to the selector on staging when a mock passport is the alternative', async () => {
+    selfClient.loadDocumentCatalog.mockResolvedValue({
+      selectedDocumentId: 'k',
+    });
+    mockGetAllDocuments.mockResolvedValue({
+      k: doc('kyc'),
+      p: doc('passport', true),
+    });
+    await expect(
+      evaluateGoogleUsatEntryGate(selfClient, appWith('staging_https')),
+    ).resolves.toBe('allow');
+    await expect(
+      evaluateGoogleUsatEntryGate(selfClient, appWith('https')),
+    ).resolves.toBe('block');
+  });
+
+  it('picker eligibility accepts a mock passport on staging only', () => {
+    expect(
+      evaluateGoogleUsatEligibilityForDocument(
+        appWith('staging_https'),
+        doc('passport', true),
+      ),
+    ).toEqual({ eligible: true });
+    expect(
+      evaluateGoogleUsatEligibilityForDocument(
+        appWith('https'),
+        doc('passport', true),
+      ),
+    ).toEqual({ eligible: false, reason: 'unsupported_id_type' });
+  });
+
+  it('resolves a mock-allowing policy for staging without changing categories', () => {
+    const production = getGoogleUsatPolicyForApp(appWith('https'));
+    const staging = getGoogleUsatPolicyForApp(appWith('staging_https'));
+    expect(production.allowMock).toBe(false);
+    expect(staging.allowMock).toBe(true);
+    expect(staging.allowedCategories).toEqual(production.allowedCategories);
   });
 });
