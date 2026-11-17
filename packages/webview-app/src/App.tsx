@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import type React from 'react';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, MemoryRouter, Route, Routes } from 'react-router-dom';
 
 import { BootDecision } from './components/BootDecision';
 import { InitialRouteRedirect } from './components/InitialRouteRedirect';
@@ -296,7 +296,14 @@ export const AppRoutes: React.FC = () => (
   </OperatingModeProvider>
 );
 
-const defaultRouter = (children: React.ReactNode): React.ReactNode => <BrowserRouter>{children}</BrowserRouter>;
+// WebKit blocks history URL changes on file:// pages (the in-app bundle), so the
+// embedded build routes in memory instead.
+const defaultRouter = (children: React.ReactNode): React.ReactNode =>
+  window.location.protocol === 'file:' ? (
+    <MemoryRouter>{children}</MemoryRouter>
+  ) : (
+    <BrowserRouter>{children}</BrowserRouter>
+  );
 
 export interface AppProps {
   // Router seam: production wraps the route table in BrowserRouter; tests pass a
