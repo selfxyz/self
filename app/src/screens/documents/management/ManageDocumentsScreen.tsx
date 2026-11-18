@@ -24,15 +24,19 @@ import {
 import { DocumentEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 import {
   borderColor,
+  slate500,
   textBlack,
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
+import { dinot } from '@selfxyz/mobile-sdk-alpha/constants/fonts';
 
 import useHasRealDocument from '@/hooks/useHasRealDocument';
 import { impactLight } from '@/integrations/haptics';
 import type { RootStackParamList } from '@/navigation';
 import { usePassport } from '@/providers/passportDataProvider';
 import { extraYPadding } from '@/utils/styleUtils';
+
+const CREATE_TEST_DOCUMENT_LABEL = 'Create Test Document';
 
 const PassportDataSelector = () => {
   const navigation =
@@ -185,15 +189,15 @@ const PassportDataSelector = () => {
       case 'passport':
         return 'Passport';
       case 'mock_passport':
-        return 'Mock Passport';
+        return 'Test Passport';
       case 'id_card':
         return 'ID Card';
       case 'mock_id_card':
-        return 'Mock ID Card';
+        return 'Test ID Card';
       case 'aadhaar':
         return 'Aadhaar';
       case 'mock_aadhaar':
-        return 'Mock Aadhaar';
+        return 'Test Aadhaar';
       default:
         return metadata.documentType;
     }
@@ -448,10 +452,20 @@ const ManageDocumentsScreen: React.FC = () => {
                 View Document Info
               </SecondaryButton>
             )}
-            <SecondaryButton onPress={handleGenerateMock}>
-              Generate Mock Document
-            </SecondaryButton>
           </ButtonsContainer>
+          <Text
+            testID="create-test-document-link"
+            accessibilityRole="link"
+            onPress={handleGenerateMock}
+            color={slate500}
+            fontFamily={dinot}
+            fontSize="$3"
+            textAlign="center"
+            textDecorationLine="underline"
+            paddingVertical="$2"
+          >
+            {CREATE_TEST_DOCUMENT_LABEL}
+          </Text>
         </YStack>
       </YStack>
     </YStack>

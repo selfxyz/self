@@ -162,13 +162,21 @@ describe('ManageDocumentsScreen', () => {
     const { UNSAFE_root } = render(<ManageDocumentsScreen />);
 
     await waitFor(() => {
-      expect(getButtonLabels(UNSAFE_root)).toEqual([
-        'Add New Document',
-        'Generate Mock Document',
-      ]);
+      expect(getButtonLabels(UNSAFE_root)).toEqual(['Add New Document']);
     });
 
     expect(getButtonLabels(UNSAFE_root)).not.toContain('View Document Info');
+  });
+
+  it('opens the test document screen from the link', async () => {
+    const { getByTestId } = render(<ManageDocumentsScreen />);
+
+    const link = await waitFor(() => getByTestId('create-test-document-link'));
+    expect(link.props.children).toBe('Create Test Document');
+
+    fireEvent.press(link);
+
+    expect(navigate).toHaveBeenCalledWith('CreateMock');
   });
 
   it('shows the View Document Info action and navigates to DocumentDataInfo', async () => {
@@ -183,7 +191,6 @@ describe('ManageDocumentsScreen', () => {
       expect(getButtonLabels(UNSAFE_root)).toEqual([
         'Add New Document',
         'View Document Info',
-        'Generate Mock Document',
       ]);
     });
 
