@@ -267,14 +267,13 @@ const IdCardLayout: FC<IdCardLayoutAttributes> = ({
     mock: isMockDocument,
   });
 
-  // Header title - add "DEV" prefix for mock documents
   const headerTitle = isMockDocument
-    ? `DEV ${getDocumentTypeLabel()}`
+    ? `TEST ${getDocumentTypeLabel()}`
     : getDocumentTypeLabel();
 
   // Subtitle text (uses demonym: "VERIFIED AMERICAN PASSPORT")
   const subtitleText = isMockDocument
-    ? `SELF DEVELOPER ${getDocumentTypeLabel()}`
+    ? 'NOT A VALID DOCUMENT'
     : `VERIFIED ${countryDemonym} ${getDocumentTypeLabel()}`;
 
   // Bottom label (uses demonym: "AMERICAN PASSPORT")

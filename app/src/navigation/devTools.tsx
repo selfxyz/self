@@ -36,7 +36,7 @@ const devScreens = {
     screen: CreateMockScreen,
     options: {
       ...devHeaderOptions,
-      title: 'Mock Document',
+      title: 'Test Document',
       headerStyle: {
         backgroundColor: black,
       },

@@ -101,7 +101,7 @@ function getDocumentDisplayName(
     }
   }
 
-  const mockPrefix = isMock ? 'Dev ' : '';
+  const mockPrefix = isMock ? 'Test ' : '';
 
   if (category === 'passport') {
     const base = 'Passport';
@@ -114,13 +114,13 @@ function getDocumentDisplayName(
       ? `${mockPrefix}${countryCode} ${base}`
       : `${mockPrefix}${base}`;
   } else if (category === 'aadhaar') {
-    return isMock ? 'Dev Aadhaar ID' : 'Aadhaar ID';
+    return isMock ? 'Test Aadhaar ID' : 'Aadhaar ID';
   } else if (category === 'kyc') {
     const idLabel = metadata.idType || 'Verified ID';
-    return isMock ? `Dev ${idLabel}` : idLabel;
+    return isMock ? `Test ${idLabel}` : idLabel;
   }
 
-  return isMock ? `Dev ${metadata.documentType}` : metadata.documentType;
+  return isMock ? `Test ${metadata.documentType}` : metadata.documentType;
 }
 
 function getSecurityLabelForDocument(
