@@ -3,11 +3,27 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./validator": "./src/validator.ts",
+    "./node": "./src/node/index.ts",
+    "./schema/*": "./schema/*",
+    "./fixtures/*": "./fixtures/*"
+  },
   "scripts": {
+    "generate": "tsx scripts/generate.ts",
+    "generate:check": "tsx scripts/generate.ts --check",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "types": "tsc --noEmit"
   },
+  "dependencies": {
+    "ajv": "^8.17.1"
+  },
   "devDependencies": {
-    "typescript": "^5.9.3"
+    "@types/node": "^22.18.3",
+    "tsx": "^4.23.1",
+    "typescript": "^5.9.3",
+    "vitest": "^2.1.8"
   }
 }

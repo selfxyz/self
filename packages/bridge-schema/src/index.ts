@@ -2,5 +2,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+export { SCHEMA_DIALECT, type SchemaDocument } from './schemaDocument';
+
 /** Version of the bridge contract defined by this package. Placeholder until the first schema lands. */
 export const BRIDGE_SCHEMA_VERSION = '0.0.0';
