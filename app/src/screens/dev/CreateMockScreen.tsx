@@ -90,9 +90,9 @@ const MockDocumentTitleCard = () => {
           Create a test document
         </Text>
         <Caption style={{ fontFamily: dinot, fontSize: 20, color: zinc400 }}>
-          For developers integrating Self. Creates sample data that works only
-          on Self's staging environment. It is not an identity document and
-          cannot be used for real verification.
+          For developers integrating Self. A test document works only in Self's
+          test environment. It is not an identity document and cannot be used
+          for real verification.
         </Caption>
       </YStack>
     </YStack>
