@@ -2,7 +2,7 @@
 
 The single source of the bridge contract between the Self web app and the native SDK cores: the message schema, the types generated from it for TypeScript, Swift and Kotlin, and the shared test fixtures that all three implementations must pass.
 
-**Status: placeholder.** This directory holds only this file. It has no `package.json` yet, so it is not part of the pnpm workspace.
+**Status: empty skeleton.** The package is in the pnpm workspace as the private `@selfxyz/bridge-schema` and typechecks. It holds one placeholder constant and no schema yet.
 
 ## Rules for this directory
 
@@ -12,4 +12,10 @@ The single source of the bridge contract between the Self web app and the native
 
 ## Next step
 
-Add the package manifest, the schema and the first fixtures, and update the lockfile in the same change.
+Add the schema for the message envelope and the opening exchange, the first fixtures, and the generated types.
+
+## Check
+
+```sh
+pnpm --filter @selfxyz/bridge-schema types
+```
