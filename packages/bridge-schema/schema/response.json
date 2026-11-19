@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "bridge/response",
+  "title": "Response, native to web (BC 4.3)",
+  "type": "object",
+  "required": [
+    "type",
+    "version",
+    "id",
+    "domain",
+    "requestId",
+    "success",
+    "timestamp"
+  ],
+  "properties": {
+    "type": { "const": "response" },
+    "version": { "$ref": "common#/$defs/version" },
+    "id": { "$ref": "common#/$defs/id" },
+    "domain": { "$ref": "common#/$defs/domain" },
+    "requestId": { "$ref": "common#/$defs/id" },
+    "success": { "type": "boolean" },
+    "data": {
+      "description": "The method result, any JSON value. Absent or null means no value."
+    },
+    "error": { "anyOf": [{ "$ref": "error" }, { "type": "null" }] },
+    "timestamp": { "$ref": "common#/$defs/timestamp" }
+  },
+  "if": {
+    "type": "object",
+    "required": ["success"],
+    "properties": { "success": { "const": true } }
+  },
+  "then": {
+    "type": "object",
+    "properties": { "error": { "type": "null" } }
+  },
+  "else": {
+    "type": "object",
+    "required": ["error"],
+    "properties": { "error": { "$ref": "error" } }
+  }
+}

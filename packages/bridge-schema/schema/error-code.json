@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "bridge/error-code",
+  "title": "Bridge error codes (BC 7.2)",
+  "type": "string",
+  "enum": [
+    "USER_CANCELLED",
+    "CANCELLED",
+    "PERMISSION_DENIED",
+    "UNSUPPORTED",
+    "UNAVAILABLE",
+    "TIMEOUT",
+    "BUSY",
+    "INVALID_PARAMS",
+    "UNSUPPORTED_VERSION",
+    "FAILED",
+    "INTERNAL_ERROR"
+  ]
+}

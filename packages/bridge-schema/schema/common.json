@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "bridge/common",
+  "title": "Fields shared by every bridge message (BC 4.1)",
+  "$defs": {
+    "id": {
+      "description": "A UUID version 4 string, unique for the life of the page.",
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
+    },
+    "version": {
+      "description": "The protocol major version. Not pinned to one value: a receiver answers a major it does not serve with UNSUPPORTED_VERSION.",
+      "type": "integer",
+      "minimum": 1
+    },
+    "domain": {
+      "description": "A domain name. Not limited to bridge/domain: native answers an unknown domain with UNSUPPORTED and copies the name into the response.",
+      "type": "string",
+      "minLength": 1
+    },
+    "timestamp": {
+      "description": "Send time in milliseconds since the Unix epoch. For logs only.",
+      "type": "number"
+    }
+  }
+}

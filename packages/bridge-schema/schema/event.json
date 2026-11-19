@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "bridge/event",
+  "title": "Event, native to web (BC 4.4)",
+  "type": "object",
+  "required": ["type", "version", "id", "domain", "event", "data", "timestamp"],
+  "properties": {
+    "type": { "const": "event" },
+    "version": { "$ref": "common#/$defs/version" },
+    "id": { "$ref": "common#/$defs/id" },
+    "domain": { "$ref": "common#/$defs/domain" },
+    "event": { "type": "string", "minLength": 1 },
+    "requestId": {
+      "description": "The id of the request that caused the event. Absent or null when no request did.",
+      "anyOf": [{ "$ref": "common#/$defs/id" }, { "type": "null" }]
+    },
+    "data": { "type": "object" },
+    "timestamp": { "$ref": "common#/$defs/timestamp" }
+  }
+}

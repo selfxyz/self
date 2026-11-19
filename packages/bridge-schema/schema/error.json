@@ -1,0 +1,226 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "bridge/error",
+  "title": "Error object of a failed response (BC 7.1 to 7.3)",
+  "type": "object",
+  "required": ["code", "message"],
+  "properties": {
+    "code": {
+      "$ref": "error-code"
+    },
+    "message": {
+      "description": "English text for logs. Never shown to the user and never parsed.",
+      "type": "string"
+    },
+    "details": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/details"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "$ref": "#/$defs/codeIsUnsupported"
+      },
+      "then": {
+        "type": "object",
+        "properties": {
+          "details": {
+            "type": ["object", "null"],
+            "properties": {
+              "reason": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/unsupportedReason"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "$ref": "#/$defs/codeIsUnavailable"
+      },
+      "then": {
+        "type": "object",
+        "properties": {
+          "details": {
+            "type": ["object", "null"],
+            "properties": {
+              "reason": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/unavailableReason"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "$ref": "#/$defs/codeIsFailed"
+      },
+      "then": {
+        "type": "object",
+        "properties": {
+          "details": {
+            "type": ["object", "null"],
+            "properties": {
+              "reason": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/failedReason"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/codeIsUnsupported"
+          },
+          {
+            "$ref": "#/$defs/codeIsUnavailable"
+          },
+          {
+            "$ref": "#/$defs/codeIsFailed"
+          }
+        ]
+      },
+      "else": {
+        "type": "object",
+        "properties": {
+          "details": {
+            "type": ["object", "null"],
+            "properties": {
+              "reason": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "details": {
+      "description": "Extra data. Keys not listed here are allowed, for example nativeCode and cause.",
+      "type": "object",
+      "properties": {
+        "reason": {
+          "type": ["string", "null"]
+        },
+        "field": {
+          "description": "INVALID_PARAMS: the param or envelope field at fault.",
+          "type": ["string", "null"]
+        },
+        "supported": {
+          "description": "UNSUPPORTED_VERSION: the protocol majors native serves.",
+          "type": ["array", "null"],
+          "items": {
+            "type": "integer"
+          }
+        },
+        "origin": {
+          "description": "TIMEOUT and CANCELLED: the side that raised the error.",
+          "enum": ["native", "web", null]
+        },
+        "permission": {
+          "description": "PERMISSION_DENIED: the operating system permission, for example camera.",
+          "type": ["string", "null"]
+        },
+        "canAskAgain": {
+          "description": "PERMISSION_DENIED: false when the system will not prompt again.",
+          "type": ["boolean", "null"]
+        }
+      }
+    },
+    "unsupportedReason": {
+      "type": "string",
+      "enum": [
+        "unknown_domain",
+        "unknown_method",
+        "no_module",
+        "no_hardware",
+        "no_transport"
+      ]
+    },
+    "unavailableReason": {
+      "type": "string",
+      "enum": [
+        "nfc_disabled",
+        "no_device_credential",
+        "not_enrolled",
+        "lockout",
+        "device_locked",
+        "not_active"
+      ]
+    },
+    "failedReason": {
+      "type": "string",
+      "enum": [
+        "tag_lost",
+        "auth_failed",
+        "unsupported_document",
+        "read_error",
+        "camera_init",
+        "storage_error",
+        "item_lost",
+        "already_exists"
+      ]
+    },
+    "codeIsUnsupported": {
+      "type": "object",
+      "required": ["code"],
+      "properties": {
+        "code": {
+          "const": "UNSUPPORTED"
+        }
+      }
+    },
+    "codeIsUnavailable": {
+      "type": "object",
+      "required": ["code"],
+      "properties": {
+        "code": {
+          "const": "UNAVAILABLE"
+        }
+      }
+    },
+    "codeIsFailed": {
+      "type": "object",
+      "required": ["code"],
+      "properties": {
+        "code": {
+          "const": "FAILED"
+        }
+      }
+    }
+  }
+}

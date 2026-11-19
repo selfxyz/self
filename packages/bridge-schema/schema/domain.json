@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "bridge/domain",
+  "title": "The core domains (BC 4.1, BC 8)",
+  "type": "string",
+  "enum": [
+    "lifecycle",
+    "secureStorage",
+    "nfc",
+    "camera",
+    "biometrics",
+    "haptic",
+    "analytics",
+    "navigation"
+  ]
+}

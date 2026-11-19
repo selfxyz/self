@@ -1,0 +1,11 @@
+{
+  "name": "envelope-invalid/not-an-object",
+  "given": {
+    "capabilities": "full"
+  },
+  "steps": [
+    {
+      "send": "[\"request\"]"
+    }
+  ]
+}

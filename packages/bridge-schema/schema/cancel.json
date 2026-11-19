@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "bridge/cancel",
+  "title": "Cancel, web to native (BC 4.5)",
+  "type": "object",
+  "required": ["type", "version", "id", "domain", "requestId", "timestamp"],
+  "properties": {
+    "type": { "const": "cancel" },
+    "version": { "$ref": "common#/$defs/version" },
+    "id": { "$ref": "common#/$defs/id" },
+    "domain": { "$ref": "common#/$defs/domain" },
+    "requestId": { "$ref": "common#/$defs/id" },
+    "reason": { "anyOf": [{ "$ref": "#/$defs/reason" }, { "type": "null" }] },
+    "timestamp": { "$ref": "common#/$defs/timestamp" }
+  },
+  "$defs": {
+    "reason": {
+      "description": "Why the web gave up. For logs only.",
+      "type": "string",
+      "enum": ["user", "timeout", "navigation"]
+    }
+  }
+}

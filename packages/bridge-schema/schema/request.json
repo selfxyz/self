@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "bridge/request",
+  "title": "Request, web to native (BC 4.2)",
+  "type": "object",
+  "required": [
+    "type",
+    "version",
+    "id",
+    "domain",
+    "method",
+    "params",
+    "timestamp"
+  ],
+  "properties": {
+    "type": { "const": "request" },
+    "version": { "$ref": "common#/$defs/version" },
+    "id": { "$ref": "common#/$defs/id" },
+    "domain": { "$ref": "common#/$defs/domain" },
+    "method": { "type": "string", "minLength": 1 },
+    "params": { "type": "object" },
+    "timestamp": { "$ref": "common#/$defs/timestamp" }
+  }
+}
