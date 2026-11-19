@@ -6,42 +6,10 @@ import XCTest
 
 @testable import SelfSdk
 
-/// Runs the `envelope` and `envelope-invalid` fixture groups as far as the codec goes. The Kotlin
-/// library has the same table in `EnvelopeFixtureTest`. Change both together.
+/// Checks the codec against the `envelope` and `envelope-invalid` fixture groups. `RouterFixtureTests`
+/// runs the same fixtures through the router. The Kotlin library has the same cases in
+/// `EnvelopeFixtureTest`. Change both together.
 final class EnvelopeFixtureTests: XCTestCase {
-    /// The codec alone gives the whole answer: a drop, or INVALID_PARAMS with the field.
-    private let codecComplete = [
-        "envelope-invalid/method-wrong-type",
-        "envelope-invalid/missing-id",
-        "envelope-invalid/missing-method",
-        "envelope-invalid/missing-params",
-        "envelope-invalid/not-an-object",
-        "envelope-invalid/not-json",
-        "envelope-invalid/params-array",
-        "envelope-invalid/params-null",
-        "envelope-invalid/timestamp-wrong-type"
-    ]
-
-    /// The first message parses, so the answer needs the router and a handler. Not run to the end yet.
-    private let needsRouter = [
-        "envelope-invalid/duplicate-request-id",
-        "envelope-invalid/unknown-domain",
-        "envelope-invalid/unknown-method",
-        "envelope/cancel-reason-absent",
-        "envelope/cancel-reason-null",
-        "envelope/cancel-with-reason",
-        "envelope/event-request-id-absent",
-        "envelope/event-request-id-null",
-        "envelope/event-with-request-id",
-        "envelope/request-response-data",
-        "envelope/response-error-details-absent",
-        "envelope/response-error-details-null",
-        "envelope/response-error-with-details",
-        "envelope/response-optionals-absent",
-        "envelope/response-optionals-null",
-        "envelope/unknown-fields"
-    ]
-
     private func fixtures() throws -> [Fixture] {
         try FixtureLoader.group("envelope") + FixtureLoader.group("envelope-invalid")
     }
@@ -64,28 +32,26 @@ final class EnvelopeFixtureTests: XCTestCase {
         }
     }
 
-    func testEveryFixtureOfTheTwoGroupsIsInOneList() throws {
-        XCTAssertEqual(try fixtures().map(\.name).sorted(), (codecComplete + needsRouter).sorted())
-    }
-
-    func testTheCodecAloneAnswersAnInvalidEnvelope() throws {
-        for name in codecComplete {
-            XCTAssertEqual(try FixtureRunner.run(try fixture(name), CodecFixtureSubject()), .passed, name)
+    /// The fixtures whose every `send` is a JSON request or cancel the codec reads.
+    private func parsing() throws -> [Fixture] {
+        try fixtures().filter { fixture in
+            try fixture.steps.allSatisfy { step in
+                switch step {
+                case .sendRaw: return false
+                case .send(let message):
+                    switch EnvelopeCodec.decode(try JSONText.write(.object(FixturePlaceholders().fillSend(message)))) {
+                    case .request, .cancel: return true
+                    default: return false
+                    }
+                default: return true
+                }
+            }
         }
     }
 
-    func testAFixtureWhoseFirstMessageParsesWaitsForTheRouter() throws {
-        for name in needsRouter {
-            XCTAssertEqual(
-                try FixtureRunner.run(try fixture(name), CodecFixtureSubject()),
-                .deferred(stepIndex: 0, why: "a message that parses needs the router"),
-                name
-            )
-        }
-    }
-
-    func testEverySendOfAWaitingFixtureReadsAsTheMessageItHolds() throws {
-        for name in needsRouter {
+    func testEverySendThatParsesReadsAsTheMessageItHolds() throws {
+        XCTAssertEqual(try parsing().count, 16)
+        for name in try parsing().map(\.name) {
             let placeholders = FixturePlaceholders()
             for message in sends(try fixture(name)) {
                 let sent = placeholders.fillSend(message)
@@ -115,7 +81,7 @@ final class EnvelopeFixtureTests: XCTestCase {
 
     func testTheWriterGivesAMessageThatMatchesEachExpect() throws {
         var count = 0
-        for name in codecComplete + needsRouter {
+        for name in try fixtures().map(\.name) {
             let placeholders = FixturePlaceholders()
             for message in expects(try fixture(name)) {
                 let expected = placeholders.fillExpect(message)
@@ -125,7 +91,7 @@ final class EnvelopeFixtureTests: XCTestCase {
                 count += 1
             }
         }
-        XCTAssertGreaterThan(count, needsRouter.count)
+        XCTAssertGreaterThan(count, try parsing().count)
     }
 
     func testALabelBecomesOneUUIDForTheWholeFixture() throws {

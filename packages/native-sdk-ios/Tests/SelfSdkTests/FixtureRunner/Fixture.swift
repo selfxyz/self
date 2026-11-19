@@ -181,13 +181,14 @@ enum FixtureLoader {
         guard let root = Bundle.module.url(forResource: "Fixtures", withExtension: nil)?.resolvingSymlinksInPath(),
             let found = FileManager.default.enumerator(at: root, includingPropertiesForKeys: [.isRegularFileKey])
         else { throw FixtureFormatError(message: "No Fixtures directory in the test resources") }
-        let files = found.compactMap { $0 as? URL }
+        let urls: [URL] = found.compactMap { $0 as? URL }
             .map { $0.resolvingSymlinksInPath() }
             .filter { (try? $0.resourceValues(forKeys: [.isRegularFileKey]).isRegularFile) == true }
             .filter { !$0.lastPathComponent.hasPrefix(".") }
-            .sorted { $0.path < $1.path }
+        let name = { (file: URL) -> String in String(file.deletingPathExtension().path.dropFirst(root.path.count + 1)) }
+        let files = urls.sorted { name($0) < name($1) }
         return try files.map { file in
-            let expectedName = String(file.deletingPathExtension().path.dropFirst(root.path.count + 1))
+            let expectedName = name(file)
             let content = try JSONText.parse(String(contentsOf: file, encoding: .utf8))
             let fixture = try FixtureParser.parse(content, source: file.path)
             guard fixture.name == expectedName, file.pathExtension == "json" else {

@@ -1,0 +1,44 @@
+{
+  "name": "timeout/mrz-timeout-ms",
+  "given": {
+    "capabilities": "full",
+    "provider": {
+      "camera.scanMRZ": {
+        "pending": true
+      }
+    }
+  },
+  "steps": [
+    {
+      "send": {
+        "type": "request",
+        "version": 2,
+        "id": "r1",
+        "domain": "camera",
+        "method": "scanMRZ",
+        "params": {
+          "timeoutMs": 30000
+        },
+        "timestamp": 0
+      }
+    },
+    {
+      "advance": 30000
+    },
+    {
+      "expect": {
+        "type": "response",
+        "version": 2,
+        "domain": "camera",
+        "requestId": "r1",
+        "success": false,
+        "error": {
+          "code": "TIMEOUT",
+          "details": {
+            "origin": "native"
+          }
+        }
+      }
+    }
+  ]
+}

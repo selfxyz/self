@@ -1,0 +1,43 @@
+{
+  "name": "errors/failed-already-exists",
+  "given": {
+    "capabilities": "full",
+    "provider": {
+      "secureStorage.set": {
+        "fail": "already_exists"
+      }
+    }
+  },
+  "steps": [
+    {
+      "send": {
+        "type": "request",
+        "version": 2,
+        "id": "r1",
+        "domain": "secureStorage",
+        "method": "set",
+        "params": {
+          "key": "self_mnemonic",
+          "value": "word list",
+          "mode": "create"
+        },
+        "timestamp": 0
+      }
+    },
+    {
+      "expect": {
+        "type": "response",
+        "version": 2,
+        "domain": "secureStorage",
+        "requestId": "r1",
+        "success": false,
+        "error": {
+          "code": "FAILED",
+          "details": {
+            "reason": "already_exists"
+          }
+        }
+      }
+    }
+  ]
+}

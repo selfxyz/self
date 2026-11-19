@@ -2,7 +2,7 @@
 
 The iOS native core of the Self SDK, in plain Swift. It hosts one web view that runs the Self web app and answers the web app's bridge messages with device features.
 
-**Status: bridge types, envelope codec and fixture runner skeleton.** The package holds the types of the bridge contract, the codec that reads and writes its messages, the JavaScript escaping, and a test runner for the shared fixtures. No router, handler or web view host exists yet.
+**Status: bridge types, envelope codec, router and fixture runner.** The package holds the types of the bridge contract, the codec that reads and writes its messages, the JavaScript escaping, the router that answers each request, and a test runner for the shared fixtures. No handler or web view host exists yet.
 
 ## Rules for this directory
 
@@ -36,15 +36,19 @@ The iOS native core of the Self SDK, in plain Swift. It hosts one web view that 
 - `SelfSdkUI` cannot see the internal bridge types of `SelfSdk`. How it gets them is not decided. The first step that needs them in `SelfSdkUI` (the WebView host, step 16) decides.
 - `ToolchainTests` in `SelfSdkUITests` proves that the UI target builds and runs on a simulator. It tests no SDK behaviour.
 
-## Bridge codec and fixture runner
+## Bridge codec, router and fixture runner
 
-`Sources/SelfSdk/Bridge/` holds `JSONText`, `EnvelopeCodec` and `BridgeScript`. `Tests/SelfSdkTests/FixtureRunner/` holds the fixture runner. They are the Swift form of the Kotlin code in `packages/native-sdk-android`, with the same rules and the same test cases. The README of that package describes them. Change both packages together.
+`Sources/SelfSdk/Bridge/` holds `JSONText`, `EnvelopeCodec`, `BridgeScript`, `BridgeRouter`, `BridgeFailure` and `BridgeClock`. `Tests/SelfSdkTests/FixtureRunner/` holds the fixture runner. They are the Swift form of the Kotlin code in `packages/native-sdk-android`, with the same rules and the same test cases. The README of that package describes them. Change both packages together.
 
 Differences from the Kotlin code:
 
 - `EnvelopeCodec.encode` and `JSONText.write` throw (`EnvelopeEncodingError`, `JSONWriteError`) where Kotlin throws `IllegalArgumentException`.
 - `EnvelopeScriptTests` evaluates each script in JavaScriptCore and checks that the page gets the JSON text back unchanged. The Kotlin test has the same vectors as expected strings.
 - The fixture copies are a resource of the test target (`.copy("Fixtures")` in `Package.swift`).
+- A handler is a closure that can throw. A thrown error is mapped like an error passed to `fail`.
+- `BridgeFailure(_:)` returns nil for a reason its code does not list, where Kotlin throws `IllegalArgumentException`.
+- A stop action cannot throw, so the Kotlin case of a stop action that throws has no Swift test.
+- The router's lock is an `NSRecursiveLock`. `SystemBridgeClock` runs its timers on a private serial `DispatchQueue`.
 
 ## Build, test and lint
 

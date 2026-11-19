@@ -1,0 +1,39 @@
+{
+  "name": "errors/failed-camera-init",
+  "given": {
+    "capabilities": "full",
+    "provider": {
+      "camera.scanMRZ": {
+        "fail": "camera_init"
+      }
+    }
+  },
+  "steps": [
+    {
+      "send": {
+        "type": "request",
+        "version": 2,
+        "id": "r1",
+        "domain": "camera",
+        "method": "scanMRZ",
+        "params": {},
+        "timestamp": 0
+      }
+    },
+    {
+      "expect": {
+        "type": "response",
+        "version": 2,
+        "domain": "camera",
+        "requestId": "r1",
+        "success": false,
+        "error": {
+          "code": "FAILED",
+          "details": {
+            "reason": "camera_init"
+          }
+        }
+      }
+    }
+  ]
+}

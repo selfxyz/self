@@ -1,0 +1,28 @@
+{
+  "name": "cancel/cancel-scan-with-none-active",
+  "given": {
+    "capabilities": "full"
+  },
+  "steps": [
+    {
+      "send": {
+        "type": "request",
+        "version": 2,
+        "id": "r1",
+        "domain": "nfc",
+        "method": "cancelScan",
+        "params": {},
+        "timestamp": 0
+      }
+    },
+    {
+      "expect": {
+        "type": "response",
+        "version": 2,
+        "domain": "nfc",
+        "requestId": "r1",
+        "success": true
+      }
+    }
+  ]
+}

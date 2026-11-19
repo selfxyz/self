@@ -1,0 +1,42 @@
+{
+  "name": "errors/failed-storage-error",
+  "given": {
+    "capabilities": "full",
+    "provider": {
+      "secureStorage.set": {
+        "fail": "storage_error"
+      }
+    }
+  },
+  "steps": [
+    {
+      "send": {
+        "type": "request",
+        "version": 2,
+        "id": "r1",
+        "domain": "secureStorage",
+        "method": "set",
+        "params": {
+          "key": "self_setting_theme",
+          "value": "dark"
+        },
+        "timestamp": 0
+      }
+    },
+    {
+      "expect": {
+        "type": "response",
+        "version": 2,
+        "domain": "secureStorage",
+        "requestId": "r1",
+        "success": false,
+        "error": {
+          "code": "FAILED",
+          "details": {
+            "reason": "storage_error"
+          }
+        }
+      }
+    }
+  ]
+}

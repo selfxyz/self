@@ -128,9 +128,13 @@ class FixtureRunnerTest {
 
     @Test
     fun reportsAStepTheSubjectCannotRunAsDeferred() {
-        val advance = parse("{\"name\":\"a/b\",\"given\":{\"capabilities\":\"full\"},\"steps\":[{\"send\":\"x\"},{\"advance\":2000}]}")
+        val native =
+            parse("{\"name\":\"a/b\",\"given\":{\"capabilities\":\"full\"},\"steps\":[{\"send\":\"x\"},{\"native\":\"system_back\"}]}")
 
-        assertEquals(FixtureOutcome.Deferred(1, "the fake clock comes with the router"), FixtureRunner.run(advance, CodecFixtureSubject()))
+        assertEquals(
+            FixtureOutcome.Deferred(1, "the native action system_back needs its handler"),
+            FixtureRunner.run(native, RouterFixtureSubject(native.given)),
+        )
     }
 
     @Test

@@ -2,7 +2,7 @@
 
 The Android native core of the Self SDK, in plain Kotlin. It hosts one WebView that runs the Self web app and answers the web app's bridge messages with device features.
 
-**Status: bridge types, envelope codec and fixture runner skeleton.** The module holds the types of the bridge contract, the codec that reads and writes its messages, the JavaScript escaping, and a test runner for the shared fixtures. No router, handler or WebView host exists yet.
+**Status: bridge types, envelope codec, router and fixture runner.** The module holds the types of the bridge contract, the codec that reads and writes its messages, the JavaScript escaping, the router that answers each request, and a test runner for the shared fixtures. No handler or WebView host exists yet.
 
 ## Rules for this directory
 
@@ -30,7 +30,7 @@ The Android Gradle plugin, Kotlin, the two kotlinx libraries and the ktlint plug
 | Android Gradle plugin | 8.12.0  | `compileSdk 35` needs a newer plugin than 8.2.2.                          |
 | Kotlin                | 2.1.0   | The two kotlinx libraries below need Kotlin 2.                            |
 | kotlinx-serialization | 1.7.3   | Not used yet. The envelope codec has its own JSON reader (see below).     |
-| kotlinx-coroutines    | 1.9.0   | The router and the handlers. `kotlinx-coroutines-test` in tests.          |
+| kotlinx-coroutines    | 1.9.0   | The handlers. The router uses a lock and `BridgeClock`, not coroutines.   |
 | ktlint Gradle plugin  | 12.1.2  | ktlint 1.5.0 with the plugin's `android` flag, as `native-shell-android`. |
 | Robolectric           | 4.14.1  | Unit tests that need Android classes. No device.                          |
 
@@ -64,7 +64,7 @@ What `EnvelopeCodec.decode` gives for a body (BC 4.6):
 - An unknown field is ignored. `null` is the same as absent.
 - `InvalidRequest` names the first field at fault in the order `version`, `domain`, `method`, `params`, `timestamp`. It also holds the `version`, `domain` and `method` that could be read.
 - `version` must be a whole number. `domain` and `method` must be non-empty strings. `params` must be an object. `timestamp` must be a number.
-- The codec does not check that `id` is a UUID, and does not check that native serves the `version`, the `domain` or the `method`. The router does the last three (step 9).
+- The codec does not check that `id` is a UUID, and does not check that native serves the `version`, the `domain` or the `method`. The router does the last three.
 - A cancel `reason` outside the list reads as absent, because the reason is for logs only.
 - `encode` leaves out an optional field that has no value: `data` that is `null`, `error`, `details` with no key, `requestId` of an event. It throws for a response whose `success` and `error` disagree, and for a number that is not finite.
 
@@ -79,25 +79,67 @@ What `EnvelopeCodec.decode` gives for a body (BC 4.6):
 
 `BridgeScript.escape` replaces, in one pass: `\` with `\\`, `'` with `\'`, a newline with `\n`, a carriage return with `\r`, U+2028 with the six characters `\u2028`, U+2029 with `\u2029`. The Swift tests evaluate the same vectors in JavaScriptCore.
 
+## Router
+
+Source: BC 5.1, 6, 7. Decision ids: BC-Q8 (cancel is a message type), BC-Q9 (`nfc.cancelScan` and `camera.stopCamera` stay beside it), BC-Q11 (the timeout values), BC-Q36 (requests end when the page navigates). All are "Draft stands" and are built as drafted. `packages/native-sdk-ios` has the same code in Swift, with the same rules and the same test cases.
+
+| File               | Holds                                                                                                 |
+| ------------------ | ----------------------------------------------------------------------------------------------------- |
+| `BridgeRouter.kt`  | `BridgeRouter`, the `BridgeCall` a handler gets, `BridgeMethodHandler`, and `BridgeMethodRules`.      |
+| `BridgeFailure.kt` | The exception a handler fails with, `forReason`, and the mapping of any other exception.              |
+| `BridgeClock.kt`   | The time source: `now` for timestamps, `schedule` for timers. `SystemBridgeClock` in production code. |
+
+A handler is registered per domain with one function per method. The router checks a request in this order and answers the first problem without calling the handler:
+
+| Check                                                                             | Answer                                        |
+| --------------------------------------------------------------------------------- | --------------------------------------------- |
+| `version` is not 2, and the method is not `lifecycle.dismiss` (BC 5.1)            | `UNSUPPORTED_VERSION`, `details.supported`    |
+| A pending request has the same `id` (BC 6.4)                                      | `INVALID_PARAMS`, `field: "id"`               |
+| No domain of that name, or one registered as unavailable                          | `UNSUPPORTED`, `unknown_domain` or its reason |
+| No method of that name in the domain                                              | `UNSUPPORTED`, `unknown_method`               |
+| `params.timeoutMs` of a native-owned method is not a whole number of 0 or more    | `INVALID_PARAMS`, `field: "timeoutMs"`        |
+| `nfc.scanPassport` or `camera.scanMRZ` while one runs in the same domain (BC 6.4) | `BUSY`                                        |
+
+An invalid request (the codec's `InvalidRequest`) gets `UNSUPPORTED_VERSION` when its `version` is readable and not 2, and `INVALID_PARAMS` with the field otherwise.
+
+Rules after the handler starts:
+
+- Exactly one response. `succeed` and `fail` return false once the request is answered, and send nothing. An event after the response, or while the request ends, is not sent.
+- Native-owned timeouts (BC 6.2): `nfc.scanPassport` uses `params.timeoutMs`, default 120000. `camera.scanMRZ` uses `params.timeoutMs`, default 0. 0 means no timer. Every other method gets no native timer. When the timer ends, the request ends with `TIMEOUT` and `details.origin: "native"`.
+- A cancel (BC 6.3) of a pending request ends it with `CANCELLED` and `details.origin: "native"`. A cancel of an unknown or finished request, and a second cancel, are ignored.
+- Ending a request: the router runs the handler's stop action (`onStop`), then answers with the code when the handler answers or after 2000 ms, whichever is first. The handler's own outcome is dropped. A request with no stop action is answered at once. A stop action set after the request ended runs at once.
+- `lifecycle.dismiss` ends every other pending request with `CANCELLED` before its handler runs.
+- `cancelActiveScan(domain)` ends the scan of one domain, for the `nfc.cancelScan` and `camera.stopCamera` handlers. `cancelAll()` ends every pending request, for a host that closes the flow.
+- `pageChanged()` (BC-Q36) runs each stop action and sends nothing more for the old page's requests.
+- Error mapping (BC 7.2): `fail` with a `BridgeFailure` sends its error. Any other exception, also one thrown by the handler, is `INTERNAL_ERROR`, and the message names the exception class only. A `BridgeFailure` with a reason its code does not list cannot be made. A result that cannot be written as JSON is `INTERNAL_ERROR`.
+- Each response and event carries major 2. `emit` is called under the router's lock, so it must not block.
+
+What the router does not do yet: answer `lifecycle.getConfig` (step 10), send no event before the handshake (BC 5.5), check the page origin (the WebView host, step 16).
+
 ## Fixture runner
 
 The runner is test code, in `src/test/kotlin/xyz/self/sdk/core/bridge/fixtures/`. The fixture format is in the README of `packages/bridge-schema`.
 
-| Part                  | Does                                                                                                         |
-| --------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `FixtureLoader`       | Reads the fixture copies by the rules of the TypeScript loader.                                              |
-| `FixturePlaceholders` | Replaces an id label with a UUID and `"timestamp": 0` with a time.                                           |
-| `FixtureSubject`      | The code under test: message bodies in, JSON texts out. The router implements it in step 9.                  |
-| `FixtureRunner`       | Feeds each `send`, `native` and `advance` step to the subject and compares each `expect`.                    |
-| `FixtureMatcher`      | Compares an emitted message with an `expect`. Its rules are in the README of `packages/bridge-schema`.       |
-| `CodecFixtureSubject` | The subject until the router exists. It answers what the codec alone can answer and defers every other step. |
+| Part                   | Does                                                                                                       |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `FixtureLoader`        | Reads the fixture copies by the rules of the TypeScript loader.                                            |
+| `FixturePlaceholders`  | Replaces an id label with a UUID and `"timestamp": 0` with a time.                                         |
+| `FixtureSubject`       | The code under test: message bodies in, JSON texts out.                                                    |
+| `FixtureRunner`        | Feeds each `send`, `native` and `advance` step to the subject and compares each `expect`.                  |
+| `FixtureMatcher`       | Compares an emitted message with an `expect`. Its rules are in the README of `packages/bridge-schema`.     |
+| `RouterFixtureSubject` | The router with fake handlers set up from `given`, and `ManualClock`. Defers a method with no handler yet. |
+| `ManualClock`          | The fake clock. Timers fire only in `advance`, in time order.                                              |
 
 A fixture ends as `Passed`, `Failed` or `Deferred`. `Deferred` means the subject could not run a step yet. It is not a pass.
 
-`EnvelopeFixtureTest` lists each fixture of the groups `envelope` and `envelope-invalid` as one of two kinds, and fails for a fixture that is in neither list:
+`RouterFixtureSubject` sets up the router from the fixture's `given`:
 
-- Codec-complete, 9 fixtures of `envelope-invalid`: run to the end against `CodecFixtureSubject`.
-- Needs the router, 3 fixtures of `envelope-invalid` and all 13 of `envelope`: deferred at the first step. For these the test checks only that each `send` reads as the message it holds, and that the codec writes a message that matches each `expect`.
+- The domains and methods are those of the capability setup, read from its `handshake/<setup>` fixture. An unavailable domain is registered with its reason.
+- A method in `given.provider` is a fake: it emits each `progress` entry as the domain's first event, then fails with the `fail` cause, or never finishes and stops when the router asks. The causes are in the README of `packages/bridge-schema`.
+- `nfc.cancelScan` and `camera.stopCamera` call `cancelActiveScan` and succeed.
+- Any other method defers the fixture, because its handler comes in a later step. A `native` step defers too.
+
+`RouterFixtureTest` runs the groups `envelope`, `envelope-invalid`, `cancel`, `timeout`, `errors` and `version`. Each fixture passes, except 8 that stop at a step that needs a later handler: `lifecycle.ready`, `lifecycle.dismiss`, `lifecycle.getConfig` (step 10) and `nfc.getStatus`. The test lists each of them with the step and the reason. `EnvelopeFixtureTest` also checks that each `send` reads as the message it holds, and that the codec writes a message that matches each `expect`.
 
 ## Build, test and lint
 

@@ -2,7 +2,7 @@
 
 The single source of the bridge contract between the Self web app and the native SDK cores: the message schema, the types generated from it for TypeScript, Swift and Kotlin, and the shared test fixtures that all three implementations must pass.
 
-**Status: envelope, handshake, storage policy, native types and native fixture copies.** The package holds the schema of the four message kinds, the error object, the core domain list and the handshake (`lifecycle.getConfig`), the `envelope`, `envelope-invalid`, `handshake` and `version` fixture groups, the fixture format with its TypeScript loader, the storage policy table with the key-pattern list, and the generator of the Kotlin and Swift types. It holds no other method schema and no `secureStorage` method schema yet.
+**Status: envelope, handshake, storage policy, native types and native fixture copies.** The package holds the schema of the four message kinds, the error object, the core domain list and the handshake (`lifecycle.getConfig`), the `envelope`, `envelope-invalid`, `handshake`, `version`, `cancel`, `timeout` and `errors` fixture groups, the fixture format with its TypeScript loader, the storage policy table with the key-pattern list, and the generator of the Kotlin and Swift types. It holds no other method schema and no `secureStorage` method schema yet.
 
 ## Schema
 
@@ -124,6 +124,32 @@ The format does not define these yet:
 - How the web runner compares a message with an `expect`. There is no matcher in this package. The native rule is below.
 - The `given.provider` key for "succeed with a value".
 - The list of `native` actions.
+
+### Router groups
+
+Source: BC 6.2, 6.3, 6.4, 7.2, 7.3 and 11.3. Decision ids: BC-Q8, BC-Q9, BC-Q11, BC-Q36.
+
+| Group     | Covers                                                                                                                                                                                                                     |
+| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `cancel`  | Cancel while pending, after the response, for an unknown id, twice. `nfc.cancelScan` and `camera.stopCamera` with and without an active scan, and in another domain. `lifecycle.dismiss` ends every other pending request. |
+| `timeout` | `nfc.scanPassport` with the default 120000 ms, with `timeoutMs`, with `timeoutMs: 0`. `camera.scanMRZ` with no default and with `timeoutMs`. A web-owned method that native never times out. A cancel after the timeout.   |
+| `errors`  | One fixture per error code, and one per `details.reason` value.                                                                                                                                                            |
+
+The `fail` cause of a provider entry is a `details.reason` value, and native answers with the one code whose list holds it. Three causes are not reasons:
+
+| Cause                  | Answer                                                         |
+| ---------------------- | -------------------------------------------------------------- |
+| `user_cancelled`       | `USER_CANCELLED`                                               |
+| `permission_denied`    | `PERMISSION_DENIED`, `permission` is the domain name           |
+| `unexpected_exception` | `INTERNAL_ERROR`: the fake throws an error native did not map. |
+
+`tests/routerFixtures.test.ts` checks that each cause maps to the code the fixture expects, that each faked method is in the capability setup, and that the `errors` group covers every code and every reason.
+
+These cases of BC 11.3 have no native fixture:
+
+- `no_transport`. Only the web bridge raises it, and a native runner has a transport.
+- A late response that the web drops, and the cancel the web sends when its own timeout ends. Both are web runner cases. The native half is in `timeout/web-owned-cancel` and `timeout/cancel-after-native-timeout`.
+- A handler that does not stop within 2000 ms. A provider entry cannot say it. The native unit tests cover it with the fake clock.
 
 ### How a native runner compares
 
@@ -328,4 +354,4 @@ pnpm --filter @selfxyz/bridge-schema generate:check  # exit 1 if a generated fil
 
 ## Next step
 
-The router in each native package (step 9). It implements the `FixtureSubject` of the native fixture runner, so the fixtures that are deferred today run to the end.
+The capability registry and the `lifecycle` handler (step 10). The native runners defer the fixtures that need `lifecycle.ready`, `lifecycle.dismiss` or `lifecycle.getConfig` until then.

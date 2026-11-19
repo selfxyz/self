@@ -1,0 +1,52 @@
+{
+  "name": "timeout/web-owned-cancel",
+  "given": {
+    "capabilities": "full",
+    "provider": {
+      "secureStorage.has": {
+        "pending": true
+      }
+    }
+  },
+  "steps": [
+    {
+      "send": {
+        "type": "request",
+        "version": 2,
+        "id": "r1",
+        "domain": "secureStorage",
+        "method": "has",
+        "params": {
+          "key": "self_mnemonic"
+        },
+        "timestamp": 0
+      }
+    },
+    {
+      "advance": 30000
+    },
+    {
+      "send": {
+        "type": "cancel",
+        "version": 2,
+        "id": "c1",
+        "domain": "secureStorage",
+        "requestId": "r1",
+        "reason": "timeout",
+        "timestamp": 0
+      }
+    },
+    {
+      "expect": {
+        "type": "response",
+        "version": 2,
+        "domain": "secureStorage",
+        "requestId": "r1",
+        "success": false,
+        "error": {
+          "code": "CANCELLED"
+        }
+      }
+    }
+  ]
+}

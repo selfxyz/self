@@ -1,0 +1,38 @@
+{
+  "name": "errors/user-cancelled",
+  "given": {
+    "capabilities": "full",
+    "provider": {
+      "biometrics.authenticate": {
+        "fail": "user_cancelled"
+      }
+    }
+  },
+  "steps": [
+    {
+      "send": {
+        "type": "request",
+        "version": 2,
+        "id": "r1",
+        "domain": "biometrics",
+        "method": "authenticate",
+        "params": {
+          "reason": "Confirm it is you"
+        },
+        "timestamp": 0
+      }
+    },
+    {
+      "expect": {
+        "type": "response",
+        "version": 2,
+        "domain": "biometrics",
+        "requestId": "r1",
+        "success": false,
+        "error": {
+          "code": "USER_CANCELLED"
+        }
+      }
+    }
+  ]
+}

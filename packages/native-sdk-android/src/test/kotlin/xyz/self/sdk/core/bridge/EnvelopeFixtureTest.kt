@@ -8,85 +8,42 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import xyz.self.sdk.core.bridge.fixtures.CodecFixtureSubject
 import xyz.self.sdk.core.bridge.fixtures.ExpectedMessage
 import xyz.self.sdk.core.bridge.fixtures.Fixture
 import xyz.self.sdk.core.bridge.fixtures.FixtureLoader
 import xyz.self.sdk.core.bridge.fixtures.FixtureMatcher
-import xyz.self.sdk.core.bridge.fixtures.FixtureOutcome
 import xyz.self.sdk.core.bridge.fixtures.FixturePlaceholders
-import xyz.self.sdk.core.bridge.fixtures.FixtureRunner
 import xyz.self.sdk.core.bridge.fixtures.FixtureStep
 import xyz.self.sdk.core.bridge.generated.BridgeCancelReason
 
 /**
- * Runs the `envelope` and `envelope-invalid` fixture groups as far as the codec goes. The Swift
- * library has the same table in `EnvelopeFixtureTests`. Change both together.
+ * Checks the codec against the `envelope` and `envelope-invalid` fixture groups. `RouterFixtureTest`
+ * runs the same fixtures through the router. The Swift library has the same cases in
+ * `EnvelopeFixtureTests`. Change both together.
  */
 class EnvelopeFixtureTest {
-    /** The codec alone gives the whole answer: a drop, or INVALID_PARAMS with the field. */
-    private val codecComplete =
-        listOf(
-            "envelope-invalid/method-wrong-type",
-            "envelope-invalid/missing-id",
-            "envelope-invalid/missing-method",
-            "envelope-invalid/missing-params",
-            "envelope-invalid/not-an-object",
-            "envelope-invalid/not-json",
-            "envelope-invalid/params-array",
-            "envelope-invalid/params-null",
-            "envelope-invalid/timestamp-wrong-type",
-        )
-
-    /** The first message parses, so the answer needs the router and a handler. Not run to the end yet. */
-    private val needsRouter =
-        listOf(
-            "envelope-invalid/duplicate-request-id",
-            "envelope-invalid/unknown-domain",
-            "envelope-invalid/unknown-method",
-            "envelope/cancel-reason-absent",
-            "envelope/cancel-reason-null",
-            "envelope/cancel-with-reason",
-            "envelope/event-request-id-absent",
-            "envelope/event-request-id-null",
-            "envelope/event-with-request-id",
-            "envelope/request-response-data",
-            "envelope/response-error-details-absent",
-            "envelope/response-error-details-null",
-            "envelope/response-error-with-details",
-            "envelope/response-optionals-absent",
-            "envelope/response-optionals-null",
-            "envelope/unknown-fields",
-        )
-
     private val fixtures = FixtureLoader.group("envelope") + FixtureLoader.group("envelope-invalid")
+
+    /** The fixtures whose every `send` is a JSON request or cancel the codec reads. */
+    private val parsing =
+        fixtures.filter { fixture ->
+            fixture.steps.all {
+                it !is FixtureStep.SendRaw &&
+                    (it !is FixtureStep.Send || parses(it))
+            }
+        }
+
+    private fun parses(step: FixtureStep.Send): Boolean {
+        val body = JsonText.write(JsonObject(FixturePlaceholders().fillSend(step.message)))
+        return EnvelopeCodec.decode(body).let { it is InboundMessage.Request || it is InboundMessage.Cancel }
+    }
 
     private fun fixture(name: String): Fixture = fixtures.single { it.name == name }
 
     @Test
-    fun everyFixtureOfTheTwoGroupsIsInOneList() {
-        assertEquals((codecComplete + needsRouter).sorted(), fixtures.map { it.name }.sorted())
-    }
-
-    @Test
-    fun theCodecAloneAnswersAnInvalidEnvelope() {
-        for (name in codecComplete) {
-            assertEquals(name, FixtureOutcome.Passed, FixtureRunner.run(fixture(name), CodecFixtureSubject()))
-        }
-    }
-
-    @Test
-    fun aFixtureWhoseFirstMessageParsesWaitsForTheRouter() {
-        for (name in needsRouter) {
-            val outcome = FixtureRunner.run(fixture(name), CodecFixtureSubject())
-
-            assertEquals(name, FixtureOutcome.Deferred(0, "a message that parses needs the router"), outcome)
-        }
-    }
-
-    @Test
-    fun everySendOfAWaitingFixtureReadsAsTheMessageItHolds() {
-        for (name in needsRouter) {
+    fun everySendThatParsesReadsAsTheMessageItHolds() {
+        assertEquals(16, parsing.size)
+        for (name in parsing.map { it.name }) {
             val placeholders = FixturePlaceholders()
             for (step in fixture(name).steps.filterIsInstance<FixtureStep.Send>()) {
                 val sent = placeholders.fillSend(step.message)
@@ -122,7 +79,7 @@ class EnvelopeFixtureTest {
     @Test
     fun theWriterGivesAMessageThatMatchesEachExpect() {
         var expects = 0
-        for (name in codecComplete + needsRouter) {
+        for (name in fixtures.map { it.name }) {
             val placeholders = FixturePlaceholders()
             for (step in fixture(name).steps.filterIsInstance<FixtureStep.Expect>()) {
                 val expected = placeholders.fillExpect(step.message)
@@ -131,7 +88,7 @@ class EnvelopeFixtureTest {
                 expects++
             }
         }
-        assertTrue(expects > needsRouter.size)
+        assertTrue(expects > parsing.size)
     }
 
     @Test

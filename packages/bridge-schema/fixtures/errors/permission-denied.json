@@ -1,0 +1,39 @@
+{
+  "name": "errors/permission-denied",
+  "given": {
+    "capabilities": "full",
+    "provider": {
+      "camera.scanMRZ": {
+        "fail": "permission_denied"
+      }
+    }
+  },
+  "steps": [
+    {
+      "send": {
+        "type": "request",
+        "version": 2,
+        "id": "r1",
+        "domain": "camera",
+        "method": "scanMRZ",
+        "params": {},
+        "timestamp": 0
+      }
+    },
+    {
+      "expect": {
+        "type": "response",
+        "version": 2,
+        "domain": "camera",
+        "requestId": "r1",
+        "success": false,
+        "error": {
+          "code": "PERMISSION_DENIED",
+          "details": {
+            "permission": "camera"
+          }
+        }
+      }
+    }
+  ]
+}

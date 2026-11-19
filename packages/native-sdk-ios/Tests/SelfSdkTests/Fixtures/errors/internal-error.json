@@ -1,0 +1,36 @@
+{
+  "name": "errors/internal-error",
+  "given": {
+    "capabilities": "full",
+    "provider": {
+      "biometrics.isAvailable": {
+        "fail": "unexpected_exception"
+      }
+    }
+  },
+  "steps": [
+    {
+      "send": {
+        "type": "request",
+        "version": 2,
+        "id": "r1",
+        "domain": "biometrics",
+        "method": "isAvailable",
+        "params": {},
+        "timestamp": 0
+      }
+    },
+    {
+      "expect": {
+        "type": "response",
+        "version": 2,
+        "domain": "biometrics",
+        "requestId": "r1",
+        "success": false,
+        "error": {
+          "code": "INTERNAL_ERROR"
+        }
+      }
+    }
+  ]
+}

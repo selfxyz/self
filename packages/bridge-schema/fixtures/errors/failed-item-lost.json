@@ -1,0 +1,41 @@
+{
+  "name": "errors/failed-item-lost",
+  "given": {
+    "capabilities": "full",
+    "provider": {
+      "secureStorage.get": {
+        "fail": "item_lost"
+      }
+    }
+  },
+  "steps": [
+    {
+      "send": {
+        "type": "request",
+        "version": 2,
+        "id": "r1",
+        "domain": "secureStorage",
+        "method": "get",
+        "params": {
+          "key": "self_mnemonic"
+        },
+        "timestamp": 0
+      }
+    },
+    {
+      "expect": {
+        "type": "response",
+        "version": 2,
+        "domain": "secureStorage",
+        "requestId": "r1",
+        "success": false,
+        "error": {
+          "code": "FAILED",
+          "details": {
+            "reason": "item_lost"
+          }
+        }
+      }
+    }
+  ]
+}

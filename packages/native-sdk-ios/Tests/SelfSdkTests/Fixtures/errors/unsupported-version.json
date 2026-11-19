@@ -1,0 +1,36 @@
+{
+  "name": "errors/unsupported-version",
+  "given": {
+    "capabilities": "full"
+  },
+  "steps": [
+    {
+      "send": {
+        "type": "request",
+        "version": 1,
+        "id": "r1",
+        "domain": "haptic",
+        "method": "trigger",
+        "params": {
+          "type": "success"
+        },
+        "timestamp": 0
+      }
+    },
+    {
+      "expect": {
+        "type": "response",
+        "version": 2,
+        "domain": "haptic",
+        "requestId": "r1",
+        "success": false,
+        "error": {
+          "code": "UNSUPPORTED_VERSION",
+          "details": {
+            "supported": [2]
+          }
+        }
+      }
+    }
+  ]
+}

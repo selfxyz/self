@@ -140,12 +140,12 @@ final class FixtureRunnerTests: XCTestCase {
     }
 
     func testReportsAStepTheSubjectCannotRunAsDeferred() throws {
-        let advance = try parse(
-            #"{"name":"a/b","given":{"capabilities":"full"},"steps":[{"send":"x"},{"advance":2000}]}"#)
+        let native = try parse(
+            #"{"name":"a/b","given":{"capabilities":"full"},"steps":[{"send":"x"},{"native":"system_back"}]}"#)
 
         XCTAssertEqual(
-            try FixtureRunner.run(advance, CodecFixtureSubject()),
-            .deferred(stepIndex: 1, why: "the fake clock comes with the router")
+            try FixtureRunner.run(native, try RouterFixtureSubject(native.given)),
+            .deferred(stepIndex: 1, why: "the native action system_back needs its handler")
         )
     }
 

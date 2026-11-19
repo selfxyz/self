@@ -1,0 +1,62 @@
+{
+  "name": "cancel/dismiss-cancels-pending",
+  "given": {
+    "capabilities": "full",
+    "provider": {
+      "nfc.scanPassport": {
+        "pending": true
+      }
+    }
+  },
+  "steps": [
+    {
+      "send": {
+        "type": "request",
+        "version": 2,
+        "id": "r1",
+        "domain": "nfc",
+        "method": "scanPassport",
+        "params": {
+          "passportNumber": "L898902C3",
+          "dateOfBirth": "740812",
+          "dateOfExpiry": "120415"
+        },
+        "timestamp": 0
+      }
+    },
+    {
+      "send": {
+        "type": "request",
+        "version": 2,
+        "id": "r2",
+        "domain": "lifecycle",
+        "method": "dismiss",
+        "params": {
+          "reason": "user_cancel"
+        },
+        "timestamp": 0
+      }
+    },
+    {
+      "expect": {
+        "type": "response",
+        "version": 2,
+        "domain": "nfc",
+        "requestId": "r1",
+        "success": false,
+        "error": {
+          "code": "CANCELLED"
+        }
+      }
+    },
+    {
+      "expect": {
+        "type": "response",
+        "version": 2,
+        "domain": "lifecycle",
+        "requestId": "r2",
+        "success": true
+      }
+    }
+  ]
+}

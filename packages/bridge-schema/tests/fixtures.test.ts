@@ -61,9 +61,12 @@ const inGroup = (group: string) =>
 describe('fixture files', () => {
   it('fall into the groups this package defines', () => {
     expect([...new Set(fixtures.map(fixtureGroup))].sort()).toEqual([
+      'cancel',
       'envelope',
       'envelope-invalid',
+      'errors',
       'handshake',
+      'timeout',
       'version',
     ]);
   });
@@ -71,8 +74,11 @@ describe('fixture files', () => {
   it.each(fixtures.map(fixture => [fixture.name, fixture] as const))(
     '%s uses only the step kinds its group needs',
     (_name, fixture) => {
+      const kinds = ['timeout', 'errors'].includes(fixtureGroup(fixture))
+        ? ['send', 'expect', 'advance']
+        : ['send', 'expect', 'native'];
       for (const step of fixture.steps) {
-        expect(['send', 'expect', 'native']).toContain(stepKind(step));
+        expect(kinds).toContain(stepKind(step));
       }
     },
   );

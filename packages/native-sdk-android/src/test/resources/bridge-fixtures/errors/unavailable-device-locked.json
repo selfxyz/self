@@ -1,0 +1,41 @@
+{
+  "name": "errors/unavailable-device-locked",
+  "given": {
+    "capabilities": "full",
+    "provider": {
+      "secureStorage.get": {
+        "fail": "device_locked"
+      }
+    }
+  },
+  "steps": [
+    {
+      "send": {
+        "type": "request",
+        "version": 2,
+        "id": "r1",
+        "domain": "secureStorage",
+        "method": "get",
+        "params": {
+          "key": "self_mnemonic"
+        },
+        "timestamp": 0
+      }
+    },
+    {
+      "expect": {
+        "type": "response",
+        "version": 2,
+        "domain": "secureStorage",
+        "requestId": "r1",
+        "success": false,
+        "error": {
+          "code": "UNAVAILABLE",
+          "details": {
+            "reason": "device_locked"
+          }
+        }
+      }
+    }
+  ]
+}

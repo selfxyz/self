@@ -157,9 +157,9 @@ internal object FixtureLoader {
         return root
             .walkTopDown()
             .filter { it.isFile && !it.name.startsWith(".") }
-            .sortedBy { it.path }
-            .map { file ->
-                val expectedName = file.relativeTo(root).invariantSeparatorsPath.removeSuffix(".json")
+            .map { file -> file to file.relativeTo(root).invariantSeparatorsPath.removeSuffix(".json") }
+            .sortedBy { (_, expectedName) -> expectedName }
+            .map { (file, expectedName) ->
                 val fixture = FixtureParser.parse(JsonText.parse(file.readText()), file.path)
                 if (fixture.name != expectedName) {
                     throw FixtureFormatException("${file.path}: name must be \"$expectedName\", the path of the file")
