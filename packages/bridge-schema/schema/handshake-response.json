@@ -1,0 +1,351 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "bridge/handshake-response",
+  "title": "Handshake response: the result of lifecycle.getConfig (BC 5.3, SC 4, SS 9.3, WD-P14)",
+  "type": "object",
+  "required": [
+    "protocolVersion",
+    "protocolMinor",
+    "sdkVersion",
+    "platform",
+    "wrapper",
+    "mode",
+    "debug",
+    "referenceId",
+    "verificationRequest",
+    "capabilities",
+    "app",
+    "device",
+    "locale",
+    "insets",
+    "appState"
+  ],
+  "properties": {
+    "protocolVersion": {
+      "description": "The major version native uses for this session.",
+      "$ref": "common#/$defs/version"
+    },
+    "protocolMinor": {
+      "description": "The minor version native implements.",
+      "type": "integer",
+      "minimum": 0
+    },
+    "sdkVersion": {
+      "description": "The native library version, in the form x.y.z.",
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "platform": {
+      "enum": ["ios", "android"]
+    },
+    "wrapper": {
+      "description": "How the host app reached the library. For logs and analytics only.",
+      "enum": ["none", "kmp", "react-native"]
+    },
+    "mode": {
+      "description": "embed: a partner app launched a verification. self-app: the Self app's own shell.",
+      "enum": ["self-app", "embed"]
+    },
+    "debug": {
+      "type": "boolean"
+    },
+    "referenceId": {
+      "description": "One id for this launch: the host's value or a UUID native made.",
+      "type": "string",
+      "minLength": 1
+    },
+    "verificationRequest": {
+      "description": "The request the host app passed to launch, copied without interpretation. The web validates its fields (BC 9.2). null when there is none.",
+      "type": ["object", "null"]
+    },
+    "capabilities": {
+      "description": "One entry per domain. A domain with no entry, or a null entry, counts as not available.",
+      "type": "object",
+      "required": [
+        "lifecycle",
+        "secureStorage",
+        "nfc",
+        "camera",
+        "biometrics",
+        "haptic",
+        "analytics",
+        "navigation"
+      ],
+      "properties": {
+        "lifecycle": {
+          "$ref": "capability"
+        },
+        "secureStorage": {
+          "allOf": [
+            {
+              "$ref": "capability"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "features": {
+                  "type": ["object", "null"],
+                  "properties": {
+                    "userPresence": {
+                      "description": "The strongest check the device can run now. none: no device credential is set (BC 8.2).",
+                      "enum": ["biometric", "passcode", "none", null]
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "nfc": {
+          "allOf": [
+            {
+              "$ref": "capability"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "features": {
+                  "type": ["object", "null"],
+                  "properties": {
+                    "can": {
+                      "description": "True when a scan can authenticate with the card access number (BC 8.3).",
+                      "type": ["boolean", "null"]
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "camera": {
+          "allOf": [
+            {
+              "$ref": "capability"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "features": {
+                  "type": ["object", "null"],
+                  "properties": {
+                    "hints": {
+                      "description": "The scan hints this build can report (BC 8.4).",
+                      "type": ["array", "null"],
+                      "items": {
+                        "enum": ["state", "glare", "blur"]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "biometrics": {
+          "$ref": "capability"
+        },
+        "haptic": {
+          "$ref": "capability"
+        },
+        "analytics": {
+          "$ref": "capability"
+        },
+        "navigation": {
+          "$ref": "capability"
+        }
+      },
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "$ref": "capability"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      }
+    },
+    "app": {
+      "description": "The host app: bundle id or package name, version and build number.",
+      "type": "object",
+      "required": ["id", "version", "build"],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "build": {
+          "type": "string"
+        }
+      }
+    },
+    "device": {
+      "description": "For logs, support screens and analytics.",
+      "type": "object",
+      "required": ["osVersion", "model"],
+      "properties": {
+        "osVersion": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        }
+      }
+    },
+    "locale": {
+      "type": "object",
+      "required": ["languageTags", "region", "timeZone"],
+      "properties": {
+        "languageTags": {
+          "description": "The user's preferred languages as BCP 47 tags, in order.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "region": {
+          "description": "The device region as a two-letter country code.",
+          "type": ["string", "null"]
+        },
+        "timeZone": {
+          "description": "The time zone as an IANA name.",
+          "type": "string"
+        }
+      }
+    },
+    "insets": {
+      "description": "Safe-area insets in CSS pixels at the time of the answer.",
+      "type": "object",
+      "required": ["top", "right", "bottom", "left"],
+      "properties": {
+        "top": {
+          "type": "number"
+        },
+        "right": {
+          "type": "number"
+        },
+        "bottom": {
+          "type": "number"
+        },
+        "left": {
+          "type": "number"
+        }
+      }
+    },
+    "appState": {
+      "description": "The app state at the time of the answer.",
+      "enum": ["active", "inactive", "background"]
+    },
+    "migration": {
+      "description": "Shell only. The migration status and its reason code (SC 10.1).",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/migration"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "initialIntake": {
+      "description": "Shell only. The oldest intake the web has not acknowledged, or null. Its fields are not checked until the intake object is defined (SC 5.2).",
+      "type": ["object", "null"]
+    },
+    "pendingIntakeCount": {
+      "description": "Shell only. How many more intakes wait behind initialIntake.",
+      "type": ["integer", "null"],
+      "minimum": 0
+    },
+    "storage": {
+      "description": "The result of native's launch check of secure storage (SS 9.3).",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/storage"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "bundle": {
+      "description": "The web bundle native loaded. For logs and support screens (WD-P14).",
+      "anyOf": [
+        {
+          "$ref": "#/$defs/bundle"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "if": {
+    "type": "object",
+    "required": ["mode"],
+    "properties": {
+      "mode": {
+        "const": "self-app"
+      }
+    }
+  },
+  "then": {
+    "type": "object",
+    "required": ["migration", "initialIntake", "pendingIntakeCount"],
+    "properties": {
+      "migration": {
+        "type": "object"
+      },
+      "initialIntake": {
+        "type": ["object", "null"]
+      },
+      "pendingIntakeCount": {
+        "type": "integer"
+      }
+    }
+  },
+  "$defs": {
+    "migration": {
+      "type": "object",
+      "required": ["status"],
+      "properties": {
+        "status": {
+          "description": "A marker status of MG 5.1: none_needed, in_progress, waiting_for_user, blocked, done, resolved_by_user. Not an enum: the web treats an unknown status as not final.",
+          "type": "string",
+          "minLength": 1
+        },
+        "reason": {
+          "description": "The marker's reason code, for example no_device_credential.",
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "storage": {
+      "type": "object",
+      "required": ["status"],
+      "properties": {
+        "status": {
+          "description": "unavailable: the check itself failed.",
+          "enum": ["ok", "items_lost", "unavailable"]
+        }
+      }
+    },
+    "bundle": {
+      "type": "object",
+      "required": ["build", "source", "complete"],
+      "properties": {
+        "build": {
+          "type": "integer"
+        },
+        "source": {
+          "description": "The web must not branch on it.",
+          "enum": ["seed", "downloaded"]
+        },
+        "complete": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

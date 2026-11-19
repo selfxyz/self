@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "bridge/capability",
+  "title": "Capability entry of one domain in the handshake response (BC 5.4)",
+  "type": "object",
+  "required": ["available", "methods", "events"],
+  "properties": {
+    "available": {
+      "description": "True when the domain's code is in this build and the device has the hardware. Not a state the user can change.",
+      "type": "boolean"
+    },
+    "reason": {
+      "description": "Why the domain is not available.",
+      "enum": ["no_module", "no_hardware", null]
+    },
+    "methods": {
+      "description": "Every method native answers in this domain. Empty when not available.",
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "events": {
+      "description": "Every event native can emit in this domain.",
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "features": {
+      "description": "Named flags for optional behaviour. A missing flag means the feature is absent.",
+      "type": ["object", "null"]
+    }
+  },
+  "if": {
+    "type": "object",
+    "required": ["available"],
+    "properties": { "available": { "const": false } }
+  },
+  "then": {
+    "type": "object",
+    "required": ["reason"],
+    "properties": {
+      "reason": { "enum": ["no_module", "no_hardware"] },
+      "methods": { "type": "array", "maxItems": 0 }
+    }
+  }
+}

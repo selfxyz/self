@@ -19,6 +19,11 @@ export interface FixtureGiven {
   readonly capabilities: string;
   /** Fake hardware behaviour, keyed by `<domain>.<method>`. */
   readonly provider?: Readonly<Record<string, FixtureProviderSetup>>;
+  /**
+   * What the fake host and device give native for this launch: the handshake response fields
+   * other than `protocolVersion`, `protocolMinor` and `capabilities`.
+   */
+  readonly launch?: FixtureJson;
 }
 
 /** A message from web to native. A string is a raw body, for input that is not a JSON object. */
@@ -77,7 +82,12 @@ export const FIXTURE_STEP_KINDS = [
 ] as const;
 
 const FIXTURE_KEYS = ['name', 'given', 'steps'];
-const GIVEN_KEYS = ['capabilities', 'provider'];
+const GIVEN_KEYS = ['capabilities', 'provider', 'launch'];
+const LAUNCH_KEYS_NATIVE_OWNS = [
+  'protocolVersion',
+  'protocolMinor',
+  'capabilities',
+];
 const PROVIDER_KEYS = ['fail', 'progress', 'pending'];
 const NAME_PATTERN = /^[A-Za-z][A-Za-z0-9-]*\/[a-z0-9][a-z0-9-]*$/;
 const PROVIDER_METHOD_PATTERN = /^[A-Za-z][A-Za-z0-9]*\.[A-Za-z][A-Za-z0-9]*$/;
@@ -141,6 +151,21 @@ function checkProvider(provider: unknown, source: string): void {
   }
 }
 
+function checkLaunch(launch: unknown, source: string): void {
+  if (!isObject(launch)) {
+    throw parseError(source, 'given.launch', 'must be an object');
+  }
+  for (const key of LAUNCH_KEYS_NATIVE_OWNS) {
+    if (key in launch) {
+      throw parseError(
+        source,
+        'given.launch',
+        `cannot set "${key}": it comes from the build and given.capabilities`,
+      );
+    }
+  }
+}
+
 function checkGiven(given: unknown, source: string): void {
   if (!isObject(given)) {
     throw parseError(source, 'given', 'must be an object');
@@ -155,6 +180,9 @@ function checkGiven(given: unknown, source: string): void {
   }
   if (given.provider !== undefined) {
     checkProvider(given.provider, source);
+  }
+  if (given.launch !== undefined) {
+    checkLaunch(given.launch, source);
   }
 }
 

@@ -78,6 +78,14 @@ describe('parseFixture', () => {
     });
   });
 
+  it('accepts a launch setup and does not inspect its fields', () => {
+    const launch = { mode: 'embed', verificationRequest: null, later: 1 };
+
+    expect(
+      parse(withGiven({ capabilities: 'full', launch })).given.launch,
+    ).toBe(launch);
+  });
+
   it.each([
     ['an array', [], 'a fixture must be a JSON object'],
     [
@@ -106,6 +114,18 @@ describe('parseFixture', () => {
       withGiven({ capabilities: 'full', clock: 0 }),
       'given has the unknown key "clock"',
     ],
+    [
+      'a launch setup that is not an object',
+      withGiven({ capabilities: 'full', launch: 'embed' }),
+      'given.launch must be an object',
+    ],
+    ...['protocolVersion', 'protocolMinor', 'capabilities'].map(
+      (key): [string, unknown, string] => [
+        `a launch setup that sets ${key}`,
+        withGiven({ capabilities: 'full', launch: { [key]: 2 } }),
+        `given.launch cannot set "${key}"`,
+      ],
+    ),
     [
       'a provider key that is not domain.method',
       withGiven({ capabilities: 'full', provider: { nfc: { fail: 'x' } } }),

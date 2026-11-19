@@ -2,31 +2,53 @@
 
 The single source of the bridge contract between the Self web app and the native SDK cores: the message schema, the types generated from it for TypeScript, Swift and Kotlin, and the shared test fixtures that all three implementations must pass.
 
-**Status: envelope only.** The package holds the schema of the four message kinds, the error object and the core domain list, the `envelope` and `envelope-invalid` fixture groups, and the fixture format with its TypeScript loader. It holds no method, handshake or storage schema and no generation target yet.
+**Status: envelope and handshake.** The package holds the schema of the four message kinds, the error object, the core domain list and the handshake (`lifecycle.getConfig`), the `envelope`, `envelope-invalid`, `handshake` and `version` fixture groups, and the fixture format with its TypeScript loader. It holds no other method schema, no storage schema and no generation target yet.
 
 ## Schema
 
-Source: Bridge Contract (BC) sections 4.1 to 4.5, 7.1 to 7.3 and 8. Decision ids: BC-Q8, BC-Q10, BC-Q33, BC-Q40.
+Source: Bridge Contract (BC) sections 4.1 to 4.5, 5.1 to 5.4, 7.1 to 7.3 and 8. Decision ids: BC-Q8, BC-Q10, BC-Q33, BC-Q40.
 
-| `$id`               | Holds                                                                                                |
-| ------------------- | ---------------------------------------------------------------------------------------------------- |
-| `bridge/request`    | Request, web to native.                                                                              |
-| `bridge/response`   | Response, native to web. `error` is required when `success` is `false` and absent when it is `true`. |
-| `bridge/event`      | Event, native to web. `requestId` is present when a request caused the event.                        |
-| `bridge/cancel`     | Cancel, web to native.                                                                               |
-| `bridge/error`      | The error object: the code, the `details.reason` values each code allows, the typed `details` keys.  |
-| `bridge/error-code` | The eleven error codes.                                                                              |
-| `bridge/domain`     | The eight core domains.                                                                              |
-| `bridge/common`     | The `id`, `version`, `domain` and `timestamp` fields.                                                |
+The handshake also takes fields that other pages propose and BC does not show yet. They are built as drafted: Shell Contract (SC) section 4 (SC-P4), Storage and Security (SS) section 9.3, Web Delivery row WD-P14. Decision ids: BC-Q6, BC-Q7, BC-Q38, SC-P4, SC-Q7, SC-Q12, WD-P14, MG-Q2. The typed feature flags come from BC 8.2 to 8.4: BC-Q14, BC-Q20, BC-Q22.
+
+| `$id`                       | Holds                                                                                                |
+| --------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `bridge/request`            | Request, web to native.                                                                              |
+| `bridge/response`           | Response, native to web. `error` is required when `success` is `false` and absent when it is `true`. |
+| `bridge/event`              | Event, native to web. `requestId` is present when a request caused the event.                        |
+| `bridge/cancel`             | Cancel, web to native.                                                                               |
+| `bridge/error`              | The error object: the code, the `details.reason` values each code allows, the typed `details` keys.  |
+| `bridge/error-code`         | The eleven error codes.                                                                              |
+| `bridge/domain`             | The eight core domains.                                                                              |
+| `bridge/common`             | The `id`, `version`, `domain` and `timestamp` fields.                                                |
+| `bridge/handshake-request`  | The `params` of `lifecycle.getConfig`: `protocolMinor` and `webVersion`.                             |
+| `bridge/handshake-response` | The `data` of the answer to `lifecycle.getConfig`.                                                   |
+| `bridge/capability`         | The entry of one domain in the handshake's `capabilities`.                                           |
 
 What the schema does and does not enforce:
 
 - An unknown field is valid at every level. An optional field can be `null` or absent. A required field cannot be `null`.
 - `version` is any integer from 1. A message with a major the receiver does not serve is a valid message that gets `UNSUPPORTED_VERSION`.
 - `domain` on a message is any non-empty string, because native answers an unknown domain with `UNSUPPORTED` and copies the name into the response. Check the name against `bridge/domain` to route.
-- `method`, `params`, `data` and event names are not checked per domain yet.
+- `method`, `params`, `data` and event names are not checked per domain by the message schemas. `METHOD_SCHEMAS` names the schema of a method's `params` and of its result. It lists `lifecycle.getConfig` only.
 - `details.reason` is checked against the list of its code. A code with no list takes no reason.
 - Rules about behaviour are not in the schema: string bodies only, delivery in order, no event after the response, one response per request.
+
+### Handshake
+
+`PROTOCOL_VERSION` is major 2, minor 0. The handshake response schema enforces these rules:
+
+- Required in both modes: the BC 5.3 fields, and `app`, `device`, `locale`, `insets`, `appState`. `verificationRequest` and `locale.region` are required and can be `null`.
+- Required when `mode` is `self-app`: `migration`, `initialIntake` (can be `null`) and `pendingIntakeCount`. In `embed` they are not checked for absence.
+- Optional: `storage` and `bundle`.
+- `capabilities` has an entry for each of the eight core domains. An entry for another domain is valid and has the same shape, or is `null`.
+- An entry with `available: false` has a `reason` and no methods.
+- Typed feature flags: `secureStorage.userPresence`, `nfc.can`, `camera.hints`. Other flags are not checked. `camera.previewModes` waits for BC-Q1.
+
+The schema does not check these:
+
+- The fields of `verificationRequest`. Native copies the host's request and the web validates it (BC 9.2). The extra fields are not determined (BC-Q24).
+- The fields of `initialIntake`. The intake object is SC 5.2, which waits for SC-Q1.
+- The value of `migration.status`. The web treats an unknown status as not final (SC 10.1).
 
 ## Fixtures
 
@@ -39,7 +61,8 @@ One file per fixture, at `fixtures/<group>/<case>.json`:
   "name": "<group>/<case>",
   "given": {
     "capabilities": "full",
-    "provider": { "nfc.scanPassport": { "fail": "nfc_disabled" } }
+    "provider": { "nfc.scanPassport": { "fail": "nfc_disabled" } },
+    "launch": { "mode": "embed", "verificationRequest": null }
   },
   "steps": [{ "send": {} }, { "advance": 2000 }, { "expect": {} }]
 }
@@ -51,8 +74,9 @@ The Swift and Kotlin runners must read a file by the same rules as the TypeScrip
 | -------------------- | ----------------------------------------------------------------------------------------------------------- |
 | The file             | A JSON object with the keys `name`, `given` and `steps` and no other key.                                   |
 | `name`               | Equal to the file path under `fixtures/`, without `.json`.                                                  |
-| `given.capabilities` | Required. A named device setup, for example `full`. The names are not listed yet.                           |
-| `given.provider`     | Optional. What the fake hardware does, keyed by `<domain>.<method>`. `given` takes no other key.            |
+| `given.capabilities` | Required. A named device setup, for example `full`. See the list below.                                     |
+| `given.provider`     | Optional. What the fake hardware does, keyed by `<domain>.<method>`.                                        |
+| `given.launch`       | Optional. An object: what the fake host and device give native for this launch. `given` takes no other key. |
 | `steps`              | A list of one or more steps. A step is an object with exactly one of the four keys below.                   |
 | `send`               | A message from web to native: a JSON object.                                                                |
 | `expect`             | A message from native to web: a JSON object.                                                                |
@@ -69,6 +93,25 @@ Placeholders (`fillPlaceholders`):
 - A runner adds no field to a `send` and does not change a field of another type. Invalid input stays invalid.
 - An `expect` leaves out the message's own `id` and `timestamp`, and `error.message`. No runner compares them. `completeExpect` adds them before a message is validated or fed to the web bridge.
 
+Launch setup (`given.launch`). BC 11.1 does not define it. It is this package's addition:
+
+- It holds the handshake response fields that native reads from the host app, the device and its own build: every field other than `protocolVersion`, `protocolMinor` and `capabilities`. The loader rejects those three keys and does not inspect the others.
+- A runner sets up its fake host and device from it. Native then answers `lifecycle.getConfig` with `PROTOCOL_VERSION`, these fields unchanged, and the capability entries of `given.capabilities`. This includes `sdkVersion` and `platform`, so one fixture runs on both platforms.
+- A fixture that expects a successful handshake must have it. Without it, the answer to `lifecycle.getConfig` is not defined.
+
+Capability setups (`given.capabilities`). The handshake fixture of a name defines its entries:
+
+| Name                   | Entries                                                             | Defined by                       |
+| ---------------------- | ------------------------------------------------------------------- | -------------------------------- |
+| `full`                 | Every core domain is available.                                     | `handshake/full`                 |
+| `no_passport_module`   | `full`, with `nfc` and `camera` not available, reason `no_module`.  | `handshake/no-passport-module`   |
+| `no_nfc_hardware`      | `full`, with `nfc` not available, reason `no_hardware`.             | `handshake/no-nfc-hardware`      |
+| `no_device_credential` | `full`, with `secureStorage.features.userPresence` equal to `none`. | `handshake/no-device-credential` |
+
+In `self-app` mode the `lifecycle` entry has no `setResult` method and no `cancel` event (SC 4). `handshake/self-app` defines `full` for that mode. It lists the eight core domains only: the shell domains of SC 4 are not in the contract yet.
+
+In the `version` group, native answers a request at a major it does not serve with `UNSUPPORTED_VERSION` and `details.supported`, and accepts `lifecycle.dismiss`. Each response carries native's own major in `version`.
+
 Time:
 
 - A runner uses a fake clock. No fixture waits in real time.
@@ -78,7 +121,7 @@ The format does not define these yet:
 
 - How a runner compares a message with an `expect`. There is no matcher in this package.
 - The `given.provider` key for "succeed with a value".
-- The list of `given.capabilities` names and the list of `native` actions.
+- The list of `native` actions.
 
 ### Provisional parts
 
@@ -125,4 +168,4 @@ pnpm --filter @selfxyz/bridge-schema generate:check  # exit 1 if a generated fil
 
 ## Next step
 
-Define the handshake schema, with the `version` and `handshake` fixture groups (BC 5.2 to 5.4).
+Define the storage policy table and the key-pattern list (SS 5.2, 6.3, 6.4).

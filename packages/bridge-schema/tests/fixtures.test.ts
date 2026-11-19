@@ -2,22 +2,22 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { randomUUID } from 'node:crypto';
-
 import { describe, expect, it } from 'vitest';
 
 import {
-  completeExpect,
-  createLabelBinder,
-  fillPlaceholders,
-  type Fixture,
   fixtureGroup,
   type FixtureJson as Json,
   SCHEMA_IDS,
   stepKind,
 } from '../src';
 import { loadFixtures } from '../src/node';
-import { createContractValidator, failingPaths, fixturesDir } from './support';
+import {
+  createContractValidator,
+  failingPaths,
+  filledMessages,
+  fixturesDir,
+  messageProblems as problemsOf,
+} from './support';
 
 type SendProblem =
   /** The body is text that is not JSON, or JSON that is not an object. Native drops it. */
@@ -46,49 +46,8 @@ const SEND_PROBLEMS: Record<string, SendProblem> = {
   'envelope-invalid/duplicate-request-id': { schemaValid: true },
 };
 
-const SCHEMA_BY_TYPE: Record<string, string> = {
-  request: SCHEMA_IDS.request,
-  response: SCHEMA_IDS.response,
-  event: SCHEMA_IDS.event,
-  cancel: SCHEMA_IDS.cancel,
-};
-
 const validator = createContractValidator();
-
-/** The messages of a fixture as a runner validates them (BC 11.2), split by direction. */
-function filledMessages(fixture: Fixture): {
-  sends: (Json | string)[];
-  expects: Json[];
-} {
-  const steps = fillPlaceholders(fixture.steps, {
-    idFor: createLabelBinder(randomUUID),
-    timestamp: 1794650000000,
-  });
-  return {
-    sends: steps.flatMap(step => ('send' in step ? [step.send] : [])),
-    expects: steps.flatMap(step =>
-      'expect' in step
-        ? [
-            completeExpect(step.expect, {
-              id: randomUUID(),
-              timestamp: 1794650000000,
-              errorMessage: 'for logs',
-            }),
-          ]
-        : [],
-    ),
-  };
-}
-
-function messageProblems(message: Json): string[] {
-  const schemaId = SCHEMA_BY_TYPE[String(message.type)];
-  if (!schemaId) {
-    return [`unknown message type ${String(message.type)}`];
-  }
-  return failingPaths(validator, schemaId, message).map(
-    at => `${schemaId} fails at "${at}"`,
-  );
-}
+const messageProblems = (message: Json) => problemsOf(validator, message);
 
 const inDomainList = (message: Json) =>
   validator.validate(SCHEMA_IDS.domain, message.domain).valid;
@@ -104,6 +63,8 @@ describe('fixture files', () => {
     expect([...new Set(fixtures.map(fixtureGroup))].sort()).toEqual([
       'envelope',
       'envelope-invalid',
+      'handshake',
+      'version',
     ]);
   });
 

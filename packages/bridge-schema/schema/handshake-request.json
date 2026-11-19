@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "bridge/handshake-request",
+  "title": "Handshake request: the params of lifecycle.getConfig (BC 5.2)",
+  "type": "object",
+  "required": ["protocolMinor", "webVersion"],
+  "properties": {
+    "protocolMinor": {
+      "description": "The minor version the web implements.",
+      "type": "integer",
+      "minimum": 0
+    },
+    "webVersion": {
+      "description": "The web app's build version, for logs.",
+      "type": "string"
+    }
+  }
+}
