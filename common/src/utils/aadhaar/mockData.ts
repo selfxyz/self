@@ -12,6 +12,13 @@ import {
   getNameDobLeafAadhaar,
   getNameYobLeafAahaar,
 } from '../trees.js';
+import {
+  convertBigIntToByteArray,
+  decompressByteArray,
+  extractPhoto,
+  splitToWords,
+  Uint8ArrayToCharArray,
+} from './anonAadhaar.js';
 import { testQRData } from './assets/dataInput.js';
 import { AadhaarField, createSelector } from './constants.js';
 import {
@@ -22,16 +29,8 @@ import {
   testCustomData,
 } from './utils.js';
 
-import {
-  convertBigIntToByteArray,
-  decompressByteArray,
-  extractPhoto,
-  splitToWords,
-} from '@anon-aadhaar/core';
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import { SMT } from '@openpassport/zk-kit-smt';
-import { bufferToHex, Uint8ArrayToCharArray } from '@zk-email/helpers/dist/binary-format.js';
-import { sha256Pad } from '@zk-email/helpers/dist/sha-utils.js';
 
 // Helper function to compute padded name
 function computePaddedName(name: string): number[] {
@@ -388,7 +387,7 @@ export async function prepareAadhaarRegisterData(qrData: string, secret: string,
     sharedData.decodedData.length - 256,
     sharedData.decodedData.length
   );
-  const signature = BigInt('0x' + bufferToHex(Buffer.from(signatureBytes)).toString());
+  const signature = BigInt('0x' + Buffer.from(signatureBytes).toString('hex'));
 
   //do promise.all for all certs and pick the one that is valid
   const certificates = await Promise.all(
@@ -400,7 +399,10 @@ export async function prepareAadhaarRegisterData(qrData: string, secret: string,
         const md = forge.md.sha256.create();
         md.update(forge.util.binary.raw.encode(sharedData.signedData));
 
-        const isValid = publicKey.verify(md.digest().getBytes(), signatureBytes);
+        const isValid = publicKey.verify(
+          md.digest().getBytes(),
+          signatureBytes as unknown as string
+        );
         return isValid;
       } catch (error) {
         return false;
@@ -485,7 +487,7 @@ export function prepareAadhaarRegisterTestData(
     sharedData.decodedData.length - 256,
     sharedData.decodedData.length
   );
-  const signature = BigInt('0x' + bufferToHex(Buffer.from(signatureBytes)).toString());
+  const signature = BigInt('0x' + Buffer.from(signatureBytes).toString('hex'));
 
   const publicKey = forge.pki.publicKeyFromPem(pubkeyPem);
 
@@ -558,7 +560,7 @@ export function processQRDataSimple(qrData: string) {
   const qrDataBytes = convertBigIntToByteArray(BigInt(qrData));
   const decodedData = decompressByteArray(qrDataBytes);
   const signedData = decodedData.slice(0, decodedData.length - 256);
-  const [qrDataPaddedNumber, qrDataPaddedLen] = shaPad(signedData, 512 * 3);
+  const [qrDataPaddedNumber, qrDataPaddedLen] = shaPad(Array.from(signedData), 512 * 3);
   const qrDataPadded = new Uint8Array(qrDataPaddedNumber);
   let photoEOI = 0;
   for (let i = 0; i < qrDataPadded.length - 1; i++) {

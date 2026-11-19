@@ -86,9 +86,6 @@ module.exports = {
     // package-local node_modules under circuits/ with pnpm layouts).
     '^snarkjs$': '<rootDir>/../node_modules/snarkjs/build/main.cjs',
     '^ffjavascript$': '<rootDir>/../node_modules/ffjavascript/build/main.cjs',
-    // Fix @anon-aadhaar/core resolution
-    '^@anon-aadhaar/core$':
-      '<rootDir>/../node_modules/@anon-aadhaar/core/dist/index.js',
   },
   transform: {
     '\\.[jt]sx?$': ['babel-jest', { configFile: './babel.config.test.cjs' }],

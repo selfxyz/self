@@ -1,4 +1,3 @@
-import { PublicSignals } from 'snarkjs';
 import { discloseIndices } from './constants.js';
 import { AttestationId } from 'src/types/types.js';
 import { ProofError } from '../errors/index.js';
@@ -44,7 +43,7 @@ export const bytesCount: Record<AttestationId, number[]> = {
  */
 export function getRevealedDataBytes(
   attestationId: AttestationId,
-  publicSignals: PublicSignals
+  publicSignals: string[]
 ): number[] {
   let bytes: number[] = [];
   for (let i = 0; i < getRevealedDataPublicSignalsLength(attestationId); i++) {

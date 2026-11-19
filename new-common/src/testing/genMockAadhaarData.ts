@@ -9,7 +9,7 @@ import {
   rawDataToCompressedQR,
   replaceBytesBetween,
   returnFullId,
-} from '@anon-aadhaar/core';
+} from '../documents/aadhaar/anon-aadhaar.js';
 
 // Pre-generated V2 test QR data (default, no custom fields)
 export const testDefaultQRData =

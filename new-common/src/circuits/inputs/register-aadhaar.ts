@@ -1,5 +1,4 @@
-import { Uint8ArrayToCharArray } from '@zk-email/helpers/dist/binary-format.js';
-import { splitToWords } from '@anon-aadhaar/core';
+import { splitToWords, Uint8ArrayToCharArray } from '../../documents/aadhaar/anon-aadhaar.js';
 
 import {
   processQRData,
