@@ -1,8 +1,7 @@
-import { convertBigIntToByteArray, decompressByteArray, extractPhoto } from '@anon-aadhaar/core';
-
 import { shaPad } from '../../crypto/sha-pad.js';
 import { packBytesAndPoseidon } from '../../crypto/hash/poseidon.js';
 import type { ExtractedQRData } from '../../foundation/types/document.js';
+import { convertBigIntToByteArray, decompressByteArray, extractPhoto } from './anon-aadhaar.js';
 import { extractQRDataFields } from './utils.js';
 
 export interface ProcessedQRData {
