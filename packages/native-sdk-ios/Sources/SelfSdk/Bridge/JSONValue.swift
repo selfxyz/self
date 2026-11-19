@@ -3,7 +3,7 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 /// A JSON value the contract does not type: `params`, `data`, a verification request. The generated
-/// bridge types refer to it. It has no parser and no writer yet.
+/// bridge types refer to it. `JSONText` reads and writes it. A number is a double, as in `JSON.parse`.
 indirect enum JSONValue: Equatable, Sendable {
     case null
     case bool(Bool)

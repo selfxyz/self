@@ -1,0 +1,34 @@
+{
+  "name": "envelope-invalid/params-array",
+  "given": {
+    "capabilities": "full"
+  },
+  "steps": [
+    {
+      "send": {
+        "type": "request",
+        "version": 2,
+        "id": "r1",
+        "domain": "nfc",
+        "method": "getStatus",
+        "params": [],
+        "timestamp": 0
+      }
+    },
+    {
+      "expect": {
+        "type": "response",
+        "version": 2,
+        "domain": "nfc",
+        "requestId": "r1",
+        "success": false,
+        "error": {
+          "code": "INVALID_PARAMS",
+          "details": {
+            "field": "params"
+          }
+        }
+      }
+    }
+  ]
+}

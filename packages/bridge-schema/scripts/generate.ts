@@ -14,6 +14,7 @@ import {
 } from '../src';
 import {
   CONTRACT_PLAN,
+  createFixtureTargets,
   createNativeTargets,
   runGenerateCli,
 } from '../src/node';
@@ -27,7 +28,7 @@ const storagePolicy = JSON.parse(
   readFileSync(path.join(packageRoot, 'storage', 'policy.json'), 'utf8'),
 ) as StoragePolicyTable;
 
-const targets = createNativeTargets({
+const nativeTypeTargets = createNativeTargets({
   plan: CONTRACT_PLAN,
   protocolVersion: PROTOCOL_VERSION,
   storagePolicy,
@@ -38,6 +39,9 @@ const targets = createNativeTargets({
 process.exitCode = runGenerateCli(process.argv.slice(2), {
   schemaDir: path.join(packageRoot, 'schema'),
   outRoot: path.resolve(packageRoot, '..', '..'),
-  targets,
+  targets: [
+    ...nativeTypeTargets,
+    ...createFixtureTargets(path.join(packageRoot, 'fixtures')),
+  ],
   log: line => console.log(line),
 });

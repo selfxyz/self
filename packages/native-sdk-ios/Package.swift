@@ -31,7 +31,9 @@ let package = Package(
         ),
         .testTarget(
             name: "SelfSdkTests",
-            dependencies: ["SelfSdk"]
+            dependencies: ["SelfSdk"],
+            // Written by packages/bridge-schema. `.copy` keeps the `<group>/<case>.json` layout.
+            resources: [.copy("Fixtures")]
         ),
         .testTarget(
             name: "SelfSdkUITests",

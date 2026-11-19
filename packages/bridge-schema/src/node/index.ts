@@ -13,6 +13,7 @@ export {
 } from './generate';
 export { loadFixtures } from './loadFixtures';
 export { loadSchemas } from './loadSchemas';
+export { createFixtureTargets, FIXTURE_OUTPUT_DIRS } from './native/fixtures';
 export { emitKotlin, type KotlinOptions } from './native/kotlin';
 export {
   buildContractModel,

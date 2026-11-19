@@ -1,0 +1,30 @@
+{
+  "name": "envelope/response-optionals-null",
+  "given": {
+    "capabilities": "full"
+  },
+  "steps": [
+    {
+      "send": {
+        "type": "request",
+        "version": 2,
+        "id": "r1",
+        "domain": "lifecycle",
+        "method": "ready",
+        "params": {},
+        "timestamp": 0
+      }
+    },
+    {
+      "expect": {
+        "type": "response",
+        "version": 2,
+        "domain": "lifecycle",
+        "requestId": "r1",
+        "success": true,
+        "data": null,
+        "error": null
+      }
+    }
+  ]
+}

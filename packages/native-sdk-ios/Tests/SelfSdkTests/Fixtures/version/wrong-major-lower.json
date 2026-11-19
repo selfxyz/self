@@ -1,0 +1,37 @@
+{
+  "name": "version/wrong-major-lower",
+  "given": {
+    "capabilities": "full"
+  },
+  "steps": [
+    {
+      "send": {
+        "type": "request",
+        "version": 1,
+        "id": "r1",
+        "domain": "lifecycle",
+        "method": "getConfig",
+        "params": {
+          "protocolMinor": 0,
+          "webVersion": "3.1.0+20e152b1f"
+        },
+        "timestamp": 0
+      }
+    },
+    {
+      "expect": {
+        "type": "response",
+        "version": 2,
+        "domain": "lifecycle",
+        "requestId": "r1",
+        "success": false,
+        "error": {
+          "code": "UNSUPPORTED_VERSION",
+          "details": {
+            "supported": [2]
+          }
+        }
+      }
+    }
+  ]
+}

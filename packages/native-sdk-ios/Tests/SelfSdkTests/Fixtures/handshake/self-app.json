@@ -1,0 +1,170 @@
+{
+  "name": "handshake/self-app",
+  "given": {
+    "capabilities": "full",
+    "launch": {
+      "sdkVersion": "0.1.0",
+      "platform": "ios",
+      "wrapper": "none",
+      "mode": "self-app",
+      "debug": false,
+      "referenceId": "6a1f0c52-3b7e-4d18-9c0a-5e2d7b9f4a11",
+      "verificationRequest": null,
+      "app": {
+        "id": "xyz.self.example",
+        "version": "3.0.0",
+        "build": "412"
+      },
+      "device": {
+        "osVersion": "18.1",
+        "model": "iPhone16,2"
+      },
+      "locale": {
+        "languageTags": ["en-GB", "fr-FR"],
+        "region": "GB",
+        "timeZone": "Europe/London"
+      },
+      "insets": {
+        "top": 59,
+        "right": 0,
+        "bottom": 34,
+        "left": 0
+      },
+      "appState": "active",
+      "migration": {
+        "status": "done"
+      },
+      "initialIntake": null,
+      "pendingIntakeCount": 0,
+      "storage": {
+        "status": "ok"
+      },
+      "bundle": {
+        "build": 2052,
+        "source": "downloaded",
+        "complete": true
+      }
+    }
+  },
+  "steps": [
+    {
+      "send": {
+        "type": "request",
+        "version": 2,
+        "id": "r1",
+        "domain": "lifecycle",
+        "method": "getConfig",
+        "params": {
+          "protocolMinor": 0,
+          "webVersion": "3.1.0+20e152b1f"
+        },
+        "timestamp": 0
+      }
+    },
+    {
+      "expect": {
+        "type": "response",
+        "version": 2,
+        "domain": "lifecycle",
+        "requestId": "r1",
+        "success": true,
+        "data": {
+          "protocolVersion": 2,
+          "protocolMinor": 0,
+          "sdkVersion": "0.1.0",
+          "platform": "ios",
+          "wrapper": "none",
+          "mode": "self-app",
+          "debug": false,
+          "referenceId": "6a1f0c52-3b7e-4d18-9c0a-5e2d7b9f4a11",
+          "verificationRequest": null,
+          "app": {
+            "id": "xyz.self.example",
+            "version": "3.0.0",
+            "build": "412"
+          },
+          "device": {
+            "osVersion": "18.1",
+            "model": "iPhone16,2"
+          },
+          "locale": {
+            "languageTags": ["en-GB", "fr-FR"],
+            "region": "GB",
+            "timeZone": "Europe/London"
+          },
+          "insets": {
+            "top": 59,
+            "right": 0,
+            "bottom": 34,
+            "left": 0
+          },
+          "appState": "active",
+          "migration": {
+            "status": "done"
+          },
+          "initialIntake": null,
+          "pendingIntakeCount": 0,
+          "storage": {
+            "status": "ok"
+          },
+          "bundle": {
+            "build": 2052,
+            "source": "downloaded",
+            "complete": true
+          },
+          "capabilities": {
+            "lifecycle": {
+              "available": true,
+              "methods": ["getConfig", "ready", "dismiss"],
+              "events": []
+            },
+            "secureStorage": {
+              "available": true,
+              "methods": ["has", "get", "getMany", "set", "remove"],
+              "events": [],
+              "features": {
+                "userPresence": "biometric"
+              }
+            },
+            "nfc": {
+              "available": true,
+              "methods": ["getStatus", "scanPassport", "cancelScan"],
+              "events": ["scanProgress"],
+              "features": {
+                "can": false
+              }
+            },
+            "camera": {
+              "available": true,
+              "methods": ["isAvailable", "scanMRZ", "stopCamera"],
+              "events": ["scanHint"],
+              "features": {
+                "hints": ["state"]
+              }
+            },
+            "biometrics": {
+              "available": true,
+              "methods": ["isAvailable", "getBiometryType", "authenticate"],
+              "events": []
+            },
+            "haptic": {
+              "available": true,
+              "methods": ["trigger"],
+              "events": []
+            },
+            "analytics": {
+              "available": true,
+              "methods": ["trackEvent"],
+              "events": []
+            },
+            "navigation": {
+              "available": true,
+              "methods": ["openExternal", "openSettings"],
+              "events": ["back"]
+            }
+          }
+        }
+      }
+    }
+  ]
+}

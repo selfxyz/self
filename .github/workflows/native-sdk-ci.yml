@@ -44,6 +44,8 @@ jobs:
               - ".github/CI_FORCE_RUN"
               - "packages/native-sdk-android/src/main/kotlin/xyz/self/sdk/core/bridge/generated/**"
               - "packages/native-sdk-ios/Sources/SelfSdk/Bridge/Generated/**"
+              - "packages/native-sdk-android/src/test/resources/bridge-fixtures/**"
+              - "packages/native-sdk-ios/Tests/SelfSdkTests/Fixtures/**"
             android:
               - "packages/bridge-schema/**"
               - ".github/workflows/native-sdk-ci.yml"
@@ -70,7 +72,7 @@ jobs:
         run: pnpm --filter @selfxyz/bridge-schema types
       - name: Test
         run: pnpm --filter @selfxyz/bridge-schema test
-      - name: Check that the generated Kotlin and Swift types are up to date
+      - name: Check that the generated Kotlin and Swift types and the fixture copies are up to date
         run: pnpm --filter @selfxyz/bridge-schema generate:check
 
   native-sdk-android:

@@ -6,7 +6,7 @@ package xyz.self.sdk.core.bridge
 
 /**
  * A JSON value the contract does not type: `params`, `data`, a verification request. The generated
- * bridge types refer to it. It has no parser and no writer yet.
+ * bridge types refer to it. [JsonText] reads and writes it. A number is a double, as in `JSON.parse`.
  */
 internal sealed interface JsonValue
 

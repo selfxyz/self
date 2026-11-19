@@ -2,7 +2,7 @@
 
 The single source of the bridge contract between the Self web app and the native SDK cores: the message schema, the types generated from it for TypeScript, Swift and Kotlin, and the shared test fixtures that all three implementations must pass.
 
-**Status: envelope, handshake, storage policy and native types.** The package holds the schema of the four message kinds, the error object, the core domain list and the handshake (`lifecycle.getConfig`), the `envelope`, `envelope-invalid`, `handshake` and `version` fixture groups, the fixture format with its TypeScript loader, the storage policy table with the key-pattern list, and the generator of the Kotlin and Swift types. It holds no other method schema and no `secureStorage` method schema yet.
+**Status: envelope, handshake, storage policy, native types and native fixture copies.** The package holds the schema of the four message kinds, the error object, the core domain list and the handshake (`lifecycle.getConfig`), the `envelope`, `envelope-invalid`, `handshake` and `version` fixture groups, the fixture format with its TypeScript loader, the storage policy table with the key-pattern list, and the generator of the Kotlin and Swift types. It holds no other method schema and no `secureStorage` method schema yet.
 
 ## Schema
 
@@ -121,9 +121,22 @@ Time:
 
 The format does not define these yet:
 
-- How a runner compares a message with an `expect`. There is no matcher in this package.
+- How the web runner compares a message with an `expect`. There is no matcher in this package. The native rule is below.
 - The `given.provider` key for "succeed with a value".
 - The list of `native` actions.
+
+### How a native runner compares
+
+BC 11.1 says a runner compares the listed fields and ignores the message's own `id`, its `timestamp` and `error.message`. It does not say more. The Kotlin and Swift runners (`FixtureMatcher`) apply these rules:
+
+- Only the fields of the contract are compared. Response: `type`, `version`, `domain`, `requestId`, `success`, `data`, `error`. Event: `type`, `version`, `domain`, `event`, `requestId`, `data`. Another field in an `expect` is input for the web runner.
+- A field the `expect` does not list is not compared.
+- `null` in an `expect` means native emits no value: the field is absent or `null`.
+- `data` must be equal as a whole.
+- Of `error`: the `code`, and each key that the `expect` lists in `details`. Native can emit more keys in `details`.
+- Native must emit each `expect` in order and no other message.
+
+A fixture ends as passed, failed or deferred. Deferred means the code under test cannot run a step yet. It is not a pass.
 
 ### Additions to BC 11.1
 
@@ -262,11 +275,21 @@ Drift check. `generate:check` exits 1, and names the file, when a generated file
 
 Not in the types yet:
 
-- A parser and a writer. The types hold values only. The envelope codec is step 8. The Android package has kotlinx-serialization from step 7. Step 8 decides whether `JsonValue` stays or gives way to the library's `JsonElement`.
+- A parser and a writer. The types hold values only. Each native package has a hand-written codec next to the generated directory (`EnvelopeCodec`). It reads and writes `JsonValue` / `JSONValue` and does not use kotlinx-serialization. A number in that type is a double, as in `JSON.parse`.
 - The keys of `details` that the schema does not list, for example `nativeCode` and `cause`.
 - The rules that apply the policy table (`resolve` in `src/storagePolicy.ts`). Native has the rows only. The storage core applies them.
-- The fixtures. A native fixture runner needs them inside each native package, and no step has copied them yet.
 - TypeScript types of the messages. The web bridge takes them in step 12.
+
+### Fixture copies
+
+`generate` also copies every fixture file into each native package, byte for byte, with the `<group>/<case>.json` layout. SwiftPM takes test resources from inside its package only, so a native test cannot read `fixtures/` here.
+
+| Target | Directory                                                         |
+| ------ | ----------------------------------------------------------------- |
+| Kotlin | `packages/native-sdk-android/src/test/resources/bridge-fixtures/` |
+| Swift  | `packages/native-sdk-ios/Tests/SelfSdkTests/Fixtures/`            |
+
+The drift check covers the copies in the same way as the types: a copy that differs, is missing, or has no source fails `generate:check`, and `tests/nativeFixtures.test.ts` runs the same check. Edit a fixture here and run `generate`.
 
 ## Layout
 
@@ -280,7 +303,7 @@ Not in the types yet:
 | `src/fixture.ts`       | The fixture types, `parseFixture` and the placeholder functions. Part of the `.` export.       |
 | `src/validator.ts`     | The `./validator` export. Compiles a set of schemas and validates a value against one of them. |
 | `src/node/`            | The `./node` export. Reads `schema/` and `fixtures/` from disk and runs generation.            |
-| `src/node/native/`     | The Kotlin and Swift targets: the plan, the schema reader and one emitter per language.        |
+| `src/node/native/`     | The Kotlin and Swift targets: the plan, the schema reader, one emitter per language, the copy. |
 | `scripts/generate.ts`  | The generation entry point. It lists the generation targets.                                   |
 
 The exports point at TypeScript source. The package is private and has no build step.
@@ -289,7 +312,7 @@ The exports point at TypeScript source. The package is private and has no build 
 
 - The contract is defined here once. `packages/webview-bridge`, `packages/native-sdk-ios` and `packages/native-sdk-android` consume it and do not define their own copy.
 - A change to a message is made here first, with a fixture, and then in the three implementations.
-- Generated files are committed. Do not edit them by hand; change the schema and run `generate`.
+- Generated files and fixture copies are committed. Do not edit them by hand; change the schema or the fixture and run `generate`.
 - A generated directory holds generated files only. Hand-written native code goes next to it, not in it.
 - ktlint and SwiftLint do not check a generated directory. `generate:check` owns the format of those files.
 - The existing bridge types in `packages/webview-bridge` and `packages/kmp-sdk` are reference only until this package replaces them.
@@ -305,4 +328,4 @@ pnpm --filter @selfxyz/bridge-schema generate:check  # exit 1 if a generated fil
 
 ## Next step
 
-The envelope codec and the native fixture runner (step 8).
+The router in each native package (step 9). It implements the `FixtureSubject` of the native fixture runner, so the fixtures that are deferred today run to the end.

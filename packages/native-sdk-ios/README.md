@@ -2,7 +2,7 @@
 
 The iOS native core of the Self SDK, in plain Swift. It hosts one web view that runs the Self web app and answers the web app's bridge messages with device features.
 
-**Status: bridge types and build setup.** The package holds the types of the bridge contract, their tests, the two targets and the lint setup that the next steps use. No feature code exists yet.
+**Status: bridge types, envelope codec and fixture runner skeleton.** The package holds the types of the bridge contract, the codec that reads and writes its messages, the JavaScript escaping, and a test runner for the shared fixtures. No router, handler or web view host exists yet.
 
 ## Rules for this directory
 
@@ -13,6 +13,7 @@ The iOS native core of the Self SDK, in plain Swift. It hosts one web view that 
 - `Sources/SelfSdk/Bridge/Generated/` is written by `packages/bridge-schema`. Do not edit a file there and do not add one. Change the schema, then run `pnpm --filter @selfxyz/bridge-schema generate`.
 - SwiftLint does not check that directory (`.swiftlint.yml`). The drift check of `packages/bridge-schema` owns the format of those files.
 - The bridge types are internal. They are not part of the host API.
+- `Tests/SelfSdkTests/Fixtures/` is a copy of `packages/bridge-schema/fixtures/`, written by the same command. Do not edit a file there and do not add one.
 - The package, product and target names `SelfSdk` and `SelfSdkUI` are placeholders until the public host API is settled.
 
 ## Requirements
@@ -34,6 +35,16 @@ The iOS native core of the Self SDK, in plain Swift. It hosts one web view that 
 - Each source file of `SelfSdkUI` and of `SelfSdkUITests` is inside `#if canImport(UIKit)`. On macOS the two targets are empty, so `swift build` and `swift test` pass and run no UI test.
 - `SelfSdkUI` cannot see the internal bridge types of `SelfSdk`. How it gets them is not decided. The first step that needs them in `SelfSdkUI` (the WebView host, step 16) decides.
 - `ToolchainTests` in `SelfSdkUITests` proves that the UI target builds and runs on a simulator. It tests no SDK behaviour.
+
+## Bridge codec and fixture runner
+
+`Sources/SelfSdk/Bridge/` holds `JSONText`, `EnvelopeCodec` and `BridgeScript`. `Tests/SelfSdkTests/FixtureRunner/` holds the fixture runner. They are the Swift form of the Kotlin code in `packages/native-sdk-android`, with the same rules and the same test cases. The README of that package describes them. Change both packages together.
+
+Differences from the Kotlin code:
+
+- `EnvelopeCodec.encode` and `JSONText.write` throw (`EnvelopeEncodingError`, `JSONWriteError`) where Kotlin throws `IllegalArgumentException`.
+- `EnvelopeScriptTests` evaluates each script in JavaScriptCore and checks that the page gets the JSON text back unchanged. The Kotlin test has the same vectors as expected strings.
+- The fixture copies are a resource of the test target (`.copy("Fixtures")` in `Package.swift`).
 
 ## Build, test and lint
 

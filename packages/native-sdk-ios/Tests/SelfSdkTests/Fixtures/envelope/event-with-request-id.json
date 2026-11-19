@@ -1,0 +1,62 @@
+{
+  "name": "envelope/event-with-request-id",
+  "given": {
+    "capabilities": "full",
+    "provider": {
+      "nfc.scanPassport": {
+        "progress": [
+          {
+            "step": "waiting_for_tag",
+            "percent": 0
+          }
+        ],
+        "fail": "tag_lost"
+      }
+    }
+  },
+  "steps": [
+    {
+      "send": {
+        "type": "request",
+        "version": 2,
+        "id": "r1",
+        "domain": "nfc",
+        "method": "scanPassport",
+        "params": {
+          "passportNumber": "L898902C3",
+          "dateOfBirth": "740812",
+          "dateOfExpiry": "120415"
+        },
+        "timestamp": 0
+      }
+    },
+    {
+      "expect": {
+        "type": "event",
+        "version": 2,
+        "domain": "nfc",
+        "event": "scanProgress",
+        "requestId": "r1",
+        "data": {
+          "step": "waiting_for_tag",
+          "percent": 0
+        }
+      }
+    },
+    {
+      "expect": {
+        "type": "response",
+        "version": 2,
+        "domain": "nfc",
+        "requestId": "r1",
+        "success": false,
+        "error": {
+          "code": "FAILED",
+          "details": {
+            "reason": "tag_lost"
+          }
+        }
+      }
+    }
+  ]
+}
