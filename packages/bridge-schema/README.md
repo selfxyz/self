@@ -258,11 +258,11 @@ The generator stops with an error, and names the place in the schema, for each o
 - Two wire values of one enum that give the same native name.
 - A policy table that `createStoragePolicy` refuses.
 
-Drift check. `generate:check` exits 1, and names the file, when a generated file differs from the generator's output, when one is missing, and when a generated directory holds a file the generator does not write. `generate` writes the files and removes such a file. A file whose name starts with a dot is ignored. `tests/nativeTypes.test.ts` runs the same check, so `test` also fails on drift. No CI job runs `generate:check` yet: the workflow is step 7.
+Drift check. `generate:check` exits 1, and names the file, when a generated file differs from the generator's output, when one is missing, and when a generated directory holds a file the generator does not write. `generate` writes the files and removes such a file. A file whose name starts with a dot is ignored. `tests/nativeTypes.test.ts` runs the same check, so `test` also fails on drift. The `bridge-schema` job of `.github/workflows/native-sdk-ci.yml` runs `types`, `test` and `generate:check`.
 
 Not in the types yet:
 
-- A parser and a writer. The types hold values only. The envelope codec is step 8. Step 7 adds a serialization library to the Android package, and the JSON value type can change with it.
+- A parser and a writer. The types hold values only. The envelope codec is step 8. The Android package has kotlinx-serialization from step 7. Step 8 decides whether `JsonValue` stays or gives way to the library's `JsonElement`.
 - The keys of `details` that the schema does not list, for example `nativeCode` and `cause`.
 - The rules that apply the policy table (`resolve` in `src/storagePolicy.ts`). Native has the rows only. The storage core applies them.
 - The fixtures. A native fixture runner needs them inside each native package, and no step has copied them yet.
@@ -291,6 +291,7 @@ The exports point at TypeScript source. The package is private and has no build 
 - A change to a message is made here first, with a fixture, and then in the three implementations.
 - Generated files are committed. Do not edit them by hand; change the schema and run `generate`.
 - A generated directory holds generated files only. Hand-written native code goes next to it, not in it.
+- ktlint and SwiftLint do not check a generated directory. `generate:check` owns the format of those files.
 - The existing bridge types in `packages/webview-bridge` and `packages/kmp-sdk` are reference only until this package replaces them.
 
 ## Commands
@@ -304,4 +305,4 @@ pnpm --filter @selfxyz/bridge-schema generate:check  # exit 1 if a generated fil
 
 ## Next step
 
-Package hygiene in both native packages (step 7), then the envelope codec and the native fixture runner (step 8).
+The envelope codec and the native fixture runner (step 8).

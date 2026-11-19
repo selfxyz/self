@@ -1,0 +1,3 @@
+# Written by packages/bridge-schema. Its drift check owns the format of these files.
+[src/main/kotlin/xyz/self/sdk/core/bridge/generated/*.kt]
+ktlint = disabled

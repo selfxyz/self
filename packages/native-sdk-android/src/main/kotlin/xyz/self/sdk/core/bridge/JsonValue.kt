@@ -12,12 +12,22 @@ internal sealed interface JsonValue
 
 internal data object JsonNull : JsonValue
 
-internal data class JsonBool(val value: Boolean) : JsonValue
+internal data class JsonBool(
+    val value: Boolean,
+) : JsonValue
 
-internal data class JsonNumber(val value: Double) : JsonValue
+internal data class JsonNumber(
+    val value: Double,
+) : JsonValue
 
-internal data class JsonString(val value: String) : JsonValue
+internal data class JsonString(
+    val value: String,
+) : JsonValue
 
-internal data class JsonArray(val items: List<JsonValue>) : JsonValue
+internal data class JsonArray(
+    val items: List<JsonValue>,
+) : JsonValue
 
-internal data class JsonObject(val members: Map<String, JsonValue>) : JsonValue
+internal data class JsonObject(
+    val members: Map<String, JsonValue>,
+) : JsonValue

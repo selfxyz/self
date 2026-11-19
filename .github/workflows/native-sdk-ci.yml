@@ -1,0 +1,140 @@
+name: Native SDK CI
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled]
+    paths:
+      - "packages/bridge-schema/**"
+      - "packages/native-sdk-android/**"
+      - "packages/native-sdk-ios/**"
+      - ".github/workflows/native-sdk-ci.yml"
+      - ".github/actions/**"
+      - ".github/CI_FORCE_RUN"
+  push:
+    branches: [dev, staging, main]
+    paths:
+      - "packages/bridge-schema/**"
+      - "packages/native-sdk-android/**"
+      - "packages/native-sdk-ios/**"
+      - ".github/workflows/native-sdk-ci.yml"
+      - ".github/actions/**"
+      - ".github/CI_FORCE_RUN"
+  workflow_dispatch: {}
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      schema: ${{ steps.filter.outputs.schema }}
+      android: ${{ steps.filter.outputs.android }}
+      ios: ${{ steps.filter.outputs.ios }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            schema:
+              - "packages/bridge-schema/**"
+              - ".github/workflows/native-sdk-ci.yml"
+              - ".github/actions/**"
+              - ".github/CI_FORCE_RUN"
+              - "packages/native-sdk-android/src/main/kotlin/xyz/self/sdk/core/bridge/generated/**"
+              - "packages/native-sdk-ios/Sources/SelfSdk/Bridge/Generated/**"
+            android:
+              - "packages/bridge-schema/**"
+              - ".github/workflows/native-sdk-ci.yml"
+              - ".github/actions/**"
+              - ".github/CI_FORCE_RUN"
+              - "packages/native-sdk-android/**"
+            ios:
+              - "packages/bridge-schema/**"
+              - ".github/workflows/native-sdk-ci.yml"
+              - ".github/actions/**"
+              - ".github/CI_FORCE_RUN"
+              - "packages/native-sdk-ios/**"
+
+  bridge-schema:
+    needs: changes
+    if: github.event_name == 'workflow_dispatch' || needs.changes.outputs.schema == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        uses: ./.github/actions/pnpm-install
+      - name: Typecheck
+        run: pnpm --filter @selfxyz/bridge-schema types
+      - name: Test
+        run: pnpm --filter @selfxyz/bridge-schema test
+      - name: Check that the generated Kotlin and Swift types are up to date
+        run: pnpm --filter @selfxyz/bridge-schema generate:check
+
+  native-sdk-android:
+    needs: changes
+    if: github.event_name == 'workflow_dispatch' || needs.changes.outputs.android == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: packages/native-sdk-android
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: ./.github/actions/cache-gradle
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-disabled: true
+      - run: ./gradlew ktlintCheck
+      - run: ./gradlew testReleaseUnitTest
+      - run: ./gradlew assembleRelease
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-sdk-android-test-results
+          path: |
+            packages/native-sdk-android/build/reports/tests/
+            packages/native-sdk-android/build/test-results/
+
+  native-sdk-ios:
+    needs: changes
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (needs.changes.outputs.ios == 'true' &&
+       ((github.event_name == 'push' && contains(fromJSON('["refs/heads/staging","refs/heads/main"]'), github.ref)) ||
+        (github.event_name == 'pull_request' && contains(fromJSON('["staging","main"]'), github.base_ref)) ||
+        (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'test-ios'))))
+    runs-on: namespace-profile-apple-silicon-6cpu
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: packages/native-sdk-ios
+    steps:
+      - uses: actions/checkout@v4
+      - name: Find iOS Simulator
+        id: sim
+        uses: ./.github/actions/find-ios-simulator
+      - name: Install SwiftLint
+        run: brew install swiftlint
+      - name: Run SwiftLint
+        run: swiftlint lint --strict
+      - name: Build and test the Foundation-only target on macOS
+        run: swift build && swift test
+      - name: Test both targets on the simulator
+        run: |
+          xcodebuild \
+            -scheme SelfSdk-Package \
+            -destination "id=${{ steps.sim.outputs.id }}" \
+            -resultBundlePath TestResults.xcresult \
+            test
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-sdk-ios-test-results
+          path: packages/native-sdk-ios/TestResults.xcresult

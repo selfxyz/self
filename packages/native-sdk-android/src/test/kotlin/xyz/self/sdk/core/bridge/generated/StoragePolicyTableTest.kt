@@ -12,8 +12,7 @@ class StoragePolicyTableTest {
     private fun firstRow(
         namespace: StorageNamespace,
         key: String,
-    ): StoragePolicyRow? =
-        StoragePolicyTable.rows.firstOrNull { it.namespace == namespace && Regex(it.pattern).matches(key) }
+    ): StoragePolicyRow? = StoragePolicyTable.rows.firstOrNull { it.namespace == namespace && Regex(it.pattern).matches(key) }
 
     @Test
     fun tableConstants() {

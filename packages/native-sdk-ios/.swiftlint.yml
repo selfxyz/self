@@ -1,0 +1,5 @@
+excluded:
+  - .build
+  - DerivedData
+  # Written by packages/bridge-schema. Its drift check owns the format of these files.
+  - Sources/SelfSdk/Bridge/Generated
