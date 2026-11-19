@@ -2,7 +2,7 @@
 
 The Android native core of the Self SDK, in plain Kotlin. It hosts one WebView that runs the Self web app and answers the web app's bridge messages with device features.
 
-**Status: empty skeleton.** The module builds and has one placeholder test. No feature code exists yet.
+**Status: bridge types only.** The module holds the types of the bridge contract and their tests. No feature code exists yet.
 
 ## Rules for this directory
 
@@ -10,6 +10,8 @@ The Android native core of the Self SDK, in plain Kotlin. It hosts one WebView t
 - The existing implementations are reference only. Read them to learn behaviour, or copy a reviewed piece file by file. Do not move or edit them: `packages/native-shell-android`, `packages/kmp-sdk`, `packages/rn-sdk`, `packages/mobile-sdk-alpha`, `app/android`.
 - Passport NFC and MRZ source does not go in this repository. It is consumed as a published binary.
 - Native code does hardware and OS access only. Screens and flow logic live in the web app.
+- `src/main/kotlin/xyz/self/sdk/core/bridge/generated/` is written by `packages/bridge-schema`. Do not edit a file there and do not add one. Change the schema, then run `pnpm --filter @selfxyz/bridge-schema generate`.
+- The bridge types are `internal`. They are not part of the host API.
 - The group `xyz.self.sdk` and the namespace `xyz.self.sdk.core` are placeholders until the public host API is settled.
 
 ## Requirements

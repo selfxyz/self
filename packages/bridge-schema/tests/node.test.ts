@@ -150,6 +150,42 @@ describe('generate', () => {
     );
   });
 
+  describe('with a directory the target owns', () => {
+    const owner: GenerationTarget = { ...idList, ownedDirs: ['out'] };
+    const options = () => ({ schemaDir, outRoot, targets: [owner] });
+
+    beforeEach(() => {
+      generate({ ...options(), check: false });
+      mkdirSync(path.join(outRoot, 'out/old'), { recursive: true });
+      writeFileSync(path.join(outRoot, 'out/old/gone.txt'), 'left behind');
+    });
+
+    it('reports a file no target emits under check and leaves it in place', () => {
+      expect(generate({ ...options(), check: true }).changed).toEqual([
+        'out/old/gone.txt',
+      ]);
+      expect(existsSync(path.join(outRoot, 'out/old/gone.txt'))).toBe(true);
+    });
+
+    it('removes a file no target emits on a write', () => {
+      expect(generate({ ...options(), check: false }).changed).toEqual([
+        'out/old/gone.txt',
+      ]);
+      expect(existsSync(path.join(outRoot, 'out/old/gone.txt'))).toBe(false);
+      expect(generate({ ...options(), check: true }).changed).toEqual([]);
+    });
+
+    it('does not touch a file outside the owned directory, or a dot file inside it', () => {
+      rmSync(path.join(outRoot, 'out/old'), { recursive: true });
+      writeFileSync(path.join(outRoot, 'kept.txt'), 'hand-written');
+      writeFileSync(path.join(outRoot, 'out/.DS_Store'), '');
+
+      expect(generate({ ...options(), check: false }).changed).toEqual([]);
+      expect(existsSync(path.join(outRoot, 'kept.txt'))).toBe(true);
+      expect(existsSync(path.join(outRoot, 'out/.DS_Store'))).toBe(true);
+    });
+  });
+
   it('refuses a path outside the output root', () => {
     const escaping: GenerationTarget = {
       name: 'escaping',

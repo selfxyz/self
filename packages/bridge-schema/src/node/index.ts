@@ -13,3 +13,19 @@ export {
 } from './generate';
 export { loadFixtures } from './loadFixtures';
 export { loadSchemas } from './loadSchemas';
+export { emitKotlin, type KotlinOptions } from './native/kotlin';
+export {
+  buildContractModel,
+  type ContractModel,
+  type ContractPlan,
+  type TypePlan,
+  type TypeRef,
+} from './native/model';
+export { CONTRACT_PLAN } from './native/plan';
+export { emitSwift, type SwiftOptions } from './native/swift';
+export {
+  createNativeTargets,
+  NATIVE_OUTPUT_DIRS,
+  type NativeTargetOptions,
+} from './native/targets';
+export type { NativeConstants } from './native/text';

@@ -2,7 +2,7 @@
 
 The single source of the bridge contract between the Self web app and the native SDK cores: the message schema, the types generated from it for TypeScript, Swift and Kotlin, and the shared test fixtures that all three implementations must pass.
 
-**Status: envelope, handshake and storage policy.** The package holds the schema of the four message kinds, the error object, the core domain list and the handshake (`lifecycle.getConfig`), the `envelope`, `envelope-invalid`, `handshake` and `version` fixture groups, the fixture format with its TypeScript loader, and the storage policy table with the key-pattern list. It holds no other method schema, no `secureStorage` method schema and no generation target yet.
+**Status: envelope, handshake, storage policy and native types.** The package holds the schema of the four message kinds, the error object, the core domain list and the handshake (`lifecycle.getConfig`), the `envelope`, `envelope-invalid`, `handshake` and `version` fixture groups, the fixture format with its TypeScript loader, the storage policy table with the key-pattern list, and the generator of the Kotlin and Swift types. It holds no other method schema and no `secureStorage` method schema yet.
 
 ## Schema
 
@@ -142,7 +142,7 @@ In `envelope-invalid`, a `send` can fail the schema, and some input is invalid f
 
 Source: Storage and Security (SS) sections 5.2, 6.3 and 6.4, and SS 11.2 for the document id. All are marked Proposed and are built as drafted. Decision ids: SS-S5.2, SS-S6.3, MG-Q1 (draft (a): the keys are the web's keys), MG-Q3 (draft (a): the marker is the native item `migration.state`).
 
-`storage/policy.json` is the policy table. Both native libraries load this file, and the web's storage adapter takes its key-pattern list from it. No second list exists.
+`storage/policy.json` is the policy table. The web's storage adapter takes its key-pattern list from it. Each native library has the rows as generated constants (`StoragePolicyTable`, see Native types), and `generate:check` fails when they differ from this file. No list is written by hand a second time. SS 6.3 says that both native libraries load the same file: the constants replace a file read at start, because SwiftPM cannot read outside its package root.
 
 ```json
 {
@@ -217,6 +217,57 @@ The spec does not determine these. Each has the default that the table or the co
 
 Not in this package yet: the `secureStorage` method schemas, the value size limit (SS 5.3), and the rules that need the stored item (a `set` below the minimum class, a `set` that lowers a class). Those belong to the storage core.
 
+## Native types
+
+Source: plan 3.4-1 option (a) and 3.4-2 option (b). The generator is in this package. Its output is committed inside each native package, because SwiftPM cannot read a file outside its package root.
+
+| Target | Directory                                                                         | Visibility |
+| ------ | --------------------------------------------------------------------------------- | ---------- |
+| Kotlin | `packages/native-sdk-android/src/main/kotlin/xyz/self/sdk/core/bridge/generated/` | `internal` |
+| Swift  | `packages/native-sdk-ios/Sources/SelfSdk/Bridge/Generated/`                       | internal   |
+
+Each target writes the same six files:
+
+| File                 | Holds                                                                                                        | Read from                              |
+| -------------------- | ------------------------------------------------------------------------------------------------------------ | -------------------------------------- |
+| `BridgeEnvelope`     | The four messages, the message type list, the core domain list, the cancel reasons.                          | `schema/`                              |
+| `BridgeError`        | The error object, its details, the eleven codes, the three reason lists, and `allowedReasons` of a code.     | `schema/error.json`, `error-code.json` |
+| `BridgeHandshake`    | The handshake request and response, the capability entry, and the enum of each typed field and feature flag. | `schema/`                              |
+| `BridgeStorage`      | The storage namespaces and the protection classes.                                                           | `schema/storage-policy.json`           |
+| `BridgeProtocol`     | The protocol major and minor.                                                                                | `PROTOCOL_VERSION`                     |
+| `StoragePolicyTable` | The rows of the policy table as constants, the table version, the key length limit and the default class.    | `storage/policy.json`, `src/`          |
+
+How a schema becomes a type:
+
+- `src/node/native/plan.ts` gives each type its name and the place in the schema it is read from. JSON Schema has no name for an inline enum or object. The values of an enum, the fields of a type, and which fields can be `null` come from the schema.
+- An enum holds the wire value of each case: `wire` and `fromWire` in Kotlin, `rawValue` in Swift. In Swift the wire value `none` is the case `noneValue`, because `.none` on an optional means "no value".
+- A field that the schema does not require is nullable and has the default `null`. A field that is required and can be `null` is nullable and has no default. `null` and absent are the same.
+- An `integer` is `Long` in Kotlin and `Int` in Swift. A `number` is `Double`.
+- A property with a `const` is not a field. The `type` of a message is the type itself, and `BridgeMessageType` lists the four values.
+- `domain`, `method`, `event`, `details.reason` and `migration.status` are strings, as in the schema. Use `BridgeDomain` to route and `allowedReasons` to check a reason.
+- A value the schema does not type is `JsonValue` (Kotlin) or `JSONValue` (Swift), a small hand-written type in each native package: `params`, `data`, `verificationRequest`, `initialIntake`, `features`.
+- `capabilities` is a map from a domain name to an entry that can be `null`. The typed feature flags have an enum each (`BridgeUserPresence`, `BridgeCameraHint`), and `features` stays an untyped object.
+- A rule of the schema that is not a type is not in the types: `if`, `then`, `else`, `pattern`, `minimum`, the lengths.
+
+The generator stops with an error, and names the place in the schema, for each of these:
+
+- A keyword it does not read.
+- An inline enum or an object with named fields that the plan does not name.
+- A schema enum that no type is made from.
+- A code with a reason list in `bridge/error` that the plan does not list, or lists with another enum.
+- Two wire values of one enum that give the same native name.
+- A policy table that `createStoragePolicy` refuses.
+
+Drift check. `generate:check` exits 1, and names the file, when a generated file differs from the generator's output, when one is missing, and when a generated directory holds a file the generator does not write. `generate` writes the files and removes such a file. A file whose name starts with a dot is ignored. `tests/nativeTypes.test.ts` runs the same check, so `test` also fails on drift. No CI job runs `generate:check` yet: the workflow is step 7.
+
+Not in the types yet:
+
+- A parser and a writer. The types hold values only. The envelope codec is step 8. Step 7 adds a serialization library to the Android package, and the JSON value type can change with it.
+- The keys of `details` that the schema does not list, for example `nativeCode` and `cause`.
+- The rules that apply the policy table (`resolve` in `src/storagePolicy.ts`). Native has the rows only. The storage core applies them.
+- The fixtures. A native fixture runner needs them inside each native package, and no step has copied them yet.
+- TypeScript types of the messages. The web bridge takes them in step 12.
+
 ## Layout
 
 | Path                   | Holds                                                                                          |
@@ -229,6 +280,7 @@ Not in this package yet: the `secureStorage` method schemas, the value size limi
 | `src/fixture.ts`       | The fixture types, `parseFixture` and the placeholder functions. Part of the `.` export.       |
 | `src/validator.ts`     | The `./validator` export. Compiles a set of schemas and validates a value against one of them. |
 | `src/node/`            | The `./node` export. Reads `schema/` and `fixtures/` from disk and runs generation.            |
+| `src/node/native/`     | The Kotlin and Swift targets: the plan, the schema reader and one emitter per language.        |
 | `scripts/generate.ts`  | The generation entry point. It lists the generation targets.                                   |
 
 The exports point at TypeScript source. The package is private and has no build step.
@@ -238,6 +290,7 @@ The exports point at TypeScript source. The package is private and has no build 
 - The contract is defined here once. `packages/webview-bridge`, `packages/native-sdk-ios` and `packages/native-sdk-android` consume it and do not define their own copy.
 - A change to a message is made here first, with a fixture, and then in the three implementations.
 - Generated files are committed. Do not edit them by hand; change the schema and run `generate`.
+- A generated directory holds generated files only. Hand-written native code goes next to it, not in it.
 - The existing bridge types in `packages/webview-bridge` and `packages/kmp-sdk` are reference only until this package replaces them.
 
 ## Commands
@@ -251,4 +304,4 @@ pnpm --filter @selfxyz/bridge-schema generate:check  # exit 1 if a generated fil
 
 ## Next step
 
-Deliver the Kotlin and Swift types into both native packages, with a drift check.
+Package hygiene in both native packages (step 7), then the envelope codec and the native fixture runner (step 8).

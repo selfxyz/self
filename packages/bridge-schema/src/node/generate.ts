@@ -2,7 +2,14 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import path from 'node:path';
 
 import type { SchemaDocument } from '../schemaDocument';
@@ -17,6 +24,11 @@ export interface GeneratedFile {
 
 export interface GenerationTarget {
   readonly name: string;
+  /**
+   * Directories, relative to `outRoot`, that hold this target's files and no other file. A file
+   * there that the target does not emit is out of date: a write removes it and a check reports it.
+   */
+  readonly ownedDirs?: readonly string[];
   emit(schemas: readonly SchemaDocument[]): GeneratedFile[];
 }
 
@@ -30,7 +42,10 @@ export interface GenerationOptions {
 
 export interface GenerationReport {
   readonly files: readonly string[];
-  /** Files whose content on disk differs from the generated content, or that are missing. */
+  /**
+   * Files whose content on disk differs from the generated content, files that are missing, and
+   * files in an owned directory that no target emits.
+   */
   readonly changed: readonly string[];
 }
 
@@ -45,6 +60,21 @@ function resolveInside(outRoot: string, relativePath: string): string {
     throw new Error(`Generated path escapes the output root: ${relativePath}`);
   }
   return resolved;
+}
+
+function listFiles(dir: string): string[] {
+  if (!existsSync(dir)) {
+    return [];
+  }
+  const entries = readdirSync(dir, { withFileTypes: true }).filter(
+    // Not a source file: for example the `.DS_Store` that Finder writes.
+    entry => !entry.name.startsWith('.'),
+  );
+  return entries.flatMap(entry =>
+    entry.isDirectory()
+      ? listFiles(path.join(dir, entry.name))
+      : [path.join(dir, entry.name)],
+  );
 }
 
 export function generate(options: GenerationOptions): GenerationReport {
@@ -76,6 +106,26 @@ export function generate(options: GenerationOptions): GenerationReport {
     if (!options.check) {
       mkdirSync(path.dirname(absolutePath), { recursive: true });
       writeFileSync(absolutePath, content, 'utf8');
+    }
+  }
+
+  const emitted = new Set(
+    [...outputs.keys()].map(file => resolveInside(options.outRoot, file)),
+  );
+  for (const target of options.targets) {
+    for (const ownedDir of target.ownedDirs ?? []) {
+      const absoluteDir = resolveInside(options.outRoot, ownedDir);
+      for (const found of listFiles(absoluteDir).sort()) {
+        if (emitted.has(found)) {
+          continue;
+        }
+        changed.push(
+          path.relative(options.outRoot, found).split(path.sep).join('/'),
+        );
+        if (!options.check) {
+          rmSync(found);
+        }
+      }
     }
   }
 
@@ -112,7 +162,7 @@ export function runGenerateCli(
   }
   const verb = check
     ? 'up to date'
-    : `generated, ${report.changed.length} written`;
+    : `generated, ${report.changed.length} written or removed`;
   options.log(`${report.files.length} file(s) ${verb}.`);
   return 0;
 }
