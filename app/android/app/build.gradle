@@ -255,7 +255,7 @@ dependencies {
     implementation project(':passportreader')
     implementation 'org.jmrtd:jmrtd:0.7.35'
 
-    implementation 'com.github.blikoon:QRCodeScanner:0.1.2'
+    implementation 'com.google.zxing:core:3.3.0'
 
     // e-Aadhaar PDF decrypt + rasterize (pure-JVM, ships no .so -> no 16KB alignment impact).
     // Exclude its bundled bouncycastle (jdk15to18:1.72): it duplicates the app's existing
