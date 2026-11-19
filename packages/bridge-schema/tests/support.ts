@@ -18,7 +18,7 @@ import {
 import { loadSchemas } from '../src/node';
 import { createSchemaValidator, type SchemaValidator } from '../src/validator';
 
-const packageRoot = path.resolve(
+export const packageRoot = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   '..',
 );

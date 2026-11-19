@@ -25,6 +25,21 @@ export {
   stepKind,
 } from './fixture';
 export { SCHEMA_DIALECT, type SchemaDocument } from './schemaDocument';
+export {
+  createStoragePolicy,
+  isValidStorageKey,
+  STORAGE_DEFAULT_PROTECTION,
+  STORAGE_KEY_MAX_LENGTH,
+  STORAGE_POLICY_VERSION,
+  type StorageNamespace,
+  type StoragePolicy,
+  type StoragePolicyClassRow,
+  type StoragePolicyDecision,
+  type StoragePolicyForbiddenRow,
+  type StoragePolicyRow,
+  type StoragePolicyTable,
+  type StorageProtection,
+} from './storagePolicy';
 
 /** Version of the bridge contract defined by this package. `0.0.0` while the contract is incomplete. */
 export const BRIDGE_SCHEMA_VERSION = '0.0.0';
@@ -44,6 +59,8 @@ export const SCHEMA_IDS = {
   handshakeResponse: 'bridge/handshake-response',
   request: 'bridge/request',
   response: 'bridge/response',
+  storageKey: 'bridge/storage-key',
+  storagePolicy: 'bridge/storage-policy',
 } as const;
 
 /**

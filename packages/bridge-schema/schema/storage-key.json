@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "bridge/storage-key",
+  "title": "A key name of the web namespace (SS 5.2)",
+  "description": "1 to 128 characters from A-Z a-z 0-9 _ . -. Native rejects any other key with INVALID_PARAMS and details.field = \"key\".",
+  "type": "string",
+  "pattern": "^[A-Za-z0-9_.-]{1,128}$"
+}

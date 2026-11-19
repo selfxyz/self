@@ -8,7 +8,8 @@
     "./validator": "./src/validator.ts",
     "./node": "./src/node/index.ts",
     "./schema/*": "./schema/*",
-    "./fixtures/*": "./fixtures/*"
+    "./fixtures/*": "./fixtures/*",
+    "./storage/*": "./storage/*"
   },
   "scripts": {
     "generate": "tsx scripts/generate.ts",

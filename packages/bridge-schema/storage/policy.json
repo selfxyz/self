@@ -1,0 +1,83 @@
+{
+  "version": 1,
+  "rows": [
+    {
+      "item": "Recovery phrase",
+      "namespace": "web",
+      "pattern": "self_mnemonic",
+      "minimumProtection": "userPresence"
+    },
+    {
+      "item": "Private key. Never stored.",
+      "namespace": "web",
+      "pattern": "self_private_key",
+      "forbidden": true
+    },
+    {
+      "item": "Identity address",
+      "namespace": "web",
+      "pattern": "self_identity_address",
+      "minimumProtection": "none"
+    },
+    {
+      "item": "Backup state",
+      "namespace": "web",
+      "pattern": "self_backup_state",
+      "minimumProtection": "none"
+    },
+    {
+      "item": "Document catalog",
+      "namespace": "web",
+      "pattern": "self_document_catalog",
+      "minimumProtection": "none"
+    },
+    {
+      "item": "Document. The id is the content hash.",
+      "namespace": "web",
+      "pattern": "self_doc_[0-9a-f]{64}",
+      "minimumProtection": "none"
+    },
+    {
+      "item": "Staged legacy document",
+      "namespace": "web",
+      "pattern": "self_migration_legacy_[1-4]",
+      "minimumProtection": "none"
+    },
+    {
+      "item": "Setting",
+      "namespace": "web",
+      "pattern": "self_setting_[a-z0-9_]{1,64}",
+      "minimumProtection": "none"
+    },
+    {
+      "item": "Migration state marker",
+      "namespace": "native",
+      "pattern": "migration\\.state",
+      "minimumProtection": "none"
+    },
+    {
+      "item": "Presence record of a web item. iOS only.",
+      "namespace": "native",
+      "pattern": "presence\\.web\\.[A-Za-z0-9_.-]{1,128}",
+      "minimumProtection": "none"
+    },
+    {
+      "item": "Presence record of a native item. iOS only.",
+      "namespace": "native",
+      "pattern": "presence\\.native\\.[A-Za-z0-9_.-]{1,128}",
+      "minimumProtection": "none"
+    },
+    {
+      "item": "Storage metadata",
+      "namespace": "native",
+      "pattern": "storage\\.meta",
+      "minimumProtection": "none"
+    },
+    {
+      "item": "Google sign-in tokens. Android only.",
+      "namespace": "native",
+      "pattern": "cloud\\.google\\.tokens",
+      "minimumProtection": "none"
+    }
+  ]
+}

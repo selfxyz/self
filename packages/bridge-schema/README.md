@@ -2,7 +2,7 @@
 
 The single source of the bridge contract between the Self web app and the native SDK cores: the message schema, the types generated from it for TypeScript, Swift and Kotlin, and the shared test fixtures that all three implementations must pass.
 
-**Status: envelope and handshake.** The package holds the schema of the four message kinds, the error object, the core domain list and the handshake (`lifecycle.getConfig`), the `envelope`, `envelope-invalid`, `handshake` and `version` fixture groups, and the fixture format with its TypeScript loader. It holds no other method schema, no storage schema and no generation target yet.
+**Status: envelope, handshake and storage policy.** The package holds the schema of the four message kinds, the error object, the core domain list and the handshake (`lifecycle.getConfig`), the `envelope`, `envelope-invalid`, `handshake` and `version` fixture groups, the fixture format with its TypeScript loader, and the storage policy table with the key-pattern list. It holds no other method schema, no `secureStorage` method schema and no generation target yet.
 
 ## Schema
 
@@ -23,10 +23,12 @@ The handshake also takes fields that other pages propose and BC does not show ye
 | `bridge/handshake-request`  | The `params` of `lifecycle.getConfig`: `protocolMinor` and `webVersion`.                             |
 | `bridge/handshake-response` | The `data` of the answer to `lifecycle.getConfig`.                                                   |
 | `bridge/capability`         | The entry of one domain in the handshake's `capabilities`.                                           |
+| `bridge/storage-key`        | A key name of the web namespace: 1 to 128 characters from `A-Z a-z 0-9 _ . -`.                       |
+| `bridge/storage-policy`     | The shape of `storage/policy.json`. Not a bridge message.                                            |
 
 What the schema does and does not enforce:
 
-- An unknown field is valid at every level. An optional field can be `null` or absent. A required field cannot be `null`.
+- An unknown field is valid at every level of a message. `bridge/storage-policy` is not a message and does not allow one. An optional field can be `null` or absent. A required field cannot be `null`.
 - `version` is any integer from 1. A message with a major the receiver does not serve is a valid message that gets `UNSUPPORTED_VERSION`.
 - `domain` on a message is any non-empty string, because native answers an unknown domain with `UNSUPPORTED` and copies the name into the response. Check the name against `bridge/domain` to route.
 - `method`, `params`, `data` and event names are not checked per domain by the message schemas. `METHOD_SCHEMAS` names the schema of a method's `params` and of its result. It lists `lifecycle.getConfig` only.
@@ -70,18 +72,18 @@ One file per fixture, at `fixtures/<group>/<case>.json`:
 
 The Swift and Kotlin runners must read a file by the same rules as the TypeScript loader. The loader rejects a file that breaks one of them.
 
-| Part                 | Rule                                                                                                        |
-| -------------------- | ----------------------------------------------------------------------------------------------------------- |
-| The file             | A JSON object with the keys `name`, `given` and `steps` and no other key.                                   |
-| `name`               | Equal to the file path under `fixtures/`, without `.json`.                                                  |
-| `given.capabilities` | Required. A named device setup, for example `full`. See the list below.                                     |
-| `given.provider`     | Optional. What the fake hardware does, keyed by `<domain>.<method>`.                                        |
-| `given.launch`       | Optional. An object: what the fake host and device give native for this launch. `given` takes no other key. |
-| `steps`              | A list of one or more steps. A step is an object with exactly one of the four keys below.                   |
-| `send`               | A message from web to native: a JSON object.                                                                |
-| `expect`             | A message from native to web: a JSON object.                                                                |
-| `advance`            | The runner moves its fake clock forward by this many milliseconds: an integer, 1 or more.                   |
-| `native`             | A non-empty string that names an action native starts with no message from the web. Provisional, see below. |
+| Part                 | Rule                                                                                                         |
+| -------------------- | ------------------------------------------------------------------------------------------------------------ |
+| The file             | A JSON object with the keys `name`, `given` and `steps` and no other key.                                    |
+| `name`               | Equal to the file path under `fixtures/`, without `.json`.                                                   |
+| `given.capabilities` | Required. A named device setup, for example `full`. See the list below.                                      |
+| `given.provider`     | Optional. What the fake hardware does, keyed by `<domain>.<method>`.                                         |
+| `given.launch`       | Optional. An object: what the fake host and device give native for this launch. `given` takes no other key.  |
+| `steps`              | A list of one or more steps. A step is an object with exactly one of the four keys below.                    |
+| `send`               | A message from web to native: a JSON object.                                                                 |
+| `expect`             | A message from native to web: a JSON object.                                                                 |
+| `advance`            | The runner moves its fake clock forward by this many milliseconds: an integer, 1 or more.                    |
+| `native`             | A non-empty string that names an action native starts with no message from the web. See the additions below. |
 
 The loader does not check the messages inside `send` and `expect`. `tests/fixtures.test.ts` validates them against the schema.
 
@@ -123,9 +125,9 @@ The format does not define these yet:
 - The `given.provider` key for "succeed with a value".
 - The list of `native` actions.
 
-### Provisional parts
+### Additions to BC 11.1
 
-Step 2 wrote these into fixtures before the format was defined. BC 11.1 has no raw body and no native step, and it names the provider behaviours "emit progress" and "never finish" without a key for them. The loader accepts all four so that the fixtures load as they are. The owner has not confirmed them.
+BC 11.1 has no raw body and no native step, and it names the provider behaviours "emit progress" and "never finish" without a key for them. These four parts are this package's additions to the format. The owner accepted them. The loader accepts all four.
 
 | Part                                              | Meaning                                                                                                                                                                                          |
 | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -136,17 +138,98 @@ Step 2 wrote these into fixtures before the format was defined. BC 11.1 has no r
 
 In `envelope-invalid`, a `send` can fail the schema, and some input is invalid for a reason the schema cannot see (unknown domain, unknown method, duplicate request id). `SEND_PROBLEMS` in `tests/fixtures.test.ts` states which. Every `expect` in that group is valid.
 
+## Storage policy
+
+Source: Storage and Security (SS) sections 5.2, 6.3 and 6.4, and SS 11.2 for the document id. All are marked Proposed and are built as drafted. Decision ids: SS-S5.2, SS-S6.3, MG-Q1 (draft (a): the keys are the web's keys), MG-Q3 (draft (a): the marker is the native item `migration.state`).
+
+`storage/policy.json` is the policy table. Both native libraries load this file, and the web's storage adapter takes its key-pattern list from it. No second list exists.
+
+```json
+{
+  "version": 1,
+  "rows": [
+    {
+      "item": "Recovery phrase",
+      "namespace": "web",
+      "pattern": "self_mnemonic",
+      "minimumProtection": "userPresence"
+    },
+    {
+      "item": "Private key. Never stored.",
+      "namespace": "web",
+      "pattern": "self_private_key",
+      "forbidden": true
+    }
+  ]
+}
+```
+
+| Part                | Rule                                                                                                                |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| The file            | Has the shape of `bridge/storage-policy`. An unknown field is not valid. A reader rejects a `version` other than 1. |
+| `namespace`         | `web` or `native` (SS 5.1).                                                                                         |
+| `pattern`           | A regular expression that must match the whole key. See the pattern rules below.                                    |
+| `minimumProtection` | `none` or `userPresence`: the lowest class the storage layer stores a matching key at.                              |
+| `forbidden`         | `true`: the storage layer refuses a matching key. A row has `minimumProtection` or `forbidden`, not both.           |
+| `item`              | Optional text for readers of the file.                                                                              |
+
+How a reader applies the table (`createStoragePolicy`, `resolve`):
+
+1. Check the key. A web key must pass `bridge/storage-key`. A native key has the same characters and no length limit. A key that fails is `invalid`, and no row is tried.
+2. Take the first row of the key's namespace whose pattern matches the whole key.
+3. A forbidden row: `forbidden`. Another row: `matched`, with the row's minimum class. No row: `unmatched`, with the class `none` (BC 8.2).
+
+The three results are different on purpose. Native stores a web key that no row matches, at the class `none`, because native cannot tell whether a key holds personal data. The web's storage adapter does not: `isAllowedWebKey` accepts a key only when a web row that is not forbidden matches it. `webKeyPatterns` is that key-pattern list.
+
+Pattern rules. JavaScript, `java.util.regex` and `NSRegularExpression` must give the same answer, so a pattern has three parts only:
+
+- A literal character from `A-Z a-z 0-9 _ -`.
+- An escaped dot, `\.`.
+- A character class of those characters and the dot, with an optional `{n}` or `{n,m}` count.
+
+A pattern has no anchor. A reader matches the whole key (`matches()` in Kotlin, a match of the full range in Swift) and does not search inside it. The key check of step 1 runs first, so a key with a line break never reaches a pattern.
+
+The rows (SS 6.4):
+
+| Namespace | Pattern                                   | Class or mark  | Item                                            |
+| --------- | ----------------------------------------- | -------------- | ----------------------------------------------- |
+| `web`     | `self_mnemonic`                           | `userPresence` | Recovery phrase. The only row above `none`.     |
+| `web`     | `self_private_key`                        | forbidden      | Private key. Never stored.                      |
+| `web`     | `self_identity_address`                   | `none`         | Identity address.                               |
+| `web`     | `self_backup_state`                       | `none`         | Backup state.                                   |
+| `web`     | `self_document_catalog`                   | `none`         | Document catalog.                               |
+| `web`     | `self_doc_[0-9a-f]{64}`                   | `none`         | Document. The id is the content hash (SS 11.2). |
+| `web`     | `self_migration_legacy_[1-4]`             | `none`         | Staged legacy document (MG 4.3).                |
+| `web`     | `self_setting_[a-z0-9_]{1,64}`            | `none`         | Setting.                                        |
+| `native`  | `migration\.state`                        | `none`         | Migration state marker.                         |
+| `native`  | `presence\.web\.[A-Za-z0-9_.-]{1,128}`    | `none`         | Presence record of a web item. iOS only.        |
+| `native`  | `presence\.native\.[A-Za-z0-9_.-]{1,128}` | `none`         | Presence record of a native item. iOS only.     |
+| `native`  | `storage\.meta`                           | `none`         | Storage metadata.                               |
+| `native`  | `cloud\.google\.tokens`                   | `none`         | Google sign-in tokens. Android only.            |
+
+The spec does not determine these. Each has the default that the table or the code uses:
+
+- The characters and length of `<name>` in `self_setting_<name>`. Default: 1 to 64 characters from `a-z 0-9 _`.
+- Whether the 128 character limit of SS 5.2 covers the native namespace. `presence.<namespace>.<key>` is longer than 128 characters for a long key. Default: the limit covers web keys only.
+- The error native gives for a forbidden key. SS 6.4 says native refuses the name and names no code. The table holds no error. Step 25 needs the answer.
+- A push token, pending KYC sessions and points events (SS 6.4, "Not determined"). They have no row.
+- The debug key `self_keychain_debug` of the web's debug screens. It has no row, so the web's key check does not allow it.
+
+Not in this package yet: the `secureStorage` method schemas, the value size limit (SS 5.3), and the rules that need the stored item (a `set` below the minimum class, a `set` that lowers a class). Those belong to the storage core.
+
 ## Layout
 
-| Path                  | Holds                                                                                          |
-| --------------------- | ---------------------------------------------------------------------------------------------- |
-| `schema/`             | The contract as JSON Schema files. Each file declares the 2020-12 dialect and a unique `$id`.  |
-| `fixtures/`           | The shared conformance fixtures, as JSON.                                                      |
-| `src/index.ts`        | The `.` export. No Node API and no validator, so the web bundle can import it.                 |
-| `src/fixture.ts`      | The fixture types, `parseFixture` and the placeholder functions. Part of the `.` export.       |
-| `src/validator.ts`    | The `./validator` export. Compiles a set of schemas and validates a value against one of them. |
-| `src/node/`           | The `./node` export. Reads `schema/` and `fixtures/` from disk and runs generation.            |
-| `scripts/generate.ts` | The generation entry point. It lists the generation targets.                                   |
+| Path                   | Holds                                                                                          |
+| ---------------------- | ---------------------------------------------------------------------------------------------- |
+| `schema/`              | The contract as JSON Schema files. Each file declares the 2020-12 dialect and a unique `$id`.  |
+| `fixtures/`            | The shared conformance fixtures, as JSON.                                                      |
+| `storage/policy.json`  | The storage policy table. The `./storage/*` export.                                            |
+| `src/storagePolicy.ts` | The table types, `isValidStorageKey` and `createStoragePolicy`. Part of the `.` export.        |
+| `src/index.ts`         | The `.` export. No Node API and no validator, so the web bundle can import it.                 |
+| `src/fixture.ts`       | The fixture types, `parseFixture` and the placeholder functions. Part of the `.` export.       |
+| `src/validator.ts`     | The `./validator` export. Compiles a set of schemas and validates a value against one of them. |
+| `src/node/`            | The `./node` export. Reads `schema/` and `fixtures/` from disk and runs generation.            |
+| `scripts/generate.ts`  | The generation entry point. It lists the generation targets.                                   |
 
 The exports point at TypeScript source. The package is private and has no build step.
 
@@ -168,4 +251,4 @@ pnpm --filter @selfxyz/bridge-schema generate:check  # exit 1 if a generated fil
 
 ## Next step
 
-Define the storage policy table and the key-pattern list (SS 5.2, 6.3, 6.4).
+Deliver the Kotlin and Swift types into both native packages, with a drift check.

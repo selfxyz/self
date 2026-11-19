@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "bridge/storage-policy",
+  "title": "The storage policy table, storage/policy.json (SS 6.3)",
+  "description": "Not a bridge message. An unknown field is not valid: a reader that does not know the whole table must not apply part of it.",
+  "type": "object",
+  "required": ["version", "rows"],
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "description": "The format of this file. A reader rejects a version it does not know.",
+      "const": 1
+    },
+    "rows": {
+      "description": "A key takes the first row of its namespace whose pattern matches it.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/row"
+      }
+    }
+  },
+  "$defs": {
+    "protection": {
+      "description": "A protection class, by its wire value (BC 8.2, SS 6.1).",
+      "enum": ["none", "userPresence"]
+    },
+    "pattern": {
+      "description": "Matches the whole key. Built from three parts only, which the JavaScript, Kotlin and Swift regular expression engines read the same way: a literal character from A-Z a-z 0-9 _ -, an escaped dot, and a character class of those characters with an optional {n} or {n,m} count.",
+      "type": "string",
+      "pattern": "^(?:[A-Za-z0-9_-]|\\\\\\.|\\[[A-Za-z0-9_.-]+\\](?:\\{[0-9]+(?:,[0-9]+)?\\})?)+$"
+    },
+    "row": {
+      "description": "A row gives a minimum class or forbids the key name, not both.",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/classRow"
+        },
+        {
+          "$ref": "#/$defs/forbiddenRow"
+        }
+      ]
+    },
+    "item": {
+      "description": "What the row is for. For readers of the file only.",
+      "type": "string",
+      "minLength": 1
+    },
+    "namespace": {
+      "enum": ["web", "native"]
+    },
+    "classRow": {
+      "type": "object",
+      "required": ["namespace", "pattern", "minimumProtection"],
+      "additionalProperties": false,
+      "properties": {
+        "item": {
+          "$ref": "#/$defs/item"
+        },
+        "namespace": {
+          "$ref": "#/$defs/namespace"
+        },
+        "pattern": {
+          "$ref": "#/$defs/pattern"
+        },
+        "minimumProtection": {
+          "$ref": "#/$defs/protection"
+        }
+      }
+    },
+    "forbiddenRow": {
+      "type": "object",
+      "required": ["namespace", "pattern", "forbidden"],
+      "additionalProperties": false,
+      "properties": {
+        "item": {
+          "$ref": "#/$defs/item"
+        },
+        "namespace": {
+          "$ref": "#/$defs/namespace"
+        },
+        "pattern": {
+          "$ref": "#/$defs/pattern"
+        },
+        "forbidden": {
+          "description": "The storage layer refuses every operation that names a matching key.",
+          "const": true
+        }
+      }
+    }
+  }
+}
