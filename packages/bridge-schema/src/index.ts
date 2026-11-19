@@ -2,6 +2,28 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
+export {
+  completeExpect,
+  createLabelBinder,
+  type ExpectFill,
+  fillPlaceholders,
+  type Fixture,
+  FIXTURE_STEP_KINDS,
+  type FixtureAdvanceStep,
+  type FixtureExpectStep,
+  type FixtureGiven,
+  fixtureGroup,
+  type FixtureJson,
+  fixtureLabels,
+  type FixtureNativeStep,
+  type FixtureProviderSetup,
+  type FixtureSendStep,
+  type FixtureStep,
+  type FixtureStepKind,
+  parseFixture,
+  type PlaceholderValues,
+  stepKind,
+} from './fixture';
 export { SCHEMA_DIALECT, type SchemaDocument } from './schemaDocument';
 
 /** Version of the bridge contract defined by this package. `0.0.0` while the contract is incomplete. */

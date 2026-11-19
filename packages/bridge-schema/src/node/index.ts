@@ -11,4 +11,5 @@ export {
   generate,
   runGenerateCli,
 } from './generate';
+export { loadFixtures } from './loadFixtures';
 export { loadSchemas } from './loadSchemas';

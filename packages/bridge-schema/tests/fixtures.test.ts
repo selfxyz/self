@@ -3,22 +3,21 @@
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
 import { randomUUID } from 'node:crypto';
-import { readdirSync, readFileSync } from 'node:fs';
-import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { SCHEMA_IDS } from '../src';
+import {
+  completeExpect,
+  createLabelBinder,
+  fillPlaceholders,
+  type Fixture,
+  fixtureGroup,
+  type FixtureJson as Json,
+  SCHEMA_IDS,
+  stepKind,
+} from '../src';
+import { loadFixtures } from '../src/node';
 import { createContractValidator, failingPaths, fixturesDir } from './support';
-
-type Json = Record<string, unknown>;
-
-interface Fixture {
-  readonly group: string;
-  readonly file: string;
-  readonly name: unknown;
-  readonly steps: readonly Json[];
-}
 
 type SendProblem =
   /** The body is text that is not JSON, or JSON that is not an object. Native drops it. */
@@ -56,70 +55,29 @@ const SCHEMA_BY_TYPE: Record<string, string> = {
 
 const validator = createContractValidator();
 
-function loadFixtures(): Fixture[] {
-  const fixtures: Fixture[] = [];
-  for (const group of readdirSync(fixturesDir, { withFileTypes: true })) {
-    if (!group.isDirectory()) {
-      throw new Error(`fixtures/${group.name}: expected a group directory`);
-    }
-    for (const file of readdirSync(path.join(fixturesDir, group.name)).sort()) {
-      const parsed = JSON.parse(
-        readFileSync(path.join(fixturesDir, group.name, file), 'utf8'),
-      ) as { name: unknown; steps: Json[] };
-      fixtures.push({
-        group: group.name,
-        file: `${group.name}/${path.basename(file, '.json')}`,
-        name: parsed.name,
-        steps: parsed.steps,
-      });
-    }
-  }
-  return fixtures;
-}
-
-/**
- * Fills the placeholders of BC 11.1: an id label becomes a UUID, the same one wherever the label
- * appears, and an `expect` gains the fields a runner does not compare.
- */
-function fillPlaceholders(steps: readonly Json[]): Json[] {
-  const ids = new Map<string, string>();
-  const idFor = (label: string) => {
-    const id = ids.get(label) ?? randomUUID();
-    ids.set(label, id);
-    return id;
-  };
-  const swapLabel = (message: Json, field: string) =>
-    typeof message[field] === 'string'
-      ? { [field]: idFor(message[field]) }
-      : {};
-
-  return steps.map(step => {
-    if (typeof step.send === 'object' && step.send !== null) {
-      const send = step.send as Json;
-      return {
-        send: {
-          ...send,
-          ...swapLabel(send, 'id'),
-          ...swapLabel(send, 'requestId'),
-          ...(send.timestamp === 0 ? { timestamp: 1794650000000 } : {}),
-        },
-      };
-    }
-    if (step.expect !== undefined) {
-      const expected = step.expect as Json;
-      const error = expected.error as Json | null | undefined;
-      return {
-        expect: {
-          id: randomUUID(),
-          timestamp: 1794650000000,
-          ...expected,
-          ...swapLabel(expected, 'requestId'),
-          ...(error ? { error: { message: 'for logs', ...error } } : {}),
-        },
-      };
-    }
-    return step;
+/** The messages of a fixture as a runner validates them (BC 11.2), split by direction. */
+function filledMessages(fixture: Fixture): {
+  sends: (Json | string)[];
+  expects: Json[];
+} {
+  const steps = fillPlaceholders(fixture.steps, {
+    idFor: createLabelBinder(randomUUID),
+    timestamp: 1794650000000,
   });
+  return {
+    sends: steps.flatMap(step => ('send' in step ? [step.send] : [])),
+    expects: steps.flatMap(step =>
+      'expect' in step
+        ? [
+            completeExpect(step.expect, {
+              id: randomUUID(),
+              timestamp: 1794650000000,
+              errorMessage: 'for logs',
+            }),
+          ]
+        : [],
+    ),
+  };
 }
 
 function messageProblems(message: Json): string[] {
@@ -135,28 +93,25 @@ function messageProblems(message: Json): string[] {
 const inDomainList = (message: Json) =>
   validator.validate(SCHEMA_IDS.domain, message.domain).valid;
 
-const fixtures = loadFixtures();
+const fixtures = loadFixtures(fixturesDir);
 const inGroup = (group: string) =>
   fixtures
-    .filter(fixture => fixture.group === group)
-    .map(fixture => [fixture.file, fixture] as const);
+    .filter(fixture => fixtureGroup(fixture) === group)
+    .map(fixture => [fixture.name, fixture] as const);
 
 describe('fixture files', () => {
   it('fall into the groups this package defines', () => {
-    expect([...new Set(fixtures.map(fixture => fixture.group))].sort()).toEqual(
-      ['envelope', 'envelope-invalid'],
-    );
+    expect([...new Set(fixtures.map(fixtureGroup))].sort()).toEqual([
+      'envelope',
+      'envelope-invalid',
+    ]);
   });
 
-  it.each(fixtures.map(fixture => [fixture.file, fixture] as const))(
-    '%s is named after its path and holds one action per step',
-    (file, fixture) => {
-      expect(fixture.name).toBe(file);
-      expect(fixture.steps.length).toBeGreaterThan(0);
+  it.each(fixtures.map(fixture => [fixture.name, fixture] as const))(
+    '%s uses only the step kinds its group needs',
+    (_name, fixture) => {
       for (const step of fixture.steps) {
-        const keys = Object.keys(step);
-        expect(keys).toHaveLength(1);
-        expect(['send', 'expect', 'native']).toContain(keys[0]);
+        expect(['send', 'expect', 'native']).toContain(stepKind(step));
       }
     },
   );
@@ -172,19 +127,23 @@ describe('envelope fixtures', () => {
   it.each(inGroup('envelope'))(
     '%s holds only valid messages',
     (_file, fixture) => {
-      for (const step of fillPlaceholders(fixture.steps)) {
-        const message = (step.send ?? step.expect) as Json | undefined;
-        if (message) {
-          expect(messageProblems(message)).toEqual([]);
-          expect(inDomainList(message)).toBe(true);
-        }
+      const { sends, expects } = filledMessages(fixture);
+      for (const message of [...sends, ...expects] as Json[]) {
+        expect(messageProblems(message)).toEqual([]);
+        expect(inDomainList(message)).toBe(true);
       }
     },
   );
 
   it('cover the four message kinds', () => {
     const kinds = inGroup('envelope').flatMap(([, fixture]) =>
-      fixture.steps.map(step => ((step.send ?? step.expect) as Json)?.type),
+      fixture.steps.map(step =>
+        'send' in step
+          ? (step.send as Json).type
+          : 'expect' in step
+            ? step.expect.type
+            : undefined,
+      ),
     );
 
     expect(new Set(kinds.filter(Boolean))).toEqual(
@@ -198,13 +157,7 @@ describe('envelope-invalid fixtures', () => {
     '%s is invalid in the way it states, and native answers with valid messages',
     (file, fixture) => {
       const problem = SEND_PROBLEMS[file];
-      const steps = fillPlaceholders(fixture.steps);
-      const sends = steps.flatMap(step =>
-        step.send === undefined ? [] : [step.send],
-      );
-      const expects = steps.flatMap(step =>
-        step.expect === undefined ? [] : [step.expect as Json],
-      );
+      const { sends, expects } = filledMessages(fixture);
 
       for (const expected of expects) {
         expect(messageProblems(expected)).toEqual([]);
@@ -263,12 +216,12 @@ describe('envelope-invalid fixtures', () => {
 
   it('the duplicate-request-id fixture sends one id twice', () => {
     const fixture = fixtures.find(
-      candidate => candidate.file === 'envelope-invalid/duplicate-request-id',
+      candidate => candidate.name === 'envelope-invalid/duplicate-request-id',
     );
     const requestIds = (fixture?.steps ?? [])
-      .map(step => step.send as Json | undefined)
-      .filter(send => send?.type === 'request')
-      .map(send => send?.id);
+      .flatMap(step => ('send' in step ? [step.send as Json] : []))
+      .filter(send => send.type === 'request')
+      .map(send => send.id);
 
     expect(requestIds).toHaveLength(2);
     expect(new Set(requestIds).size).toBe(1);
