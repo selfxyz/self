@@ -1086,12 +1086,6 @@ importers:
         specifier: ^2.1.8
         version: 2.1.9(@types/node@22.20.1)(@vitest/ui@2.1.9)(jsdom@25.0.1)(less@4.6.4)(lightningcss@1.32.0)(sass@1.99.0)(supports-color@8.1.1)(terser@5.47.1)
 
-  packages/bridge-schema:
-    devDependencies:
-      typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
-
   packages/kmp-sdk: {}
 
   packages/kmp-sdk-test-app: {}
