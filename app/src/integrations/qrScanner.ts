@@ -3,7 +3,6 @@
 import { NativeModules, Platform } from 'react-native';
 
 interface QRScannerBridge {
-  scanQRCode: () => Promise<string>;
   scanQRCodeFromPhotoLibrary: () => Promise<string>;
   scanQRCodeFromPDF: (fileUri: string, password: string) => Promise<string>;
 }
@@ -21,13 +20,6 @@ if (Platform.OS === 'ios') {
 }
 
 export { QRScanner };
-
-/**
- * Check if QR scanner camera is available
- */
-export const isQRScannerCameraAvailable = (): boolean => {
-  return QRScanner?.scanQRCode != null;
-};
 
 /**
  * Check if QR scanner photo library is available
@@ -73,16 +65,4 @@ export const scanQRCodeFromPDF = async (
   }
 
   return await QRScanner.scanQRCodeFromPDF(fileUri, password);
-};
-
-/**
- * Scans QR code using device camera
- * @returns Promise that resolves with the QR code content
- */
-export const scanQRCodeWithCamera = async (): Promise<string> => {
-  if (!QRScanner?.scanQRCode) {
-    throw new Error('QR Scanner not available on this platform');
-  }
-
-  return await QRScanner.scanQRCode();
 };

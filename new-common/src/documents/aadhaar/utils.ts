@@ -1,6 +1,5 @@
-import { convertBigIntToByteArray, decompressByteArray } from '@anon-aadhaar/core';
-
 import type { ExtractedQRData } from '../../foundation/types/document.js';
+import { convertBigIntToByteArray, decompressByteArray } from './anon-aadhaar.js';
 
 const FIELD_POSITIONS = {
   NAME: 3,
