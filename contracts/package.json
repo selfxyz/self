@@ -1,6 +1,6 @@
 {
   "name": "@selfxyz/contracts",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "repository": {
     "type": "git",
     "url": "https://github.com/selfxyz/self"
@@ -83,7 +83,6 @@
     "@safe-global/api-kit": "^4.0.1",
     "@safe-global/protocol-kit": "^6.1.2",
     "@safe-global/safe-core-sdk-types": "^5.1.0",
-    "@selfxyz/new-common": "workspace:^",
     "@zk-kit/baby-jubjub": "^1.0.3",
     "@zk-kit/imt": "^2.0.0-beta.4",
     "@zk-kit/imt.sol": "^2.0.0-beta.12",
@@ -106,6 +105,7 @@
     "@nomicfoundation/hardhat-verify": "^2.1.0",
     "@nomicfoundation/ignition-core": "^0.15.12",
     "@openzeppelin/hardhat-upgrades": "^3.9.1",
+    "@selfxyz/new-common": "workspace:^",
     "@typechain/ethers-v6": "^0.5.0",
     "@typechain/hardhat": "^9.0.0",
     "@types/chai": "^4.3.16",
