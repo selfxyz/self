@@ -1,6 +1,6 @@
 {
   "name": "@selfxyz/common",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "Constants and utils for self sdks",
   "repository": {
     "type": "git",
@@ -684,7 +684,6 @@
     "types": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@anon-aadhaar/core": "npm:@selfxyz/anon-aadhaar-core@^0.0.1",
     "@noble/hashes": "^1.5.0",
     "@openpassport/zk-kit-imt": "^0.0.5",
     "@openpassport/zk-kit-lean-imt": "^0.0.6",
@@ -709,10 +708,10 @@
     "json-to-ts": "^2.1.0",
     "jsrsasign": "^11.1.0",
     "node-forge": "github:remicolin/forge#17a11a632dd0e50343b3b8393245a2696f78afbb",
+    "pako": "^2.1.0",
     "path": "^0.12.7",
     "pkijs": "^3.3.3",
     "poseidon-lite": "^0.2.0",
-    "snarkjs": "^0.7.5",
     "typescript-parser": "^2.6.1",
     "uuid": "^11.1.0"
   },
@@ -720,6 +719,7 @@
     "@types/js-sha1": "^0.6.3",
     "@types/node": "^22.18.3",
     "@types/node-forge": "^1.3.10",
+    "@types/pako": "^2.0.3",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
     "@vitest/ui": "^2.1.8",

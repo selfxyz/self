@@ -58,9 +58,9 @@ import { storePassportData } from '@/providers/passportDataProvider';
 import { extraYPadding } from '@/utils/styleUtils';
 
 const documentTypes = {
-  mock_passport: 'Passport',
-  mock_id_card: 'ID Card',
-  mock_aadhaar: 'Aadhaar',
+  mock_passport: 'Test Passport',
+  mock_id_card: 'Test ID Card',
+  mock_aadhaar: 'Test Aadhaar',
 };
 
 const MockDocumentTitleCard = () => {
@@ -87,11 +87,12 @@ const MockDocumentTitleCard = () => {
       </YStack>
       <YStack flex={1} flexDirection="column" gap={2}>
         <Text fontFamily={dinot} fontWeight={500} fontSize="$6" color={white}>
-          Generate mock document data
+          Create a test document
         </Text>
         <Caption style={{ fontFamily: dinot, fontSize: 20, color: zinc400 }}>
-          Configure data parameters to generate a mock document for testing
-          purposes on the Self Protocol.
+          For developers integrating Self. A test document works only in Self's
+          test environment. It is not an identity document and cannot be used
+          for real verification.
         </Caption>
       </YStack>
     </YStack>
@@ -232,7 +233,7 @@ const CreateMockScreen: React.FC = () => {
         </Pressable>
         <YStack paddingHorizontal="$4" paddingBottom="$4" gap="$4">
           <Text fontWeight={500} fontSize="$6" fontFamily={dinot}>
-            Mock Document Parameters
+            Test Document Parameters
           </Text>
           <YStack
             borderRadius={10}
@@ -264,7 +265,7 @@ const CreateMockScreen: React.FC = () => {
               </FormSection>
             )}
 
-            <FormSection title="Document Type">
+            <FormSection title="Test Document Type">
               <Button
                 onPress={() => {
                   buttonTap();
@@ -379,7 +380,7 @@ const CreateMockScreen: React.FC = () => {
             </FormSection>
 
             {selectedDocumentType !== 'mock_aadhaar' && (
-              <FormSection title="Document Expires In">
+              <FormSection title="Test Document Expires In">
                 <XStack
                   alignItems="center"
                   gap="$2"
@@ -516,7 +517,7 @@ const CreateMockScreen: React.FC = () => {
               {isGenerating ? (
                 <Spinner color="gray" size="small" />
               ) : (
-                'Generate Mock Document'
+                'Create Test Document'
               )}
             </PrimaryButton>
           </ButtonsContainer>
@@ -543,7 +544,7 @@ const CreateMockScreen: React.FC = () => {
               justifyContent="space-between"
               marginBottom="$4"
             >
-              <Text fontSize="$8">Select a document type</Text>
+              <Text fontSize="$8">Select a test document type</Text>
               <XStack
                 onPress={() => {
                   selectionChange();

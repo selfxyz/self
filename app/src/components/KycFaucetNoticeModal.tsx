@@ -2,20 +2,22 @@
 // SPDX-License-Identifier: BUSL-1.1
 // NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.
 
-import React, { useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 
 import { useSelfClient } from '@selfxyz/mobile-sdk-alpha';
 import { KycEvents } from '@selfxyz/mobile-sdk-alpha/constants/analytics';
 
 import AlertModal, { type AlertModalParams } from '@/components/AlertModal';
-import { KYC_FAUCET_NOTICE_COPY } from '@/integrations/kyc/faucetNotice';
+import {
+  KYC_FAUCET_NOTICE_COPY,
+  runKycFaucetNoticeContinuation,
+} from '@/integrations/kyc/faucetNotice';
 import { useKycFaucetNoticeStore } from '@/stores/kycFaucetNoticeStore';
 
 const KycFaucetNoticeModal: React.FC = () => {
   const selfClient = useSelfClient();
   const isOpen = useKycFaucetNoticeStore(state => state.isOpen);
   const isContinuing = useKycFaucetNoticeStore(state => state.isContinuing);
-  const close = useKycFaucetNoticeStore(state => state.close);
 
   useEffect(() => {
     if (isOpen) {
@@ -31,29 +33,48 @@ const KycFaucetNoticeModal: React.FC = () => {
     return {
       titleText: KYC_FAUCET_NOTICE_COPY.titleText,
       bodyText: KYC_FAUCET_NOTICE_COPY.bodyText,
-      buttonText: isContinuing
-        ? KYC_FAUCET_NOTICE_COPY.loadingText
-        : KYC_FAUCET_NOTICE_COPY.continueText,
-      secondaryButtonText: isContinuing
-        ? undefined
-        : KYC_FAUCET_NOTICE_COPY.goBackText,
-      disablePrimaryButton: isContinuing,
-      preventDismiss: isContinuing,
-      onButtonPress: async () => {
-        const { onContinue, markContinuing } =
-          useKycFaucetNoticeStore.getState();
+      buttonText: KYC_FAUCET_NOTICE_COPY.continueText,
+      secondaryButtonText: KYC_FAUCET_NOTICE_COPY.goBackText,
+      onButtonPress: () => {
         selfClient.trackEvent(KycEvents.FAUCET_NOTICE_CONTINUED);
-        markContinuing();
-        await onContinue?.();
+        useKycFaucetNoticeStore.getState().markContinuing();
       },
       onSecondaryButtonPress: decline,
       onModalDismiss: decline,
     };
-  }, [isContinuing, selfClient]);
+  }, [selfClient]);
 
-  if (!isOpen) return null;
+  // AlertModal hides after every button press; while continuing the modal
+  // must stay mounted until onHidden so the native dismissal can finish.
+  const handleHide = useCallback(() => {
+    const store = useKycFaucetNoticeStore.getState();
+    if (!store.isContinuing) {
+      store.close();
+    }
+  }, []);
 
-  return <AlertModal visible modalParams={modalParams} onHideModal={close} />;
+  const handleHidden = useCallback(() => {
+    const {
+      isContinuing: shouldContinue,
+      onContinue,
+      close,
+    } = useKycFaucetNoticeStore.getState();
+    close();
+    if (shouldContinue && onContinue) {
+      runKycFaucetNoticeContinuation(onContinue);
+    }
+  }, []);
+
+  if (!isOpen && !isContinuing) return null;
+
+  return (
+    <AlertModal
+      visible={isOpen}
+      modalParams={modalParams}
+      onHideModal={handleHide}
+      onHidden={handleHidden}
+    />
+  );
 };
 
 export default KycFaucetNoticeModal;

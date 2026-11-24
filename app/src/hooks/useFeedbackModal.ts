@@ -80,14 +80,25 @@ export const useFeedbackModal = () => {
     setIsVisible(false);
   }, []);
 
+  const isModalVisibleRef = useRef(false);
+
   const showModal = useCallback((params: AlertModalParams) => {
+    isModalVisibleRef.current = true;
     setModalParams(params);
     setIsModalVisible(true);
   }, []);
 
+  // Params stay mounted until the native modal has finished dismissing so
+  // AlertModal can observe the dismissal; see onModalHidden.
   const hideModal = useCallback(() => {
+    isModalVisibleRef.current = false;
     setIsModalVisible(false);
-    setModalParams(null);
+  }, []);
+
+  const onModalHidden = useCallback(() => {
+    if (!isModalVisibleRef.current) {
+      setModalParams(null);
+    }
   }, []);
 
   useEffect(() => {
@@ -137,5 +148,6 @@ export const useFeedbackModal = () => {
     modalParams,
     showModal,
     hideModal,
+    onModalHidden,
   };
 };

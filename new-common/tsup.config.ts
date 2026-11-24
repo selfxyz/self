@@ -155,8 +155,6 @@ export default defineConfig([
     platform: 'neutral',
     external: [
       /^@openpassport/,
-      /^@zk-email/,
-      /^@anon-aadhaar/,
       /^@zk-kit/,
       /^asn1/,
       /^elliptic/,
@@ -165,6 +163,7 @@ export default defineConfig([
       /^i18n-/,
       /^js-/,
       /^node-forge/,
+      /^pako/,
       /^pkijs/,
       /^poseidon-/,
     ],
@@ -184,8 +183,6 @@ export default defineConfig([
     platform: 'neutral',
     external: [
       /^@openpassport/,
-      /^@zk-email/,
-      /^@anon-aadhaar/,
       /^@zk-kit/,
       /^asn1/,
       /^elliptic/,
@@ -194,6 +191,7 @@ export default defineConfig([
       /^i18n-/,
       /^js-/,
       /^node-forge/,
+      /^pako/,
       /^pkijs/,
       /^poseidon-/,
     ],
