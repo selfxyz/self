@@ -1,0 +1,66 @@
+{
+  "scope_notes": [
+    "This part covers `@selfxyz/core`, `@selfxyz/common`, `@selfxyz/qrcode`, `@selfxyz/qrcode-angular` and `@selfxyz/sdk-common`. The `@selfxyz/contracts` npm package belongs to the contracts part.",
+    "The list comes from `pnpm-lock.yaml` at this commit. A consumer's install resolves the declared ranges again and also installs peer dependencies, so their tree can differ."
+  ],
+  "answers": {
+    "CocoaPods and Gradle native dependencies": {
+      "done": true,
+      "result": "Not applicable. These packages have no native dependencies."
+    },
+    "Circom includes": {
+      "done": true,
+      "result": "Not applicable to the SDK packages."
+    },
+    "Forge libs": {
+      "done": true,
+      "result": "Not applicable to the SDK packages."
+    },
+    "Own licence": {
+      "done": false,
+      "result": "`sdk/core`, `sdk/qrcode` and `sdk/qrcode-angular` have an MIT `LICENSE` file. `common` and `sdk/sdk-common` have none yet."
+    },
+    "Each flagged prod dependency": {
+      "done": true,
+      "result": "A `prod` row here is a runtime dependency that a consumer installs with the package."
+    },
+    "Git submodules": {
+      "done": true,
+      "result": "None of the three belongs to the SDK packages."
+    },
+    "Vendored binaries": {
+      "done": true,
+      "result": "None."
+    },
+    "Fonts": {
+      "done": true,
+      "result": "None."
+    },
+    "Git or URL dependencies": {
+      "done": true,
+      "result": "Licence read from `package.json` at the pinned commit."
+    },
+    "Pods and local Gradle modules": {
+      "done": true,
+      "result": "Not applicable."
+    },
+    "Code cloned or downloaded at build time": {
+      "done": true,
+      "result": "Not applicable."
+    },
+    "Source files copied from other projects": {
+      "done": false
+    },
+    "Android: is the Gradle list": {
+      "done": true,
+      "result": "Not applicable."
+    },
+    "LGPL: how is it linked": {
+      "done": true,
+      "result": "No LGPL package in the runtime dependencies. `rollup-plugin-dts` (LGPL-3.0-only) is a build tool."
+    },
+    "Attribution": {
+      "done": false
+    }
+  }
+}
