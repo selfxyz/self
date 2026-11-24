@@ -2,6 +2,7 @@
   "name": "@selfxyz/rn-sdk",
   "version": "0.0.1-alpha.1",
   "description": "Self Protocol React Native SDK — thin WebView wrapper for identity verification",
+  "license": "BUSL-1.1",
   "sideEffects": false,
   "exports": {
     ".": {

@@ -2,6 +2,7 @@
   "name": "@selfxyz/rn-nfc-passport",
   "version": "0.0.1-alpha.1",
   "description": "Optional native NFC passport reader for @selfxyz/rn-sdk — registers the SelfPassportReader module (ICAO 9303 chip read)",
+  "license": "BUSL-1.1",
   "sideEffects": false,
   "exports": {
     ".": {

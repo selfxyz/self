@@ -1,6 +1,7 @@
 {
   "name": "@selfxyz/webview-bridge",
   "version": "0.0.1-alpha.1",
+  "license": "BUSL-1.1",
   "type": "module",
   "exports": {
     ".": {
