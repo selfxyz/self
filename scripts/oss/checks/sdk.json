@@ -62,5 +62,6 @@
     "Attribution": {
       "done": false
     }
-  }
+  },
+  "status_text": "The ok / nok status of this part is recorded in the internal licence register, not in this file."
 }

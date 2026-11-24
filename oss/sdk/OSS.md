@@ -16,11 +16,10 @@ The ok / nok status of this part is recorded in the internal licence register, n
 
 ## What the scanner covered
 
-- npm: 1745 packages from `pnpm-lock.yaml` importer `sdk/core,common,sdk/qrcode,sdk/qrcode-angular,sdk/sdk-common` (250 prod, 1495 dev-only). "prod" means reachable from `dependencies` or `optionalDependencies`; peer dependencies are not followed.
-- CocoaPods: 0 pods from `Podfile.lock`.
-- Gradle: 0 Maven modules, mode: **none**.
+- npm packages: 1745 (250 prod, 1495 dev-only).
+- "prod" means reachable from runtime dependency declarations in the lockfile or build file. Peer dependencies are not followed.
 - Workspace packages followed: `@selfxyz/common`, `@selfxyz/sdk-common`.
-- Licence lookups: deps.dev, npm registry, Maven POMs, CocoaPods trunk (0 requests this run; 0 packages had no metadata the scanner could reach). Not sent: names matching `@selfxyz/,selfxyz,xyz.self`, workspace packages, git/url dependencies, pods outside the trunk spec repo, local Gradle modules.
+- Licence lookups: deps.dev, npm registry, Maven POMs, CocoaPods trunk, GitHub licence detection (0 requests this run; 0 packages had no metadata the scanner could reach). Not sent: names matching `@selfxyz/,selfxyz,xyz.self`, workspace packages, git/url dependencies, pods outside the trunk spec repo, local Gradle modules.
 - Curations applied from `scripts/oss/curations.json`: 15 rows.
 
 ## Flagged dependencies
@@ -72,9 +71,9 @@ The scanner cannot see these. Answers come from `scripts/oss/checks/`: a ticked 
   - `contracts/lib/forge-std @ 8e40513d6`
   - `contracts/lib/openzeppelin-foundry-upgrades @ cbce1e003`
   - `packages/mobile-sdk-alpha/mobile-sdk-native @ 074f23538`
-- [x] Vendored binaries under `sdk/` and followed workspace packages (0): what are they, and under which licence?
+- [x] Vendored binaries in `sdk/` and followed workspace packages (0): what are they, and under which licence?
   - Result: None.
-- [x] Fonts under `sdk/` and followed workspace packages (0): is each one licensed for app embedding and for a public repo?
+- [x] Fonts in `sdk/` and followed workspace packages (0): is each one licensed for app embedding and for a public repo?
   - Result: None.
 - [x] Git or URL dependencies (1): licence read from the pinned commit?
   - Result: Licence read from `package.json` at the pinned commit.

@@ -1,5 +1,5 @@
 """Collectors and writers for scan.sh. Standard library only."""
-import argparse, csv, datetime, fnmatch, hashlib, json, os, re, subprocess, sys, urllib.parse, urllib.request
+import argparse, csv, datetime, fnmatch, hashlib, json, os, re, subprocess, sys, tomllib, urllib.parse, urllib.request
 
 UA = {"User-Agent": "oss-licence-scan"}
 CACHE = os.path.join(os.environ.get("XDG_CACHE_HOME", os.path.expanduser("~/.cache")), "oss-scan", "licences.json")
@@ -144,6 +144,27 @@ class Lookup:
         self.save()
         return {(n, v): self.c.get(f"MAVEN:{n}@{v}", {"lic": "", "src": ""}) for n, v in items}
 
+    def cargo(self, items):
+        self.depsdev("CARGO", items)
+        return {(n, v): self.c.get(f"CARGO:{n}@{v}", {"lic": "", "src": ""}) for n, v in items}
+
+    def github(self, slugs):
+        """Licence of a public GitHub repository, as GitHub detects it (used for Swift packages)."""
+        out = {}
+        for slug in slugs:
+            k = f"GH:{slug}"
+            if k not in self.c and not self.offline:
+                r = self._get(f"https://api.github.com/repos/{slug}/license")
+                if r is None:
+                    self.failed += 1
+                    out[slug] = {"lic": "", "src": ""}
+                    continue
+                spdx_id = (r.get("license") or {}).get("spdx_id") or ""
+                self.c[k] = {"lic": "" if spdx_id in ("", "NOASSERTION") else spdx_id, "src": "GitHub licence detection for the source repository"}
+            out[slug] = self.c.get(k, {"lic": "", "src": ""})
+        self.save()
+        return out
+
     def pods(self, items):
         out = {}
         for n, v in items:
@@ -165,6 +186,238 @@ class Lookup:
 
 
 # ---------------------------------------------------------------- collectors
+def gitshow(a, path):
+    r = subprocess.run(["git", "-C", a.repo, "show", f"{a.sha}:{path}"], capture_output=True)
+    return r.stdout.decode("utf-8", "replace") if r.returncode == 0 else None
+
+
+def split(v):
+    return [x.strip() for x in (v or "").split(",") if x.strip()]
+
+
+GRADLE_CONF = re.compile(r"(implementation|api|compileonly|runtimeonly|kapt|ksp|annotationprocessor)$", re.I)
+
+
+def gradle_declared(a):
+    """Dependencies declared in the given Gradle files (Groovy or Kotlin DSL), with a version catalog if given.
+    Returns ({module: (version, scope)}, {project path: scope})."""
+    libs, bundles = {}, {}
+    if a.version_catalog:
+        cat = tomllib.loads(gitshow(a, a.version_catalog) or "")
+        vers = cat.get("versions", {})
+        for alias, d in cat.get("libraries", {}).items():
+            if isinstance(d, str):
+                g, n, v = (d.split(":") + [""])[:3]
+            else:
+                g, n = (d["module"].split(":") if "module" in d else (d.get("group", ""), d.get("name", "")))
+                v = d.get("version", "")
+                v = vers.get(v.get("ref", ""), v.get("require", "")) if isinstance(v, dict) else v
+            libs[re.sub(r"[-_]", ".", alias)] = (f"{g}:{n}", str(v))
+        bundles = {re.sub(r"[-_]", ".", k): [re.sub(r"[-_]", ".", x) for x in v] for k, v in cat.get("bundles", {}).items()}
+    mods, projects = {}, {}
+
+    def add(mod, ver, conf):
+        scope = "dev" if re.search(r"test|debug|kapt|ksp|annotationprocessor", conf, re.I) else "prod"
+        if mod not in mods or (scope == "prod" and mods[mod][1] == "dev"):
+            mods[mod] = (ver or "unresolved", scope)
+
+    for path in split(a.gradle_files):
+        txt = gitshow(a, path)
+        if txt is None:
+            sys.exit(f"gradle file not found at this ref: {path}")
+        for line in txt.splitlines():
+            m = re.match(r"\s*(\w+)\s*[( ]\s*(.*)$", line)
+            if not m or not GRADLE_CONF.search(m.group(1)):
+                continue
+            conf, rest = m.group(1), m.group(2)
+            pm = re.search(r"project\(\s*(?:path\s*[:=]\s*)?['\"]([^'\"]+)['\"]", rest)
+            cm = re.search(r"['\"]([\w.\-]+):([\w.\-]+)(?::([^'\"@]+))?(?:@\w+)?['\"]", rest)
+            lm = re.search(r"libs\.([\w.]+)", rest)
+            if pm:
+                projects[pm.group(1)] = "prod"
+            elif cm:
+                add(f"{cm.group(1)}:{cm.group(2)}", cm.group(3) or "", conf)
+            elif lm:
+                alias = lm.group(1)
+                for al in (bundles.get(alias[len("bundles."):], []) if alias.startswith("bundles.") else [alias]):
+                    if al in libs:
+                        add(libs[al][0], libs[al][1], conf)
+                    else:
+                        add(f"catalog:{al}", "", conf)
+    return mods, projects
+
+
+def swift_rows(a, lk, first_party):
+    pk = {}
+    for path in split(a.swift):
+        txt = gitshow(a, path)
+        if txt is None:
+            sys.exit(f"swift file not found at this ref: {path}")
+        if path.endswith(".resolved"):
+            d = json.loads(txt)
+            for p in d.get("pins") or d.get("object", {}).get("pins", []):
+                url, st = p.get("location") or p.get("repositoryURL", ""), p.get("state", {})
+                pk[url] = (st.get("version") or (st.get("revision") or "")[:12], "resolved")
+        else:
+            for m in re.finditer(r"\.package\(\s*(?:name:\s*\"[^\"]*\"\s*,\s*)?url:\s*\"([^\"]+)\"\s*,\s*(.*)$", txt, re.M):
+                req = re.sub(r"\)\s*,?\s*(//.*)?$", "", re.sub(r"\s+", " ", m.group(2)).strip()).replace('"', "'")
+                pk.setdefault(m.group(1), (req, "declared"))
+    slug = lambda u: re.sub(r"\.git$", "", re.sub(r"^(https://|git@)github\.com[/:]", "", u))
+    isfp = lambda n: any(x.strip("@/").lower() in n.lower() for x in first_party)
+    lic = lk.github(sorted(slug(u) for u in pk if "github.com" in u and not isfp(u)))
+    rows = []
+    for url, (ver, how) in sorted(pk.items()):
+        n = slug(url)
+        if isfp(url):
+            l, src = "", "first-party, not looked up"
+        else:
+            e = lic.get(n, {"lic": "", "src": ""})
+            l, src = e["lic"], e["src"] + ("" if how == "resolved" else " (version is the declared requirement, not a resolved pin)")
+        rows.append(dict(eco="swiftpm", name=n, version=ver, licence=l, source=src, scope="prod", direct="direct" if how == "declared" else ""))
+    return rows
+
+
+def podspec_rows(a, lk, first_party):
+    rows = []
+    for path in split(a.podspec):
+        txt = gitshow(a, path)
+        if txt is None:
+            sys.exit(f"podspec not found at this ref: {path}")
+        for m in re.finditer(r"\.dependency\s+['\"]([^'\"/]+)[^'\"]*['\"](?:\s*,\s*['\"]([^'\"]+)['\"])?", txt):
+            name, req = m.group(1), m.group(2) or ""
+            vm = re.match(r"^(?:~>|>=|=)?\s*([\d.]+)$", req)
+            e = lk.pods([(name, vm.group(1))])[(name, vm.group(1))] if vm and not any(x.strip("@/").lower() in name.lower() for x in first_party) else {"lic": "", "src": ""}
+            rows.append(dict(eco="cocoapods", name=name, version=req or "any", licence=norm(e["lic"]), scope="prod", direct="direct",
+                             source=(e["src"] + " (looked up at the lowest version the requirement allows)") if e["lic"] else "podspec requirement, not looked up"))
+    return rows
+
+
+def npmlock_rows(a, lk, first_party):
+    found = {}
+    for path in split(a.npm_lock):
+        txt = gitshow(a, path)
+        if txt is None:
+            sys.exit(f"package-lock.json not found at this ref: {path}")
+        for k, p in json.loads(txt).get("packages", {}).items():
+            if "node_modules/" not in k or p.get("link"):
+                continue
+            key = (k.split("node_modules/")[-1], p.get("version", ""))
+            scope = "dev" if p.get("dev") else "prod"
+            lic = p.get("license") if isinstance(p.get("license"), str) else ""
+            if key not in found or (scope == "prod" and found[key][0] == "dev"):
+                found[key] = (scope, lic or found.get(key, ("", ""))[1])
+    fp = lambda n: any(n.startswith(x) for x in first_party)
+    look = lk.npm(sorted(k for k, v in found.items() if not v[1] and not fp(k[0])))
+    rows = []
+    for (n, v), (scope, lic) in sorted(found.items()):
+        if fp(n):
+            l, src = lic, "first-party (registry package), not looked up"
+        elif lic:
+            l, src = lic, "licence field in package-lock.json"
+        else:
+            l, src = look[(n, v)]["lic"], look[(n, v)]["src"]
+        rows.append(dict(eco="npm", name=n, version=v, licence=l, source=src, scope=scope, direct=""))
+    return rows
+
+
+def yarnlock_rows(a, lk, first_party):
+    """Yarn berry lockfile. Argument: "path/to/yarn.lock:workspace1,workspace2" (workspace folders whose
+    `dependencies` are the runtime roots). Everything else in the lockfile is dev scope."""
+    if not a.yarn_lock:
+        return []
+    path, _, wss = a.yarn_lock.partition(":")
+    txt = gitshow(a, path)
+    if txt is None:
+        sys.exit(f"yarn.lock not found at this ref: {path}")
+    entries, by_desc, cur, block = [], {}, None, None
+    for line in txt.splitlines():
+        if line and not line.startswith((" ", "#", "__metadata")) and line.endswith(":"):
+            cur = {"descs": [d.strip().strip('"') for d in line[:-1].strip('"').split(",")], "deps": {}, "version": ""}
+            entries.append(cur)
+            for d in cur["descs"]:
+                by_desc[d] = cur
+            block = None
+        elif cur is not None and line.startswith("  ") and not line.startswith("    "):
+            k, _, v = line.strip().partition(":")
+            block = k if not v.strip() else None
+            if k == "version":
+                cur["version"] = v.strip().strip('"')
+        elif cur is not None and line.startswith("    ") and block in ("dependencies", "optionalDependencies"):
+            k, _, v = line.strip().partition(":")
+            cur["deps"][k.strip().strip('"')] = v.strip().strip('"')
+    name_of = lambda d: d[:d.index("@", 1)]
+    roots = []
+    for ws in [x.strip() for x in wss.split(",") if x.strip()]:
+        pj = json.loads(gitshow(a, f"{ws}/package.json") or "{}")
+        wentry = next((e for e in entries if any(d.endswith(f"@workspace:{ws}") for d in e["descs"])), None)
+        for dep in (pj.get("dependencies") or {}):
+            if wentry and dep in wentry["deps"]:
+                roots.append(f"{dep}@{wentry['deps'][dep]}")
+    prod, q = set(), list(roots)
+    while q:
+        d = q.pop()
+        e = by_desc.get(d) or by_desc.get(d.replace("@npm:", "@", 1))
+        if e is None or id(e) in prod:
+            continue
+        prod.add(id(e))
+        q += [f"{n}@{r}" for n, r in e["deps"].items()]
+    found = {}
+    for e in entries:
+        if any("@workspace:" in d for d in e["descs"]) or not e["version"]:
+            continue
+        key = (name_of(e["descs"][0]), e["version"])
+        if id(e) in prod or key not in found:
+            found[key] = "prod" if id(e) in prod else found.get(key, "dev")
+    fp = lambda n: any(n.startswith(x) for x in first_party)
+    look = lk.npm(sorted(k for k in found if not fp(k[0])))
+    return [dict(eco="npm", name=n, version=v, licence="" if fp(n) else look[(n, v)]["lic"], scope=sc, direct="",
+                 source="first-party (registry package), not looked up" if fp(n) else look[(n, v)]["src"]) for (n, v), sc in sorted(found.items())]
+
+
+def cargo_rows(a, lk, first_party):
+    rows = []
+    for path in split(a.cargo_lock):
+        txt = gitshow(a, path)
+        if txt is None:
+            sys.exit(f"Cargo.lock not found at this ref: {path}")
+        lock = tomllib.loads(txt)
+        man = tomllib.loads(gitshow(a, os.path.join(os.path.dirname(path), "Cargo.toml")) or "")
+        root = (man.get("package") or {}).get("name")
+        devonly = set(man.get("dev-dependencies", {})) - set(man.get("dependencies", {})) - set(man.get("build-dependencies", {}))
+        byname = {}
+        for p in lock.get("package", []):
+            byname.setdefault(p["name"], []).append(p)
+
+        def resolve(dep):
+            parts = dep.split(" ")
+            c = byname.get(parts[0], [])
+            c = [p for p in c if len(parts) > 1 and p["version"] == parts[1]] or c
+            return c[0] if c else None
+
+        rp = next((p for p in lock.get("package", []) if p["name"] == root), None)
+        prod = None
+        if rp:
+            prod, q = set(), [resolve(d) for d in rp.get("dependencies", []) if d.split(" ")[0] not in devonly]
+            while q:
+                p = q.pop()
+                if p and (p["name"], p["version"]) not in prod:
+                    prod.add((p["name"], p["version"]))
+                    q += [resolve(d) for d in p.get("dependencies", [])]
+        pkgs = [p for p in lock.get("package", []) if p["name"] != root]
+        ext = [(p["name"], p["version"]) for p in pkgs if p.get("source", "").startswith("registry+")]
+        lic = lk.cargo(sorted(ext))
+        for p in pkgs:
+            k = (p["name"], p["version"])
+            if k in lic:
+                l, src = lic[k]["lic"].replace(" / ", " OR "), lic[k]["src"]
+            else:
+                l, src = "", ("first-party, not looked up" if not p.get("source") else "git/url dependency, not looked up")
+            rows.append(dict(eco="cargo", name=k[0], version=k[1], licence=l, source=src, direct="",
+                             scope="prod" if (prod is None or k in prod) else "dev"))
+    return rows
+
+
+
 def ws_licence(a, path):
     """Licence field and LICENSE file of a workspace package, read at the scanned commit."""
     try:
@@ -298,10 +551,16 @@ def pod_rows(work, npm_lic, lk, first_party):
     return rows
 
 
-def gradle_rows(work, lk, npm_lic, first_party):
+def gradle_rows(work, lk, npm_lic, first_party, a):
     rep, decl = os.path.join(work, "gradle-report.txt"), os.path.join(work, "build.gradle")
     mods, projects, declared, dproj, mode = {}, set(), {}, set(), "none"
-    if os.path.exists(decl):
+    dscope = {}
+    if split(a.gradle_files):
+        dm, dp = gradle_declared(a)
+        declared = {n: v for n, (v, sc) in dm.items()}
+        dscope = {n: sc for n, (v, sc) in dm.items()}
+        dproj = set(dp)
+    elif os.path.exists(decl):
         rx = r"^\s*(\w*[iI]mplementation|api|compileOnly)\s*\(?\s*(project\(['\"]([^'\"]+)|['\"]([\w.\-]+):([\w.\-]+):([^'\"@]+))"
         for m in re.finditer(rx, open(decl).read(), re.M):
             if m.group(3):
@@ -325,7 +584,7 @@ def gradle_rows(work, lk, npm_lic, first_party):
             if m and (m.group(4) or m.group(3)):
                 mods[f"{m.group(1)}:{m.group(2)}"] = re.sub(r"[{}]|strictly ", "", m.group(4) or m.group(3))
         # A dependency declared at this ref but absent from the report means the report is from another commit.
-        stale = sorted(n for n in declared if n not in mods and "$" not in declared[n])
+        stale = sorted(n for n in declared if n not in mods and "$" not in declared[n] and dscope.get(n, "prod") == "prod")
         for n in stale:
             mods[n] = declared[n]
         if stale:
@@ -334,11 +593,11 @@ def gradle_rows(work, lk, npm_lic, first_party):
         mode = "declared only (no transitive dependencies)"
         mods, projects = dict(declared), dproj
     isfp = lambda n: any(n.startswith(x) for x in first_party)
-    lic = lk.maven(sorted((n, v) for n, v in mods.items() if not isfp(n)))
+    lic = lk.maven(sorted((n, v) for n, v in mods.items() if not isfp(n) and not n.startswith("catalog:") and v != "unresolved" and "$" not in v))
     rows = []
     for n, v in sorted(mods.items()):
-        e = lic.get((n, v), {"lic": "", "src": "first-party, not looked up"})
-        rows.append(dict(eco="maven", name=n, version=v, licence=norm(e["lic"]), scope="prod", direct="",
+        e = lic.get((n, v), {"lic": "", "src": "first-party, not looked up" if isfp(n) else "version not resolved, not looked up"})
+        rows.append(dict(eco="maven", name=n, version=v, licence=norm(e["lic"]), scope=dscope.get(n, "prod"), direct="direct" if n in declared else "",
                          source=e["src"] + (" [declared, not in report]" if n in stale else "")))
     by_name = {}
     for (n, v), l in npm_lic.items():
@@ -360,12 +619,13 @@ def tree_facts(work, path, extra=()):
         if meta.split()[1] == "commit":
             subs.append((name, meta.split()[2]))
         files.append(name)
+    whole = path in ("", ".")
     roots = [path.rstrip("/") + "/"] + [e.rstrip("/") + "/" for e in extra]
-    inpart = [f for f in files if f.startswith(tuple(roots))]
+    inpart = files if whole else [f for f in files if f.startswith(tuple(roots))]
     pick = lambda rx: [f for f in inpart if re.search(rx, f, re.I)]
     top = lambda d: [f for f in files if os.path.dirname(f) == d and re.match(r"(LICEN[SC]E|NOTICE|COPYING)", os.path.basename(f), re.I)]
     return dict(submodules=subs, binaries=pick(r"\.(jar|aar|so|a|dylib)$|\.(xcframework|framework)/Info\.plist$"),
-                fonts=pick(r"\.(otf|ttf|woff2?)$"), part_licence=top(path.rstrip("/")), root_licence=top(""))
+                fonts=pick(r"\.(otf|ttf|woff2?)$"), part_licence=top("" if whole else path.rstrip("/")), root_licence=top(""))
 
 
 # ---------------------------------------------------------------- writers
@@ -383,18 +643,22 @@ def spdx(rows, a, out):
             extracted[ref] = lic
             decl = ref
         sid = f"SPDXRef-Package-{i}"
-        ptype = {"npm": "npm", "maven": "maven", "cocoapods": "cocoapods"}.get(r["eco"])
+        ptype = {"npm": "npm", "maven": "maven", "cocoapods": "cocoapods", "cargo": "cargo", "swiftpm": "swift"}.get(r["eco"])
+        if r["eco"] == "cocoapods" and not re.match(r"^[\d.]+", r["version"]):
+            ptype = None  # a version requirement, not a version
+        if r["eco"] == "maven" and (r["name"].startswith("catalog:") or r["version"] == "unresolved" or "$" in r["version"]):
+            ptype = None
         pk = dict(SPDXID=sid, name=r["name"], versionInfo=r["version"] or "NOASSERTION", downloadLocation="NOASSERTION",
                   filesAnalyzed=False, licenseConcluded="NOASSERTION", licenseDeclared=decl, copyrightText="NOASSERTION",
                   comment=f"scope={r['scope']}; licence source: {r['source'] or 'none'}")
         if ptype and not r["version"].startswith(("http", "git")):
-            nm = r["name"].replace(":", "/") if ptype == "maven" else urllib.parse.quote(r["name"], safe="/")
+            nm = r["name"].replace(":", "/") if ptype == "maven" else ("github.com/" + r["name"] if ptype == "swift" else urllib.parse.quote(r["name"], safe="/"))
             pk["externalRefs"] = [dict(referenceCategory="PACKAGE-MANAGER", referenceType="purl", referenceLocator=f"pkg:{ptype}/{nm}@{r['version']}")]
         pkgs.append(pk)
         rels.append(dict(spdxElementId="SPDXRef-Root", relationshipType="DEV_DEPENDENCY_OF" if r["scope"] == "dev" else "DEPENDS_ON", relatedSpdxElement=sid))
         if r["scope"] == "dev":
             rels[-1] = dict(spdxElementId=sid, relationshipType="DEV_DEPENDENCY_OF", relatedSpdxElement="SPDXRef-Root")
-    root = dict(SPDXID="SPDXRef-Root", name=f"{a.repo_name}/{a.part}", versionInfo=a.version, downloadLocation="NOASSERTION", filesAnalyzed=False,
+    root = dict(SPDXID="SPDXRef-Root", name=a.repo_name if a.part == "all" else f"{a.repo_name}/{a.part}", versionInfo=a.version, downloadLocation="NOASSERTION", filesAnalyzed=False,
                 licenseConcluded="NOASSERTION", licenseDeclared="NOASSERTION", copyrightText="NOASSERTION", comment=f"git commit {a.sha}")
     d = dict(spdxVersion="SPDX-2.3", dataLicense="CC0-1.0", SPDXID=doc, name=f"{a.repo_name}-{a.part}-{a.sha[:9]}",
              documentNamespace=f"https://spdx.org/spdxdocs/{a.repo_name}-{a.part}-{a.sha}",
@@ -410,21 +674,26 @@ def oss_md(rows, facts, gmode, ws, a, out, lk):
     order = ["strong", "unknown", "weak", "restricted", "non-standard", "dual", "first-party"]
     title = dict(strong="GPL / AGPL / SSPL", unknown="No licence found", weak="Weak copyleft (LGPL, MPL, EPL, ...)",
                  restricted="Source-available or proprietary terms", **{"non-standard": "Licence name not recognised"}, dual="Dual licence with a permissive option (explicit OR)", **{"first-party": "First-party packages (own licence state)"})
-    L = [f"# OSS scan: {a.repo_name} / {a.part}", "",
+    where = "the repo" if a.path in ("", ".") else f"`{a.path}/`"
+    L = [f"# OSS scan: {a.repo_name}" + ("" if a.part == "all" else f" / {a.part}"), "",
          "Generated by `scripts/oss/scan.sh`, with hand-established answers merged in: the \"Ships?\" and \"Note\" columns come from `scripts/oss/curations.json`, the checklist answers from `scripts/oss/checks/`.", "",
          "## Version scanned", "", f"- Ref: `{a.ref}`", f"- Commit: `{a.sha}`", f"- Version at that commit: `{a.version}`", f"- Scan date: {today}",
          f"- Released as: {a.released}", "",
-         "## Status", "", "The ok / nok status of this part is recorded in the internal licence register, not in this file.", "",
-         "## What the scanner covered", "",
-         f"- npm: {sum(r['eco'] == 'npm' for r in rows)} packages from `pnpm-lock.yaml` importer `{a.importer}` "
-         f"({sum(r['eco'] == 'npm' and r['scope'] == 'prod' for r in rows)} prod, {sum(r['eco'] == 'npm' and r['scope'] == 'dev' for r in rows)} dev-only). "
-         f"\"prod\" means reachable from `dependencies` or `optionalDependencies`; peer dependencies are not followed.",
-         f"- CocoaPods: {sum(r['eco'] == 'cocoapods' for r in rows)} pods from `Podfile.lock`.",
-         f"- Gradle: {sum(r['eco'] == 'maven' for r in rows)} Maven modules, mode: **{gmode}**.",
-         f"- Workspace packages followed: {', '.join(f'`{k}`' for k in sorted(ws)) or 'none'}.",
-         f"- Licence lookups: deps.dev, npm registry, Maven POMs, CocoaPods trunk ({lk.calls} requests this run; {lk.failed} packages had no metadata the scanner could reach). "
-         f"Not sent: names matching `{a.first_party}`, workspace packages, git/url dependencies, pods outside the trunk spec repo, local Gradle modules.",
-         f"- Curations applied from `scripts/oss/curations.json`: {a.curated} rows.", ""]
+         "## Status", "", "@@STATUS@@", "",
+         "## What the scanner covered", ""]
+    label = dict(npm="npm packages", cocoapods="CocoaPods", maven="Maven modules", swiftpm="Swift packages", cargo="Rust crates")
+    label["gradle-project"] = "local Gradle modules"
+    for eco in ("npm", "cocoapods", "maven", "gradle-project", "swiftpm", "cargo"):
+        rs = [r for r in rows if r["eco"] == eco]
+        if rs:
+            L.append(f"- {label[eco]}: {len(rs)} ({sum(r['scope'] == 'prod' for r in rs)} prod, {sum(r['scope'] == 'dev' for r in rs)} dev-only).")
+    if any(r["eco"] in ("maven", "gradle-project") for r in rows):
+        L.append(f"- Gradle mode: **{gmode}**.")
+    L += ["- \"prod\" means reachable from runtime dependency declarations in the lockfile or build file. Peer dependencies are not followed.",
+          f"- Workspace packages followed: {', '.join(f'`{k}`' for k in sorted(ws)) or 'none'}.",
+          f"- Licence lookups: deps.dev, npm registry, Maven POMs, CocoaPods trunk, GitHub licence detection ({lk.calls} requests this run; {lk.failed} packages had no metadata the scanner could reach). "
+          f"Not sent: names matching `{a.first_party}`, workspace packages, git/url dependencies, pods outside the trunk spec repo, local Gradle modules.",
+          f"- Curations applied from `scripts/oss/curations.json`: {a.curated} rows.", ""]
     L += ["## Flagged dependencies", "", "\"Ships?\" is `yes` or `no` where someone traced it, otherwise `not traced`. Every dependency, with its licence, is in `sbom.spdx.json`.", ""]
     for c in order:
         rs = [r for r in flagged if r["cat"] == c]
@@ -451,11 +720,11 @@ def oss_md(rows, facts, gmode, ws, a, out, lk):
           "- [ ] CocoaPods and Gradle native dependencies: are they all in the list above?",
           "- [ ] Circom includes: which circuit libraries are included, and under which licences?",
           "- [ ] Forge libs: which libraries sit under the contracts `lib/` folder, and under which licences?",
-          f"- [ ] Own licence. Files found in `{a.path}/`: {', '.join(facts['part_licence']) or '**none**'}. At repo root: {', '.join(facts['root_licence']) or '**none**'}.",
+          f"- [ ] Own licence. Files found in {where}: {', '.join(facts['part_licence']) or '**none**'}." + ("" if where == "the repo" else f" At repo root: {', '.join(facts['root_licence']) or '**none**'}."),
           "- [ ] Each flagged prod dependency: does it really ship (trace the import, or inspect the built artifact)?",
           f"- [ ] Git submodules ({len(facts['submodules'])}):"] + cap([f"{n} @ {s[:9]}" for n, s in facts["submodules"]])
-    L += [f"- [ ] Vendored binaries under `{a.path}/` and followed workspace packages ({len(facts['binaries'])}): what are they, and under which licence?"] + cap(facts["binaries"])
-    L += [f"- [ ] Fonts under `{a.path}/` and followed workspace packages ({len(facts['fonts'])}): is each one licensed for app embedding and for a public repo?"] + cap(facts["fonts"])
+    L += [f"- [ ] Vendored binaries in {where} and followed workspace packages ({len(facts['binaries'])}): what are they, and under which licence?"] + cap(facts["binaries"])
+    L += [f"- [ ] Fonts in {where} and followed workspace packages ({len(facts['fonts'])}): is each one licensed for app embedding and for a public repo?"] + cap(facts["fonts"])
     gits = [r for r in rows if "git/url" in r["source"] or r["version"].startswith(("http", "git"))]
     L += [f"- [ ] Git or URL dependencies ({len(gits)}): licence read from the pinned commit?"] + cap([f"{r['name']} {r['version']}" for r in gits])
     ext = [r for r in rows if "not looked up" in r["source"] and r["eco"] in ("cocoapods", "gradle-project")]
@@ -480,6 +749,13 @@ def oss_md(rows, facts, gmode, ws, a, out, lk):
                 L[i] = ("- [x] " if ans.get("done") else "- [ ] ") + line[6:] + (f"\n  - Result: {ans['result']}" if ans.get("result") else "")
     if unused:
         sys.exit(f"checks.json has answers that match no checklist line: {sorted(unused)}")
+    st = checks.get("status")
+    if st:
+        status = [st["value"], ""] + [f"- {x}" for x in st.get("reasons", [])]
+    else:
+        status = [checks.get("status_text", "Status: TODO (ok / nok), with every reason.")]
+    k = L.index("@@STATUS@@")
+    L[k:k + 1] = status
     if checks.get("scope_notes"):
         i = L.index("## Check by hand")
         L[i:i] = ["## Scope notes", ""] + [f"- {n}" for n in checks["scope_notes"]] + [""]
@@ -488,25 +764,26 @@ def oss_md(rows, facts, gmode, ws, a, out, lk):
 
 def main():
     ap = argparse.ArgumentParser()
-    for k in ("work", "out", "ref", "sha", "part", "path", "importer", "first-party", "offline", "repo-name", "repo", "curations", "released", "checks", "csv"):
+    for k in ("work", "out", "ref", "sha", "part", "path", "importer", "first-party", "offline", "repo-name", "repo", "curations", "released", "checks", "csv",
+              "gradle-files", "version-catalog", "swift", "podspec", "npm-lock", "yarn-lock", "cargo-lock", "version-text"):
         ap.add_argument("--" + k, default="")
     a = ap.parse_args()
     vs = []
-    for root in [x for x in (a.importer or a.path).split(",") if x]:
+    for root in [x for x in (a.importer or a.path).split(",") if x and x != "."]:
         try:
             pj = json.loads(subprocess.run(["git", "-C", a.repo, "show", f"{a.sha}:{root}/package.json"], capture_output=True, text=True, check=True).stdout)
             vs.append(f"{pj.get('name', root)} {pj.get('version', '?')}")
         except Exception:
             pass
-    a.version = "; ".join(vs) or "unknown"
+    a.version = a.version_text or "; ".join(vs) or "unknown"
     a.released = a.released or "not recorded"
     lk = Lookup(a.offline == "1")
     fps = [x for x in a.first_party.split(",") if x]
     nrows, ws = npm_rows(a.work, a.importer, fps, lk, a)
     npm_lic = {(r["name"], r["version"]): r["licence"] for r in nrows}
     prows = pod_rows(a.work, npm_lic, lk, fps)
-    grows, gmode = gradle_rows(a.work, lk, npm_lic, fps)
-    rows = nrows + prows + grows
+    grows, gmode = gradle_rows(a.work, lk, npm_lic, fps, a)
+    rows = nrows + npmlock_rows(a, lk, fps) + yarnlock_rows(a, lk, fps) + prows + podspec_rows(a, lk, fps) + grows + swift_rows(a, lk, fps) + cargo_rows(a, lk, fps)
     curs = json.load(open(a.curations)) if a.curations and os.path.exists(a.curations) else []
     used = 0
     for r in rows:

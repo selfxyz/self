@@ -16,11 +16,14 @@ The ok / nok status of this part is recorded in the internal licence register, n
 
 ## What the scanner covered
 
-- npm: 2002 packages from `pnpm-lock.yaml` importer `app` (1414 prod, 588 dev-only). "prod" means reachable from `dependencies` or `optionalDependencies`; peer dependencies are not followed.
-- CocoaPods: 166 pods from `Podfile.lock`.
-- Gradle: 337 Maven modules, mode: **resolved report**.
+- npm packages: 2002 (1414 prod, 588 dev-only).
+- CocoaPods: 166 (166 prod, 0 dev-only).
+- Maven modules: 337 (337 prod, 0 dev-only).
+- local Gradle modules: 46 (46 prod, 0 dev-only).
+- Gradle mode: **resolved report**.
+- "prod" means reachable from runtime dependency declarations in the lockfile or build file. Peer dependencies are not followed.
 - Workspace packages followed: `@selfxyz/common`, `@selfxyz/mobile-sdk-alpha`, `@selfxyz/rn-mrz-scanner`, `@selfxyz/rn-nfc-passport`, `@selfxyz/rn-sdk`, `@selfxyz/webview-bridge`.
-- Licence lookups: deps.dev, npm registry, Maven POMs, CocoaPods trunk (33 requests this run; 11 packages had no metadata the scanner could reach). Not sent: names matching `@selfxyz/,selfxyz,xyz.self`, workspace packages, git/url dependencies, pods outside the trunk spec repo, local Gradle modules.
+- Licence lookups: deps.dev, npm registry, Maven POMs, CocoaPods trunk, GitHub licence detection (33 requests this run; 11 packages had no metadata the scanner could reach). Not sent: names matching `@selfxyz/,selfxyz,xyz.self`, workspace packages, git/url dependencies, pods outside the trunk spec repo, local Gradle modules.
 - Curations applied from `scripts/oss/curations.json`: 217 rows.
 
 ## Flagged dependencies
@@ -118,7 +121,7 @@ The scanner cannot see these. Answers come from `scripts/oss/checks/`: a ticked 
   - `contracts/lib/forge-std @ 8e40513d6`
   - `contracts/lib/openzeppelin-foundry-upgrades @ cbce1e003`
   - `packages/mobile-sdk-alpha/mobile-sdk-native @ 074f23538`
-- [ ] Vendored binaries under `app/` and followed workspace packages (9): what are they, and under which licence?
+- [ ] Vendored binaries in `app/` and followed workspace packages (9): what are they, and under which licence?
   - Result: `gradle-wrapper.jar` is a build tool. The `mobile-sdk-alpha` AAR and xcframeworks are not linked into the app (autolinking disabled, no such pod in `Podfile.lock`), but they are committed in this repository and the licences of their contents are still to be reviewed.
   - `app/android/gradle/wrapper/gradle-wrapper.jar`
   - `packages/mobile-sdk-alpha/dist/android/mobile-sdk-alpha-release.aar`
@@ -129,7 +132,7 @@ The scanner cannot see these. Answers come from `scripts/oss/checks/`: a ticked 
   - `packages/mobile-sdk-alpha/ios/Frameworks/OpenSSL.xcframework/ios-arm64_x86_64-simulator/OpenSSL.framework/Info.plist`
   - `packages/mobile-sdk-alpha/ios/SelfSDK/NFCPassportReader 2.xcframework/Info.plist`
   - `packages/mobile-sdk-alpha/ios/SelfSDK/NFCPassportReader 2.xcframework/ios-arm64/NFCPassportReader.framework/Info.plist`
-- [ ] Fonts under `app/` and followed workspace packages (13): is each one licensed for app embedding and for a public repo?
+- [ ] Fonts in `app/` and followed workspace packages (13): is each one licensed for app embedding and for a public repo?
   - `app/android/app/src/main/assets/custom/slkscr.woff`
   - `app/android/app/src/main/assets/fonts/Advercase-Regular.otf`
   - `app/android/app/src/main/assets/fonts/DINOT-Bold.otf`
