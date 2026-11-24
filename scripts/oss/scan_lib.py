@@ -442,29 +442,33 @@ def yarnlock_rows(a, lk, first_party):
     if txt is None:
         sys.exit(f"yarn.lock not found at this ref: {path}")
     entries, by_desc, cur, block = [], {}, None, None
-    for line in txt.splitlines():
+    for line in txt.splitlines():  # reads both yarn berry and yarn classic (v1) lockfiles
         if line and not line.startswith((" ", "#", "__metadata")) and line.endswith(":"):
-            cur = {"descs": [d.strip().strip('"') for d in line[:-1].strip('"').split(",")], "deps": {}, "version": ""}
+            cur = {"descs": [d.strip().strip('"') for d in line[:-1].split(", ")], "deps": {}, "version": ""}
             entries.append(cur)
             for d in cur["descs"]:
                 by_desc[d] = cur
             block = None
         elif cur is not None and line.startswith("  ") and not line.startswith("    "):
-            k, _, v = line.strip().partition(":")
-            block = k if not v.strip() else None
-            if k == "version":
-                cur["version"] = v.strip().strip('"')
+            t = line.strip()
+            m = re.match(r'version:?\s+"?([^"]+)"?$', t)
+            if m:
+                cur["version"] = m.group(1)
+            block = t[:-1] if t.endswith(":") else None
         elif cur is not None and line.startswith("    ") and block in ("dependencies", "optionalDependencies"):
-            k, _, v = line.strip().partition(":")
-            cur["deps"][k.strip().strip('"')] = v.strip().strip('"')
+            m = re.match(r'"?([^"\s:]+)"?:?\s+"?([^"]+)"?$', line.strip())
+            if m:
+                cur["deps"][m.group(1)] = m.group(2)
     name_of = lambda d: d[:d.index("@", 1)]
     roots = []
     for ws in [x.strip() for x in wss.split(",") if x.strip()]:
-        pj = json.loads(gitshow(a, f"{ws}/package.json") or "{}")
+        pj = json.loads(gitshow(a, "package.json" if ws == "." else f"{ws}/package.json") or "{}")
         wentry = next((e for e in entries if any(d.endswith(f"@workspace:{ws}") for d in e["descs"])), None)
-        for dep in (pj.get("dependencies") or {}):
+        for dep, rng in (pj.get("dependencies") or {}).items():
             if wentry and dep in wentry["deps"]:
                 roots.append(f"{dep}@{wentry['deps'][dep]}")
+            elif not wentry:  # yarn classic has no workspace entry: the range comes from package.json
+                roots.append(f"{dep}@{rng}")
     prod, q = set(), list(roots)
     while q:
         d = q.pop()

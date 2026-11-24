@@ -10,7 +10,7 @@
 # Inputs (all read at <ref> with git, comma-separated lists allowed):
 #   --npm-importer NAMES   pnpm-lock.yaml importers to follow (prod and dev closure)
 #   --npm-lock FILES       package-lock.json files
-#   --yarn-lock FILE:WS    yarn.lock (berry) and the workspace folders whose
+#   --yarn-lock FILE:WS    yarn.lock (berry or classic) and the workspace folders whose
 #                          dependencies are the runtime roots
 #   --podfile-lock FILE    Podfile.lock
 #   --podspec FILES        podspec files (declared pod dependencies)
