@@ -187,7 +187,7 @@ target "Self" do
   # The wrapper (SdkReactNative.podspec) depends on DiditSDK/AutoDetection when
   # DIDIT_SDK_IOS_VARIANT=autodetection (set above). Keep this tag in sync with
   # the exact DiditSDK version pinned by @didit-protocol/sdk-react-native.
-  pod 'DiditSDK/AutoDetection', :podspec => 'https://raw.githubusercontent.com/didit-protocol/sdk-ios/4.0.5/DiditSDK.podspec'
+  pod 'DiditSDK/AutoDetection', :podspec => 'https://raw.githubusercontent.com/didit-protocol/sdk-ios/4.0.6/DiditSDK.podspec'
   pod 'OpenSSL-Universal', '~> 1.1.1900'
   pod "SwiftQRScanner", :git => "https://github.com/vinodiOS/SwiftQRScanner"
   # RNReactNativeHapticFeedback is handled by autolinking

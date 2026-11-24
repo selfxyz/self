@@ -23,6 +23,7 @@ describe('onboarding perks', () => {
 
   it('returns null content when an id type has no renderable perks', () => {
     expect(getPerkRailContent('unknown')).toBeNull();
+    expect(getPerkRailContent('a')).toBeNull();
   });
 
   it('counts perks (not logos) so multi-logo perks stay singular', () => {

@@ -274,8 +274,8 @@ describe('version-manager', () => {
       // Verify writes occurred:
       // 1. package.json, 2. version.json,
       // 3. build.gradle (versionCode), 4. pbxproj (CURRENT_PROJECT_VERSION),
-      // 5. pbxproj (MARKETING_VERSION)
-      expect(writeCalls.length).toBe(5);
+      // 5. pbxproj (MARKETING_VERSION), 6. build.gradle (versionName)
+      expect(writeCalls.length).toBe(6);
 
       // Find and verify package.json write
       const packageWrite = writeCalls.find(call =>
@@ -300,6 +300,13 @@ describe('version-manager', () => {
       );
       expect(gradleWrite).toBeDefined();
       expect(gradleWrite.content).toContain('versionCode 250');
+      const gradleWrites = writeCalls.filter(call =>
+        call.filePath.includes('build.gradle'),
+      );
+      expect(gradleWrites.length).toBe(2);
+      expect(
+        gradleWrites.some(call => call.content.includes('versionName "2.0.0"')),
+      ).toBe(true);
 
       // Find and verify pbxproj writes
       const pbxprojWrites = writeCalls.filter(call =>

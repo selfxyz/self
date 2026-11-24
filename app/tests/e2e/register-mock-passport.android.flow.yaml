@@ -53,25 +53,24 @@ appId: com.proofofpassportapp
     timeout: 15000
 
 # 6. Settings → Manage Documents → CreateMock screen.
-#    Use anchored regex on the button label to avoid matching the on-screen
-#    description text "Generate mock document data" which is a substring match.
 - tapOn: "Manage ID documents"
 - extendedWaitUntil:
     visible: "Available Documents"
     timeout: 15000
-- tapOn: "^Generate Mock Document$"
+- tapOn:
+    id: "create-test-document-link"
 
-# 7. CreateMock screen. The Generate button is below the fold on a 1080×2400
+# 7. CreateMock screen. The create button is below the fold on a 1080×2400
 #    screen — scroll to it explicitly, then tap.
 - extendedWaitUntil:
-    visible: "Mock Document Parameters"
+    visible: "Test Document Parameters"
     timeout: 15000
 - scrollUntilVisible:
     element:
-      text: "^Generate Mock Document$"
+      text: "^Create Test Document$"
     direction: DOWN
     timeout: 15000
-- tapOn: "^Generate Mock Document$"
+- tapOn: "^Create Test Document$"
 
 # 8. Generation takes ~20-30s on swiftshader, then routes to
 #    ConfirmBelonging which shows a "Confirm" primary button next to a

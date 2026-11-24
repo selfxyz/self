@@ -29,7 +29,6 @@ export const PERKS: Record<PerkId, PerkRecord> = {
 const ID_TYPE_TO_PERK_IDS: Record<string, PerkId[]> = {
   p: ['google_cloud_faucet'],
   i: ['google_cloud_faucet'],
-  a: ['google_cloud_faucet'],
 };
 
 export function getPerkRecordsForIdType(idType: string): PerkRecord[] {

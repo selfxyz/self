@@ -22,6 +22,7 @@ import {
   isKycFlowEnabled,
   KYC_PROVIDER,
   launchKycVerification as startKycVerification,
+  useKycFlowEnabled,
 } from '@/integrations/kyc';
 import { confirmKycFaucetNotice } from '@/integrations/kyc/faucetNotice';
 import type { KycVerificationResult } from '@/integrations/kyc/types';
@@ -96,10 +97,17 @@ export const useKycLauncher = (options: UseKycLauncherOptions) => {
   const selfClient = useSelfClient();
   const [isLoading, setIsLoading] = useState(false);
 
+  // Owns isLoading once the user accepts the faucet notice; the notice itself
+  // resolves before this runs so the alert modal is gone when Didit presents.
   const runKycProviderFlow = useCallback(async () => {
     const sessionRequestedAt = Date.now();
     let providerOpenedAt: number | null = null;
     try {
+      // The faucet notice may have been open while the remote flag changed.
+      if (!isKycFlowEnabled(countryCode)) {
+        console.warn('KYC flow became unavailable; not creating a session');
+        return;
+      }
       trackBranchEvent(selfClient, KycEvents.SESSION_REQUESTED, {
         provider: KYC_PROVIDER,
       });
@@ -196,10 +204,12 @@ export const useKycLauncher = (options: UseKycLauncherOptions) => {
       } else {
         navigation.navigate('KycConnectionError', { countryCode });
       }
+    } finally {
+      setIsLoading(false);
     }
   }, [navigation, selfClient, countryCode, onSuccess, onCancel, onError]);
 
-  const isKycAvailable = isKycFlowEnabled();
+  const isKycAvailable = useKycFlowEnabled(countryCode);
 
   const launchKycVerification = useCallback(async () => {
     if (!isKycAvailable) {
@@ -217,6 +227,7 @@ export const useKycLauncher = (options: UseKycLauncherOptions) => {
         );
 
     setIsLoading(true);
+    let accepted = false;
     try {
       if (hasPendingOrProcessingKyc()) {
         showModal({
@@ -258,13 +269,15 @@ export const useKycLauncher = (options: UseKycLauncherOptions) => {
         return;
       }
 
-      await confirmKycFaucetNotice(
+      accepted = await confirmKycFaucetNotice(
         showModal,
         { onContinue: runKycProviderFlow },
         selfClient,
       );
     } finally {
-      setIsLoading(false);
+      if (!accepted) {
+        setIsLoading(false);
+      }
     }
   }, [isKycAvailable, runKycProviderFlow, selfClient, showModal]);
 

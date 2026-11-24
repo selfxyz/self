@@ -15,7 +15,6 @@ import {
   black,
   separatorColor,
   slate100,
-  slate300,
   slate400,
   white,
 } from '@selfxyz/mobile-sdk-alpha/constants/colors';
@@ -49,6 +48,10 @@ const getCountryName = (code: string): string => {
   return (commonNames as Record<string, string>)[cleaned] || cleaned;
 };
 
+const TEST_DATA_SUBTITLE = 'Sample test data. Not a valid document.';
+const TEST_DATA_AUTHORITY = 'Self test issuer';
+const TEST_DATA_FOOTER = 'SAMPLE - NOT A VALID DOCUMENT';
+
 interface IdCardRevealedProps {
   idDocument: PassportData | AadhaarData;
 }
@@ -71,6 +74,20 @@ const IdCardRevealed: FC<IdCardRevealedProps> = ({ idDocument }) => {
   const contentLeftOffset = imageSize.width + revealedPadding;
   const docAttributes = getDocumentAttributes(idDocument);
   const nameData = getNameAndSurname(docAttributes.nameSlice);
+  const isTestData = Boolean(idDocument.mock);
+  const isPassport =
+    isMRZDocument(idDocument) && idDocument.documentCategory === 'passport';
+  const isAadhaar = isAadhaarDocument(idDocument);
+  const documentLabel = isPassport
+    ? 'Passport'
+    : isAadhaar
+      ? 'Aadhaar'
+      : 'ID Card';
+  const verifiedLabel = isPassport
+    ? 'Biometric Passport'
+    : isAadhaar
+      ? 'Aadhaar Document'
+      : 'Biometric ID Card';
 
   return (
     <YStack width="100%" alignItems="center" justifyContent="center">
@@ -111,47 +128,35 @@ const IdCardRevealed: FC<IdCardRevealedProps> = ({ idDocument }) => {
                 fontSize={revealedFontSize.large * 1.4}
                 color="black"
               >
-                {isMRZDocument(idDocument) &&
-                idDocument.documentCategory === 'passport'
-                  ? 'Passport'
-                  : isAadhaarDocument(idDocument)
-                    ? 'Aadhaar'
-                    : 'ID Card'}
+                {isTestData ? `Test ${documentLabel}` : documentLabel}
               </Text>
               <Text
                 fontSize={revealedFontSize.small}
                 color={slate400}
                 fontFamily={dinot}
               >
-                Verified{' '}
-                {isMRZDocument(idDocument) &&
-                idDocument.documentCategory === 'passport'
-                  ? 'Biometric Passport'
-                  : isAadhaarDocument(idDocument)
-                    ? 'Aadhaar Document'
-                    : 'Biometric ID Card'}
+                {isTestData ? TEST_DATA_SUBTITLE : `Verified ${verifiedLabel}`}
               </Text>
             </YStack>
           </XStack>
           <XStack flex={1} justifyContent="flex-end">
-            {idDocument.mock && (
+            {isTestData && (
               <YStack
                 marginTop={revealedPadding / 4}
-                borderWidth={1}
-                borderColor={slate300}
                 borderRadius={100}
                 paddingHorizontal={revealedPadding / 2}
                 alignSelf="flex-start"
-                backgroundColor={slate100}
+                backgroundColor={black}
                 paddingVertical={revealedPadding / 8}
               >
                 <Text
                   fontSize={revealedFontSize.xsmall}
-                  color={slate400}
+                  color={white}
                   fontFamily={dinot}
+                  fontWeight="bold"
                   letterSpacing={revealedFontSize.xsmall * 0.15}
                 >
-                  DEVELOPER
+                  TEST DATA
                 </Text>
               </YStack>
             )}
@@ -269,7 +274,11 @@ const IdCardRevealed: FC<IdCardRevealedProps> = ({ idDocument }) => {
               <YStack flex={1}>
                 <IdAttribute
                   name="AUTHORITY"
-                  value={getCountryName(docAttributes.issuingStateSlice)}
+                  value={
+                    isTestData
+                      ? TEST_DATA_AUTHORITY
+                      : getCountryName(docAttributes.issuingStateSlice)
+                  }
                 />
               </YStack>
               <YStack flex={1} />
@@ -278,8 +287,29 @@ const IdCardRevealed: FC<IdCardRevealedProps> = ({ idDocument }) => {
           </YStack>
         </XStack>
 
+        {isTestData && (
+          <XStack
+            alignItems="center"
+            justifyContent="center"
+            backgroundColor={slate100}
+            borderRadius={revealedBorderRadius / 3}
+            paddingHorizontal={revealedPadding / 2}
+            paddingVertical={revealedPadding / 4}
+            minHeight={revealedFontSize.xsmall * 2.5}
+          >
+            <Text
+              fontSize={revealedFontSize.xsmall}
+              letterSpacing={revealedFontSize.xsmall * 0.3}
+              fontFamily={plexMono}
+              color={slate400}
+            >
+              {TEST_DATA_FOOTER}
+            </Text>
+          </XStack>
+        )}
+
         {/* Footer Section - MRZ */}
-        {isMRZDocument(idDocument) && idDocument.mrz && (
+        {!isTestData && isMRZDocument(idDocument) && idDocument.mrz && (
           <XStack
             alignItems="center"
             backgroundColor={slate100}
@@ -346,7 +376,7 @@ const IdCardRevealed: FC<IdCardRevealedProps> = ({ idDocument }) => {
         )}
 
         {/* Footer Section - Empty placeholder for Aadhaar */}
-        {isAadhaarDocument(idDocument) && (
+        {!isTestData && isAadhaar && (
           <XStack
             alignItems="center"
             backgroundColor={slate100}
