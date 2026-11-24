@@ -756,6 +756,9 @@ def oss_md(rows, facts, gmode, ws, a, out, lk):
         status = [checks.get("status_text", "Status: TODO (ok / nok), with every reason.")]
     k = L.index("@@STATUS@@")
     L[k:k + 1] = status
+    if checks.get("not_verified"):
+        i = L.index("## Counts by licence")
+        L[i:i] = ["## Not verified", ""] + [f"- {n}" for n in checks["not_verified"]] + [""]
     if checks.get("scope_notes"):
         i = L.index("## Check by hand")
         L[i:i] = ["## Scope notes", ""] + [f"- {n}" for n in checks["scope_notes"]] + [""]
