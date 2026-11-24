@@ -66,11 +66,8 @@ The scanner cannot see these. Answers come from `scripts/oss/checks/sdk.json`: a
   - Result: `sdk/core`, `sdk/qrcode` and `sdk/qrcode-angular` have an MIT `LICENSE` file. `common` and `sdk/sdk-common` have none yet.
 - [x] Each flagged prod dependency: does it really ship (trace the import, or inspect the built artifact)?
   - Result: A `prod` row here is a runtime dependency that a consumer installs with the package.
-- [x] Git submodules (3):
+- [x] Git submodules (0):
   - Result: None of the three belongs to the SDK packages.
-  - `contracts/lib/forge-std @ 8e40513d6`
-  - `contracts/lib/openzeppelin-foundry-upgrades @ cbce1e003`
-  - `packages/mobile-sdk-alpha/mobile-sdk-native @ 074f23538`
 - [x] Vendored binaries in `sdk/` and followed workspace packages (0): what are they, and under which licence?
   - Result: None.
 - [x] Fonts in `sdk/` and followed workspace packages (0): is each one licensed for app embedding and for a public repo?
