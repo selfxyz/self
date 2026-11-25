@@ -459,7 +459,11 @@ def yarnlock_rows(a, lk, first_party):
             m = re.match(r'"?([^"\s:]+)"?:?\s+"?([^"]+)"?$', line.strip())
             if m:
                 cur["deps"][m.group(1)] = m.group(2)
-    name_of = lambda d: d[:d.index("@", 1)]
+    def name_of(d):  # "alias@npm:real@range" is listed under the real package name
+        alias, rest = d[:d.index("@", 1)], d[d.index("@", 1) + 1:]
+        if rest.startswith("npm:") and "@" in rest[5:]:
+            return rest[4:4 + rest[4:].index("@", 1)]
+        return alias
     roots = []
     for ws in [x.strip() for x in wss.split(",") if x.strip()]:
         pj = json.loads(gitshow(a, "package.json" if ws == "." else f"{ws}/package.json") or "{}")
