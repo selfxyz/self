@@ -480,7 +480,14 @@ def yarnlock_rows(a, lk, first_party):
         if e is None or id(e) in prod:
             continue
         prod.add(id(e))
-        q += [f"{n}@{r}" for n, r in e["deps"].items()]
+        deps = e["deps"]
+        wsd = next((x for x in e["descs"] if "@workspace:" in x), None)
+        if wsd:  # a workspace entry lists dev dependencies too: follow only its package.json dependencies
+            wp = wsd.split("@workspace:", 1)[1]
+            wpj = json.loads(gitshow(a, "package.json" if wp == "." else f"{wp}/package.json") or "{}")
+            keep = set(wpj.get("dependencies") or {}) | set(wpj.get("optionalDependencies") or {})
+            deps = {n: r for n, r in deps.items() if n in keep}
+        q += [f"{n}@{r}" for n, r in deps.items()]
     found = {}
     for e in entries:
         if any("@workspace:" in d for d in e["descs"]) or not e["version"]:
