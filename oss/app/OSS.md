@@ -110,11 +110,8 @@ The scanner cannot see these. Answers come from `scripts/oss/checks/app.json`: a
   - Result: `app/LICENSE` is the Business Source License 1.1.
 - [x] Each flagged prod dependency: does it really ship (trace the import, or inspect the built artifact)?
   - Result: Traced for the rows marked `yes` or `no` above. Rows marked `not traced` were not followed.
-- [x] Git submodules (3):
+- [x] Git submodules (0):
   - Result: The two `contracts/lib` submodules belong to the contracts part. `mobile-sdk-native` is not built into the app: autolinking for `@selfxyz/mobile-sdk-alpha` is disabled in `app/react-native.config.cjs`.
-  - `contracts/lib/forge-std @ 8e40513d6`
-  - `contracts/lib/openzeppelin-foundry-upgrades @ cbce1e003`
-  - `packages/mobile-sdk-alpha/mobile-sdk-native @ 074f23538`
 - [ ] Vendored binaries in `app/` and followed workspace packages (9): what are they, and under which licence?
   - Result: `gradle-wrapper.jar` is a build tool. The `mobile-sdk-alpha` AAR and xcframeworks are not linked into the app (autolinking disabled, no such pod in `Podfile.lock`), but they are committed in this repository and the licences of their contents are still to be reviewed.
   - `app/android/gradle/wrapper/gradle-wrapper.jar`

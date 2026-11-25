@@ -5,12 +5,12 @@
 #
 # Usage:
 #   scan.sh <ref> [options]            whole repo; options usually come from scan.args
-#   scan.sh <ref> --part app|sdk       presets for the parts of selfxyz/self
+#   scan.sh <ref> --part app|sdk|contracts|circuits   presets for the parts of selfxyz/self
 #
 # Inputs (all read at <ref> with git, comma-separated lists allowed):
 #   --npm-importer NAMES   pnpm-lock.yaml importers to follow (prod and dev closure)
 #   --npm-lock FILES       package-lock.json files
-#   --yarn-lock FILE:WS    yarn.lock (berry) and the workspace folders whose
+#   --yarn-lock FILE:WS    yarn.lock (berry or classic) and the workspace folders whose
 #                          dependencies are the runtime roots
 #   --podfile-lock FILE    Podfile.lock
 #   --podspec FILES        podspec files (declared pod dependencies)
@@ -21,6 +21,9 @@
 #                          gives the resolved, transitive list
 #   --swift FILES          Package.swift and/or Package.resolved
 #   --cargo-lock FILES     Cargo.lock (Cargo.toml next to it gives the dev split)
+#   --solidity DIRS        folders of .sol sources: SPDX identifiers per folder
+#   --circom DIRS          folders of .circom sources: the packages they include
+# Git submodules under --path are always listed.
 # Other options:
 #   --path DIR             folder the hand-check file listings look at (default: repo)
 #   --out DIR              output folder (default oss/, or oss/<part>)
@@ -35,7 +38,7 @@
 # (checks/<part>.json when --part is used).
 set -euo pipefail
 
-usage() { sed -n '2,36p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
+usage() { sed -n '2,39p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
 [ $# -ge 1 ] || usage
 REF=$1; shift
 HERE=$(cd "$(dirname "$0")" && pwd)
@@ -50,7 +53,7 @@ if [ -f "$HERE/scan.args" ]; then
   set -- "${ARGS[@]}" "$@"
 fi
 REPO=$(pwd); OUT=""; PART=""; PPATH=""; IMPORTER=""; PODLOCK=""; GRADLE=""
-REPORT=""; CUR=""; CSV=""; RELEASED=""; GFILES=""; CATALOG=""; SWIFT=""; PODSPEC=""; NPMLOCK=""; YARNLOCK=""; CARGOLOCK=""; VTEXT=""; FIRST="@selfxyz/,selfxyz,xyz.self"; OFFLINE=0
+REPORT=""; CUR=""; CSV=""; RELEASED=""; GFILES=""; CATALOG=""; SWIFT=""; PODSPEC=""; NPMLOCK=""; YARNLOCK=""; CARGOLOCK=""; VTEXT=""; SOL=""; CIRCOM=""; FIRST="@selfxyz/,selfxyz,xyz.self"; OFFLINE=0
 while [ $# -gt 0 ]; do
   case $1 in
     --part) PART=$2; shift 2 ;;
@@ -67,6 +70,8 @@ while [ $# -gt 0 ]; do
     --yarn-lock) YARNLOCK=$2; shift 2 ;;
     --cargo-lock) CARGOLOCK=$2; shift 2 ;;
     --version-text) VTEXT=$2; shift 2 ;;
+    --solidity) SOL=$2; shift 2 ;;
+    --circom) CIRCOM=$2; shift 2 ;;
     --first-party) FIRST=$2; shift 2 ;;
     --curations) CUR=$2; shift 2 ;;
     --released) RELEASED=$2; shift 2 ;;
@@ -83,6 +88,8 @@ case $PART in
   app) PPATH=app; IMPORTER=app; PODLOCK=app/ios/Podfile.lock
        GRADLE=app/android/app/build.gradle ;;
   sdk) PPATH=sdk; IMPORTER=sdk/core,common,sdk/qrcode,sdk/qrcode-angular,sdk/sdk-common ;;
+  contracts) PPATH=contracts; IMPORTER=contracts; SOL=contracts/contracts ;;
+  circuits) PPATH=circuits; IMPORTER=circuits; CIRCOM=circuits/circuits ;;
   "") if [ -n "$PPATH" ]; then PART=$(basename "$PPATH"); else PART=all; PPATH=.; fi ;;
   *) echo "unknown part: $PART" >&2; exit 2 ;;
 esac
@@ -121,4 +128,4 @@ NAME=$(git -C "$REPO" remote get-url origin 2>/dev/null | sed -E 's#.*/##; s#\.g
 python3 -I "$HERE/scan_lib.py" \
   --work "$WORK" --out "$OUT" --ref "$REF" --sha "$SHA" --part "$PART" \
   --path "$PPATH" --importer "$IMPORTER" --first-party "$FIRST" \
-  --offline "$OFFLINE" --curations "$CUR" --checks "$CHECKS" --gradle-files "$GFILES" --version-catalog "$CATALOG" --swift "$SWIFT" --podspec "$PODSPEC" --npm-lock "$NPMLOCK" --yarn-lock "$YARNLOCK" --cargo-lock "$CARGOLOCK" --version-text "$VTEXT" --csv "$CSV" --released "$RELEASED" --repo "$REPO" --repo-name "$NAME"
+  --offline "$OFFLINE" --curations "$CUR" --checks "$CHECKS" --gradle-files "$GFILES" --version-catalog "$CATALOG" --swift "$SWIFT" --podspec "$PODSPEC" --npm-lock "$NPMLOCK" --yarn-lock "$YARNLOCK" --cargo-lock "$CARGOLOCK" --version-text "$VTEXT" --solidity "$SOL" --circom "$CIRCOM" --csv "$CSV" --released "$RELEASED" --repo "$REPO" --repo-name "$NAME"

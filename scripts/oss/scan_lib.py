@@ -154,7 +154,15 @@ class Lookup:
         for slug in slugs:
             k = f"GH:{slug}"
             if k not in self.c and not self.offline:
-                r = self._get(f"https://api.github.com/repos/{slug}/license")
+                r = None
+                try:
+                    g = subprocess.run(["gh", "api", f"repos/{slug}/license"], capture_output=True, timeout=30)
+                    self.calls += 1
+                    r = json.loads(g.stdout) if g.returncode == 0 else None
+                except Exception:
+                    r = None
+                if r is None:
+                    r = self._get(f"https://api.github.com/repos/{slug}/license")
                 if r is None:
                     self.failed += 1
                     out[slug] = {"lic": "", "src": ""}
@@ -247,6 +255,110 @@ def gradle_declared(a):
     return mods, projects
 
 
+def gitgrep(a, pattern, paths):
+    r = subprocess.run(["git", "-C", a.repo, "grep", "-n", "-I", "-E", pattern, a.sha, "--"] + paths, capture_output=True)
+    out = []
+    for line in r.stdout.decode("utf-8", "replace").splitlines():
+        parts = line.split(":", 3)  # sha:path:line:text
+        if len(parts) == 4:
+            out.append((parts[1], parts[3]))
+    return out
+
+
+def solidity_rows(a):
+    """One row per (folder, SPDX identifier) for the Solidity sources under the given folders."""
+    rows = []
+    for d in split(a.solidity):
+        d = d.rstrip("/")
+        files = [l.rstrip("\n").split("\t", 1)[1] for l in open(os.path.join(a.work, "tree.txt")) if "\t" in l]
+        sols = [f for f in files if f.startswith(d + "/") and f.endswith(".sol")]
+        spdx_of = {}
+        for path, text in gitgrep(a, "SPDX-License-Identifier:", [d]):
+            m = re.search(r"SPDX-License-Identifier:\s*([^\s*]+(?:\s+(?:OR|AND|WITH)\s+[^\s*]+)*)", text)
+            if m and path.endswith(".sol"):
+                spdx_of.setdefault(path, m.group(1).strip())
+        groups = {}
+        for f in sols:
+            rel = f[len(d) + 1:]
+            top = rel.split("/")[0] if "/" in rel else "."
+            groups.setdefault((top, spdx_of.get(f, "")), []).append(f)
+        for (top, lic), fs in sorted(groups.items()):
+            where = d if top == "." else f"{d}/{top}"
+            scope = "dev" if re.search(r"(^|/)(tests?|mocks?|example)s?(/|$)", where, re.I) else "prod"
+            rows.append(dict(eco="solidity-source", name=f"{where}: {len(fs)} .sol file{'s' if len(fs) != 1 else ''}", version="", licence=lic, scope=scope, direct="",
+                             source="SPDX-License-Identifier header in each file" if lic else "no SPDX-License-Identifier header"))
+    return rows
+
+
+def circom_rows(a, npm_rows_):
+    """Packages that circom sources include, matched to the npm rows for version and licence."""
+    by_name = {}
+    for r in npm_rows_:
+        by_name.setdefault(r["name"], r)
+    users = {}
+    for d in split(a.circom):
+        for path, text in gitgrep(a, r'^[[:space:]]*include[[:space:]]+"', [d.rstrip("/")]):
+            m = re.search(r'include\s+"([^"]+)"', text)
+            if not m or not path.endswith(".circom"):
+                continue
+            inc = m.group(1)
+            if "node_modules/" in inc:
+                inc = inc.split("node_modules/")[-1]
+            elif inc.startswith(".") or "/" not in inc:
+                continue  # a local file
+            segs = inc.split("/")
+            pkg = "/".join(segs[:2]) if segs[0].startswith("@") else segs[0]
+            users.setdefault(pkg, set()).add(path)
+    alias = {}
+    lockp = os.path.join(a.work, "pnpm-lock.json")
+    if os.path.exists(lockp):
+        imps = json.load(open(lockp)).get("importers", {})
+        for root in split(a.importer):
+            for sec in ("dependencies", "devDependencies", "optionalDependencies"):
+                for n, x in (imps.get(root, {}).get(sec) or {}).items():
+                    v = x.get("version", "")
+                    if "@" in v[1:] and not v[0].isdigit() and not v.startswith(("http", "link:", "workspace:")):
+                        alias[n] = re.sub(r"\(.*$", "", v)[:re.sub(r"\(.*$", "", v).rindex("@")]
+    rows = []
+    for pkg, fs in sorted(users.items()):
+        r = by_name.get(pkg) or by_name.get(alias.get(pkg, ""))
+        if pkg in alias and r:
+            pkg = f"{pkg} (npm alias of {alias[pkg]})"
+        rows.append(dict(eco="circom-include", name=pkg, version=r["version"] if r else "", licence=r["licence"] if r else "", scope="prod", direct="direct",
+                         source=(f"included by {len(fs)} circom file{'s' if len(fs) != 1 else ''}; " + (f"licence of the npm package ({r['source']})" if r else "not an npm dependency of this part, not looked up"))))
+    return rows
+
+
+def submodule_rows(a, lk, first_party):
+    gm = os.path.join(a.work, "gitmodules")
+    if not os.path.exists(gm):
+        return []
+    mods, cur = [], None
+    for line in open(gm):
+        m = re.match(r'\s*\[submodule\s+"([^"]+)"\]', line)
+        if m:
+            cur = {"path": "", "url": ""}
+            mods.append(cur)
+        m = re.match(r"\s*(path|url)\s*=\s*(\S+)", line)
+        if m and cur is not None:
+            cur[m.group(1)] = m.group(2)
+    shas = {}
+    for line in open(os.path.join(a.work, "tree.txt")):
+        meta, _, name = line.rstrip("\n").partition("\t")
+        if meta.split()[1] == "commit":
+            shas[name] = meta.split()[2]
+    whole = a.path in ("", ".")
+    mods = [m for m in mods if whole or m["path"].startswith(a.path.rstrip("/") + "/")]
+    slug = lambda u: re.sub(r"\.git$", "", re.sub(r"^(https://|git@)github\.com[/:]", "", u))
+    isfp = lambda u: any(x.strip("@/").lower() in u.lower() for x in first_party)
+    lic = lk.github(sorted(slug(m["url"]) for m in mods if "github.com" in m["url"] and not isfp(m["url"])))
+    rows = []
+    for m in mods:
+        e = lic.get(slug(m["url"]), {"lic": "", "src": "first-party, not looked up" if isfp(m["url"]) else "not looked up"})
+        rows.append(dict(eco="git-submodule", name=f"{m['path']} ({slug(m['url'])})", version=shas.get(m["path"], "")[:12], licence=e["lic"], source=e["src"], scope="prod", direct="direct"))
+    return rows
+
+
 def swift_rows(a, lk, first_party):
     pk = {}
     for path in split(a.swift):
@@ -330,29 +442,37 @@ def yarnlock_rows(a, lk, first_party):
     if txt is None:
         sys.exit(f"yarn.lock not found at this ref: {path}")
     entries, by_desc, cur, block = [], {}, None, None
-    for line in txt.splitlines():
+    for line in txt.splitlines():  # reads both yarn berry and yarn classic (v1) lockfiles
         if line and not line.startswith((" ", "#", "__metadata")) and line.endswith(":"):
-            cur = {"descs": [d.strip().strip('"') for d in line[:-1].strip('"').split(",")], "deps": {}, "version": ""}
+            cur = {"descs": [d.strip().strip('"') for d in line[:-1].split(", ")], "deps": {}, "version": ""}
             entries.append(cur)
             for d in cur["descs"]:
                 by_desc[d] = cur
             block = None
         elif cur is not None and line.startswith("  ") and not line.startswith("    "):
-            k, _, v = line.strip().partition(":")
-            block = k if not v.strip() else None
-            if k == "version":
-                cur["version"] = v.strip().strip('"')
+            t = line.strip()
+            m = re.match(r'version:?\s+"?([^"]+)"?$', t)
+            if m:
+                cur["version"] = m.group(1)
+            block = t[:-1] if t.endswith(":") else None
         elif cur is not None and line.startswith("    ") and block in ("dependencies", "optionalDependencies"):
-            k, _, v = line.strip().partition(":")
-            cur["deps"][k.strip().strip('"')] = v.strip().strip('"')
-    name_of = lambda d: d[:d.index("@", 1)]
+            m = re.match(r'"?([^"\s:]+)"?:?\s+"?([^"]+)"?$', line.strip())
+            if m:
+                cur["deps"][m.group(1)] = m.group(2)
+    def name_of(d):  # "alias@npm:real@range" is listed under the real package name
+        alias, rest = d[:d.index("@", 1)], d[d.index("@", 1) + 1:]
+        if rest.startswith("npm:") and "@" in rest[5:]:
+            return rest[4:4 + rest[4:].index("@", 1)]
+        return alias
     roots = []
     for ws in [x.strip() for x in wss.split(",") if x.strip()]:
-        pj = json.loads(gitshow(a, f"{ws}/package.json") or "{}")
+        pj = json.loads(gitshow(a, "package.json" if ws == "." else f"{ws}/package.json") or "{}")
         wentry = next((e for e in entries if any(d.endswith(f"@workspace:{ws}") for d in e["descs"])), None)
-        for dep in (pj.get("dependencies") or {}):
+        for dep, rng in (pj.get("dependencies") or {}).items():
             if wentry and dep in wentry["deps"]:
                 roots.append(f"{dep}@{wentry['deps'][dep]}")
+            elif not wentry:  # yarn classic has no workspace entry: the range comes from package.json
+                roots.append(f"{dep}@{rng}")
     prod, q = set(), list(roots)
     while q:
         d = q.pop()
@@ -360,7 +480,14 @@ def yarnlock_rows(a, lk, first_party):
         if e is None or id(e) in prod:
             continue
         prod.add(id(e))
-        q += [f"{n}@{r}" for n, r in e["deps"].items()]
+        deps = e["deps"]
+        wsd = next((x for x in e["descs"] if "@workspace:" in x), None)
+        if wsd:  # a workspace entry lists dev dependencies too: follow only its package.json dependencies
+            wp = wsd.split("@workspace:", 1)[1]
+            wpj = json.loads(gitshow(a, "package.json" if wp == "." else f"{wp}/package.json") or "{}")
+            keep = set(wpj.get("dependencies") or {}) | set(wpj.get("optionalDependencies") or {})
+            deps = {n: r for n, r in deps.items() if n in keep}
+        q += [f"{n}@{r}" for n, r in deps.items()]
     found = {}
     for e in entries:
         if any("@workspace:" in d for d in e["descs"]) or not e["version"]:
@@ -448,7 +575,7 @@ def npm_rows(work, importer, first_party, lk, a):
         i = k.rfind("@")
         return k[:i], k[i + 1:]
 
-    ws = {}
+    ws, ws_scope = {}, {}
 
     def walk(sections):
         reach, direct, seen_imp, q = {}, set(), set(roots), []
@@ -461,6 +588,7 @@ def npm_rows(work, importer, first_party, lk, a):
             if ver.startswith(("link:", "workspace:")):
                 t = os.path.normpath(os.path.join(imp, ver.split(":", 1)[1]))
                 ws[n] = t
+                ws_scope.setdefault(n, "prod" if sections[0] == "dependencies" else "dev")
                 if t in imps and t not in seen_imp:
                     seen_imp.add(t)
                     for s in ("dependencies", "optionalDependencies"):
@@ -484,7 +612,7 @@ def npm_rows(work, importer, first_party, lk, a):
     fp = lambda n: any(n.startswith(x) for x in first_party) or n in ws
     isurl = lambda v: v.startswith("http") or "github" in v or v.startswith("git")
     lic = lk.npm(sorted((n, v) for n, v in prod | dev if not fp(n) and not isurl(v)))
-    rows = [dict(eco="npm", name=n, version="workspace", licence=ws_licence(a, t)[0], source=ws_licence(a, t)[1], scope="prod", direct="direct") for n, t in sorted(ws.items())]
+    rows = [dict(eco="npm", name=n, version="workspace", licence=ws_licence(a, t)[0], source=ws_licence(a, t)[1], scope=ws_scope.get(n, "prod"), direct="direct") for n, t in sorted(ws.items())]
     for n, v in sorted(prod | dev):
         scope = "prod" if (n, v) in prod else "dev"
         d = "direct" if (n, v) in (pdirect | ddirect) else "transitive"
@@ -620,6 +748,7 @@ def tree_facts(work, path, extra=()):
             subs.append((name, meta.split()[2]))
         files.append(name)
     whole = path in ("", ".")
+    subs = [x for x in subs if whole or x[0].startswith(path.rstrip("/") + "/")]
     roots = [path.rstrip("/") + "/"] + [e.rstrip("/") + "/" for e in extra]
     inpart = files if whole else [f for f in files if f.startswith(tuple(roots))]
     pick = lambda rx: [f for f in inpart if re.search(rx, f, re.I)]
@@ -684,7 +813,10 @@ def oss_md(rows, facts, gmode, ws, a, out, lk):
          "## What the scanner covered", ""]
     label = dict(npm="npm packages", cocoapods="CocoaPods", maven="Maven modules", swiftpm="Swift packages", cargo="Rust crates")
     label["gradle-project"] = "local Gradle modules"
-    for eco in ("npm", "cocoapods", "maven", "gradle-project", "swiftpm", "cargo"):
+    label["solidity-source"] = "Solidity source groups (folder and SPDX identifier)"
+    label["circom-include"] = "packages included by circom sources"
+    label["git-submodule"] = "git submodules"
+    for eco in ("npm", "cocoapods", "maven", "gradle-project", "swiftpm", "cargo", "solidity-source", "circom-include", "git-submodule"):
         rs = [r for r in rows if r["eco"] == eco]
         if rs:
             L.append(f"- {label[eco]}: {len(rs)} ({sum(r['scope'] == 'prod' for r in rs)} prod, {sum(r['scope'] == 'dev' for r in rs)} dev-only).")
@@ -769,7 +901,7 @@ def oss_md(rows, facts, gmode, ws, a, out, lk):
 def main():
     ap = argparse.ArgumentParser()
     for k in ("work", "out", "ref", "sha", "part", "path", "importer", "first-party", "offline", "repo-name", "repo", "curations", "released", "checks", "csv",
-              "gradle-files", "version-catalog", "swift", "podspec", "npm-lock", "yarn-lock", "cargo-lock", "version-text"):
+              "gradle-files", "version-catalog", "swift", "podspec", "npm-lock", "yarn-lock", "cargo-lock", "version-text", "solidity", "circom"):
         ap.add_argument("--" + k, default="")
     a = ap.parse_args()
     vs = []
@@ -788,6 +920,7 @@ def main():
     prows = pod_rows(a.work, npm_lic, lk, fps)
     grows, gmode = gradle_rows(a.work, lk, npm_lic, fps, a)
     rows = nrows + npmlock_rows(a, lk, fps) + yarnlock_rows(a, lk, fps) + prows + podspec_rows(a, lk, fps) + grows + swift_rows(a, lk, fps) + cargo_rows(a, lk, fps)
+    rows += solidity_rows(a) + circom_rows(a, nrows) + submodule_rows(a, lk, fps)
     curs = json.load(open(a.curations)) if a.curations and os.path.exists(a.curations) else []
     used = 0
     for r in rows:

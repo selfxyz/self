@@ -1,0 +1,87 @@
+{
+  "status_text": "The ok / nok status of this part is recorded in the internal licence register, not in this file.",
+  "scope_notes": [
+    "This part covers `circuits/` (circom) and `noir/`. `@selfxyz/circuits` is `private: true`, version 0.0.1, and is not published to npm. No other workspace package depends on it.",
+    "The circuits are compiled to proving artifacts (wasm and C++ witness generators, r1cs, zkeys, verification keys) that the backend prover uses. Verifier contracts generated from the circuits live in the contracts part. No zkey, wasm, ptau, r1cs or verification key is committed in `circuits/` or `noir/`. A search of `app/`, `packages/`, `sdk/` and `common/` found no circuit artifact.",
+    "The repository does not record which commit or which zkeys back the deployed verifiers or the production prover.",
+    "The npm list comes from the `circuits` importer in `pnpm-lock.yaml`. The importer lists snarkjs, circomlibjs, circom_tester and similar packages under `dependencies`, although they are build and test tools. `circuits/package.json` pins `circom_tester` to `#main`; the lockfile pins commit 81e963c.",
+    "Found by hand, not in the SBOM: the circom compiler 2.1.9 (GPL-3.0 per the GitHub licence API) is a build tool pinned by sha256 in `circuits-build.yml`.",
+    "Found by hand, not in the SBOM: the snarkjs Solidity verifier template is copied into the generated verifier sources with the header `SPDX-License-Identifier: GPL-3.0` and \"Copyright 2021 0KIMS association\". 87 files under `contracts/contracts/verifiers/` carry GPL-3.0 (disclose 4, dsc 23, register 30, register_id 27, register_aadhaar 1, register_kyc 1, gcp 1). They belong to the contracts part.",
+    "Found by hand, not in the SBOM: the production circuits (register, register_id, register_aadhaar, register_kyc, dsc, disclose, gcp_jwt_verifier) include circomlib 2.0.5 (GPL-3.0) and circom-bigint at commit 4f78084 (GPL-3.0 LICENSE file; ISC in package.json). Includes are resolved with a script over the tree.",
+    "Found by hand, not in the SBOM: build scripts under `circuits/scripts/build/` run circom, `snarkjs groth16 setup`, `zkey contribute`, `zkey export verificationkey` and `zkey export solidityverifier`, then copy the verifier `.sol` files into `contracts/contracts/verifiers/`. Powers of Tau files are downloaded from storage.googleapis.com/zkevm.",
+    "Found by hand, not in the SBOM: the workflow `circuits-build.yml` (self-hosted runner) builds C++ for register, register_id, register_aadhaar, register_kyc, disclose and dsc and ends with `actions/upload-artifact` named `circuits`, path `output/`. That is a GitHub Actions artifact, not a release. `gcp_jwt_verifier` has its own build script and is not in that workflow."
+  ],
+  "answers": {
+    "CocoaPods and Gradle native dependencies": {
+      "done": true,
+      "result": "Not applicable. This part has no native dependencies."
+    },
+    "Circom includes": {
+      "done": true,
+      "result": "External includes in `circuits/circuits/**/*.circom`: (1) `circomlib/circuits/*`: circomlib 2.0.5, GPL-3.0 per the npm registry (the tarball has no LICENSE file; 50 circuit files carry GNU headers); used by register, register_id, register_aadhaar, register_kyc, dsc, all four disclose circuits and gcp_jwt_verifier. (2) `@openpassport/zk-email-circuits/{lib,utils}/*` 6.1.2: MIT per the npm field only (no LICENSE file or headers in the tarball); used by the same circuits. (3) `@zk-kit/binary-merkle-root.circom` (npm alias of a first-party fork, 0.0.1, depends on circomlib 2.0.5): licence of the fork not looked up, upstream @zk-kit 2.0.0 is MIT; used by register, register_id, dsc and the four disclose circuits. (4) `circom-bigint/circuits/bigint_func.circom` from github.com/0xbok/circom-bigint at commit 4f78084327e993136edb2a8f4bd52ffbb437ab78: LICENSE file is the full GPL-3.0 text, package.json says ISC (author 0xPARC), README says proof of concept; reached through `utils/crypto/bigInt/bigIntFunc.circom` by all production circuits. (5) `anon-aadhaar-circuits/src/helpers/constants.circom` (npm alias of a first-party fork, 0.0.1): licence of the fork not looked up, upstream is MIT; used by register_aadhaar and vc_and_disclose_aadhaar. Listed in package.json with no include found: circom-dl (MIT, commit 472d489), @zk-email/circuits 6.3.4, @zk-email/zk-regex-circom 1.3.0, @zk-kit/circuits 1.0.0-beta, @zk-email/jwt-tx-builder-circuits 0.1.0 (all MIT). `circuits/scripts/link-circom-deps.cjs` symlinks circomlib, circom-bigint, zk-email, anon-aadhaar-circuits and binary-merkle-root into `circuits/node_modules` for tests."
+    },
+    "Forge libs": {
+      "done": true,
+      "result": "Not applicable. The Solidity `lib/` folders belong to the contracts part. The `node-forge` npm package is a different library."
+    },
+    "Own licence": {
+      "done": true,
+      "result": "`circuits/LICENSE` starts \"MIT License / Copyright (c) 2023 zk-email\" followed by the standard MIT text. It has no Self copyright line. `circuits/package.json` says `\"license\": \"MIT\"`, `\"author\": \"self team\"`, `\"private\": true`. The root `LICENSE` says each package has its own LICENSE. `noir/` has no LICENSE file and no licence field in `Nargo.toml`. Self-authored circom files have no SPDX or copyright header."
+    },
+    "Each flagged prod dependency": {
+      "done": true,
+      "result": "Traced from the circom includes, the build scripts and the test imports. Libraries compiled into the production circuits (circomlib, circom-bigint, the two first-party forks) are marked `no` for distributed artifacts here: the circuits run on the backend prover. snarkjs, circomlibjs, ffjavascript and related GPL-3.0 packages, circom_tester and the snarkjs and node-forge forks are build or test tools. circom_tester is imported by 21 test files."
+    },
+    "Git submodules": {
+      "done": true,
+      "result": "The `contracts/lib` submodules belong to the contracts part. `mobile-sdk-native` is not part of this part."
+    },
+    "Vendored binaries": {
+      "done": true,
+      "result": "None found in `circuits/` or `noir/`. No committed zkey, wasm, ptau, r1cs or verification key (`build/` is gitignored)."
+    },
+    "Fonts": {
+      "done": true,
+      "result": "Not applicable."
+    },
+    "Git or URL dependencies": {
+      "done": true,
+      "result": "Pins read from `pnpm-lock.yaml`; licences established by hand at the pinned commit: circom-bigint 4f78084 (GPL-3.0 LICENSE file, ISC in package.json), circom-dl 472d489 (MIT), circom_tester 81e963c (GPL-3.0 in package.json, no LICENSE file found), node-forge fork 17a11a6 ((BSD-3-Clause OR GPL-2.0) in package.json; GitHub reports the licence file as undetermined), sampritipanda/snarkjs fef81fc (GPL-3.0, COPYING file and package.json). `circuits/package.json` has no commit for circom-bigint, circom-dl and node-forge."
+    },
+    "Pods and local Gradle modules": {
+      "done": true,
+      "result": "Not applicable."
+    },
+    "Code cloned or downloaded at build time": {
+      "done": true,
+      "result": "Powers of Tau files are downloaded from storage.googleapis.com/zkevm during the build. `circuits/scripts/server/download_circuits_from_AWS.sh` exists next to `upload_to_AWS.sh`. The latter is a manual script, not in CI, that uploads zkey and dat zips for three legacy circuit names (`prove_rsa_*`) to the S3 bucket `proofofpassport-us`. Where the production artifacts live is not recorded in this repository."
+    },
+    "Source files copied from other projects": {
+      "done": true,
+      "result": "`utils/aadhaar/pack.circom` line 1: \"THIS CODE WAS TAKEN FROM\" anon-aadhaar `packages/circuits/src/utils/pack.circom` (upstream MIT per the GitHub licence API; no notice kept in the file). `gcp_jwt_verifier/jwt_verifier.circom` (lines 23, 58, 98, 143-144): \"Modified version of ZK-Email's JWTVerifier\", linking zkemail/zk-jwt at 3a50a9b (package.json MIT; no LICENSE file found by the GitHub licence API; no notice kept). `utils/crypto/hasher/shaBytes/dynamic/sha1Bytes.circom` (lines 8, 34): \"Adapted from\" `@openpassport/zk-email-circuits/helpers/sha.circom` and `sha256general.circom` (MIT upstream). `utils/crypto/bigInt/bigIntFunc.circom` (lines 288-305): \"adapted from BigMulShortLong and LongToShortNoEndCarry2\" with no origin named, and it includes circom-bigint; it also contains `splitOverflowedRegister_dl`. The `bigInt/` folder and `ec/curve.circom` look like circom-dl code by naming; no provenance header. No other SPDX, GNU, GPL or Copyright text in `circuits/` outside README link lists."
+    },
+    "Android: is the Gradle list": {
+      "done": true,
+      "result": "Not applicable."
+    },
+    "LGPL: how is it linked": {
+      "done": true,
+      "result": "Not applicable. No LGPL package found in this part."
+    },
+    "Attribution": {
+      "done": false,
+      "result": "Not checked."
+    }
+  },
+  "not_verified": [
+    "Whether the GPL-3.0 licences of circomlib and circom-bigint, or of the snarkjs Solidity template, apply to the generated zkeys, witness generators or verifier contracts. Question for the policy owner.",
+    "Whether C++ and wasm generated by the circom compiler carry the compiler's GPL-3.0.",
+    "The full transitive closure of the circuits importer was not enumerated by hand; the SBOM lists what the lockfile declares.",
+    "Licences of `@selfxyz/binary-merkle-root.circom`, `@selfxyz/aa-circuits` and `@selfxyz/anon-aadhaar-core` (not looked up).",
+    "Which commit and which zkeys back the deployed on-chain verifiers; whether `Verifier_gcp_jwt` is deployed.",
+    "Where the production zkeys and wasm used by the backend prover are stored. Retention and downloadability of the `circuits` Actions artifact on this public repository.",
+    "Origin of the in-tree `bigInt/` and `ec/` circom code (circom-dl or another library) and of the functions adapted from BigMulShortLong.",
+    "The licence of the noir standard library, and the zk-jwt licence file (only a package.json field was seen). `@openpassport/zk-email-circuits` and circomlib tarballs carry no LICENSE file; their licence is the package.json field.",
+    "Noir: workspace members `crates/dg1` and `crates/econtent` (`type = \"bin\"`, `compiler_version = \">=0.36.0\"`) have empty dependencies and use only `std::hash::sha256`. No CI workflow references noir and nothing is published; no further check done."
+  ]
+}
