@@ -1,9 +1,9 @@
 {
   "name": "@selfxyz/sdk-common",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "",
   "keywords": [],
-  "license": "ISC",
+  "license": "MIT",
   "author": "",
   "type": "module",
   "exports": {
