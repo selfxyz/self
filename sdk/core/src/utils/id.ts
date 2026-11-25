@@ -11,6 +11,44 @@ export const removeNullBytes = (str: string): string => {
   return str.replace(/\x00/g, '');
 };
 
+/**
+ * Formats a raw MRZ name slice for display: runs of `<` between letters become a
+ * single space, remaining `<` are dropped.
+ * @param raw - The revealed name slice, before any `<` replacement
+ * @returns The display name, e.g. `DOE JANE MARIE`
+ */
+export const formatMrzNameForDisplay = (raw: string): string => {
+  return raw
+    .replace(/([A-Z])<+([A-Z])/g, '$1 $2')
+    .replace(/</g, '')
+    .trim();
+};
+
+/**
+ * Splits an MRZ name field into surname and given names at the first `<<`.
+ * @param raw - The revealed name slice, before any `<` replacement
+ * @returns The two parts, or undefined when there is no `<<` boundary or no surname.
+ *   `givenNames` is omitted when nothing follows the boundary.
+ */
+export const splitMrzName = (raw: string): { surname: string; givenNames?: string } | undefined => {
+  const cleaned = removeNullBytes(raw);
+  const boundary = cleaned.indexOf('<<');
+  if (boundary === -1) {
+    return undefined;
+  }
+
+  const surname = cleaned.slice(0, boundary).replace(/</g, ' ').trim();
+  if (!surname) {
+    return undefined;
+  }
+
+  const givenNames = cleaned
+    .slice(boundary + 2)
+    .replace(/<+/g, ' ')
+    .trim();
+  return givenNames ? { surname, givenNames } : { surname };
+};
+
 export const formatRevealedDataPacked = (
   attestationId: AttestationId,
   publicSignals: string[]
@@ -32,15 +70,13 @@ export const formatRevealedDataPacked = (
     )
     .toString('utf-8');
 
-  const name = revealedDataPackedString
+  const rawName = revealedDataPackedString
     .subarray(
       revealedDataIndices[attestationId].nameStart,
       revealedDataIndices[attestationId].nameEnd + 1
     )
-    .toString('utf-8')
-    .replace(/([A-Z])<+([A-Z])/g, '$1 $2')
-    .replace(/</g, '')
-    .trim();
+    .toString('utf-8');
+  const name = formatMrzNameForDisplay(rawName);
   const idNumber = revealedDataPackedString
     .subarray(
       revealedDataIndices[attestationId].idNumberStart,
@@ -130,6 +166,7 @@ export const formatRevealedDataPacked = (
     forbiddenCountriesListPacked: forbiddenCountriesListPacked,
     issuingState: removeNullBytes(issuingState),
     name: removeNullBytes(name),
+    ...(attestationId === 1 || attestationId === 2 ? splitMrzName(rawName) : {}),
     idNumber: idNumber,
     nationality: nationality,
     dateOfBirth: dateOfBirth,
