@@ -53,7 +53,13 @@ async function promptYesNo(question: string): Promise<boolean> {
   });
 
   return new Promise((resolve) => {
+    let answered = false;
+    // Treat closed stdin (non-interactive runs) as "no" instead of hanging.
+    rl.on("close", () => {
+      if (!answered) resolve(false);
+    });
     rl.question(`${question} (y/n): `, (answer) => {
+      answered = true;
       rl.close();
       resolve(answer.toLowerCase() === "y" || answer.toLowerCase() === "yes");
     });
@@ -316,7 +322,36 @@ task("upgrade", "Deploy new implementation and create Safe proposal for upgrade"
 
     const targetVersionInfo = getVersionInfo(contractId, newVersion);
     const latestVersionInfo = getLatestVersionInfo(contractId);
-    const latestInitVersion = latestVersionInfo?.info.initializerVersion || 0;
+    const recordedInitVersion = latestVersionInfo?.info.initializerVersion || 0;
+
+    // The proxy's on-chain initialized version (OpenZeppelin v5 Initializable storage) is authoritative.
+    // The registry value is used only on localhost when the read fails.
+    const INITIALIZABLE_SLOT = "0xf0c57e16840df040f15088dc2f81fe391c3923bec73e23a9662efc9c229c6a00";
+    let latestInitVersion = recordedInitVersion;
+    try {
+      if ((await hre.ethers.provider.getCode(proxyAddress)) === "0x") {
+        log.error(`No contract code at proxy address ${proxyAddress} on '${network}'`);
+        return;
+      }
+      const raw = await hre.ethers.provider.getStorage(proxyAddress, INITIALIZABLE_SLOT);
+      const onChainInitVersion = Number(BigInt(raw) & 0xffffffffffffffffn);
+      if (onChainInitVersion === 0) {
+        log.error(`Proxy ${proxyAddress} reports initializer version 0 (uninitialized or not an Initializable proxy)`);
+        return;
+      }
+      if (onChainInitVersion !== recordedInitVersion) {
+        log.warning(
+          `Registry records initializer version ${recordedInitVersion}, proxy is at ${onChainInitVersion} on-chain; using on-chain value`,
+        );
+      }
+      latestInitVersion = onChainInitVersion;
+    } catch (e: any) {
+      if (network !== "localhost") {
+        log.error(`Could not read on-chain initializer version: ${e.message?.slice(0, 100)}`);
+        return;
+      }
+      log.warning(`Could not read on-chain initializer version, using registry value: ${e.message?.slice(0, 100)}`);
+    }
 
     let actualReinitVersion: number | null = null;
     let noNewInitializer = false;
@@ -329,11 +364,15 @@ task("upgrade", "Deploy new implementation and create Safe proposal for upgrade"
         return;
       }
 
-      // If target version already exists in registry, validate against its expected version
+      // Version the proxy will be at after this upgrade: unchanged for code-only upgrades.
+      const effectiveInitVersion = actualReinitVersion <= latestInitVersion ? latestInitVersion : actualReinitVersion;
+
+      // If target version already exists in registry (e.g. deployed to another network first),
+      // validate against its recorded version
       if (targetVersionInfo) {
         const expected = targetVersionInfo.initializerVersion;
-        if (actualReinitVersion !== expected) {
-          log.error(`Reinitializer mismatch: expected ${expected}, found ${actualReinitVersion}`);
+        if (effectiveInitVersion !== expected) {
+          log.error(`Reinitializer mismatch: expected ${expected}, found ${effectiveInitVersion}`);
           return;
         }
       }
@@ -342,6 +381,30 @@ task("upgrade", "Deploy new implementation and create Safe proposal for upgrade"
         // No new reinitializer — code-only upgrade
         noNewInitializer = true;
         log.success(`No new initialization needed (reinitializer stays at ${actualReinitVersion})`);
+      } else if (actualReinitVersion < latestInitVersion) {
+        // Highest reinitializer in source is below the proxy's version, e.g. a completed one-time
+        // initializer was removed. Nothing new can run, but confirm: a newly added reinitializer
+        // numbered at or below the proxy's version would never run on this proxy.
+        log.box([
+          "REINITIALIZER BELOW PROXY VERSION",
+          "═".repeat(50),
+          "",
+          `Proxy initializer version: ${latestInitVersion}`,
+          `Highest reinitializer in source: ${actualReinitVersion}`,
+          "",
+          "Treat as code-only only if no initializer was added in this version.",
+          `A new initializer must use reinitializer(${latestInitVersion + 1}).`,
+        ]);
+        if (dryRun) {
+          log.warning("Dry run: would ask for confirmation to proceed as a code-only upgrade");
+        } else {
+          const proceed = await promptYesNo("Proceed as a code-only upgrade?");
+          if (!proceed) {
+            log.info("Upgrade cancelled");
+            return;
+          }
+        }
+        noNewInitializer = true;
       } else if (actualReinitVersion === latestInitVersion + 1) {
         // Standard upgrade with new reinitializer
         log.success(`Reinitializer version correct: reinitializer(${actualReinitVersion})`);
@@ -353,7 +416,7 @@ task("upgrade", "Deploy new implementation and create Safe proposal for upgrade"
           "REINITIALIZER VERSION MISMATCH",
           "═".repeat(50),
           "",
-          `Latest registry version has reinitializer: ${latestInitVersion}`,
+          `Proxy initializer version: ${latestInitVersion}`,
           `Contract file has reinitializer: ${actualReinitVersion}`,
           "",
           "Valid options:",
@@ -622,7 +685,10 @@ task("upgrade", "Deploy new implementation and create Safe proposal for upgrade"
     log.step("Updating deployment registry...");
 
     const latestVersion = getLatestVersionInfo(contractId);
-    const newInitializerVersion = actualReinitVersion ?? (latestVersion?.info.initializerVersion || 0) + 1;
+    // For code-only upgrades the proxy's initialized version does not change.
+    const newInitializerVersion = noNewInitializer
+      ? latestInitVersion
+      : (actualReinitVersion ?? (latestVersion?.info.initializerVersion || 0) + 1);
     const deployerAddress = (await hre.ethers.provider.getSigner()).address;
 
     addVersion(
@@ -722,6 +788,12 @@ task("upgrade", "Deploy new implementation and create Safe proposal for upgrade"
         }
       } catch {
         log.detail("Initializer", "None");
+      }
+      if (initData === "0x") {
+        log.warning(
+          `New reinitializer expected but '${initializerName}()' was not found or takes arguments; ` +
+            "the upgrade will NOT call any initializer. Encode the initializer call manually if one is required.",
+        );
       }
     } else {
       log.detail("Initializer", "None (code-only upgrade)");

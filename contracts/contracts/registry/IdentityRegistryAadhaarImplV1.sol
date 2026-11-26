@@ -249,19 +249,6 @@ contract IdentityRegistryAadhaarImplV1 is IdentityRegistryAadhaarStorageV1, IIde
     }
 
     /**
-     * @notice Initializes AccessControl governance.
-     * @dev Used when upgrading from Ownable to AccessControl governance.
-     * This function sets up AccessControl roles on an already-initialized contract.
-     * It does NOT modify existing state (hub, roots, etc.).
-     *
-     * SECURITY: This function can only be called once - enforced by reinitializer(2).
-     * The previous version used reinitializer(1), so this upgrade uses version 2.
-     */
-    function initializeGovernance() external reinitializer(2) {
-        __ImplRoot_init();
-    }
-
-    /**
      * @notice Initializes OFAC proof verification infrastructure.
      * @dev Sets GCP JWT verifier, PCR0Manager, and root CA pubkey hash.
      * @param gcpJwtVerifier_ The GCP JWT Groth16 verifier address.
