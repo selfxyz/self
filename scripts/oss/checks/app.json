@@ -1,0 +1,62 @@
+{
+  "answers": {
+    "CocoaPods and Gradle native dependencies": {
+      "done": true,
+      "result": "Yes. Pods come from `app/ios/Podfile.lock` and Maven modules from the resolved release runtime classpath."
+    },
+    "Circom includes": {
+      "done": true,
+      "result": "Not applicable to the app."
+    },
+    "Forge libs": {
+      "done": true,
+      "result": "Not applicable to the app."
+    },
+    "Own licence": {
+      "done": true,
+      "result": "`app/LICENSE` is the Business Source License 1.1."
+    },
+    "Each flagged prod dependency": {
+      "done": true,
+      "result": "Traced for the rows marked `yes` or `no` above. Rows marked `not traced` were not followed."
+    },
+    "Git submodules": {
+      "done": true,
+      "result": "The two `contracts/lib` submodules belong to the contracts part. `mobile-sdk-native` is not built into the app: autolinking for `@selfxyz/mobile-sdk-alpha` is disabled in `app/react-native.config.cjs`."
+    },
+    "Vendored binaries": {
+      "done": false,
+      "result": "`gradle-wrapper.jar` is a build tool. The `mobile-sdk-alpha` AAR and xcframeworks are not linked into the app (autolinking disabled, no such pod in `Podfile.lock`), but they are committed in this repository and the licences of their contents are still to be reviewed."
+    },
+    "Fonts": {
+      "done": false
+    },
+    "Git or URL dependencies": {
+      "done": true,
+      "result": "Licence read from `package.json` at the pinned commit."
+    },
+    "Pods and local Gradle modules": {
+      "done": false,
+      "result": "`:passportreader` is scanned in its own repository. `:expo-log-box` is still to be looked up."
+    },
+    "Code cloned or downloaded at build time": {
+      "done": true,
+      "result": "The Android build clones two first-party modules (`:passportreader`, `:react-native-passport-reader`) and the iOS build pulls the `SelfNFCPassportReader` pod by commit. Each is scanned in its own repository."
+    },
+    "Source files copied from other projects": {
+      "done": false
+    },
+    "Android: is the Gradle list": {
+      "done": true,
+      "result": "Resolved `releaseRuntimeClasspath`, taken from a checkout whose Android dependencies and lockfile are identical to this commit (only `versionCode` differs)."
+    },
+    "LGPL: how is it linked": {
+      "done": true,
+      "result": "Android: the LGPL jars are merged into the app dex and release minify is off. iOS: no LGPL pod found."
+    },
+    "Attribution": {
+      "done": false
+    }
+  },
+  "status_text": "The ok / nok status of this part is recorded in the internal licence register, not in this file."
+}

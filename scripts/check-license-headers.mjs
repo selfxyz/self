@@ -29,6 +29,8 @@ const CANONICAL_HEADER_LINES = [
   '// NOTE: Converts to Apache-2.0 on 2029-06-11 per LICENSE.',
 ];
 
+const MIT_LICENSE_LINE = '// SPDX-License-Identifier: MIT';
+
 function findFiles(
   dir,
   extensions = ['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.kt', '.swift'],
@@ -106,6 +108,10 @@ function findLicenseHeaderIndex(lines) {
   const isPreviousYearHeader =
     currentLine === '// SPDX-FileCopyrightText: 2025 Social Connect Labs, Inc.';
   if (isCurrentHeader || isPreviousYearHeader) {
+    // MIT-licensed packages (e.g. common/) use a two-line header.
+    if (lines[i + 1] === MIT_LICENSE_LINE) {
+      return { index: i, type: 'mit', valid: true, endIndex: i + 1 };
+    }
     const hasAllLines =
       lines[i + 1] === CANONICAL_HEADER_LINES[1] &&
       lines[i + 2] === CANONICAL_HEADER_LINES[2];

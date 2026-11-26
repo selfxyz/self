@@ -14,3 +14,4 @@ contracts/typechain-types/**
 packages/webview-app/public/animations/**
 .nvmrc
 .watchmanconfig
+oss/**
