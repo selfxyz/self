@@ -135,17 +135,22 @@ contract GovernanceInitAccessTest is Test {
     // Tests
     // ------------------------------------------------------------------
 
-    function test_proxyDeployment_requiresInitData() public {
+    function test_proxyDeployment_requiresInitialization() public {
         Target[5] memory ts = _targets();
+        // A successful call that does not initialize (view function) must not pass either.
+        bytes memory nonInitCall = abi.encodeWithSignature("supportsInterface(bytes4)", bytes4(0x01ffc9a7));
         for (uint256 i = 0; i < ts.length; i++) {
-            vm.expectRevert(ProxyRoot.ProxyRootEmptyInitData.selector);
+            vm.expectRevert(ProxyRoot.ProxyRootNotInitialized.selector);
             new ProxyRoot(ts[i].impl, "");
+
+            vm.expectRevert(ProxyRoot.ProxyRootNotInitialized.selector);
+            new ProxyRoot(ts[i].impl, nonInitCall);
         }
         // The named proxy wrappers inherit the same check.
-        vm.expectRevert(ProxyRoot.ProxyRootEmptyInitData.selector);
+        vm.expectRevert(ProxyRoot.ProxyRootNotInitialized.selector);
         new IdentityVerificationHub(ts[0].impl, "");
-        vm.expectRevert(ProxyRoot.ProxyRootEmptyInitData.selector);
-        new IdentityRegistry(ts[1].impl, "");
+        vm.expectRevert(ProxyRoot.ProxyRootNotInitialized.selector);
+        new IdentityRegistry(ts[1].impl, nonInitCall);
     }
 
     function test_freshProxy_initializedAtExpectedVersion_andRolesOnlyWithDeployer() public {
