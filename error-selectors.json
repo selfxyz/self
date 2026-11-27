@@ -606,6 +606,12 @@
     "file": "contracts/contracts/IdentityVerificationHubImplV1.sol"
   },
   {
+    "name": "ProxyRootNotInitialized",
+    "signature": "ProxyRootNotInitialized()",
+    "selector": "0x8c434303",
+    "file": "contracts/contracts/upgradeable/ProxyRoot.sol"
+  },
+  {
     "name": "NO_VERIFIER_SET",
     "signature": "NO_VERIFIER_SET()",
     "selector": "0x8e727f46",

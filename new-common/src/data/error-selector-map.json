@@ -46,6 +46,7 @@
   "0x86d41225": "InsufficientCharcodeLen",
   "0x8930acef": "InvalidDayRange",
   "0x899ef10d": "LENGTH_MISMATCH",
+  "0x8c434303": "ProxyRootNotInitialized",
   "0x8e727f46": "NO_VERIFIER_SET",
   "0x8f1b44c7": "InvalidCscaRoot",
   "0x9003ac4d": "INVALID_REGISTER_PROOF",

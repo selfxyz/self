@@ -358,10 +358,16 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
     // ====================================================
 
     /**
-     * @notice Initializes the Identity Verification Hub V2 contract for upgrade.
+     * @notice Initializes the Identity Verification Hub V2 contract.
      * @dev Sets up the contract state including circuit version and emits initialization event.
-     * This function is used when upgrading from V1 to V2, hence uses reinitializer(2).
      * The circuit version is set to 2 for V2 hub compatibility.
+     *
+     * Grants SECURITY_ROLE and OPERATIONS_ROLE to the caller, so it must be called in the same
+     * transaction as proxy deployment (constructor data) or the upgrade (upgradeToAndCall).
+     *
+     * Initializer versions: deployed hub proxies are at version 12 (versions 11 and 12 are used).
+     * Any new initializer must use version 13 or higher and be restricted to SECURITY_ROLE, since a
+     * fresh proxy initialized by this function is at version 11.
      */
     function initialize() external reinitializer(11) {
         __ImplRoot_init();
@@ -374,19 +380,6 @@ contract IdentityVerificationHubImplV2 is ImplRoot {
         AADHAAR_REGISTRATION_WINDOW = 20;
 
         emit HubInitializedV2();
-    }
-
-    /**
-     * @notice Initializes governance for upgraded contracts.
-     * @dev Used when upgrading from Ownable to AccessControl governance.
-     * This function sets up AccessControl roles on an already-initialized contract.
-     * It does NOT modify existing state (hub, roots, etc.).
-     *
-     * SECURITY: This function can only be called once - enforced by reinitializer(12).
-     * The previous version used reinitializer(11), so this upgrade uses version 12.
-     */
-    function initializeGovernance() external reinitializer(12) {
-        __ImplRoot_init();
     }
 
     // ====================================================
