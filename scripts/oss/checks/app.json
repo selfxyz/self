@@ -58,5 +58,8 @@
       "done": false
     }
   },
-  "status_text": "The ok / nok status of this part is recorded in the internal licence register, not in this file."
+  "status_text": "The ok / nok status of this part is recorded in the internal licence register, not in this file.",
+  "scope_notes": [
+    "Found by hand, not in the SBOM: the QKMRZScanner pod (3.0.0, MIT) carries a Tesseract trained-data file, `Supporting Files/tessdata/ocrb.traineddata` (336,567 bytes). The pod's repository states no source or licence for that file other than the pod's MIT LICENSE. The pod is linked into the iOS app but not called: the app scans the MRZ with Apple Vision (`MrzScanEngine`), and no JavaScript calls `MRZScannerModule`, the only entry point to QKMRZScanner. It also brings in SwiftyTesseract (3.1.3, MIT), which embeds Tesseract (Apache-2.0), Leptonica (BSD-2-Clause), libpng, libjpeg and libtiff as binaries, as listed in its README. Removing the pod needs an app release; QKMRZParser (2.0.0, MIT) stays, because the Vision scanner uses it."
+  ]
 }
