@@ -40,7 +40,7 @@ function createShim(shimPath, targetPath) {
   writeFileSync(
     path.join(shimDir, 'index.js'),
     [
-      `export * from '${targetPath.replace('.js', '')}';`,
+      `export * from '${targetPath}';`,
       // If some targets have a default export, optionally re-export it:
       // `export { default } from '${targetPath.replace('.js', '')}';`,
       '',

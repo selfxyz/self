@@ -62,7 +62,7 @@
     "nice": "pnpm format && pnpm lint:imports",
     "nice:check": "pnpm lint && pnpm lint:imports:check",
     "prepublishOnly": "pnpm build",
-    "test": "echo 'no tests found'",
+    "test": "node --test scripts/*.test.mjs",
     "types": "pnpm --filter @selfxyz/sdk-common build && tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
